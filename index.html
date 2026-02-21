@@ -26,6 +26,7 @@
     --geo:      #c48a4e;
     --phys:     #29d4f5;
     --sci:      #f5c842;
+    --psych:    #f472b6;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -162,6 +163,7 @@
   .pill-astro { color: var(--astro); background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3);}
   .pill-geo   { color: var(--geo);   background: rgba(196,138,78,0.1);  border-color: rgba(196,138,78,0.3); }
   .pill-phys  { color: var(--phys);  background: rgba(41,212,245,0.1);  border-color: rgba(41,212,245,0.3); }
+  .pill-psych { color: var(--psych); background: rgba(244,114,182,0.1); border-color: rgba(244,114,182,0.3); }
   .pill-more  { color: var(--muted); background: rgba(123,120,158,0.1); border-color: rgba(123,120,158,0.25);}
 
   .hero-btns {
@@ -299,6 +301,7 @@
   .sb-geo   .subject-header { border-color: rgba(196,138,78,0.2); }
   .sb-phys  .subject-header { border-color: rgba(41,212,245,0.2); }
   .sb-sci   .subject-header { border-color: rgba(245,200,66,0.2); }
+  .sb-psych .subject-header { border-color: rgba(244,114,182,0.2); }
 
   .sb-bio   .subject-title { color: var(--bio); }
   .sb-chem  .subject-title { color: var(--chem); }
@@ -306,6 +309,7 @@
   .sb-geo   .subject-title { color: var(--geo); }
   .sb-phys  .subject-title { color: var(--phys); }
   .sb-sci   .subject-title { color: var(--sci); }
+  .sb-psych .subject-title { color: var(--psych); }
 
   .badge-bio   { color: var(--bio);   background: rgba(61,220,132,0.1);  border-color: rgba(61,220,132,0.3); }
   .badge-chem  { color: var(--chem);  background: rgba(255,112,67,0.1);  border-color: rgba(255,112,67,0.3); }
@@ -313,6 +317,7 @@
   .badge-geo   { color: var(--geo);   background: rgba(196,138,78,0.1);  border-color: rgba(196,138,78,0.3); }
   .badge-phys  { color: var(--phys);  background: rgba(41,212,245,0.1);  border-color: rgba(41,212,245,0.3); }
   .badge-sci   { color: var(--sci);   background: rgba(245,200,66,0.1);  border-color: rgba(245,200,66,0.3); }
+  .badge-psych { color: var(--psych); background: rgba(244,114,182,0.1); border-color: rgba(244,114,182,0.3); }
 
   /* Unit cards */
   .unit-row {
@@ -336,6 +341,7 @@
   .sb-geo   .unit-card:hover { border-color: rgba(196,138,78,0.35); }
   .sb-phys  .unit-card:hover { border-color: rgba(41,212,245,0.35); }
   .sb-sci   .unit-card:hover { border-color: rgba(245,200,66,0.35); }
+  .sb-psych .unit-card:hover { border-color: rgba(244,114,182,0.35); }
 
   .unit-top { padding: 1.4rem 1.6rem 0.8rem; flex: 1; }
   .unit-name {
@@ -464,6 +470,7 @@
     <span class="pill pill-astro">🔭 Astronomy</span>
     <span class="pill pill-geo">🪨 Geology</span>
     <span class="pill pill-phys">⚡ Physics</span>
+    <span class="pill pill-psych">🧠 Psychology</span>
     <span class="pill pill-more">+ More</span>
   </div>
 
@@ -477,11 +484,11 @@
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat-item">
-      <span class="stat-num">6</span>
+      <span class="stat-num">7</span>
       <span class="stat-label">Science Subjects</span>
     </div>
     <div class="stat-item">
-      <span class="stat-num">2</span>
+      <span class="stat-num">3</span>
       <span class="stat-label">Live Units</span>
     </div>
     <div class="stat-item">
@@ -692,6 +699,40 @@
           <div class="unit-top">
             <div class="unit-name">Lab Safety</div>
             <div class="unit-desc">Safety symbols, proper equipment use, MSDS basics, and rules every scientist follows in the lab.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PSYCHOLOGY -->
+    <div class="subject-block sb-psych">
+      <div class="subject-header">
+        <span class="subject-icon">🧠</span>
+        <span class="subject-title">Psychology</span>
+        <span class="subject-badge badge-psych">Behavioral Science</span>
+      </div>
+      <div class="unit-row">
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Rage Baiting &amp; Media Manipulation</div>
+            <div class="unit-desc">How outrage is engineered online, why your brain falls for it, and how to become a smarter media consumer.</div>
+          </div>
+          <div class="unit-links">
+            <a href="ragebaiting.html" class="ulink live">🕵️ Detective Academy</a>
+          </div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Cognitive Biases</div>
+            <div class="unit-desc">The mental shortcuts your brain takes — confirmation bias, anchoring, the Dunning-Kruger effect, and more.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Emotional Regulation &amp; Social Influence</div>
+            <div class="unit-desc">How emotions are processed, why peer pressure works, and strategies for managing your own responses.</div>
           </div>
           <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
         </div>
