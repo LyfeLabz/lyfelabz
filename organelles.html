@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | Cell Organelles</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #2ecc71;
+    --green-dark: #27ae60;
+    --blue: #3498db;
+    --blue-dark: #2980b9;
+    --teal: #1abc9c;
+    --purple: #9b59b6;
+    --red: #e74c3c;
+    --orange: #e67e22;
+    --yellow: #f1c40f;
+    --dark: #1a2535;
+    --dark2: #243447;
+    --card: #1e2f42;
+    --text: #e8f4f8;
+    --text-muted: #8aafca;
+    --border: rgba(52,152,219,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 2rem;
+  }
+  .nav-logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: var(--green);
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: color 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--green); }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    transition: all 0.2s;
+  }
+  .nav-back:hover { color: var(--green); border-color: rgba(46,204,113,0.4); }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0f2535 100%);
+    padding: 6rem 2rem 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(52,152,219,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(26,188,156,0.08) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(52,152,219,0.15);
+    border: 1px solid rgba(52,152,219,0.4);
+    color: var(--blue);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    position: relative;
+  }
+  .hero-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .btn {
+    display: inline-block;
+    padding: 0.8rem 2rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.25s;
+    cursor: pointer;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), var(--teal));
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(52,152,219,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(52,152,219,0.45); }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.2);
+    color: var(--text);
+  }
+  .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+  .hero-cells {
+    position: absolute;
+    font-size: 2.5rem;
+    opacity: 0.08;
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .hero-cells:nth-child(1) { top: 10%; left: 8%; animation-delay: 0s; }
+  .hero-cells:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-cells:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-cells:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5rem 2rem; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: rgba(52,152,219,0.1);
+    border: 1px solid rgba(52,152,219,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  .section-desc {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    max-width: 680px;
+    margin-bottom: 3rem;
+  }
+
+  /* ===== ORGANELLES ===== */
+  #organelles { background: var(--dark2); }
+  .org-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+  .org-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .org-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
+  .org-emoji { font-size: 2.2rem; margin-bottom: 0.8rem; display: block; }
+  .org-name { font-weight: 900; font-size: 1.1rem; margin-bottom: 0.4rem; }
+  .org-function { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.8rem; }
+  .org-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: 99px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .tag-plant { background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+  .tag-animal { background: rgba(52,152,219,0.15); color: var(--blue); border: 1px solid rgba(52,152,219,0.3); }
+  .tag-no { background: rgba(231,76,60,0.1); color: #e57575; border: 1px solid rgba(231,76,60,0.2); }
+
+  .org-card:nth-child(1)  { --accent: #3498db; }
+  .org-card:nth-child(2)  { --accent: #27ae60; }
+  .org-card:nth-child(3)  { --accent: #9b59b6; }
+  .org-card:nth-child(4)  { --accent: #1abc9c; }
+  .org-card:nth-child(5)  { --accent: #e74c3c; }
+  .org-card:nth-child(6)  { --accent: #e67e22; }
+  .org-card:nth-child(7)  { --accent: #2ecc71; }
+  .org-card:nth-child(8)  { --accent: #3498db; }
+  .org-card:nth-child(9)  { --accent: #e74c3c; }
+  .org-card:nth-child(10) { --accent: #9b59b6; }
+  .org-card:nth-child(11) { --accent: #f1c40f; }
+  .org-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent, var(--blue));
+  }
+  .org-card:hover { border-color: var(--accent, var(--blue)); }
+
+  /* ===== EXTENSION BANNER ===== */
+  .extension-banner {
+    margin-top: 3.5rem;
+    border-radius: 20px;
+    padding: 2.2rem 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    background: linear-gradient(135deg, rgba(230,126,34,0.10) 0%, rgba(52,152,219,0.06) 100%);
+    border: 2px solid rgba(230,126,34,0.3);
+  }
+  .extension-banner-icon {
+    font-size: 3.5rem;
+    flex-shrink: 0;
+    animation: float 5s ease-in-out infinite;
+  }
+  .extension-banner-body { flex: 1; min-width: 200px; }
+  .extension-banner-tag-orange {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--orange);
+    background: rgba(230,126,34,0.12);
+    border: 1px solid rgba(230,126,34,0.35);
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+    margin-bottom: 0.6rem;
+  }
+  .extension-banner h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    margin-bottom: 0.4rem;
+    color: var(--text);
+  }
+  .extension-banner p { color: var(--text-muted); font-size: 0.95rem; }
+  .btn-extension-orange {
+    background: linear-gradient(135deg, var(--orange), #d35400);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(230,126,34,0.35);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .btn-extension-orange:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(230,126,34,0.5); }
+
+  /* ===== VIDEO ===== */
+  .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .video-wrapper iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: none;
+  }
+
+  /* ===== CITY ANALOGY ===== */
+  #city { background: var(--dark); }
+  .city-intro {
+    background: linear-gradient(135deg, rgba(52,152,219,0.1), rgba(46,204,113,0.05));
+    border: 1px solid rgba(52,152,219,0.25);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+    text-align: center;
+  }
+  .city-intro p { font-size: 1.1rem; color: var(--text-muted); max-width: 720px; margin: 0 auto; }
+  .city-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  .city-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.6rem;
+    transition: all 0.3s;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .city-card:hover { transform: translateY(-3px); border-color: rgba(52,152,219,0.4); }
+  .city-icon-box {
+    font-size: 2rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: rgba(52,152,219,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .city-content h3 { font-weight: 900; font-size: 1rem; margin-bottom: 0.2rem; color: var(--text); }
+  .city-content .city-analog {
+    font-size: 0.82rem;
+    color: var(--blue);
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .city-content p { font-size: 0.88rem; color: var(--text-muted); }
+
+  /* ===== QUIZ ===== */
+  .quiz-section { background: var(--dark2); }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: var(--text-muted);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .quiz-question-text { font-weight: 800; font-size: 1rem; }
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    padding-left: 3rem;
+  }
+  .quiz-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem 1.2rem;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.02);
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: 'Nunito', sans-serif;
+    text-align: left;
+    color: var(--text);
+    width: 100%;
+  }
+  .quiz-option:hover:not(.selected):not(.disabled) {
+    border-color: rgba(52,152,219,0.5);
+    background: rgba(52,152,219,0.06);
+  }
+  .quiz-option.correct { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red) !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(46,204,113,0.4) !important; background: rgba(46,204,113,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback {
+    display: none;
+    font-size: 0.85rem;
+    margin-top: 0.8rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    padding-left: 3rem;
+    font-weight: 700;
+  }
+  .option-feedback.correct-fb { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    margin-bottom: 1.2rem;
+  }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--teal));
+    border-radius: 99px;
+    transition: width 0.4s;
+    width: 0%;
+  }
+  .progress-text { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; min-width: 60px; text-align: right; }
+  .score-board {
+    display: none;
+    background: linear-gradient(135deg, rgba(52,152,219,0.1), rgba(26,188,156,0.05));
+    border: 2px solid rgba(52,152,219,0.3);
+    border-radius: 20px;
+    padding: 2.5rem;
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .score-board .big-score {
+    font-family: 'Fredoka One', cursive;
+    font-size: 4rem;
+    color: var(--teal);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .score-board p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .reset-btn {
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    color: #fff;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: all 0.25s;
+  }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: #0d1720;
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+  footer .logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--teal); margin-bottom: 0.5rem; }
+  footer p { color: var(--text-muted); font-size: 0.9rem; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="hub.html" class="nav-logo">🧬 Biology Review Lab</a>
+  <ul class="nav-links">
+    <li><a href="#organelles">Organelles</a></li>
+    <li><a href="#city">Cell City</a></li>
+    <li><a href="#watch">Watch</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="extension_organelles.html">Extension 📦</a></li>
+  </ul>
+  <a href="hub.html" class="nav-back">⬅️ LyfeLabz Hub</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-cells">🧫</span>
+  <span class="hero-cells">🔬</span>
+  <span class="hero-cells">🏭</span>
+  <span class="hero-cells">⚡</span>
+  <div class="hero-badge">LyfeLabz · Biology · Unit 2</div>
+  <h1>Cell Organelles 🧫</h1>
+  <p>Everything you need to ace your quiz on <strong>Cell Organelles</strong> — explore what's inside plant and animal cells, see how it all fits together with the Cell City analogy, then test yourself!</p>
+  <div class="hero-btns">
+    <a href="#organelles" class="btn btn-primary">Explore Organelles 🔬</a>
+    <a href="#quiz" class="btn btn-outline">Jump to Quiz 📝</a>
+  </div>
+</header>
+
+<!-- ORGANELLES REFERENCE SECTION -->
+<section id="organelles">
+  <div class="container">
+    <span class="section-label">Slide Deck</span>
+    <h2 class="section-title">Cell Organelles 🧫</h2>
+    <p class="section-desc">Organelles are structures inside a cell that each do a specialized job. Think of them as the departments of a tiny city.</p>
+    <div class="org-grid">
+      <div class="org-card">
+        <span class="org-emoji">🚦</span>
+        <div class="org-name">Cell Membrane</div>
+        <div class="org-function">Surrounds the cell and controls what enters and exits. Like a <strong>toll bridge</strong>.</div>
+        <div class="org-tags">
+          <span class="tag tag-plant">🌿 Plant ✓</span>
+          <span class="tag tag-animal">🐾 Animal ✓</span>
+        </div>
+      </div>
+      <div class="org-card">
+        <span class="org-emoji">🏰</span>
+        <div class="org-name">Cell Wall</div>
+        <div class="org-function">Rigid outer layer that supports plant cells, letting them stand tall. Like a <strong>castle wall</strong>.</div>
+        <div class="org-tags">
+          <span class="tag tag-plant">🌿 Plant ✓</span>
+          <span class="tag tag-no">🐾 Animal ✗</span>
+        </div>
+      </div>
+      <div class="org-card">
+        <span class="org-emoji">🧠</span>
+        <div class="org-name">Nucleus</div>
+        <div class="org-function">Houses DNA with instructions for making proteins. The <strong>brain</strong> of the cell.</div>
+        <div class="org-tags">
+          <span class="tag tag-plant">🌿 Plant ✓</span>
+          <span class="tag tag-animal">🐾 Animal ✓</span>
+        </div>
+      </div>
+      <div class="org-card">
+        <span class="org-emoji">🍩</span>
+        <div class="org-name">Cytoplasm</div>
+        <div class="org-function">Gel-like substance filling the cell, allowing organelles and materials to move. Like <strong>jelly in a donut</strong>.</div>
+        <div class="org-tags">
+          <span class="tag tag-plant">🌿 Plant ✓</span>
+          <span class="tag tag-animal">🐾 Animal ✓</span>
+        </div>
+      </div>
+      <div class="org-card">
+        <span class="org-emoji">⚡</span>
+        <div class="org-name">Mitochondria</div>
+        <div class="org-function">The powerhouse that produces energy (ATP) for the cell. Like a <strong>power plant</strong>.</div>
+        <div class="org-tags">
+          <span class="tag tag-plant">🌿 Plant ✓</span>
+          <span class="tag tag-animal">🐾 Animal ✓</span>
+        </div>
+      </div>
+      <div class="org-card">
+        <span class="org-emoji">🏗️</span>
+        <div class="org-name">Ribosomes</div>
+        <div class="org-function">Take instructions from the nucleus and create proteins. Like a <strong>construction site</strong>.</div>
+        <div class="org-tags">
+          <span class="tag tag-plant">🌿 Plant ✓</span>
+          <span class="tag tag-animal">🐾 Animal ✓</span>
+        </div>
+      </div>
+      <div class="org-card">
+        <span class="org-emoji">☀️</span>
+        <div class="org-name">Chloroplasts</div>
+        <div class="org-function">Convert sunlight into energy through photosynthesis. Like a <strong>solar panel</strong>.</div>
+        <div class="org-tags">
+          <span class="tag tag-plant">🌿 Plant ✓</span>
+          <span class="tag tag-no">🐾 Animal ✗</span>
+        </div>
+      </div>
+      <div class="org-card">
+        <span class="org-emoji">🪣</span>
+        <div class="org-name">Vacuoles</div>
+        <div class="org-function">Store water and nutrients. Plants have <strong>one large</strong> central vacuole; animals have <strong>many small</strong> ones. Like a <strong>water tank</strong>.</div>
+        <div class="org-tags">
+          <span class="tag tag-plant">🌿 Plant — One large</span>
+          <span class="tag tag-animal">🐾 Animal — Many small</span>
+        </div>
+      </div>
+      <div class="org-card">
+        <span class="org-emoji">🚛</span>
+        <div class="org-name">Lysosomes</div>
+        <div class="org-function">Waste management system of the cell — breaks down waste and keeps the cell clean. Like a <strong>garbage truck</strong>.</div>
+        <div class="org-tags">
+          <span class="tag tag-plant">🌿 Plant ✓</span>
+          <span class="tag tag-animal">🐾 Animal ✓</span>
+        </div>
+      </div>
+      <div class="org-card">
+        <span class="org-emoji">🚇</span>
+        <div class="org-name">Rough Endoplasmic Reticulum</div>
+        <div class="org-function">Makes and transports proteins through the cell. Like <strong>Boston's T</strong> (subway system).</div>
+        <div class="org-tags">
+          <span class="tag tag-plant">🌿 Plant ✓</span>
+          <span class="tag tag-animal">🐾 Animal ✓</span>
+        </div>
+      </div>
+      <div class="org-card">
+        <span class="org-emoji">📦</span>
+        <div class="org-name">Golgi Bodies</div>
+        <div class="org-function">Process and package proteins for shipment outside the cell. Like the <strong>post office</strong>.</div>
+        <div class="org-tags">
+          <span class="tag tag-plant">🌿 Plant ✓</span>
+          <span class="tag tag-animal">🐾 Animal ✓</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXTENSION BANNER -->
+<div style="background:var(--dark2); padding: 0 2rem 4rem;">
+  <div class="container">
+    <div class="extension-banner">
+      <div class="extension-banner-icon">📦</div>
+      <div class="extension-banner-body">
+        <div class="extension-banner-tag-orange">⭐ Extension Activity</div>
+        <h3>How Does a Cell Ship a Protein?</h3>
+        <p>Ready to go deeper? Trace the full protein pathway step by step — from DNA to delivery — and see how it connects to insulin, antibodies, and real diseases.</p>
+      </div>
+      <a href="extension_organelles.html" class="btn btn-extension-orange">Explore Extension 📦</a>
+    </div>
+  </div>
+</div>
+
+<!-- CELL CITY ANALOGY -->
+<section id="city">
+  <div class="container">
+    <span class="section-label">Cell City Analogy</span>
+    <h2 class="section-title">The Cell is a City 🏙️</h2>
+    <p class="section-desc">Every organelle has a city counterpart. Just like a city needs all its departments working together to thrive — so does your cell!</p>
+    <div class="city-intro">
+      <p>🌆 Imagine your cell is a <strong>bustling city</strong>. It has a government center, a power grid, factories, delivery trucks, waste management, and border control — all working in perfect harmony to keep the city alive and running. Remove any one piece, and the whole system suffers.</p>
+    </div>
+    <div class="city-grid">
+      <div class="city-card">
+        <div class="city-icon-box">🏛️</div>
+        <div class="city-content">
+          <div class="city-analog">Nucleus → City Hall / Mayor's Office</div>
+          <h3>The Control Center</h3>
+          <p>Just as the Mayor's Office issues laws and decisions that guide the whole city, the <strong>nucleus</strong> contains the DNA "rulebook" that tells every organelle what to do.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🚦</div>
+        <div class="city-content">
+          <div class="city-analog">Cell Membrane → City Border Control</div>
+          <h3>The Gatekeeper</h3>
+          <p>Border control decides who and what enters or leaves the city. The <strong>cell membrane</strong> does the same — carefully regulating what passes in and out of the cell.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🧱</div>
+        <div class="city-content">
+          <div class="city-analog">Cell Wall → City Walls / Fortification</div>
+          <h3>The Protective Structure</h3>
+          <p>Ancient city walls kept the city standing tall and protected. The <strong>cell wall</strong> gives plant cells rigid structure and protection (only in plant cities!).</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">⚡</div>
+        <div class="city-content">
+          <div class="city-analog">Mitochondria → Power Plant</div>
+          <h3>The Energy Source</h3>
+          <p>No city runs without electricity. The <strong>mitochondria</strong> generate ATP energy to power all of the cell's activities, just like a power station keeps the lights on.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🏭</div>
+        <div class="city-content">
+          <div class="city-analog">Ribosomes → Manufacturing Factories</div>
+          <h3>The Builders</h3>
+          <p>Factories follow blueprints from headquarters to manufacture products. <strong>Ribosomes</strong> read instructions from the nucleus (DNA) to build proteins the cell needs.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🚇</div>
+        <div class="city-content">
+          <div class="city-analog">Rough ER → Transit System</div>
+          <h3>The Transport Network</h3>
+          <p>A city's subway and road system moves people and goods around. The <strong>rough endoplasmic reticulum</strong> is the cell's highway, transporting proteins where they need to go.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">📮</div>
+        <div class="city-content">
+          <div class="city-analog">Golgi Bodies → Post Office / Shipping Center</div>
+          <h3>The Packaging &amp; Delivery Hub</h3>
+          <p>The post office sorts, packages, and ships mail. <strong>Golgi bodies</strong> receive proteins from the ER, package them up, and ship them to the right destination inside or outside the cell.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">☀️</div>
+        <div class="city-content">
+          <div class="city-analog">Chloroplasts → Solar Farm</div>
+          <h3>The Renewable Energy Source</h3>
+          <p>Solar panels collect sunlight and convert it to usable energy. <strong>Chloroplasts</strong> do the exact same thing for plant cells through photosynthesis.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🏊</div>
+        <div class="city-content">
+          <div class="city-analog">Vacuoles → Reservoir / Water Tower</div>
+          <h3>Storage &amp; Water Supply</h3>
+          <p>A city reservoir stores water for when citizens need it. <strong>Vacuoles</strong> store water, nutrients, and waste — plant cells have one giant central reservoir; animal cells have many smaller ones.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🗑️</div>
+        <div class="city-content">
+          <div class="city-analog">Lysosomes → Sanitation Department</div>
+          <h3>Waste Management</h3>
+          <p>Every city needs garbage trucks and waste processing. <strong>Lysosomes</strong> are the cell's clean-up crew — breaking down waste, worn-out parts, and invaders to keep the cell healthy.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🌊</div>
+        <div class="city-content">
+          <div class="city-analog">Cytoplasm → City Streets &amp; Water Supply</div>
+          <h3>The Medium Everything Moves Through</h3>
+          <p>Streets connect every part of a city. The <strong>cytoplasm</strong> is the gel-like fluid that all organelles are suspended in — it lets nutrients and materials move freely from place to place.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEO: Cell Organelle Rap -->
+<section id="watch" style="background:var(--dark2); padding:5rem 2rem;">
+  <div class="container">
+    <span class="section-label">Video — Cell Organelles</span>
+    <h2 class="section-title">The Cell Organelle Rap 🎤</h2>
+    <p class="section-desc" style="margin-bottom:2rem;">Now that you know your organelles, watch this rap to help lock it all in before the quiz!</p>
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/-zafJKbMPA8" allowfullscreen></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="quiz-section" style="background:var(--dark); padding:5rem 2rem;">
+  <div class="container">
+    <span class="section-label">Quiz</span>
+    <h2 class="section-title">Cell Organelles Quiz 🧫</h2>
+    <p class="section-desc">Put your organelle knowledge to the test! Can you identify the right part for each job?</p>
+    <div class="quiz-progress">
+      <div class="progress-bar"><div class="progress-fill" id="q2-progress"></div></div>
+      <div class="progress-text" id="q2-progress-text">0 / 9</div>
+    </div>
+    <div id="quiz2-questions"></div>
+    <div class="score-board" id="q2-score">
+      <div class="big-score" id="q2-score-num">0/9</div>
+      <p id="q2-score-msg"></p>
+      <button class="reset-btn" onclick="resetQuiz(2)">🔄 Try Again</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">🧫 LyfeLabz · Cell Organelles</div>
+  <p style="margin-bottom:0.5rem;">Part of the Biology unit · <a href="hub.html" style="color:var(--teal);">Back to LyfeLabz Hub</a></p>
+  <p>© 2025 LyfeLabz · Educational Use</p>
+</footer>
+
+<script>
+const quizData = {
+  2: {
+    total: 9,
+    questions: [
+      {
+        q: "Which organelle is described as 'the powerhouse of the cell' because it produces energy?",
+        options: ["Nucleus","Ribosome","Mitochondria","Chloroplast"],
+        correct: 2,
+        explanation: "The mitochondria produce ATP (energy) for the cell through cellular respiration — it's literally called the powerhouse!"
+      },
+      {
+        q: "The cell membrane is compared to a toll bridge because it:",
+        options: ["Gives the cell its rigid shape","Controls what enters and exits the cell","Stores water and nutrients","Produces proteins"],
+        correct: 1,
+        explanation: "Like a toll bridge, the cell membrane controls traffic — deciding what can pass into and out of the cell."
+      },
+      {
+        q: "Which organelle is found in plant cells but NOT in animal cells and is responsible for photosynthesis?",
+        options: ["Mitochondria","Vacuole","Ribosome","Chloroplast"],
+        correct: 3,
+        explanation: "Chloroplasts capture sunlight and convert it to glucose through photosynthesis. They're only found in plant (and algae) cells!"
+      },
+      {
+        q: "The Golgi bodies are compared to a post office because they:",
+        options: ["Generate energy for the cell","Break down waste materials","Process and package proteins for shipment","Control what enters the cell"],
+        correct: 2,
+        explanation: "Like a post office, Golgi bodies receive proteins from the ER, package them up, and ship them to where they're needed."
+      },
+      {
+        q: "How are vacuoles different in plant cells vs. animal cells?",
+        options: ["Plant cells have many small vacuoles; animal cells have one large one","Both have the same number","Plant cells have one large central vacuole; animal cells have many small ones","Neither type of cell has vacuoles"],
+        correct: 2,
+        explanation: "Plant cells have ONE large central vacuole (think of a big water storage tank). Animal cells have MANY small vacuoles."
+      },
+      {
+        q: "Which organelle is compared to 'jelly in a donut' and helps organelles move around inside the cell?",
+        options: ["Cell wall","Vacuole","Nucleus","Cytoplasm"],
+        correct: 3,
+        explanation: "The cytoplasm is the gel-like fluid that fills the cell. Just like jelly lets a donut's filling flow, cytoplasm lets materials move around."
+      },
+      {
+        q: "A student says: 'The ribosomes are like the construction crew.' Why is this a good analogy?",
+        options: ["Because ribosomes build the cell wall","Because ribosomes follow instructions (from DNA) to build proteins","Because ribosomes remove waste from the cell","Because ribosomes generate energy"],
+        correct: 1,
+        explanation: "Construction crews follow blueprints to build things. Ribosomes follow DNA's instructions (via mRNA) to build proteins for the cell."
+      },
+      {
+        q: "Which organelle acts as the 'brain' of the cell and houses the cell's DNA?",
+        options: ["Mitochondria","Ribosome","Nucleus","Golgi bodies"],
+        correct: 2,
+        explanation: "The nucleus is the control center — it contains DNA with all the instructions for the cell's functions. Found in both plant and animal cells."
+      },
+      {
+        q: "The lysosomes are described as the cell's waste management system. What do they actually do?",
+        options: ["Produce energy for the cell","Transport proteins through the cell","Package proteins for export","Break down waste materials and keep the cell clean"],
+        correct: 3,
+        explanation: "Lysosomes contain enzymes that break down worn-out cell parts, food particles, and invaders — keeping the cell clean and healthy."
+      }
+    ]
+  }
+};
+
+const quizState = { 2: { answered: 0, correct: 0 } };
+
+function buildQuiz(num) {
+  const data = quizData[num];
+  const container = document.getElementById(`quiz${num}-questions`);
+  container.innerHTML = '';
+  quizState[num] = { answered: 0, correct: 0 };
+  updateProgress(num);
+
+  data.questions.forEach((q, qi) => {
+    const letters = ['A','B','C','D'];
+    const optionsHTML = q.options.map((opt, oi) => `
+      <button class="quiz-option" onclick="selectAnswer(${num}, ${qi}, ${oi})" id="q${num}-${qi}-${oi}">
+        <span class="option-letter">${letters[oi]}</span>
+        <span>${opt}</span>
+      </button>
+    `).join('');
+
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.id = `q${num}-card-${qi}`;
+    card.innerHTML = `
+      <div class="quiz-header">
+        <div class="quiz-num">${qi + 1}</div>
+        <div class="quiz-question-text">${q.q}</div>
+      </div>
+      <div class="quiz-options">${optionsHTML}</div>
+      <div class="option-feedback" id="q${num}-feedback-${qi}"></div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function selectAnswer(quizNum, qi, chosenIndex) {
+  const q = quizData[quizNum].questions[qi];
+  const isCorrect = chosenIndex === q.correct;
+  q.options.forEach((_, oi) => {
+    const btn = document.getElementById(`q${quizNum}-${qi}-${oi}`);
+    btn.classList.add('disabled');
+    if (oi === q.correct) btn.classList.add('revealed-correct');
+  });
+  const chosenBtn = document.getElementById(`q${quizNum}-${qi}-${chosenIndex}`);
+  chosenBtn.classList.add(isCorrect ? 'correct' : 'incorrect');
+  const feedback = document.getElementById(`q${quizNum}-feedback-${qi}`);
+  if (isCorrect) {
+    feedback.className = 'option-feedback correct-fb';
+    feedback.innerHTML = '✅ Correct! ' + q.explanation;
+    quizState[quizNum].correct++;
+  } else {
+    feedback.className = 'option-feedback incorrect-fb';
+    feedback.innerHTML = '❌ Not quite. ' + q.explanation;
+  }
+  quizState[quizNum].answered++;
+  updateProgress(quizNum);
+  if (quizState[quizNum].answered === quizData[quizNum].total) showScore(quizNum);
+}
+
+function updateProgress(num) {
+  const total = quizData[num].total;
+  const answered = quizState[num].answered;
+  const pct = (answered / total) * 100;
+  document.getElementById(`q${num}-progress`).style.width = pct + '%';
+  document.getElementById(`q${num}-progress-text`).textContent = `${answered} / ${total}`;
+}
+
+function showScore(num) {
+  const { correct, answered } = quizState[num];
+  const pct = Math.round((correct / answered) * 100);
+  let msg = '';
+  if (pct === 100) msg = '🏆 Perfect score! You are a cell biology superstar!';
+  else if (pct >= 80) msg = '🌟 Great work! You really know your organelles. Review any you missed.';
+  else if (pct >= 60) msg = '📚 Good effort! Go back over your notes and try again.';
+  else msg = "💪 Keep studying — you'll get there! Review the notes above and try again.";
+  document.getElementById(`q${num}-score-num`).textContent = `${correct}/${answered}`;
+  document.getElementById(`q${num}-score-msg`).textContent = msg;
+  document.getElementById(`q${num}-score`).classList.add('show');
+  document.getElementById(`q${num}-score`).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetQuiz(num) {
+  document.getElementById(`q${num}-score`).classList.remove('show');
+  buildQuiz(num);
+}
+
+buildQuiz(2);
+</script>
+</body>
+</html>
