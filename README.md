@@ -1,5 +1,5 @@
 # LyfeLabz
-Classroom-tested. Student-focused. Built for clarity.
+*Classroom-tested. Student-focused. Built for clarity.*
 
 **LyfeLabz is an interactive middle school science hub built to make lessons feel more like labs than lectures.**  
 Created for students to explore independently and for teachers to deploy instantly.
