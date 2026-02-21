@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LyfeLabz Real Power Lab | Media Literacy for Middle Schoolers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Nunito', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+        .pulse-animation { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .example-card { cursor: pointer; transition: all 0.3s ease; }
+        .smooth-scroll { scroll-behavior: smooth; }
+
+        /* Quiz */
+        .quiz-option {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid #e2e8f0;
+        }
+        .quiz-option:hover:not(.answered) {
+            border-color: #818cf8;
+            background-color: #eef2ff;
+        }
+        .quiz-option.correct  { border-color: #22c55e; background-color: #f0fdf4; }
+        .quiz-option.incorrect { border-color: #ef4444; background-color: #fef2f2; }
+        .quiz-option.reveal-correct { border-color: #22c55e; background-color: #f0fdf4; }
+        .quiz-option.answered { cursor: default; }
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 smooth-scroll">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-indigo-600"></i>
+                    <span class="font-bold text-xl text-slate-900">Real Power Lab</span>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#learn"      class="text-slate-600 hover:text-indigo-600 font-medium transition">Learn</a>
+                    <a href="#watch"      class="text-slate-600 hover:text-indigo-600 font-medium transition">Watch</a>
+                    <a href="#real-life"  class="text-slate-600 hover:text-indigo-600 font-medium transition">Real Life</a>
+                    <a href="#real-power" class="text-slate-600 hover:text-indigo-600 font-medium transition">Real Power</a>
+                    <a href="#spot"       class="text-slate-600 hover:text-indigo-600 font-medium transition">Spot the Bait</a>
+                    <a href="#tools"      class="text-slate-600 hover:text-indigo-600 font-medium transition">Tools</a>
+                    <a href="#resources"  class="text-slate-600 hover:text-indigo-600 font-medium transition">Resources</a>
+                </div>
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-md text-slate-600 hover:bg-slate-100">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200">
+            <div class="px-4 pt-2 pb-3 space-y-1">
+                <a href="#learn"      class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">Learn</a>
+                <a href="#watch"      class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">Watch</a>
+                <a href="#real-life"  class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">Real Life</a>
+                <a href="#real-power" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">Real Power</a>
+                <a href="#spot"       class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">Spot the Bait</a>
+                <a href="#tools"      class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">Tools</a>
+                <a href="#resources"  class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600">Resources</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white">
+        <div class="absolute inset-0 bg-black opacity-10"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        <span class="text-sm font-semibold">For Middle School Students</span>
+                    </div>
+                    <h1 class="text-5xl md:text-6xl font-extrabold leading-tight">
+                        Don't Take the <span class="text-yellow-300">Bait</span> 🎣
+                    </h1>
+                    <p class="text-xl text-indigo-100 leading-relaxed max-w-lg">
+                        Learn how to spot "rage bait"—content designed to make you angry—and become a smarter, calmer internet user.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#learn" class="inline-flex items-center gap-2 bg-white text-indigo-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-indigo-50 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            Start Learning <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#spot" class="inline-flex items-center gap-2 bg-indigo-500/30 backdrop-blur-sm border border-white/40 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-indigo-500/40 transition">
+                            Play the Game
+                        </a>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 transform rotate-3 hover:rotate-0 transition duration-500">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center pulse-animation">
+                                <i data-lucide="flame" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div class="flex-1 bg-white/90 rounded-2xl p-4 text-slate-800">
+                                <p class="font-bold text-red-600 text-lg">SHOCKING! 🚨</p>
+                                <p class="text-slate-600">You won't BELIEVE what they did!!! 😡😡😡</p>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">Angry</span>
+                                    <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">2.5k comments</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm text-white/80 mt-4">
+                            <span class="flex items-center gap-1"><i data-lucide="eye" class="w-4 h-4"></i> This is rage bait!</span>
+                            <span class="flex items-center gap-1"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Designed to trigger you</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-50 to-transparent"></div>
+    </section>
+
+    <!-- What is Rage Baiting -->
+    <section id="learn" class="py-20 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Media Literacy 101</span>
+                <h2 class="text-4xl font-bold text-slate-900 mt-2 mb-4">What is Rage Baiting?</h2>
+                <p class="text-lg text-slate-600">Rage baiting is when someone creates content specifically to make you angry, upset, or outraged—because angry people click, comment, and share more.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-2xl p-8 shadow-sm card-hover border border-slate-100">
+                    <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mb-6">
+                        <i data-lucide="flame" class="w-7 h-7 text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">The Hook</h3>
+                    <p class="text-slate-600 leading-relaxed">Content uses shocking headlines, extreme opinions, or upsetting images to trigger immediate emotional reactions before you even think.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-8 shadow-sm card-hover border border-slate-100">
+                    <div class="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center mb-6">
+                        <i data-lucide="mouse-pointer-click" class="w-7 h-7 text-orange-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">The Engagement Trap</h3>
+                    <p class="text-slate-600 leading-relaxed">When you're angry, you comment, share, and argue. This gives the post more visibility and makes money for the creator through ads.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-8 shadow-sm card-hover border border-slate-100">
+                    <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mb-6">
+                        <i data-lucide="brain" class="w-7 h-7 text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Your Power</h3>
+                    <p class="text-slate-600 leading-relaxed">Once you recognize rage bait, you can choose not to engage. This keeps you calmer and stops manipulation in its tracks.</p>
+                </div>
+            </div>
+
+            <!-- Cycle Diagram -->
+            <div class="mt-16 bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-slate-200">
+                <h3 class="text-2xl font-bold text-center text-slate-900 mb-8">The Rage Bait Cycle</h3>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+                    <div class="flex flex-col items-center text-center max-w-xs">
+                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-3">
+                            <span class="text-2xl font-bold text-indigo-600">1</span>
+                        </div>
+                        <p class="font-semibold text-slate-900">Creator posts extreme content</p>
+                    </div>
+                    <i data-lucide="arrow-right" class="w-6 h-6 text-slate-400 hidden md:block"></i>
+                    <i data-lucide="arrow-down" class="w-6 h-6 text-slate-400 md:hidden"></i>
+                    <div class="flex flex-col items-center text-center max-w-xs">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                            <span class="text-2xl font-bold text-red-600">2</span>
+                        </div>
+                        <p class="font-semibold text-slate-900">You feel angry or shocked</p>
+                    </div>
+                    <i data-lucide="arrow-right" class="w-6 h-6 text-slate-400 hidden md:block"></i>
+                    <i data-lucide="arrow-down" class="w-6 h-6 text-slate-400 md:hidden"></i>
+                    <div class="flex flex-col items-center text-center max-w-xs">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-3">
+                            <span class="text-2xl font-bold text-orange-600">3</span>
+                        </div>
+                        <p class="font-semibold text-slate-900">You comment or share</p>
+                    </div>
+                    <i data-lucide="arrow-right" class="w-6 h-6 text-slate-400 hidden md:block"></i>
+                    <i data-lucide="arrow-down" class="w-6 h-6 text-slate-400 md:hidden"></i>
+                    <div class="flex flex-col items-center text-center max-w-xs">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                            <span class="text-2xl font-bold text-green-600">4</span>
+                        </div>
+                        <p class="font-semibold text-slate-900">Creator gets paid. Cycle repeats.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== VIDEO + QUIZ SECTION ========== -->
+    <section id="watch" class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Header -->
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">BBC Learning English</span>
+                <h2 class="text-4xl font-bold text-slate-900 mt-2 mb-4">Watch: How Online Anger Makes Money</h2>
+                <p class="text-lg text-slate-600">Watch this 6-minute BBC video, then put your knowledge to the test with the quiz below!</p>
+            </div>
+
+            <!-- Video Embed -->
+            <div class="rounded-3xl overflow-hidden shadow-2xl border border-slate-200 mb-3">
+                <div class="relative w-full" style="padding-top: 56.25%;">
+                    <iframe
+                        class="absolute top-0 left-0 w-full h-full"
+                        src="https://www.youtube.com/embed/JaGXfJBx0BM"
+                        title="Rage bait: How online anger makes money ⏲️ 6 Minute English – BBC Learning English"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+            <p class="text-center text-sm text-slate-400 mb-16 italic">
+                "Rage bait: How online anger makes money" &mdash; BBC Learning English &middot; 6 Minute English
+            </p>
+
+            <!-- Quiz Card -->
+            <div class="bg-indigo-50 rounded-3xl p-8 md:p-12 border border-indigo-100">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="clipboard-list" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-900">Video Comprehension Quiz</h3>
+                </div>
+                <p class="text-slate-600 mb-10">Answer all 5 questions based on what you just watched. Click an answer to see instant feedback!</p>
+
+                <div id="quiz-container" class="space-y-10">
+
+                    <!-- Q1 -->
+                    <div class="quiz-question" data-question="1">
+                        <p class="font-bold text-slate-900 text-lg mb-4">
+                            <span class="inline-flex items-center justify-center w-8 h-8 bg-indigo-600 text-white rounded-full text-sm font-bold mr-2 flex-shrink-0">1</span>
+                            According to the BBC video, what is the best definition of "rage bait"?
+                        </p>
+                        <div class="space-y-3">
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,1)">
+                                <span class="font-medium text-slate-700">A) Breaking news stories shared to keep people informed</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="true" onclick="selectAnswer(this,1)">
+                                <span class="font-medium text-slate-700">B) Content deliberately designed to provoke anger and boost online engagement</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,1)">
+                                <span class="font-medium text-slate-700">C) A type of fishing game popular on social media</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,1)">
+                                <span class="font-medium text-slate-700">D) Advertisements that appear in comment sections</span>
+                            </div>
+                        </div>
+                        <div class="quiz-feedback hidden mt-4 p-4 rounded-xl text-sm font-semibold"></div>
+                    </div>
+
+                    <!-- Q2 -->
+                    <div class="quiz-question" data-question="2">
+                        <p class="font-bold text-slate-900 text-lg mb-4">
+                            <span class="inline-flex items-center justify-center w-8 h-8 bg-indigo-600 text-white rounded-full text-sm font-bold mr-2 flex-shrink-0">2</span>
+                            Why do social media algorithms push rage-baiting content to more people?
+                        </p>
+                        <div class="space-y-3">
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,2)">
+                                <span class="font-medium text-slate-700">A) Platforms are legally required to promote controversial content</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,2)">
+                                <span class="font-medium text-slate-700">B) Platforms prioritise educational and positive content</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="true" onclick="selectAnswer(this,2)">
+                                <span class="font-medium text-slate-700">C) High engagement — angry comments, shares, and reactions — signals to the algorithm that content is popular, so it shows it to even more users</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,2)">
+                                <span class="font-medium text-slate-700">D) Creators pay social media companies to boost their posts</span>
+                            </div>
+                        </div>
+                        <div class="quiz-feedback hidden mt-4 p-4 rounded-xl text-sm font-semibold"></div>
+                    </div>
+
+                    <!-- Q3 -->
+                    <div class="quiz-question" data-question="3">
+                        <p class="font-bold text-slate-900 text-lg mb-4">
+                            <span class="inline-flex items-center justify-center w-8 h-8 bg-indigo-600 text-white rounded-full text-sm font-bold mr-2 flex-shrink-0">3</span>
+                            How do rage bait creators typically earn money from their content?
+                        </p>
+                        <div class="space-y-3">
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="true" onclick="selectAnswer(this,3)">
+                                <span class="font-medium text-slate-700">A) Through advertising revenue — the more views and interactions, the more ad money they earn</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,3)">
+                                <span class="font-medium text-slate-700">B) By charging viewers a fee to read their posts</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,3)">
+                                <span class="font-medium text-slate-700">C) By collecting donations from angry followers</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,3)">
+                                <span class="font-medium text-slate-700">D) They do not earn any money — rage bait is always created for fun</span>
+                            </div>
+                        </div>
+                        <div class="quiz-feedback hidden mt-4 p-4 rounded-xl text-sm font-semibold"></div>
+                    </div>
+
+                    <!-- Q4 -->
+                    <div class="quiz-question" data-question="4">
+                        <p class="font-bold text-slate-900 text-lg mb-4">
+                            <span class="inline-flex items-center justify-center w-8 h-8 bg-indigo-600 text-white rounded-full text-sm font-bold mr-2 flex-shrink-0">4</span>
+                            What is one negative effect of regularly consuming rage bait, as discussed in the video?
+                        </p>
+                        <div class="space-y-3">
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,4)">
+                                <span class="font-medium text-slate-700">A) It improves your critical thinking skills over time</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,4)">
+                                <span class="font-medium text-slate-700">B) It slows down your device's internet speed</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="true" onclick="selectAnswer(this,4)">
+                                <span class="font-medium text-slate-700">C) It can harm your mood and mental wellbeing by trapping you in a cycle of stress and anger</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,4)">
+                                <span class="font-medium text-slate-700">D) It causes your social media account to be suspended</span>
+                            </div>
+                        </div>
+                        <div class="quiz-feedback hidden mt-4 p-4 rounded-xl text-sm font-semibold"></div>
+                    </div>
+
+                    <!-- Q5 -->
+                    <div class="quiz-question" data-question="5">
+                        <p class="font-bold text-slate-900 text-lg mb-4">
+                            <span class="inline-flex items-center justify-center w-8 h-8 bg-indigo-600 text-white rounded-full text-sm font-bold mr-2 flex-shrink-0">5</span>
+                            What does the video suggest is the most powerful thing you can do when you spot rage bait?
+                        </p>
+                        <div class="space-y-3">
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,5)">
+                                <span class="font-medium text-slate-700">A) Comment angrily so others know you see through it</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,5)">
+                                <span class="font-medium text-slate-700">B) Share it widely to warn your friends</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="false" onclick="selectAnswer(this,5)">
+                                <span class="font-medium text-slate-700">C) Report it immediately to the platform</span>
+                            </div>
+                            <div class="quiz-option rounded-xl px-5 py-4 bg-white" data-correct="true" onclick="selectAnswer(this,5)">
+                                <span class="font-medium text-slate-700">D) Recognise the emotional trigger, pause, and choose not to engage — starving it of the attention it needs</span>
+                            </div>
+                        </div>
+                        <div class="quiz-feedback hidden mt-4 p-4 rounded-xl text-sm font-semibold"></div>
+                    </div>
+
+                </div><!-- end quiz-container -->
+
+                <!-- Score Panel -->
+                <div id="quiz-score-section" class="hidden mt-12 pt-8 border-t border-indigo-200 text-center fade-in">
+                    <div id="quiz-score-badge" class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-extrabold text-white"></div>
+                    <h4 id="quiz-score-title"   class="text-2xl font-bold text-slate-900 mb-2"></h4>
+                    <p  id="quiz-score-message" class="text-slate-600 mb-6 max-w-md mx-auto"></p>
+                    <button onclick="resetQuiz()" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-full font-bold hover:bg-indigo-700 transition">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> Try Again
+                    </button>
+                </div>
+
+            </div><!-- end quiz card -->
+        </div>
+    </section>
+    <!-- ========== END VIDEO + QUIZ SECTION ========== -->
+
+    <!-- ========== REAL LIFE SECTION ========== -->
+    <section id="real-life" class="py-20 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Header -->
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-amber-400 font-semibold text-sm uppercase tracking-wider">From the Screen to the Classroom</span>
+                <h2 class="text-4xl font-bold text-white mt-2 mb-4">It Doesn't Stay Online</h2>
+                <p class="text-lg text-slate-300">
+                    The same mechanics that power rage bait online work in real life too. When someone says or does something to get a reaction out of you — in class, in the hallway, at lunch — <span class="text-amber-300 font-semibold">that's rage baiting IRL.</span>
+                </p>
+            </div>
+
+            <!-- Side-by-side comparison -->
+            <div class="mb-16">
+                <h3 class="text-2xl font-bold text-center text-white mb-8">Same Script. Different Screen.</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Online column -->
+                    <div class="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center">
+                                <i data-lucide="smartphone" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-white">Online</h4>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-white/10 rounded-xl p-4 border border-white/10">
+                                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">The Act</p>
+                                <p class="text-slate-200 font-medium">Creator posts: <span class="text-red-300">"ALL CATS ARE UGLY AND STUPID!"</span></p>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-4 border border-white/10">
+                                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">The Reaction</p>
+                                <p class="text-slate-200 font-medium">Cat lovers flood the comments in outrage 😡</p>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-4 border border-white/10">
+                                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">The Goal</p>
+                                <p class="text-slate-200 font-medium">Creator gets attention, views, ad money ✅</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- In Person column -->
+                    <div class="bg-amber-500/20 backdrop-blur-sm rounded-3xl p-8 border border-amber-400/30">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
+                                <i data-lucide="school" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-white">In Person</h4>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="bg-white/10 rounded-xl p-4 border border-white/10">
+                                <p class="text-xs text-amber-300 uppercase tracking-wider mb-1">The Act</p>
+                                <p class="text-slate-200 font-medium">Someone says something they <em>know</em> will upset you or your friend 🎯</p>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-4 border border-white/10">
+                                <p class="text-xs text-amber-300 uppercase tracking-wider mb-1">The Reaction</p>
+                                <p class="text-slate-200 font-medium">You get mad. Others turn to look. Class stops. 👀</p>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-4 border border-white/10">
+                                <p class="text-xs text-amber-300 uppercase tracking-wider mb-1">The Goal</p>
+                                <p class="text-slate-200 font-medium">They get the attention, the laugh, the "win" ✅</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center text-slate-400 mt-6 text-sm italic">The only difference? One plays out on a phone. The other plays out in front of you.</p>
+            </div>
+
+            <!-- The Power Dynamic — 3 stages from the slide deck -->
+            <div class="bg-white/5 rounded-3xl p-8 md:p-12 border border-white/10 mb-16">
+                <h3 class="text-2xl font-bold text-center text-white mb-2">The Power Dynamic</h3>
+                <p class="text-center text-slate-400 mb-10">A visual guide to the social mechanics of provocation</p>
+                <div class="flex flex-col md:flex-row items-stretch gap-4">
+                    <!-- Stage 1 -->
+                    <div class="flex-1 bg-red-500/20 border border-red-400/30 rounded-2xl p-6">
+                        <div class="text-xs font-bold uppercase tracking-widest text-red-300 mb-3">Stage 1</div>
+                        <h4 class="text-lg font-bold text-white mb-2">Provocation</h4>
+                        <div class="w-12 h-12 bg-red-500/30 rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="flame" class="w-6 h-6 text-red-300"></i>
+                        </div>
+                        <p class="text-slate-300 text-sm leading-relaxed">An intentional action or statement designed to offend, upset, or provoke — online <em>or</em> in person.</p>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <i data-lucide="arrow-right" class="w-6 h-6 text-slate-500 hidden md:block"></i>
+                        <i data-lucide="arrow-down" class="w-6 h-6 text-slate-500 md:hidden"></i>
+                    </div>
+                    <!-- Stage 2 -->
+                    <div class="flex-1 bg-yellow-500/20 border border-yellow-400/30 rounded-2xl p-6">
+                        <div class="text-xs font-bold uppercase tracking-widest text-yellow-300 mb-3">Stage 2</div>
+                        <h4 class="text-lg font-bold text-white mb-2">The Reaction Loop</h4>
+                        <div class="w-12 h-12 bg-yellow-500/30 rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="refresh-cw" class="w-6 h-6 text-yellow-300"></i>
+                        </div>
+                        <p class="text-slate-300 text-sm leading-relaxed">Your angry or upset reaction draws focus — from you <em>and</em> everyone watching. Reaction = attention.</p>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <i data-lucide="arrow-right" class="w-6 h-6 text-slate-500 hidden md:block"></i>
+                        <i data-lucide="arrow-down" class="w-6 h-6 text-slate-500 md:hidden"></i>
+                    </div>
+                    <!-- Stage 3 -->
+                    <div class="flex-1 bg-blue-500/20 border border-blue-400/30 rounded-2xl p-6">
+                        <div class="text-xs font-bold uppercase tracking-widest text-blue-300 mb-3">Stage 3</div>
+                        <h4 class="text-lg font-bold text-white mb-2">Social Currency</h4>
+                        <div class="w-12 h-12 bg-blue-500/30 rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="crown" class="w-6 h-6 text-blue-300"></i>
+                        </div>
+                        <p class="text-slate-300 text-sm leading-relaxed">Attention converts into perceived social power — influence, visibility, a sense of control. And it reinforces the behavior.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- When provoking becomes entertainment — consequences -->
+            <div>
+                <h3 class="text-2xl font-bold text-center text-white mb-3">When Provoking Becomes Entertainment</h3>
+                <p class="text-center text-slate-400 mb-10">Every time someone rage baits in class, something real is lost.</p>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="bg-white/5 rounded-2xl p-6 border border-white/10 text-center">
+                        <div class="w-14 h-14 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="clock" class="w-7 h-7 text-red-400"></i>
+                        </div>
+                        <p class="font-bold text-white text-lg mb-1">Learning Time</p>
+                        <p class="text-slate-400 text-sm">Every disruption eats into time that can't be recovered.</p>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-6 border border-white/10 text-center">
+                        <div class="w-14 h-14 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="focus" class="w-7 h-7 text-orange-400"></i>
+                        </div>
+                        <p class="font-bold text-white text-lg mb-1">Focus</p>
+                        <p class="text-slate-400 text-sm">It takes minutes to get a class back on track after a disruption.</p>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-6 border border-white/10 text-center">
+                        <div class="w-14 h-14 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="handshake" class="w-7 h-7 text-yellow-400"></i>
+                        </div>
+                        <p class="font-bold text-white text-lg mb-1">Trust</p>
+                        <p class="text-slate-400 text-sm">Relationships erode when people feel targeted or embarrassed.</p>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-6 border border-white/10 text-center">
+                        <div class="w-14 h-14 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="shield" class="w-7 h-7 text-blue-400"></i>
+                        </div>
+                        <p class="font-bold text-white text-lg mb-1">Psychological Safety</p>
+                        <p class="text-slate-400 text-sm">When people don't feel safe, they stop taking risks and stop learning.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <!-- ========== END REAL LIFE SECTION ========== -->
+
+    <!-- ========== REAL POWER SECTION ========== -->
+    <section id="real-power" class="py-20 bg-gradient-to-br from-slate-50 to-indigo-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Header -->
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Provoking for a Reaction Is Not Real Power</span>
+                <h2 class="text-4xl font-bold text-slate-900 mt-2 mb-4">Real Power vs. Not Real Power</h2>
+                <p class="text-lg text-slate-600">Getting a reaction out of someone <em>feels</em> powerful. But it's actually the opposite. Here's the difference.</p>
+            </div>
+
+            <!-- Real Power vs Not Real Power comparison -->
+            <div class="grid md:grid-cols-2 gap-6 mb-16">
+                <!-- Real Power -->
+                <div class="bg-teal-50 rounded-3xl p-8 md:p-10 border-2 border-teal-200">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-teal-500 rounded-xl flex items-center justify-center">
+                            <i data-lucide="brain" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-teal-800">Real Power</h3>
+                    </div>
+                    <p class="text-teal-700 font-bold text-xl mb-6">Control over yourself.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-teal-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="check" class="w-4 h-4 text-teal-700"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-teal-800">Self-Regulation & Emotional Intelligence</p>
+                                <p class="text-teal-600 text-sm">You choose how to respond. You don't hand that control to someone else.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-teal-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="check" class="w-4 h-4 text-teal-700"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-teal-800">Inner Strength & Calmness</p>
+                                <p class="text-teal-600 text-sm">Staying calm under pressure is genuinely hard — and genuinely impressive.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-teal-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="check" class="w-4 h-4 text-teal-700"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-teal-800">Acting with Intention & Choice</p>
+                                <p class="text-teal-600 text-sm">You decide your next move — it isn't decided for you by someone who wanted a reaction.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Not Real Power -->
+                <div class="bg-red-50 rounded-3xl p-8 md:p-10 border-2 border-red-200">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-red-400 rounded-xl flex items-center justify-center">
+                            <i data-lucide="x" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-red-800">Not Real Power</h3>
+                    </div>
+                    <p class="text-red-700 font-bold text-xl mb-6">Control over someone else's emotions.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="x" class="w-4 h-4 text-red-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-red-800">Manipulation & Provocation</p>
+                                <p class="text-red-600 text-sm">You need someone else's anger to feel powerful. That's dependence, not strength.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="x" class="w-4 h-4 text-red-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-red-800">Seeking External Validation</p>
+                                <p class="text-red-600 text-sm">Your sense of status depends on the audience reaction — like a social media algorithm.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="x" class="w-4 h-4 text-red-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-red-800">Being Reactive & Unpredictable</p>
+                                <p class="text-red-600 text-sm">When you rage bait, you're also losing control — you're performing for others instead of leading yourself.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Impact vs Intent -->
+            <div class="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-slate-200 mb-12">
+                <div class="text-center mb-10">
+                    <h3 class="text-2xl font-bold text-slate-900 mb-2">Impact Matters More Than Intent</h3>
+                    <p class="text-slate-600 max-w-2xl mx-auto">"I was just joking" or "I didn't mean it like that" doesn't undo how someone feels. The impact on others is what counts — not what you meant.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-blue-50 rounded-2xl p-6 border border-blue-200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <i data-lucide="lightbulb" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <h4 class="font-bold text-blue-900 text-lg">Intent (What you meant)</h4>
+                        </div>
+                        <p class="text-blue-700">"I was just trying to be funny." "It was only a joke." "I didn't think they'd actually get upset."</p>
+                    </div>
+                    <div class="bg-red-50 rounded-2xl p-6 border border-red-200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                                <i data-lucide="heart-crack" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <h4 class="font-bold text-red-900 text-lg">Impact (What actually happened)</h4>
+                        </div>
+                        <p class="text-red-700">Someone felt embarrassed, humiliated, or angry in front of others. That feeling is real — regardless of what was intended.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Choice — "You are old enough to choose" -->
+            <div class="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 md:p-14 text-white text-center">
+                <h3 class="text-3xl md:text-4xl font-extrabold mb-4">Provoking is Easy.<br class="hidden md:block"/> Leading is Hard.</h3>
+                <p class="text-indigo-200 text-lg mb-10 max-w-2xl mx-auto">Anyone can push a button to make someone react. It takes zero skill. What actually takes strength is choosing <em>not</em> to — and deciding what kind of person you want to be.</p>
+
+                <div class="grid md:grid-cols-2 gap-6 mb-10 text-left">
+                    <div class="bg-white/10 rounded-2xl p-6 border border-white/20">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 bg-red-500/30 rounded-full flex items-center justify-center">
+                                <i data-lucide="zap" class="w-5 h-5 text-red-300"></i>
+                            </div>
+                            <p class="font-bold text-lg">Disrupting Reactions</p>
+                        </div>
+                        <p class="text-indigo-200 text-sm">Easy attention. Zero trust built. Short-lived. Other people remember it — and not in the way you want.</p>
+                    </div>
+                    <div class="bg-white/10 rounded-2xl p-6 border border-white/20">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 bg-green-500/30 rounded-full flex items-center justify-center">
+                                <i data-lucide="star" class="w-5 h-5 text-green-300"></i>
+                            </div>
+                            <p class="font-bold text-lg">Leading with Self-Control</p>
+                        </div>
+                        <p class="text-indigo-200 text-sm">Harder to do. Builds real respect. Lasts. People remember this too — and it opens doors that provocation closes.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 inline-block">
+                    <p class="text-2xl md:text-3xl font-extrabold text-yellow-300 mb-2">When people think of you this year,</p>
+                    <p class="text-xl md:text-2xl font-bold text-white">what do you want to be known for?</p>
+                </div>
+
+                <div class="mt-8 text-indigo-300 text-lg font-semibold tracking-wide uppercase">
+                    You are old enough to choose.
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <!-- ========== END REAL POWER SECTION ========== -->
+
+    <!-- Spot the Bait -->
+    <section id="spot" class="py-20 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Interactive Challenge</span>
+                <h2 class="text-4xl font-bold text-slate-900 mt-2 mb-4">Can You Spot the Rage Bait?</h2>
+                <p class="text-lg text-slate-600">Click on the posts below that you think are designed to make you angry. Learn the tell-tale signs!</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" id="bait-game">
+
+                <!-- Card 1: Rage Bait -->
+                <div class="example-card bg-white rounded-2xl p-6 border-2 border-slate-200 hover:border-indigo-300" onclick="toggleSelection(this, true)">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-red-400 to-orange-500 rounded-full"></div>
+                        <div><p class="font-bold text-slate-900">HotTakesDaily</p><p class="text-xs text-slate-500">2h ago</p></div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-4">
+                        <p class="text-lg font-bold text-slate-900 mb-2">This generation is SO LAZY! 📱😤</p>
+                        <p class="text-slate-600 text-sm">Kids these days don't even know how to use a rotary phone OR read a map. Absolutely PATHETIC. Share if you agree!!!</p>
+                    </div>
+                    <div class="flex gap-4 text-slate-400 text-sm">
+                        <span class="flex items-center gap-1"><i data-lucide="message-circle" class="w-4 h-4"></i> 1.2k</span>
+                        <span class="flex items-center gap-1"><i data-lucide="share-2" class="w-4 h-4"></i> 856</span>
+                    </div>
+                    <div class="result-message hidden mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+                        <p class="text-sm font-semibold text-red-700 flex items-center gap-2"><i data-lucide="alert-circle" class="w-4 h-4"></i> Rage Bait! Uses generalizations and inflammatory language.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Not Rage Bait -->
+                <div class="example-card bg-white rounded-2xl p-6 border-2 border-slate-200 hover:border-indigo-300" onclick="toggleSelection(this, false)">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full"></div>
+                        <div><p class="font-bold text-slate-900">ScienceForKids</p><p class="text-xs text-slate-500">5h ago</p></div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-4">
+                        <p class="text-lg font-bold text-slate-900 mb-2">How Do Rainbows Form? 🌈</p>
+                        <p class="text-slate-600 text-sm">Light enters a raindrop, slows down, bends, and reflects off the back of the drop. Different colors bend at different angles!</p>
+                    </div>
+                    <div class="flex gap-4 text-slate-400 text-sm">
+                        <span class="flex items-center gap-1"><i data-lucide="message-circle" class="w-4 h-4"></i> 24</span>
+                        <span class="flex items-center gap-1"><i data-lucide="heart" class="w-4 h-4"></i> 156</span>
+                    </div>
+                    <div class="result-message hidden mt-4 p-3 rounded-lg bg-green-50 border border-green-200">
+                        <p class="text-sm font-semibold text-green-700 flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Not rage bait! Educational and neutral.</p>
+                    </div>
+                </div>
+
+                <!-- Card 3: Rage Bait -->
+                <div class="example-card bg-white rounded-2xl p-6 border-2 border-slate-200 hover:border-indigo-300" onclick="toggleSelection(this, true)">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full"></div>
+                        <div><p class="font-bold text-slate-900">CelebrityDrama</p><p class="text-xs text-slate-500">1h ago</p></div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-4">
+                        <p class="text-lg font-bold text-slate-900 mb-2">CANCELLED! 🤬👎</p>
+                        <p class="text-slate-600 text-sm">[Famous Person] wore THE WORST outfit ever. They obviously hate their fans. This is disrespectful and disgusting!!!</p>
+                    </div>
+                    <div class="flex gap-4 text-slate-400 text-sm">
+                        <span class="flex items-center gap-1"><i data-lucide="message-circle" class="w-4 h-4"></i> 3.4k</span>
+                        <span class="flex items-center gap-1"><i data-lucide="share-2" class="w-4 h-4"></i> 2.1k</span>
+                    </div>
+                    <div class="result-message hidden mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+                        <p class="text-sm font-semibold text-red-700 flex items-center gap-2"><i data-lucide="alert-circle" class="w-4 h-4"></i> Rage Bait! Excessive capitalization and manufactured outrage.</p>
+                    </div>
+                </div>
+
+                <!-- Card 4: Rage Bait -->
+                <div class="example-card bg-white rounded-2xl p-6 border-2 border-slate-200 hover:border-indigo-300" onclick="toggleSelection(this, true)">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-red-500 rounded-full"></div>
+                        <div><p class="font-bold text-slate-900">ViralVids</p><p class="text-xs text-slate-500">30m ago</p></div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-4">
+                        <p class="text-lg font-bold text-slate-900 mb-2">YOU WONT BELIEVE THIS 🤯😡</p>
+                        <p class="text-slate-600 text-sm">School bans students from using pencils!!! The principal said "they're too dangerous." This is INSANE!</p>
+                    </div>
+                    <div class="flex gap-4 text-slate-400 text-sm">
+                        <span class="flex items-center gap-1"><i data-lucide="message-circle" class="w-4 h-4"></i> 5.6k</span>
+                        <span class="flex items-center gap-1"><i data-lucide="share-2" class="w-4 h-4"></i> 4.2k</span>
+                    </div>
+                    <div class="result-message hidden mt-4 p-3 rounded-lg bg-red-50 border border-red-200">
+                        <p class="text-sm font-semibold text-red-700 flex items-center gap-2"><i data-lucide="alert-circle" class="w-4 h-4"></i> Rage Bait! Likely fake news designed to provoke.</p>
+                    </div>
+                </div>
+
+                <!-- Card 5: Not Rage Bait -->
+                <div class="example-card bg-white rounded-2xl p-6 border-2 border-slate-200 hover:border-indigo-300" onclick="toggleSelection(this, false)">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-teal-500 rounded-full"></div>
+                        <div><p class="font-bold text-slate-900">NatureDaily</p><p class="text-xs text-slate-500">4h ago</p></div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-4">
+                        <p class="text-lg font-bold text-slate-900 mb-2">Red Panda Spotted in Park 🐼</p>
+                        <p class="text-slate-600 text-sm">Local wildlife photographer captured these beautiful images during morning hike. Have you seen any interesting animals lately?</p>
+                    </div>
+                    <div class="flex gap-4 text-slate-400 text-sm">
+                        <span class="flex items-center gap-1"><i data-lucide="message-circle" class="w-4 h-4"></i> 45</span>
+                        <span class="flex items-center gap-1"><i data-lucide="heart" class="w-4 h-4"></i> 892</span>
+                    </div>
+                    <div class="result-message hidden mt-4 p-3 rounded-lg bg-green-50 border border-green-200">
+                        <p class="text-sm font-semibold text-green-700 flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Not rage bait! Positive and community-focused.</p>
+                    </div>
+                </div>
+
+                <!-- Card 6: Not Rage Bait -->
+                <div class="example-card bg-white rounded-2xl p-6 border-2 border-slate-200 hover:border-indigo-300" onclick="toggleSelection(this, false)">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full"></div>
+                        <div><p class="font-bold text-slate-900">HistoryHub</p><p class="text-xs text-slate-500">6h ago</p></div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-4">
+                        <p class="text-lg font-bold text-slate-900 mb-2">The History of Pizza 🍕</p>
+                        <p class="text-slate-600 text-sm">Originally a dish for poor people in Naples, Italy. The first pizzeria in America opened in 1905 in New York City.</p>
+                    </div>
+                    <div class="flex gap-4 text-slate-400 text-sm">
+                        <span class="flex items-center gap-1"><i data-lucide="message-circle" class="w-4 h-4"></i> 67</span>
+                        <span class="flex items-center gap-1"><i data-lucide="book-open" class="w-4 h-4"></i> 234 saved</span>
+                    </div>
+                    <div class="result-message hidden mt-4 p-3 rounded-lg bg-green-50 border border-green-200">
+                        <p class="text-sm font-semibold text-green-700 flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Not rage bait! Informative and factual.</p>
+                    </div>
+                </div>
+
+            </div><!-- end bait-game -->
+            <div class="text-center">
+                <button onclick="resetGame()" class="inline-flex items-center gap-2 text-indigo-600 font-semibold hover:text-indigo-700 transition">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i> Reset Challenge
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Red Flags Checklist -->
+    <section id="tools" class="py-20 bg-indigo-50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Detection Tools</span>
+                <h2 class="text-4xl font-bold text-slate-900 mt-2 mb-4">Rage Bait Red Flags 🚩</h2>
+                <p class="text-lg text-slate-600">Use this checklist before you react to any content online.</p>
+            </div>
+            <div class="bg-white rounded-3xl shadow-lg p-8 md:p-12">
+                <div class="space-y-4" id="checklist">
+                    <label class="flex items-start gap-4 p-4 rounded-xl hover:bg-slate-50 cursor-pointer transition border border-transparent hover:border-slate-200">
+                        <input type="checkbox" class="w-6 h-6 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 mt-1" onchange="updateProgress()">
+                        <div><p class="font-bold text-slate-900">ALL CAPS or excessive punctuation!!!</p><p class="text-slate-600 text-sm">Shouting through text is a classic rage bait technique.</p></div>
+                    </label>
+                    <label class="flex items-start gap-4 p-4 rounded-xl hover:bg-slate-50 cursor-pointer transition border border-transparent hover:border-slate-200">
+                        <input type="checkbox" class="w-6 h-6 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 mt-1" onchange="updateProgress()">
+                        <div><p class="font-bold text-slate-900">"You won't believe this..."</p><p class="text-slate-600 text-sm">Clickbait headlines that promise shock value.</p></div>
+                    </label>
+                    <label class="flex items-start gap-4 p-4 rounded-xl hover:bg-slate-50 cursor-pointer transition border border-transparent hover:border-slate-200">
+                        <input type="checkbox" class="w-6 h-6 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 mt-1" onchange="updateProgress()">
+                        <div><p class="font-bold text-slate-900">Attacks entire groups of people</p><p class="text-slate-600 text-sm">"All teens are..." or "Everyone from [place] is..."</p></div>
+                    </label>
+                    <label class="flex items-start gap-4 p-4 rounded-xl hover:bg-slate-50 cursor-pointer transition border border-transparent hover:border-slate-200">
+                        <input type="checkbox" class="w-6 h-6 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 mt-1" onchange="updateProgress()">
+                        <div><p class="font-bold text-slate-900">No credible sources mentioned</p><p class="text-slate-600 text-sm">Wild claims without links to verify information.</p></div>
+                    </label>
+                    <label class="flex items-start gap-4 p-4 rounded-xl hover:bg-slate-50 cursor-pointer transition border border-transparent hover:border-slate-200">
+                        <input type="checkbox" class="w-6 h-6 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 mt-1" onchange="updateProgress()">
+                        <div><p class="font-bold text-slate-900">Trying to make you angry, not informed</p><p class="text-slate-600 text-sm">Ask yourself: Is this educating me or just enraging me?</p></div>
+                    </label>
+                </div>
+                <div class="mt-8 pt-8 border-t border-slate-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-slate-900">Your Awareness Score</span>
+                        <span id="score-text" class="text-indigo-600 font-bold">0/5 checked</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-3">
+                        <div id="progress-bar" class="bg-indigo-600 h-3 rounded-full transition-all duration-500" style="width:0%"></div>
+                    </div>
+                    <p id="score-message" class="mt-3 text-sm text-slate-600">Check all boxes to become a Rage Bait Expert!</p>
+                </div>
+            </div>
+
+            <!-- STOP Method -->
+            <div class="mt-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-8 md:p-12 text-white">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <i data-lucide="shield" class="w-8 h-8"></i> The S.T.O.P. Method
+                </h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                        <p class="text-3xl font-bold mb-2">S</p><p class="font-bold text-lg mb-1">Stop</p>
+                        <p class="text-emerald-100">Pause before reacting. Take a breath.</p>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                        <p class="text-3xl font-bold mb-2">T</p><p class="font-bold text-lg mb-1">Think</p>
+                        <p class="text-emerald-100">Why was this created? Who benefits from my anger?</p>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                        <p class="text-3xl font-bold mb-2">O</p><p class="font-bold text-lg mb-1">Observe</p>
+                        <p class="text-emerald-100">Look for red flags. Check the sources.</p>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                        <p class="text-3xl font-bold mb-2">P</p><p class="font-bold text-lg mb-1">Proceed</p>
+                        <p class="text-emerald-100">Choose not to engage, or respond calmly with facts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Resources -->
+    <section id="resources" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Keep Learning</span>
+                <h2 class="text-4xl font-bold text-slate-900 mt-2 mb-4">Explore More Resources</h2>
+                <p class="text-lg text-slate-600">Trusted websites and tools to help you become a digital detective.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <a href="https://www.commonsensemedia.org/" target="_blank" rel="noopener noreferrer" class="group block bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition card-hover">
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-200 transition"><i data-lucide="heart-handshake" class="w-6 h-6 text-blue-600"></i></div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Common Sense Media</h3>
+                    <p class="text-slate-600 text-sm mb-4">Reviews and advice for movies, games, apps, and safe online behavior.</p>
+                    <span class="inline-flex items-center text-indigo-600 text-sm font-semibold">Visit Site <i data-lucide="external-link" class="w-4 h-4 ml-1"></i></span>
+                </a>
+                <a href="https://www.snopes.com/" target="_blank" rel="noopener noreferrer" class="group block bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition card-hover">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-yellow-200 transition"><i data-lucide="search-check" class="w-6 h-6 text-yellow-600"></i></div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Snopes</h3>
+                    <p class="text-slate-600 text-sm mb-4">Fact-checking website to verify viral stories and urban legends.</p>
+                    <span class="inline-flex items-center text-indigo-600 text-sm font-semibold">Visit Site <i data-lucide="external-link" class="w-4 h-4 ml-1"></i></span>
+                </a>
+                <a href="https://www.factcheck.org/" target="_blank" rel="noopener noreferrer" class="group block bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition card-hover">
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-200 transition"><i data-lucide="clipboard-check" class="w-6 h-6 text-green-600"></i></div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">FactCheck.org</h3>
+                    <p class="text-slate-600 text-sm mb-4">Nonpartisan fact-checking resource that monitors accuracy in politics.</p>
+                    <span class="inline-flex items-center text-indigo-600 text-sm font-semibold">Visit Site <i data-lucide="external-link" class="w-4 h-4 ml-1"></i></span>
+                </a>
+                <a href="https://www.netSmartz.org/" target="_blank" rel="noopener noreferrer" class="group block bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition card-hover">
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-200 transition"><i data-lucide="shield-alert" class="w-6 h-6 text-purple-600"></i></div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">NetSmartz</h3>
+                    <p class="text-slate-600 text-sm mb-4">Interactive games and videos about internet safety from the National Center for Missing & Exploited Children.</p>
+                    <span class="inline-flex items-center text-indigo-600 text-sm font-semibold">Visit Site <i data-lucide="external-link" class="w-4 h-4 ml-1"></i></span>
+                </a>
+                <a href="https://www.poynter.org/iframes/fact-checking/" target="_blank" rel="noopener noreferrer" class="group block bg-slate-50 rounded-2xl p-6 border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition card-hover">
+                    <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-red-200 transition"><i data-lucide="newspaper" class="w-6 h-6 text-red-600"></i></div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">MediaWise</h3>
+                    <p class="text-slate-600 text-sm mb-4">Learn media literacy skills to find reliable information online.</p>
+                    <span class="inline-flex items-center text-indigo-600 text-sm font-semibold">Visit Site <i data-lucide="external-link" class="w-4 h-4 ml-1"></i></span>
+                </a>
+                <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white flex flex-col justify-center items-center text-center">
+                    <i data-lucide="book-open" class="w-12 h-12 mb-4 opacity-80"></i>
+                    <h3 class="text-lg font-bold mb-2">Ask Your Librarian!</h3>
+                    <p class="text-indigo-100 text-sm">School librarians are experts in media literacy and can help you find trustworthy sources.</p>
+                </div>
+            </div>
+
+            <!-- Discussion Questions -->
+            <div class="mt-16 bg-slate-100 rounded-3xl p-8 md:p-12">
+                <h3 class="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <i data-lucide="message-circle" class="w-8 h-8 text-indigo-600"></i> Discussion Questions for Class or Home
+                </h3>
+                <ul class="space-y-4">
+                    <li class="flex items-start gap-3">
+                        <span class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-700 font-bold text-sm flex-shrink-0">1</span>
+                        <p class="text-slate-700">Have you ever seen a post that made you really angry? How did you react? What would you do differently now?</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-700 font-bold text-sm flex-shrink-0">2</span>
+                        <p class="text-slate-700">Why do you think people create rage bait content? What do they gain from it?</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-700 font-bold text-sm flex-shrink-0">3</span>
+                        <p class="text-slate-700">Can you think of a time when being calm helped you make a better decision than reacting immediately?</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-700 font-bold text-sm flex-shrink-0">4</span>
+                        <p class="text-slate-700">How can you help friends recognize rage bait without making them feel bad?</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-300 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="shield-check" class="w-6 h-6 text-indigo-400"></i>
+                        <span class="font-bold text-lg text-white">LyfeLabz</span>
+                    </div>
+                    <p class="text-sm text-slate-400">Empowering middle school students with media literacy skills to navigate the digital world safely and wisely.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#learn"      class="hover:text-white transition">What is Rage Bait?</a></li>
+                        <li><a href="#watch"      class="hover:text-white transition">Watch the Video</a></li>
+                        <li><a href="#real-life"  class="hover:text-white transition">Real Life Connection</a></li>
+                        <li><a href="#real-power" class="hover:text-white transition">Real Power</a></li>
+                        <li><a href="#spot"       class="hover:text-white transition">Interactive Game</a></li>
+                        <li><a href="#tools"      class="hover:text-white transition">Detection Tools</a></li>
+                        <li><a href="#resources"  class="hover:text-white transition">Resources</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white mb-4">Remember</h4>
+                    <p class="text-sm text-slate-400 italic">"Don't let someone else's anger become your own. Stay curious, stay kind, stay critical."</p>
+                </div>
+            </div>
+            <div class="border-t border-slate-800 pt-8 text-center text-sm text-slate-500">
+                <p>&copy; 2024 Real Power Lab. Created for educational purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        // ── Spot the Bait ──
+        function toggleSelection(card, isBait) {
+            card.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500');
+            if (card.classList.contains('selected')) {
+                card.classList.remove('selected');
+                card.querySelector('.result-message').classList.add('hidden');
+            } else {
+                card.classList.add('selected', 'border-indigo-500', 'ring-2', 'ring-indigo-500');
+                const msg = card.querySelector('.result-message');
+                msg.classList.remove('hidden');
+                msg.style.opacity = '0';
+                setTimeout(() => { msg.style.transition = 'opacity 0.3s ease'; msg.style.opacity = '1'; }, 10);
+            }
+        }
+        function resetGame() {
+            document.querySelectorAll('.example-card').forEach(card => {
+                card.classList.remove('selected', 'border-indigo-500', 'ring-2', 'ring-indigo-500');
+                card.querySelector('.result-message').classList.add('hidden');
+            });
+        }
+
+        // ── Checklist ──
+        function updateProgress() {
+            const boxes   = document.querySelectorAll('#checklist input[type="checkbox"]');
+            const checked = document.querySelectorAll('#checklist input[type="checkbox"]:checked');
+            const pct     = (checked.length / boxes.length) * 100;
+            document.getElementById('progress-bar').style.width = pct + '%';
+            document.getElementById('score-text').textContent   = `${checked.length}/${boxes.length} checked`;
+            const msg = document.getElementById('score-message');
+            if (checked.length === 0) {
+                msg.textContent  = "Check all boxes to become a Rage Bait Expert!";
+                msg.className    = "mt-3 text-sm text-slate-600";
+            } else if (checked.length < boxes.length) {
+                msg.textContent  = "Good start! Keep checking those red flags.";
+                msg.className    = "mt-3 text-sm text-blue-600";
+            } else {
+                msg.textContent  = "🎉 Congratulations! You're now a certified Rage Bait Detective!";
+                msg.className    = "mt-3 text-sm text-green-600 font-bold";
+                const bar = document.getElementById('progress-bar');
+                bar.classList.add('bg-green-500');
+                setTimeout(() => bar.classList.remove('bg-green-500'), 1000);
+            }
+        }
+
+        // ── Quiz ──
+        const quizState = { answered: {}, score: 0 };
+        const TOTAL_Q   = 5;
+
+        const correctFeedback = [
+            "Correct! 🎉 Great job — you were paying attention!",
+            "That's right! 🌟 The algorithm really does reward anger.",
+            "Spot on! ✅ Ad money is exactly how rage bait pays off.",
+            "Nailed it! 🧠 Our mood really does suffer from the anger cycle.",
+            "Perfect! 🎯 Not engaging is the single most powerful move you can make."
+        ];
+        const incorrectFeedback = [
+            "Not quite — but now you know! Rage bait is all about manufacturing anger for clicks.",
+            "Good try! The algorithm rewards engagement — and nothing drives engagement like anger.",
+            "Close, but not right. The big earner is ad revenue from all those angry eyeballs.",
+            "Not this time. Constant anger and stress is the real toll rage bait takes on us.",
+            "Almost! Sharing or commenting still gives it the attention it craves. Not engaging is key."
+        ];
+
+        function selectAnswer(clicked, qNum) {
+            if (quizState.answered[qNum] !== undefined) return;   // already answered
+
+            const isCorrect = clicked.dataset.correct === 'true';
+            quizState.answered[qNum] = isCorrect;
+            if (isCorrect) quizState.score++;
+
+            // Disable all options in this question
+            const qBlock  = document.querySelector(`.quiz-question[data-question="${qNum}"]`);
+            const options  = qBlock.querySelectorAll('.quiz-option');
+            options.forEach(opt => {
+                opt.classList.add('answered');
+                if (opt.dataset.correct === 'true') opt.classList.add('reveal-correct');
+            });
+
+            // Style the clicked option
+            clicked.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+            // Show feedback
+            const fb = qBlock.querySelector('.quiz-feedback');
+            fb.textContent = isCorrect ? correctFeedback[qNum-1] : incorrectFeedback[qNum-1];
+            fb.classList.remove('hidden');
+            fb.classList.add('fade-in',
+                isCorrect ? 'bg-green-50' : 'bg-red-50',
+                isCorrect ? 'border'      : 'border',
+                isCorrect ? 'border-green-200' : 'border-red-200',
+                isCorrect ? 'text-green-700'   : 'text-red-700'
+            );
+
+            if (Object.keys(quizState.answered).length === TOTAL_Q) {
+                setTimeout(showScore, 600);
+            }
+        }
+
+        function showScore() {
+            const s       = quizState.score;
+            const section = document.getElementById('quiz-score-section');
+            const badge   = document.getElementById('quiz-score-badge');
+            const title   = document.getElementById('quiz-score-title');
+            const msg     = document.getElementById('quiz-score-message');
+
+            badge.textContent = `${s}/5`;
+            section.classList.remove('hidden');
+
+            if (s === 5) {
+                badge.classList.add('bg-green-500');
+                title.textContent = '🏆 Perfect Score! You\'re a Rage Bait Expert!';
+                msg.textContent   = 'Outstanding! You understood every concept from the video. You\'re ready to help others spot rage bait too!';
+            } else if (s >= 3) {
+                badge.classList.add('bg-indigo-500');
+                title.textContent = '👍 Nice Work, Detective!';
+                msg.textContent   = 'Solid effort! Review the questions you missed, then try again — you\'ve got this.';
+            } else {
+                badge.classList.add('bg-orange-400');
+                title.textContent = '📺 Try Rewatching the Video!';
+                msg.textContent   = 'No worries at all — this stuff takes practice. Watch the BBC clip again and give the quiz another shot!';
+            }
+
+            section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function resetQuiz() {
+            quizState.answered = {};
+            quizState.score    = 0;
+
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('correct','incorrect','reveal-correct','answered');
+            });
+            document.querySelectorAll('.quiz-feedback').forEach(fb => {
+                fb.className    = 'quiz-feedback hidden mt-4 p-4 rounded-xl text-sm font-semibold';
+                fb.textContent  = '';
+            });
+
+            const section = document.getElementById('quiz-score-section');
+            section.classList.add('hidden');
+            document.getElementById('quiz-score-badge').className =
+                'w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-extrabold text-white';
+
+            document.getElementById('watch').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ── Smooth scroll ──
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                const t = document.querySelector(this.getAttribute('href'));
+                if (t) { t.scrollIntoView({ behavior:'smooth', block:'start' }); document.getElementById('mobile-menu').classList.add('hidden'); }
+            });
+        });
+
+        // ── Scroll-in animations ──
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }
+            });
+        }, { threshold:0.1, rootMargin:'0px 0px -50px 0px' });
+
+        document.querySelectorAll('.card-hover').forEach(el => {
+            el.style.opacity   = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition= 'opacity 0.6s ease, transform 0.6s ease';
+            obs.observe(el);
+        });
+    </script>
+</body>
+</html>
