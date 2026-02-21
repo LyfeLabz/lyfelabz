@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | Science Learning Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:      #0b0e1a;
+    --ink2:     #111527;
+    --ink3:     #181d35;
+    --card:     #141828;
+    --card2:    #1c2240;
+    --border:   rgba(180,160,255,0.12);
+    --text:     #e8e6f4;
+    --muted:    #7b789e;
+
+    --gold:     #f5c842;
+    --gold-dim: rgba(245,200,66,0.15);
+    --gold-glow:rgba(245,200,66,0.35);
+
+    --bio:      #3ddc84;
+    --chem:     #ff7043;
+    --astro:    #b47fff;
+    --geo:      #c48a4e;
+    --phys:     #29d4f5;
+    --sci:      #f5c842;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--ink);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  #stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+  }
+
+  nav, .hero, section, footer, .stats-bar { position: relative; z-index: 1; }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11,14,26,0.93);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 6rem;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 0%, rgba(180,127,255,0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(41,212,245,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 35% at 10% 90%, rgba(245,200,66,0.06) 0%, transparent 60%);
+  }
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    color: var(--gold);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+  .word-lyfe { color: var(--text); }
+  .word-labz {
+    background: linear-gradient(135deg, var(--gold) 0%, #ff9a42 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 580px;
+    margin: 0 auto 1.5rem;
+    line-height: 1.7;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+  .subject-pills {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+    animation: fadeUp 0.7s 0.3s ease both;
+  }
+  .pill {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    border: 1px solid;
+  }
+  .pill-bio   { color: var(--bio);   background: rgba(61,220,132,0.1);  border-color: rgba(61,220,132,0.3); }
+  .pill-chem  { color: var(--chem);  background: rgba(255,112,67,0.1);  border-color: rgba(255,112,67,0.3); }
+  .pill-astro { color: var(--astro); background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3);}
+  .pill-geo   { color: var(--geo);   background: rgba(196,138,78,0.1);  border-color: rgba(196,138,78,0.3); }
+  .pill-phys  { color: var(--phys);  background: rgba(41,212,245,0.1);  border-color: rgba(41,212,245,0.3); }
+  .pill-more  { color: var(--muted); background: rgba(123,120,158,0.1); border-color: rgba(123,120,158,0.25);}
+
+  .hero-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.7s 0.4s ease both;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 2.2rem;
+    border-radius: 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.25s;
+    letter-spacing: 0.02em;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold), #ff9a42);
+    color: #111;
+    box-shadow: 0 4px 24px rgba(245,200,66,0.35);
+  }
+  .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(245,200,66,0.5); }
+  .btn-ghost {
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.18);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== STATS BAR ===== */
+  .stats-bar {
+    background: var(--ink2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 1.8rem 2rem;
+  }
+  .stats-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 5rem;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--gold);
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 0.1rem;
+  }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5.5rem 2rem; }
+  .container { max-width: 1140px; margin: 0 auto; }
+  .section-eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.28);
+    padding: 0.28rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    margin-bottom: 0.8rem;
+    line-height: 1.2;
+  }
+  .section-desc {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 640px;
+    margin-bottom: 3rem;
+    line-height: 1.7;
+  }
+
+  /* ===== SUBJECT BLOCKS ===== */
+  #subjects { background: var(--ink2); }
+  .subject-block { margin-bottom: 3.5rem; }
+  .subject-block:last-child { margin-bottom: 0; }
+
+  .subject-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .subject-icon { font-size: 1.8rem; line-height: 1; }
+  .subject-title { font-family: 'Sora', sans-serif; font-size: 1.25rem; font-weight: 800; }
+  .subject-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.22rem 0.7rem;
+    border-radius: 99px;
+    border: 1px solid;
+    margin-left: auto;
+  }
+
+  .sb-bio   .subject-header { border-color: rgba(61,220,132,0.2); }
+  .sb-chem  .subject-header { border-color: rgba(255,112,67,0.2); }
+  .sb-astro .subject-header { border-color: rgba(180,127,255,0.2); }
+  .sb-geo   .subject-header { border-color: rgba(196,138,78,0.2); }
+  .sb-phys  .subject-header { border-color: rgba(41,212,245,0.2); }
+  .sb-sci   .subject-header { border-color: rgba(245,200,66,0.2); }
+
+  .sb-bio   .subject-title { color: var(--bio); }
+  .sb-chem  .subject-title { color: var(--chem); }
+  .sb-astro .subject-title { color: var(--astro); }
+  .sb-geo   .subject-title { color: var(--geo); }
+  .sb-phys  .subject-title { color: var(--phys); }
+  .sb-sci   .subject-title { color: var(--sci); }
+
+  .badge-bio   { color: var(--bio);   background: rgba(61,220,132,0.1);  border-color: rgba(61,220,132,0.3); }
+  .badge-chem  { color: var(--chem);  background: rgba(255,112,67,0.1);  border-color: rgba(255,112,67,0.3); }
+  .badge-astro { color: var(--astro); background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3);}
+  .badge-geo   { color: var(--geo);   background: rgba(196,138,78,0.1);  border-color: rgba(196,138,78,0.3); }
+  .badge-phys  { color: var(--phys);  background: rgba(41,212,245,0.1);  border-color: rgba(41,212,245,0.3); }
+  .badge-sci   { color: var(--sci);   background: rgba(245,200,66,0.1);  border-color: rgba(245,200,66,0.3); }
+
+  /* Unit cards */
+  .unit-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1.2rem;
+  }
+  .unit-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.28s, border-color 0.28s, box-shadow 0.28s;
+  }
+  .unit-card:hover { transform: translateY(-4px); box-shadow: 0 14px 44px rgba(0,0,0,0.4); }
+  .sb-bio   .unit-card:hover { border-color: rgba(61,220,132,0.35); }
+  .sb-chem  .unit-card:hover { border-color: rgba(255,112,67,0.35); }
+  .sb-astro .unit-card:hover { border-color: rgba(180,127,255,0.35); }
+  .sb-geo   .unit-card:hover { border-color: rgba(196,138,78,0.35); }
+  .sb-phys  .unit-card:hover { border-color: rgba(41,212,245,0.35); }
+  .sb-sci   .unit-card:hover { border-color: rgba(245,200,66,0.35); }
+
+  .unit-top { padding: 1.4rem 1.6rem 0.8rem; flex: 1; }
+  .unit-name {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.02rem;
+    font-weight: 700;
+    margin-bottom: 0.45rem;
+    color: var(--text);
+  }
+  .unit-desc { font-size: 0.87rem; color: var(--muted); line-height: 1.6; }
+  .unit-links {
+    padding: 0.9rem 1.6rem 1.3rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .ulink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    padding: 0.4rem 1rem;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .ulink:hover { color: var(--gold); border-color: rgba(245,200,66,0.4); background: rgba(245,200,66,0.05); }
+  .ulink.live {
+    background: linear-gradient(135deg, var(--gold), #ff9a42);
+    color: #111 !important;
+    border-color: transparent;
+    font-weight: 800;
+  }
+  .ulink.live:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,200,66,0.4); color: #111 !important; }
+  .coming-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    opacity: 0.5;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ===== HOW IT WORKS ===== */
+  #how { background: var(--ink); }
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1.5rem;
+  }
+  .how-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2rem 1.6rem;
+    text-align: center;
+    transition: transform 0.28s, border-color 0.28s;
+  }
+  .how-card:hover { transform: translateY(-3px); border-color: rgba(245,200,66,0.3); }
+  .how-icon { font-size: 2.6rem; margin-bottom: 1rem; }
+  .how-step {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.62rem;
+    color: var(--gold);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+  }
+  .how-card h3 { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 0.55rem; }
+  .how-card p { font-size: 0.87rem; color: var(--muted); line-height: 1.65; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--ink2);
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  .footer-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.6rem;
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+  footer p { font-size: 0.83rem; color: var(--muted); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--ink); }
+  ::-webkit-scrollbar-thumb { background: var(--card2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="#subjects">Subjects</a></li>
+    <li><a href="#how">How It Works</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">⚗️ Middle School Science Hub</div>
+  <h1>
+    <span class="word-lyfe">Lyfe</span><span class="word-labz">Labz</span>
+  </h1>
+  <p class="hero-sub">Your interactive science classroom — biology, chemistry, astronomy, geology, physics, and more. Explore, practice, and master every unit.</p>
+
+  <div class="subject-pills">
+    <span class="pill pill-bio">🌱 Biology</span>
+    <span class="pill pill-chem">⚗️ Chemistry</span>
+    <span class="pill pill-astro">🔭 Astronomy</span>
+    <span class="pill pill-geo">🪨 Geology</span>
+    <span class="pill pill-phys">⚡ Physics</span>
+    <span class="pill pill-more">+ More</span>
+  </div>
+
+  <div class="hero-btns">
+    <a href="#subjects" class="btn btn-gold">🚀 Explore All Units</a>
+    <a href="#how" class="btn btn-ghost">How It Works</a>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <span class="stat-num">6</span>
+      <span class="stat-label">Science Subjects</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">3</span>
+      <span class="stat-label">Live Units</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">∞</span>
+      <span class="stat-label">Practice Questions</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">100%</span>
+      <span class="stat-label">Free for Students</span>
+    </div>
+  </div>
+</div>
+
+<!-- SUBJECTS -->
+<section id="subjects">
+  <div class="container">
+    <div class="section-eyebrow">📚 All Units</div>
+    <h2 class="section-title">Find Your Subject</h2>
+    <p class="section-desc">Browse every unit by subject area. Click any live card to jump into the review lab. New units are added throughout the school year!</p>
+
+    <!-- BIOLOGY -->
+    <div class="subject-block sb-bio">
+      <div class="subject-header">
+        <span class="subject-icon">🌱</span>
+        <span class="subject-title">Biology</span>
+        <span class="subject-badge badge-bio">Life Science</span>
+      </div>
+      <div class="unit-row">
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Characteristics of Life &amp; Cell Organization</div>
+            <div class="unit-desc">The 6 characteristics of life, prokaryotic vs. eukaryotic cells, and unicellular vs. multicellular organisms.</div>
+          </div>
+          <div class="unit-links">
+            <a href="unit1_characteristics.html" class="ulink live">🔬 Review Lab</a>
+          </div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Cell Organelles</div>
+            <div class="unit-desc">Inside plant and animal cells — nuclei, mitochondria, chloroplasts, and more, using real-world analogies.</div>
+          </div>
+          <div class="unit-links">
+            <a href="unit1_characteristics.html" class="ulink live">🔬 Review Lab</a>
+            <a href="extension_organelles.html" class="ulink">⚗️ Extension</a>
+          </div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Viruses</div>
+            <div class="unit-desc">Are viruses alive? Virus structure, lytic and lysogenic cycles, and how viruses compare to living cells.</div>
+          </div>
+          <div class="unit-links">
+            <a href="extensions_virus.html" class="ulink live">🦠 Virus Lab</a>
+          </div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Genetics &amp; Heredity</div>
+            <div class="unit-desc">Punnett squares, dominant and recessive traits, and how genes pass from parent to offspring.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Ecosystems &amp; Energy Flow</div>
+            <div class="unit-desc">Food webs, trophic levels, producers, consumers, decomposers, and how energy moves through ecosystems.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Human Body Systems</div>
+            <div class="unit-desc">Circulatory, digestive, nervous systems and more — how organs work together to keep us alive.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHEMISTRY -->
+    <div class="subject-block sb-chem">
+      <div class="subject-header">
+        <span class="subject-icon">⚗️</span>
+        <span class="subject-title">Chemistry</span>
+        <span class="subject-badge badge-chem">Physical Science</span>
+      </div>
+      <div class="unit-row">
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Matter &amp; Its Properties</div>
+            <div class="unit-desc">Physical vs. chemical properties, states of matter, and the particle model of matter.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Atoms, Elements &amp; the Periodic Table</div>
+            <div class="unit-desc">Atomic structure, protons, neutrons, electrons, and how to navigate the periodic table.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Chemical Reactions</div>
+            <div class="unit-desc">Reactants, products, indicators of chemical change, conservation of mass, and balancing equations.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASTRONOMY -->
+    <div class="subject-block sb-astro">
+      <div class="subject-header">
+        <span class="subject-icon">🔭</span>
+        <span class="subject-title">Astronomy</span>
+        <span class="subject-badge badge-astro">Earth &amp; Space Science</span>
+      </div>
+      <div class="unit-row">
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">The Solar System</div>
+            <div class="unit-desc">Planets, moons, dwarf planets, asteroids, and what holds the solar system together.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Stars &amp; the Life Cycle of Stars</div>
+            <div class="unit-desc">Nebulae, main sequence, red giants, supernovae, black holes — how stars are born and die.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Earth, Moon &amp; Sun System</div>
+            <div class="unit-desc">Moon phases, tides, eclipses, seasons, and Earth's rotation and revolution.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GEOLOGY -->
+    <div class="subject-block sb-geo">
+      <div class="subject-header">
+        <span class="subject-icon">🪨</span>
+        <span class="subject-title">Geology &amp; Earth Science</span>
+        <span class="subject-badge badge-geo">Earth Science</span>
+      </div>
+      <div class="unit-row">
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Plate Tectonics</div>
+            <div class="unit-desc">Continental drift, tectonic plate boundaries, earthquakes, volcanoes, and mountain formation.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Rocks &amp; the Rock Cycle</div>
+            <div class="unit-desc">Igneous, sedimentary, and metamorphic rocks — and how each type forms and transforms over time.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Weathering, Erosion &amp; Soil</div>
+            <div class="unit-desc">How rocks break down, how soil forms, and how wind and water shape Earth's surface.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHYSICS -->
+    <div class="subject-block sb-phys">
+      <div class="subject-header">
+        <span class="subject-icon">⚡</span>
+        <span class="subject-title">Physics</span>
+        <span class="subject-badge badge-phys">Physical Science</span>
+      </div>
+      <div class="unit-row">
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Forces &amp; Motion</div>
+            <div class="unit-desc">Newton's laws, speed, velocity, acceleration, friction, and balanced vs. unbalanced forces.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Energy</div>
+            <div class="unit-desc">Kinetic and potential energy, thermal, light, sound, and electrical energy — and how energy transfers.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Waves, Sound &amp; Light</div>
+            <div class="unit-desc">Wavelength, frequency, amplitude, the electromagnetic spectrum, reflection, and refraction.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCIENCE PRACTICES -->
+    <div class="subject-block sb-sci">
+      <div class="subject-header">
+        <span class="subject-icon">🧪</span>
+        <span class="subject-title">Good Science Practices</span>
+        <span class="subject-badge badge-sci">Scientific Method</span>
+      </div>
+      <div class="unit-row">
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">The Scientific Method</div>
+            <div class="unit-desc">Observations, hypotheses, variables, controlled experiments, data analysis, and writing conclusions.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Data, Graphs &amp; Measurement</div>
+            <div class="unit-desc">Reading and creating bar, line, and scatter plot graphs. SI units and measurement tools.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Lab Safety</div>
+            <div class="unit-desc">Safety symbols, proper equipment use, MSDS basics, and rules every scientist follows in the lab.</div>
+          </div>
+          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="section-eyebrow">💡 How It Works</div>
+    <h2 class="section-title">Built for Learners</h2>
+    <p class="section-desc">LyfeLabz makes reviewing science engaging, effective, and fun. Here's how every unit is structured.</p>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-icon">📖</div>
+        <div class="how-step">Step 1</div>
+        <h3>Read the Review</h3>
+        <p>Clear notes and visual breakdowns cover every key concept — no textbook hunting required.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">🎮</div>
+        <div class="how-step">Step 2</div>
+        <h3>Try the Activities</h3>
+        <p>Interactive labs and extension pages help you apply what you've learned hands-on.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">✅</div>
+        <div class="how-step">Step 3</div>
+        <h3>Test Yourself</h3>
+        <p>Practice quizzes give instant feedback and real explanations — learn from every miss.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">🏆</div>
+        <div class="how-step">Step 4</div>
+        <h3>Ace Your Test</h3>
+        <p>Review your score, revisit weak spots, and walk into your exam with full confidence.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-name">LYFELABZ</div>
+  <p>Your middle school science hub · lyfelabz.com · made with 🔬 for curious scientists everywhere</p>
+</footer>
+
+<!-- Animated Starfield -->
+<script>
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = document.body.scrollHeight;
+    generateStars();
+  }
+
+  function generateStars() {
+    stars = [];
+    const count = Math.floor((canvas.width * canvas.height) / 3800);
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.4 + 0.2,
+        a: Math.random() * 0.65 + 0.1,
+        speed: Math.random() * 0.3 + 0.04,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+      const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(220,210,255,${alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => {
+    clearTimeout(window._rt);
+    window._rt = setTimeout(resize, 200);
+  });
+
+  resize();
+  requestAnimationFrame(draw);
+</script>
+</body>
+</html>
