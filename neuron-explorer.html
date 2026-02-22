@@ -192,6 +192,7 @@
   <div class="hud-item" id="hudScore"><span class="hud-label">Score</span><span class="hud-value" id="scoreVal">0</span></div>
   <div class="hud-item"><span class="hud-label">Explored</span><span class="hud-value" id="foundVal">0 / 11</span></div>
   <div class="hud-item"><span class="hud-label">Signal Phase</span><span class="hud-value" id="phaseVal">REST</span></div>
+  <div class="hud-item"><span class="hud-label">Conduction Speed</span><span class="hud-value" id="speedLabel" style="color:var(--neuro); font-size:1rem;">⚡ FAST</span></div>
 </div>
 
 <div class="mode-bar">
@@ -533,7 +534,10 @@
           <button class="btn primary" onclick="runSignal()">Run Signal</button>
           <button class="btn" onclick="resetSignal()">Reset</button>
         </div>
-        <div style="margin-top:0.75rem; color:var(--muted); font-size:0.82rem; line-height:1.55;">Sequence: resting → threshold → spike → travel → neurotransmitter release.</div>
+        <div style="margin-top:0.75rem; color:var(--muted); font-size:0.82rem; line-height:1.55;">
+          Sequence: resting → threshold → spike → travel → neurotransmitter release.<br>
+          <span style="color:var(--neuro); font-weight:700;">Toggle myelin on/off</span> and run the signal both ways — notice how much faster saltatory conduction is!
+        </div>
       </div>
 
       <div class="panel quiz-panel" id="quizPanel">
@@ -777,6 +781,12 @@
     const sw = document.getElementById('myelinSwitch');
     sw.classList.toggle('on', myelinOn);
     myelinGroup.classList.toggle('hidden', !myelinOn);
+    // Update the speed indicator in the HUD
+    const speedEl = document.getElementById('speedLabel');
+    if(speedEl){
+      speedEl.textContent = myelinOn ? '⚡ FAST' : '🐢 SLOW';
+      speedEl.style.color = myelinOn ? 'var(--neuro)' : 'var(--warn)';
+    }
     if(mode==='signal') resetSignal();
   }
 
@@ -786,40 +796,50 @@
     running = true;
     resetSignal();
 
-    phaseVal.textContent = 'THRESHOLD';
+    // ── Timing constants ──────────────────────────────────────
+    // Myelinated:   total ~1.8s  — signal jumps node-to-node fast (saltatory)
+    // Unmyelinated: total ~4.5s  — signal crawls continuously, ~2.5× slower
+    const T = myelinOn
+      ? { threshold:0, spike:350, n1:550, n2:800, n3:1050, release:1250, nt:1550, rest:2000 }
+      : { threshold:0, spike:700, n1:1300, n2:2100, n3:2900, release:3300, nt:3800, rest:4600 };
+
+    phaseVal.textContent = myelinOn ? '⚡ THRESHOLD' : 'THRESHOLD';
     score += 25; popHUD(); updateHUD();
 
+    // Show spike / AP line
     timers.push(setTimeout(()=>{
-      phaseVal.textContent = 'SPIKE';
+      phaseVal.textContent = myelinOn ? '⚡ SPIKE' : 'SPIKE';
       apLine.style.opacity = "1.0";
       apLine.classList.add('active');
-    }, 650));
+    }, T.spike));
 
-    const travel = myelinOn ? [900, 1200, 1500] : [1050, 1500, 1950];
-    travel.forEach((ms, idx)=>{
+    // Nodes fire in sequence
+    [T.n1, T.n2, T.n3].forEach((ms, idx)=>{
       timers.push(setTimeout(()=>{
         nodes[idx].classList.add('active');
-        if(idx>0) nodes[idx-1].classList.remove('active');
+        if(idx > 0) nodes[idx-1].classList.remove('active');
+        phaseVal.textContent = myelinOn ? `⚡ NODE ${idx+1}/3` : `NODE ${idx+1}/3`;
       }, ms));
     });
 
+    // Neurotransmitter release
     timers.push(setTimeout(()=>{
       phaseVal.textContent = 'RELEASE';
       nodes.forEach(n=>n.classList.remove('active'));
       ves.forEach(v=>v.classList.add('active'));
-    }, myelinOn ? 1750 : 2200));
+    }, T.release));
 
     timers.push(setTimeout(()=>{
       ves.forEach(v=>v.classList.remove('active'));
       nts.forEach(n=>n.classList.add('active'));
       score += 75; popHUD(); updateHUD();
-    }, myelinOn ? 2100 : 2550));
+    }, T.nt));
 
     timers.push(setTimeout(()=>{
       phaseVal.textContent = 'REST';
       setRestVisual();
       running = false;
-    }, myelinOn ? 2900 : 3400));
+    }, T.rest));
   }
 
   // Quiz logic
