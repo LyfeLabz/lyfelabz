@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | About</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:       #0b0e1a;
+    --ink2:      #111527;
+    --card:      #141828;
+    --card2:     #1c2240;
+    --border:    rgba(180,160,255,0.12);
+    --text:      #e8e6f4;
+    --muted:     #7b789e;
+    --gold:      #f5c842;
+    --gold-glow: rgba(245,200,66,0.35);
+    --bio:       #3ddc84;
+    --phys:      #29d4f5;
+    --psych:     #f472b6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--ink);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  #stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+  }
+
+  nav, header, main, footer { position: relative; z-index: 1; }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11,14,26,0.93);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    transition: all 0.2s;
+  }
+  .nav-back:hover { color: var(--gold); border-color: rgba(245,200,66,0.4); }
+
+  /* ===== HERO ===== */
+  header.hero {
+    padding: 7rem 2rem 5.5rem;
+    text-align: center;
+    background:
+      radial-gradient(ellipse 65% 50% at 50% 0%, rgba(245,200,66,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 35% at 85% 80%, rgba(41,212,245,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 35% 30% at 10% 90%, rgba(180,127,255,0.05) 0%, transparent 60%);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    color: var(--gold);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    animation: fadeUp 0.6s ease both;
+  }
+  header.hero h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+  .word-lyfe { color: var(--text); }
+  .word-labz {
+    background: linear-gradient(135deg, var(--gold) 0%, #ff9a42 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-tagline {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+  .hero-tagline span {
+    color: var(--text);
+    opacity: 0.9;
+  }
+  .hero-divider {
+    display: inline-block;
+    color: var(--gold);
+    margin: 0 0.6rem;
+    opacity: 0.5;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== MAIN LAYOUT ===== */
+  main { max-width: 860px; margin: 0 auto; padding: 0 2rem 6rem; }
+
+  /* ===== INTRO BLOCK ===== */
+  .intro-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.8rem 3rem;
+    margin-top: -2rem;
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 2;
+  }
+  .intro-block p {
+    font-size: 1.08rem;
+    color: var(--muted);
+    line-height: 1.85;
+  }
+  .intro-block p strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  /* ===== SECTION SHARED ===== */
+  .section-eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.28);
+    padding: 0.28rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 800;
+    margin-bottom: 1.8rem;
+    line-height: 1.2;
+  }
+  .content-section { margin-bottom: 4rem; }
+
+  /* ===== BUILT FOR CARDS ===== */
+  .audience-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+  }
+  .audience-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.8rem 1.6rem;
+    transition: transform 0.28s, border-color 0.28s, box-shadow 0.28s;
+  }
+  .audience-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.35); }
+  .audience-card:nth-child(1) { border-top: 3px solid var(--bio); }
+  .audience-card:nth-child(1):hover { border-color: rgba(61,220,132,0.4); }
+  .audience-card:nth-child(2) { border-top: 3px solid var(--phys); }
+  .audience-card:nth-child(2):hover { border-color: rgba(41,212,245,0.4); }
+  .audience-card:nth-child(3) { border-top: 3px solid var(--psych); }
+  .audience-card:nth-child(3):hover { border-color: rgba(244,114,182,0.4); }
+  .audience-icon { font-size: 2.2rem; margin-bottom: 0.9rem; display: block; }
+  .audience-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+  .audience-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+
+  /* ===== STANDARDS BLOCK ===== */
+  .standards-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 18px;
+    padding: 2.4rem 2.8rem;
+    margin-bottom: 1.5rem;
+  }
+  .standards-block p {
+    font-size: 0.97rem;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 1.4rem;
+  }
+  .standards-block p:last-child { margin-bottom: 0; }
+  .standards-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.4rem;
+  }
+  .standards-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .standards-list li::before {
+    content: '▸';
+    color: var(--gold);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  /* ===== PHILOSOPHY CALLOUT ===== */
+  .philosophy-callout {
+    background: linear-gradient(135deg, rgba(245,200,66,0.07) 0%, rgba(41,212,245,0.04) 100%);
+    border: 1px solid rgba(245,200,66,0.25);
+    border-radius: 20px;
+    padding: 3rem 3rem;
+    text-align: center;
+  }
+  .philosophy-callout .quote-mark {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    color: var(--gold);
+    opacity: 0.3;
+    line-height: 1;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  .philosophy-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .philosophy-line {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .philosophy-line .accent { color: var(--gold); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--ink2);
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+  .footer-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.6rem;
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+  footer p { font-size: 0.83rem; color: var(--muted); }
+  footer a { color: var(--gold); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--ink); }
+  ::-webkit-scrollbar-thumb { background: var(--card2); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    .intro-block { padding: 2rem 1.5rem; }
+    .standards-block { padding: 1.8rem 1.6rem; }
+    .philosophy-callout { padding: 2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <a href="index.html" class="nav-back">⬅️ Back to Hub</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-eyebrow">🧭 About</div>
+  <h1><span class="word-lyfe">Lyfe</span><span class="word-labz">Labz</span></h1>
+  <p class="hero-tagline">
+    <span>Classroom-tested</span>
+    <span class="hero-divider">·</span>
+    <span>Student-focused</span>
+    <span class="hero-divider">·</span>
+    <span>Built for clarity</span>
+  </p>
+</header>
+
+<!-- MAIN CONTENT -->
+<main>
+
+  <!-- INTRO -->
+  <div class="intro-block">
+    <p>LyfeLabz is an <strong>interactive middle school science hub</strong> built to make lessons feel more like labs than lectures. The goal is simple: create science resources that are <strong>engaging for students</strong> and <strong>effortless for teachers to use</strong>. Each lesson is designed with short explanations, clean visuals, embedded media, and interactive challenges that encourage applied thinking rather than passive consumption.</p>
+    <p style="margin-top:1.2rem; padding-top:1.2rem; border-top:1px solid var(--border); font-size:0.97rem;">LyfeLabz was created by middle school science teachers who wanted better resources for their own students.</p>
+  </div>
+
+  <!-- BUILT FOR -->
+  <div class="content-section">
+    <div class="section-eyebrow">🎯 Audience</div>
+    <h2 class="section-title">LyfeLabz is Built For</h2>
+    <div class="audience-grid">
+      <div class="audience-card">
+        <span class="audience-icon">🧑‍🎓</span>
+        <div class="audience-title">Students</div>
+        <div class="audience-desc">Who benefit from structured, visual, and interactive learning experiences that go beyond reading a textbook.</div>
+      </div>
+      <div class="audience-card">
+        <span class="audience-icon">🧑‍🏫</span>
+        <div class="audience-title">Teachers</div>
+        <div class="audience-desc">Who want high-engagement resources that can be deployed instantly — no setup, no prep, no friction.</div>
+      </div>
+      <div class="audience-card">
+        <span class="audience-icon">🏫</span>
+        <div class="audience-title">Classrooms</div>
+        <div class="audience-desc">That value clarity, accessibility, and purposeful design as essential parts of the learning environment.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STANDARDS ALIGNMENT -->
+  <div class="content-section">
+    <div class="section-eyebrow">📋 Standards</div>
+    <h2 class="section-title">Standards Alignment</h2>
+    <div class="standards-block">
+      <p>All instructional content is designed to align with the <strong style="color:var(--text);">Massachusetts Science and Technology/Engineering Curriculum Frameworks</strong> for middle school. Lessons emphasize:</p>
+      <ul class="standards-list">
+        <li>Conceptual understanding over memorization</li>
+        <li>Application of scientific practices</li>
+        <li>Clear models, evidence-based reasoning, and real-world connections</li>
+      </ul>
+      <p>Content is structured to support progression across physical science, life science, Earth and space science, and engineering topics in accordance with state expectations.</p>
+    </div>
+  </div>
+
+  <!-- WHY LYFELABZ EXISTS -->
+  <div class="content-section">
+    <div class="section-eyebrow">💡 Mission</div>
+    <h2 class="section-title">Why LyfeLabz Exists</h2>
+    <div class="standards-block" style="margin-bottom:2rem;">
+      <p>Middle school students are capable of deep scientific thinking when the learning environment is clear and intentional. LyfeLabz exists to provide that structure.</p>
+    </div>
+    <div class="philosophy-callout">
+      <span class="quote-mark">"</span>
+      <div class="philosophy-lines">
+        <div class="philosophy-line">Science should feel <span class="accent">active.</span></div>
+        <div class="philosophy-line">Learning should feel <span class="accent">accessible.</span></div>
+        <div class="philosophy-line">Design should never get in the way of <span class="accent">understanding.</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-name">LYFELABZ</div>
+  <p>Your middle school science hub · lyfelabz.com · <a href="index.html">Back to Hub</a></p>
+</footer>
+
+<!-- Starfield -->
+<script>
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = document.body.scrollHeight;
+    generateStars();
+  }
+
+  function generateStars() {
+    stars = [];
+    const count = Math.floor((canvas.width * canvas.height) / 3800);
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.4 + 0.2,
+        a: Math.random() * 0.65 + 0.1,
+        speed: Math.random() * 0.3 + 0.04,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+      const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(220,210,255,${alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => {
+    clearTimeout(window._rt);
+    window._rt = setTimeout(resize, 200);
+  });
+
+  resize();
+  requestAnimationFrame(draw);
+</script>
+</body>
+</html>
