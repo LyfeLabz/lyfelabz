@@ -6,9 +6,33 @@
     <title>LyfeLabz Real Power Lab | Media Literacy for Middle Schoolers</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .nav-lyfelabz {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 900;
+            color: #f5c842;
+            text-decoration: none;
+            letter-spacing: 0.06em;
+            text-shadow: 0 0 18px rgba(245,200,66,0.35);
+        }
+        .nav-lyfelabz:hover { color: #f5c842; }
+        .nav-subject-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #a855f7;
+            background: rgba(168,85,247,0.1);
+            border: 1px solid rgba(168,85,247,0.4);
+            padding: 0.35rem 0.9rem;
+            border-radius: 99px;
+        }
         h1, h2, h3, h4, h5, h6 { font-family: 'Nunito', sans-serif; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .card-hover { transition: all 0.3s ease; }
@@ -45,10 +69,7 @@
     <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="shield-check" class="w-8 h-8 text-indigo-600"></i>
-                    <span class="font-bold text-xl text-slate-900">Real Power Lab</span>
-                </div>
+                <a href="index.html" class="nav-lyfelabz">LYFELABZ</a>
                 <div class="hidden md:flex space-x-6">
                     <a href="#learn"      class="text-slate-600 hover:text-indigo-600 font-medium transition">Learn</a>
                     <a href="#watch"      class="text-slate-600 hover:text-indigo-600 font-medium transition">Watch</a>
@@ -58,6 +79,7 @@
                     <a href="#tools"      class="text-slate-600 hover:text-indigo-600 font-medium transition">Tools</a>
                     <a href="#resources"  class="text-slate-600 hover:text-indigo-600 font-medium transition">Resources</a>
                 </div>
+                <span class="nav-subject-pill">🧠 Psychology</span>
                 <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-md text-slate-600 hover:bg-slate-100">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>

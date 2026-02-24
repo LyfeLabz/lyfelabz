@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LyfeLabz | Characteristics of Life & Cell Organization</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
     --green: #2ecc71;
@@ -16,6 +16,8 @@
     --red: #e74c3c;
     --orange: #e67e22;
     --yellow: #f1c40f;
+    --gold: #f5c842;
+    --gold-glow: rgba(245,200,66,0.35);
     --dark: #1a2535;
     --dark2: #243447;
     --card: #1e2f42;
@@ -48,10 +50,13 @@
     padding: 0.8rem 2rem;
   }
   .nav-logo {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.4rem;
-    color: var(--green);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
     text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
   }
   .nav-links {
     display: flex;
@@ -73,18 +78,16 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    color: var(--text-muted);
-    text-decoration: none;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 800;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    border: 1px solid var(--border);
+    color: var(--green);
+    background: rgba(46,204,113,0.1);
+    border: 1px solid rgba(46,204,113,0.4);
     padding: 0.35rem 0.9rem;
     border-radius: 99px;
-    transition: all 0.2s;
   }
-  .nav-back:hover { color: var(--green); border-color: rgba(46,204,113,0.4); }
 
   /* ===== HERO ===== */
   .hero {
@@ -500,14 +503,14 @@
 
 <!-- NAV -->
 <nav>
-  <a href="index.html" class="nav-logo">🧬 Biology Review Lab</a>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
     <li><a href="#characteristics">Life</a></li>
     <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="extensions_virus.html">Extension 🦠</a></li>
   </ul>
-  <a href="index.html" class="nav-back">⬅️ LyfeLabz Hub</a>
+  <span class="nav-back">🌱 Biology</span>
 </nav>
 
 <!-- HERO -->

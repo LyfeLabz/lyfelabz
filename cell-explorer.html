@@ -4,30 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cell Explorer | LyfeLabz</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink:      #0b0e1a;
-    --ink2:     #111527;
-    --ink3:     #181d35;
-    --card:     #141828;
-    --card2:    #1c2240;
-    --border:   rgba(180,160,255,0.12);
-    --text:     #e8e6f4;
-    --muted:    #7b789e;
-    --gold:       #f5c842;
-    --gold-dim:   rgba(245,200,66,0.15);
-    --gold-glow:  rgba(245,200,66,0.35);
-    --bio:    #3ddc84;
-    --chem:   #ff7043;
-    --astro:  #b47fff;
-    --phys:   #29d4f5;
-    --psych:  #f472b6;
+    --green: #2ecc71;
+    --green-dark: #27ae60;
+    --blue: #3498db;
+    --teal: #1abc9c;
+    --purple: #9b59b6;
+    --red: #e74c3c;
+    --orange: #e67e22;
+    --yellow: #f1c40f;
+    --dark: #1a2535;
+    --dark2: #243447;
+    --card: #1e2f42;
+    --text: #e8f4f8;
+    --text-muted: #8aafca;
+    --border: rgba(52,152,219,0.2);
+    /* accent aliases kept for game logic */
+    --bio: #2ecc71;
+    --gold: #f1c40f;
+    --gold-glow: rgba(241,196,15,0.35);
+    --phys: #3498db;
+    --neuro: #9b59b6;
+    --astro: #9b59b6;
+    --chem: #e67e22;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
-    font-family: 'Space Grotesk', sans-serif;
-    background: var(--ink);
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
     color: var(--text);
     line-height: 1.6;
     overflow-x: hidden;
@@ -39,19 +45,37 @@
   /* NAV */
   nav {
     position:sticky; top:0; z-index:100;
-    background:rgba(11,14,26,0.93); backdrop-filter:blur(14px);
+    background:rgba(20,30,45,0.97); backdrop-filter:blur(14px);
     border-bottom:1px solid var(--border);
     display:flex; align-items:center; justify-content:space-between;
     padding:0.85rem 2.5rem;
   }
   .nav-logo {
-    font-family:'Orbitron',sans-serif; font-size:1.35rem; font-weight:900;
-    color:var(--gold); text-decoration:none; letter-spacing:0.06em;
-    text-shadow:0 0 18px var(--gold-glow);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
   }
   .nav-links { display:flex; gap:2rem; list-style:none; flex-wrap:wrap; align-items:center; }
   .nav-links a { color:var(--muted); text-decoration:none; font-size:0.82rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; transition:color 0.2s; }
-  .nav-links a:hover { color:var(--gold); }
+  .nav-links a:hover { color: var(--green); }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: rgba(46,204,113,0.1);
+    border: 1px solid rgba(46,204,113,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+  }
   .nav-badge { font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:0.22rem 0.7rem; border-radius:99px; color:var(--bio); background:rgba(61,220,132,0.1); border:1px solid rgba(61,220,132,0.3); }
 
   /* PAGE HERO */
@@ -68,7 +92,7 @@
     font-size:0.75rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
     margin-bottom:1.2rem; animation:fadeUp 0.5s ease both;
   }
-  .page-hero h1 { font-family:'Orbitron',sans-serif; font-size:clamp(1.8rem,5vw,3.2rem); font-weight:900; line-height:1.1; margin-bottom:0.8rem; animation:fadeUp 0.6s 0.08s ease both; }
+  .page-hero h1 { font-family: 'Fredoka One', cursive; font-size:clamp(1.8rem,5vw,3.2rem); font-weight:900; line-height:1.1; margin-bottom:0.8rem; animation:fadeUp 0.6s 0.08s ease both; }
   .title-explorer { background:linear-gradient(135deg,var(--bio) 0%,var(--phys) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
   .page-hero p { color:var(--muted); font-size:0.97rem; max-width:540px; margin:0 auto; animation:fadeUp 0.6s 0.16s ease both; }
 
@@ -84,7 +108,7 @@
 
   /* MODE TABS */
   .mode-bar { display:flex; justify-content:center; gap:0.6rem; padding:0 2rem 1rem; }
-  .mode-btn { padding:0.55rem 1.6rem; background:var(--card); border:1px solid var(--border); border-radius:99px; color:var(--muted); font-family:'Space Grotesk',sans-serif; font-size:0.8rem; font-weight:700; cursor:pointer; letter-spacing:0.08em; text-transform:uppercase; transition:all 0.2s; }
+  .mode-btn { padding:0.55rem 1.6rem; background:var(--card); border:1px solid var(--border); border-radius:99px; color:var(--muted); font-family: 'Nunito', sans-serif; font-size:0.8rem; font-weight:700; cursor:pointer; letter-spacing:0.08em; text-transform:uppercase; transition:all 0.2s; }
   .mode-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.2); }
   .mode-btn.active { background:rgba(61,220,132,0.12); border-color:rgba(61,220,132,0.45); color:var(--bio); }
 
@@ -121,7 +145,7 @@
   .quiz-eyebrow { font-size:0.62rem; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); font-family:'Orbitron',sans-serif; margin-bottom:0.9rem; }
   .quiz-q { font-family:'Sora',sans-serif; font-size:0.92rem; font-weight:700; color:var(--text); line-height:1.55; margin-bottom:1rem; }
   .quiz-options { display:flex; flex-direction:column; gap:0.55rem; }
-  .quiz-opt { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:0.65rem 1rem; color:var(--text); font-family:'Space Grotesk',sans-serif; font-size:0.84rem; font-weight:500; cursor:pointer; text-align:left; transition:all 0.15s; }
+  .quiz-opt { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:0.65rem 1rem; color:var(--text); font-family: 'Nunito', sans-serif; font-size:0.84rem; font-weight:500; cursor:pointer; text-align:left; transition:all 0.15s; }
   .quiz-opt:hover:not(:disabled) { background:rgba(61,220,132,0.08); border-color:rgba(61,220,132,0.35); color:var(--bio); }
   .quiz-opt.correct { background:rgba(61,220,132,0.12); border-color:rgba(61,220,132,0.6); color:var(--bio); font-weight:700; }
   .quiz-opt.wrong { background:rgba(255,112,67,0.1); border-color:rgba(255,112,67,0.5); color:var(--chem); }
@@ -129,7 +153,7 @@
   .quiz-feedback.show { display:block; }
   .quiz-feedback.correct { background:rgba(61,220,132,0.1); border:1px solid rgba(61,220,132,0.3); color:var(--bio); }
   .quiz-feedback.wrong   { background:rgba(255,112,67,0.08); border:1px solid rgba(255,112,67,0.3); color:var(--chem); }
-  .next-btn { display:none; margin-top:0.9rem; width:100%; padding:0.75rem; background:linear-gradient(135deg,var(--gold),#ff9a42); border:none; border-radius:10px; color:#111; font-family:'Space Grotesk',sans-serif; font-weight:800; font-size:0.85rem; cursor:pointer; letter-spacing:0.06em; text-transform:uppercase; transition:all 0.2s; }
+  .next-btn { display:none; margin-top:0.9rem; width:100%; padding:0.75rem; background:linear-gradient(135deg,var(--gold),#ff9a42); border:none; border-radius:10px; color:#111; font-family: 'Nunito', sans-serif; font-weight:800; font-size:0.85rem; cursor:pointer; letter-spacing:0.06em; text-transform:uppercase; transition:all 0.2s; }
   .next-btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(245,200,66,0.4); }
   .next-btn.show { display:block; }
 
@@ -143,7 +167,7 @@
   .org-chip.done { border-color:rgba(61,220,132,0.5); color:var(--bio); background:rgba(61,220,132,0.08); }
 
   /* TOOLTIP */
-  .tooltip { position:fixed; background:var(--card2); border:1px solid rgba(61,220,132,0.4); border-radius:8px; padding:6px 12px; font-size:0.75rem; font-weight:700; color:var(--bio); pointer-events:none; z-index:200; white-space:nowrap; transform:translate(-50%,-115%); opacity:0; transition:opacity 0.12s; letter-spacing:0.05em; font-family:'Orbitron',sans-serif; }
+  .tooltip { position:fixed; background:var(--dark2); border:1px solid rgba(61,220,132,0.4); border-radius:8px; padding:6px 12px; font-size:0.75rem; font-weight:700; color:var(--bio); pointer-events:none; z-index:200; white-space:nowrap; transform:translate(-50%,-115%); opacity:0; transition:opacity 0.12s; letter-spacing:0.05em; font-family:'Orbitron',sans-serif; }
   .tooltip.visible { opacity:1; }
 
   /* WIN MODAL */
@@ -156,7 +180,7 @@
   .modal-box p { color:var(--muted); font-size:0.9rem; margin-bottom:1.2rem; line-height:1.65; }
   .modal-score { font-family:'Orbitron',sans-serif; font-size:2.8rem; font-weight:900; background:linear-gradient(135deg,var(--gold),#ff9a42); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
   .modal-grade { font-size:0.85rem; color:var(--bio); margin-top:0.3rem; margin-bottom:1.5rem; font-weight:700; }
-  .restart-btn { padding:0.85rem 2.2rem; background:linear-gradient(135deg,var(--gold),#ff9a42); border:none; border-radius:12px; color:#111; font-family:'Space Grotesk',sans-serif; font-weight:800; font-size:0.95rem; cursor:pointer; letter-spacing:0.04em; transition:all 0.2s; box-shadow:0 4px 24px rgba(245,200,66,0.35); }
+  .restart-btn { padding:0.85rem 2.2rem; background:linear-gradient(135deg,var(--gold),#ff9a42); border:none; border-radius:12px; color:#111; font-family: 'Nunito', sans-serif; font-weight:800; font-size:0.95rem; cursor:pointer; letter-spacing:0.04em; transition:all 0.2s; box-shadow:0 4px 24px rgba(245,200,66,0.35); }
   .restart-btn:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(245,200,66,0.5); }
 
   /* FOOTER */
@@ -165,8 +189,8 @@
   footer p { font-size:0.8rem; color:var(--muted); }
 
   ::-webkit-scrollbar { width:6px; }
-  ::-webkit-scrollbar-track { background:var(--ink); }
-  ::-webkit-scrollbar-thumb { background:var(--card2); border-radius:3px; }
+  ::-webkit-scrollbar-track { background:var(--dark); }
+  ::-webkit-scrollbar-thumb { background:var(--dark2); border-radius:3px; }
 
   @media (max-width:740px) {
     .game-layout { flex-direction:column; }
@@ -186,8 +210,9 @@
   <ul class="nav-links">
     <li><a href="index.html#subjects">Subjects</a></li>
     <li><a href="organelles.html">Cell Review</a></li>
-    <li><span class="nav-badge">🔬 Biology</span></li>
+
   </ul>
+  <span class="nav-back">🌱 Biology</span>
 </nav>
 
 <!-- PAGE HERO -->

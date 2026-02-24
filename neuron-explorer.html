@@ -4,26 +4,65 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Neuron Explorer | LyfeLabz</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#0b0e1a; --ink2:#111527; --ink3:#181d35;
-    --card:#141828; --card2:#1c2240; --border:rgba(180,160,255,0.12);
-    --text:#e8e6f4; --muted:#7b789e; --gold:#f5c842;
-    --gold-glow:rgba(245,200,66,0.35);
-    --bio:#3ddc84; --phys:#29d4f5; --neuro:#b47fff; --warn:#ff7043;
+  :root {
+    --green: #2ecc71;
+    --green-dark: #27ae60;
+    --blue: #3498db;
+    --teal: #1abc9c;
+    --purple: #9b59b6;
+    --red: #e74c3c;
+    --orange: #e67e22;
+    --yellow: #f1c40f;
+    --dark: #1a2535;
+    --dark2: #243447;
+    --card: #1e2f42;
+    --text: #e8f4f8;
+    --text-muted: #8aafca;
+    --border: rgba(52,152,219,0.2);
+    /* accent aliases kept for game logic */
+    --bio: #2ecc71;
+    --gold: #f1c40f;
+    --gold-glow: rgba(241,196,15,0.35);
+    --phys: #3498db;
+    --neuro: #9b59b6;
+    --astro: #9b59b6;
+    --chem: #e67e22;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Space Grotesk',sans-serif; background:var(--ink); color:var(--text); line-height:1.6; overflow-x:hidden; min-height:100vh;}
+  body{font-family: 'Nunito', sans-serif; background:var(--dark); color:var(--text); line-height:1.6; overflow-x:hidden; min-height:100vh;}
   #stars{position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.55;}
   nav,.page-hero,.hud,.mode-bar,.game-section,footer{position:relative; z-index:1;}
 
-  nav{position:sticky; top:0; z-index:100; background:rgba(11,14,26,0.93); backdrop-filter:blur(14px);
+  nav{position:sticky; top:0; z-index:100; background:rgba(20,30,45,0.97); backdrop-filter:blur(14px);
     border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0.85rem 2.5rem;}
-  .nav-logo{font-family:'Orbitron',sans-serif; font-size:1.35rem; font-weight:900; color:var(--gold); text-decoration:none; letter-spacing:0.06em; text-shadow:0 0 18px var(--gold-glow);}
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
   .nav-links{display:flex; gap:2rem; list-style:none; flex-wrap:wrap; align-items:center;}
   .nav-links a{color:var(--muted); text-decoration:none; font-size:0.82rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; transition:color 0.2s;}
-  .nav-links a:hover{color:var(--gold)}
+  .nav-links a:hover{color: var(--green); }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: rgba(46,204,113,0.1);
+    border: 1px solid rgba(46,204,113,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+  }
   .nav-badge{font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:0.22rem 0.7rem; border-radius:99px; color:var(--neuro); background:rgba(180,127,255,0.12); border:1px solid rgba(180,127,255,0.3);}
 
   .page-hero{padding:3.5rem 2rem 1.8rem; text-align:center;
@@ -32,7 +71,7 @@
   .page-eyebrow{display:inline-flex; align-items:center; gap:0.5rem; background:rgba(180,127,255,0.12);
     border:1px solid rgba(180,127,255,0.32); color:var(--neuro); padding:0.4rem 1.2rem; border-radius:99px;
     font-size:0.75rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:1.2rem; animation:fadeUp 0.5s ease both;}
-  .page-hero h1{font-family:'Orbitron',sans-serif; font-size:clamp(1.8rem,5vw,3.2rem); font-weight:900; line-height:1.1; margin-bottom:0.8rem; animation:fadeUp 0.6s 0.08s ease both;}
+  .page-hero h1{font-family: 'Fredoka One', cursive; font-size:clamp(1.8rem,5vw,3.2rem); font-weight:900; line-height:1.1; margin-bottom:0.8rem; animation:fadeUp 0.6s 0.08s ease both;}
   .title-explorer{background:linear-gradient(135deg,var(--neuro) 0%,var(--phys) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;}
   .page-hero p{color:var(--muted); font-size:0.97rem; max-width:620px; margin:0 auto; animation:fadeUp 0.6s 0.16s ease both;}
   @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
@@ -113,7 +152,7 @@
     border:none; border-radius:10px; color:#111; font-weight:900; font-size:0.85rem; cursor:pointer; letter-spacing:0.06em; text-transform:uppercase; transition:all 0.2s;}
   .next-btn.show{display:block;}
 
-  .tooltip{position:fixed; background:var(--card2); border:1px solid rgba(180,127,255,0.45); border-radius:8px; padding:6px 12px;
+  .tooltip{position:fixed; background:var(--dark2); border:1px solid rgba(180,127,255,0.45); border-radius:8px; padding:6px 12px;
     font-size:0.75rem; font-weight:900; color:var(--neuro); pointer-events:none; z-index:200; white-space:nowrap;
     transform:translate(-50%,-115%); opacity:0; transition:opacity 0.12s; letter-spacing:0.05em; font-family:'Orbitron',sans-serif;}
   .tooltip.visible{opacity:1;}
@@ -178,8 +217,8 @@
   <ul class="nav-links">
     <li><a href="index.html#subjects">Subjects</a></li>
     <li><a href="organelles.html">Cell Review</a></li>
-    <li><span class="nav-badge">🧠 Neuro Extension</span></li>
   </ul>
+  <span class="nav-back">🌱 Biology</span>
 </nav>
 
 <div class="page-hero">
