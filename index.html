@@ -157,7 +157,11 @@
     padding: 0.3rem 0.9rem;
     border-radius: 99px;
     border: 1px solid;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
   }
+  .pill:hover { opacity: 0.8; }
   .pill-bio   { color: var(--bio);   background: rgba(61,220,132,0.1);  border-color: rgba(61,220,132,0.3); }
   .pill-chem  { color: var(--chem);  background: rgba(255,112,67,0.1);  border-color: rgba(255,112,67,0.3); }
   .pill-astro { color: var(--astro); background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3);}
@@ -487,12 +491,12 @@
   <p class="hero-sub">Your interactive science classroom — biology, chemistry, astronomy, geology, physics, and more. Explore, practice, and master every unit.</p>
 
   <div class="subject-pills">
-    <span class="pill pill-bio">🌱 Biology</span>
-    <span class="pill pill-chem">🧪 Chemistry</span>
-    <span class="pill pill-astro">🔭 Astronomy</span>
-    <span class="pill pill-geo">🪨 Geology</span>
-    <span class="pill pill-phys">⚡ Physics</span>
-    <span class="pill pill-psych">🧠 Psychology</span>
+    <a href="#bio" class="pill pill-bio">🌱 Biology</a>
+    <a href="#chem" class="pill pill-chem">🧪 Chemistry</a>
+    <a href="#astro" class="pill pill-astro">🔭 Astronomy</a>
+    <a href="#geo" class="pill pill-geo">🪨 Rocks Tell Stories</a>
+    <a href="#phys" class="pill pill-phys">⚡ Physics</a>
+    <a href="#psych" class="pill pill-psych">🧠 Psychology</a>
     <span class="pill pill-more">+ More</span>
   </div>
 
@@ -532,6 +536,7 @@
     <p class="section-desc">Browse every unit by subject area. Click any live card to jump into the review lab — or choose the ⭐ extension for a deeper dive or 🎮 interactive game. New units are added throughout the school year!</p>
 
     <!-- BIOLOGY -->
+    <span id="bio" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
     <div class="subject-block sb-bio">
       <div class="subject-header">
         <span class="subject-icon">🌱</span>
@@ -541,7 +546,7 @@
       <div class="unit-row">
         <div class="unit-card">
           <div class="unit-top">
-            <div class="unit-name">Characteristics of Life &amp; Cell Organization</div>
+            <div class="unit-name">Characteristics of Life &amp; Cell Types</div>
             <div class="unit-desc">The 6 characteristics of life, prokaryotic vs. eukaryotic cells, and unicellular vs. multicellular organisms.</div>
           </div>
           <div class="unit-links">
@@ -576,6 +581,7 @@
     </div>
 
     <!-- CHEMISTRY -->
+    <span id="chem" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
     <div class="subject-block sb-chem">
       <div class="subject-header">
         <span class="subject-icon">🧪</span>
@@ -608,6 +614,7 @@
     </div>
 
     <!-- ASTRONOMY -->
+    <span id="astro" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
     <div class="subject-block sb-astro">
       <div class="subject-header">
         <span class="subject-icon">🔭</span>
@@ -640,31 +647,32 @@
     </div>
 
     <!-- GEOLOGY -->
+    <span id="geo" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
     <div class="subject-block sb-geo">
       <div class="subject-header">
         <span class="subject-icon">🪨</span>
-        <span class="subject-title">Geology &amp; Earth Science</span>
+        <span class="subject-title">Rocks Tell Stories</span>
         <span class="subject-badge badge-geo">Earth Science</span>
       </div>
       <div class="unit-row">
         <div class="unit-card">
           <div class="unit-top">
-            <div class="unit-name">Plate Tectonics</div>
-            <div class="unit-desc">Continental drift, tectonic plate boundaries, earthquakes, volcanoes, and mountain formation.</div>
+            <div class="unit-name">Biological Evolution</div>
+            <div class="unit-desc">Natural selection, adaptation, evidence from fossils and DNA, and how life on Earth has changed over millions of years.</div>
           </div>
           <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
         </div>
         <div class="unit-card">
           <div class="unit-top">
-            <div class="unit-name">Rocks &amp; the Rock Cycle</div>
-            <div class="unit-desc">Igneous, sedimentary, and metamorphic rocks — and how each type forms and transforms over time.</div>
+            <div class="unit-name">Layers of Time</div>
+            <div class="unit-desc">Igneous, sedimentary, and metamorphic rocks — how each type forms and what the layers reveal about Earth's history.</div>
           </div>
           <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
         </div>
         <div class="unit-card">
           <div class="unit-top">
-            <div class="unit-name">Weathering, Erosion &amp; Soil</div>
-            <div class="unit-desc">How rocks break down, how soil forms, and how wind and water shape Earth's surface.</div>
+            <div class="unit-name">Continental Drift</div>
+            <div class="unit-desc">How continents move, tectonic plate boundaries, earthquakes, volcanoes, and the forces that shape landmasses over time.</div>
           </div>
           <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
         </div>
@@ -672,6 +680,7 @@
     </div>
 
     <!-- PHYSICS -->
+    <span id="phys" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
     <div class="subject-block sb-phys">
       <div class="subject-header">
         <span class="subject-icon">⚡</span>
@@ -704,6 +713,7 @@
     </div>
 
     <!-- SCIENCE PRACTICES -->
+    <span id="sci" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
     <div class="subject-block sb-sci">
       <div class="subject-header">
         <span class="subject-icon">🧪</span>
@@ -736,6 +746,7 @@
     </div>
 
     <!-- PSYCHOLOGY -->
+    <span id="psych" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
     <div class="subject-block sb-psych">
       <div class="subject-header">
         <span class="subject-icon">🧠</span>
