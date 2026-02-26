@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LyfeLabz | About</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
@@ -67,18 +68,19 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    color: var(--muted);
-    text-decoration: none;
-    font-size: 0.82rem;
-    font-weight: 600;
+    font-size: 0.78rem;
+    font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    border: 1px solid var(--border);
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.4);
     padding: 0.35rem 0.9rem;
     border-radius: 99px;
-    transition: all 0.2s;
+    text-decoration: none;
+    transition: opacity 0.2s;
   }
-  .nav-back:hover { color: var(--gold); border-color: rgba(245,200,66,0.4); }
+  .nav-back:hover { opacity: 0.8; }
 
   /* ===== HERO ===== */
   header.hero {
@@ -334,7 +336,7 @@
 <!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
-  <a href="index.html" class="nav-back">⬅️ Back to Hub</a>
+  <a href="index.html" class="nav-back">🧭 Hub</a>
 </nav>
 
 <!-- HERO -->
