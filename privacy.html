@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | Privacy Policy</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #2ecc71;
+    --gold:  #f5c842;
+    --gold-glow: rgba(245,200,66,0.35);
+    --dark:  #1a2535;
+    --dark2: #243447;
+    --card:  #1e2f42;
+    --text:  #e8f4f8;
+    --text-muted: #8aafca;
+    --border: rgba(52,152,219,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .nav-back:hover { opacity: 0.8; }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0f2535 100%);
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,200,66,0.06) 0%, transparent 65%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.35);
+    color: var(--gold);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1.4rem;
+    position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    margin-bottom: 0.8rem;
+    background: linear-gradient(135deg, #fff 40%, var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    position: relative;
+  }
+
+  /* ===== CONTENT ===== */
+  .content {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+  }
+
+  .policy-section {
+    margin-bottom: 3rem;
+  }
+
+  .section-eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.08);
+    border: 1px solid rgba(245,200,66,0.25);
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+    margin-bottom: 0.9rem;
+  }
+
+  h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    color: var(--text);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  .policy-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+  }
+
+  .policy-card p {
+    color: var(--text-muted);
+    font-size: 0.97rem;
+    margin-bottom: 1rem;
+    line-height: 1.75;
+  }
+  .policy-card p:last-child { margin-bottom: 0; }
+
+  .policy-card p strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .policy-list {
+    list-style: none;
+    margin: 0.5rem 0 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .policy-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .policy-list li::before {
+    content: '▸';
+    color: var(--gold);
+    font-size: 0.75rem;
+    margin-top: 0.3rem;
+    flex-shrink: 0;
+  }
+
+  .highlight-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(245,200,66,0.06);
+    border: 1px solid rgba(245,200,66,0.2);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    margin-top: 1rem;
+    font-size: 0.93rem;
+    color: var(--text-muted);
+  }
+  .highlight-row strong { color: var(--text); }
+
+  .contact-block {
+    background: linear-gradient(135deg, rgba(245,200,66,0.07) 0%, rgba(52,152,219,0.04) 100%);
+    border: 1px solid rgba(245,200,66,0.25);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    text-align: center;
+  }
+  .contact-block p {
+    color: var(--text-muted);
+    font-size: 0.97rem;
+    margin-bottom: 0.8rem;
+  }
+  .contact-email {
+    display: inline-block;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid rgba(245,200,66,0.35);
+    padding-bottom: 0.1rem;
+    transition: opacity 0.2s;
+  }
+  .contact-email:hover { opacity: 0.75; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: #0d1720;
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  .footer-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+  footer p { color: var(--text-muted); font-size: 0.85rem; }
+  footer a { color: var(--gold); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .policy-card { padding: 1.5rem; }
+    .contact-block { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <a href="index.html" class="nav-back">🧭 Hub</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">LyfeLabz · Legal</div>
+  <h1>Privacy Policy</h1>
+  <p>Effective Date: February 26, 2024</p>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- INTRO -->
+  <div class="policy-section">
+    <div class="policy-card">
+      <p>LyfeLabz is an educational website created to support science learning for middle school students and the broader public. This policy explains how we handle information when you visit the site.</p>
+    </div>
+  </div>
+
+  <!-- INFORMATION WE COLLECT -->
+  <div class="policy-section">
+    <div class="section-eyebrow">📊 Data</div>
+    <h2>Information We Collect</h2>
+    <div class="policy-card">
+      <p>LyfeLabz does <strong>not</strong> collect personal information such as names, email addresses, phone numbers, or student identifiers.</p>
+      <p>The site uses basic website analytics to understand how visitors use the site. This may include:</p>
+      <ul class="policy-list">
+        <li>Number of visitors</li>
+        <li>Pages viewed</li>
+        <li>General geographic region (city level)</li>
+        <li>Device type and browser</li>
+        <li>Referring websites</li>
+      </ul>
+      <p>This information is collected in aggregate and does <strong>not</strong> identify individual users.</p>
+    </div>
+  </div>
+
+  <!-- HOW INFORMATION IS USED -->
+  <div class="policy-section">
+    <div class="section-eyebrow">🔍 Usage</div>
+    <h2>How Information Is Used</h2>
+    <div class="policy-card">
+      <p>Analytics data is used solely to:</p>
+      <ul class="policy-list">
+        <li>Improve website content</li>
+        <li>Understand which resources are most helpful</li>
+        <li>Monitor overall site performance</li>
+      </ul>
+      <p><strong>LyfeLabz does not sell, trade, or share visitor data.</strong></p>
+    </div>
+  </div>
+
+  <!-- CHILDREN'S PRIVACY -->
+  <div class="policy-section">
+    <div class="section-eyebrow">🧒 Children</div>
+    <h2>Children's Privacy</h2>
+    <div class="policy-card">
+      <p>LyfeLabz is designed for educational use. The site does <strong>not</strong> require accounts, logins, or submission of personal information. No personal data is knowingly collected from children.</p>
+    </div>
+  </div>
+
+  <!-- THIRD-PARTY SERVICES -->
+  <div class="policy-section">
+    <div class="section-eyebrow">🔗 Third Parties</div>
+    <h2>Third-Party Services</h2>
+    <div class="policy-card">
+      <p>LyfeLabz uses the following third-party service:</p>
+      <div class="highlight-row">
+        <span>📈</span>
+        <span><strong>Google Analytics</strong> — collects anonymous usage statistics. Data collected through this service is governed by <a href="https://policies.google.com/privacy" target="_blank" style="color:var(--gold);">Google's privacy policies</a>.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="policy-section">
+    <div class="section-eyebrow">✉️ Contact</div>
+    <h2>Contact</h2>
+    <div class="contact-block">
+      <p>For questions about this policy, please reach out:</p>
+      <a href="mailto:labzlyfe@gmail.com" class="contact-email">labzlyfe@gmail.com</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-name">LYFELABZ</div>
+  <p>Your middle school science hub · <a href="index.html">Back to Hub</a></p>
+</footer>
+
+</body>
+</html>
