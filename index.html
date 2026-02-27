@@ -410,6 +410,29 @@
   }
   .ulink.ext:hover { background: rgba(180,127,255,0.2); border-color: rgba(180,127,255,0.55); color: var(--astro); }
 
+  /* ===== PILL LEGEND ===== */
+  .pill-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1.2rem;
+    margin-bottom: 2.5rem;
+  }
+  .legend-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-right: 0.25rem;
+  }
+  .legend-pill {
+    pointer-events: none;
+    font-size: 0.72rem !important;
+    padding: 0.22rem 0.8rem !important;
+  }
+
   .coming-label {
     font-size: 0.75rem;
     font-weight: 600;
@@ -534,7 +557,13 @@
   <div class="container">
     <div class="section-eyebrow">📚 All Units</div>
     <h2 class="section-title">Find Your Subject</h2>
-    <p class="section-desc">Browse every unit by subject area. Click any live card to jump into the review lab — or choose the ⭐ extension for a deeper dive or 🎮 interactive game. New units are added throughout the school year!</p>
+    <p class="section-desc">Browse every unit by subject area. Click any card to get started — new units are added throughout the school year!</p>
+    <div class="pill-legend">
+      <span class="legend-label">Each card may include:</span>
+      <span class="ulink live legend-pill">Review Lab</span>
+      <span class="ulink ext legend-pill">Extension</span>
+      <span class="ulink game legend-pill">Game</span>
+    </div>
 
     <!-- BIOLOGY -->
     <span id="bio" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
@@ -551,10 +580,10 @@
             <div class="unit-desc">The 6 characteristics of life, prokaryotic vs. eukaryotic cells, and unicellular vs. multicellular organisms.</div>
           </div>
           <div class="unit-links">
-            <a href="characteristics.html" class="ulink live">🔬 Review Lab</a>
-            <a href="extensions_virus.html" class="ulink ext">⭐ Are Viruses Alive?</a>
-            <a href="is-it-alive.html" class="ulink game">🎮 Is It Alive?</a>
-            <a href="cell-type-showdown.html" class="ulink game">🎮 Cell Type Showdown</a>
+            <a href="characteristics.html" class="ulink live">Review Lab</a>
+            <a href="extensions_virus.html" class="ulink ext">Are Viruses Alive?</a>
+            <a href="is-it-alive.html" class="ulink game">Is It Alive?</a>
+            <a href="cell-type-showdown.html" class="ulink game">Cell Type Showdown</a>
           </div>
         </div>
         <div class="unit-card">
@@ -563,10 +592,10 @@
             <div class="unit-desc">Inside plant and animal cells — nuclei, mitochondria, chloroplasts, and more, using real-world analogies.</div>
           </div>
           <div class="unit-links">
-            <a href="organelles.html" class="ulink live">🔬 Review Lab</a>
-            <a href="extension_organelles.html" class="ulink ext">⭐ Protein Pathway</a>
-            <a href="cell-explorer.html" class="ulink game">🎮 Cell Explorer</a>
-            <a href="neuron-explorer.html" class="ulink ext">⭐ Neuron Explorer</a>
+            <a href="organelles.html" class="ulink live">Review Lab</a>
+            <a href="extension_organelles.html" class="ulink ext">Protein Pathway</a>
+            <a href="cell-explorer.html" class="ulink game">Cell Explorer</a>
+            <a href="neuron-explorer.html" class="ulink ext">Neuron Explorer</a>
           </div>
         </div>
         <div class="unit-card">
@@ -761,7 +790,7 @@
             <div class="unit-desc">How outrage is engineered online, why your brain falls for it, and how to become a smarter media consumer.</div>
           </div>
           <div class="unit-links">
-            <a href="ragebaiting.html" class="ulink live">🕵️ Real Power Lab</a>
+            <a href="ragebaiting.html" class="ulink live">Real Power Lab</a>
           </div>
         </div>
         <div class="unit-card">
