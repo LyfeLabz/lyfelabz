@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9QHB5G2B5B');</script>
+<meta charset="UTF-8"><link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | The Immune System Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#1de9b6;--accent-dim:rgba(29,233,182,0.15);--accent-glow:rgba(29,233,182,0.35);--blue:#3bc8e8;--teal:#1de9b6;--gold:#f5c842;--gold-glow:rgba(245,200,66,0.35);--orange:#ff9d45;--green:#69d97a;--slate:#c8d8e8;--purple:#b388ff;--dark:#0c1520;--card:#172030;--text:#e8f4fb;--muted:#6a92ad;--border:rgba(255,255,255,0.07);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:var(--dark);color:var(--text);line-height:1.6;overflow-x:hidden;}
+nav{position:sticky;top:0;z-index:200;background:rgba(10,18,28,0.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0.8rem 2.5rem;}
+.nav-logo{font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:900;color:var(--gold);text-decoration:none;letter-spacing:0.06em;text-shadow:0 0 18px var(--gold-glow);}
+.nav-center{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--muted);font-weight:700;}
+.nav-center .sep{opacity:0.3;}.nav-center .cur{color:var(--accent);}
+.nav-back{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(29,233,182,0.4);padding:0.32rem 0.9rem;border-radius:99px;text-decoration:none;transition:all 0.2s;}
+.nav-back:hover{background:rgba(29,233,182,0.25);}
+.page-header{background:linear-gradient(135deg,#0a1520 0%,#1a1030 50%,#0c1a28 100%);padding:2.2rem 2.5rem 2rem;position:relative;overflow:hidden;border-bottom:1px solid rgba(29,233,182,0.14);}
+.page-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 18% 60%,rgba(29,233,182,0.10) 0%,transparent 55%),radial-gradient(ellipse at 80% 25%,rgba(59,200,232,0.06) 0%,transparent 55%);pointer-events:none;}
+.header-inner{max-width:1340px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;flex-wrap:wrap;position:relative;}
+.header-badge{display:inline-flex;align-items:center;gap:0.5rem;background:var(--accent-dim);border:1px solid rgba(29,233,182,0.4);color:var(--accent);padding:0.32rem 1rem;border-radius:99px;font-size:0.73rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.85rem;}
+.pulse-dot{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:pdot 1.8s ease-in-out infinite;}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.65)}}
+.page-header h1{font-family:'Fredoka One',cursive;font-size:clamp(1.8rem,3.8vw,2.9rem);line-height:1.1;margin-bottom:0.35rem;background:linear-gradient(135deg,#fff 20%,#1de9b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.page-header p{color:var(--muted);font-size:0.95rem;max-width:460px;}
+.header-hint{display:flex;align-items:center;gap:0.55rem;font-size:0.8rem;color:var(--muted);font-weight:700;background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:0.55rem 1rem;border-radius:11px;white-space:nowrap;flex-shrink:0;}
+.explorer-wrap{max-width:1340px;margin:0 auto;padding:1.8rem 2rem 3rem;}
+.sys-toggles{display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:1.4rem;}
+.tog-lbl{font-size:0.7rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-right:0.2rem;white-space:nowrap;}
+.stog{display:inline-flex;align-items:center;gap:0.38rem;padding:0.36rem 0.95rem;border-radius:99px;font-size:0.79rem;font-weight:800;border:1.5px solid;cursor:pointer;transition:all 0.22s;background:transparent;font-family:'Nunito',sans-serif;white-space:nowrap;}
+.stog.self{color:var(--accent);border-color:rgba(29,233,182,0.5);background:var(--accent-dim);cursor:default;}
+.stog.resp{color:var(--blue);border-color:rgba(59,200,232,0.28);}.stog.resp:hover{background:rgba(59,200,232,0.09);border-color:rgba(59,200,232,0.6);}.stog.resp.on{background:rgba(59,200,232,0.14);border-color:rgba(59,200,232,0.8);box-shadow:0 0 10px rgba(59,200,232,0.2);}
+.stog.dige{color:var(--orange);border-color:rgba(255,157,69,0.28);}.stog.dige:hover{background:rgba(255,157,69,0.09);border-color:rgba(255,157,69,0.6);}.stog.dige.on{background:rgba(255,157,69,0.14);border-color:rgba(255,157,69,0.8);box-shadow:0 0 10px rgba(255,157,69,0.2);}
+.stog.excr{color:var(--green);border-color:rgba(105,217,122,0.28);}.stog.excr:hover{background:rgba(105,217,122,0.09);border-color:rgba(105,217,122,0.6);}.stog.excr.on{background:rgba(105,217,122,0.14);border-color:rgba(105,217,122,0.8);box-shadow:0 0 10px rgba(105,217,122,0.2);}
+.stog.skel{color:var(--slate);border-color:rgba(200,216,232,0.25);}.stog.skel:hover{background:rgba(200,216,232,0.07);border-color:rgba(200,216,232,0.55);}.stog.skel.on{background:rgba(200,216,232,0.11);border-color:rgba(200,216,232,0.75);box-shadow:0 0 10px rgba(200,216,232,0.15);}
+.stog.immu{color:var(--teal);border-color:rgba(29,233,182,0.28);}.stog.immu:hover{background:rgba(29,233,182,0.09);border-color:rgba(29,233,182,0.6);}.stog.immu.on{background:rgba(29,233,182,0.13);border-color:rgba(29,233,182,0.8);box-shadow:0 0 10px rgba(29,233,182,0.2);}
+.stog.nerv{color:var(--purple);border-color:rgba(179,136,255,0.28);}.stog.nerv:hover{background:rgba(179,136,255,0.09);border-color:rgba(179,136,255,0.6);}.stog.nerv.on{background:rgba(179,136,255,0.14);border-color:rgba(179,136,255,0.8);box-shadow:0 0 10px rgba(179,136,255,0.2);}
+.stog.musc{color:#ff6b6b;border-color:rgba(255,107,107,0.28);}.stog.musc:hover{background:rgba(255,107,107,0.09);border-color:rgba(255,107,107,0.6);}.stog.musc.on{background:rgba(255,107,107,0.14);border-color:rgba(255,107,107,0.8);box-shadow:0 0 10px rgba(255,107,107,0.2);}
+.stog.endo{color:var(--gold);border-color:rgba(245,200,66,0.28);}.stog.endo:hover{background:rgba(245,200,66,0.09);border-color:rgba(245,200,66,0.6);}.stog.endo.on{background:rgba(245,200,66,0.14);border-color:rgba(245,200,66,0.8);box-shadow:0 0 10px rgba(245,200,66,0.2);}
+.panels{display:grid;grid-template-columns:1fr 400px;gap:1.4rem;align-items:start;}
+.map-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.5rem;position:relative;}
+.map-label{font-size:0.67rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;}
+#map-canvas{width:100%;display:block;cursor:default;}
+.info-panel{display:flex;flex-direction:column;gap:1rem;position:sticky;top:80px;}
+.info-stack{position:relative;min-height:200px;}
+.i-idle{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem;text-align:center;transition:opacity 0.3s;}
+.i-idle.gone{opacity:0;pointer-events:none;position:absolute;width:100%;}
+.i-idle-icon{font-size:2.6rem;display:block;margin-bottom:0.7rem;}
+.i-idle-title{font-family:'Fredoka One',cursive;font-size:1.2rem;margin-bottom:0.35rem;}
+.i-idle-desc{color:var(--muted);font-size:0.87rem;line-height:1.6;}
+.i-card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;opacity:0;transform:translateY(10px);transition:opacity 0.3s,transform 0.3s;pointer-events:none;position:absolute;width:100%;}
+.i-card.on{opacity:1;transform:translateY(0);pointer-events:auto;position:relative;}
+.i-card-hd{padding:1.2rem 1.4rem 0.9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.85rem;}
+.i-card-ico{font-size:2rem;flex-shrink:0;}
+.i-card-sys{font-size:0.66rem;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.12rem;}
+.i-card-name{font-family:'Fredoka One',cursive;font-size:1.45rem;line-height:1.1;color:var(--text);}
+.i-card-body{padding:1.2rem 1.4rem;}
+.i-sec-lbl{font-size:0.65rem;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem;}
+.i-role{font-size:0.92rem;color:var(--text);line-height:1.65;margin-bottom:1.1rem;}
+.i-fact{background:rgba(29,233,182,0.07);border:1px solid rgba(29,233,182,0.2);border-left:3px solid var(--accent);border-radius:9px;padding:0.8rem 1rem;font-size:0.86rem;color:var(--muted);line-height:1.6;}
+.i-fact strong{color:var(--accent);}
+.c-card{background:var(--card);border:1px solid var(--border);border-radius:17px;padding:1.2rem 1.4rem;display:none;animation:fup 0.28s ease both;}
+.c-card.on{display:block;}
+@keyframes fup{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.c-card-hd{display:flex;align-items:center;gap:0.65rem;margin-bottom:0.8rem;padding-bottom:0.7rem;border-bottom:1px solid var(--border);}
+.c-ico{font-size:1.35rem;}.c-lbl{font-size:0.65rem;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.08rem;}
+.c-name{font-family:'Fredoka One',cursive;font-size:1rem;line-height:1.1;}
+.c-card p{font-size:0.86rem;color:var(--muted);line-height:1.65;}.c-card p strong{color:var(--text);}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;background:var(--card);border:1px solid var(--border);border-radius:17px;padding:1.3rem 1.8rem;margin-top:1.4rem;}
+.s-num{font-family:'Fredoka One',cursive;font-size:1.75rem;color:var(--accent);display:block;line-height:1;margin-bottom:0.2rem;}
+.s-lbl{font-size:0.77rem;color:var(--muted);font-weight:700;}
+footer{background:#070f17;border-top:1px solid var(--border);padding:2.2rem 2rem;text-align:center;margin-top:1rem;}
+footer .logo{font-family:'Fredoka One',cursive;font-size:1.3rem;color:var(--accent);margin-bottom:0.35rem;}
+footer p{color:var(--muted);font-size:0.83rem;}footer a{color:var(--blue);text-decoration:none;}
+@media(max-width:960px){.panels{grid-template-columns:1fr}.info-panel{position:static}}
+@media(max-width:600px){nav{padding:0.8rem 1.2rem}.nav-center{display:none}.page-header{padding:1.6rem 1.2rem 1.3rem}.explorer-wrap{padding:1.2rem 1rem 2rem}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <div class="nav-center"><span>Biology</span><span class="sep">›</span><span>Lesson 3 — Body Systems</span><span class="sep">›</span><span class="cur">Immune System</span></div>
+  <a href="body_systems.html" class="nav-back">← Body Systems</a>
+</nav>
+<div class="page-header">
+  <div class="header-inner">
+    <div>
+      <div class="header-badge"><div class="pulse-dot"></div>The Immune System · Interactive Map</div>
+      <h1>The Immune System 🛡️</h1>
+      <p>The body's defense force — an army of cells, proteins, and organs that identify and eliminate pathogens, foreign substances, and cancer cells.</p>
+    </div>
+    <div class="header-hint"><span>👆</span><span>Click any node · Hover lines for labels · Toggle systems</span></div>
+  </div>
+</div>
+<div class="explorer-wrap">
+  <div class="sys-toggles">
+    <span class="tog-lbl">Show connections with:</span>
+    <button class="stog self" disabled>🛡️ Immune System (You Are Here)</button>
+    <button class="stog resp" id="tog-circ" onclick="toggleSys('circ',this)">🫀 Circulatory</button>
+    <button class="stog skel" id="tog-skel" onclick="toggleSys('skel',this)">🦴 Skeletal</button>
+  </div>
+  <div class="panels">
+    <div class="map-panel">
+      <div class="map-label">The Immune System Map — Click any node to explore</div>
+      <canvas id="map-canvas"></canvas>
+    </div>
+    <div class="info-panel">
+      <div class="info-stack">
+        <div class="i-idle" id="i-idle">
+          <span class="i-idle-icon">🛡️</span>
+          <div class="i-idle-title">Select a Node</div>
+          <div class="i-idle-desc">Click any organ or structure on the map to learn about its role — plus a fun fact you won't forget!</div>
+        </div>
+        <div class="i-card" id="i-card">
+          <div class="i-card-hd">
+            <div class="i-card-ico" id="c-ico">🛡️</div>
+            <div><div class="i-card-sys" id="c-sys">The Immune System</div><div class="i-card-name" id="c-name"></div></div>
+          </div>
+          <div class="i-card-body">
+            <div class="i-sec-lbl">🔬 Role in the Immune System</div>
+            <div class="i-role" id="c-role"></div>
+            <div class="i-sec-lbl">⚡ Fun Fact</div>
+            <div class="i-fact" id="c-fact"></div>
+          </div>
+        </div>
+      </div>
+      <div class="c-card" id="cc-circ">
+        <div class="c-card-hd"><span class="c-ico">🫀</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#e74c6f">Circulatory System</div></div></div>
+        <p>The circulatory system is the immune system's <strong>rapid transit network</strong> — white blood cells and antibodies travel through blood vessels to reach any infection site in the body within minutes.</p>
+      </div>
+      <div class="c-card" id="cc-skel">
+        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div></div>
+        <p><strong>All immune cells originate in bone marrow</strong>. Every B-cell, T-cell, and macrophage begins as a stem cell in the red marrow of large bones — the skeletal system is the immune system's manufacturing plant.</p>
+      </div>
+    </div>
+  </div>
+  <div class="stats">
+    <div><span class="s-num">2 trillion</span><span class="s-lbl">White blood cells in your body</span></div>
+    <div><span class="s-num">~600</span><span class="s-lbl">Lymph nodes throughout the body</span></div>
+    <div><span class="s-num">1B+</span><span class="s-lbl">Antibody types your body can make</span></div>
+    <div><span class="s-num">120 days</span><span class="s-lbl">Memory cell lifespan (some: lifetime)</span></div>
+    <div><span class="s-num">3</span><span class="s-lbl">Systems it connects to</span></div>
+  </div>
+</div>
+<footer>
+  <div class="logo">🛡️ LyfeLabz · Immune System</div>
+  <p>Part of <a href="body_systems.html">Lesson 3 — Body Systems</a> · <a href="index.html">Back to LyfeLabz Hub</a></p>
+  <p style="margin-top:0.3rem">© 2025 LyfeLabz · Educational Use</p>
+</footer>
+<script>
+var organData={
+  whitecells:{ico:'⚪',name:'White Blood Cells',sys:'Immune',col:'#1de9b6',role:'The soldiers of the immune system. Neutrophils engulf bacteria; lymphocytes produce antibodies and target infected cells; macrophages devour pathogens and dead cells. About 2 trillion circulate at any time.',fact:'<strong>Fun Fact:</strong> A single neutrophil can engulf up to 20 bacteria before it dies. Pus is simply a collection of dead neutrophils and bacteria from a battle your immune system won.'},
+  lymphnodes:{ico:'🛡️',name:'Lymph Nodes',sys:'Immune',col:'#1de9b6',role:'Filtering stations scattered throughout the body. They trap bacteria, viruses, and abnormal cells from lymph fluid, allowing white blood cells inside to destroy them. Swollen nodes mean active infection fighting nearby.',fact:'<strong>Fun Fact:</strong> You have about 600 lymph nodes — concentrated in your neck, armpits, and groin. During infection, they can swell from pea-sized to grape-sized.'},
+  thymus:{ico:'🌿',name:'Thymus',sys:'Immune',col:'#1de9b6',role:'Where T-cells mature — they arrive as immature cells from bone marrow and graduate as trained immune cells capable of targeting specific pathogens. Most active in childhood and gradually shrinks after puberty.',fact:'<strong>Fun Fact:</strong> The thymus destroys about 95% of T-cells that enter — those that react to the body\'s own tissues. This prevents autoimmune disease.'},
+  spleen:{ico:'💜',name:'Spleen',sys:'Immune',col:'#22ddb0',role:'The largest lymphatic organ — filtering blood, removing old or damaged red blood cells, and housing immune cells ready to respond to blood-borne infections. Also acts as a blood reservoir.',fact:'<strong>Fun Fact:</strong> You can live without a spleen, but you become more vulnerable to certain bacterial infections, particularly pneumonia.'},
+  antibodies:{ico:'🔑',name:'Antibodies',sys:'Immune',col:'#1de9b6',role:'Y-shaped proteins produced by B-cells that bind specifically to one pathogen antigen. They neutralise pathogens directly, flag them for destruction, and activate complement proteins. Memory B-cells remain for faster future responses.',fact:'<strong>Fun Fact:</strong> Your immune system can produce over 1 billion different antibody types — each recognising a unique molecular shape. Vaccination trains this system without actual infection.'},
+  circulatory:{ico:'🫀',name:'Circulatory System',sys:'Circulatory',col:'#e74c6f',role:'The immune system\'s highway — white blood cells and antibodies travel through blood vessels to reach infection sites anywhere in the body within minutes. Lymph vessels run parallel to blood vessels throughout.',fact:'<strong>Fun Fact:</strong> During a serious infection, bone marrow can produce white blood cells at 10x the normal rate — the surge of cells causes the aching you feel when sick.'},
+  skeletal:{ico:'🦴',name:'Skeletal System',sys:'Skeletal',col:'#c8d8e8',role:'Red bone marrow is the birthplace of all immune cells — every white blood cell, whether B-cell, T-cell, or macrophage, begins as a stem cell in bone marrow before maturing elsewhere.',fact:'<strong>Fun Fact:</strong> Bone marrow transplants can rebuild a destroyed immune system — the new marrow\'s stem cells repopulate the body with a completely new set of immune cells.'}
+};
+var NODE_DEFS={
+  whitecells:{x:0.5,y:0.1,r:22,system:'immu'},
+  lymphnodes:{x:0.2,y:0.3,r:20,system:'immu'},
+  thymus:{x:0.8,y:0.28,r:18,system:'immu'},
+  spleen:{x:0.22,y:0.58,r:19,system:'immu'},
+  antibodies:{x:0.78,y:0.56,r:18,system:'immu'},
+  circulatory:{x:0.5,y:0.46,r:17,system:'circ'},
+  skeletal:{x:0.5,y:0.78,r:17,system:'skel'}
+};
+var CONNECTIONS=[
+  {from:'whitecells',to:'lymphnodes',label:'patrol and filter',sys:'immu'},
+  {from:'whitecells',to:'antibodies',label:'B-cells produce antibodies',sys:'immu'},
+  {from:'thymus',to:'whitecells',label:'T-cells trained here',sys:'immu'},
+  {from:'lymphnodes',to:'spleen',label:'lymph drained to spleen',sys:'immu'},
+  {from:'spleen',to:'antibodies',label:'B-cells activated',sys:'immu'},
+  {from:'whitecells',to:'circulatory',label:'travel via bloodstream',sys:'circ'},
+  {from:'circulatory',to:'lymphnodes',label:'blood filtered at nodes',sys:'circ'},
+  {from:'skeletal',to:'whitecells',label:'bone marrow produces WBCs',sys:'skel'},
+  {from:'skeletal',to:'thymus',label:'immature T-cells from marrow',sys:'skel'}
+];
+var SYS_COLOR={circ:'#e74c6f',resp:'#3bc8e8',dige:'#ff9d45',excr:'#69d97a',skel:'#c8d8e8',immu:'#1de9b6',nerv:'#b388ff',musc:'#ff6b6b',endo:'#f5c842',lymp:'#88ffdd'};
+var activeSystems={'immu':true};
+
+var selectedNode=null,hoveredNode=null,hoveredConn=null,particles=[];
+var canvas=document.getElementById('map-canvas');
+var ctx=canvas.getContext('2d');
+function resize(){var p=canvas.parentElement;var w=p.clientWidth-48;var h=Math.max(540,Math.round(w*0.90));canvas.width=w;canvas.height=h;spawnParticles();}
+window.addEventListener('resize',resize);
+function nodePos(id){var n=NODE_DEFS[id];return{x:n.x*canvas.width,y:n.y*canvas.height,r:n.r};}
+function visNodes(){return Object.keys(NODE_DEFS).filter(function(id){return activeSystems[NODE_DEFS[id].system];});}
+function visConns(){return CONNECTIONS.filter(function(c){if(!activeSystems[c.sys])return false;if(!NODE_DEFS[c.from]||!NODE_DEFS[c.to])return false;return activeSystems[NODE_DEFS[c.from].system]&&activeSystems[NODE_DEFS[c.to].system];});}
+function ctrl(conn){var f=nodePos(conn.from),t=nodePos(conn.to);return{cx:(f.x+t.x)/2+(t.y-f.y)*0.22,cy:(f.y+t.y)/2-(t.x-f.x)*0.22};}
+function bezPt(f,cx,cy,t2,t){return{x:(1-t)*(1-t)*f.x+2*(1-t)*t*cx+t*t*t2.x,y:(1-t)*(1-t)*f.y+2*(1-t)*t*cy+t*t*t2.y};}
+function Particle(conn){this.conn=conn;this.t=Math.random();this.speed=0.003+Math.random()*0.003;this.size=2.2+Math.random()*1.4;this.alpha=0.7+Math.random()*0.3;}
+Particle.prototype.update=function(){this.t+=this.speed;if(this.t>1)this.t=0;};
+Particle.prototype.pos=function(){var f=nodePos(this.conn.from),t2=nodePos(this.conn.to),c=ctrl(this.conn);return bezPt(f,c.cx,c.cy,t2,this.t);};
+function spawnParticles(){particles=[];visConns().forEach(function(conn){var n=3+Math.floor(Math.random()*3);for(var i=0;i<n;i++)particles.push(new Particle(conn));});}
+function drawPill(text,x,y,col){ctx.save();ctx.font='700 10px Nunito,sans-serif';var tw=ctx.measureText(text).width;var pw=tw+14,ph=18,px=x-tw/2-7,py=y-9,r=5;ctx.fillStyle='rgba(8,16,28,0.90)';ctx.globalAlpha=1;ctx.beginPath();ctx.moveTo(px+r,py);ctx.lineTo(px+pw-r,py);ctx.quadraticCurveTo(px+pw,py,px+pw,py+r);ctx.lineTo(px+pw,py+ph-r);ctx.quadraticCurveTo(px+pw,py+ph,px+pw-r,py+ph);ctx.lineTo(px+r,py+ph);ctx.quadraticCurveTo(px,py+ph,px,py+ph-r);ctx.lineTo(px,py+r);ctx.quadraticCurveTo(px,py,px+r,py);ctx.closePath();ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=1;ctx.globalAlpha=0.45;ctx.stroke();ctx.fillStyle=col;ctx.globalAlpha=0.95;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y);ctx.restore();}
+function drawArrow(f,c,t2,col,alpha){var t=0.94;var ax=2*(1-t)*(c.cx-f.x)+2*t*(t2.x-c.cx);var ay=2*(1-t)*(c.cy-f.y)+2*t*(t2.y-c.cy);var angle=Math.atan2(ay,ax),len=9;ctx.save();ctx.translate(t2.x,t2.y);ctx.rotate(angle);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-len,-len*0.42);ctx.lineTo(-len,len*0.42);ctx.closePath();ctx.fillStyle=col;ctx.globalAlpha=alpha;ctx.fill();ctx.restore();}
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);var vc=visConns(),vn=visNodes();
+vc.forEach(function(conn){var f=nodePos(conn.from),t2=nodePos(conn.to),c=ctrl(conn),col=SYS_COLOR[conn.sys],isHov=(hoveredConn===conn);
+ctx.save();ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.quadraticCurveTo(c.cx,c.cy,t2.x,t2.y);ctx.strokeStyle=col;ctx.globalAlpha=isHov?0.20:0.06;ctx.lineWidth=isHov?14:8;ctx.stroke();ctx.restore();
+ctx.save();ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.quadraticCurveTo(c.cx,c.cy,t2.x,t2.y);ctx.strokeStyle=col;ctx.globalAlpha=isHov?0.80:0.28;ctx.lineWidth=isHov?2.5:1.6;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+drawArrow(f,c,t2,col,isHov?0.9:0.40);
+if(isHov||hoveredNode===conn.from||hoveredNode===conn.to){var mid=bezPt(f,c.cx,c.cy,t2,0.5);drawPill(conn.label,mid.x,mid.y,col);}});
+particles.forEach(function(p){var conns=visConns(),found=false;for(var i=0;i<conns.length;i++){if(conns[i]===p.conn){found=true;break;}}if(!found)return;var pos=p.pos(),col=SYS_COLOR[p.conn.sys];ctx.save();var g=ctx.createRadialGradient(pos.x,pos.y,0,pos.x,pos.y,p.size*3.5);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(pos.x,pos.y,p.size*3.5,0,Math.PI*2);ctx.fillStyle=g;ctx.globalAlpha=0.30;ctx.fill();ctx.beginPath();ctx.arc(pos.x,pos.y,p.size,0,Math.PI*2);ctx.fillStyle=col;ctx.globalAlpha=p.alpha;ctx.fill();ctx.restore();});
+vn.forEach(function(id){var p=nodePos(id),data=organData[id],col=data.col,isSel=(selectedNode===id),isHov=(hoveredNode===id);
+ctx.save();var g=ctx.createRadialGradient(p.x,p.y,p.r*0.5,p.x,p.y,p.r*2.8);g.addColorStop(0,col+(isSel?'44':'22'));g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.r*2.8,0,Math.PI*2);ctx.fill();ctx.restore();
+ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=(isSel||isHov)?col+'33':'#132030';ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=isSel?3.2:(isHov?2.5:1.8);ctx.globalAlpha=isSel?1.0:(isHov?0.95:0.80);ctx.stroke();ctx.restore();
+if(isSel){var t=(Date.now()%1800)/1800;ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,p.r+t*p.r*1.4,0,Math.PI*2);ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.globalAlpha=(1-t)*0.65;ctx.stroke();ctx.restore();}
+ctx.save();ctx.font=(p.r*0.95)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=1;ctx.fillText(data.ico,p.x,p.y+1);ctx.restore();
+ctx.save();ctx.font='800 '+Math.max(10,Math.round(p.r*0.54))+'px Nunito,sans-serif';ctx.fillStyle=isSel?col:'#e8f4fb';ctx.globalAlpha=isSel?1:0.90;ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(data.name,p.x,p.y+p.r+5);if(isSel||isHov){ctx.font='700 9px Nunito,sans-serif';ctx.fillStyle=col;ctx.globalAlpha=0.75;ctx.fillText(data.sys,p.x,p.y+p.r+20);}ctx.restore();});}
+function loop(){particles.forEach(function(p){p.update();});draw();requestAnimationFrame(loop);}
+canvas.addEventListener('click',function(e){var rect=canvas.getBoundingClientRect();var sx=canvas.width/rect.width,sy=canvas.height/rect.height;var mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy;var hit=null;visNodes().forEach(function(id){var p=nodePos(id);if(Math.sqrt((mx-p.x)*(mx-p.x)+(my-p.y)*(my-p.y))<p.r+8)hit=id;});if(hit){selectedNode=hit;var d=organData[hit];document.getElementById('c-ico').textContent=d.ico;document.getElementById('c-name').textContent=d.name;document.getElementById('c-sys').textContent=d.sys+' System';document.getElementById('c-sys').style.color=d.col;document.getElementById('c-role').textContent=d.role;document.getElementById('c-fact').innerHTML=d.fact;document.getElementById('i-idle').classList.add('gone');document.getElementById('i-card').classList.add('on');}});
+canvas.addEventListener('mousemove',function(e){var rect=canvas.getBoundingClientRect();var sx=canvas.width/rect.width,sy=canvas.height/rect.height;var mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy;var onNode=null;visNodes().forEach(function(id){var p=nodePos(id);if(Math.sqrt((mx-p.x)*(mx-p.x)+(my-p.y)*(my-p.y))<p.r+8)onNode=id;});var onConn=null;if(!onNode){visConns().forEach(function(conn){var f=nodePos(conn.from),t2=nodePos(conn.to),c=ctrl(conn);for(var i=0;i<=20;i++){var t=i/20;var pt=bezPt(f,c.cx,c.cy,t2,t);if(Math.sqrt((mx-pt.x)*(mx-pt.x)+(my-pt.y)*(my-pt.y))<10){onConn=conn;break;}}});}hoveredNode=onNode;hoveredConn=onConn;canvas.style.cursor=(onNode||onConn)?'pointer':'default';});
+canvas.addEventListener('mouseleave',function(){hoveredNode=null;hoveredConn=null;});
+function toggleSys(key,btn){if(activeSystems[key]){delete activeSystems[key];btn.classList.remove('on');}else{activeSystems[key]=true;btn.classList.add('on');}var cc=document.getElementById('cc-'+key);if(cc)cc.classList.toggle('on',!!activeSystems[key]);spawnParticles();}
+resize();loop();
+
+</script>
+</body>
+</html>
