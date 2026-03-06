@@ -345,6 +345,8 @@ const SYS_COLOR = {
 // ─────────────────────────────────────────────
 const activeSystems = new Set(['circ']);
 let selectedNode = null;
+let hoveredNode   = null;
+let hoveredConn   = null;
 let particles = [];
 let animFrame;
 
@@ -532,6 +534,7 @@ function draw() {
     const data = organData[id];
     const col  = data.col;
     const isSelected = selectedNode === id;
+    const isHovered  = hoveredNode   === id;
 
     // Outer glow ring
     ctx.save();
@@ -588,11 +591,13 @@ function draw() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillText(data.name, x, y + r + 5);
-    // System tag
-    ctx.font = `700 9px Nunito, sans-serif`;
-    ctx.fillStyle = col;
-    ctx.globalAlpha = 0.65;
-    ctx.fillText(data.sys, x, y + r + 20);
+    // System tag — hover/select only
+    if (isSelected || isHovered) {
+      ctx.font = `700 9px Nunito, sans-serif`;
+      ctx.fillStyle = col;
+      ctx.globalAlpha = 0.75;
+      ctx.fillText(data.sys, x, y + r + 20);
+    }
     ctx.restore();
   });
 }
@@ -658,14 +663,36 @@ canvas.addEventListener('click', e => {
 
 canvas.addEventListener('mousemove', e => {
   const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  let onNode = false;
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top)  * scaleY;
+
+  let onNode = null;
   visibleNodes().forEach(id => {
     const { x, y, r } = nodePos(id);
-    if (Math.hypot(mx - x, my - y) < r + 8) onNode = true;
+    if (Math.hypot(mx - x, my - y) < r + 8) onNode = id;
   });
-  canvas.style.cursor = onNode ? 'pointer' : 'default';
+
+  let onConn = null;
+  if (!onNode) {
+    visibleConnections().forEach(conn => {
+      const from = nodePos(conn.from);
+      const to   = nodePos(conn.to);
+      const cx = (from.x + to.x) / 2 + (to.y - from.y) * 0.22;
+      const cy = (from.y + to.y) / 2 - (to.x - from.x) * 0.22;
+      for (let i = 0; i <= 20; i++) {
+        const t = i / 20;
+        const px = (1-t)*(1-t)*from.x + 2*(1-t)*t*cx + t*t*to.x;
+        const py = (1-t)*(1-t)*from.y + 2*(1-t)*t*cy + t*t*to.y;
+        if (Math.hypot(mx - px, my - py) < 10) { onConn = conn; break; }
+      }
+    });
+  }
+
+  hoveredNode = onNode;
+  hoveredConn = onConn;
+  canvas.style.cursor = (onNode || onConn) ? 'pointer' : 'default';
 });
 
 canvas.addEventListener('mouseleave', () => {
