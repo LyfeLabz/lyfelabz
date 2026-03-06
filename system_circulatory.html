@@ -491,35 +491,13 @@ function draw() {
     // Arrowhead at destination
     drawArrow(from, { x:cx, y:cy }, to, col);
 
-    // Connection label — midpoint of bezier at t=0.5
-    const t = 0.5;
-    const lx = (1-t)*(1-t)*from.x + 2*(1-t)*t*cx + t*t*to.x;
-    const ly = (1-t)*(1-t)*from.y + 2*(1-t)*t*cy + t*t*to.y;
-    ctx.save();
-    ctx.font = '600 10px Nunito, sans-serif';
-    ctx.fillStyle = col;
-    ctx.globalAlpha = 0.7;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    // Small pill background
-    const tw = ctx.measureText(conn.label).width;
-    ctx.fillStyle = 'rgba(12,21,32,0.82)';
-    ctx.globalAlpha = 0.9;
-    var _pw = tw+10, _ph = 18, _px = lx-tw/2-5, _py = ly-9, _pr = 5;
-    ctx.beginPath();
-    ctx.moveTo(_px+_pr,_py); ctx.lineTo(_px+_pw-_pr,_py);
-    ctx.quadraticCurveTo(_px+_pw,_py,_px+_pw,_py+_pr);
-    ctx.lineTo(_px+_pw,_py+_ph-_pr);
-    ctx.quadraticCurveTo(_px+_pw,_py+_ph,_px+_pw-_pr,_py+_ph);
-    ctx.lineTo(_px+_pr,_py+_ph);
-    ctx.quadraticCurveTo(_px,_py+_ph,_px,_py+_ph-_pr);
-    ctx.lineTo(_px,_py+_pr); ctx.quadraticCurveTo(_px,_py,_px+_pr,_py);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = col;
-    ctx.globalAlpha = 0.85;
-    ctx.fillText(conn.label, lx, ly);
-    ctx.restore();
+    // Connection label — hover only
+    if (hoveredConn === conn || hoveredNode === conn.from || hoveredNode === conn.to) {
+      const t = 0.5;
+      const lx = (1-t)*(1-t)*from.x + 2*(1-t)*t*cx + t*t*to.x;
+      const ly = (1-t)*(1-t)*from.y + 2*(1-t)*t*cy + t*t*to.y;
+      drawLabel(conn.label, lx, ly, col);
+    }
   });
 
   // ── Draw particles ──

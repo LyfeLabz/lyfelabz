@@ -287,6 +287,8 @@
     transition: all 0.3s;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
   .system-card::before {
     content: '';
@@ -554,7 +556,8 @@
   .explore-btn {
     display: inline-flex;
     align-items: center;
-    margin-top: 1.1rem;
+    align-self: flex-start;
+    margin-top: auto;
     padding: 0.45rem 1.1rem;
     border-radius: 99px;
     font-size: 0.8rem;
@@ -585,7 +588,7 @@
     <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
   </ul>
-  <a href="index.html#bio" class="nav-back">🧬 Biology</a>
+  <a href="index.html#bio" class="nav-back">🏂🏽 Biology</a>
 </nav>
 
 <!-- HERO -->
@@ -632,7 +635,7 @@
       </div>
       <div class="hier-arrow">→</div>
       <div class="hier-item">
-        <span class="hier-icon">🧬</span>
+        <span class="hier-icon">🏂🏽</span>
         <div class="hier-name">Body Systems</div>
       </div>
     </div>
@@ -657,12 +660,7 @@
         <div class="system-name">Circulatory System</div>
         <div class="system-summary">Transports oxygen, nutrients, and waste throughout the body.</div>
         <div class="system-desc">The <strong>heart</strong> pumps blood around the body through <strong>veins</strong> and <strong>arteries</strong>. Blood acts as the delivery service — bringing what cells need and carrying away what they don't.</div>
-        <div class="system-connections">
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Respiratory</span><span class="ct-desc">→ delivers oxygen to cells</span></div>
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Digestive</span><span class="ct-desc">→ transports nutrients</span></div>
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Excretory</span><span class="ct-desc">→ removes waste</span></div>
-        </div>
-        <a href="system_circulatory.html" class="explore-btn">Explore 🫀 Interactive Map →</a>
+        <a href="system_circulatory.html" class="explore-btn">Explore 🫀 Interactive Map</a>
       </div>
 
       <div class="system-card digestive">
@@ -670,11 +668,7 @@
         <div class="system-name">Digestive System</div>
         <div class="system-summary">Breaks down food into nutrients and energy for the body to absorb.</div>
         <div class="system-desc">Food travels from the <strong>mouth</strong> → <strong>stomach</strong> → <strong>small intestine</strong>, where nutrients are absorbed into the bloodstream. The large intestine removes solid waste.</div>
-        <div class="system-connections">
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Circulatory</span><span class="ct-desc">→ transports absorbed nutrients to cells</span></div>
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Muscular</span><span class="ct-desc">→ smooth muscle moves food through</span></div>
-        </div>
-        <a href="system_digestive.html" class="explore-btn">Explore 🫄 Interactive Map →</a>
+        <a href="system_digestive.html" class="explore-btn">Explore 🫄 Interactive Map</a>
       </div>
 
       <div class="system-card respiratory">
@@ -682,11 +676,7 @@
         <div class="system-name">Respiratory System</div>
         <div class="system-summary">Moves air in and out of the body through breathing.</div>
         <div class="system-desc">We inhale air through the <strong>nose</strong> and <strong>mouth</strong>, down to the <strong>lungs</strong>. Oxygen passes into the blood, and carbon dioxide waste is exhaled out.</div>
-        <div class="system-connections">
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Circulatory</span><span class="ct-desc">→ carries O₂ to cells, removes CO₂</span></div>
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Excretory</span><span class="ct-desc">→ lungs remove gaseous waste (CO₂)</span></div>
-        </div>
-        <a href="system_respiratory.html" class="explore-btn">Explore 🫁 Interactive Map →</a>
+        <a href="system_respiratory.html" class="explore-btn">Explore 🫁 Interactive Map</a>
       </div>
 
       <div class="system-card excretory">
@@ -694,12 +684,7 @@
         <div class="system-name">Excretory System</div>
         <div class="system-summary">Removes solid, liquid, and gaseous waste from the body.</div>
         <div class="system-desc">Three types of waste removal keep the body in balance: the <strong>large intestine</strong> removes solid waste, the <strong>bladder</strong> stores and removes liquid waste, and the <strong>lungs</strong> remove gaseous CO₂. Removing waste maintains <strong>homeostasis</strong>.</div>
-        <div class="system-connections">
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Large Intestine</span><span class="ct-desc">→ solid waste (Digestive)</span></div>
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Bladder</span><span class="ct-desc">→ liquid waste (Urinary)</span></div>
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Lungs</span><span class="ct-desc">→ gaseous waste (Respiratory)</span></div>
-        </div>
-        <a href="system_excretory.html" class="explore-btn">Explore ♻️ Interactive Map →</a>
+        <a href="system_excretory.html" class="explore-btn">Explore ♻️ Interactive Map</a>
       </div>
 
       <div class="system-card skeletal">
@@ -707,11 +692,7 @@
         <div class="system-name">Skeletal System</div>
         <div class="system-summary">Provides structure, supports movement, and protects organs.</div>
         <div class="system-desc"><strong>Bones</strong> give the body its shape. <strong>Ligaments</strong> connect bones to bones. <strong>Tendons</strong> connect bones to muscles. Bone marrow — found inside bones — produces blood cells.</div>
-        <div class="system-connections">
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Muscular</span><span class="ct-desc">→ enables movement together</span></div>
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Circulatory</span><span class="ct-desc">→ bone marrow produces blood cells</span></div>
-        </div>
-        <a href="system_skeletal.html" class="explore-btn">Explore 🦴 Interactive Map →</a>
+        <a href="system_skeletal.html" class="explore-btn">Explore 🦴 Interactive Map</a>
       </div>
 
       <div class="system-card muscular">
@@ -719,12 +700,7 @@
         <div class="system-name">Muscular System</div>
         <div class="system-summary">Allows movement of the body and movement of materials through the body.</div>
         <div class="system-desc">Three types: <strong>Cardiac</strong> muscle pumps blood (heart). <strong>Skeletal</strong> muscle connects to bones for movement (hamstrings). <strong>Smooth</strong> muscle moves materials through organs (small intestine).</div>
-        <div class="system-connections">
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Skeletal</span><span class="ct-desc">→ enables body movement</span></div>
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Circulatory</span><span class="ct-desc">→ cardiac muscle pumps blood</span></div>
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Digestive</span><span class="ct-desc">→ smooth muscle moves food</span></div>
-        </div>
-        <a href="system_muscular.html" class="explore-btn">Explore 💪 Interactive Map →</a>
+        <a href="system_muscular.html" class="explore-btn">Explore 💪 Interactive Map</a>
       </div>
 
       <div class="system-card nervous">
@@ -732,11 +708,7 @@
         <div class="system-name">Nervous System</div>
         <div class="system-summary">Detects, interprets, and responds to information from the environment.</div>
         <div class="system-desc">The <strong>brain</strong> is the control center. The <strong>spinal cord</strong> relays signals between brain and body. <strong>Neurons</strong> are specialized cells that carry electrical signals throughout the body at high speed.</div>
-        <div class="system-connections">
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">All Systems</span><span class="ct-desc">→ coordinates &amp; controls all</span></div>
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Muscular</span><span class="ct-desc">→ sends signals to move muscles</span></div>
-        </div>
-        <a href="system_nervous.html" class="explore-btn">Explore 🧠 Interactive Map →</a>
+        <a href="system_nervous.html" class="explore-btn">Explore 🧠 Interactive Map</a>
       </div>
 
       <div class="system-card immune">
@@ -744,11 +716,7 @@
         <div class="system-name">Immune System</div>
         <div class="system-summary">Defends the body against harmful bacteria, viruses, and parasites.</div>
         <div class="system-desc"><strong>White blood cells</strong> are produced in our bones and attack foreign invaders. <strong>Lymph nodes</strong> filter out germs that accumulate in cells, tissues, and blood, preventing infection from spreading.</div>
-        <div class="system-connections">
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Circulatory</span><span class="ct-desc">→ moves white blood cells throughout body</span></div>
-          <div class="connection-tag"><span class="ct-icon">🔗</span><span class="ct-name">Skeletal</span><span class="ct-desc">→ bone marrow produces white blood cells</span></div>
-        </div>
-        <a href="system_immune.html" class="explore-btn">Explore 🛡️ Interactive Map →</a>
+        <a href="system_immune.html" class="explore-btn">Explore 🛡️ Interactive Map</a>
       </div>
 
     </div>
