@@ -574,6 +574,63 @@
     border-color: rgba(255,255,255,0.25);
     transform: translateX(3px);
   }
+
+  /* ===== EXTENSION BANNER ===== */
+    background: linear-gradient(135deg, rgba(59,200,232,0.08) 0%, rgba(29,233,182,0.05) 100%);
+    border: 2px solid rgba(59,200,232,0.3);
+    border-radius: 20px;
+    padding: 2rem 2.4rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+  }
+  .extension-banner-icon {
+    font-size: 3.2rem;
+    flex-shrink: 0;
+    animation: float 5s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .extension-banner-body { flex: 1; min-width: 200px; }
+  .extension-banner-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(59,200,232,0.12);
+    border: 1px solid rgba(59,200,232,0.3);
+    padding: 0.22rem 0.75rem;
+    border-radius: 99px;
+    margin-bottom: 0.5rem;
+  }
+  .extension-banner h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.45rem;
+    margin-bottom: 0.35rem;
+    color: var(--text);
+  }
+  .extension-banner p { color: var(--text-muted); font-size: 0.92rem; }
+  .btn-extension {
+    display: inline-block;
+    padding: 0.75rem 1.8rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, var(--accent), var(--teal));
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(59,200,232,0.3);
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.25s;
+  }
+  .btn-extension:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(59,200,232,0.45); }
 </style>
 </head>
 <body>
@@ -787,6 +844,21 @@
     </table>
   </div>
 </section>
+
+<!-- EXTENSION BANNER -->
+<div style="background:var(--dark2); padding: 0 2rem 4rem;">
+  <div class="container">
+    <div class="extension-banner">
+      <div class="extension-banner-icon">🩺</div>
+      <div class="extension-banner-body">
+        <div class="extension-banner-tag">⭐ Extension Activity</div>
+        <h3>Body Systems Case Files</h3>
+        <p>Seven real patient cases — read the vitals, spot the systems, and unlock the diagnosis. A deep-dive into how systems break down in the real world.</p>
+      </div>
+      <a href="extension_body_systems.html" class="btn-extension">Open Case Files 📁</a>
+    </div>
+  </div>
+</div>
 
 <!-- VIDEO -->
 <section id="watch" style="background: var(--dark);">

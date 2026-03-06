@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9QHB5G2B5B');</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | Body Systems Case Files</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #3bc8e8; --accent-dim: rgba(59,200,232,0.15); --accent-rgb: 59,200,232;
+  --teal: #1de9b6; --gold: #f5c842; --gold-glow: rgba(245,200,66,0.35);
+  --purple: #b388ff; --orange: #ff9d45; --red: #e74c6f; --green: #69d97a;
+  --dark: #0c1520; --dark2: #111d2c; --card: #172030; --text: #e8f4fb; --muted: #6a92ad; --border: rgba(255,255,255,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:var(--dark);color:var(--text);line-height:1.6;overflow-x:hidden;}
+nav{position:sticky;top:0;z-index:200;background:rgba(10,18,28,0.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0.8rem 2.5rem;}
+.nav-logo{font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:900;color:var(--gold);text-decoration:none;letter-spacing:0.06em;text-shadow:0 0 18px var(--gold-glow);}
+.nav-center{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--muted);font-weight:700;}
+.nav-center .sep{opacity:0.3;} .nav-center .cur{color:var(--accent);}
+.nav-back{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),0.4);padding:0.32rem 0.9rem;border-radius:99px;text-decoration:none;transition:all 0.2s;}
+.nav-back:hover{background:rgba(var(--accent-rgb),0.25);}
+.hero{background:linear-gradient(135deg,#0a1520 0%,#0a1e2a 50%,#0c1a28 100%);padding:5rem 2rem 4rem;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(59,200,232,0.09) 0%,transparent 60%),radial-gradient(ellipse at 70% 30%,rgba(29,233,182,0.06) 0%,transparent 60%);pointer-events:none;}
+.hero-float{position:absolute;font-size:2.5rem;opacity:0.06;animation:float 6s ease-in-out infinite;pointer-events:none;}
+.hero-float:nth-child(1){top:12%;left:7%;animation-delay:0s;}
+.hero-float:nth-child(2){top:20%;right:9%;animation-delay:1.5s;}
+.hero-float:nth-child(3){bottom:18%;left:14%;animation-delay:3s;}
+.hero-float:nth-child(4){bottom:22%;right:7%;animation-delay:4s;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-18px);}}
+.hero-badge{display:inline-flex;align-items:center;gap:0.5rem;background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),0.4);color:var(--accent);padding:0.35rem 1.1rem;border-radius:99px;font-size:0.75rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1.4rem;position:relative;}
+.pulse{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:pdot 1.8s ease-in-out infinite;}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.65);}}
+.hero h1{font-family:'Fredoka One',cursive;font-size:clamp(2.4rem,5.5vw,4rem);line-height:1.1;margin-bottom:1rem;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;}
+.hero p{font-size:1.1rem;color:var(--muted);max-width:580px;margin:0 auto 2rem;position:relative;}
+.how-it-works{display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;margin-top:1rem;position:relative;}
+.hw-step{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:1rem 1.4rem;text-align:center;min-width:140px;max-width:180px;}
+.hw-step .ico{font-size:1.8rem;display:block;margin-bottom:0.4rem;}
+.hw-step .lbl{font-size:0.78rem;font-weight:800;color:var(--muted);}
+.main{max-width:960px;margin:0 auto;padding:3rem 2rem 4rem;}
+.score-bar{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1rem 1.8rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:2.5rem;flex-wrap:wrap;}
+.score-info{display:flex;align-items:center;gap:1.5rem;}
+.score-num{font-family:'Fredoka One',cursive;font-size:2rem;color:var(--accent);line-height:1;}
+.score-label{font-size:0.75rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.progress-wrap{flex:1;min-width:160px;}
+.progress-track{height:8px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--teal));border-radius:99px;transition:width 0.5s ease;width:0%;}
+.progress-text{font-size:0.72rem;color:var(--muted);font-weight:700;margin-top:0.3rem;}
+.case-card{background:var(--card);border:1px solid var(--border);border-radius:22px;overflow:hidden;margin-bottom:2.5rem;animation:fadeup 0.4s ease both;}
+@keyframes fadeup{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.case-header{padding:1.8rem 2rem 1.4rem;border-bottom:1px solid var(--border);position:relative;}
+.case-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.case-meta{display:flex;flex-direction:column;gap:0.5rem;}
+.case-tag{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.68rem;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(var(--accent-rgb),0.3);padding:0.22rem 0.7rem;border-radius:99px;}
+.case-num{font-size:0.82rem;color:var(--muted);font-weight:700;}
+.case-title{font-family:'Fredoka One',cursive;font-size:1.65rem;margin-top:0.3rem;}
+.case-badge{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:0.7rem 1.1rem;text-align:center;flex-shrink:0;}
+.case-badge-ico{font-size:2rem;display:block;}
+.case-badge-lbl{font-size:0.65rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.vitals{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.8rem;margin-top:1.2rem;}
+.vital-item{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.7rem 1rem;}
+.vital-label{font-size:0.62rem;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.2rem;}
+.vital-value{font-size:0.92rem;font-weight:800;color:var(--text);}
+.vital-value.abnormal{color:var(--red);}
+.symptoms-box{margin-top:1.2rem;background:rgba(231,76,111,0.06);border:1px solid rgba(231,76,111,0.18);border-left:3px solid var(--red);border-radius:10px;padding:1rem 1.2rem;}
+.symptoms-box .sym-label{font-size:0.65rem;font-weight:900;letter-spacing:0.13em;text-transform:uppercase;color:var(--red);margin-bottom:0.5rem;}
+.sym-list{display:flex;flex-wrap:wrap;gap:0.5rem;}
+.sym-tag{background:rgba(231,76,111,0.10);border:1px solid rgba(231,76,111,0.25);color:#f08090;padding:0.25rem 0.7rem;border-radius:99px;font-size:0.82rem;font-weight:700;}
+.background-box{margin-top:1rem;background:rgba(59,200,232,0.05);border:1px solid rgba(59,200,232,0.14);border-left:3px solid var(--accent);border-radius:10px;padding:1rem 1.2rem;}
+.background-box .bg-label{font-size:0.65rem;font-weight:900;letter-spacing:0.13em;text-transform:uppercase;color:var(--accent);margin-bottom:0.35rem;}
+.background-box p{font-size:0.92rem;color:var(--text);line-height:1.65;}
+.case-body{padding:1.8rem 2rem;}
+.q-block{margin-bottom:2rem;}
+.q-label{font-size:0.67rem;font-weight:900;letter-spacing:0.13em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem;}
+.q-text{font-size:1rem;font-weight:700;margin-bottom:1rem;line-height:1.5;}
+.options{display:grid;gap:0.6rem;}
+.opt-btn{display:flex;align-items:center;gap:0.8rem;padding:0.75rem 1rem;border-radius:11px;border:1.5px solid rgba(255,255,255,0.09);background:rgba(255,255,255,0.03);cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.92rem;font-weight:700;color:var(--text);text-align:left;transition:all 0.2s;}
+.opt-btn:hover:not(.disabled){border-color:rgba(59,200,232,0.5);background:rgba(59,200,232,0.07);}
+.opt-btn.disabled{cursor:default;}
+.opt-btn.correct{background:rgba(29,233,182,0.12);border-color:#1de9b6;color:#1de9b6;}
+.opt-btn.incorrect{background:rgba(231,76,111,0.10);border-color:var(--red);color:var(--red);}
+.opt-letter{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:900;flex-shrink:0;}
+.feedback{margin-top:0.9rem;padding:0.85rem 1rem;border-radius:10px;font-size:0.88rem;line-height:1.6;display:none;}
+.feedback.show{display:block;}
+.feedback.correct-fb{background:rgba(29,233,182,0.09);border:1px solid rgba(29,233,182,0.3);color:var(--teal);}
+.feedback.incorrect-fb{background:rgba(231,76,111,0.08);border:1px solid rgba(231,76,111,0.25);color:#f08090;}
+.diagnosis-reveal{display:none;margin-top:1.6rem;background:linear-gradient(135deg,rgba(245,200,66,0.08),rgba(59,200,232,0.06));border:1px solid rgba(245,200,66,0.25);border-radius:16px;padding:1.4rem 1.6rem;}
+.diagnosis-reveal.show{display:block;animation:fadeup 0.4s ease both;}
+.dx-label{font-size:0.67rem;font-weight:900;letter-spacing:0.13em;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem;}
+.dx-title{font-family:'Fredoka One',cursive;font-size:1.3rem;margin-bottom:0.5rem;color:var(--gold);}
+.dx-body{font-size:0.9rem;color:var(--muted);line-height:1.7;}
+.dx-systems{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.8rem;}
+.dx-sys-tag{padding:0.28rem 0.8rem;border-radius:99px;font-size:0.78rem;font-weight:800;border:1.5px solid;}
+.case-result{display:none;margin-top:1rem;padding:1rem 1.4rem;border-radius:14px;background:rgba(179,136,255,0.08);border:1px solid rgba(179,136,255,0.22);text-align:center;}
+.case-result.show{display:block;animation:fadeup 0.3s ease both;}
+.case-result .cr-score{font-family:'Fredoka One',cursive;font-size:1.8rem;color:var(--purple);}
+.case-result .cr-msg{font-size:0.88rem;color:var(--muted);margin-top:0.2rem;}
+.final-score{display:none;background:linear-gradient(135deg,rgba(59,200,232,0.12),rgba(29,233,182,0.08));border:2px solid rgba(59,200,232,0.3);border-radius:22px;padding:2.5rem;text-align:center;margin-top:2rem;}
+.final-score.show{display:block;animation:fadeup 0.5s ease both;}
+.final-score .fs-icon{font-size:3.5rem;margin-bottom:0.8rem;}
+.final-score .fs-num{font-family:'Fredoka One',cursive;font-size:3.5rem;color:var(--accent);line-height:1;margin-bottom:0.5rem;}
+.final-score .fs-msg{font-size:1.05rem;color:var(--muted);margin-bottom:1.5rem;max-width:480px;margin-left:auto;margin-right:auto;}
+.btn-reset{padding:0.75rem 2rem;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--teal));color:#fff;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;transition:all 0.2s;}
+.btn-reset:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(59,200,232,0.4);}
+footer{background:#070f17;border-top:1px solid var(--border);padding:2rem;text-align:center;}
+footer .logo{font-family:'Fredoka One',cursive;font-size:1.2rem;color:var(--accent);margin-bottom:0.3rem;}
+footer p{color:var(--muted);font-size:0.82rem;}footer a{color:var(--teal);text-decoration:none;}
+@media(max-width:600px){nav{padding:0.8rem 1.2rem;}.nav-center{display:none;}.main{padding:2rem 1rem 3rem;}.case-header,.case-body{padding:1.2rem;}.vitals{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <div class="nav-center"><span>Biology</span><span class="sep">›</span><span>Lesson 3 — Body Systems</span><span class="sep">›</span><span class="cur">Case Files</span></div>
+  <a href="body_systems.html" class="nav-back">← Body Systems</a>
+</nav>
+
+<div class="hero">
+  <span class="hero-float">🩺</span>
+  <span class="hero-float">📁</span>
+  <span class="hero-float">🔬</span>
+  <span class="hero-float">💊</span>
+  <div class="hero-badge"><div class="pulse"></div>Extension Activity · Body Systems</div>
+  <h1>Body Systems<br>Case Files 🩺</h1>
+  <p>Seven real-world patient files. Read the symptoms, study the vitals, and use your knowledge of body systems to answer the doctor's questions — then unlock the diagnosis.</p>
+  <div class="how-it-works">
+    <div class="hw-step"><span class="ico">📁</span><span class="lbl">Open the file</span></div>
+    <div class="hw-step"><span class="ico">🩺</span><span class="lbl">Study symptoms</span></div>
+    <div class="hw-step"><span class="ico">🧠</span><span class="lbl">Answer questions</span></div>
+    <div class="hw-step"><span class="ico">🏆</span><span class="lbl">Reveal diagnosis</span></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="score-bar">
+    <div class="score-info">
+      <div><div class="score-num" id="score-num">0</div><div class="score-label">Points</div></div>
+      <div><div class="score-num" id="q-num">0</div><div class="score-label">Answered</div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-text" id="progress-text">0 of 21 questions</div>
+    </div>
+  </div>
+  <div id="cases-container"></div>
+  <div class="final-score" id="final-score">
+    <div class="fs-icon" id="fs-icon">🏆</div>
+    <div class="fs-num" id="fs-num"></div>
+    <div class="fs-msg" id="fs-msg"></div>
+    <button class="btn-reset" onclick="resetAll()">Try Again 🔄</button>
+  </div>
+</div>
+
+<footer>
+  <div class="logo">🩺 LyfeLabz · Body Systems Case Files</div>
+  <p>Part of <a href="body_systems.html">Lesson 3 — Body Systems</a> · <a href="index.html">Back to LyfeLabz Hub</a></p>
+  <p style="margin-top:0.3rem">© 2025 LyfeLabz · Educational Use</p>
+</footer>
+
+<script>
+const CASES = [
+  {
+    id: 1, emoji: "😮‍💨", title: "Breathless in Biology Class",
+    patient: { name: "Maya", age: 13, grade: "7th" },
+    vitals: [
+      { label: "Heart Rate", value: "112 bpm", abnormal: true },
+      { label: "Breathing Rate", value: "26 breaths/min", abnormal: true },
+      { label: "O₂ Saturation", value: "91%", abnormal: true },
+      { label: "Temperature", value: "37.0°C", abnormal: false }
+    ],
+    symptoms: ["Wheezing during class","Chest tightness","Shortness of breath","Dry cough","Difficulty speaking in full sentences"],
+    background: "Maya has had these episodes since she was 8. They tend to happen in cold weather, during exercise, or when she's near cats. Her older brother has the same condition. Breathing through a device (inhaler) gives her relief within minutes.",
+    diagnosis: {
+      name: "Asthma",
+      systems: [{name:"Respiratory",col:"#3bc8e8"},{name:"Circulatory",col:"#e74c6f"},{name:"Nervous",col:"#b388ff"}],
+      explanation: "Asthma is a condition where the airways (bronchi and bronchioles) become inflamed and narrow, making it hard to breathe. The Respiratory System is the primary system affected. The Circulatory System compensates with a faster heart rate, trying to deliver more oxygen despite lower intake. The Nervous System is also involved — asthma attacks can be triggered by stress and are controlled in part by the autonomic nervous system."
+    },
+    questions: [
+      { text: "Maya's airways are narrowing and inflamed. Which system is directly affected?", options: ["Excretory System","Circulatory System","Respiratory System","Skeletal System"], correct: 2, explanation: "The Respiratory System includes the airways (bronchi, bronchioles) and lungs. Asthma causes these airways to swell and narrow, making it hard to get air in and out." },
+      { text: "Maya's heart rate is 112 bpm — higher than normal (60–100 bpm). Why is her Circulatory System speeding up?", options: ["To fight off the virus causing the wheeze","To compensate for lower oxygen by pumping blood faster","To digest food and release more energy","To reduce swelling in the lungs"], correct: 1, explanation: "When less oxygen enters through the lungs, the heart pumps faster to deliver whatever oxygen IS available more quickly. This compensation is the Circulatory System responding to the Respiratory System's struggle." },
+      { text: "Her O₂ saturation is 91% — lower than the normal 95–100%. What does this tell us about what is entering her Circulatory System?", options: ["Too much CO₂ is being produced","Not enough glucose is reaching the lungs","Less oxygen than normal is crossing from the lungs into the blood","The kidneys are not filtering blood properly"], correct: 2, explanation: "O₂ saturation measures how much of the blood's hemoglobin is carrying oxygen. At 91%, less oxygen is crossing through the alveoli into the bloodstream — a direct sign the Respiratory System isn't exchanging gases efficiently." }
+    ]
+  },
+  {
+    id: 2, emoji: "🩸", title: "Always Cold, Always Tired",
+    patient: { name: "Jordan", age: 12, grade: "6th" },
+    vitals: [
+      { label: "Heart Rate", value: "98 bpm", abnormal: true },
+      { label: "Red Blood Cell Count", value: "3.2 million/µL", abnormal: true },
+      { label: "Hemoglobin", value: "9.8 g/dL", abnormal: true },
+      { label: "Temperature", value: "36.2°C", abnormal: false }
+    ],
+    symptoms: ["Constant fatigue","Pale, yellowish skin","Always feeling cold","Dizziness when standing up","Headaches"],
+    background: "Jordan has been a vegetarian for two years. They eat well but recently stopped eating fortified cereals. Their doctor ordered blood tests after Jordan's parents noticed they were unusually pale. Jordan says even walking up stairs leaves them exhausted.",
+    diagnosis: {
+      name: "Iron-Deficiency Anemia",
+      systems: [{name:"Circulatory",col:"#e74c6f"},{name:"Digestive",col:"#ff9d45"},{name:"Skeletal",col:"#c8d8e8"}],
+      explanation: "Anemia means not enough healthy red blood cells to carry oxygen. Iron is essential for making hemoglobin — the protein in red blood cells that carries O₂. Jordan's vegetarian diet lacks heme iron (from meat), so the Digestive System absorbs less iron overall. Bone marrow (Skeletal System) can't make enough hemoglobin-rich red blood cells. The Circulatory System then can't deliver enough oxygen — causing fatigue, paleness, and cold feelings."
+    },
+    questions: [
+      { text: "Jordan's hemoglobin is very low. Hemoglobin is found in red blood cells and carries oxygen. Which system is most directly failing?", options: ["Immune System","Nervous System","Circulatory System","Excretory System"], correct: 2, explanation: "Red blood cells and hemoglobin are part of the Circulatory System. Low hemoglobin means less oxygen is being delivered to the body's cells — directly impairing the circulatory system's core job." },
+      { text: "Jordan needs more iron to make red blood cells. Iron comes from food — which system is not absorbing enough of it?", options: ["Respiratory System","Muscular System","Skeletal System","Digestive System"], correct: 3, explanation: "The Digestive System absorbs nutrients from food, including iron. A diet low in iron means the digestive tract isn't absorbing enough to supply what the body needs for red blood cell production." },
+      { text: "Red blood cells are made in bone marrow. Without enough iron, the bone marrow can't do its job. Which system does bone marrow belong to?", options: ["Circulatory System","Immune System","Skeletal System","Muscular System"], correct: 2, explanation: "Bone marrow lives inside bones — making it part of the Skeletal System. It produces red blood cells, white blood cells, and platelets. When iron is scarce, the marrow can't produce enough healthy red blood cells." }
+    ]
+  },
+  {
+    id: 3, emoji: "💀", title: "The Brittle Break",
+    patient: { name: "Sam", age: 14, grade: "8th" },
+    vitals: [
+      { label: "Calcium Level (blood)", value: "7.2 mg/dL", abnormal: true },
+      { label: "Vitamin D Level", value: "11 ng/mL", abnormal: true },
+      { label: "Bone Density", value: "Below average for age", abnormal: true },
+      { label: "Heart Rate", value: "74 bpm", abnormal: false }
+    ],
+    symptoms: ["Fractured wrist from minor fall","Frequent leg cramps","Aching bones","Muscle twitching","3 fractures in 2 years"],
+    background: "Sam plays video games most of the day and rarely goes outside. They don't drink milk and don't take supplements. The school nurse flagged Sam's second fracture this year as unusual for a teenager. The doctor ran a blood panel and found very low vitamin D and calcium levels.",
+    diagnosis: {
+      name: "Vitamin D Deficiency & Low Bone Density",
+      systems: [{name:"Skeletal",col:"#c8d8e8"},{name:"Muscular",col:"#ff6b6b"},{name:"Digestive",col:"#ff9d45"}],
+      explanation: "Vitamin D helps the Digestive System absorb calcium from food. Without enough vitamin D (usually made by skin in sunlight), calcium absorption drops. The Skeletal System then can't maintain strong bones — causing low density and easy fractures. Low calcium also disrupts the Muscular System, causing cramps and twitches because muscles need calcium ions to contract and relax properly."
+    },
+    questions: [
+      { text: "Sam's bones fracture easily and have below-average density. Which system is most directly affected?", options: ["Nervous System","Respiratory System","Skeletal System","Immune System"], correct: 2, explanation: "The Skeletal System is made up of bones. Low bone density means bones are weaker and more prone to breaking — a direct Skeletal System problem caused by lack of calcium and vitamin D." },
+      { text: "Sam's leg cramps and muscle twitching happen because calcium is needed for muscles to contract. Which system is also being affected?", options: ["Excretory System","Muscular System","Circulatory System","Digestive System"], correct: 1, explanation: "Calcium isn't just for bones — the Muscular System needs calcium ions to trigger muscle contractions. When blood calcium is low, muscles can misfire, causing cramps, spasms, and twitching." },
+      { text: "Vitamin D helps the intestines absorb calcium from food. Without enough vitamin D, this absorption fails. Which system handles this absorption?", options: ["Skeletal System","Circulatory System","Respiratory System","Digestive System"], correct: 3, explanation: "The Digestive System — specifically the small intestine — is responsible for absorbing nutrients from food, including calcium. Vitamin D acts like a key that unlocks calcium absorption. Without it, most dietary calcium passes through unabsorbed." }
+    ]
+  },
+  {
+    id: 4, emoji: "🧠", title: "The Shaky Signals",
+    patient: { name: "River", age: 13, grade: "7th" },
+    vitals: [
+      { label: "Blood Glucose", value: "52 mg/dL", abnormal: true },
+      { label: "Heart Rate", value: "106 bpm", abnormal: true },
+      { label: "Reaction Time", value: "Noticeably slow", abnormal: true },
+      { label: "Temperature", value: "37.1°C", abnormal: false }
+    ],
+    symptoms: ["Confusion and difficulty concentrating","Shaking and trembling","Sweating heavily","Feeling weak and dizzy","Sudden irritability"],
+    background: "River has Type 1 diabetes — their pancreas does not produce insulin, so they take daily insulin injections. Today they took their insulin but skipped breakfast before gym class. After 30 minutes of exercise, a classmate noticed River looked confused and was sweating. The school nurse checked River's blood glucose and found it dangerously low.",
+    diagnosis: {
+      name: "Hypoglycemia (Low Blood Sugar)",
+      systems: [{name:"Nervous",col:"#b388ff"},{name:"Circulatory",col:"#e74c6f"},{name:"Muscular",col:"#ff6b6b"}],
+      explanation: "Blood glucose (sugar) is the brain's primary fuel. When blood glucose drops too low (hypoglycemia), the Nervous System is the first to malfunction — causing confusion, mood changes, and slow reactions. The Circulatory System is affected as the heart beats faster trying to deliver whatever glucose is available. The Muscular System shows shaking and weakness because muscles also rely on glucose for energy."
+    },
+    questions: [
+      { text: "River is confused, irritable, and has slow reactions. The brain runs almost entirely on glucose. Which system is being starved of fuel first?", options: ["Digestive System","Skeletal System","Excretory System","Nervous System"], correct: 3, explanation: "The brain — the command center of the Nervous System — is the most glucose-dependent organ in the body. When blood sugar drops, the Nervous System malfunctions first, causing confusion, irritability, and slow thinking." },
+      { text: "River's heart rate is 106 bpm. When blood glucose is low, the body releases adrenaline which speeds up the heart. Why does the heart speed up?", options: ["To produce more insulin","To warm the body up","To deliver the limited glucose to vital organs faster","To slow digestion so glucose stays in the blood longer"], correct: 2, explanation: "When glucose is scarce, the Circulatory System compensates by pumping faster — trying to rush what little glucose is available to critical organs like the brain. This is why a racing heart is a symptom of low blood sugar." },
+      { text: "River is shaking and feels weak in their muscles. Muscles use glucose for energy. Which system is directly showing the effects of low fuel?", options: ["Immune System","Respiratory System","Muscular System","Skeletal System"], correct: 2, explanation: "The Muscular System requires glucose for energy to contract. When blood glucose is critically low, muscles can't function properly — causing trembling, weakness, and the shaky appearance that is a telltale sign of hypoglycemia." }
+    ]
+  },
+  {
+    id: 5, emoji: "🌸", title: "Spring Sneezes Gone Wrong",
+    patient: { name: "Jamie", age: 12, grade: "6th" },
+    vitals: [
+      { label: "Heart Rate", value: "108 bpm", abnormal: true },
+      { label: "Breathing Rate", value: "24 breaths/min", abnormal: true },
+      { label: "O₂ Saturation", value: "93%", abnormal: true },
+      { label: "Temperature", value: "37.4°C", abnormal: false }
+    ],
+    symptoms: ["Severe sneezing and runny nose","Swollen, itchy throat","Chest tightness","Hives (raised red bumps on skin)","Difficulty swallowing"],
+    background: "Jamie went hiking in spring and came home with escalating symptoms. Starting with a runny nose and itchy eyes, the reaction worsened quickly — the throat began to swell and Jamie's chest tightened. A doctor confirms this is a severe seasonal allergy response (anaphylaxis-like reaction). Breathing through an inhaler gave partial relief but the throat swelling is concerning.",
+    diagnosis: {
+      name: "Severe Allergic Reaction (Anaphylaxis)",
+      systems: [{name:"Immune",col:"#1de9b6"},{name:"Respiratory",col:"#3bc8e8"},{name:"Circulatory",col:"#e74c6f"}],
+      explanation: "Severe allergies happen when the Immune System massively overreacts to harmless triggers (like pollen), flooding the body with histamine and other chemicals. The Respiratory System is directly impacted — the airways swell and narrow, making breathing difficult. If the throat swells severely (anaphylaxis), the Circulatory System is also at risk: less oxygen enters the blood, and blood pressure can drop dangerously. This is why anaphylaxis is a medical emergency."
+    },
+    questions: [
+      { text: "Jamie's body is overreacting to pollen. Which system is responsible for triggering this reaction?", options: ["Digestive System","Muscular System","Immune System","Excretory System"], correct: 2, explanation: "Allergies are caused by the Immune System mistakenly identifying harmless substances (like pollen) as dangerous threats. It releases histamines, causing the swelling, sneezing, itching, and hives that Jamie is experiencing." },
+      { text: "Jamie's airways are tightening and the throat is swelling. Which system is being directly blocked?", options: ["Circulatory System","Skeletal System","Nervous System","Respiratory System"], correct: 3, explanation: "The airway — nose, throat, trachea, bronchi — is all part of the Respiratory System. When the immune response causes these tissues to swell, the Respiratory System can no longer move air in and out properly." },
+      { text: "Swelling in the throat can block airflow entirely. If no oxygen enters the lungs, which other system is immediately put at risk?", options: ["Skeletal System","Digestive System","Circulatory System","Muscular System"], correct: 2, explanation: "Without oxygen entering from the Respiratory System, the Circulatory System can't deliver oxygen to organs. Blood oxygen levels crash rapidly, putting the heart, brain, and all other systems in danger — this is why anaphylaxis can be fatal without treatment." }
+    ]
+  },
+  {
+    id: 6, emoji: "🥾", title: "Heatstroke on the Trail",
+    patient: { name: "Alex", age: 13, grade: "7th" },
+    vitals: [
+      { label: "Heart Rate", value: "118 bpm", abnormal: true },
+      { label: "Blood Pressure", value: "88/58 mmHg (low)", abnormal: true },
+      { label: "Body Temperature", value: "39.8°C (103.6°F)", abnormal: true },
+      { label: "Urine Color", value: "Dark orange", abnormal: true }
+    ],
+    symptoms: ["Extreme dizziness and nausea","Muscle cramps in legs","Racing heart","Confusion and disorientation","No sweat despite extreme heat"],
+    background: "Alex, an experienced hiker, set out on a 10-mile summer trail without enough water. Midway through, it was 95°F (35°C). Alex started sweating heavily early on, then stopped sweating entirely — which actually felt like a relief at the time. By mile 7, Alex was confused and dizzy. A passing hiker called for help. The lack of sweating combined with a temperature of 39.8°C indicated heatstroke, not just dehydration.",
+    diagnosis: {
+      name: "Heatstroke & Severe Dehydration",
+      systems: [{name:"Excretory",col:"#69d97a"},{name:"Circulatory",col:"#e74c6f"},{name:"Muscular",col:"#ff6b6b"},{name:"Nervous",col:"#b388ff"}],
+      explanation: "Heatstroke occurs when the body's cooling system fails. The Excretory System (skin/sweat glands) normally removes heat through sweat — but when severely dehydrated, there's no water left to sweat. Without cooling, core temperature rises dangerously. The Circulatory System loses blood volume (less fluid = lower blood pressure, faster heart rate). Muscles cramp without electrolytes. The Nervous System is affected last — confusion and disorientation are warning signs that the brain is overheating."
+    },
+    questions: [
+      { text: "Alex stopped sweating — which seems like a relief but is actually dangerous. Sweating is the body's main cooling method. Which system is responsible for producing sweat?", options: ["Skeletal System","Respiratory System","Excretory System","Immune System"], correct: 2, explanation: "Sweat glands are part of the Excretory System (specifically the skin). Sweating removes body heat through evaporation. When dehydration depletes water reserves, sweating stops — and body temperature rises dangerously without this cooling mechanism." },
+      { text: "Alex's blood pressure is dangerously low (88/58 mmHg — normal is ~120/80). Dehydration reduces blood volume. How does the Circulatory System try to compensate?", options: ["It slows down to conserve energy","It pumps harder and faster to maintain blood flow to vital organs","It diverts blood to the digestive system","It stops circulating blood to the legs"], correct: 1, explanation: "When blood volume drops (due to fluid loss), the heart beats faster and harder to try to maintain blood flow to the brain and vital organs. This is why Alex's heart rate is 118 bpm — the Circulatory System is working overtime." },
+      { text: "Alex is confused and disoriented — a sign that the brain is being affected. The brain is extremely sensitive to overheating. Which system does this symptom primarily belong to?", options: ["Digestive System","Excretory System","Muscular System","Nervous System"], correct: 3, explanation: "The brain is the control center of the Nervous System. High body temperature disrupts the electrical signals neurons use to communicate. Confusion, disorientation, and even seizures can occur when body temperature exceeds safe limits — these are Nervous System warning signs of heatstroke." }
+    ]
+  },
+  {
+    id: 7, emoji: "🦠", title: "The Long-Lasting Cough",
+    patient: { name: "Priya", age: 14, grade: "8th" },
+    vitals: [
+      { label: "Temperature", value: "38.6°C (101.5°F)", abnormal: true },
+      { label: "White Blood Cell Count", value: "14,200/µL (elevated)", abnormal: true },
+      { label: "Breathing Rate", value: "22 breaths/min", abnormal: true },
+      { label: "O₂ Saturation", value: "94%", abnormal: true }
+    ],
+    symptoms: ["Persistent wet cough for 10 days","Fever and chills","Chest pain when breathing deeply","Green/yellow mucus","Fatigue and loss of appetite"],
+    background: "Priya had what seemed like a normal cold that started two weeks ago. Instead of getting better after 7 days, her symptoms worsened. She developed a fever and her cough became 'wet' — producing colored mucus. Her mom noticed she was breathing faster than normal at rest. A chest X-ray showed cloudy patches in the lower left lung, and her blood test showed a very high white blood cell count.",
+    diagnosis: {
+      name: "Bacterial Pneumonia",
+      systems: [{name:"Respiratory",col:"#3bc8e8"},{name:"Immune",col:"#1de9b6"},{name:"Circulatory",col:"#e74c6f"}],
+      explanation: "Pneumonia is an infection where bacteria (or viruses) colonize the air sacs (alveoli) in the lungs, filling them with fluid and pus. The Respiratory System is directly affected — fluid in the alveoli blocks gas exchange, lowering O₂ saturation and raising breathing rate. The Immune System is in full battle mode, sending white blood cells (hence the elevated count) to fight the infection — causing fever as a weapon against bacteria. The Circulatory System is also involved: it carries white blood cells and antibodies to the infection site, while the heart rate rises to support increased demand."
+    },
+    questions: [
+      { text: "Priya's alveoli are filling with fluid from the infection. Alveoli are where oxygen enters the blood. Which system is most directly impaired?", options: ["Skeletal System","Immune System","Excretory System","Respiratory System"], correct: 3, explanation: "The alveoli are microscopic air sacs deep in the lungs — a core component of the Respiratory System. When they fill with fluid (as happens in pneumonia), gas exchange is blocked. Less oxygen crosses into the blood, which is why Priya's O₂ saturation has dropped to 94%." },
+      { text: "Priya's white blood cell count is 14,200/µL — nearly double the normal maximum of 11,000. What does this tell us about the Immune System?", options: ["Her immune system has shut down","Her immune system is producing extra red blood cells","Her immune system is actively fighting an infection by producing more white blood cells","Her immune system has mistakenly attacked her own lungs"], correct: 2, explanation: "Elevated white blood cell count (leukocytosis) is a classic sign of active infection. The Immune System ramps up white blood cell production in bone marrow and releases them into the bloodstream to attack the bacteria — a healthy, expected immune response." },
+      { text: "Priya has a fever of 38.6°C. Fever is caused by the Immune System deliberately raising body temperature. Why is fever actually helpful when fighting bacteria?", options: ["It makes the patient sweat out the bacteria","Most bacteria grow best at normal body temperature — higher heat slows their reproduction","It speeds up the digestive system to produce more energy","It cools the lungs to reduce swelling"], correct: 1, explanation: "Most harmful bacteria are adapted to thrive at normal body temperature (37°C). The Immune System raises body temperature to make the environment less hospitable for bacteria — slowing their growth and reproduction. Fever is the body's weapon, not just a side effect." }
+    ]
+  }
+];
+
+let score = 0, totalAnswered = 0;
+const totalQuestions = CASES.reduce((a,c)=>a+c.questions.length,0);
+const caseAnswered = {};
+CASES.forEach(c => { caseAnswered[c.id] = 0; });
+
+function buildAll() {
+  const container = document.getElementById('cases-container');
+  container.innerHTML = '';
+  score = 0; totalAnswered = 0;
+  CASES.forEach(c => { caseAnswered[c.id] = 0; container.appendChild(buildCase(c)); });
+  updateScore();
+}
+
+function buildCase(c) {
+  const card = document.createElement('div');
+  card.className = 'case-card';
+  card.id = `case-${c.id}`;
+  const vitalsHTML = c.vitals.map(v=>`<div class="vital-item"><div class="vital-label">${v.label}</div><div class="vital-value${v.abnormal?' abnormal':''}">${v.value}${v.abnormal?' ⚠️':' ✅'}</div></div>`).join('');
+  const sympHTML = c.symptoms.map(s=>`<span class="sym-tag">${s}</span>`).join('');
+  const qsHTML = c.questions.map((q,qi)=>{
+    const letters=['A','B','C','D'];
+    const opts=q.options.map((o,oi)=>`<button class="opt-btn" id="copt-${c.id}-${qi}-${oi}" onclick="answerCase(${c.id},${qi},${oi})"><span class="opt-letter">${letters[oi]}</span><span>${o}</span></button>`).join('');
+    return `<div class="q-block"><div class="q-label">Question ${qi+1} of ${c.questions.length}</div><div class="q-text">${q.text}</div><div class="options">${opts}</div><div class="feedback" id="cfb-${c.id}-${qi}"></div></div>`;
+  }).join('');
+  const dxSysHTML = c.diagnosis.systems.map(s=>`<span class="dx-sys-tag" style="color:${s.col};border-color:${s.col}40;background:${s.col}15">${s.name}</span>`).join('');
+  card.innerHTML = `
+    <div class="case-header">
+      <div class="case-top">
+        <div class="case-meta">
+          <div class="case-tag"><span>📁</span> Case File ${c.id} of ${CASES.length}</div>
+          <div class="case-title">${c.emoji} ${c.title}</div>
+          <div class="case-num">Patient: ${c.patient.name}, Age ${c.patient.age} · Grade ${c.patient.grade}</div>
+        </div>
+        <div class="case-badge"><span class="case-badge-ico">${c.emoji}</span><div class="case-badge-lbl">Case ${c.id}</div></div>
+      </div>
+      <div class="vitals">${vitalsHTML}</div>
+      <div class="symptoms-box"><div class="sym-label">⚠️ Presenting Symptoms</div><div class="sym-list">${sympHTML}</div></div>
+      <div class="background-box"><div class="bg-label">📋 Background</div><p>${c.background}</p></div>
+    </div>
+    <div class="case-body">
+      ${qsHTML}
+      <div class="diagnosis-reveal" id="dx-${c.id}">
+        <div class="dx-label">✅ Diagnosis Revealed</div>
+        <div class="dx-title">🩺 ${c.diagnosis.name}</div>
+        <div class="dx-body">${c.diagnosis.explanation}</div>
+        <div class="dx-systems">${dxSysHTML}</div>
+      </div>
+      <div class="case-result" id="cr-${c.id}"><div class="cr-score" id="cr-score-${c.id}"></div><div class="cr-msg" id="cr-msg-${c.id}"></div></div>
+    </div>`;
+  return card;
+}
+
+function answerCase(cid, qi, chosen) {
+  const c = CASES[cid-1];
+  const q = c.questions[qi];
+  if (document.getElementById(`copt-${cid}-${qi}-${chosen}`).classList.contains('disabled')) return;
+  const isCorrect = chosen === q.correct;
+  q.options.forEach((_,oi)=>{
+    const btn = document.getElementById(`copt-${cid}-${qi}-${oi}`);
+    btn.classList.add('disabled');
+    if (oi === q.correct) btn.classList.add('correct');
+  });
+  if (!isCorrect) document.getElementById(`copt-${cid}-${qi}-${chosen}`).classList.add('incorrect');
+  const fb = document.getElementById(`cfb-${cid}-${qi}`);
+  fb.className = `feedback show ${isCorrect?'correct-fb':'incorrect-fb'}`;
+  fb.innerHTML = `${isCorrect?'✅ Correct!':'❌ Not quite.'} ${q.explanation}`;
+  if (isCorrect) score++;
+  totalAnswered++;
+  caseAnswered[cid]++;
+  updateScore();
+  if (caseAnswered[cid] === c.questions.length) {
+    let sc = 0;
+    c.questions.forEach((_,qi2)=>{ if(document.getElementById(`cfb-${cid}-${qi2}`).classList.contains('correct-fb')) sc++; });
+    document.getElementById(`dx-${cid}`).classList.add('show');
+    const msg = sc===c.questions.length?'🏆 Perfect — you cracked the case!':sc>=2?'🌟 Strong work — review the explanations you missed.':'📚 Keep studying — the diagnosis breakdown above explains everything.';
+    document.getElementById(`cr-score-${cid}`).textContent=`${sc} / ${c.questions.length}`;
+    document.getElementById(`cr-msg-${cid}`).textContent=msg;
+    document.getElementById(`cr-${cid}`).classList.add('show');
+    if (totalAnswered === totalQuestions) showFinal();
+  }
+}
+
+function updateScore() {
+  document.getElementById('score-num').textContent = score;
+  document.getElementById('q-num').textContent = totalAnswered;
+  const pct = (totalAnswered/totalQuestions)*100;
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-text').textContent = `${totalAnswered} of ${totalQuestions} questions`;
+}
+
+function showFinal() {
+  const pct = Math.round((score/totalQuestions)*100);
+  const icon = pct===100?'🏆':pct>=80?'🌟':pct>=60?'👍':'💪';
+  const msg = pct===100?'Perfect score! Every case solved correctly. You think like a real doctor.':pct>=80?'Excellent diagnostic skills! You clearly understand how body systems connect.':pct>=60?'Good effort! Review the case diagnoses above to strengthen your understanding.':'Keep studying — re-read each diagnosis explanation and try again.';
+  document.getElementById('fs-icon').textContent=icon;
+  document.getElementById('fs-num').textContent=`${score} / ${totalQuestions}`;
+  document.getElementById('fs-msg').textContent=msg;
+  document.getElementById('final-score').classList.add('show');
+  document.getElementById('final-score').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function resetAll() {
+  document.getElementById('final-score').classList.remove('show');
+  buildAll();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+buildAll();
+</script>
+</body>
+</html>

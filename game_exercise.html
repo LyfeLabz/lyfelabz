@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9QHB5G2B5B');</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | Exercise Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --accent:#69d97a;--accent-dim:rgba(105,217,122,0.15);--accent-rgb:105,217,122;
+  --teal:#1de9b6;--blue:#3bc8e8;--gold:#f5c842;--gold-glow:rgba(245,200,66,0.35);
+  --red:#e74c6f;--orange:#ff9d45;--purple:#b388ff;
+  --dark:#0c1520;--dark2:#111d2c;--card:#172030;--text:#e8f4fb;--muted:#6a92ad;--border:rgba(255,255,255,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:var(--dark);color:var(--text);line-height:1.6;overflow-x:hidden;}
+nav{position:sticky;top:0;z-index:200;background:rgba(10,18,28,0.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0.8rem 2.5rem;}
+.nav-logo{font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:900;color:var(--gold);text-decoration:none;letter-spacing:0.06em;text-shadow:0 0 18px var(--gold-glow);}
+.nav-center{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--muted);font-weight:700;}
+.nav-center .sep{opacity:0.3;}.nav-center .cur{color:var(--accent);}
+.nav-back{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),0.4);padding:0.32rem 0.9rem;border-radius:99px;text-decoration:none;transition:all 0.2s;}
+.nav-back:hover{background:rgba(var(--accent-rgb),0.25);}
+.hero{background:linear-gradient(135deg,#0a1520 0%,#0a2010 50%,#0c1a28 100%);padding:4rem 2rem 3.5rem;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(105,217,122,0.09) 0%,transparent 60%),radial-gradient(ellipse at 70% 30%,rgba(29,233,182,0.06) 0%,transparent 60%);pointer-events:none;}
+.hero-float{position:absolute;font-size:2.5rem;opacity:0.07;animation:float 6s ease-in-out infinite;pointer-events:none;}
+.hero-float:nth-child(1){top:12%;left:7%;animation-delay:0s;}
+.hero-float:nth-child(2){top:20%;right:9%;animation-delay:1.5s;}
+.hero-float:nth-child(3){bottom:18%;left:14%;animation-delay:3s;}
+.hero-float:nth-child(4){bottom:22%;right:7%;animation-delay:4s;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-18px);}}
+.hero-badge{display:inline-flex;align-items:center;gap:0.5rem;background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),0.4);color:var(--accent);padding:0.35rem 1.1rem;border-radius:99px;font-size:0.75rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1.2rem;position:relative;}
+.pulse{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:pdot 1.8s ease-in-out infinite;}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.65);}}
+.hero h1{font-family:'Fredoka One',cursive;font-size:clamp(2.2rem,5vw,3.5rem);line-height:1.1;margin-bottom:0.8rem;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;}
+.hero p{font-size:1rem;color:var(--muted);max-width:540px;margin:0 auto;position:relative;}
+.main{max-width:1100px;margin:0 auto;padding:2.5rem 2rem 4rem;}
+/* Intensity control */
+.intensity-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.8rem 2rem;margin-bottom:2rem;}
+.ip-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem;}
+.ip-title{font-family:'Fredoka One',cursive;font-size:1.3rem;}
+.ip-hint{font-size:0.8rem;color:var(--muted);font-weight:700;}
+.intensity-levels{display:grid;grid-template-columns:repeat(5,1fr);gap:0.7rem;}
+.level-btn{padding:0.7rem 0.5rem;border-radius:12px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;text-align:center;transition:all 0.2s;font-family:'Nunito',sans-serif;}
+.level-btn:hover{border-color:rgba(105,217,122,0.4);background:rgba(105,217,122,0.07);}
+.level-btn.active{border-color:var(--accent);background:var(--accent-dim);}
+.level-btn .li{font-size:1.6rem;display:block;margin-bottom:0.3rem;}
+.level-btn .ln{font-weight:900;font-size:0.82rem;color:var(--text);}
+.level-btn .ld{font-size:0.7rem;color:var(--muted);font-weight:700;}
+.level-btn.active .ln{color:var(--accent);}
+/* Score bar */
+.score-bar{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.9rem 1.6rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;}
+.score-info{display:flex;gap:1.5rem;}
+.sc-item{text-align:center;}
+.sc-num{font-family:'Fredoka One',cursive;font-size:1.8rem;color:var(--accent);line-height:1;}
+.sc-lbl{font-size:0.68rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.progress-wrap{flex:1;min-width:140px;}
+.progress-track{height:8px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--teal));border-radius:99px;transition:width 0.4s ease;width:0%;}
+.progress-text{font-size:0.7rem;color:var(--muted);font-weight:700;margin-top:0.25rem;}
+/* Systems grid */
+.systems-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.4rem;margin-bottom:2rem;}
+.sys-card{background:var(--card);border:2px solid var(--border);border-radius:18px;overflow:hidden;transition:all 0.3s;}
+.sys-card-header{padding:1.1rem 1.4rem 0.9rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.8rem;}
+.sys-ico{font-size:1.8rem;flex-shrink:0;}
+.sys-name{font-family:'Fredoka One',cursive;font-size:1.1rem;line-height:1.1;}
+.sys-status{font-size:0.68rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-top:0.1rem;}
+.sys-card-body{padding:1.2rem 1.4rem;}
+/* Meter */
+.meter-row{display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem;}
+.meter-label{font-size:0.75rem;font-weight:800;color:var(--muted);width:100px;flex-shrink:0;}
+.meter-track{flex:1;height:10px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;}
+.meter-fill{height:100%;border-radius:99px;transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1);}
+.meter-val{font-size:0.78rem;font-weight:800;width:70px;text-align:right;flex-shrink:0;}
+.sys-fact{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:0.7rem 0.9rem;font-size:0.82rem;color:var(--muted);line-height:1.55;margin-top:0.5rem;}
+.sys-fact strong{color:var(--text);}
+/* Quiz panel */
+.quiz-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.8rem 2rem;margin-bottom:2rem;}
+.qp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:0.8rem;}
+.qp-title{font-family:'Fredoka One',cursive;font-size:1.3rem;}
+.qp-badge{font-size:0.7rem;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(var(--accent-rgb),0.3);padding:0.22rem 0.7rem;border-radius:99px;}
+.quiz-q{margin-bottom:1.4rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border);}
+.quiz-q:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.qq-text{font-size:0.97rem;font-weight:700;margin-bottom:0.8rem;line-height:1.5;}
+.qq-opts{display:grid;gap:0.5rem;}
+.qq-btn{display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.9rem;border-radius:10px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:700;color:var(--text);text-align:left;transition:all 0.2s;}
+.qq-btn:hover:not(.disabled){border-color:rgba(105,217,122,0.45);background:rgba(105,217,122,0.07);}
+.qq-btn.disabled{cursor:default;}
+.qq-btn.correct{background:rgba(29,233,182,0.11);border-color:#1de9b6;color:#1de9b6;}
+.qq-btn.incorrect{background:rgba(231,76,111,0.09);border-color:var(--red);color:var(--red);}
+.ql{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:900;flex-shrink:0;}
+.qq-fb{display:none;margin-top:0.7rem;padding:0.7rem 0.9rem;border-radius:9px;font-size:0.85rem;line-height:1.6;}
+.qq-fb.show{display:block;}
+.qq-fb.cfb{background:rgba(29,233,182,0.08);border:1px solid rgba(29,233,182,0.28);color:var(--teal);}
+.qq-fb.ifb{background:rgba(231,76,111,0.07);border:1px solid rgba(231,76,111,0.22);color:#f08090;}
+.final-score{display:none;background:linear-gradient(135deg,rgba(105,217,122,0.12),rgba(29,233,182,0.08));border:2px solid rgba(105,217,122,0.3);border-radius:22px;padding:2.5rem;text-align:center;margin-top:2rem;}
+.final-score.show{display:block;animation:fadeup 0.5s ease both;}
+.fs-icon{font-size:3.5rem;margin-bottom:0.8rem;}
+.fs-num{font-family:'Fredoka One',cursive;font-size:3.5rem;color:var(--accent);line-height:1;margin-bottom:0.5rem;}
+.fs-msg{font-size:1rem;color:var(--muted);margin-bottom:1.5rem;max-width:460px;margin-left:auto;margin-right:auto;}
+.btn-reset{padding:0.7rem 1.8rem;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--teal));color:#fff;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:800;cursor:pointer;transition:all 0.2s;}
+.btn-reset:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(105,217,122,0.4);}
+@keyframes fadeup{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+footer{background:#070f17;border-top:1px solid var(--border);padding:2rem;text-align:center;}
+footer .logo{font-family:'Fredoka One',cursive;font-size:1.2rem;color:var(--accent);margin-bottom:0.3rem;}
+footer p{color:var(--muted);font-size:0.82rem;}footer a{color:var(--blue);text-decoration:none;}
+@media(max-width:700px){.intensity-levels{grid-template-columns:repeat(3,1fr);}.nav-center{display:none;}.main{padding:1.5rem 1rem 3rem;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <div class="nav-center"><span>Biology</span><span class="sep">›</span><span>Lesson 3 — Body Systems</span><span class="sep">›</span><span class="cur">Exercise Simulator</span></div>
+  <a href="body_systems.html" class="nav-back">← Body Systems</a>
+</nav>
+
+<div class="hero">
+  <span class="hero-float">🏃</span>
+  <span class="hero-float">🫀</span>
+  <span class="hero-float">🫁</span>
+  <span class="hero-float">💪</span>
+  <div class="hero-badge"><div class="pulse"></div>Game · Body Systems</div>
+  <h1>Exercise Simulator 🏃</h1>
+  <p>Crank up the intensity and watch every body system respond in real time. Then prove you know WHY — answer the quiz to score points!</p>
+</div>
+
+<div class="main">
+  <div class="intensity-panel">
+    <div class="ip-top">
+      <div class="ip-title">🎚️ Choose Your Intensity Level</div>
+      <div class="ip-hint">Select a level — all systems update instantly</div>
+    </div>
+    <div class="intensity-levels" id="intensity-levels"></div>
+  </div>
+
+  <div class="score-bar">
+    <div class="score-info">
+      <div class="sc-item"><div class="sc-num" id="score-num">0</div><div class="sc-lbl">Points</div></div>
+      <div class="sc-item"><div class="sc-num" id="q-num">0</div><div class="sc-lbl">Answered</div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-text" id="progress-text">Answer the quiz below to earn points</div>
+    </div>
+  </div>
+
+  <div class="systems-grid" id="systems-grid"></div>
+  <div class="quiz-panel">
+    <div class="qp-header">
+      <div class="qp-title">🧠 Quiz — Prove You Know Why!</div>
+      <div class="qp-badge">10 Questions · Score Tracking</div>
+    </div>
+    <div id="quiz-container"></div>
+  </div>
+  <div class="final-score" id="final-score">
+    <div class="fs-icon" id="fs-icon">🏆</div>
+    <div class="fs-num" id="fs-num"></div>
+    <div class="fs-msg" id="fs-msg"></div>
+    <button class="btn-reset" onclick="resetQuiz()">Try Quiz Again 🔄</button>
+  </div>
+</div>
+
+<footer>
+  <div class="logo">🏃 LyfeLabz · Exercise Simulator</div>
+  <p>Part of <a href="body_systems.html">Lesson 3 — Body Systems</a> · <a href="index.html">Back to LyfeLabz Hub</a></p>
+  <p style="margin-top:0.3rem">© 2025 LyfeLabz · Educational Use</p>
+</footer>
+
+<script>
+const LEVELS = [
+  { id:0, ico:"🛋️", name:"Rest", desc:"Couch sitting" },
+  { id:1, ico:"🚶", name:"Walking", desc:"Easy stroll" },
+  { id:2, ico:"🏃", name:"Jogging", desc:"Steady pace" },
+  { id:3, ico:"⚡", name:"Running", desc:"Hard effort" },
+  { id:4, ico:"🔥", name:"Sprinting", desc:"Max effort" }
+];
+
+const SYSTEMS = [
+  {
+    id:"circ", ico:"🫀", name:"Circulatory System", col:"#e74c6f",
+    metrics:[
+      { label:"Heart Rate", unit:"bpm",     values:[68, 100, 140, 175, 200], normal:68  },
+      { label:"Blood Flow", unit:"L/min",   values:[5,  10,  15,  20,  25],  normal:5   },
+      { label:"Blood Pressure", unit:"mmHg",values:[115,125,140,160,180],    normal:115 }
+    ],
+    facts:[
+      "At rest, your heart beats about 68 times per minute.",
+      "During a brisk walk, heart rate rises to ~100 bpm to deliver more oxygen.",
+      "Jogging pushes the heart to ~140 bpm — nearly double resting rate!",
+      "At high intensity, blood flow to muscles increases <strong>4×</strong> compared to rest.",
+      "Sprinting pushes the heart near its maximum — about 200 bpm for most teens."
+    ]
+  },
+  {
+    id:"resp", ico:"🫁", name:"Respiratory System", col:"#3bc8e8",
+    metrics:[
+      { label:"Breathing Rate", unit:"/min", values:[15,20,30,45,60],  normal:15 },
+      { label:"O₂ Intake",      unit:"L/min",values:[0.3,1,2,4,6],    normal:0.3 },
+      { label:"CO₂ Output",     unit:"L/min",values:[0.25,0.9,1.8,3.5,5.5], normal:0.25 }
+    ],
+    facts:[
+      "At rest, you breathe about 15 times per minute — mostly on autopilot.",
+      "Walking raises your breathing rate as muscles demand slightly more oxygen.",
+      "Jogging can triple your breathing rate as CO₂ builds up in the blood.",
+      "At high intensity, you can inhale up to 4 litres of O₂ every minute.",
+      "Sprinting at max effort, your lungs can process up to 150 litres of air per minute!"
+    ]
+  },
+  {
+    id:"musc", ico:"💪", name:"Muscular System", col:"#ff6b6b",
+    metrics:[
+      { label:"O₂ Demand",   unit:"×rest", values:[1,3,8,15,20],   normal:1 },
+      { label:"Heat Output", unit:"×rest", values:[1,3,7,14,18],   normal:1 },
+      { label:"Glucose Use", unit:"×rest", values:[1,2,6,12,18],   normal:1 }
+    ],
+    facts:[
+      "At rest, muscles are quiet — using just enough energy to maintain tone.",
+      "Even walking activates leg muscles, which demand more glucose and oxygen.",
+      "Jogging muscles can consume <strong>8×</strong> more oxygen than at rest!",
+      "At high intensity, muscles produce so much heat the body sweats to cool down.",
+      "Sprinting uses fast-twitch muscle fibres that produce energy without oxygen — but tire quickly."
+    ]
+  },
+  {
+    id:"excr", ico:"♻️", name:"Excretory System", col:"#69d97a",
+    metrics:[
+      { label:"Sweat Rate",  unit:"mL/hr",  values:[30,200,600,1200,1800], normal:30  },
+      { label:"CO₂ Output",  unit:"×rest",  values:[1,2,4,8,12],           normal:1   },
+      { label:"Urine Volume",unit:"×rest",  values:[1,0.9,0.7,0.5,0.3],    normal:1   }
+    ],
+    facts:[
+      "At rest, sweat production is very low — just a small trickle to maintain temperature.",
+      "Walking raises body temperature slightly, activating sweat glands.",
+      "Jogging produces enough sweat to lose up to 600 mL of fluid per hour.",
+      "Intense exercise ramps up CO₂ output — the lungs become a key excretory organ.",
+      "At max effort, you can sweat nearly 2 litres per hour — replacing fluids is critical!"
+    ]
+  },
+  {
+    id:"nerv", ico:"🧠", name:"Nervous System", col:"#b388ff",
+    metrics:[
+      { label:"Reaction Time",  unit:"ms",   values:[250,230,210,190,175],  normal:250 },
+      { label:"Motor Signals",  unit:"×rest",values:[1,2,5,12,20],          normal:1   },
+      { label:"Coordination",   unit:"×rest",values:[1,2,4,8,12],           normal:1   }
+    ],
+    facts:[
+      "At rest, the nervous system quietly monitors body state — heartbeat, breathing, balance.",
+      "Walking requires the motor cortex to fire continuous signals to leg muscles.",
+      "Jogging increases motor neuron activity <strong>5×</strong> as balance and rhythm must be maintained.",
+      "High-intensity exercise actually <strong>sharpens</strong> reaction time — adrenaline speeds neural signals.",
+      "At max effort, the cerebellum is working intensely to coordinate 200+ muscles simultaneously."
+    ]
+  },
+  {
+    id:"immu", ico:"🛡️", name:"Immune System", col:"#1de9b6",
+    metrics:[
+      { label:"WBC Activity",     unit:"×rest",values:[1,1.2,1.5,2,3],   normal:1 },
+      { label:"Inflammation Risk",unit:"×rest",values:[1,1,1.2,1.8,2.5], normal:1 },
+      { label:"Anti-pathogen",    unit:"×rest",values:[1,1.1,1.3,1.5,1.8],normal:1 }
+    ],
+    facts:[
+      "At rest, the immune system does its normal surveillance — monitoring for threats.",
+      "Light exercise slightly boosts immune activity — white blood cells circulate faster.",
+      "Moderate jogging is excellent for immunity — it's one of the best things you can do!",
+      "Intense exercise temporarily <strong>suppresses</strong> immunity for a few hours after — the 'open window' effect.",
+      "After sprinting, the body needs recovery time before the immune system returns to full strength."
+    ]
+  }
+];
+
+const QUIZ = [
+  { text:"When you start running, your heart rate increases. This is the Circulatory System responding. Why?", options:["To make the lungs bigger","To pump more oxygen-carrying blood to working muscles","To slow digestion so energy goes to muscles","To reduce body temperature"], correct:1, explanation:"Working muscles need more oxygen. The heart pumps faster to deliver oxygen-rich blood faster — more beats per minute means more oxygen delivered per minute." },
+  { text:"Your breathing rate triples when jogging. Which waste product is the MAIN trigger that signals your body to breathe faster?", options:["Oxygen","Glucose","Carbon dioxide (CO₂)","Nitrogen"], correct:2, explanation:"Rising CO₂ in the blood is the main signal to the brain to breathe faster. The body is less sensitive to falling O₂ levels — it's the CO₂ buildup that really sounds the alarm." },
+  { text:"Muscles use up to 20× more oxygen during sprinting than at rest. Which system delivers that oxygen to them?", options:["Excretory System","Nervous System","Digestive System","Circulatory System"], correct:3, explanation:"The Circulatory System carries oxygen (bound to hemoglobin in red blood cells) from the lungs to the muscles. Higher demand = faster heart rate = more oxygen delivered." },
+  { text:"You sweat heavily during intense exercise. Sweating is mainly the job of which system?", options:["Respiratory System","Nervous System","Excretory System","Immune System"], correct:2, explanation:"Sweat glands are part of the Excretory System (skin). Sweating removes heat and also excretes small amounts of water, salt, and waste — helping maintain homeostasis." },
+  { text:"The nervous system sends more signals to muscles during exercise. What is the name of the nerve cells that carry movement commands from the brain to muscles?", options:["Sensory neurons","Motor neurons","Blood vessels","Capillaries"], correct:1, explanation:"Motor neurons carry electrical signals from the brain and spinal cord to muscles, telling them to contract. The more intense the exercise, the more motor neurons fire." },
+  { text:"During high-intensity exercise, the Circulatory System diverts blood AWAY from some organs toward working muscles. Which organ gets less blood during intense exercise?", options:["The heart","The brain","The digestive system","Working leg muscles"], correct:2, explanation:"Blood is actively diverted from the digestive system during intense exercise — this is why eating right before hard exercise can cause cramps. Muscles and the brain take priority." },
+  { text:"After intense exercise, your immune system is temporarily weakened. This is called the 'open window' effect. What does this mean for athletes?", options:["They cannot get sick after exercise","They should exercise harder to strengthen immunity","They are more vulnerable to infections for a few hours post-exercise","Their white blood cells stop working permanently"], correct:2, explanation:"Intense exercise temporarily suppresses immunity — white blood cell activity drops for a few hours. This 'open window' is why athletes are advised to avoid sick people right after hard training." },
+  { text:"Muscles produce heat as a waste product of energy use. Which system REMOVES this excess heat from the body?", options:["Skeletal System","Immune System","Excretory System (via sweat)","Digestive System"], correct:2, explanation:"The Excretory System removes heat through sweat. Water evaporating from skin carries heat away from the body — the most effective cooling system humans have." },
+  { text:"Your reaction time actually IMPROVES slightly during moderate exercise. Which chemical does the Nervous System release during exercise that speeds up brain signals?", options:["Insulin","Adrenaline (epinephrine)","Bile","Hemoglobin"], correct:1, explanation:"Adrenaline (epinephrine) is released by the adrenal glands during exercise. It speeds up heart rate, sharpens focus, and accelerates neural signal processing — making reactions faster." },
+  { text:"Which TWO systems are MOST directly responsible for delivering oxygen to working muscles during exercise?", options:["Respiratory + Circulatory","Digestive + Excretory","Skeletal + Muscular","Nervous + Immune"], correct:0, explanation:"The Respiratory System brings oxygen in through the lungs, and the Circulatory System carries that oxygen to muscles via red blood cells. These two are the core delivery partnership during exercise." }
+];
+
+let currentLevel = 0;
+let score = 0, answered = 0;
+const total = QUIZ.length;
+
+function buildLevels() {
+  const container = document.getElementById('intensity-levels');
+  container.innerHTML = '';
+  LEVELS.forEach(l => {
+    const btn = document.createElement('button');
+    btn.className = 'level-btn' + (l.id === currentLevel ? ' active' : '');
+    btn.innerHTML = `<span class="li">${l.ico}</span><div class="ln">${l.name}</div><div class="ld">${l.desc}</div>`;
+    btn.onclick = () => setLevel(l.id);
+    container.appendChild(btn);
+  });
+}
+
+function setLevel(lvl) {
+  currentLevel = lvl;
+  buildLevels();
+  buildSystems();
+}
+
+function buildSystems() {
+  const grid = document.getElementById('systems-grid');
+  grid.innerHTML = '';
+  SYSTEMS.forEach(sys => {
+    const card = document.createElement('div');
+    card.className = 'sys-card';
+    card.style.borderColor = `${sys.col}30`;
+    const status = currentLevel === 0 ? 'At Rest' : currentLevel === 1 ? 'Lightly Active' : currentLevel === 2 ? 'Moderately Active' : currentLevel === 3 ? 'Highly Active' : 'Maximum Effort';
+    const metersHTML = sys.metrics.map(m => {
+      const val = m.values[currentLevel];
+      const pct = Math.min(100, (val / m.values[4]) * 100);
+      const displayVal = typeof val === 'number' && val < 10 ? val.toFixed(1) : Math.round(val);
+      const col = pct < 40 ? '#69d97a' : pct < 70 ? '#f5c842' : pct < 85 ? '#ff9d45' : '#e74c6f';
+      return `<div class="meter-row">
+        <div class="meter-label">${m.label}</div>
+        <div class="meter-track"><div class="meter-fill" style="width:${pct}%;background:${col}"></div></div>
+        <div class="meter-val" style="color:${col}">${displayVal} ${m.unit}</div>
+      </div>`;
+    }).join('');
+    card.innerHTML = `
+      <div class="sys-card-header">
+        <div class="sys-ico">${sys.ico}</div>
+        <div><div class="sys-name" style="color:${sys.col}">${sys.name}</div><div class="sys-status" style="color:${sys.col}99">${status}</div></div>
+      </div>
+      <div class="sys-card-body">
+        ${metersHTML}
+        <div class="sys-fact">${sys.facts[currentLevel]}</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function buildQuiz() {
+  score = 0; answered = 0;
+  updateScore();
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = '';
+  document.getElementById('final-score').classList.remove('show');
+  QUIZ.forEach((q, qi) => {
+    const letters = ['A','B','C','D'];
+    const opts = q.options.map((o,oi) => `<button class="qq-btn" id="qq-${qi}-${oi}" onclick="answerQ(${qi},${oi})"><span class="ql">${letters[oi]}</span><span>${o}</span></button>`).join('');
+    const div = document.createElement('div');
+    div.className = 'quiz-q';
+    div.innerHTML = `<div class="qq-text">${qi+1}. ${q.text}</div><div class="qq-opts">${opts}</div><div class="qq-fb" id="qqfb-${qi}"></div>`;
+    container.appendChild(div);
+  });
+}
+
+function answerQ(qi, chosen) {
+  const q = QUIZ[qi];
+  if (document.getElementById(`qq-${qi}-${chosen}`).classList.contains('disabled')) return;
+  const isCorrect = chosen === q.correct;
+  q.options.forEach((_,oi) => {
+    const btn = document.getElementById(`qq-${qi}-${oi}`);
+    btn.classList.add('disabled');
+    if (oi === q.correct) btn.classList.add('correct');
+  });
+  if (!isCorrect) document.getElementById(`qq-${qi}-${chosen}`).classList.add('incorrect');
+  const fb = document.getElementById(`qqfb-${qi}`);
+  fb.className = `qq-fb show ${isCorrect?'cfb':'ifb'}`;
+  fb.innerHTML = `${isCorrect?'✅ Correct!':'❌ Not quite.'} ${q.explanation}`;
+  if (isCorrect) score++;
+  answered++;
+  updateScore();
+  if (answered === total) showFinal();
+}
+
+function updateScore() {
+  document.getElementById('score-num').textContent = score;
+  document.getElementById('q-num').textContent = answered;
+  const pct = (answered/total)*100;
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-text').textContent = `${answered} of ${total} questions`;
+}
+
+function showFinal() {
+  const pct = Math.round((score/total)*100);
+  const icon = pct===100?'🏆':pct>=80?'🌟':pct>=60?'👍':'💪';
+  const msg = pct===100?'Perfect! You completely understand how exercise drives every body system.':pct>=80?'Great work! You clearly understand the connections between exercise and body systems.':pct>=60?'Good effort! Review the explanations and try exploring the simulator some more.':'Keep studying! Try changing the intensity levels and reading the facts — then retry the quiz.';
+  document.getElementById('fs-icon').textContent=icon;
+  document.getElementById('fs-num').textContent=`${score} / ${total}`;
+  document.getElementById('fs-msg').textContent=msg;
+  document.getElementById('final-score').classList.add('show');
+  document.getElementById('final-score').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function resetQuiz() {
+  document.getElementById('final-score').classList.remove('show');
+  buildQuiz();
+  document.getElementById('quiz-container').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+buildLevels();
+buildSystems();
+buildQuiz();
+</script>
+</body>
+</html>
