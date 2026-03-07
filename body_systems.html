@@ -246,7 +246,7 @@
     text-align: center;
     transition: all 0.3s;
   }
-  .hier-item:hover { transform: translateY(-4px); border-color: rgba(59,200,232,0.5); box-shadow: 0 10px 28px rgba(0,0,0,0.3); }
+  .hier-item:hover { border-color: rgba(59,200,232,0.5); box-shadow: 0 0 20px rgba(59,200,232,0.18); }
   .hier-icon { font-size: 2rem; }
   .hier-name {
     font-weight: 900;
@@ -414,6 +414,12 @@
   .conn-header.respiratory .conn-header-name { color: var(--accent); }
   .conn-header.muscular    { background: rgba(233,30,99,0.1);   border-bottom-color: rgba(233,30,99,0.2); }
   .conn-header.muscular    .conn-header-name { color: #f06292; }
+  .conn-header.excretory   { background: rgba(105,217,122,0.08); border-bottom-color: rgba(105,217,122,0.18); }
+  .conn-header.excretory   .conn-header-name { color: #69d97a; }
+  .conn-header.digestive   { background: rgba(255,152,0,0.1);   border-bottom-color: rgba(255,152,0,0.2); }
+  .conn-header.digestive   .conn-header-name { color: #ffb74d; }
+  .conn-header.immune      { background: rgba(29,233,182,0.08);  border-bottom-color: rgba(29,233,182,0.18); }
+  .conn-header.immune      .conn-header-name { color: #1de9b6; }
   .conn-rows { padding: 0.5rem 0; }
   .conn-row {
     display: flex;
@@ -428,9 +434,11 @@
     font-weight: 900;
     letter-spacing: 0.07em;
     text-transform: uppercase;
-    padding: 0.2rem 0.65rem;
+    padding: 0.2rem 0;
     border-radius: 99px;
     flex-shrink: 0;
+    width: 114px;
+    text-align: center;
     margin-top: 0.1rem;
   }
   .conn-partner.respiratory { background: rgba(59,200,232,0.12);  color: var(--accent);  border: 1px solid rgba(59,200,232,0.3); }
@@ -441,11 +449,41 @@
   .conn-partner.circulatory { background: rgba(231,76,60,0.12);   color: #e87070;        border: 1px solid rgba(231,76,60,0.3); }
   .conn-partner.nervous     { background: rgba(103,58,183,0.12);  color: #b39ddb;        border: 1px solid rgba(103,58,183,0.3); }
   .conn-partner.all         { background: rgba(245,200,66,0.12);  color: var(--gold);    border: 1px solid rgba(245,200,66,0.3); }
+  .conn-partner.skeletal    { background: rgba(200,216,232,0.10);  color: #c8d8e8;        border: 1px solid rgba(200,216,232,0.3); }
   .conn-desc {
     font-size: 0.88rem;
     color: var(--text-muted);
     line-height: 1.55;
   }
+
+  /* ===== NERVOUS FEATURED CARD ===== */
+  .nervous-featured {
+    grid-column: 1 / -1;
+  }
+  .nervous-intro {
+    padding: 0.9rem 1.3rem 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.6;
+    border-bottom: 1px solid rgba(103,58,183,0.2);
+    margin-bottom: 0.25rem;
+  }
+  .nervous-connections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    padding: 0.4rem 0;
+  }
+  .nervous-conn-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1.3rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .nervous-conn-item:last-child { border-bottom: none; }
+  .nervous-conn-item .conn-partner { flex-shrink: 0; width: 114px; text-align: center; margin-top: 0.1rem; }
+  .nervous-conn-item .conn-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.55; }
 
   /* ===== VIDEO ===== */
   .video-wrapper {
@@ -648,10 +686,11 @@
   }
 
   /* ===== EXTENSION BANNER ===== */
-    background: linear-gradient(135deg, rgba(59,200,232,0.08) 0%, rgba(29,233,182,0.05) 100%);
-    border: 2px solid rgba(59,200,232,0.3);
+  .extension-banner {
+    background: linear-gradient(135deg, rgba(155,89,182,0.12) 0%, rgba(52,152,219,0.08) 100%);
+    border: 2px solid rgba(155,89,182,0.35);
     border-radius: 20px;
-    padding: 2rem 2.4rem;
+    padding: 2.2rem 2.5rem;
     display: flex;
     align-items: center;
     gap: 2rem;
@@ -667,16 +706,16 @@
   .extension-banner-body { flex: 1; min-width: 200px; }
   .extension-banner-tag {
     display: inline-block;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 900;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--accent);
-    background: rgba(59,200,232,0.12);
-    border: 1px solid rgba(59,200,232,0.3);
-    padding: 0.22rem 0.75rem;
+    color: #c39bd3;
+    background: rgba(155,89,182,0.15);
+    border: 1px solid rgba(155,89,182,0.35);
+    padding: 0.25rem 0.8rem;
     border-radius: 99px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
   }
   .extension-banner h3 {
     font-family: 'Fredoka One', cursive;
@@ -695,14 +734,14 @@
     cursor: pointer;
     border: none;
     font-family: 'Nunito', sans-serif;
-    background: linear-gradient(135deg, var(--accent), var(--teal));
+    background: linear-gradient(135deg, #9b59b6, #7d3c98);
     color: #fff;
-    box-shadow: 0 4px 18px rgba(59,200,232,0.3);
+    box-shadow: 0 4px 20px rgba(155,89,182,0.35);
     white-space: nowrap;
     flex-shrink: 0;
     transition: all 0.25s;
   }
-  .btn-extension:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(59,200,232,0.45); }
+  .btn-extension:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(155,89,182,0.5); }
 </style>
 </head>
 <body>
@@ -813,7 +852,7 @@
         <div class="system-name">Excretory System</div>
         <div class="system-summary">Removes solid, liquid, and gaseous waste from the body.</div>
         <div class="system-desc">Three types of waste removal keep the body in balance: the <strong>large intestine</strong> removes solid waste, the <strong>bladder</strong> stores and removes liquid waste, and the <strong>lungs</strong> remove gaseous CO₂. Removing waste maintains <strong>homeostasis</strong>.</div>
-        <a href="system_excretory.html" class="explore-btn">Explore ♻️ Interactive Map</a>
+        <a href="system_excretory.html" class="explore-btn">Explore 🚽 Interactive Map</a>
       </div>
 
       <div class="system-card skeletal">
@@ -860,6 +899,45 @@
     <p class="section-desc">No body system works alone — they are constantly depending on and supporting each other. Here's a quick reference for the key interactions.</p>
     <div class="connections-grid">
 
+      <!-- NERVOUS — spans full width, first ─────────────────────────────── -->
+      <div class="conn-card nervous-featured">
+        <div class="conn-header nervous">
+          <span class="conn-header-icon">🧠</span>
+          <span class="conn-header-name">Nervous — The Master Controller</span>
+        </div>
+        <div class="nervous-intro">The brain and spinal cord send and receive signals through neurons to coordinate every other system. Nothing in the body operates without nervous system involvement.</div>
+        <div class="nervous-connections-grid">
+          <div class="nervous-conn-item">
+            <span class="conn-partner circulatory">Circulatory</span>
+            <span class="conn-desc">Regulates heart rate and blood pressure through autonomic signals — speeding up during stress, slowing during rest</span>
+          </div>
+          <div class="nervous-conn-item">
+            <span class="conn-partner muscular">Muscular</span>
+            <span class="conn-desc">Motor neurons carry signals from the brain to muscles, triggering every voluntary movement and reflex</span>
+          </div>
+          <div class="nervous-conn-item">
+            <span class="conn-partner respiratory">Respiratory</span>
+            <span class="conn-desc">Controls breathing rate and depth — adjusting oxygen intake based on activity level and CO₂ levels in the blood</span>
+          </div>
+          <div class="nervous-conn-item">
+            <span class="conn-partner digestive">Digestive</span>
+            <span class="conn-desc">The enteric nervous system (500 million gut neurons) coordinates peristalsis, enzyme release, and appetite signals</span>
+          </div>
+          <div class="nervous-conn-item">
+            <span class="conn-partner excretory">Excretory</span>
+            <span class="conn-desc">Sends signals to the bladder to control urination, and monitors blood chemistry to trigger kidney function adjustments</span>
+          </div>
+          <div class="nervous-conn-item">
+            <span class="conn-partner immune">Immune</span>
+            <span class="conn-desc">Communicates with immune cells via neurotransmitters — chronic stress suppresses immunity, while the nervous system directs inflammation responses</span>
+          </div>
+          <div class="nervous-conn-item">
+            <span class="conn-partner skeletal">Skeletal</span>
+            <span class="conn-desc">Detects pain and pressure through sensory neurons in bones and joints, protecting the skeleton and guiding posture and balance</span>
+          </div>
+        </div>
+      </div>
+
       <!-- CIRCULATORY -->
       <div class="conn-card">
         <div class="conn-header circulatory">
@@ -886,6 +964,28 @@
         </div>
       </div>
 
+      <!-- MUSCULAR -->
+      <div class="conn-card">
+        <div class="conn-header muscular">
+          <span class="conn-header-icon">💪</span>
+          <span class="conn-header-name">Muscular</span>
+        </div>
+        <div class="conn-rows">
+          <div class="conn-row">
+            <span class="conn-partner digestive">Digestive</span>
+            <span class="conn-desc">Smooth muscle in the digestive tract pushes food along through peristalsis</span>
+          </div>
+          <div class="conn-row">
+            <span class="conn-partner circulatory">Circulatory</span>
+            <span class="conn-desc">The heart is a muscle — cardiac muscle contraction pumps blood through the entire body; skeletal muscles also help push blood back through veins</span>
+          </div>
+          <div class="conn-row">
+            <span class="conn-partner skeletal">Skeletal</span>
+            <span class="conn-desc">Muscles attach to bones via tendons and pull on them to create all movement — neither system works without the other</span>
+          </div>
+        </div>
+      </div>
+
       <!-- SKELETAL -->
       <div class="conn-card">
         <div class="conn-header skeletal">
@@ -904,20 +1004,6 @@
         </div>
       </div>
 
-      <!-- NERVOUS -->
-      <div class="conn-card">
-        <div class="conn-header nervous">
-          <span class="conn-header-icon">🧠</span>
-          <span class="conn-header-name">Nervous</span>
-        </div>
-        <div class="conn-rows">
-          <div class="conn-row">
-            <span class="conn-partner all">All Systems</span>
-            <span class="conn-desc">The brain and spinal cord send signals to coordinate and regulate every other body system</span>
-          </div>
-        </div>
-      </div>
-
       <!-- RESPIRATORY -->
       <div class="conn-card">
         <div class="conn-header respiratory">
@@ -929,19 +1015,63 @@
             <span class="conn-partner excretory">Excretory</span>
             <span class="conn-desc">The lungs remove carbon dioxide — a gaseous waste product — from the body when we exhale</span>
           </div>
+          <div class="conn-row">
+            <span class="conn-partner circulatory">Circulatory</span>
+            <span class="conn-desc">Blood travels to the lungs to pick up oxygen and drop off CO₂ — the two systems are inseparable gas exchange partners</span>
+          </div>
         </div>
       </div>
 
-      <!-- MUSCULAR -->
+      <!-- DIGESTIVE -->
       <div class="conn-card">
-        <div class="conn-header muscular">
-          <span class="conn-header-icon">💪</span>
-          <span class="conn-header-name">Muscular</span>
+        <div class="conn-header digestive">
+          <span class="conn-header-icon">🫄</span>
+          <span class="conn-header-name">Digestive</span>
         </div>
         <div class="conn-rows">
           <div class="conn-row">
-            <span class="conn-partner digestive">Digestive</span>
-            <span class="conn-desc">Smooth muscle in the digestive tract pushes food along through peristalsis</span>
+            <span class="conn-partner immune">Immune</span>
+            <span class="conn-desc">The gut lining is one of the body's largest immune barriers — gut bacteria and immune cells work together to block pathogens from entering the bloodstream</span>
+          </div>
+          <div class="conn-row">
+            <span class="conn-partner excretory">Excretory</span>
+            <span class="conn-desc">Solid waste passes to the large intestine for elimination; the liver filters toxins from digested material before they reach general circulation</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXCRETORY -->
+      <div class="conn-card">
+        <div class="conn-header excretory">
+          <span class="conn-header-icon">🚽</span>
+          <span class="conn-header-name">Excretory</span>
+        </div>
+        <div class="conn-rows">
+          <div class="conn-row">
+            <span class="conn-partner circulatory">Circulatory</span>
+            <span class="conn-desc">The kidneys filter waste from the blood — receiving blood via the renal artery and returning clean blood via the renal vein</span>
+          </div>
+          <div class="conn-row">
+            <span class="conn-partner respiratory">Respiratory</span>
+            <span class="conn-desc">The lungs excrete CO₂ gas — a metabolic waste product — with every exhale, working alongside the kidneys to keep blood chemistry balanced</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- IMMUNE -->
+      <div class="conn-card">
+        <div class="conn-header immune">
+          <span class="conn-header-icon">🛡️</span>
+          <span class="conn-header-name">Immune</span>
+        </div>
+        <div class="conn-rows">
+          <div class="conn-row">
+            <span class="conn-partner skeletal">Skeletal</span>
+            <span class="conn-desc">Red and white blood cells — including the immune system's key fighters — are produced in bone marrow inside the skeletal system</span>
+          </div>
+          <div class="conn-row">
+            <span class="conn-partner circulatory">Circulatory</span>
+            <span class="conn-desc">The bloodstream carries white blood cells and antibodies to any site of infection anywhere in the body</span>
           </div>
         </div>
       </div>
@@ -957,10 +1087,10 @@
       <div class="extension-banner-icon">🩺</div>
       <div class="extension-banner-body">
         <div class="extension-banner-tag">⭐ Extension Activity</div>
-        <h3>Body Systems Case Files</h3>
+        <h3>Solving Medical Mysteries</h3>
         <p>Seven real patient cases — read the vitals, spot the systems, and unlock the diagnosis. A deep-dive into how systems break down in the real world.</p>
       </div>
-      <a href="extension_body_systems.html" class="btn-extension">Open Case Files 📁</a>
+      <a href="extension_body_systems.html" class="btn-extension">Solving Medical Mysteries 🩺</a>
     </div>
   </div>
 </div>

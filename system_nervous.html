@@ -38,7 +38,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(10,18,28,0.97);backdrop-fi
 .stog.immu{color:var(--teal);border-color:rgba(29,233,182,0.28);}.stog.immu:hover{background:rgba(29,233,182,0.09);border-color:rgba(29,233,182,0.6);}.stog.immu.on{background:rgba(29,233,182,0.13);border-color:rgba(29,233,182,0.8);box-shadow:0 0 10px rgba(29,233,182,0.2);}
 .stog.nerv{color:var(--purple);border-color:rgba(179,136,255,0.28);}.stog.nerv:hover{background:rgba(179,136,255,0.09);border-color:rgba(179,136,255,0.6);}.stog.nerv.on{background:rgba(179,136,255,0.14);border-color:rgba(179,136,255,0.8);box-shadow:0 0 10px rgba(179,136,255,0.2);}
 .stog.musc{color:#ff6b6b;border-color:rgba(255,107,107,0.28);}.stog.musc:hover{background:rgba(255,107,107,0.09);border-color:rgba(255,107,107,0.6);}.stog.musc.on{background:rgba(255,107,107,0.14);border-color:rgba(255,107,107,0.8);box-shadow:0 0 10px rgba(255,107,107,0.2);}
-.stog.endo{color:var(--gold);border-color:rgba(245,200,66,0.28);}.stog.endo:hover{background:rgba(245,200,66,0.09);border-color:rgba(245,200,66,0.6);}.stog.endo.on{background:rgba(245,200,66,0.14);border-color:rgba(245,200,66,0.8);box-shadow:0 0 10px rgba(245,200,66,0.2);}
+
 .panels{display:grid;grid-template-columns:1fr 400px;gap:1.4rem;align-items:start;}
 .map-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.5rem;position:relative;}
 .map-label{font-size:0.67rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;}
@@ -98,9 +98,13 @@ footer p{color:var(--muted);font-size:0.83rem;}footer a{color:var(--blue);text-d
   <div class="sys-toggles">
     <span class="tog-lbl">Show connections with:</span>
     <button class="stog self" disabled>🧠 Nervous System (You Are Here)</button>
-    <button class="stog dige" id="tog-musc" onclick="toggleSys('musc',this)">💪 Muscular</button>
-    <button class="stog skel" id="tog-endo" onclick="toggleSys('endo',this)">⚗️ Endocrine</button>
     <button class="stog resp" id="tog-circ" onclick="toggleSys('circ',this)">🫀 Circulatory</button>
+    <button class="stog dige" id="tog-musc" onclick="toggleSys('musc',this)">💪 Muscular</button>
+    <button class="stog resp" id="tog-resp" onclick="toggleSys('resp',this)">🫁 Respiratory</button>
+    <button class="stog dige" id="tog-dige" onclick="toggleSys('dige',this)">🫄 Digestive</button>
+    <button class="stog excr" id="tog-excr" onclick="toggleSys('excr',this)">🚽 Excretory</button>
+    <button class="stog skel" id="tog-skel" onclick="toggleSys('skel',this)">🦴 Skeletal</button>
+    <button class="stog immu" id="tog-immu" onclick="toggleSys('immu',this)">🛡️ Immune</button>
   </div>
   <div class="panels">
     <div class="map-panel">
@@ -127,17 +131,33 @@ footer p{color:var(--muted);font-size:0.83rem;}footer a{color:var(--blue);text-d
           </div>
         </div>
       </div>
+      <div class="c-card" id="cc-circ">
+        <div class="c-card-hd"><span class="c-ico">🫀</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#e74c6f">Circulatory System</div></div></div>
+        <p>The brain demands <strong>constant uninterrupted blood flow</strong> — 10 seconds without it causes unconsciousness. The autonomic nervous system continuously monitors and adjusts heart rate and vessel tone in real time.</p>
+      </div>
       <div class="c-card" id="cc-musc">
         <div class="c-card-hd"><span class="c-ico">💪</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#ff6b6b">Muscular System</div></div></div>
         <p><strong>Every voluntary movement</strong> originates in the motor cortex, travels down the spinal cord, and arrives at muscles via motor neurons. The cerebellum fine-tunes timing so movements are smooth and coordinated.</p>
       </div>
-      <div class="c-card" id="cc-endo">
-        <div class="c-card-hd"><span class="c-ico">⚗️</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#f5c842">Endocrine System</div></div></div>
-        <p>The <strong>hypothalamus bridges the two systems</strong> — it produces hormones that control the pituitary gland, which regulates nearly every other endocrine gland. Nervous signals are fast; hormonal responses sustain them.</p>
+      <div class="c-card" id="cc-resp">
+        <div class="c-card-hd"><span class="c-ico">🫁</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#3bc8e8">Respiratory System</div></div></div>
+        <p>The <strong>brain stem controls breathing automatically</strong> — adjusting rate and depth based on CO₂ levels in the blood. You can consciously override it briefly, but the brain stem always takes back control.</p>
       </div>
-      <div class="c-card" id="cc-circ">
-        <div class="c-card-hd"><span class="c-ico">🫀</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#e74c6f">Circulatory System</div></div></div>
-        <p>The brain demands <strong>constant uninterrupted blood flow</strong> — 10 seconds without it causes unconsciousness. The autonomic nervous system continuously monitors and adjusts heart rate and vessel tone.</p>
+      <div class="c-card" id="cc-dige">
+        <div class="c-card-hd"><span class="c-ico">🫄</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#ff9d45">Digestive System</div></div></div>
+        <p>The gut has its own <strong>enteric nervous system</strong> — 500 million neurons that manage digestion semi-independently. It communicates with the brain via the vagus nerve, which is why stress and emotions directly affect digestion.</p>
+      </div>
+      <div class="c-card" id="cc-excr">
+        <div class="c-card-hd"><span class="c-ico">🚽</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#69d97a">Excretory System</div></div></div>
+        <p>The nervous system <strong>sends signals to the bladder</strong> to control urination timing, and monitors blood chemistry to trigger kidney function adjustments — including water retention during dehydration or stress.</p>
+      </div>
+      <div class="c-card" id="cc-skel">
+        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div></div>
+        <p>Sensory neurons in <strong>bones and joints detect pain, pressure, and position</strong> (proprioception), sending constant feedback to the brain so it can maintain balance, posture, and protect the skeleton from damage.</p>
+      </div>
+      <div class="c-card" id="cc-immu">
+        <div class="c-card-hd"><span class="c-ico">🛡️</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#1de9b6">Immune System</div></div></div>
+        <p>The nervous system communicates with immune cells via <strong>neurotransmitters and neuropeptides</strong>. Chronic stress activates the stress response, suppressing immune function — which is why stressed people get sick more easily.</p>
       </div>
     </div>
   </div>
@@ -146,13 +166,13 @@ footer p{color:var(--muted);font-size:0.83rem;}footer a{color:var(--blue);text-d
     <div><span class="s-num">268 mph</span><span class="s-lbl">Fastest nerve signal speed</span></div>
     <div><span class="s-num">100 trillion</span><span class="s-lbl">Synaptic connections</span></div>
     <div><span class="s-num">20%</span><span class="s-lbl">Body energy used by brain</span></div>
-    <div><span class="s-num">4</span><span class="s-lbl">Systems it connects to</span></div>
+    <div><span class="s-num">7</span><span class="s-lbl">Systems it connects to</span></div>
   </div>
 </div>
 <footer>
   <div class="logo">🧠 LyfeLabz · Nervous System</div>
   <p>Part of <a href="body_systems.html">Lesson 3 — Body Systems</a> · <a href="index.html">Back to LyfeLabz Hub</a></p>
-  <p style="margin-top:0.3rem">© 2025 LyfeLabz · Educational Use</p>
+  <p style="margin-top:0.3rem">© 2026 LyfeLabz · Educational Use</p>
 </footer>
 <script>
 var organData={
@@ -162,18 +182,26 @@ var organData={
   pns:{ico:'🕸️',name:'Peripheral Nervous System',sys:'Nervous',col:'#c9aaff',role:'Connects the brain and spinal cord to the rest of the body via 43 pairs of nerves. The somatic division controls voluntary movements; the autonomic controls unconscious functions like heart rate and digestion.',fact:'<strong>Fun Fact:</strong> The longest single nerve cell in your body stretches from your spinal cord to your big toe — over 3 feet long in a tall person.'},
   senses:{ico:'👁️',name:'Sensory Organs',sys:'Nervous',col:'#9988ff',role:'Eyes, ears, nose, tongue, and skin convert physical stimuli into electrical signals that travel to the brain for interpretation. Without sensory input, the brain would have no information about the world.',fact:'<strong>Fun Fact:</strong> Your eyes can detect a single photon of light in complete darkness. In good conditions, you could see a candle flame from 30 miles away.'},
   muscular:{ico:'💪',name:'Muscular System',sys:'Muscular',col:'#ff6b6b',role:'Controls all voluntary muscle movement via motor neurons. The neuromuscular junction is where nerve meets muscle. The cerebellum coordinates timing for smooth, precise movement.',fact:'<strong>Fun Fact:</strong> Playing a musical instrument requires coordinating hundreds of muscles with millisecond timing. Musicians literally develop extra neural connections in the motor cortex.'},
-  endocrine:{ico:'⚗️',name:'Endocrine System',sys:'Endocrine',col:'#f5c842',role:'The hypothalamus bridges the two systems — it is both a brain region and an endocrine gland, producing hormones that regulate the pituitary gland and the entire hormonal cascade.',fact:'<strong>Fun Fact:</strong> When stressed, the hypothalamus triggers adrenaline release in milliseconds. The nervous system acts fast; then the endocrine system sustains the response with slower hormonal signals.'},
-  circulatory:{ico:'🫀',name:'Circulatory System',sys:'Circulatory',col:'#e74c6f',role:'The brain is extremely sensitive to blood flow — a 10-second interruption causes unconsciousness. The nervous system monitors blood pressure and adjusts heart rate and vessel tone in real time.',fact:'<strong>Fun Fact:</strong> The brain has its own waste-flushing system (the glymphatic system) that clears metabolic waste — including proteins linked to Alzheimer\'s — primarily during deep sleep.'}
+  circulatory:{ico:'🫀',name:'Circulatory System',sys:'Circulatory',col:'#e74c6f',role:'The brain is extremely sensitive to blood flow — a 10-second interruption causes unconsciousness. The nervous system monitors blood pressure and adjusts heart rate and vessel tone in real time.',fact:'<strong>Fun Fact:</strong> The brain has its own waste-flushing system (the glymphatic system) that clears metabolic waste — including proteins linked to Alzheimer\'s — primarily during deep sleep.'},
+  respiratory:{ico:'🫁',name:'Respiratory System',sys:'Respiratory',col:'#3bc8e8',role:'The brain stem (medulla oblongata) automatically controls breathing rate based on CO₂ levels in the blood. You can consciously override it briefly, but the brain stem always reasserts control.',fact:'<strong>Fun Fact:</strong> Hiccups are caused by the phrenic nerve — the nerve that controls your diaphragm — being irritated. The nerve runs from your brain stem all the way down to your diaphragm.'},
+  digestive:{ico:'🫄',name:'Digestive System',sys:'Digestive',col:'#ff9d45',role:'The enteric nervous system — 500 million neurons embedded in the gut walls — controls digestion semi-independently. It communicates with the brain via the vagus nerve; stress and emotions directly affect gut function.',fact:'<strong>Fun Fact:</strong> Your gut produces about 95% of your body\'s serotonin — a key mood chemical. The gut–brain connection is so strong scientists call the enteric nervous system your "second brain."'},
+  excretory:{ico:'🫘',name:'Excretory System',sys:'Excretory',col:'#69d97a',role:'The nervous system controls the urge to urinate by sending signals to the bladder sphincter. It also monitors blood chemistry and triggers the kidneys to adjust water retention during dehydration or stress.',fact:'<strong>Fun Fact:</strong> Your kidneys respond to stress hormones triggered by the nervous system by retaining more water — which is why anxiety can sometimes cause you to feel less need to urinate.'},
+  skeletal:{ico:'🦴',name:'Skeletal System',sys:'Skeletal',col:'#c8d8e8',role:'Sensory neurons embedded in bones, cartilage, and joints continuously report pain, pressure, and position (proprioception) back to the brain — allowing the nervous system to maintain posture, balance, and protect bones from injury.',fact:'<strong>Fun Fact:</strong> Proprioception — your sense of where your body is in space — relies on thousands of nerve endings in your joints and muscles. Close your eyes and touch your nose; that\'s proprioception at work.'},
+  immune:{ico:'🛡️',name:'Immune System',sys:'Immune',col:'#1de9b6',role:'The nervous system and immune system communicate via neurotransmitters, neuropeptides, and cytokines. Chronic activation of the stress response suppresses immune cell production, explaining why prolonged stress leads to illness.',fact:'<strong>Fun Fact:</strong> The nervous system can directly innervate immune organs like the thymus and spleen, sending nerve signals that regulate immune cell activity — a field called psychoneuroimmunology.'}
 };
 var NODE_DEFS={
   brain:{x:0.5,y:0.07,r:26,system:'nerv'},
-  spinalcord:{x:0.5,y:0.3,r:18,system:'nerv'},
-  neurons:{x:0.22,y:0.2,r:18,system:'nerv'},
-  pns:{x:0.5,y:0.54,r:19,system:'nerv'},
-  senses:{x:0.78,y:0.2,r:18,system:'nerv'},
-  muscular:{x:0.16,y:0.62,r:18,system:'musc'},
-  endocrine:{x:0.84,y:0.56,r:17,system:'endo'},
-  circulatory:{x:0.5,y:0.8,r:17,system:'circ'}
+  spinalcord:{x:0.5,y:0.30,r:18,system:'nerv'},
+  neurons:{x:0.22,y:0.18,r:17,system:'nerv'},
+  pns:{x:0.5,y:0.52,r:19,system:'nerv'},
+  senses:{x:0.78,y:0.18,r:17,system:'nerv'},
+  circulatory:{x:0.20,y:0.72,r:17,system:'circ'},
+  muscular:{x:0.82,y:0.42,r:17,system:'musc'},
+  respiratory:{x:0.80,y:0.63,r:17,system:'resp'},
+  digestive:{x:0.65,y:0.82,r:17,system:'dige'},
+  excretory:{x:0.35,y:0.88,r:16,system:'excr'},
+  skeletal:{x:0.14,y:0.50,r:16,system:'skel'},
+  immune:{x:0.14,y:0.88,r:16,system:'immu'}
 };
 var CONNECTIONS=[
   {from:'brain',to:'spinalcord',label:'sends motor commands',sys:'nerv'},
@@ -183,10 +211,18 @@ var CONNECTIONS=[
   {from:'spinalcord',to:'pns',label:'connects to body',sys:'nerv'},
   {from:'pns',to:'muscular',label:'motor neurons fire muscles',sys:'musc'},
   {from:'muscular',to:'pns',label:'proprioception feedback',sys:'musc'},
-  {from:'brain',to:'endocrine',label:'hypothalamus triggers hormones',sys:'endo'},
-  {from:'endocrine',to:'brain',label:'hormones affect brain function',sys:'endo'},
-  {from:'brain',to:'circulatory',label:'monitors blood pressure',sys:'circ'},
-  {from:'circulatory',to:'brain',label:'delivers O2 and glucose',sys:'circ'}
+  {from:'brain',to:'circulatory',label:'regulates heart rate',sys:'circ'},
+  {from:'circulatory',to:'brain',label:'delivers O2 and glucose',sys:'circ'},
+  {from:'brain',to:'respiratory',label:'controls breathing rate',sys:'resp'},
+  {from:'respiratory',to:'brain',label:'CO2 level feedback',sys:'resp'},
+  {from:'brain',to:'digestive',label:'vagus nerve signals',sys:'dige'},
+  {from:'digestive',to:'brain',label:'gut-brain axis',sys:'dige'},
+  {from:'spinalcord',to:'excretory',label:'bladder control signals',sys:'excr'},
+  {from:'excretory',to:'brain',label:'blood chemistry feedback',sys:'excr'},
+  {from:'pns',to:'skeletal',label:'pain and position sensing',sys:'skel'},
+  {from:'skeletal',to:'brain',label:'proprioception signals',sys:'skel'},
+  {from:'brain',to:'immune',label:'stress response signals',sys:'immu'},
+  {from:'immune',to:'brain',label:'cytokine feedback',sys:'immu'}
 ];
 var SYS_COLOR={circ:'#e74c6f',resp:'#3bc8e8',dige:'#ff9d45',excr:'#69d97a',skel:'#c8d8e8',immu:'#1de9b6',nerv:'#b388ff',musc:'#ff6b6b',endo:'#f5c842',lymp:'#88ffdd'};
 var activeSystems={'nerv':true};

@@ -142,15 +142,14 @@
   /* CYCLE */
   .cycle-box { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; margin-top: 3rem; }
   .cycle-box h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; text-align: center; margin-bottom: 2rem; }
-  .cycle-steps { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; }
-  .cycle-step { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 160px; }
-  .cycle-num { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 0.6rem; }
+  .cycle-steps { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 1.5rem 2rem; }
+  .cycle-step { display: flex; flex-direction: column; align-items: center; text-align: center; width: 140px; }
+  .cycle-num { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka One', cursive; font-size: 1.5rem; flex-shrink: 0; margin-bottom: 0.6rem; }
   .cn1 { background: rgba(168,85,247,0.2); color: var(--purple-light); border: 1px solid rgba(168,85,247,0.35); }
   .cn2 { background: rgba(231,76,60,0.2);  color: #e87070;             border: 1px solid rgba(231,76,60,0.35); }
   .cn3 { background: rgba(230,126,34,0.2); color: #f0a060;             border: 1px solid rgba(230,126,34,0.35); }
   .cn4 { background: rgba(46,204,113,0.2); color: var(--green);        border: 1px solid rgba(46,204,113,0.35); }
   .cycle-step p { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); }
-  .cycle-arrow { color: rgba(255,255,255,0.25); font-size: 1.5rem; margin-top: -1.5rem; }
 
   /* VIDEO */
   .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 8px 40px rgba(0,0,0,0.5); margin-bottom: 0.75rem; }
@@ -449,11 +448,8 @@
       <h3>The Rage Bait Cycle</h3>
       <div class="cycle-steps">
         <div class="cycle-step"><div class="cycle-num cn1">1</div><p>Creator posts extreme content</p></div>
-        <div class="cycle-arrow">›</div>
         <div class="cycle-step"><div class="cycle-num cn2">2</div><p>You feel angry or shocked</p></div>
-        <div class="cycle-arrow">›</div>
         <div class="cycle-step"><div class="cycle-num cn3">3</div><p>You comment or share</p></div>
-        <div class="cycle-arrow">›</div>
         <div class="cycle-step"><div class="cycle-num cn4">4</div><p>Creator gets paid. Cycle repeats.</p></div>
       </div>
     </div>
