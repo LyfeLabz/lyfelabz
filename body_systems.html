@@ -378,6 +378,75 @@
   .compare-table td:first-child { color: var(--text); font-weight: 700; }
   .compare-table td:nth-child(2) { color: var(--accent); font-weight: 700; }
 
+  /* ===== CONNECTION CARDS ===== */
+  .connections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.4rem;
+    margin-top: 2rem;
+  }
+  .conn-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .conn-header {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.85rem 1.3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .conn-header-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .conn-header-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+  }
+  .conn-header.circulatory { background: rgba(231,76,60,0.12);  border-bottom-color: rgba(231,76,60,0.2); }
+  .conn-header.circulatory .conn-header-name { color: #e87070; }
+  .conn-header.skeletal    { background: rgba(189,189,189,0.1); border-bottom-color: rgba(189,189,189,0.2); }
+  .conn-header.skeletal    .conn-header-name { color: #c8cdd0; }
+  .conn-header.nervous     { background: rgba(103,58,183,0.14); border-bottom-color: rgba(103,58,183,0.25); }
+  .conn-header.nervous     .conn-header-name { color: #b39ddb; }
+  .conn-header.respiratory { background: rgba(59,200,232,0.1);  border-bottom-color: rgba(59,200,232,0.2); }
+  .conn-header.respiratory .conn-header-name { color: var(--accent); }
+  .conn-header.muscular    { background: rgba(233,30,99,0.1);   border-bottom-color: rgba(233,30,99,0.2); }
+  .conn-header.muscular    .conn-header-name { color: #f06292; }
+  .conn-rows { padding: 0.5rem 0; }
+  .conn-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.7rem 1.3rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .conn-row:last-child { border-bottom: none; }
+  .conn-partner {
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border-radius: 99px;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .conn-partner.respiratory { background: rgba(59,200,232,0.12);  color: var(--accent);  border: 1px solid rgba(59,200,232,0.3); }
+  .conn-partner.digestive   { background: rgba(255,152,0,0.12);   color: #ffb74d;        border: 1px solid rgba(255,152,0,0.3); }
+  .conn-partner.excretory   { background: rgba(139,195,74,0.12);  color: #aed581;        border: 1px solid rgba(139,195,74,0.3); }
+  .conn-partner.immune      { background: rgba(33,150,243,0.12);  color: #64b5f6;        border: 1px solid rgba(33,150,243,0.3); }
+  .conn-partner.muscular    { background: rgba(233,30,99,0.12);   color: #f06292;        border: 1px solid rgba(233,30,99,0.3); }
+  .conn-partner.circulatory { background: rgba(231,76,60,0.12);   color: #e87070;        border: 1px solid rgba(231,76,60,0.3); }
+  .conn-partner.nervous     { background: rgba(103,58,183,0.12);  color: #b39ddb;        border: 1px solid rgba(103,58,183,0.3); }
+  .conn-partner.all         { background: rgba(245,200,66,0.12);  color: var(--gold);    border: 1px solid rgba(245,200,66,0.3); }
+  .conn-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
   /* ===== VIDEO ===== */
   .video-wrapper {
     position: relative;
@@ -564,14 +633,17 @@
     font-weight: 800;
     letter-spacing: 0.05em;
     text-decoration: none;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: #e8f4fb;
+    background: rgba(59,200,232,0.28);
+    border: 1.5px solid rgba(59,200,232,0.8);
+    color: #7ee8f8;
+    box-shadow: 0 0 14px rgba(59,200,232,0.3), inset 0 0 10px rgba(59,200,232,0.1);
     transition: all 0.2s;
   }
   .explore-btn:hover {
-    background: rgba(255,255,255,0.10);
-    border-color: rgba(255,255,255,0.25);
+    background: rgba(59,200,232,0.5);
+    border-color: #3bc8e8;
+    color: #fff;
+    box-shadow: 0 0 22px rgba(59,200,232,0.6), inset 0 0 14px rgba(59,200,232,0.2);
     transform: translateX(3px);
   }
 
@@ -698,7 +770,7 @@
     </div>
 
     <div class="hierarchy-note">
-      ⚠️ <strong>Key Idea:</strong> If cells do not function properly, the tissues, organs, and body systems that depend on them cannot function properly either. Everything starts at the cellular level.
+      🔑 <strong>Key Idea:</strong> If cells do not function properly, the tissues, organs, and body systems that depend on them cannot function properly either. Everything starts at the cellular level.
     </div>
   </div>
 </section>
@@ -786,62 +858,95 @@
     <span class="section-label">System Interactions</span>
     <h2 class="section-title">How Systems Work Together 🔗</h2>
     <p class="section-desc">No body system works alone — they are constantly depending on and supporting each other. Here's a quick reference for the key interactions.</p>
-    <table class="compare-table">
-      <thead>
-        <tr>
-          <th>System</th>
-          <th>Works With</th>
-          <th>Why They're Connected</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Circulatory</td>
-          <td>Respiratory</td>
-          <td>Blood picks up O₂ from lungs and delivers it to every cell in the body</td>
-        </tr>
-        <tr>
-          <td>Circulatory</td>
-          <td>Digestive</td>
-          <td>Blood transports absorbed nutrients from the small intestine to cells throughout the body</td>
-        </tr>
-        <tr>
-          <td>Circulatory</td>
-          <td>Excretory</td>
-          <td>Blood carries metabolic waste products to excretory organs for removal</td>
-        </tr>
-        <tr>
-          <td>Circulatory</td>
-          <td>Immune</td>
-          <td>Blood vessels deliver white blood cells to sites of infection anywhere in the body</td>
-        </tr>
-        <tr>
-          <td>Skeletal</td>
-          <td>Muscular</td>
-          <td>Muscles pull on bones via tendons to create movement at joints</td>
-        </tr>
-        <tr>
-          <td>Skeletal</td>
-          <td>Circulatory</td>
-          <td>Bone marrow produces red and white blood cells for the circulatory and immune systems</td>
-        </tr>
-        <tr>
-          <td>Nervous</td>
-          <td>All Systems</td>
-          <td>The brain and spinal cord send signals to coordinate and regulate every other body system</td>
-        </tr>
-        <tr>
-          <td>Respiratory</td>
-          <td>Excretory</td>
-          <td>The lungs remove carbon dioxide — a gaseous waste product — from the body when we exhale</td>
-        </tr>
-        <tr>
-          <td>Muscular</td>
-          <td>Digestive</td>
-          <td>Smooth muscle in the digestive tract pushes food along through peristalsis</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="connections-grid">
+
+      <!-- CIRCULATORY -->
+      <div class="conn-card">
+        <div class="conn-header circulatory">
+          <span class="conn-header-icon">🫀</span>
+          <span class="conn-header-name">Circulatory</span>
+        </div>
+        <div class="conn-rows">
+          <div class="conn-row">
+            <span class="conn-partner respiratory">Respiratory</span>
+            <span class="conn-desc">Blood picks up O₂ from the lungs and delivers it to every cell in the body</span>
+          </div>
+          <div class="conn-row">
+            <span class="conn-partner digestive">Digestive</span>
+            <span class="conn-desc">Blood transports absorbed nutrients from the small intestine to cells throughout the body</span>
+          </div>
+          <div class="conn-row">
+            <span class="conn-partner excretory">Excretory</span>
+            <span class="conn-desc">Blood carries metabolic waste products to excretory organs for removal</span>
+          </div>
+          <div class="conn-row">
+            <span class="conn-partner immune">Immune</span>
+            <span class="conn-desc">Blood vessels deliver white blood cells to sites of infection anywhere in the body</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SKELETAL -->
+      <div class="conn-card">
+        <div class="conn-header skeletal">
+          <span class="conn-header-icon">🦴</span>
+          <span class="conn-header-name">Skeletal</span>
+        </div>
+        <div class="conn-rows">
+          <div class="conn-row">
+            <span class="conn-partner muscular">Muscular</span>
+            <span class="conn-desc">Muscles pull on bones via tendons to create movement at joints</span>
+          </div>
+          <div class="conn-row">
+            <span class="conn-partner circulatory">Circulatory</span>
+            <span class="conn-desc">Bone marrow produces red and white blood cells for the circulatory and immune systems</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- NERVOUS -->
+      <div class="conn-card">
+        <div class="conn-header nervous">
+          <span class="conn-header-icon">🧠</span>
+          <span class="conn-header-name">Nervous</span>
+        </div>
+        <div class="conn-rows">
+          <div class="conn-row">
+            <span class="conn-partner all">All Systems</span>
+            <span class="conn-desc">The brain and spinal cord send signals to coordinate and regulate every other body system</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESPIRATORY -->
+      <div class="conn-card">
+        <div class="conn-header respiratory">
+          <span class="conn-header-icon">🫁</span>
+          <span class="conn-header-name">Respiratory</span>
+        </div>
+        <div class="conn-rows">
+          <div class="conn-row">
+            <span class="conn-partner excretory">Excretory</span>
+            <span class="conn-desc">The lungs remove carbon dioxide — a gaseous waste product — from the body when we exhale</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MUSCULAR -->
+      <div class="conn-card">
+        <div class="conn-header muscular">
+          <span class="conn-header-icon">💪</span>
+          <span class="conn-header-name">Muscular</span>
+        </div>
+        <div class="conn-rows">
+          <div class="conn-row">
+            <span class="conn-partner digestive">Digestive</span>
+            <span class="conn-desc">Smooth muscle in the digestive tract pushes food along through peristalsis</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </section>
 
@@ -895,7 +1000,7 @@
 <footer>
   <div class="logo">🫀 LyfeLabz · Body Systems</div>
   <p style="margin-bottom:0.5rem;">Part of the Biology unit · <a href="index.html" style="color:var(--accent);">Back to LyfeLabz Hub</a></p>
-  <p>© 2026 LyfeLabz · Educational Use</p>
+  <p>© 2025 LyfeLabz · Educational Use</p>
 </footer>
 
 <script>
