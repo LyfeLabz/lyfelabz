@@ -526,7 +526,7 @@ body.ls-active .ls-focus {
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-eyebrow">🔬 Evidence-Based Design</div>
+  <div class="hero-eyebrow">Evidence-Based Design</div>
   <h1>Learning Science</h1>
   <p>Every lesson, extension, and game on LyfeLabz is built around principles from cognitive psychology and the science of learning — not just intuition. Here's what's working under the hood.</p>
 
@@ -947,14 +947,14 @@ body.ls-active .ls-focus {
     <div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;">
       <button id="edu-toggle-btn" onclick="toggleEduMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.45rem 1.15rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(59,200,232,0.22);background:rgba(59,200,232,0.05);color:rgba(59,200,232,0.5);">
         <span id="edu-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:rgba(59,200,232,0.3);transition:background 0.22s,box-shadow 0.22s;"></span>
-        <span id="edu-toggle-label">Show Learning Science Badges</span>
+        <span id="edu-toggle-label">Enable Educator Mode</span>
       </button>
       <button id="stem-toggle-btn" onclick="toggleStemMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.45rem 1.15rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(46,204,113,0.35);background:rgba(46,204,113,0.07);color:rgba(46,204,113,0.7);">
         <span id="stem-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:rgba(46,204,113,0.4);transition:background 0.22s,box-shadow 0.22s;"></span>
         <span id="stem-toggle-label">Show MA STE Frameworks</span>
       </button>
     </div>
-    <div style="font-size:0.67rem;color:rgba(255,255,255,0.18);max-width:320px;text-align:center;line-height:1.5;" id="edu-toggle-hint">
+    <div style="font-size:0.67rem;color:rgba(255,255,255,0.18);max-width:600px;text-align:center;line-height:1.5;" id="edu-toggle-hint">
       Badges &amp; standards appear on every lesson, extension &amp; game — this session only.
     </div>
   </div>
@@ -997,7 +997,7 @@ function syncEduToggleUI(isOn) {
       btn.style.color       = 'rgba(59,200,232,0.5)';
     }
     if (dot) { dot.style.background = 'rgba(59,200,232,0.3)'; dot.style.boxShadow = 'none'; }
-    if (lbl) lbl.textContent = 'Show Learning Science Badges';
+    if (lbl) lbl.textContent = 'Enable Educator Mode';
     if (hint) hint.innerHTML = 'Badges appear on every lesson, extension &amp; game — this session only.';
     if (hBtn) {
       hBtn.style.borderColor = 'rgba(59,200,232,0.3)';
