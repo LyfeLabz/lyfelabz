@@ -924,7 +924,7 @@
         border: 1px solid rgba(59,200,232,0.8); background: rgba(59,200,232,0.18); color: #3bc8e8;
       ">
         <span id="edu-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3bc8e8;transition:background 0.22s,box-shadow 0.22s;"></span>
-        <span id="edu-toggle-label">Show Learning Science Badges</span>
+        <span id="edu-toggle-label">Enable Educator Mode</span>
       </button>
       <button id="stem-toggle-btn" onclick="toggleStemMode()" style="
         display: inline-flex; align-items: center; gap: 0.6rem;
@@ -960,14 +960,14 @@ function syncEduToggleUI(isOn) {
     btn.style.color        = 'rgba(59,200,232,0.95)';
     dot.style.background   = '#3bc8e8';
     dot.style.boxShadow    = '0 0 8px rgba(59,200,232,0.7)';
-    lbl.textContent        = 'Learning Science: On';
+    lbl.textContent        = 'Educator Mode: On';
   } else {
     btn.style.borderColor  = 'rgba(59,200,232,0.8)';
     btn.style.background   = 'rgba(59,200,232,0.18)';
     btn.style.color        = '#3bc8e8';
     dot.style.background   = '#3bc8e8';
     dot.style.boxShadow    = 'none';
-    lbl.textContent        = 'Show Learning Science Badges';
+    lbl.textContent        = 'Enable Educator Mode';
   }
 }
 
