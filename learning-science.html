@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning Science · LyfeLabz</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <!-- Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9QHB5G2B5B');</script>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+/* ── Learning Science Badges (inline) ── */
+/* ── Visibility gate — hidden until body.ls-active is set ─────────
+   The session-check script (injected into every content page) adds
+   body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
+   Educators toggle this from the index or Learning Science page.
+   Default: hidden. Closing the browser tab resets to hidden.
+   ─────────────────────────────────────────────────────────────────*/
+.ls-focus {
+  display: none;          /* hidden by default */
+}
+
+body.ls-active .ls-focus {
+  /* ── Centered card — sits between hero and first content section ── */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+
+  /* Centered, max-width container */
+  width: fit-content;
+  max-width: 760px;
+  margin: 1.6rem auto;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+
+  /* Softly bordered teal-tinted card */
+  background: rgba(59, 200, 232, 0.05);
+  border: 1px solid rgba(59, 200, 232, 0.2);
+  border-radius: 16px;
+
+  /* Gentle entrance when mode is toggled on mid-session */
+  animation: lsFadeIn 0.35s ease both;
+}
+
+@keyframes lsFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Section label ───────────────────────────────────────────────── */
+.ls-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(59, 200, 232, 0.75);
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Individual badge ────────────────────────────────────────────── */
+.ls-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  cursor: default;
+  white-space: nowrap;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  overflow: visible;
+}
+
+.ls-badge:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* ── Tooltip (CSS-only, data-tip attribute) ──────────────────────── */
+.ls-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+
+.ls-badge[data-tip]:hover::after {
+  opacity: 1;
+}
+
+/* ── Tooltip arrow ───────────────────────────────────────────────── */
+.ls-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255, 255, 255, 0.11);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+
+.ls-badge[data-tip]:hover::before {
+  opacity: 1;
+}
+
+/* ── Responsive: hide tooltip below 480px (touch devices) ─────────  */
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after,
+  .ls-badge[data-tip]::before {
+    display: none;
+  }
+  body.ls-active .ls-focus {
+    max-width: calc(100% - 2.4rem);
+    padding: 0.75rem 1rem;
+    gap: 0.4rem 0.5rem;
+  }
+}
+</style>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --dark: #1a2535;
+      --card: #1e2f42;
+      --card2: #223244;
+      --gold: #f5c842;
+      --gold-glow: rgba(245,200,66,0.35);
+      --green: #2ecc71;
+      --teal: #3bc8e8;
+      --purple: #9b59b6;
+      --muted: #7a8fa6;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8f0f8;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Starfield ─────────────────────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 15%, rgba(59,200,232,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(155,89,182,0.07) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(245,200,66,0.03) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Nav ───────────────────────────────────────────────────────── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(26,37,53,0.92);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      text-shadow: 0 0 18px var(--gold-glow);
+    }
+    .nav-right { display: flex; align-items: center; gap: 0.6rem; }
+    .nav-pill {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid rgba(245,200,66,0.3);
+      border-radius: 99px;
+      padding: 0.3rem 0.9rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .nav-pill:hover { background: rgba(245,200,66,0.1); border-color: var(--gold); }
+
+    /* ── Hero ──────────────────────────────────────────────────────── */
+    .hero {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 5rem 2rem 3rem;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.7rem;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--teal);
+      background: rgba(59,200,232,0.08);
+      border: 1px solid rgba(59,200,232,0.22);
+      border-radius: 99px;
+      padding: 0.35rem 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      line-height: 1.05;
+      margin-bottom: 1.1rem;
+      background: linear-gradient(135deg, #fff 30%, var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 620px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
+    }
+
+    /* ── Stats strip ───────────────────────────────────────────────── */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+      padding: 1.5rem 2rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.9rem;
+      font-weight: 900;
+      color: var(--gold);
+    }
+    .stat-lbl {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ── Main layout ───────────────────────────────────────────────── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Section label ─────────────────────────────────────────────── */
+    .section-label {
+      display: inline-block;
+      font-size: 0.63rem;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.5rem;
+    }
+    .section-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.9rem;
+      margin-bottom: 0.4rem;
+    }
+    .section-desc {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 540px;
+      line-height: 1.65;
+      margin-bottom: 2.2rem;
+    }
+
+    /* ── Principle card grid ───────────────────────────────────────── */
+    .principles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.1rem;
+      margin-bottom: 4rem;
+    }
+    .p-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem 1.6rem 1.3rem;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .p-card:hover {
+      border-color: rgba(59,200,232,0.25);
+      box-shadow: 0 0 28px rgba(59,200,232,0.07);
+      transform: translateY(-2px);
+    }
+    .p-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.9rem;
+      margin-bottom: 0.85rem;
+    }
+    .p-icon {
+      font-size: 1.7rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .p-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.15rem;
+      color: var(--text);
+      margin-bottom: 0.15rem;
+    }
+    .p-badge-label {
+      font-size: 0.64rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .p-desc {
+      font-size: 0.88rem;
+      color: rgba(232,240,248,0.72);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    .p-research {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.55;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── "Used in" links ───────────────────────────────────────────── */
+    .p-activities {
+      margin-top: 0.8rem;
+    }
+    .p-act-label {
+      font-size: 0.62rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
+    }
+    .p-act-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .p-act-link {
+      font-size: 0.69rem;
+      font-weight: 700;
+      color: var(--teal);
+      background: rgba(59,200,232,0.07);
+      border: 1px solid rgba(59,200,232,0.18);
+      border-radius: 99px;
+      padding: 0.18rem 0.6rem;
+      text-decoration: none;
+      transition: all 0.18s;
+    }
+    .p-act-link:hover {
+      background: rgba(59,200,232,0.15);
+      border-color: rgba(59,200,232,0.4);
+    }
+    .p-act-link.lesson  { color: #f5c842; background: rgba(245,200,66,0.07); border-color: rgba(245,200,66,0.2); }
+    .p-act-link.lesson:hover  { background: rgba(245,200,66,0.15); border-color: rgba(245,200,66,0.45); }
+    .p-act-link.ext     { color: #c39bd3; background: rgba(155,89,182,0.07); border-color: rgba(155,89,182,0.22); }
+    .p-act-link.ext:hover     { background: rgba(155,89,182,0.15); border-color: rgba(155,89,182,0.45); }
+    .p-act-link.game    { color: #2ecc71; background: rgba(46,204,113,0.07); border-color: rgba(46,204,113,0.2); }
+    .p-act-link.game:hover    { background: rgba(46,204,113,0.15); border-color: rgba(46,204,113,0.45); }
+    .p-act-link.map     { color: #3bc8e8; background: rgba(59,200,232,0.07); border-color: rgba(59,200,232,0.2); }
+    .p-act-link.map:hover     { background: rgba(59,200,232,0.15); border-color: rgba(59,200,232,0.4); }
+
+    /* ── Teacher note box ──────────────────────────────────────────── */
+    .teacher-note {
+      background: rgba(245,200,66,0.06);
+      border: 1px solid rgba(245,200,66,0.2);
+      border-radius: 16px;
+      padding: 1.8rem 2rem;
+      margin-bottom: 3.5rem;
+    }
+    .teacher-note h3 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.25rem;
+      color: var(--gold);
+      margin-bottom: 0.7rem;
+    }
+    .teacher-note p {
+      font-size: 0.9rem;
+      color: rgba(232,240,248,0.8);
+      line-height: 1.7;
+      margin-bottom: 0.6rem;
+    }
+    .teacher-note p:last-child { margin-bottom: 0; }
+
+    /* ── Badge legend ──────────────────────────────────────────────── */
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Reusable snippet box ──────────────────────────────────────── */
+    .snippet-box {
+      background: #0e1c2c;
+      border: 1px solid rgba(59,200,232,0.18);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      margin-top: 1.2rem;
+      overflow-x: auto;
+    }
+    .snippet-box pre {
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: #8bc4e0;
+      line-height: 1.65;
+      white-space: pre;
+    }
+
+    /* ── Footer ────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .footer-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.9rem;
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: 0.12em;
+      margin-bottom: 0.6rem;
+    }
+    footer p { font-size: 0.8rem; color: var(--muted); }
+
+    @media (max-width: 600px) {
+      nav { padding: 0.8rem 1.2rem; }
+      .hero { padding: 3.5rem 1.2rem 2rem; }
+      .container { padding: 2rem 1.2rem 4rem; }
+      .stats { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-pill">← Learning Hub</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">🔬 Evidence-Based Design</div>
+  <h1>Learning Science</h1>
+  <p>Every lesson, extension, and game on LyfeLabz is built around principles from cognitive psychology and the science of learning — not just intuition. Here's what's working under the hood.</p>
+
+  <!-- Hero-level toggles — visible and intentional for educator landing -->
+  <div style="margin-top:1.6rem;display:flex;flex-direction:column;align-items:center;gap:0.5rem;">
+    <div style="display:flex;gap:0.65rem;flex-wrap:wrap;justify-content:center;">
+      <button id="edu-hero-btn" onclick="toggleEduMode()" style="
+        display:inline-flex;align-items:center;gap:0.7rem;
+        font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;
+        letter-spacing:0.05em;text-transform:uppercase;
+        border-radius:99px;padding:0.6rem 1.5rem;cursor:pointer;
+        transition:all 0.22s ease;
+        border:1px solid rgba(59,200,232,0.3);
+        background:rgba(59,200,232,0.07);
+        color:rgba(59,200,232,0.65);
+      ">
+        <span id="edu-hero-dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:rgba(59,200,232,0.35);transition:all 0.22s;"></span>
+        <span id="edu-hero-label">Enable Educator Mode</span>
+      </button>
+      <button id="stem-hero-btn" onclick="toggleStemMode()" style="
+        display:inline-flex;align-items:center;gap:0.7rem;
+        font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;
+        letter-spacing:0.05em;text-transform:uppercase;
+        border-radius:99px;padding:0.6rem 1.5rem;cursor:pointer;
+        transition:all 0.22s ease;
+        border:1px solid rgba(46,204,113,0.3);
+        background:rgba(46,204,113,0.07);
+        color:rgba(46,204,113,0.65);
+      ">
+        <span id="stem-hero-dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:rgba(46,204,113,0.35);transition:all 0.22s;"></span>
+        <span id="stem-hero-label">Show MA STE Frameworks</span>
+      </button>
+    </div>
+    <div style="font-size:0.82rem;color:rgba(255,255,255,0.45);line-height:1.8;text-align:center;max-width:580px;">
+      Enabling Educator Mode highlights the cognitive strategy at work in each activity.<br>
+      Enabling MA STE Frameworks reveals the Grade 6 alignment standards behind each activity.<br>
+      Toggling either mode on applies it site-wide. Closing the tab resets everything.
+    </div>
+  </div>
+</div>
+
+<!-- STATS STRIP -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num">15</div>
+    <div class="stat-lbl">Principles Used</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">23</div>
+    <div class="stat-lbl">Activities Analysed</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">4</div>
+    <div class="stat-lbl">Activity Types</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- Teacher note -->
+  <div class="teacher-note">
+    <h3>📋 For Teachers</h3>
+    <p>Every LyfeLabz activity is tagged with the learning science principles it uses. Hover over any badge on a lesson or game page to see a one-sentence explanation. Use the cards below to go deeper — each principle includes the research rationale and links to the activities where you'll see it in action.</p>
+    <p>Activity types: <strong style="color:var(--gold)">Lesson</strong> · <strong style="color:#c39bd3">Extension</strong> · <strong style="color:var(--green)">Game</strong> · <strong style="color:var(--teal)">Interactive Map</strong></p>
+  </div>
+
+  <!-- Principles section -->
+  <span class="section-label">The Framework</span>
+  <h2 class="section-title">15 Learning Science Principles</h2>
+  <p class="section-desc">Hover any badge on an activity page to see the one-sentence teacher tip. Click the activity links below to go directly to that principle in action.</p>
+
+  <div class="principles-grid">
+
+    <!-- 1 Retrieval Practice -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">🧠</div>
+        <div>
+          <div class="p-title">Retrieval Practice</div>
+        </div>
+      </div>
+      <p class="p-desc">Recalling information from memory — rather than re-reading it — is one of the most powerful ways to strengthen long-term retention. Every quiz on LyfeLabz is a retrieval event, not a test.</p>
+      <p class="p-research">Research finding: Students who retrieve information score significantly higher on delayed tests than students who spend the same time re-studying, even when they feel less confident. (Roediger & Karpicke, 2006)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link lesson" href="characteristics.html">Characteristics of Life</a>
+          <a class="p-act-link lesson" href="organelles.html">Cell Organelles</a>
+          <a class="p-act-link lesson" href="body_systems.html">Body Systems</a>
+          <a class="p-act-link ext" href="extension_organelles.html">Protein Pathway</a>
+          <a class="p-act-link game" href="cell-explorer.html">Cell Explorer</a>
+          <a class="p-act-link game" href="cell-type-showdown.html">Cell Type Showdown</a>
+          <a class="p-act-link game" href="neuron-explorer.html">Neuron Explorer</a>
+          <a class="p-act-link game" href="game_relay.html">System Relay Race</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 Dual Coding -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">🖼️</div>
+        <div>
+          <div class="p-title">Dual Coding</div>
+        </div>
+      </div>
+      <p class="p-desc">Pairing visuals with verbal explanations activates two separate memory channels simultaneously. When students both see and read about the same concept, it encodes more deeply than either channel alone.</p>
+      <p class="p-research">Research finding: Learning is enhanced when words and pictures are presented together rather than separately, because they are processed through distinct cognitive channels. (Paivio, 1971; Mayer, 2009)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link lesson" href="characteristics.html">Characteristics of Life</a>
+          <a class="p-act-link lesson" href="organelles.html">Cell Organelles</a>
+          <a class="p-act-link lesson" href="body_systems.html">Body Systems</a>
+          <a class="p-act-link game" href="cell-explorer.html">Cell Explorer</a>
+          <a class="p-act-link game" href="neuron-explorer.html">Neuron Explorer</a>
+          <a class="p-act-link game" href="game_exercise.html">Exercise Simulator</a>
+          <a class="p-act-link map" href="system_circulatory.html">All Interactive Maps</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 Cognitive Load Management -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">⚖️</div>
+        <div>
+          <div class="p-title">Cognitive Load Management</div>
+        </div>
+      </div>
+      <p class="p-desc">Working memory can only hold 4–7 items at once. LyfeLabz lessons are sequenced so students build understanding in layers — never throwing all eight systems at once before a schema is established.</p>
+      <p class="p-research">Research finding: Instruction that accounts for working memory limits — through chunking, sequencing, and scaffolding — produces significantly better learning outcomes. (Sweller, 1988)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link lesson" href="characteristics.html">Characteristics of Life</a>
+          <a class="p-act-link lesson" href="body_systems.html">Body Systems</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Interleaving -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">🔀</div>
+        <div>
+          <div class="p-title">Interleaving</div>
+        </div>
+      </div>
+      <p class="p-desc">Mixing different question types or topics — rather than practising one thing repeatedly — forces the brain to discriminate between concepts and apply knowledge more flexibly.</p>
+      <p class="p-research">Research finding: Students who practise interleaved problems outperform blocked-practice students on delayed tests by 43%, despite feeling like they're learning less in the moment. (Rohrer & Taylor, 2007)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link game" href="cell-type-showdown.html">Cell Type Showdown</a>
+          <a class="p-act-link ext" href="extension_body_systems.html">Solving Medical Mysteries</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 Elaboration -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">💬</div>
+        <div>
+          <div class="p-title">Elaboration</div>
+        </div>
+      </div>
+      <p class="p-desc">Explaining the "why" and "how" behind facts — rather than just the "what" — builds deep causal understanding that transfers to new situations. LyfeLabz prompts students to explain mechanisms, not just name things.</p>
+      <p class="p-research">Research finding: Students who generate elaborative explanations during learning outperform those who simply read or are told facts, because elaboration forces the creation of meaningful connections. (Chi et al., 1994)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link lesson" href="organelles.html">Cell Organelles</a>
+          <a class="p-act-link lesson" href="body_systems.html">Body Systems</a>
+          <a class="p-act-link ext" href="extension_organelles.html">Protein Pathway</a>
+          <a class="p-act-link ext" href="extensions_virus.html">Are Viruses Alive?</a>
+          <a class="p-act-link ext" href="extension_body_systems.html">Medical Mysteries</a>
+          <a class="p-act-link game" href="game_exercise.html">Exercise Simulator</a>
+          <a class="p-act-link game" href="game_relay.html">System Relay Race</a>
+          <a class="p-act-link map" href="system_nervous.html">All Interactive Maps</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 Concept Formation -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">🗂️</div>
+        <div>
+          <div class="p-title">Concept Formation</div>
+        </div>
+      </div>
+      <p class="p-desc">Concepts are built by analysing examples and non-examples until a precise mental category is established. LyfeLabz uses comparisons, contrast cases, and classification tasks to push beyond surface definitions.</p>
+      <p class="p-research">Research finding: Presenting both positive examples and near-miss non-examples during instruction accelerates concept acquisition and improves generalisation to new cases. (Tennyson & Park, 1980)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link lesson" href="characteristics.html">Characteristics of Life</a>
+          <a class="p-act-link lesson" href="body_systems.html">Body Systems</a>
+          <a class="p-act-link game" href="is-it-alive.html">Is It Alive?</a>
+          <a class="p-act-link map" href="system_immune.html">Immune System Map</a>
+          <a class="p-act-link map" href="system_muscular.html">Muscular System Map</a>
+          <a class="p-act-link map" href="system_skeletal.html">Skeletal System Map</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 Conceptual Change -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">🔄</div>
+        <div>
+          <div class="p-title">Conceptual Change</div>
+        </div>
+      </div>
+      <p class="p-desc">Misconceptions don't disappear when students hear the correct answer — they have to be actively dislodged by clear counterevidence. LyfeLabz targets the most common science misconceptions head-on.</p>
+      <p class="p-research">Research finding: Simply providing correct information rarely changes a deeply held misconception. Conceptual change requires activating the prior belief, creating cognitive conflict, and offering a more satisfying explanation. (Posner et al., 1982)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link ext" href="extensions_virus.html">Are Viruses Alive?</a>
+          <a class="p-act-link lesson" href="ragebaiting.html">Rage Bait (Psych)</a>
+          <a class="p-act-link map" href="system_excretory.html">Excretory System Map</a>
+          <a class="p-act-link map" href="system_skeletal.html">Skeletal System Map</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8 Generative Learning -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">⚙️</div>
+        <div>
+          <div class="p-title">Generative Learning</div>
+        </div>
+      </div>
+      <p class="p-desc">When students construct knowledge themselves — through summarising, mapping, predicting, or building — they retain it far better than when they receive it passively. LyfeLabz activities consistently put students in the driver's seat.</p>
+      <p class="p-research">Research finding: Generative activities that require students to actively construct meaning (rather than passively receive it) produce 50–100% better retention on delayed tests. (Fiorella & Mayer, 2015)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link ext" href="extension_organelles.html">Protein Pathway</a>
+          <a class="p-act-link ext" href="extension_body_systems.html">Medical Mysteries</a>
+          <a class="p-act-link lesson" href="ragebaiting.html">Rage Bait (Psych)</a>
+          <a class="p-act-link game" href="game_relay.html">System Relay Race</a>
+          <a class="p-act-link game" href="neuron-explorer.html">Neuron Explorer</a>
+          <a class="p-act-link map" href="system_digestive.html">Digestive Map</a>
+          <a class="p-act-link map" href="system_nervous.html">Nervous System Map</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9 Feedback & Error Correction -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">✅</div>
+        <div>
+          <div class="p-title">Feedback & Error Correction</div>
+        </div>
+      </div>
+      <p class="p-desc">Errors without feedback are harmful — they reinforce wrong answers. Every quiz and game on LyfeLabz provides an immediate explanation of why the correct answer is correct, turning mistakes into precise learning events.</p>
+      <p class="p-research">Research finding: Immediate corrective feedback significantly outperforms delayed or no feedback, especially when the explanation addresses the specific error rather than just marking it wrong. (Hattie & Timperley, 2007)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link game" href="cell-type-showdown.html">Cell Type Showdown</a>
+          <a class="p-act-link game" href="is-it-alive.html">Is It Alive?</a>
+          <a class="p-act-link game" href="game_exercise.html">Exercise Simulator</a>
+          <a class="p-act-link ext" href="extension_body_systems.html">Medical Mysteries</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10 Spaced Practice -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">📅</div>
+        <div>
+          <div class="p-title">Spaced Practice</div>
+        </div>
+      </div>
+      <p class="p-desc">Returning to material at increasing intervals exploits the "spacing effect" — one of the most replicated findings in memory research. LyfeLabz is designed so the quiz at the end of each lesson serves as a spaced review of earlier content.</p>
+      <p class="p-research">Research finding: Distributing study sessions over time produces substantially better long-term retention than massed practice (cramming), even with the same total study time. (Cepeda et al., 2006)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Curriculum-level design principle</div>
+        <div class="p-act-links">
+          <a class="p-act-link lesson" href="characteristics.html">Lesson 1 → Lesson 2 review</a>
+          <a class="p-act-link lesson" href="body_systems.html">Lesson 3 → Unit review</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11 Motivation & Curiosity -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">✨</div>
+        <div>
+          <div class="p-title">Motivation & Curiosity</div>
+        </div>
+      </div>
+      <p class="p-desc">Epistemic curiosity — the drive to close a knowledge gap — is a powerful motivator for deep learning. LyfeLabz uses open questions, surprising facts, and personally relevant topics to activate and sustain student engagement.</p>
+      <p class="p-research">Research finding: When students are genuinely curious about a topic, they show greater memory for incidental information presented alongside it, suggesting curiosity primes the brain for learning. (Gruber et al., 2014)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link ext" href="extensions_virus.html">Are Viruses Alive?</a>
+          <a class="p-act-link lesson" href="ragebaiting.html">Rage Bait (Psych)</a>
+          <a class="p-act-link game" href="cell-explorer.html">Cell Explorer</a>
+          <a class="p-act-link game" href="game_exercise.html">Exercise Simulator</a>
+          <a class="p-act-link game" href="game_relay.html">System Relay Race</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12 Metacognition -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">🔍</div>
+        <div>
+          <div class="p-title">Metacognition</div>
+        </div>
+      </div>
+      <p class="p-desc">The ability to monitor and regulate one's own thinking is one of the highest-leverage skills a student can develop. LyfeLabz activities that require students to evaluate their own reasoning — not just select answers — build this muscle.</p>
+      <p class="p-research">Research finding: Metacognitive instruction produces large effect sizes across age groups and subjects, and transfers across domains in ways that other strategies do not. (Hattie, 2009)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link ext" href="extensions_virus.html">Are Viruses Alive?</a>
+          <a class="p-act-link lesson" href="ragebaiting.html">Rage Bait (Psych)</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13 Visual Processing -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">👁️</div>
+        <div>
+          <div class="p-title">Visual Processing</div>
+        </div>
+      </div>
+      <p class="p-desc">The human visual system is optimised for detecting patterns, motion, and spatial relationships. LyfeLabz interactive maps and the Neuron Explorer use animation to make invisible biological processes directly perceivable.</p>
+      <p class="p-research">Research finding: Dynamic visualisations improve learning of systems with temporal or causal structure — processes that cannot be adequately represented in static diagrams. (Hegarty, 2004)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link game" href="neuron-explorer.html">Neuron Explorer</a>
+          <a class="p-act-link map" href="system_nervous.html">Nervous System Map</a>
+          <a class="p-act-link map" href="system_circulatory.html">Circulatory Map</a>
+          <a class="p-act-link map" href="system_digestive.html">Digestive Map</a>
+          <a class="p-act-link map" href="system_respiratory.html">Respiratory Map</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14 Analogical Reasoning -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">🔗</div>
+        <div>
+          <div class="p-title">Analogical Reasoning</div>
+        </div>
+      </div>
+      <p class="p-desc">Mapping an unfamiliar concept onto a familiar one — a cell as a city, a neuron as a telephone wire — dramatically reduces the cognitive effort of building a schema from scratch. LyfeLabz uses concrete, age-appropriate analogies throughout.</p>
+      <p class="p-research">Research finding: Analogical encoding — comparing a new concept to a known one — helps students identify the deep relational structure of problems and transfer that structure to new cases. (Gentner, 1983)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link lesson" href="organelles.html">Cell Organelles</a>
+          <a class="p-act-link ext" href="extension_organelles.html">Protein Pathway</a>
+          <a class="p-act-link map" href="system_muscular.html">Muscular System Map</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15 Active Learning -->
+    <div class="p-card">
+      <div class="p-card-top">
+        <div class="p-icon">🎯</div>
+        <div>
+          <div class="p-title">Active Learning</div>
+        </div>
+      </div>
+      <p class="p-desc">When students take actions — clicking, deciding, classifying, responding — rather than passively reading or watching, engagement and retention both increase. LyfeLabz games and maps require continuous active decision-making.</p>
+      <p class="p-research">Research finding: Active learning produces significantly greater exam performance than traditional passive instruction, with the largest benefits for students who start with lower prior knowledge. (Freeman et al., 2014)</p>
+      <div class="p-activities">
+        <div class="p-act-label">Used in</div>
+        <div class="p-act-links">
+          <a class="p-act-link ext" href="extension_body_systems.html">Medical Mysteries</a>
+          <a class="p-act-link game" href="cell-type-showdown.html">Cell Type Showdown</a>
+          <a class="p-act-link game" href="is-it-alive.html">Is It Alive?</a>
+          <a class="p-act-link game" href="neuron-explorer.html">Neuron Explorer</a>
+          <a class="p-act-link game" href="game_exercise.html">Exercise Simulator</a>
+          <a class="p-act-link game" href="game_relay.html">System Relay Race</a>
+          <a class="p-act-link lesson" href="ragebaiting.html">Rage Bait (Psych)</a>
+          <a class="p-act-link map" href="system_circulatory.html">All 8 System Maps</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .principles-grid -->
+
+</div><!-- end .container -->
+
+<footer>
+  <div class="footer-name">LYFELABZ</div>
+  <p style="margin-bottom:0.8rem;">© 2026 LyfeLabz</p>
+  <div style="display:flex;justify-content:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:1.8rem;">
+    <a href="works-cited.html" style="color:var(--teal);text-decoration:none;font-size:0.8rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border:1px solid rgba(59,200,232,0.35);padding:0.28rem 0.9rem;border-radius:99px;">Works Cited</a>
+    <a href="about.html" style="color:var(--gold);text-decoration:none;font-size:0.8rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.3);padding:0.28rem 0.9rem;border-radius:99px;">About LyfeLabz</a>
+    <a href="privacy.html" style="color:var(--gold);text-decoration:none;font-size:0.8rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.3);padding:0.28rem 0.9rem;border-radius:99px;">Privacy Policy</a>
+  </div>
+
+  <div style="padding-top:1.4rem;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;gap:0.6rem;">
+    <div style="font-size:0.62rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.2);">Educator Mode</div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;">
+      <button id="edu-toggle-btn" onclick="toggleEduMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.45rem 1.15rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(59,200,232,0.22);background:rgba(59,200,232,0.05);color:rgba(59,200,232,0.5);">
+        <span id="edu-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:rgba(59,200,232,0.3);transition:background 0.22s,box-shadow 0.22s;"></span>
+        <span id="edu-toggle-label">Show Learning Science Badges</span>
+      </button>
+      <button id="stem-toggle-btn" onclick="toggleStemMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.45rem 1.15rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(46,204,113,0.35);background:rgba(46,204,113,0.07);color:rgba(46,204,113,0.7);">
+        <span id="stem-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:rgba(46,204,113,0.4);transition:background 0.22s,box-shadow 0.22s;"></span>
+        <span id="stem-toggle-label">Show MA STE Frameworks</span>
+      </button>
+    </div>
+    <div style="font-size:0.67rem;color:rgba(255,255,255,0.18);max-width:320px;text-align:center;line-height:1.5;" id="edu-toggle-hint">
+      Badges &amp; standards appear on every lesson, extension &amp; game — this session only.
+    </div>
+  </div>
+</footer>
+
+<script>
+function syncEduToggleUI(isOn) {
+  var btn  = document.getElementById('edu-toggle-btn');
+  var dot  = document.getElementById('edu-toggle-dot');
+  var lbl  = document.getElementById('edu-toggle-label');
+  var hint = document.getElementById('edu-toggle-hint');
+  var hBtn = document.getElementById('edu-hero-btn');
+  var hDot = document.getElementById('edu-hero-dot');
+  var hLbl = document.getElementById('edu-hero-label');
+  var hHnt = document.getElementById('edu-hero-hint');
+  if (isOn) {
+    // footer toggle
+    if (btn) {
+      btn.style.borderColor = 'rgba(59,200,232,0.55)';
+      btn.style.background  = 'rgba(59,200,232,0.12)';
+      btn.style.color       = 'rgba(59,200,232,0.95)';
+    }
+    if (dot) { dot.style.background = '#3bc8e8'; dot.style.boxShadow = '0 0 8px rgba(59,200,232,0.7)'; }
+    if (lbl) lbl.textContent = 'Learning Science Badges: On';
+    if (hint) hint.innerHTML = 'Badges are now visible on every activity page this session.';
+    // hero toggle
+    if (hBtn) {
+      hBtn.style.borderColor = 'rgba(59,200,232,0.6)';
+      hBtn.style.background  = 'rgba(59,200,232,0.14)';
+      hBtn.style.color       = '#3bc8e8';
+    }
+    if (hDot) { hDot.style.background = '#3bc8e8'; hDot.style.boxShadow = '0 0 10px rgba(59,200,232,0.75)'; }
+    if (hLbl) hLbl.textContent = 'Educator Mode: On';
+    if (hHnt) hHnt.innerHTML = 'Badges are visible on all activity pages. Navigate to any lesson or game to see them.';
+    document.body.classList.add('ls-active');
+  } else {
+    if (btn) {
+      btn.style.borderColor = 'rgba(59,200,232,0.22)';
+      btn.style.background  = 'rgba(59,200,232,0.05)';
+      btn.style.color       = 'rgba(59,200,232,0.5)';
+    }
+    if (dot) { dot.style.background = 'rgba(59,200,232,0.3)'; dot.style.boxShadow = 'none'; }
+    if (lbl) lbl.textContent = 'Show Learning Science Badges';
+    if (hint) hint.innerHTML = 'Badges appear on every lesson, extension &amp; game — this session only.';
+    if (hBtn) {
+      hBtn.style.borderColor = 'rgba(59,200,232,0.3)';
+      hBtn.style.background  = 'rgba(59,200,232,0.07)';
+      hBtn.style.color       = 'rgba(59,200,232,0.65)';
+    }
+    if (hDot) { hDot.style.background = 'rgba(59,200,232,0.35)'; hDot.style.boxShadow = 'none'; }
+    if (hLbl) hLbl.textContent = 'Enable Educator Mode';
+    if (hHnt) hHnt.innerHTML = 'Turns on learning science badges across every activity — for this session only';
+    document.body.classList.remove('ls-active');
+  }
+}
+
+function toggleEduMode() {
+  var isOn = sessionStorage.getItem('lyfelabz-ls') === 'on';
+  var next = !isOn;
+  if (next) { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+  else { sessionStorage.removeItem('lyfelabz-ls'); }
+  syncEduToggleUI(next);
+}
+
+(function() { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); })();
+
+function syncStemToggleUI(isOn) {
+  var btn  = document.getElementById('stem-toggle-btn');
+  var dot  = document.getElementById('stem-toggle-dot');
+  var lbl  = document.getElementById('stem-toggle-label');
+  var hBtn = document.getElementById('stem-hero-btn');
+  var hDot = document.getElementById('stem-hero-dot');
+  var hLbl = document.getElementById('stem-hero-label');
+  if (isOn) {
+    if (btn) { btn.style.borderColor = 'rgba(46,204,113,0.55)'; btn.style.background = 'rgba(46,204,113,0.14)'; btn.style.color = 'rgba(46,204,113,1)'; }
+    if (dot) { dot.style.background = '#2ecc71'; dot.style.boxShadow = '0 0 8px rgba(46,204,113,0.7)'; }
+    if (lbl) { lbl.textContent = 'MA STE Frameworks: On'; }
+    if (hBtn) { hBtn.style.borderColor = 'rgba(46,204,113,0.55)'; hBtn.style.background = 'rgba(46,204,113,0.14)'; hBtn.style.color = 'rgba(46,204,113,1)'; }
+    if (hDot) { hDot.style.background = '#2ecc71'; hDot.style.boxShadow = '0 0 8px rgba(46,204,113,0.7)'; }
+    if (hLbl) { hLbl.textContent = 'MA STE Frameworks: On'; }
+  } else {
+    if (btn) { btn.style.borderColor = 'rgba(46,204,113,0.35)'; btn.style.background = 'rgba(46,204,113,0.07)'; btn.style.color = 'rgba(46,204,113,0.7)'; }
+    if (dot) { dot.style.background = 'rgba(46,204,113,0.4)'; dot.style.boxShadow = ''; }
+    if (lbl) { lbl.textContent = 'Show MA STE Frameworks'; }
+    if (hBtn) { hBtn.style.borderColor = 'rgba(46,204,113,0.35)'; hBtn.style.background = 'rgba(46,204,113,0.07)'; hBtn.style.color = 'rgba(46,204,113,0.7)'; }
+    if (hDot) { hDot.style.background = 'rgba(46,204,113,0.4)'; hDot.style.boxShadow = ''; }
+    if (hLbl) { hLbl.textContent = 'Show MA STE Frameworks'; }
+  }
+  document.body.classList.toggle('stem-active', isOn);
+}
+function toggleStemMode() {
+  var isOn = sessionStorage.getItem('lyfelabz-stem') === 'on';
+  var next = !isOn;
+  if (next) { sessionStorage.setItem('lyfelabz-stem', 'on'); }
+  else { sessionStorage.removeItem('lyfelabz-stem'); }
+  syncStemToggleUI(next);
+}
+(function() { syncStemToggleUI(sessionStorage.getItem('lyfelabz-stem') === 'on'); })();
+</script>
+
+<script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');</script>
+</body>
+</html>

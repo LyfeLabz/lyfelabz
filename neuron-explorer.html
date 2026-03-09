@@ -219,19 +219,272 @@
     .game-section{padding:0 1rem 2rem;}
   }
 </style>
+<style>
+/* ── Learning Science Badges (inline) ── */
+/* ── Visibility gate — hidden until body.ls-active is set ─────────
+   The session-check script (injected into every content page) adds
+   body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
+   Educators toggle this from the index or Learning Science page.
+   Default: hidden. Closing the browser tab resets to hidden.
+   ─────────────────────────────────────────────────────────────────*/
+.ls-focus {
+  display: none;          /* hidden by default */
+}
+
+body.ls-active .ls-focus {
+  /* ── Centered card — sits between hero and first content section ── */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+
+  /* Centered, max-width container */
+  width: fit-content;
+  max-width: 760px;
+  margin: 1.6rem auto;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+
+  /* Softly bordered teal-tinted card */
+  background: rgba(59, 200, 232, 0.05);
+  border: 1px solid rgba(59, 200, 232, 0.2);
+  border-radius: 16px;
+
+  /* Gentle entrance when mode is toggled on mid-session */
+  animation: lsFadeIn 0.35s ease both;
+}
+
+@keyframes lsFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Section label ───────────────────────────────────────────────── */
+.ls-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(59, 200, 232, 0.75);
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Individual badge ────────────────────────────────────────────── */
+.ls-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  cursor: default;
+  white-space: nowrap;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  overflow: visible;
+}
+
+.ls-badge:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* ── Tooltip (CSS-only, data-tip attribute) ──────────────────────── */
+.ls-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+
+.ls-badge[data-tip]:hover::after {
+  opacity: 1;
+}
+
+/* ── Tooltip arrow ───────────────────────────────────────────────── */
+.ls-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255, 255, 255, 0.11);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+
+.ls-badge[data-tip]:hover::before {
+  opacity: 1;
+}
+
+/* ── Responsive: hide tooltip below 480px (touch devices) ─────────  */
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after,
+  .ls-badge[data-tip]::before {
+    display: none;
+  }
+  body.ls-active .ls-focus {
+    max-width: calc(100% - 2.4rem);
+    padding: 0.75rem 1rem;
+    gap: 0.4rem 0.5rem;
+  }
+}
+</style>
+
+
+<style>
+/* ── MA STE Standards (inline) ────────────────────────────────── */
+.stem-focus { display: none; }
+body.stem-active .stem-focus {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 0.45rem 0.55rem;
+  width: fit-content; max-width: 760px;
+  margin: 0.5rem auto 1.6rem; padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+  background: rgba(46,204,113,0.05); border: 1px solid rgba(46,204,113,0.2);
+  border-radius: 16px; animation: stemFadeIn 0.35s ease both;
+}
+@keyframes stemFadeIn {
+  from { opacity:0; transform:translateY(-3px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.stem-focus-label {
+  font-size:0.72rem; font-weight:900; letter-spacing:0.13em;
+  text-transform:uppercase; color:rgba(46,204,113,0.75);
+  width:100%; text-align:center; margin-bottom:0.5rem;
+}
+.stem-badge {
+  display:inline-flex; align-items:center;
+  font-family:'Nunito',sans-serif; font-size:0.86rem; font-weight:700;
+  line-height:1; color:rgba(255,255,255,0.82);
+  background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16);
+  border-radius:99px; padding:0.35rem 0.9rem; white-space:nowrap;
+}
+.stem-detail { display:none; }
+body.stem-active .stem-detail {
+  width:fit-content; max-width:760px;
+  margin:0.35rem auto 0.8rem; text-align:center;
+  animation: stemFadeIn 0.35s ease both;
+}
+.stem-show-btn {
+  background:none; border:none; cursor:pointer;
+  font-family:'Nunito',sans-serif; font-size:0.72rem; font-weight:800;
+  letter-spacing:0.1em; text-transform:uppercase;
+  color:rgba(46,204,113,0.5); padding:0.25rem 0.4rem;
+  transition:color 0.2s;
+}
+.stem-show-btn:hover { color:rgba(46,204,113,0.85); }
+.stem-detail-body {
+  display:none; margin-top:0.5rem;
+  background:rgba(46,204,113,0.04); border:1px solid rgba(46,204,113,0.15);
+  border-radius:12px; padding:0.9rem 1.4rem; text-align:left;
+}
+.stem-detail.stem-open .stem-detail-body { display:block; }
+.stem-std-row {
+  display:flex; gap:0.8rem; align-items:flex-start;
+  padding:0.45rem 0; border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.stem-std-row:last-child { border-bottom:none; padding-bottom:0; }
+.stem-std-code {
+  font-size:0.75rem; font-weight:900; color:rgba(46,204,113,0.8);
+  white-space:nowrap; padding-top:0.1rem; min-width:110px;
+}
+.stem-std-text {
+  font-size:0.83rem; font-weight:600;
+  color:rgba(232,240,247,0.72); line-height:1.55;
+}
+/* ── Stem badge tooltip (mirrors ls-badge pattern) ─────────────── */
+.stem-badge { position: relative; cursor: default; }
+.stem-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(46,204,113,0.2);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.stem-badge[data-tip]:hover::after { opacity: 1; }
+.stem-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(46,204,113,0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.stem-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .stem-badge[data-tip]::after,
+  .stem-badge[data-tip]::before { display: none; }
+}
+</style>
 </head>
 <body>
 <canvas id="stars"></canvas>
 
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
-  <a href="index.html#bio" class="nav-back">🌱 Biology</a>
+  <a href="characteristics.html" class="nav-back">← Cells</a>
 </nav>
 
 <div class="page-hero">
   <div class="page-eyebrow">🧠 Biology Extension · Neuron Signaling · Game</div>
   <h1><span>Neuron </span><span class="title-explorer">Explorer</span></h1>
   <p>Explore neuron parts first, then switch to Signal Mode to watch how an action potential travels and triggers neurotransmitter release.</p>
+
 </div>
 
 <div class="hud">
@@ -242,14 +495,28 @@
 </div>
 
 <div class="mode-bar">
-  <button class="mode-btn active" id="btn-explore" onclick="setMode('explore')">🔬 Structure</button>
-  <button class="mode-btn" id="btn-signal" onclick="setMode('signal')">⚡ Signal</button>
-  <button class="mode-btn" id="btn-quiz" onclick="setMode('quiz')">🧠 Quiz Me</button>
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Students make decisions and take actions throughout — they drive the learning, not just receive it. — Freeman et al., 2014">🎯 Active Learning</span>
+  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Animated or spatial visuals make abstract processes concrete and directly perceivable. — Noetel et al., 2021">👁️ Visual Processing</span>
+  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. — Adesope et al., 2017">🧠 Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Students construct meaning themselves rather than passively receiving information from a teacher or screen. — Fiorella & Mayer, 2016">⚙️ Generative Learning</span>
+</div>
+<div class="stem-focus">
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
+  <span class="stem-badge" data-tip="Develop and use a model to describe how parts of cells contribute to cellular functions: obtaining food, water, and nutrients, disposing of wastes, and providing energy for cellular processes.">6.MS-LS1-2</span>
+  <span class="stem-badge" data-tip="Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.">6.MS-LS1-3</span></div>
 </div>
 
 <div class="game-section">
   <div class="game-layout">
     <div class="neuron-container">
+      <div style="display:flex; justify-content:center; gap:0.6rem; margin-bottom:0.75rem;">
+        <button class="mode-btn active" id="btn-explore" onclick="setMode('explore')">🔬 Structure</button>
+        <button class="mode-btn" id="btn-signal" onclick="setMode('signal')">⚡ Signal</button>
+        <button class="mode-btn" id="btn-quiz" onclick="setMode('quiz')">🧠 Quiz Me</button>
+      </div>
       <div class="neuron-frame">
         <svg id="neuronSvg" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" aria-label="Neuron diagram">
           <defs>
@@ -619,6 +886,7 @@
 <footer>
   <div class="footer-logo">LYFELABZ</div>
   <p>Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <p style="margin-top:0.6rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a></p>
 </footer>
 
 <script>
@@ -974,5 +1242,6 @@
 
   init();
 </script>
+<script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 </body>
 </html>

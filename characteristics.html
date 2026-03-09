@@ -12,7 +12,7 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LyfeLabz | Characteristics of Life & Cell Types</title>
+<title>LyfeLabz | Characteristics of Life</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -508,6 +508,257 @@
     .option-feedback { padding-left: 1rem; }
   }
 </style>
+<style>
+/* ── Learning Science Badges (inline) ── */
+/* ── Visibility gate — hidden until body.ls-active is set ─────────
+   The session-check script (injected into every content page) adds
+   body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
+   Educators toggle this from the index or Learning Science page.
+   Default: hidden. Closing the browser tab resets to hidden.
+   ─────────────────────────────────────────────────────────────────*/
+.ls-focus {
+  display: none;          /* hidden by default */
+}
+
+body.ls-active .ls-focus {
+  /* ── Centered card — sits between hero and first content section ── */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+
+  /* Centered, max-width container */
+  width: fit-content;
+  max-width: 760px;
+  margin: 1.6rem auto;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+
+  /* Softly bordered teal-tinted card */
+  background: rgba(59, 200, 232, 0.05);
+  border: 1px solid rgba(59, 200, 232, 0.2);
+  border-radius: 16px;
+
+  /* Gentle entrance when mode is toggled on mid-session */
+  animation: lsFadeIn 0.35s ease both;
+}
+
+@keyframes lsFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Section label ───────────────────────────────────────────────── */
+.ls-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(59, 200, 232, 0.75);
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Individual badge ────────────────────────────────────────────── */
+.ls-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  cursor: default;
+  white-space: nowrap;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  overflow: visible;
+}
+
+.ls-badge:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* ── Tooltip (CSS-only, data-tip attribute) ──────────────────────── */
+.ls-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+
+.ls-badge[data-tip]:hover::after {
+  opacity: 1;
+}
+
+/* ── Tooltip arrow ───────────────────────────────────────────────── */
+.ls-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255, 255, 255, 0.11);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+
+.ls-badge[data-tip]:hover::before {
+  opacity: 1;
+}
+
+/* ── Responsive: hide tooltip below 480px (touch devices) ─────────  */
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after,
+  .ls-badge[data-tip]::before {
+    display: none;
+  }
+  body.ls-active .ls-focus {
+    max-width: calc(100% - 2.4rem);
+    padding: 0.75rem 1rem;
+    gap: 0.4rem 0.5rem;
+  }
+}
+</style>
+
+<style>
+/* ── MA STE Standards (inline) ────────────────────────────────── */
+.stem-focus { display: none; }
+body.stem-active .stem-focus {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 0.45rem 0.55rem;
+  width: fit-content; max-width: 760px;
+  margin: 0.5rem auto 1.6rem; padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+  background: rgba(46,204,113,0.05); border: 1px solid rgba(46,204,113,0.2);
+  border-radius: 16px; animation: stemFadeIn 0.35s ease both;
+}
+@keyframes stemFadeIn {
+  from { opacity:0; transform:translateY(-3px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.stem-focus-label {
+  font-size:0.72rem; font-weight:900; letter-spacing:0.13em;
+  text-transform:uppercase; color:rgba(46,204,113,0.75);
+  width:100%; text-align:center; margin-bottom:0.5rem;
+}
+.stem-badge {
+  display:inline-flex; align-items:center;
+  font-family:'Nunito',sans-serif; font-size:0.86rem; font-weight:700;
+  line-height:1; color:rgba(255,255,255,0.82);
+  background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16);
+  border-radius:99px; padding:0.35rem 0.9rem; white-space:nowrap;
+}
+.stem-detail { display:none; }
+body.stem-active .stem-detail {
+  width:fit-content; max-width:760px;
+  margin:0.35rem auto 0.8rem; text-align:center;
+  animation: stemFadeIn 0.35s ease both;
+}
+.stem-show-btn {
+  background:none; border:none; cursor:pointer;
+  font-family:'Nunito',sans-serif; font-size:0.72rem; font-weight:800;
+  letter-spacing:0.1em; text-transform:uppercase;
+  color:rgba(46,204,113,0.5); padding:0.25rem 0.4rem;
+  transition:color 0.2s;
+}
+.stem-show-btn:hover { color:rgba(46,204,113,0.85); }
+.stem-detail-body {
+  display:none; margin-top:0.5rem;
+  background:rgba(46,204,113,0.04); border:1px solid rgba(46,204,113,0.15);
+  border-radius:12px; padding:0.9rem 1.4rem; text-align:left;
+}
+.stem-detail.stem-open .stem-detail-body { display:block; }
+.stem-std-row {
+  display:flex; gap:0.8rem; align-items:flex-start;
+  padding:0.45rem 0; border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.stem-std-row:last-child { border-bottom:none; padding-bottom:0; }
+.stem-std-code {
+  font-size:0.75rem; font-weight:900; color:rgba(46,204,113,0.8);
+  white-space:nowrap; padding-top:0.1rem; min-width:110px;
+}
+.stem-std-text {
+  font-size:0.83rem; font-weight:600;
+  color:rgba(232,240,247,0.72); line-height:1.55;
+}
+/* ── Stem badge tooltip (mirrors ls-badge pattern) ─────────────── */
+.stem-badge { position: relative; cursor: default; }
+.stem-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(46,204,113,0.2);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.stem-badge[data-tip]:hover::after { opacity: 1; }
+.stem-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(46,204,113,0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.stem-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .stem-badge[data-tip]::after,
+  .stem-badge[data-tip]::before { display: none; }
+}
+</style>
 </head>
 <body>
 
@@ -516,29 +767,38 @@
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
     <li><a href="#characteristics">Life</a></li>
-    <li><a href="#watch">Watch 1</a></li>
-    <li><a href="#cell-types">Cell Types</a></li>
-    <li><a href="#watch2">Watch 2</a></li>
+    <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
-    <li><a href="extensions_virus.html">Extension</a></li>
+    <li><a href="is-it-alive.html">Is It Alive?</a></li>
   </ul>
-  <a href="index.html#bio" class="nav-back">🌱 Biology</a>
+  <a href="index.html#bio" class="nav-back">← Biology</a>
 </nav>
 
 <!-- HERO -->
 <header class="hero">
   <span class="hero-cells">🦠</span>
   <span class="hero-cells">🔬</span>
-  <span class="hero-cells">🧫</span>
-  <span class="hero-cells">🧬</span>
+  <span class="hero-cells">🌱</span>
+  <span class="hero-cells">⚡</span>
   <div class="hero-badge">LyfeLabz · Biology · Lesson 1</div>
-  <h1>Characteristics of Life &amp; Cell Types 🌱</h1>
-  <p>Everything you need to ace your quiz on the <strong>Characteristics of Life</strong> and <strong>Cell Types</strong> — study the notes, watch the video, then test yourself!</p>
+  <h1>Characteristics of Life 🌱</h1>
+  <p>All living things share six key characteristics. Study the notes, watch the video, then test yourself!</p>
   <div class="hero-btns">
     <a href="#characteristics" class="btn btn-primary">Start Studying 🚀</a>
     <a href="#quiz" class="btn btn-outline">Jump to Quiz 📝</a>
   </div>
 </header>
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. — Schroeder et al., 2018">🗂️ Concept Formation</span>
+  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. — Adesope et al., 2017">🧠 Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Content is chunked and sequenced so working memory is never overwhelmed by too much at once. — Sweller et al., 2019">⚖️ Load Management</span>
+</div>
+<div class="stem-focus">
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
+  <span class="stem-badge" data-tip="Provide evidence that all organisms (unicellular and multicellular) are made of cells.">6.MS-LS1-1</span>
+</div>
 
 <!-- CHARACTERISTICS OF LIFE -->
 <section id="characteristics">
@@ -585,145 +845,61 @@
       </div>
     </div>
 
-    <!-- VIDEO: Characteristics of Life -->
+    <!-- VIDEO -->
     <div id="watch" style="margin-top:4rem;">
-      <span class="section-label">Watch 1 — Characteristics of Life</span>
+      <span class="section-label">Watch — Characteristics of Life</span>
       <h3 style="font-family:'Fredoka One',cursive; font-size:1.8rem; margin:0.8rem 0 0.5rem;">Watch &amp; Learn 🎬</h3>
-      <p style="color:var(--text-muted); margin-bottom:1.5rem;">Watch this video to reinforce the six characteristics of life before diving into cell types.</p>
+      <p style="color:var(--text-muted); margin-bottom:1.5rem;">Watch this video to reinforce the six characteristics of life before taking the quiz.</p>
       <div class="video-wrapper">
         <iframe src="https://www.youtube.com/embed/cQPVXrV0GNA" allowfullscreen></iframe>
       </div>
     </div>
-
-    <!-- Unicellular vs Multicellular -->
-    <div style="margin-top:4rem;">
-      <span id="cell-types" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
-      <h3 style="font-family:'Fredoka One',cursive; font-size:1.8rem; margin-bottom:0.5rem;">Unicellular vs. Multicellular 🦠</h3>
-      <p style="color:var(--text-muted); margin-bottom:1.5rem;">All living things are made of cells — but some run the whole show with just one, while others are built from trillions working together.</p>
-      <table class="compare-table">
-        <thead>
-          <tr>
-            <th>Feature</th>
-            <th>Unicellular</th>
-            <th>Multicellular</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Number of cells</td>
-            <td>One cell only</td>
-            <td>Many cells</td>
-          </tr>
-          <tr>
-            <td>How it works</td>
-            <td>One cell does <strong>everything</strong> — eating, moving, reproducing</td>
-            <td>Cells <strong>specialize</strong> and work together in tissues and organs</td>
-          </tr>
-          <tr>
-            <td>Examples</td>
-            <td>Bacteria, amoeba, paramecium, yeast</td>
-            <td>Humans, dogs, trees, mushrooms, jellyfish</td>
-          </tr>
-          <tr>
-            <td>Cell type</td>
-            <td>Can be prokaryotic <em>or</em> eukaryotic</td>
-            <td>Always eukaryotic</td>
-          </tr>
-          <tr>
-            <td>Complexity</td>
-            <td>Simpler — single cell must handle all life functions</td>
-            <td>More complex — division of labor between cell types</td>
-          </tr>
-          <tr>
-            <td>Visible to naked eye?</td>
-            <td class="no">❌ Usually not</td>
-            <td class="yes">✅ Usually yes</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Eukaryotic vs Prokaryotic -->
-    <div style="margin-top:4rem;">
-      <h3 style="font-family:'Fredoka One',cursive; font-size:1.8rem; margin-bottom:0.5rem;">Eukaryotic vs. Prokaryotic 🔬</h3>
-      <p style="color:var(--text-muted); margin-bottom:1.5rem;">Two major types of cells — the key difference is where the DNA lives.</p>
-      <table class="compare-table">
-        <thead>
-          <tr>
-            <th>Feature</th>
-            <th>Eukaryotic</th>
-            <th>Prokaryotic</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>DNA location</td>
-            <td>Inside the <strong>nucleus</strong></td>
-            <td>Floating in the <strong>cytoplasm</strong></td>
-          </tr>
-          <tr>
-            <td>Has a nucleus?</td>
-            <td class="yes">✅ Yes</td>
-            <td class="no">❌ No</td>
-          </tr>
-          <tr>
-            <td>Examples</td>
-            <td>Plants, animals, fungi, protists</td>
-            <td>Bacteria</td>
-          </tr>
-          <tr>
-            <td>Unicellular or multicellular?</td>
-            <td>Both possible</td>
-            <td>Always unicellular</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
   </div>
 </section>
 
-<!-- EXTENSION BANNER -->
+<!-- GAME BANNER -->
 <div style="background:var(--dark2); padding: 0 2rem 4rem;">
   <div class="container">
-    <div class="extension-banner">
-      <div class="extension-banner-icon">🦠</div>
+    <div class="extension-banner" style="background:linear-gradient(135deg,rgba(46,204,113,0.1) 0%,rgba(26,188,156,0.07) 100%);border-color:rgba(46,204,113,0.35);">
+      <div class="extension-banner-icon">🎮</div>
       <div class="extension-banner-body">
-        <div class="extension-banner-tag">⭐ Extension Activity</div>
-        <h3>Are Viruses Alive? You Decide.</h3>
-        <p>Finished the basics? Challenge yourself with this deeper dive — explore the science, check the evidence, and write your own argument using the CER framework.</p>
+        <div class="extension-banner-tag" style="color:var(--green);background:rgba(46,204,113,0.12);border-color:rgba(46,204,113,0.3);">🎯 Game</div>
+        <h3>Is It Alive?</h3>
+        <p>Put the six characteristics to the test — decide if each scenario describes something living or nonliving and rack up your score.</p>
       </div>
-      <a href="extensions_virus.html" class="btn btn-extension">Explore Extension 🔬</a>
+      <a href="is-it-alive.html" class="btn btn-primary">Play Now 🚀</a>
     </div>
   </div>
 </div>
 
-
-
-<!-- VIDEO: Cell Types -->
-<section id="watch2" style="background:var(--dark);">
+<!-- EXTENSION BANNER: GRAY ZONE -->
+<div style="background:var(--dark); padding: 0 2rem 4rem;">
   <div class="container">
-    <span class="section-label">Watch 2 — Cell Types</span>
-    <h2 class="section-title">Watch &amp; Learn 🎬</h2>
-    <p class="section-desc" style="margin-bottom:2rem;">Watch this video on unicellular vs. multicellular organisms and eukaryotic vs. prokaryotic cells to reinforce what you just studied!</p>
-    <div class="video-wrapper">
-      <iframe src="https://www.youtube.com/embed/kpk5wswBPPw" allowfullscreen></iframe>
+    <div class="extension-banner" style="background:linear-gradient(135deg,rgba(241,196,15,0.1) 0%,rgba(231,76,60,0.07) 100%);border-color:rgba(241,196,15,0.35);">
+      <div class="extension-banner-icon">⚠️</div>
+      <div class="extension-banner-body">
+        <div class="extension-banner-tag" style="color:var(--yellow);background:rgba(241,196,15,0.12);border-color:rgba(241,196,15,0.3);">⭐ Extension Activity</div>
+        <h3>The Gray Zone</h3>
+        <p>Fire grows and spreads. Crystals organize themselves. Mules can't reproduce. Robots respond to stimuli. Apply the six characteristics to five things that don't fit neatly into "living" or "nonliving."</p>
+      </div>
+      <a href="extension_gray_zone.html" class="btn btn-primary" style="background:linear-gradient(135deg,var(--yellow),var(--orange));color:#1a1a1a;box-shadow:0 4px 20px rgba(241,196,15,0.3);">Explore Extension 🔍</a>
     </div>
   </div>
-</section>
+</div>
 
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
     <span class="section-label">Quiz</span>
-    <h2 class="section-title">Characteristics of Life &amp; Cell Types Quiz 📝</h2>
-    <p class="section-desc">Test your knowledge on characteristics of life, unicellular vs. multicellular, and eukaryotic vs. prokaryotic cells! Click an answer to see instant feedback.</p>
+    <h2 class="section-title">Characteristics of Life Quiz 📝</h2>
+    <p class="section-desc">Test your knowledge on all six characteristics of life! Click an answer to see instant feedback.</p>
     <div class="quiz-progress">
       <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
-      <div class="progress-text" id="q1-progress-text">0 / 13</div>
+      <div class="progress-text" id="q1-progress-text">0 / 10</div>
     </div>
     <div id="quiz1-questions"></div>
     <div class="score-board" id="q1-score">
-      <div class="big-score" id="q1-score-num">0/13</div>
+      <div class="big-score" id="q1-score-num">0/10</div>
       <p id="q1-score-msg"></p>
       <button class="reset-btn" onclick="resetQuiz(1)">🔄 Try Again</button>
     </div>
@@ -733,50 +909,33 @@
 <!-- FOOTER -->
 <footer>
   <div class="logo">🌱 LyfeLabz · Characteristics of Life</div>
-  <p style="margin-bottom:0.5rem;">Part of the Biology unit · <a href="index.html" style="color:var(--green);">Back to LyfeLabz Hub</a></p>
+  <p style="margin-bottom:0.5rem;">Part of the Biology unit · Lesson 1</p>
+  <p style="margin-top:0.6rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a></p>
   <p>© 2026 LyfeLabz · Educational Use</p>
 </footer>
 
 <script>
 const quizData = {
   1: {
-    total: 13,
+    total: 10,
     questions: [
       {
         q: "Which of the following is NOT one of the six characteristics of life?",
         options: ["Made of cells","Maintain homeostasis","Have a backbone","Reproduce"],
         correct: 2,
-        explanation: "Having a backbone (vertebrate) is NOT a characteristic of life — many living things like worms, insects, and plants have no backbone!"
+        explanation: "Having a backbone is NOT a characteristic of life — many living things like worms, insects, and plants have no backbone!"
       },
       {
         q: "A sunflower turns its face to follow sunlight throughout the day. Which characteristic of life does this demonstrate?",
         options: ["Reproduce","Respond to stimuli","Grow and develop","Obtain and use energy"],
         correct: 1,
-        explanation: "Turning toward light (phototropism) is a response to a stimulus — in this case, the stimulus is light!"
+        explanation: "Turning toward light (phototropism) is a response to a stimulus — the stimulus is light!"
       },
       {
         q: "Your body shivers when you're cold and sweats when you're hot. This is an example of:",
         options: ["Reproducing","Growing and developing","Maintaining homeostasis","Obtaining energy"],
         correct: 2,
         explanation: "Shivering and sweating are ways your body regulates its internal temperature — that's homeostasis in action!"
-      },
-      {
-        q: "Bacteria consist of a single cell. This makes them:",
-        options: ["Multicellular","Eukaryotic","Unicellular","Neither living nor nonliving"],
-        correct: 2,
-        explanation: "Unicellular means one cell. Bacteria are single-celled (unicellular) organisms — and they're prokaryotic, not eukaryotic."
-      },
-      {
-        q: "Which of the following organisms are eukaryotic? (Choose the BEST answer)",
-        options: ["Bacteria only","Bacteria and protists","Plants, animals, fungi, and protists","Viruses"],
-        correct: 2,
-        explanation: "Eukaryotic cells have DNA inside a nucleus. Plants, animals, fungi, and protists are all eukaryotic. Bacteria are prokaryotic."
-      },
-      {
-        q: "In prokaryotic cells, where is the DNA found?",
-        options: ["Inside the nucleus","In the mitochondria","Floating in the cytoplasm","In the cell wall"],
-        correct: 2,
-        explanation: "Prokaryotic cells do NOT have a nucleus — their DNA floats freely in the cytoplasm."
       },
       {
         q: "A seed sprouts and grows into a tall tree over many years. Which TWO characteristics of life does this BEST show?",
@@ -788,44 +947,46 @@ const quizData = {
         q: "A dog has puppies. Which characteristic of life does this represent?",
         options: ["Maintain homeostasis","Obtain and use energy","Reproduce","Grow and develop"],
         correct: 2,
-        explanation: "Producing offspring (puppies) is reproduction — one of the six characteristics of life. This is an example of sexual reproduction."
+        explanation: "Producing offspring (puppies) is reproduction — one of the six characteristics of life."
       },
       {
-        q: "If an organism is made of many cells that work together to form tissues and organs, it is called:",
-        options: ["Unicellular","Prokaryotic","Eukaryotic only","Multicellular"],
-        correct: 3,
-        explanation: "Multicellular means 'many cells.' Plants, animals, and fungi are multicellular — their cells work together in tissues and organs."
-      },
-      {
-        q: "A paramecium is a single-celled organism that moves, eats, and reproduces all on its own. Which statement about it is TRUE?",
-        options: ["It must be multicellular because it does so many things","It is unicellular — one cell handles all life functions","It is multicellular but very small","It cannot be alive because it only has one cell"],
-        correct: 1,
-        explanation: "A paramecium is unicellular — just one cell, but that single cell carries out every life function: movement, digestion, reproduction, and more!"
-      },
-      {
-        q: "Which of the following is an example of a multicellular organism?",
-        options: ["Amoeba","Bacteria","Oak tree","Yeast (single-celled form)"],
+        q: "A kitten grows into a full-grown cat over several years. Which single characteristic of life does this BEST illustrate?",
+        options: ["Reproduce","Obtain and use energy","Grow and develop","Maintain homeostasis"],
         correct: 2,
-        explanation: "An oak tree is multicellular — it is made up of billions of specialized cells organized into roots, stems, leaves, and more. The others listed are unicellular."
+        explanation: "Increasing in size and changing form over time is the 'Grow and develop' characteristic."
       },
       {
-        q: "In a multicellular organism, cells are organized into tissues. What does this mean?",
-        options: ["All cells are identical and do the same job","Groups of similar cells work together to perform a specific function","Each cell works alone to keep the organism alive","Cells are spread randomly with no organization"],
-        correct: 1,
-        explanation: "In multicellular organisms, similar cells group together into tissues to carry out a specific job — like muscle tissue for movement or nerve tissue for signals."
+        q: "Which characteristic of life requires that ALL living things — from bacteria to blue whales — have at least one cell?",
+        options: ["Respond to stimuli","Obtain and use energy","Reproduce","Made of cells"],
+        correct: 3,
+        explanation: "The cell theory states that all living things are made of cells. This is characteristic #1 — no exceptions!"
       },
       {
-        q: "Can a unicellular organism also be eukaryotic?",
-        options: ["No — all unicellular organisms are prokaryotic","Yes — for example, amoeba and paramecium are unicellular eukaryotes","No — eukaryotes must always be multicellular","Yes — but only if they have a cell wall"],
+        q: "A cactus closes its pores during the hottest part of the day to conserve water. Which characteristic does this BEST represent?",
+        options: ["Grow and develop","Reproduce","Respond to stimuli","Maintain homeostasis"],
+        correct: 3,
+        explanation: "Wait — this is actually tricky! Closing pores is a response to the stimulus of heat/dry conditions. It's 'Respond to stimuli.' (Homeostasis is the result, but the mechanism is responding to a stimulus.)"
+      },
+      {
+        q: "A fire can grow, consume oxygen, and release energy. Is a fire alive? Why or why not?",
+        options: ["Yes — it uses energy and grows","No — it cannot reproduce or maintain homeostasis","Yes — it responds to oxygen as a stimulus","No — it is not made of cells, but otherwise qualifies"],
         correct: 1,
-        explanation: "Unicellular and eukaryotic are not mutually exclusive! Amoeba, paramecium, and many protists are single-celled but still have a nucleus — making them unicellular eukaryotes."
+        explanation: "Fire fails multiple characteristics: it cannot reproduce, is not made of cells, and doesn't maintain homeostasis. ALL six must be met to be considered alive."
+      },
+      {
+        q: "Which characteristic explains why living things need to eat food, absorb sunlight, or break down other molecules to survive?",
+        options: ["Maintain homeostasis","Obtain and use energy","Grow and develop","Made of cells"],
+        correct: 1,
+        explanation: "All living things need a source of energy to power their life processes — this is the 'Obtain and use energy' characteristic."
       }
     ]
   }
 };
 
 const quizState = { 1: { answered: 0, correct: 0 } };
+</script>
 
+<script>
 function buildQuiz(num) {
   const data = quizData[num];
   const container = document.getElementById(`quiz${num}-questions`);
@@ -910,5 +1071,6 @@ function resetQuiz(num) {
 
 buildQuiz(1);
 </script>
+<script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 </body>
 </html>

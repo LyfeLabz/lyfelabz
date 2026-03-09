@@ -127,7 +127,7 @@
   @media (max-width: 700px) { .hero-inner { grid-template-columns: 1fr; } .hero-card { display: none; } }
 
   /* CARDS */
-  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+  .cards-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; margin-top: 2.5rem; max-width: 960px; margin-left: auto; margin-right: auto; }
   .card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; }
   .card-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.1rem; }
   .icon-red    { background: rgba(231,76,60,0.15); }
@@ -207,7 +207,7 @@
   .label-red  { color: #e87070; }
   .label-gold { color: var(--gold); }
   .compare-item p { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
-  .compare-note { text-align: center; font-size: 0.88rem; color: rgba(255,255,255,0.3); font-style: italic; }
+  .compare-note { text-align: center; font-size: 0.88rem; color: rgba(255,255,255,0.65); font-style: italic; }
   .stages-row { display: flex; align-items: stretch; gap: 0.75rem; margin-bottom: 3rem; flex-wrap: wrap; }
   .stage { flex: 1; min-width: 180px; border-radius: 18px; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.1); }
   .stage-label { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; }
@@ -320,7 +320,7 @@
   .resource-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 1.5rem; text-decoration: none; display: block; transition: all 0.25s; }
   .resource-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.15); }
   .resource-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 1rem; }
-  .resource-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.4rem; }
+  .resource-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.4rem; color: var(--accent); }
   .resource-card p  { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem; line-height: 1.5; }
   .resource-link { font-size: 0.82rem; font-weight: 800; color: var(--accent); display: inline-flex; align-items: center; gap: 0.35rem; }
   .resource-cta { background: linear-gradient(135deg,rgba(168,85,247,0.25),rgba(59,200,232,0.15)); border: 1px solid rgba(168,85,247,0.3); border-radius: 18px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 0.5rem; }
@@ -346,9 +346,228 @@
   .footer-links a:hover { color: var(--text); }
   .footer-bottom { max-width: 1200px; margin: 0 auto; border-top: 1px solid var(--border); padding-top: 1.5rem; text-align: center; font-size: 0.82rem; color: rgba(255,255,255,0.25); }
 
-  .fade-in { animation: fadeIn 0.4s ease forwards; }
+  /* RESEARCH CARDS */
+  .research-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+  .research-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; position: relative; }
+  .research-card-top { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+  .research-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+  .research-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.15rem; color: var(--text); margin-bottom: 0.4rem; }
+  .research-card p { font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 0.9rem; }
+  .cite-pill { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; padding: 0.25rem 0.75rem; border-radius: 99px; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.25); color: rgba(168,85,247,0.85); text-decoration: none; transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s; cursor: pointer; }
+  .cite-pill:hover { background: rgba(168,85,247,0.22); border-color: rgba(168,85,247,0.6); color: #d8a4ff; box-shadow: 0 0 10px rgba(168,85,247,0.3); }
+  .stat-highlight { background: rgba(245,200,66,0.07); border: 1px solid rgba(245,200,66,0.2); border-radius: 14px; padding: 1rem 1.25rem; margin-top: 0.75rem; }
+  .stat-highlight .stat-num { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: var(--gold); line-height: 1; }
+  .stat-highlight .stat-desc { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+  /* MANIPULATION SECTION */
+  .spectrum-bar { display: flex; align-items: stretch; gap: 0; margin: 2rem 0; border-radius: 18px; overflow: hidden; border: 1px solid var(--border); }
+  .spectrum-step { flex: 1; padding: 1.5rem 1.25rem; }
+  .spectrum-step h4 { font-family: 'Fredoka One', cursive; font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .spectrum-step p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; }
+  .sp1 { background: rgba(230,126,34,0.1); border-right: 1px solid rgba(230,126,34,0.2); }
+  .sp1 h4 { color: #f0a060; }
+  .sp2 { background: rgba(231,76,60,0.1); border-right: 1px solid rgba(231,76,60,0.2); }
+  .sp2 h4 { color: #e87070; }
+  .sp3 { background: rgba(168,85,247,0.1); }
+  .sp3 h4 { color: var(--purple-light); }
+  @media (max-width:640px) { .spectrum-bar { flex-direction: column; } .sp1,.sp2 { border-right: none; border-bottom: 1px solid var(--border); } }
+
+  .manip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+  @media (max-width:640px) { .manip-grid { grid-template-columns: 1fr; } }
+  .manip-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; }
+  .manip-card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+  .manip-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+  .manip-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.25rem; }
+  .manip-card .def-box { background: rgba(255,255,255,0.04); border-left: 3px solid; border-radius: 0 10px 10px 0; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted); font-style: italic; line-height: 1.6; }
+  .manip-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 0.75rem; }
+  .manip-card p:last-child { margin-bottom: 0; }
+  .example-bubble { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 0.75rem; }
+  .example-bubble .bubble-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; }
+  .example-bubble p { font-size: 0.87rem; color: var(--text-muted); margin: 0; font-style: italic; }
+  .mc-manipulation { border-top: 3px solid rgba(231,76,60,0.5); }
+  .mc-manipulation h3 { color: #e87070; }
+  .mc-manipulation .manip-icon { background: rgba(231,76,60,0.15); }
+  .mc-manipulation .def-box { border-color: rgba(231,76,60,0.4); }
+  .mc-gaslighting { border-top: 3px solid rgba(168,85,247,0.5); }
+  .mc-gaslighting h3 { color: var(--purple-light); }
+  .mc-gaslighting .manip-icon { background: rgba(168,85,247,0.15); }
+  .mc-gaslighting .def-box { border-color: rgba(168,85,247,0.4); }
+
+  .warning-box { background: linear-gradient(135deg,rgba(168,85,247,0.1),rgba(231,76,60,0.07)); border: 1px solid rgba(168,85,247,0.25); border-radius: 20px; padding: 2rem; margin-top: 1rem; }
+  .warning-box h3 { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.75rem; color: var(--text); }
+  .warning-box p { font-size: 0.92rem; color: var(--text-muted); line-height: 1.7; }
+  .warning-list { list-style: none; margin: 1rem 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .warning-list li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .warning-list li::before { content: '⚠️'; font-size: 0.85rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+  /* WORKS CITED */
+  .works-cited { background: var(--darker); border-top: 1px solid var(--border); padding: 3rem 1.5rem; }
+  .works-cited-inner { max-width: 860px; margin: 0 auto; }
+  .works-cited h2 { font-family: 'Fredoka One', cursive; font-size: 1.6rem; margin-bottom: 0.4rem; }
+  .works-cited .wc-sub { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 2rem; }
+  .cite-entry { border-bottom: 1px solid var(--border); padding: 1rem 0; display: flex; gap: 1rem; align-items: flex-start; }
+  .cite-entry:last-child { border-bottom: none; }
+  .cite-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); color: var(--purple-light); display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 900; flex-shrink: 0; margin-top: 0.1rem; }
+  .cite-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; }
+  .cite-text strong { color: var(--text); font-weight: 700; }
+  .cite-text a { color: var(--accent); text-decoration: none; font-size: 0.8rem; }
+  .cite-text a:hover { text-decoration: underline; }
+
+  .mh-stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 1.5rem 0; }
+  @media (max-width:580px) { .mh-stats-row { grid-template-columns: 1fr; } }
+  .mh-stat { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem; text-align: center; }
+  .mh-stat .mh-num { font-family: 'Fredoka One', cursive; font-size: 1.9rem; line-height: 1; margin-bottom: 0.3rem; }
+  .mh-stat .mh-label { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; }
+
+  /* FADE-IN for new sections */
   @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+
 </style>
+<style>
+/* ── Learning Science Badges (inline) ── */
+/* ── Visibility gate — hidden until body.ls-active is set ─────────
+   The session-check script (injected into every content page) adds
+   body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
+   Educators toggle this from the index or Learning Science page.
+   Default: hidden. Closing the browser tab resets to hidden.
+   ─────────────────────────────────────────────────────────────────*/
+.ls-focus {
+  display: none;          /* hidden by default */
+}
+
+body.ls-active .ls-focus {
+  /* ── Centered card — sits between hero and first content section ── */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+
+  /* Centered, max-width container */
+  width: fit-content;
+  max-width: 760px;
+  margin: 1.6rem auto;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+
+  /* Softly bordered teal-tinted card */
+  background: rgba(59, 200, 232, 0.05);
+  border: 1px solid rgba(59, 200, 232, 0.2);
+  border-radius: 16px;
+
+  /* Gentle entrance when mode is toggled on mid-session */
+  animation: lsFadeIn 0.35s ease both;
+}
+
+@keyframes lsFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Section label ───────────────────────────────────────────────── */
+.ls-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(59, 200, 232, 0.75);
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Individual badge ────────────────────────────────────────────── */
+.ls-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  cursor: default;
+  white-space: nowrap;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  overflow: visible;
+}
+
+.ls-badge:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* ── Tooltip (CSS-only, data-tip attribute) ──────────────────────── */
+.ls-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+
+.ls-badge[data-tip]:hover::after {
+  opacity: 1;
+}
+
+/* ── Tooltip arrow ───────────────────────────────────────────────── */
+.ls-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255, 255, 255, 0.11);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+
+.ls-badge[data-tip]:hover::before {
+  opacity: 1;
+}
+
+/* ── Responsive: hide tooltip below 480px (touch devices) ─────────  */
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after,
+  .ls-badge[data-tip]::before {
+    display: none;
+  }
+  body.ls-active .ls-focus {
+    max-width: calc(100% - 2.4rem);
+    padding: 0.75rem 1rem;
+    gap: 0.4rem 0.5rem;
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -358,14 +577,16 @@
     <a href="index.html" class="nav-logo">LYFELABZ</a>
     <div class="nav-links">
       <a href="#learn">Learn</a>
+      <a href="#science">The Science</a>
       <a href="#watch">Watch</a>
       <a href="#real-life">Real Life</a>
+      <a href="#manipulation">Manipulation</a>
       <a href="#real-power">Real Power</a>
       <a href="#spot">Spot the Bait</a>
       <a href="#tools">Tools</a>
       <a href="#resources">Resources</a>
     </div>
-    <a href="index.html#psych" class="nav-pill">🧠 Psychology</a>
+    <a href="index.html#psych" class="nav-pill">← Psychology</a>
     <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -374,8 +595,10 @@
   </div>
   <div class="mobile-menu" id="mobile-menu">
     <a href="#learn">Learn</a>
+    <a href="#science">The Science</a>
     <a href="#watch">Watch</a>
     <a href="#real-life">Real Life</a>
+    <a href="#manipulation">Manipulation</a>
     <a href="#real-power">Real Power</a>
     <a href="#spot">Spot the Bait</a>
     <a href="#tools">Tools</a>
@@ -394,6 +617,7 @@
         <a href="#learn" class="btn-primary">Start Learning →</a>
         <a href="#spot" class="btn-secondary">Play the Game</a>
       </div>
+
     </div>
     <div class="hero-card">
       <div class="fake-post">
@@ -418,7 +642,14 @@
     </div>
   </div>
 </section>
-
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Prior misconceptions are directly confronted with evidence, prompting genuine revision of understanding. — Posner et al., 1982">🔄 Conceptual Change</span>
+  <span class="ls-badge" data-tip="Students make decisions and take actions throughout — they drive the learning, not just receive it. — Freeman et al., 2014">🎯 Active Learning</span>
+  <span class="ls-badge" data-tip="Students reflect on their own thinking, building the self-regulation skills that transfer across subjects. — Dent & Koenka, 2016">🔍 Metacognition</span>
+  <span class="ls-badge" data-tip="Students construct meaning themselves rather than passively receiving information from a teacher or screen. — Fiorella & Mayer, 2016">⚙️ Generative Learning</span>
+  <span class="ls-badge" data-tip="Surprising or personally relevant questions activate intrinsic motivation, sustaining engagement longer. — Lazowski & Hulleman, 2016">✨ Curiosity Drive</span>
+</div>
 <!-- WHAT IS RAGE BAITING -->
 <section id="learn" class="section">
   <div class="container">
@@ -452,6 +683,62 @@
         <div class="cycle-step"><div class="cycle-num cn3">3</div><p>You comment or share</p></div>
         <div class="cycle-step"><div class="cycle-num cn4">4</div><p>Creator gets paid. Cycle repeats.</p></div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE SCIENCE -->
+<section id="science" class="section section-alt">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Research-Backed</div>
+      <h2 class="section-title">The Science Behind the Bait</h2>
+      <p class="section-sub" style="margin:0 auto;">This isn't just a theory — researchers have studied exactly how and why rage bait works at a biological, psychological, and algorithmic level.</p>
+    </div>
+    <div class="research-grid">
+
+      <div class="research-card">
+        <div class="research-card-top">
+          <div class="research-icon icon-red">😡</div>
+          <div>
+            <h3>Anger Travels Fastest</h3>
+          </div>
+        </div>
+        <p>Of all human emotions, anger spreads the furthest and fastest on social media. Researchers at Yale analyzed 12.7 million tweets from over 7,000 users and found that posts expressing moral outrage consistently earned more likes and shares — and that this reward cycle actually trained users to express <em>more</em> outrage over time.</p>
+        <p>In other words, the more you engage with angry content, the more you learn to produce it yourself.</p>
+        <a class="cite-pill" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8363141/" target="_blank" rel="noopener">📄 Brady &amp; Crockett, Yale University, 2021 [1]</a>
+      </div>
+
+      <div class="research-card">
+        <div class="research-card-top">
+          <div class="research-icon icon-purple">🤖</div>
+          <div>
+            <h3>Algorithms Reward Outrage</h3>
+          </div>
+        </div>
+        <p>A 2025 randomized audit of Twitter's algorithm found that engagement-based ranking dramatically amplified angry, emotionally charged content over neutral content. Of all political posts selected by the algorithm, 62% expressed anger — compared to 52% in a simple chronological feed.</p>
+        <p>Critically, users said they did <em>not</em> actually prefer the content the algorithm chose for them. The platform was optimizing for engagement, not wellbeing.</p>
+        <a class="cite-pill" href="https://academic.oup.com/pnasnexus/article/4/3/pgaf062/8052060" target="_blank" rel="noopener">📄 Milli et al., PNAS Nexus, 2025 [2]</a>
+      </div>
+
+      <div class="research-card">
+        <div class="research-card-top">
+          <div class="research-icon icon-orange">🔗</div>
+          <div>
+            <h3>Outrage and Misinformation Are Paired on Purpose</h3>
+          </div>
+        </div>
+        <p>Research published in <em>Science</em> found that misinformation consistently generates more outrage than accurate news — and that people often share outrage-triggering content without even reading it first. The goal is not to inform. The goal is to provoke a moral reaction fast enough that accuracy never gets checked.</p>
+        <p>Users share outrageous content to signal group loyalty or moral stance, not because they believe it is true.</p>
+        <a class="cite-pill" href="https://www.science.org/doi/10.1126/science.adl2829" target="_blank" rel="noopener">📄 McLoughlin et al., Science, 2024 [3]</a>
+      </div>
+
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-top:2rem;">
+      <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;margin-bottom:0.5rem;">Why Your Brain Falls for It Every Time 🧠</h3>
+      <p style="font-size:0.93rem;color:var(--text-muted);line-height:1.7;margin-bottom:0.75rem;">Rage bait is not a willpower problem — it is a neuroscience problem. The amygdala, the brain's threat-detection center, processes emotionally charged stimuli before the prefrontal cortex (responsible for rational thinking) even activates. By the time you are thinking clearly, the emotional reaction has already begun.</p>
+      <p style="font-size:0.93rem;color:var(--text-muted);line-height:1.7;margin-bottom:0;">This is sometimes called the <strong style="color:var(--text);">amygdala hijack</strong> — a split-second emotional response that bypasses slow, deliberate reasoning. Rage bait creators know this. The hook has to land before your brain can evaluate whether the content is even real.</p>
     </div>
   </div>
 </section>
@@ -590,6 +877,83 @@
   </div>
 </section>
 
+<!-- MANIPULATION & GASLIGHTING -->
+<section id="manipulation" class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Going Deeper</div>
+      <h2 class="section-title">From Rage Bait to Manipulation to Gaslighting</h2>
+      <p class="section-sub" style="margin:0 auto;">Rage baiting is the entry point of a wider spectrum of psychological manipulation. Understanding where it leads helps you recognize it — and resist it — at every level.</p>
+    </div>
+
+    <div class="spectrum-bar">
+      <div class="spectrum-step sp1">
+        <h4>🎣 Rage Baiting</h4>
+        <p>Deliberate provocation designed to trigger an emotional reaction — online or in person — for attention, engagement, or entertainment.</p>
+      </div>
+      <div class="spectrum-step sp2">
+        <h4>🎭 Manipulation</h4>
+        <p>A broader pattern of behavior designed to influence or control someone through deception, guilt, or emotional pressure rather than honest communication.</p>
+      </div>
+      <div class="spectrum-step sp3">
+        <h4>🌀 Gaslighting</h4>
+        <p>The most serious form: a sustained effort to make someone doubt their own memory, perception, or reality — causing them to depend on the manipulator for what is "true."</p>
+      </div>
+    </div>
+
+    <div class="manip-grid">
+      <div class="manip-card mc-manipulation">
+        <div class="manip-card-header">
+          <div class="manip-icon">🎭</div>
+          <h3>What is Manipulation?</h3>
+        </div>
+        <div class="def-box">"Behavior designed to exploit, control, or otherwise influence others to one's advantage." — American Psychological Association</div>
+        <p>Manipulation goes beyond a single provocative post. It is a pattern — using guilt, fear, flattery, or deception to steer someone's thoughts or actions. The key difference from honest persuasion is intent: manipulation prioritizes the manipulator's gain over the other person's wellbeing.</p>
+        <div class="example-bubble">
+          <div class="bubble-label" style="color:#e87070;">Online Example</div>
+          <p>"Only stupid people disagree with this. Share if you're not an idiot."</p>
+        </div>
+        <div class="example-bubble">
+          <div class="bubble-label" style="color:#e87070;">In-Person Example</div>
+          <p>"After everything I've done for you, you won't do this one thing for me?"</p>
+        </div>
+        <a class="cite-pill" href="https://dictionary.apa.org/manipulation" target="_blank" rel="noopener">📄 Buss et al., Journal of Personality &amp; Social Psychology, 1987 [4]</a>
+      </div>
+
+      <div class="manip-card mc-gaslighting">
+        <div class="manip-card-header">
+          <div class="manip-icon">🌀</div>
+          <h3>What is Gaslighting?</h3>
+        </div>
+        <div class="def-box">"An insidious form of manipulation and psychological control in which victims are deliberately and systematically fed false information that leads them to question what they know to be true." — Psychology Today</div>
+        <p>The term comes from a 1938 play in which a husband secretly dims the gas lights in the house, then tells his wife that nothing has changed — until she starts doubting her own perception of reality. Gaslighting is not a one-time lie. It is a sustained campaign to make someone distrust their own mind.</p>
+        <div class="example-bubble">
+          <div class="bubble-label" style="color:var(--purple-light);">Online Example</div>
+          <p>"I never said that. You're misremembering. Go back and find the tweet — it doesn't exist."</p>
+        </div>
+        <div class="example-bubble">
+          <div class="bubble-label" style="color:var(--purple-light);">In-Person Example</div>
+          <p>"You're way too sensitive. That never happened the way you're describing it. Everyone else thought it was funny."</p>
+        </div>
+        <a class="cite-pill" href="https://www.psychologytoday.com/us/basics/gaslighting" target="_blank" rel="noopener">📄 Psychology Today; APA Dictionary of Psychology [5]</a>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <h3>🛡️ How to Recognize It Happening to You</h3>
+      <p>Manipulation and gaslighting can be hard to spot in the moment — especially when they come from someone you trust. These are warning signs worth knowing:</p>
+      <ul class="warning-list">
+        <li>You frequently feel confused or "crazy" after conversations with a specific person</li>
+        <li>Someone consistently denies things you clearly remember happening</li>
+        <li>You apologize constantly, even when you are not sure what you did wrong</li>
+        <li>You feel like you need to check with one person before trusting your own memory or feelings</li>
+        <li>Someone makes you feel guilty for being upset about something they did</li>
+      </ul>
+      <p style="font-size:0.88rem;color:var(--text-muted);">If any of these feel familiar, talking to a trusted adult — a counselor, teacher, or parent — is always a good first step. Recognizing the pattern is the first way out of it.</p>
+    </div>
+  </div>
+</section>
+
 <!-- REAL POWER -->
 <section id="real-power" class="section">
   <div class="container">
@@ -627,6 +991,30 @@
           <div class="impact-col-header"><div class="impact-col-icon impact-icon2">💔</div><h4>Impact (What actually happened)</h4></div>
           <p>Someone felt embarrassed, humiliated, or angry in front of others. That feeling is real — regardless of what was intended.</p>
         </div>
+      </div>
+    </div>
+
+    <div class="impact-box" style="border-top:3px solid rgba(231,76,60,0.4);margin-bottom:2rem;">
+      <h3>What the Research Says About Anger &amp; Wellbeing 📊</h3>
+      <p>Rage bait does not just waste your time. Researchers have documented real mental health costs to habitual engagement with emotionally charged content.</p>
+      <div class="mh-stats-row">
+        <div class="mh-stat">
+          <div class="mh-num" style="color:#e87070;">45%</div>
+          <div class="mh-label">of teens say they spend too much time on social media — up from 27% in 2023</div>
+        </div>
+        <div class="mh-stat">
+          <div class="mh-num" style="color:var(--purple-light);">48%</div>
+          <div class="mh-label">of teens say social media has a mostly negative effect on people their age</div>
+        </div>
+        <div class="mh-stat">
+          <div class="mh-num" style="color:var(--gold);">3×</div>
+          <div class="mh-label">significant correlations found between problematic use and depression, anxiety, and stress</div>
+        </div>
+      </div>
+      <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:0.75rem;">The research does not say all social media is harmful — it says that habitual engagement with rage-inducing content is the mechanism most linked to poorer outcomes. The more you engage with the bait, the more the cycle tightens.</p>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+        <a class="cite-pill" href="https://www.pewresearch.org/internet/2025/04/22/teens-social-media-and-mental-health/" target="_blank" rel="noopener">📄 Pew Research Center, 2024 [6]</a>
+        <a class="cite-pill" href="https://mental.jmir.org/2022/4/e33450" target="_blank" rel="noopener">📄 Shannon et al., JMIR Mental Health, 2022 [7]</a>
       </div>
     </div>
 
@@ -759,6 +1147,50 @@
   </div>
 </section>
 
+<!-- WORKS CITED -->
+<div class="works-cited">
+  <div class="works-cited-inner">
+    <h2>📚 Works Cited</h2>
+    <p class="wc-sub">All research referenced on this page. Citations follow APA 7th edition format.</p>
+
+    <div class="cite-entry">
+      <div class="cite-num">1</div>
+      <div class="cite-text"><strong>Brady, W. J., Crockett, M. J., &amp; Van Bavel, J. J. (2021).</strong> The MAD model of moral contagion: The role of motivation, attention, and design in the spread of moral emotions online. <em>Perspectives on Psychological Science, 16</em>(4), 776–792. Supporting data from: Brady, W. J., McLoughlin, K., Ditto, P. H., &amp; Crockett, M. J. (2021). How social learning amplifies moral outrage expression in online social networks. <em>Science Advances, 7</em>(31). <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8363141/" target="_blank" rel="noopener">View source →</a></div>
+    </div>
+
+    <div class="cite-entry">
+      <div class="cite-num">2</div>
+      <div class="cite-text"><strong>Milli, S., Carroll, M., Wang, Y., Pandey, S., Zhao, S., &amp; Dragan, A. D. (2025).</strong> Engagement, user satisfaction, and the amplification of divisive content on social media. <em>PNAS Nexus, 4</em>(3). <a href="https://academic.oup.com/pnasnexus/article/4/3/pgaf062/8052060" target="_blank" rel="noopener">View source →</a></div>
+    </div>
+
+    <div class="cite-entry">
+      <div class="cite-num">3</div>
+      <div class="cite-text"><strong>McLoughlin, K., Brady, W. J., &amp; Crockett, M. J. (2024).</strong> Misinformation exploits outrage to spread online. <em>Science, 386</em>(6727). <a href="https://www.science.org/doi/10.1126/science.adl2829" target="_blank" rel="noopener">View source →</a></div>
+    </div>
+
+    <div class="cite-entry">
+      <div class="cite-num">4</div>
+      <div class="cite-text"><strong>Buss, D. M., Gomes, M., Higgins, D. S., &amp; Lauterbach, K. (1987).</strong> Tactics of manipulation. <em>Journal of Personality and Social Psychology, 52</em>(6), 1219–1229. Cited in: American Psychological Association. (2015). <em>APA Dictionary of Psychology</em> (2nd ed.).</div>
+    </div>
+
+    <div class="cite-entry">
+      <div class="cite-num">5</div>
+      <div class="cite-text"><strong>American Psychological Association. (2021).</strong> APA Dictionary of Psychology: Gaslighting. <a href="https://dictionary.apa.org/gaslight" target="_blank" rel="noopener">View source →</a> &nbsp;|&nbsp; Psychology Today. (2024). Gaslighting. <a href="https://www.psychologytoday.com/us/basics/gaslighting" target="_blank" rel="noopener">View source →</a></div>
+    </div>
+
+    <div class="cite-entry">
+      <div class="cite-num">6</div>
+      <div class="cite-text"><strong>Pew Research Center. (2025, April 22).</strong> Teens, social media and mental health. <a href="https://www.pewresearch.org/internet/2025/04/22/teens-social-media-and-mental-health/" target="_blank" rel="noopener">View source →</a></div>
+    </div>
+
+    <div class="cite-entry">
+      <div class="cite-num">7</div>
+      <div class="cite-text"><strong>Shannon, H., Bush, K., Villeneuve, P. J., Hellemans, K. G., &amp; Guimond, S. (2022).</strong> Problematic social media use in adolescents and young adults: Systematic review and meta-analysis. <em>JMIR Mental Health, 9</em>(4), e33450. <a href="https://mental.jmir.org/2022/4/e33450" target="_blank" rel="noopener">View source →</a></div>
+    </div>
+
+  </div>
+</div>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-inner">
@@ -783,7 +1215,7 @@
       <p style="font-style:italic">"Don't let someone else's anger become your own. Stay curious, stay kind, stay critical."</p>
     </div>
   </div>
-  <div class="footer-bottom">&copy; 2026 LyfeLabz. Created for educational purposes.</div>
+  <div class="footer-bottom"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a><br>&copy; 2026 LyfeLabz. Created for educational purposes.</div>
 </footer>
 
 <script>
@@ -897,5 +1329,6 @@
     obs.observe(el);
   });
 </script>
+<script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');</script>
 </body>
 </html>

@@ -344,12 +344,12 @@
 <!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
-  <a href="index.html" class="nav-back">🧭 Hub</a>
+  <a href="index.html" class="nav-back">← Learning Hub</a>
 </nav>
 
 <!-- HERO -->
 <header class="hero">
-  <div class="hero-eyebrow">🧭 About</div>
+  <div class="hero-eyebrow">About</div>
   <h1><span class="word-lyfe">Lyfe</span><span class="word-labz">Labz</span></h1>
   <p class="hero-tagline">
     <span>Classroom-tested</span>
@@ -366,12 +366,12 @@
   <!-- INTRO -->
   <div class="intro-block">
     <p>LyfeLabz is an <strong>interactive middle school science hub</strong> built to make lessons feel more like labs than lectures. The goal is simple: create science resources that are <strong>engaging for students</strong> and <strong>effortless for teachers to use</strong>. Each lesson is designed with short explanations, clean visuals, embedded media, and interactive challenges that encourage applied thinking rather than passive consumption.</p>
-    <p style="margin-top:1.2rem; padding-top:1.2rem; border-top:1px solid var(--border); font-size:0.97rem;">LyfeLabz was created by middle school science teachers who wanted better resources for their own students.</p>
+
   </div>
 
   <!-- BUILT FOR -->
   <div class="content-section">
-    <div class="section-eyebrow">🎯 Audience</div>
+    <div class="section-eyebrow">Audience</div>
     <h2 class="section-title">LyfeLabz is Built For</h2>
     <div class="audience-grid">
       <div class="audience-card">
@@ -394,7 +394,7 @@
 
   <!-- STANDARDS ALIGNMENT -->
   <div class="content-section">
-    <div class="section-eyebrow">📋 Standards</div>
+    <div class="section-eyebrow">Standards</div>
     <h2 class="section-title">Standards Alignment</h2>
     <div class="standards-block">
       <p>All instructional content is designed to align with the <strong style="color:var(--text);">Massachusetts Science and Technology/Engineering Curriculum Frameworks</strong> for middle school. Lessons emphasize:</p>
@@ -407,9 +407,31 @@
     </div>
   </div>
 
+  <!-- FOR EDUCATORS -->
+  <div class="content-section">
+    <div class="section-eyebrow">For Educators</div>
+    <h2 class="section-title">Educator Mode</h2>
+    <div class="standards-block" style="margin-bottom:1.25rem;">
+      <p>LyfeLabz includes two optional educator overlays that surface instructional context hidden by default — so students see clean content while teachers can access the layer underneath.</p>
+      <ul class="standards-list" style="margin-top:1.2rem;">
+        <li><strong style="color:#3bc8e8;">Learning Science Badges</strong> — teal badges that appear on every lesson, extension, and game. Each badge names a research-backed learning principle used in that activity (e.g. Retrieval Practice, Dual Coding, Spaced Practice) with a tooltip linking to the source. Visit the <a href="learning-science.html" style="color:#3bc8e8;font-weight:700;">Learning Science</a> page for the full breakdown.</li>
+        <li><strong style="color:#2ecc71;">MA STE Standards</strong> — green badges that display the aligned 2016 Massachusetts Science &amp; Technology/Engineering standard codes for Grade 6 Life Science. An expandable detail card shows the full standard text. Only activities with a mapped standard show these badges.</li>
+      </ul>
+      <p style="margin-top:1.4rem;">Both modes are <strong style="color:var(--text);">session-only</strong> — they reset automatically when the tab is closed, so there's no risk of students seeing them next time.</p>
+    </div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:1.8rem 2rem;text-align:center;">
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.1rem;letter-spacing:0.04em;">Toggle both modes on for this session from here or from the <a href="index.html" style="color:var(--gold);font-weight:700;">Learning Hub</a> footer.</p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;">
+        <button onclick="document.getElementById('edu-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.55rem;font-family:'Space Grotesk',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(59,200,232,0.6);background:rgba(59,200,232,0.1);color:#3bc8e8;">🔬 Learning Science Badges</button>
+        <button onclick="document.getElementById('stem-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.55rem;font-family:'Space Grotesk',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(46,204,113,0.6);background:rgba(46,204,113,0.1);color:#2ecc71;">📋 MA STE Standards</button>
+      </div>
+      <p style="font-size:0.72rem;color:rgba(255,255,255,0.25);margin-top:0.85rem;">Session resets when tab is closed</p>
+    </div>
+  </div>
+
   <!-- WHY LYFELABZ EXISTS -->
   <div class="content-section">
-    <div class="section-eyebrow">💡 Mission</div>
+    <div class="section-eyebrow">Mission</div>
     <h2 class="section-title">Why LyfeLabz Exists</h2>
     <div class="standards-block" style="margin-bottom:2rem;">
       <p>Middle school students are capable of deep scientific thinking when the learning environment is clear and intentional. LyfeLabz exists to provide that structure.</p>
@@ -424,15 +446,93 @@
     </div>
   </div>
 
+  <div class="content-section" style="margin-bottom:2rem;">
+    <div class="section-eyebrow" style="margin-bottom:0.6rem;">About the Creator</div>
+    <h2 class="section-title" style="margin-top:0;margin-bottom:1.2rem;">Christopher Brown</h2>
+    <div class="standards-block" style="border-left-color: var(--teal);">
+      <p style="font-size:0.88rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--teal);margin-bottom:1.2rem;">6th Grade Science Teacher · Weston Middle School</p>
+      <p>Christopher Brown has spent 12 years teaching middle school science, watching firsthand how students engage and disengage with the material in front of them. That classroom experience, combined with graduate training in developmental and cognitive psychology, is the foundation LyfeLabz is built on.</p>
+      <p>His academic background spans the psychology of how children grow as thinkers and learners: how working memory develops, how conceptual understanding is built incrementally, and how the transition from concrete to abstract reasoning shapes what middle school students are actually ready to do. Those developmental insights drive decisions that might otherwise look like design choices. Why content is sequenced the way it is, why retrieval practice appears before new material is introduced, why analogies anchor every organelle lesson.</p>
+      <p>The cognitive psychology woven throughout (spaced practice, dual coding, elaborative interrogation) is not decorative. It reflects a deliberate effort to align every activity with what the research says actually moves learning forward.</p>
+      <p style="font-size:0.76rem;font-style:italic;color:var(--muted);margin-bottom:0;">B.S. Psychology, Northeastern University &nbsp;·&nbsp; ALM, Psychology, Harvard University Extension School<br>M.Ed., Merrimack College &nbsp;·&nbsp; Graduate Certificate in Teaching Integrated Science, American College of Education</p>
+    </div>
+  </div>
+
 </main>
 
 <!-- FOOTER -->
 <footer>
   <div class="footer-name">LYFELABZ</div>
-  <p>Your middle school science hub · lyfelabz.com · <a href="index.html">Back to Hub</a></p>
+  <p style="margin-bottom:0.4rem;">Your middle school science hub · lyfelabz.com</p>
+  <p style="margin-bottom:1.2rem;">
+    <a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a>
+  </p>
+
+  <!-- ── Educator Mode Toggles ──────────────────────────────────────── -->
+  <div style="padding-top:1.4rem;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;gap:0.6rem;">
+    <div style="font-size:0.62rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.45);">For Educators</div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;">
+      <button id="edu-toggle-btn" onclick="toggleEduMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Space Grotesk',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(59,200,232,0.8);background:rgba(59,200,232,0.18);color:#3bc8e8;">
+        <span id="edu-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3bc8e8;transition:background 0.22s,box-shadow 0.22s;"></span>
+        <span id="edu-toggle-label">Show Learning Science Badges</span>
+      </button>
+      <button id="stem-toggle-btn" onclick="toggleStemMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Space Grotesk',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(46,204,113,0.7);background:rgba(46,204,113,0.12);color:#2ecc71;">
+        <span id="stem-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2ecc71;transition:background 0.22s,box-shadow 0.22s;"></span>
+        <span id="stem-toggle-label">Show MA STE Standards</span>
+      </button>
+    </div>
+    <div style="font-size:0.67rem;color:rgba(255,255,255,0.38);max-width:340px;text-align:center;line-height:1.5;">
+      Badges &amp; standards appear on every lesson, extension &amp; game — this session only.
+    </div>
+  </div>
 </footer>
 
-<!-- Starfield -->
+<script>
+function syncEduToggleUI(isOn) {
+  var btn = document.getElementById('edu-toggle-btn');
+  var dot = document.getElementById('edu-toggle-dot');
+  var lbl = document.getElementById('edu-toggle-label');
+  if (!btn) return;
+  if (isOn) {
+    btn.style.borderColor = 'rgba(59,200,232,0.55)'; btn.style.background = 'rgba(59,200,232,0.12)'; btn.style.color = 'rgba(59,200,232,0.95)';
+    dot.style.background = '#3bc8e8'; dot.style.boxShadow = '0 0 8px rgba(59,200,232,0.7)';
+    lbl.textContent = 'Learning Science: On';
+  } else {
+    btn.style.borderColor = 'rgba(59,200,232,0.8)'; btn.style.background = 'rgba(59,200,232,0.18)'; btn.style.color = '#3bc8e8';
+    dot.style.background = '#3bc8e8'; dot.style.boxShadow = 'none';
+    lbl.textContent = 'Show Learning Science Badges';
+  }
+}
+function toggleEduMode() {
+  var next = sessionStorage.getItem('lyfelabz-ls') !== 'on';
+  next ? sessionStorage.setItem('lyfelabz-ls','on') : sessionStorage.removeItem('lyfelabz-ls');
+  syncEduToggleUI(next);
+}
+function syncStemToggleUI(isOn) {
+  var btn = document.getElementById('stem-toggle-btn');
+  var dot = document.getElementById('stem-toggle-dot');
+  var lbl = document.getElementById('stem-toggle-label');
+  if (!btn) return;
+  if (isOn) {
+    btn.style.borderColor = 'rgba(46,204,113,0.45)'; btn.style.background = 'rgba(46,204,113,0.08)'; btn.style.color = 'rgba(46,204,113,0.95)';
+    dot.style.background = '#2ecc71'; dot.style.boxShadow = '0 0 8px rgba(46,204,113,0.7)';
+    lbl.textContent = 'MA STE Standards: On';
+  } else {
+    btn.style.borderColor = 'rgba(46,204,113,0.7)'; btn.style.background = 'rgba(46,204,113,0.12)'; btn.style.color = '#2ecc71';
+    dot.style.background = '#2ecc71'; dot.style.boxShadow = 'none';
+    lbl.textContent = 'Show MA STE Standards';
+  }
+}
+function toggleStemMode() {
+  var next = sessionStorage.getItem('lyfelabz-stem') !== 'on';
+  next ? sessionStorage.setItem('lyfelabz-stem','on') : sessionStorage.removeItem('lyfelabz-stem');
+  syncStemToggleUI(next);
+}
+(function() {
+  syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on');
+  syncStemToggleUI(sessionStorage.getItem('lyfelabz-stem') === 'on');
+})();
+</script>
 <script>
   const canvas = document.getElementById('stars');
   const ctx = canvas.getContext('2d');

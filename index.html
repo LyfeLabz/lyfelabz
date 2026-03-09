@@ -84,7 +84,6 @@
     display: flex;
     gap: 2rem;
     list-style: none;
-    flex-wrap: wrap;
   }
   .nav-links a {
     color: var(--muted);
@@ -96,6 +95,24 @@
     transition: color 0.2s;
   }
   .nav-links a:hover { color: var(--gold); }
+  .nav-why {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #3bc8e8;
+    text-decoration: none;
+    border: 1px solid rgba(59,200,232,0.7);
+    border-radius: 99px;
+    padding: 0.3rem 0.9rem;
+    white-space: nowrap;
+    background: rgba(59,200,232,0.12);
+    transition: all 0.2s;
+  }
+  .nav-why:hover {
+    background: rgba(59,200,232,0.22);
+    border-color: rgba(59,200,232,0.95);
+  }
 
   /* ===== HERO ===== */
   .hero {
@@ -410,6 +427,12 @@
     font-weight: 700;
   }
   .ulink.game:hover { background: rgba(61,220,132,0.2); border-color: rgba(61,220,132,0.55); color: var(--bio); }
+  .ulink.map {
+    background: rgba(59,200,232,0.12);
+    border-color: rgba(59,200,232,0.45);
+    color: #3bc8e8;
+  }
+  .ulink.map:hover { background: rgba(59,200,232,0.2); border-color: rgba(59,200,232,0.6); color: #3bc8e8; }
   .ulink.ext {
     background: rgba(180,127,255,0.12);
     color: var(--astro);
@@ -508,10 +531,7 @@
 <!-- NAV -->
 <nav>
   <a href="#" class="nav-logo">LYFELABZ</a>
-  <ul class="nav-links">
-    <li><a href="#subjects">Subjects</a></li>
-    <li><a href="#how">How It Works</a></li>
-  </ul>
+  <a href="learning-science.html" class="nav-why">🧠 Why It Works</a>
 </nav>
 
 <!-- HERO -->
@@ -534,7 +554,7 @@
 
   <div class="hero-btns">
     <a href="#subjects" class="btn btn-gold">🚀 Explore All Units</a>
-    <a href="#how" class="btn btn-ghost">How It Works</a>
+    <a href="#how" class="btn btn-ghost">How It's Built</a>
   </div>
 </section>
 
@@ -546,7 +566,7 @@
       <span class="stat-label">Science Subjects</span>
     </div>
     <div class="stat-item">
-      <span class="stat-num">4</span>
+      <span class="stat-num">5</span>
       <span class="stat-label">Live Units</span>
     </div>
     <div class="stat-item">
@@ -563,7 +583,7 @@
 <!-- SUBJECTS -->
 <section id="subjects">
   <div class="container">
-    <div class="section-eyebrow">📚 All Units</div>
+    <div class="section-eyebrow">All Units</div>
     <h2 class="section-title">Find Your Subject</h2>
     <p class="section-desc">Browse every unit by subject area. Click any card to get started — new units are added throughout the school year!</p>
     <div class="pill-legend">
@@ -571,6 +591,7 @@
       <span class="ulink live legend-pill">Lesson</span>
       <span class="ulink ext legend-pill">Extension</span>
       <span class="ulink game legend-pill">Game</span>
+      <span class="ulink map legend-pill">Interactive Map</span>
     </div>
 
     <!-- BIOLOGY -->
@@ -584,13 +605,23 @@
       <div class="unit-row">
         <div class="unit-card">
           <div class="unit-top">
-            <div class="unit-name">Characteristics of Life &amp; Cell Types</div>
-            <div class="unit-desc">The 6 characteristics of life, unicellular vs. multicellular organisms, and prokaryotic vs. eukaryotic cells.</div>
+            <div class="unit-name">Characteristics of Life</div>
+            <div class="unit-desc">The 6 characteristics every living thing shares — and how to apply them to determine what's alive.</div>
           </div>
           <div class="unit-links">
             <a href="characteristics.html" class="ulink live">Lesson</a>
-            <a href="extensions_virus.html" class="ulink ext">Are Viruses Alive?</a>
+            <a href="extension_gray_zone.html" class="ulink ext">The Gray Zone</a>
             <a href="is-it-alive.html" class="ulink game">Is It Alive?</a>
+          </div>
+        </div>
+        <div class="unit-card">
+          <div class="unit-top">
+            <div class="unit-name">Cell Types</div>
+            <div class="unit-desc">Unicellular vs. multicellular, prokaryotic vs. eukaryotic — the building blocks of all living things.</div>
+          </div>
+          <div class="unit-links">
+            <a href="cell-types.html" class="ulink live">Lesson</a>
+            <a href="extensions_virus.html" class="ulink ext">Are Viruses Alive?</a>
             <a href="cell-type-showdown.html" class="ulink game">Cell Type Showdown</a>
           </div>
         </div>
@@ -603,7 +634,7 @@
             <a href="organelles.html" class="ulink live">Lesson</a>
             <a href="extension_organelles.html" class="ulink ext">Protein Pathway</a>
             <a href="cell-explorer.html" class="ulink game">Cell Explorer</a>
-            <a href="neuron-explorer.html" class="ulink game">Neuron Explorer</a>
+            <a href="neuron-explorer.html" class="ulink ext">Neuron Explorer</a>
           </div>
         </div>
         <div class="unit-card">
@@ -613,9 +644,10 @@
           </div>
           <div class="unit-links">
             <a href="body_systems.html" class="ulink live">Lesson</a>
-            <a href="extension_body_systems.html" class="ulink ext">Solving Medical Mysteries</a>
+            <a href="extension_body_systems.html" class="ulink ext">Medical Mysteries</a>
             <a href="game_exercise.html" class="ulink game">Exercise Simulator</a>
             <a href="game_relay.html" class="ulink game">Relay Race</a>
+            <a href="body_systems.html#systems" class="ulink map">System Maps</a>
           </div>
         </div>
       </div>
@@ -827,8 +859,8 @@
 <!-- HOW IT WORKS -->
 <section id="how">
   <div class="container">
-    <div class="section-eyebrow">💡 How It Works</div>
-    <h2 class="section-title">Built for Learners</h2>
+    <div class="section-eyebrow">How It's Built</div>
+    <h2 class="section-title">Designed for Learners</h2>
     <p class="section-desc">LyfeLabz makes reviewing science engaging, effective, and fun. Here's how every unit is structured.</p>
     <div class="how-grid">
       <div class="how-card">
@@ -866,8 +898,128 @@
   <p style="margin-top:0.6rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
     <a href="about.html" style="color:var(--gold); text-decoration:none; font-size:0.83rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.3); padding:0.3rem 0.9rem; border-radius:99px; transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(245,200,66,0.6)'" onmouseout="this.style.borderColor='rgba(245,200,66,0.3)'">About LyfeLabz</a>
     <a href="privacy.html" style="color:var(--gold); text-decoration:none; font-size:0.83rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.3); padding:0.3rem 0.9rem; border-radius:99px; transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(245,200,66,0.6)'" onmouseout="this.style.borderColor='rgba(245,200,66,0.3)'">Privacy Policy</a>
+    <a href="learning-science.html" style="color:var(--teal); text-decoration:none; font-size:0.83rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(59,200,232,0.3); padding:0.3rem 0.9rem; border-radius:99px; transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(59,200,232,0.6)'" onmouseout="this.style.borderColor='rgba(59,200,232,0.3)'">🧠 Why It Works</a>
   </p>
+
+  <!-- ── Educator Mode Toggles ─────────────────────────────────────────
+       Sits below footer links. Side-by-side buttons — one per mode.
+       Resets automatically when the browser tab is closed.
+  ─────────────────────────────────────────────────────────────────── -->
+  <div id="edu-toggle-wrap" style="
+    margin-top: 2rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  ">
+    <div style="font-size:0.62rem; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.45);">For Educators</div>
+    <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
+      <button id="edu-toggle-btn" onclick="toggleEduMode()" style="
+        display: inline-flex; align-items: center; gap: 0.6rem;
+        font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 800;
+        letter-spacing: 0.06em; text-transform: uppercase; border-radius: 99px;
+        padding: 0.5rem 1.3rem; cursor: pointer; transition: all 0.22s ease;
+        border: 1px solid rgba(59,200,232,0.8); background: rgba(59,200,232,0.18); color: #3bc8e8;
+      ">
+        <span id="edu-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3bc8e8;transition:background 0.22s,box-shadow 0.22s;"></span>
+        <span id="edu-toggle-label">Show Learning Science Badges</span>
+      </button>
+      <button id="stem-toggle-btn" onclick="toggleStemMode()" style="
+        display: inline-flex; align-items: center; gap: 0.6rem;
+        font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 800;
+        letter-spacing: 0.06em; text-transform: uppercase; border-radius: 99px;
+        padding: 0.5rem 1.3rem; cursor: pointer; transition: all 0.22s ease;
+        border: 1px solid rgba(46,204,113,0.7); background: rgba(46,204,113,0.12); color: #2ecc71;
+      ">
+        <span id="stem-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2ecc71;transition:background 0.22s,box-shadow 0.22s;"></span>
+        <span id="stem-toggle-label">Show MA STE Standards</span>
+      </button>
+    </div>
+    <div style="font-size:0.67rem; color:rgba(255,255,255,0.38); max-width:600px; text-align:center; line-height:1.5;" id="edu-toggle-hint">
+      Badges &amp; standards appear on every lesson, extension &amp; game — this session only.
+    </div>
+  </div>
 </footer>
+
+<script>
+/* ── Educator Mode — sessionStorage toggle ──────────────────────────
+   Key: 'lyfelabz-ls'  Values: 'on' | (absent)
+   Each content page checks this on load and adds body.ls-active.
+   Closing the tab clears sessionStorage automatically.
+────────────────────────────────────────────────────────────────── */
+function syncEduToggleUI(isOn) {
+  var btn  = document.getElementById('edu-toggle-btn');
+  var dot  = document.getElementById('edu-toggle-dot');
+  var lbl  = document.getElementById('edu-toggle-label');
+  if (!btn) return;
+  if (isOn) {
+    btn.style.borderColor  = 'rgba(59,200,232,0.55)';
+    btn.style.background   = 'rgba(59,200,232,0.12)';
+    btn.style.color        = 'rgba(59,200,232,0.95)';
+    dot.style.background   = '#3bc8e8';
+    dot.style.boxShadow    = '0 0 8px rgba(59,200,232,0.7)';
+    lbl.textContent        = 'Learning Science: On';
+  } else {
+    btn.style.borderColor  = 'rgba(59,200,232,0.8)';
+    btn.style.background   = 'rgba(59,200,232,0.18)';
+    btn.style.color        = '#3bc8e8';
+    dot.style.background   = '#3bc8e8';
+    dot.style.boxShadow    = 'none';
+    lbl.textContent        = 'Show Learning Science Badges';
+  }
+}
+
+function toggleEduMode() {
+  var isOn = sessionStorage.getItem('lyfelabz-ls') === 'on';
+  var next = !isOn;
+  if (next) {
+    sessionStorage.setItem('lyfelabz-ls', 'on');
+  } else {
+    sessionStorage.removeItem('lyfelabz-ls');
+  }
+  syncEduToggleUI(next);
+}
+
+// Reflect current state on page load
+(function() {
+  syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on');
+  syncStemToggleUI(sessionStorage.getItem('lyfelabz-stem') === 'on');
+})();
+</script>
+
+<script>
+/* ── MA STE Standards toggle ── */
+function syncStemToggleUI(isOn) {
+  var btn  = document.getElementById('stem-toggle-btn');
+  var dot  = document.getElementById('stem-toggle-dot');
+  var lbl  = document.getElementById('stem-toggle-label');
+  if (!btn) return;
+  if (isOn) {
+    btn.style.borderColor  = 'rgba(46,204,113,0.45)';
+    btn.style.background   = 'rgba(46,204,113,0.08)';
+    btn.style.color        = 'rgba(46,204,113,0.95)';
+    dot.style.background   = '#2ecc71';
+    dot.style.boxShadow    = '0 0 8px rgba(46,204,113,0.7)';
+    lbl.textContent        = 'MA STE Standards: On';
+  } else {
+    btn.style.borderColor  = 'rgba(46,204,113,0.7)';
+    btn.style.background   = 'rgba(46,204,113,0.12)';
+    btn.style.color        = '#2ecc71';
+    dot.style.background   = '#2ecc71';
+    dot.style.boxShadow    = 'none';
+    lbl.textContent        = 'Show MA STE Standards';
+  }
+}
+function toggleStemMode() {
+  var isOn = sessionStorage.getItem('lyfelabz-stem') === 'on';
+  var next = !isOn;
+  if (next) { sessionStorage.setItem('lyfelabz-stem', 'on'); }
+  else       { sessionStorage.removeItem('lyfelabz-stem'); }
+  syncStemToggleUI(next);
+}
+</script>
 
 <!-- Animated Starfield -->
 <script>
