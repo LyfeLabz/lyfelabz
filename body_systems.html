@@ -307,23 +307,17 @@
   .system-card.immune::before      { background: linear-gradient(90deg, var(--accent2), var(--teal)); }
 
   .system-card:hover { transform: translateY(-5px); border-color: rgba(59,200,232,0.4); box-shadow: 0 16px 36px rgba(0,0,0,0.35); }
-  .system-icon { font-size: 2.4rem; margin-bottom: 0.7rem; display: block; }
+  .system-icon { font-size: 2rem; margin-bottom: 0.2rem; display: block; }
   .system-name {
     font-family: 'Fredoka One', cursive;
-    font-size: 1.35rem;
-    margin-bottom: 0.4rem;
+    font-size: 1.15rem;
+    margin-bottom: 0;
     color: var(--text);
-  }
-  .system-summary {
-    font-size: 0.97rem;
-    color: var(--accent);
-    font-weight: 700;
-    margin-bottom: 0.8rem;
   }
   .system-desc {
     color: var(--text-muted);
-    font-size: 0.93rem;
-    margin-bottom: 1rem;
+    font-size: 0.86rem;
+    margin-bottom: 0; flex: 1; line-height: 1.6; padding-bottom: 0.8rem;
   }
   .system-connections {
     display: flex;
@@ -1076,11 +1070,6 @@ body.stem-active .stem-detail {
   color: var(--text);
   line-height: 1.2;
 }
-.dis-tagline {
-  font-size: 0.8rem; font-weight: 700;
-  color: #e8837a;
-  margin-bottom: 0.1rem;
-}
 .dis-desc {
   font-size: 0.86rem;
   color: var(--text-muted);
@@ -1221,64 +1210,56 @@ body.stem-active .stem-detail {
       <div class="system-card circulatory">
         <span class="system-icon">🫀</span>
         <div class="system-name">Circulatory System</div>
-        <div class="system-summary">Transports oxygen, nutrients, and waste throughout the body.</div>
-        <div class="system-desc">The <strong>heart</strong> pumps blood around the body through <strong>veins</strong> and <strong>arteries</strong>. Blood acts as the delivery service — bringing what cells need and carrying away what they don't.</div>
+        <div class="system-desc">The <strong>heart</strong> pumps blood through <strong>arteries</strong> and <strong>veins</strong>, transporting oxygen, nutrients, and waste to and from cells throughout the body.</div>
         <a href="system_circulatory.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card digestive">
         <span class="system-icon">🫄</span>
         <div class="system-name">Digestive System</div>
-        <div class="system-summary">Breaks down food into nutrients and energy for the body to absorb.</div>
-        <div class="system-desc">Food travels from the <strong>mouth</strong> → <strong>stomach</strong> → <strong>small intestine</strong>, where nutrients are absorbed into the bloodstream. The large intestine removes solid waste.</div>
+        <div class="system-desc">Breaks down food as it moves from the <strong>mouth</strong> → <strong>stomach</strong> → <strong>small intestine</strong>, absorbing nutrients into the bloodstream while the <strong>large intestine</strong> removes solid waste.</div>
         <a href="system_digestive.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card respiratory">
         <span class="system-icon">🫁</span>
         <div class="system-name">Respiratory System</div>
-        <div class="system-summary">Moves air in and out of the body through breathing.</div>
-        <div class="system-desc">We inhale air through the <strong>nose</strong> and <strong>mouth</strong>, down to the <strong>lungs</strong>. Oxygen passes into the blood, and carbon dioxide waste is exhaled out.</div>
+        <div class="system-desc">Moves air in and out of the body as oxygen enters the <strong>lungs</strong> and passes into the blood, while carbon dioxide waste is exhaled.</div>
         <a href="system_respiratory.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card excretory">
         <span class="system-icon">🚽</span>
         <div class="system-name">Excretory System</div>
-        <div class="system-summary">Removes solid, liquid, and gaseous waste from the body.</div>
-        <div class="system-desc">Three types of waste removal keep the body in balance: the <strong>large intestine</strong> removes solid waste, the <strong>bladder</strong> stores and removes liquid waste, and the <strong>lungs</strong> remove gaseous CO₂. Removing waste maintains <strong>homeostasis</strong>.</div>
+        <div class="system-desc">Removes solid, liquid, and gaseous wastes from the body through the <strong>large intestine</strong>, <strong>bladder</strong>, and <strong>lungs</strong>, helping maintain homeostasis.</div>
         <a href="system_excretory.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card skeletal">
         <span class="system-icon">🦴</span>
         <div class="system-name">Skeletal System</div>
-        <div class="system-summary">Provides structure, supports movement, and protects organs.</div>
-        <div class="system-desc"><strong>Bones</strong> give the body its shape. <strong>Ligaments</strong> connect bones to bones. <strong>Tendons</strong> connect bones to muscles. Bone marrow — found inside bones — produces blood cells.</div>
+        <div class="system-desc">Provides structure, protects organs, and supports movement as <strong>bones</strong> give the body its shape and <strong>bone marrow</strong> inside them produces blood cells.</div>
         <a href="system_skeletal.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card muscular">
         <span class="system-icon">💪</span>
         <div class="system-name">Muscular System</div>
-        <div class="system-summary">Allows movement of the body and movement of materials through the body.</div>
-        <div class="system-desc">Three types: <strong>Cardiac</strong> muscle pumps blood (heart). <strong>Skeletal</strong> muscle connects to bones for movement (hamstrings). <strong>Smooth</strong> muscle moves materials through organs (small intestine).</div>
+        <div class="system-desc">Allows movement of the body and materials through it using <strong>skeletal muscle</strong> to move bones, <strong>cardiac muscle</strong> to pump the heart, and <strong>smooth muscle</strong> to push materials through organs.</div>
         <a href="system_muscular.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card nervous">
         <span class="system-icon">🧠</span>
         <div class="system-name">Nervous System</div>
-        <div class="system-summary">Detects, interprets, and responds to information from the environment.</div>
-        <div class="system-desc">The <strong>brain</strong> is the control center. The <strong>spinal cord</strong> relays signals between brain and body. <strong>Neurons</strong> are specialized cells that carry electrical signals throughout the body at high speed.</div>
+        <div class="system-desc">Detects, interprets, and responds to information as the <strong>brain</strong> acts as the control center, the <strong>spinal cord</strong> relays signals, and <strong>neurons</strong> carry electrical signals throughout the body.</div>
         <a href="system_nervous.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card immune">
         <span class="system-icon">🛡️</span>
         <div class="system-name">Immune System</div>
-        <div class="system-summary">Defends the body against harmful bacteria, viruses, and parasites.</div>
-        <div class="system-desc"><strong>White blood cells</strong> are produced in our bones and attack foreign invaders. <strong>Lymph nodes</strong> filter out germs that accumulate in cells, tissues, and blood, preventing infection from spreading.</div>
+        <div class="system-desc">Defends the body against harmful bacteria, viruses, and parasites as <strong>white blood cells</strong> attack foreign invaders and <strong>lymph nodes</strong> filter germs from cells, tissues, and blood.</div>
         <a href="system_immune.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
@@ -1498,7 +1479,6 @@ body.stem-active .stem-detail {
       <div class="dis-card active-dis dis-circulatory">
         <span class="dis-icon">🫀</span>
         <div class="dis-name">Circulatory System</div>
-        <div class="dis-tagline">Heart · Blood · Vessels</div>
         <div class="dis-desc">From heart attacks and arrhythmias to anemia and blood clots — explore what happens when the body's delivery network breaks down.</div>
         <a href="disease_circulatory.html" class="dis-link">Explore Disease Maps</a>
       </div>
@@ -1507,7 +1487,6 @@ body.stem-active .stem-detail {
       <div class="dis-card active-dis dis-digestive">
         <span class="dis-icon">🫄</span>
         <div class="dis-name">Digestive System</div>
-        <div class="dis-tagline">Stomach · Intestines · Liver</div>
         <div class="dis-desc">Crohn's disease, ulcers, liver failure, and more — when the body can't absorb what it needs.</div>
         <a href="disease_digestive.html" class="dis-link">Explore Disease Maps</a>
       </div>
@@ -1516,7 +1495,6 @@ body.stem-active .stem-detail {
       <div class="dis-card active-dis dis-respiratory">
         <span class="dis-icon">🫁</span>
         <div class="dis-name">Respiratory System</div>
-        <div class="dis-tagline">Lungs · Airways · Gas Exchange</div>
         <div class="dis-desc">Asthma, pneumonia, COPD, and more — how breathing disorders affect oxygen delivery to every cell.</div>
         <a href="disease_respiratory.html" class="dis-link">Explore Disease Maps</a>
       </div>
@@ -1525,7 +1503,6 @@ body.stem-active .stem-detail {
       <div class="dis-card active-dis dis-excretory">
         <span class="dis-icon">🚽</span>
         <div class="dis-name">Excretory System</div>
-        <div class="dis-tagline">Kidneys · Lungs · Large Intestine</div>
         <div class="dis-desc">Kidney disease, kidney stones, and what happens when the body can't remove its own waste.</div>
         <a href="disease_excretory.html" class="dis-link">Explore Disease Maps</a>
       </div>
@@ -1534,7 +1511,6 @@ body.stem-active .stem-detail {
       <div class="dis-card active-dis dis-skeletal">
         <span class="dis-icon">🦴</span>
         <div class="dis-name">Skeletal System</div>
-        <div class="dis-tagline">Bones · Joints · Marrow</div>
         <div class="dis-desc">Osteoporosis, arthritis, fractures, and bone marrow disorders — when the body's framework weakens.</div>
         <a href="disease_skeletal.html" class="dis-link">Explore Disease Maps</a>
       </div>
@@ -1543,7 +1519,6 @@ body.stem-active .stem-detail {
       <div class="dis-card active-dis dis-muscular">
         <span class="dis-icon">💪</span>
         <div class="dis-name">Muscular System</div>
-        <div class="dis-tagline">Cardiac · Skeletal · Smooth Muscle</div>
         <div class="dis-desc">Muscular dystrophy, myasthenia gravis, and what happens when muscle tissue stops working properly.</div>
         <a href="disease_muscular.html" class="dis-link">Explore Disease Maps</a>
       </div>
@@ -1552,7 +1527,6 @@ body.stem-active .stem-detail {
       <div class="dis-card active-dis dis-nervous">
         <span class="dis-icon">🧠</span>
         <div class="dis-name">Nervous System</div>
-        <div class="dis-tagline">Brain · Spinal Cord · Neurons</div>
         <div class="dis-desc">Multiple sclerosis, epilepsy, stroke, and Parkinson's — disorders of the body's master controller.</div>
         <a href="disease_nervous.html" class="dis-link">Explore Disease Maps</a>
       </div>
@@ -1561,7 +1535,6 @@ body.stem-active .stem-detail {
       <div class="dis-card active-dis dis-immune">
         <span class="dis-icon">🛡️</span>
         <div class="dis-name">Immune System</div>
-        <div class="dis-tagline">White Blood Cells · Lymph Nodes</div>
         <div class="dis-desc">Allergies, autoimmune diseases, and immunodeficiencies — when the body attacks itself or can't defend at all.</div>
         <a href="disease_immune.html" class="dis-link">Explore Disease Maps</a>
       </div>
@@ -1623,7 +1596,7 @@ body.stem-active .stem-detail {
   <p style="margin-bottom:0.5rem;">Part of the Biology unit</p>
   <p style="margin-top:0.6rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a></p>
 
-  <p>© 2025 LyfeLabz · Educational Use</p>
+  <p>© 2026 LyfeLabz · Educational Use</p>
 </footer>
 
 <script>
