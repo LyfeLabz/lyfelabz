@@ -39,10 +39,16 @@ nav{position:sticky;top:0;z-index:200;background:rgba(10,18,28,0.97);backdrop-fi
 .stog.nerv{color:var(--purple);border-color:rgba(179,136,255,0.28);}.stog.nerv:hover{background:rgba(179,136,255,0.09);border-color:rgba(179,136,255,0.6);}.stog.nerv.on{background:rgba(179,136,255,0.14);border-color:rgba(179,136,255,0.8);box-shadow:0 0 10px rgba(179,136,255,0.2);}
 .stog.musc{color:#ff6b6b;border-color:rgba(255,107,107,0.28);}.stog.musc:hover{background:rgba(255,107,107,0.09);border-color:rgba(255,107,107,0.6);}.stog.musc.on{background:rgba(255,107,107,0.14);border-color:rgba(255,107,107,0.8);box-shadow:0 0 10px rgba(255,107,107,0.2);}
 .stog.endo{color:var(--gold);border-color:rgba(245,200,66,0.28);}.stog.endo:hover{background:rgba(245,200,66,0.09);border-color:rgba(245,200,66,0.6);}.stog.endo.on{background:rgba(245,200,66,0.14);border-color:rgba(245,200,66,0.8);box-shadow:0 0 10px rgba(245,200,66,0.2);}
-.panels{display:grid;grid-template-columns:1fr 400px;gap:1.4rem;align-items:start;}
-.map-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.5rem;position:relative;}
-.map-label{font-size:0.78rem;font-weight:900;letter-spacing:0.10em;text-transform:uppercase;color:rgba(220,235,248,0.92);margin-bottom:0.6rem;}
-#map-canvas{width:100%;display:block;cursor:default;}
+.panels{display:grid;grid-template-columns:1fr 430px;gap:1.4rem;align-items:start;}
+.map-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;position:relative;}
+.map-label { display:none; }
+  .map-panel-hd { padding:0.85rem 1.4rem; border-bottom:1px solid var(--border); display:flex; align-items:center; position:relative; z-index:1; }
+  .map-panel-title { font-size:0.78rem; font-weight:900; letter-spacing:0.10em; text-transform:uppercase; color:rgba(220,235,248,0.92); }
+  .map-body { padding:1rem 1.2rem 1.2rem; position:relative; z-index:1; }
+  .map-panel-hd { padding:0.85rem 1.4rem; border-bottom:1px solid var(--border); display:flex; align-items:center; position:relative; z-index:1; }
+  .map-panel-title { font-size:0.78rem; font-weight:900; letter-spacing:0.10em; text-transform:uppercase; color:rgba(220,235,248,0.92); }
+  .map-body { padding:1rem 1.2rem 1.2rem; position:relative; z-index:1; }
+#map-canvas{width:100%;display:block;cursor:default; border-radius:8px; }
 .info-panel{display:flex;flex-direction:column;gap:1rem;position:sticky;top:80px;}
 .info-stack{position:relative;min-height:200px;}
 .i-idle{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem;text-align:center;transition:opacity 0.3s;}
@@ -371,8 +377,8 @@ body.stem-active .stem-detail {
   </div>
   <div class="panels">
     <div class="map-panel">
-      <div class="map-label">IMMUNE SYSTEM MAP — CLICK ANY NODE TO EXPLORE</div>
-      <canvas id="map-canvas"></canvas>
+      <div class="map-panel-hd"><span class="map-panel-title">THE IMMUNE SYSTEM MAP — CLICK ANY NODE TO EXPLORE</span></div>
+      <div class="map-body"><canvas id="map-canvas"></canvas></div>
     </div>
     <div class="info-panel">
       <div class="info-stack">
@@ -417,7 +423,7 @@ body.stem-active .stem-detail {
   <p>Part of <a href="body_systems.html">Lesson 3 — Body Systems</a></p>
   <p style="margin-top:0.6rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a></p>
 
-  <p style="margin-top:0.3rem">© 2025 LyfeLabz · Educational Use</p>
+  <p style="margin-top:0.3rem">© 2026 LyfeLabz · Educational Use</p>
 </footer>
 <script>
 var organData={
@@ -455,9 +461,10 @@ var activeSystems={'immu':true};
 var selectedNode=null,hoveredNode=null,hoveredConn=null,particles=[];
 var canvas=document.getElementById('map-canvas');
 var ctx=canvas.getContext('2d');
-function resize(){var p=canvas.parentElement;var w=p.clientWidth-48;var h=Math.max(540,Math.round(w*0.90));canvas.width=w;canvas.height=h;spawnParticles();}
+var DPR=window.devicePixelRatio||1;
+function resize(){var p=canvas.parentElement;var w=p.clientWidth;var h=Math.max(380,Math.round(w*0.85));canvas.style.width=w+'px';canvas.style.height=h+'px';canvas.width=Math.round(w*DPR);canvas.height=Math.round(h*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);spawnParticles();}
 window.addEventListener('resize',resize);
-function nodePos(id){var n=NODE_DEFS[id];return{x:n.x*canvas.width,y:n.y*canvas.height,r:n.r};}
+function nodePos(id){var n=NODE_DEFS[id];return{x:n.x*(canvas.width/DPR),y:n.y*(canvas.height/DPR),r:n.r};}
 function visNodes(){return Object.keys(NODE_DEFS).filter(function(id){return activeSystems[NODE_DEFS[id].system];});}
 function visConns(){return CONNECTIONS.filter(function(c){if(!activeSystems[c.sys])return false;if(!NODE_DEFS[c.from]||!NODE_DEFS[c.to])return false;return activeSystems[NODE_DEFS[c.from].system]&&activeSystems[NODE_DEFS[c.to].system];});}
 function ctrl(conn){var f=nodePos(conn.from),t=nodePos(conn.to);return{cx:(f.x+t.x)/2+(t.y-f.y)*0.22,cy:(f.y+t.y)/2-(t.x-f.x)*0.22};}

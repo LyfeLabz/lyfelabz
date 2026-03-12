@@ -15,8 +15,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --accent:     #e74c6f;
-    --accent-dim: rgba(231,76,111,0.15);
+    --accent:     #e74c3c;
+    --accent-dim: rgba(231,76,60,0.15);
     --blue:       #3bc8e8;
     --teal:       #1de9b6;
     --gold:       #f5c842;
@@ -40,14 +40,14 @@
   .nav-center { display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:var(--muted); font-weight:700; }
   .nav-center .sep { opacity:0.3; }
   .nav-center .cur { color:var(--accent); }
-  .nav-back { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-dim); border:1px solid rgba(231,76,111,0.4); padding:0.32rem 0.9rem; border-radius:99px; text-decoration:none; transition:all 0.2s; }
-  .nav-back:hover { background:rgba(231,76,111,0.25); }
+  .nav-back { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-dim); border:1px solid rgba(231,76,60,0.4); padding:0.32rem 0.9rem; border-radius:99px; text-decoration:none; transition:all 0.2s; }
+  .nav-back:hover { background:rgba(231,76,60,0.25); }
 
   /* PAGE HEADER */
-  .page-header { background:linear-gradient(135deg,#0a1520 0%,#1a1030 50%,#0c1a28 100%); padding:2.2rem 2.5rem 2rem; position:relative; overflow:hidden; border-bottom:1px solid rgba(231,76,111,0.14); }
-  .page-header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 18% 60%, rgba(231,76,111,0.10) 0%,transparent 55%),radial-gradient(ellipse at 80% 25%, rgba(59,200,232,0.06) 0%,transparent 55%); pointer-events:none; }
+  .page-header { background:linear-gradient(135deg,#0a1520 0%,#1a1030 50%,#0c1a28 100%); padding:2.2rem 2.5rem 2rem; position:relative; overflow:hidden; border-bottom:1px solid rgba(231,76,60,0.14); }
+  .page-header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 18% 60%, rgba(231,76,60,0.10) 0%,transparent 55%),radial-gradient(ellipse at 80% 25%, rgba(59,200,232,0.06) 0%,transparent 55%); pointer-events:none; }
   .header-inner { max-width:1340px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:2rem; flex-wrap:wrap; position:relative; }
-  .header-badge { display:inline-flex; align-items:center; gap:0.5rem; background:var(--accent-dim); border:1px solid rgba(231,76,111,0.4); color:var(--accent); padding:0.32rem 1rem; border-radius:99px; font-size:0.73rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.85rem; }
+  .header-badge { display:inline-flex; align-items:center; gap:0.5rem; background:var(--accent-dim); border:1px solid rgba(231,76,60,0.4); color:var(--accent); padding:0.32rem 1rem; border-radius:99px; font-size:0.73rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.85rem; }
   .pulse-dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:pdot 1.8s ease-in-out infinite; }
   @keyframes pdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.65)} }
   .page-header h1 { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,3.8vw,2.9rem); line-height:1.1; margin-bottom:0.35rem; background:linear-gradient(135deg,#fff 20%,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
@@ -59,7 +59,7 @@
   .sys-toggles { display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.4rem; }
   .tog-lbl { font-size:0.7rem; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-right:0.2rem; white-space:nowrap; }
   .stog { display:inline-flex; align-items:center; gap:0.38rem; padding:0.36rem 0.95rem; border-radius:99px; font-size:0.79rem; font-weight:800; border:1.5px solid; cursor:pointer; transition:all 0.22s; background:transparent; font-family:'Nunito',sans-serif; white-space:nowrap; }
-  .stog.self { color:var(--accent); border-color:rgba(231,76,111,0.5); background:var(--accent-dim); cursor:default; }
+  .stog.self { color:var(--accent); border-color:rgba(231,76,60,0.5); background:var(--accent-dim); cursor:default; }
   .stog.resp { color:var(--blue); border-color:rgba(59,200,232,0.28); }
   .stog.resp:hover { background:rgba(59,200,232,0.09); border-color:rgba(59,200,232,0.6); }
   .stog.resp.on { background:rgba(59,200,232,0.14); border-color:rgba(59,200,232,0.8); box-shadow:0 0 10px rgba(59,200,232,0.2); }
@@ -77,13 +77,16 @@
   .stog.immu.on { background:rgba(29,233,182,0.13); border-color:rgba(29,233,182,0.8); box-shadow:0 0 10px rgba(29,233,182,0.2); }
 
   /* PANELS */
-  .panels { display:grid; grid-template-columns:1fr 400px; gap:1.4rem; align-items:start; }
+  .panels { display:grid; grid-template-columns:1fr 430px; gap:1.4rem; align-items:start; }
 
   /* MAP PANEL */
-  .map-panel { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:1.5rem; position:relative; overflow:hidden; }
-  .map-panel::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 30%, rgba(231,76,111,0.04) 0%,transparent 60%); pointer-events:none; }
-  .map-label { font-size:0.78rem; font-weight:900; letter-spacing:0.10em; text-transform:uppercase; color:rgba(220,235,248,0.92); margin-bottom:0.6rem; }
-  #map-canvas { width:100%; display:block; cursor:default; }
+  .map-panel { background:var(--card); border:1px solid var(--border); border-radius:20px; position:relative; overflow:hidden; }
+  .map-panel::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 30%, rgba(231,76,60,0.04) 0%,transparent 60%); pointer-events:none; }
+  .map-label { display:none; }
+  .map-panel-hd { padding:0.85rem 1.4rem; border-bottom:1px solid var(--border); display:flex; align-items:center; position:relative; z-index:1; }
+  .map-panel-title { font-size:0.78rem; font-weight:900; letter-spacing:0.10em; text-transform:uppercase; color:rgba(220,235,248,0.92); }
+  .map-body { padding:1rem 1.2rem 1.2rem; position:relative; z-index:1; }
+  #map-canvas { width:100%; display:block; cursor:default; border-radius:8px; }
 
   /* INFO PANEL */
   .info-panel { display:flex; flex-direction:column; gap:1rem; position:sticky; top:80px; }
@@ -104,7 +107,7 @@
   .i-card-body { padding:1.2rem 1.4rem; }
   .i-sec-lbl { font-size:0.65rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:0.4rem; }
   .i-role { font-size:0.92rem; color:var(--text); line-height:1.65; margin-bottom:1.1rem; }
-  .i-fact { background:rgba(231,76,111,0.07); border:1px solid rgba(231,76,111,0.2); border-left:3px solid var(--accent); border-radius:9px; padding:0.8rem 1rem; font-size:0.86rem; color:var(--muted); line-height:1.6; }
+  .i-fact { background:rgba(231,76,60,0.07); border:1px solid rgba(231,76,60,0.2); border-left:3px solid var(--accent); border-radius:9px; padding:0.8rem 1rem; font-size:0.86rem; color:var(--muted); line-height:1.6; }
   .i-fact strong { color:var(--accent); }
 
   .c-card { background:var(--card); border:1px solid var(--border); border-radius:17px; padding:1.2rem 1.4rem; display:none; animation:fup 0.28s ease both; }
@@ -390,9 +393,8 @@ body.stem-active .stem-detail {
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <div class="nav-center">
-    <span>Biology</span><span class="sep">›</span>
-    <span>Lesson 3 — Body Systems</span><span class="sep">›</span>
-    <span class="cur">Circulatory</span>
+    <a href="body_systems.html" style="color:var(--muted);text-decoration:none;">Body Systems</a><span class="sep">›</span>
+    <span class="cur">Circulatory — Interactive Map</span>
   </div>
   <a href="body_systems.html" class="nav-back">← Body Systems</a>
 </nav>
@@ -420,11 +422,6 @@ body.stem-active .stem-detail {
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
   <span class="stem-badge" data-tip="Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.">6.MS-LS1-3</span>
 </div>
-</div>
-  </div>
-</div>
-
-
 
   <div class="sys-toggles">
     <span class="tog-lbl">Show connections with:</span>
@@ -440,8 +437,8 @@ body.stem-active .stem-detail {
 
     <!-- MAP CANVAS -->
     <div class="map-panel">
-      <div class="map-label">CIRCULATORY SYSTEM MAP — CLICK ANY NODE TO EXPLORE</div>
-      <canvas id="map-canvas"></canvas>
+      <div class="map-panel-hd"><span class="map-panel-title">THE CIRCULATORY SYSTEM MAP — CLICK ANY NODE TO EXPLORE</span></div>
+      <div class="map-body"><canvas id="map-canvas"></canvas></div>
     </div>
 
     <!-- INFO PANEL -->
@@ -501,14 +498,21 @@ body.stem-active .stem-detail {
     <div><span class="s-num">5</span><span class="s-lbl">Systems it connects to</span></div>
   </div>
 
-</div>
+</div><!-- /explorer-wrap -->
+
+
 
 <footer>
   <div class="logo">🫀 LyfeLabz · Circulatory System</div>
-  <p>Part of <a href="body_systems.html">Lesson 3 — Body Systems</a></p>
-  <p style="margin-top:0.6rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a></p>
-
-  <p style="margin-top:0.3rem">© 2025 LyfeLabz · Educational Use</p>
+  <p style="margin-bottom:0.6rem;">
+    <a href="body_systems.html">Body Systems</a>
+    &nbsp;·&nbsp;
+    <a href="body_systems.html#diseases">Diseases &amp; Disorders</a>
+    &nbsp;·&nbsp;
+    <a href="index.html">Learning Hub</a>
+  </p>
+  <p style="margin-top:0.5rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a></p>
+  <p style="margin-top:0.3rem">© 2026 LyfeLabz · Educational Use</p>
 </footer>
 
 <script>
@@ -516,16 +520,16 @@ body.stem-active .stem-detail {
 //  DATA
 // ─────────────────────────────────────────────
 const organData = {
-  heart:      { ico:'🫀', name:'The Heart',          sys:'Circulatory', col:'#e74c6f',
+  heart:      { ico:'🫀', name:'The Heart',          sys:'Circulatory', col:'#e74c3c',
     role:'The heart is the engine of the circulatory system — a muscular pump that beats ~100,000 times every day. Its four chambers drive two loops simultaneously: pulmonary circulation (to the lungs for oxygen) and systemic circulation (out to the entire body).',
     fact:'<strong>Fun Fact:</strong> Your heart beats about 3 billion times over a lifetime without ever taking a break. The "lub-dub" sound is your heart valves snapping shut.' },
-  arteries:   { ico:'🩸', name:'Arteries',            sys:'Circulatory', col:'#e74c6f',
+  arteries:   { ico:'🩸', name:'Arteries',            sys:'Circulatory', col:'#e74c3c',
     role:'Arteries carry oxygen-rich blood away from the heart at high pressure. The aorta — the body\'s largest artery — branches into smaller arteries that reach every organ and tissue. Their thick, muscular walls absorb the force of each heartbeat.',
     fact:'<strong>Fun Fact:</strong> The aorta is about as wide as a garden hose (~1 inch). By the time blood reaches your fingertips it\'s flowing through capillaries thinner than a hair.' },
   veins:      { ico:'💉', name:'Veins',               sys:'Circulatory', col:'#3bc8e8',
     role:'Veins return oxygen-depleted blood back to the heart. The superior and inferior vena cava drain the upper and lower body into the right atrium. One-way valves inside veins prevent blood from flowing backward.',
     fact:'<strong>Fun Fact:</strong> About 70% of your blood is in your veins at any moment — they act as a reservoir. Veins look blue through skin because of how light interacts with deoxygenated blood.' },
-  capillaries:{ ico:'🕸️', name:'Capillaries',         sys:'Circulatory', col:'#e74c6f',
+  capillaries:{ ico:'🕸️', name:'Capillaries',         sys:'Circulatory', col:'#e74c3c',
     role:'Capillaries are the microscopic exchange points of the circulatory system. Their walls are just one cell thick, allowing oxygen and nutrients to pass into tissues while CO₂ and waste pass back in. Every cell in your body is within a few cell-widths of a capillary.',
     fact:'<strong>Fun Fact:</strong> If all your capillaries were laid end to end, they would stretch ~40,000 km — enough to circle the Earth at the equator!' },
   blood:      { ico:'🔴', name:'Blood',               sys:'Circulatory', col:'#f5c842',
@@ -563,7 +567,7 @@ const organData = {
 // ─────────────────────────────────────────────
 const NODE_DEFS = {
   // Circulatory core
-  heart:          { x:0.36, y:0.22, r:35, system:'circ' },  // top centre
+  heart:          { x:0.36, y:0.22, r: 32, system:'circ' },  // top centre
   arteries:       { x:0.16, y:0.40, r:27, system:'circ' },  // far left
   veins:          { x:0.74, y:0.50, r:27, system:'circ' },  // far right
   blood:          { x:0.34, y:0.54, r:24, system:'circ' },  // mid centre, moved up
@@ -601,7 +605,7 @@ const CONNECTIONS = [
 
 // Colours per system
 const SYS_COLOR = {
-  circ: '#e74c6f',
+  circ: '#e74c3c',
   resp: '#3bc8e8',
   dige: '#ff9d45',
   excr: '#69d97a',
@@ -624,13 +628,17 @@ let animFrame;
 // ─────────────────────────────────────────────
 const canvas = document.getElementById('map-canvas');
 const ctx = canvas.getContext('2d');
+  const DPR = window.devicePixelRatio || 1;
 
 function resize() {
   const panel = canvas.parentElement;
-  const w = panel.clientWidth - 48; // subtract panel padding
-  const h = Math.max(520, Math.round(w * 0.88));
-  canvas.width = w;
-  canvas.height = h;
+  const w = panel.clientWidth;
+  const h = Math.max(380, Math.round(w * 0.85));
+  canvas.style.width  = w + 'px';
+  canvas.style.height = h + 'px';
+  canvas.width  = Math.round(w * DPR);
+  canvas.height = Math.round(h * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   spawnParticles();
   draw();
 }
@@ -642,7 +650,7 @@ window.addEventListener('resize', resize);
 // ─────────────────────────────────────────────
 function nodePos(id) {
   const n = NODE_DEFS[id];
-  return { x: n.x * canvas.width, y: n.y * canvas.height, r: n.r };
+  return { x: n.x * (canvas.width/DPR), y: n.y * (canvas.height/DPR), r: n.r };
 }
 
 function visibleNodes() {

@@ -15,10 +15,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --accent:      #c0392b;
-    --accent-dim:  rgba(192,57,43,0.15);
-    --accent-glow: rgba(192,57,43,0.35);
-    --accent-border:rgba(192,57,43,0.45);
+    --accent:      #e74c3c;
+    --accent-dim:  rgba(231,76,60,0.15);
+    --accent-glow: rgba(231,76,60,0.35);
+    --accent-border:rgba(231,76,60,0.45);
     --teal:        #3bc8e8;
     --gold:        #f5c842;
     --gold-glow:   rgba(245,200,66,0.35);
@@ -42,18 +42,18 @@
   .nav-center .sep { opacity:0.3; }
   .nav-center .cur { color:var(--accent); }
   .nav-back { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-dim); border:1px solid var(--accent-border); padding:0.32rem 0.9rem; border-radius:99px; text-decoration:none; transition:all 0.2s; }
-  .nav-back:hover { background:rgba(192,57,43,0.25); }
+  .nav-back:hover { background:rgba(231,76,60,0.25); }
 
   /* ── PAGE HEADER ────────────────────────────────────── */
-  .page-header { background:linear-gradient(135deg,#0a1520 0%,#1a0e0e 50%,#0c1520 100%); padding:2.2rem 2.5rem 2rem; position:relative; overflow:hidden; border-bottom:1px solid rgba(192,57,43,0.14); }
-  .page-header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 18% 60%, rgba(192,57,43,0.12) 0%,transparent 55%),radial-gradient(ellipse at 80% 25%, rgba(59,200,232,0.05) 0%,transparent 55%); pointer-events:none; }
+  .page-header { background:linear-gradient(135deg,#0a1520 0%,#1a0e0e 50%,#0c1520 100%); padding:2.2rem 2.5rem 2rem; position:relative; overflow:hidden; border-bottom:1px solid rgba(231,76,60,0.14); }
+  .page-header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 18% 60%, rgba(231,76,60,0.12) 0%,transparent 55%),radial-gradient(ellipse at 80% 25%, rgba(59,200,232,0.05) 0%,transparent 55%); pointer-events:none; }
   .header-inner { max-width:1340px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:2rem; flex-wrap:wrap; position:relative; }
   .header-badge { display:inline-flex; align-items:center; gap:0.5rem; background:var(--accent-dim); border:1px solid var(--accent-border); color:var(--accent); padding:0.32rem 1rem; border-radius:99px; font-size:0.73rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.85rem; }
   .pulse-dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:pdot 1.8s ease-in-out infinite; flex-shrink:0; }
   @keyframes pdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.65)} }
   .page-header h1 { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,3.8vw,2.9rem); line-height:1.1; margin-bottom:0.35rem; background:linear-gradient(135deg,#fff 20%,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
   .page-header p { color:var(--muted); font-size:0.95rem; max-width:500px; line-height:1.65; }
-  @keyframes hintpulse { 0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0)} 50%{box-shadow:0 0 0 6px rgba(192,57,43,0)} }
+  @keyframes hintpulse { 0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,0)} 50%{box-shadow:0 0 0 6px rgba(231,76,60,0)} }
 
   /* ── EXPLORER WRAP ──────────────────────────────────── */
   .explorer-wrap { max-width:1340px; margin:0 auto; padding:1.8rem 2rem 3rem; }
@@ -118,7 +118,7 @@
   .i-card.on { display:block; animation:fup 0.28s ease both; }
   @keyframes fup { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
-  .i-card-hd { padding:1.2rem 1.4rem 1rem; border-bottom:1px solid var(--border); background:rgba(192,57,43,0.06); }
+  .i-card-hd { padding:1.2rem 1.4rem 1rem; border-bottom:1px solid var(--border); background:rgba(231,76,60,0.06); }
   .i-card-sys { font-size:0.66rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin-bottom:0.3rem; display:flex; align-items:center; gap:0.4rem; }
   .i-card-name { font-family:'Fredoka One',cursive; font-size:1.5rem; line-height:1.1; color:var(--text); margin-bottom:0.3rem; }
   .i-card-desc { font-size:0.84rem; color:var(--muted); line-height:1.6; }
@@ -133,13 +133,13 @@
   /* ripple blocks */
   .ripple-wrap { padding:1rem 1.4rem 0.8rem; display:flex; flex-direction:column; gap:0.7rem; }
   .sev-badge { display:inline-flex; align-items:center; gap:0.35rem; padding:0.28rem 0.9rem; border-radius:99px; font-size:0.71rem; font-weight:800; letter-spacing:0.06em; margin-bottom:0.25rem; width:fit-content; }
-  .sev-high { background:rgba(192,57,43,0.2);  color:#ff8a7a; border:1px solid rgba(192,57,43,0.4); }
+  .sev-high { background:rgba(231,76,60,0.2);  color:#ff8a7a; border:1px solid rgba(231,76,60,0.4); }
   .sev-med  { background:rgba(230,126,34,0.18); color:#f0a050; border:1px solid rgba(230,126,34,0.4); }
   .sev-low  { background:rgba(46,204,113,0.15); color:#5ddb8a; border:1px solid rgba(46,204,113,0.35); }
 
   .ripple-block { border-radius:12px; padding:0.85rem 1rem; border-left:3px solid transparent; opacity:0; transform:translateY(8px); transition:opacity .38s ease, transform .38s ease; }
   .ripple-block.show { opacity:1; transform:translateY(0); }
-  .ripple-block.r1 { background:rgba(192,57,43,0.1);  border-left-color:var(--accent); }
+  .ripple-block.r1 { background:rgba(231,76,60,0.1);  border-left-color:var(--accent); }
   .ripple-block.r2 { background:rgba(155,89,182,0.1); border-left-color:var(--purple); }
   .ripple-block.r3 { background:rgba(59,200,232,0.08); border-left-color:var(--teal); }
   .rb-label { font-size:0.67rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.22rem; display:flex; align-items:center; gap:0.35rem; }
@@ -281,7 +281,7 @@ body.stem-active .stem-focus {
 
 
   .map-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:relative;}
-  .map-panel::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 25%,rgba(192,57,43,0.06) 0%,transparent 65%);pointer-events:none;z-index:0;}
+  .map-panel::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 25%,rgba(231,76,60,0.06) 0%,transparent 65%);pointer-events:none;z-index:0;}
   .map-panel-hd{padding:0.85rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;position:relative;z-index:1;}
   .map-panel-title{font-size:0.78rem;font-weight:900;letter-spacing:0.10em;text-transform:uppercase;color:rgba(220,235,248,0.92);}
   .map-body{padding:1rem 1.2rem 1.2rem;position:relative;z-index:1;}
@@ -416,13 +416,14 @@ body.stem-active .stem-focus {
 <footer>
   <div class="logo">🩺 LyfeLabz · Circulatory System — Diseases &amp; Disorders</div>
   <p style="margin-bottom:0.6rem;">
-    <a href="body_systems.html#diseases">← Diseases &amp; Disorders</a>
+    <a href="system_circulatory.html">← Interactive Map</a>
     &nbsp;·&nbsp;
     <a href="body_systems.html">Body Systems</a>
     &nbsp;·&nbsp;
     <a href="index.html">Learning Hub</a>
   </p>
-  <p>© 2025 LyfeLabz · Educational Use</p>
+  <p style="margin-top:0.5rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a></p>
+  <p style="margin-top:0.3rem">© 2026 LyfeLabz · Educational Use</p>
 </footer>
 
 <script>
@@ -641,7 +642,7 @@ function setPanel(organ, dIdx) {
   plasma:{x:0.8,y:0.83,r:26,ico:'🧬',lbl:'Plasma'}
 };
   var CONNS = [["arteries","lungs"],["arteries","coronary"],["arteries","heart"],["heart","veins"],["heart","blood"],["lungs","heart"],["blood","capillaries"],["blood","plasma"],["veins","capillaries"]];
-  var COL   = '#c0392b';
+  var COL   = '#e74c3c';
 
   var sel=null, hov=null, hovC=null, dotT=0;
   var mc=document.getElementById('map-canvas');
