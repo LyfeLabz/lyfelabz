@@ -995,6 +995,17 @@ body.stem-active .stem-detail {
 /* ===== DISEASES & DISORDERS SECTION ===== */
 #diseases { background: var(--dark2); }
 
+.systems-intro-banner {
+  background: linear-gradient(135deg, rgba(59,200,232,0.08) 0%, rgba(29,233,182,0.05) 100%);
+  border: 1px solid rgba(59,200,232,0.22);
+  border-radius: 18px;
+  padding: 1.6rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
 .diseases-intro-banner {
   background: linear-gradient(135deg, rgba(192,57,43,0.1) 0%, rgba(155,89,182,0.07) 100%);
   border: 1px solid rgba(192,57,43,0.25);
@@ -1205,7 +1216,17 @@ body.stem-active .stem-detail {
     <h2 class="section-title">Eight Major Body Systems 🩺</h2>
     <p class="section-desc">Each system has a specialized role — and none of them work alone. Explore each one below to see what it does and how it connects to the others.</p>
 
-    <div class="systems-grid">
+
+    <div class="systems-intro-banner">
+      <div class="dib-icon">🗺️</div>
+      <div class="dib-body">
+        <div class="dib-tag" style="background:rgba(59,200,232,0.12);border-color:rgba(59,200,232,0.3);color:#3bc8e8;">How to Read These Maps</div>
+        <h3>Explore the Interactive Maps</h3>
+        <p>Click any node on the map to learn what that part does. Bigger nodes are more central to the system. Use the toggles at the top to see how systems connect to each other.</p>
+      </div>
+    </div>
+
+        <div class="systems-grid">
 
       <div class="system-card circulatory">
         <span class="system-icon">🫀</span>
@@ -1467,9 +1488,9 @@ body.stem-active .stem-detail {
     <div class="diseases-intro-banner">
       <div class="dib-icon">🔬</div>
       <div class="dib-body">
-        <div class="dib-tag">How to Read These Pages</div>
+        <div class="dib-tag">How to Read These Maps</div>
         <h3>Three Levels of Impact</h3>
-        <p>Each disease is explained at three levels: <strong>🔬 What Goes Wrong</strong> (the part itself) → <strong>📡 How It Spreads</strong> (across the system) → <strong>🧍 How You Feel It</strong> (the whole person). This helps you see how a small problem in one part can ripple through the entire body.</p>
+        <p>Each disease is explained at three levels: <strong>🔬 What Goes Wrong</strong> in that part → <strong>📡 How It Spreads</strong> through the system → <strong>🧍 How You Feel It</strong> as a whole person. Start with any node that interests you.</p>
       </div>
     </div>
 
