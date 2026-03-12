@@ -49,7 +49,6 @@
   @keyframes pdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.65)} }
   .page-header h1 { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,3.8vw,2.9rem); line-height:1.1; margin-bottom:0.35rem; background:linear-gradient(135deg,#fff 20%,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
   .page-header p { color:var(--muted); font-size:0.95rem; max-width:500px; line-height:1.65; }
-  .header-hint { display:flex; align-items:center; gap:0.55rem; font-size:0.82rem; color:var(--text); font-weight:800; background:var(--accent-dim); border:1px solid var(--accent-border); padding:0.65rem 1.1rem; border-radius:11px; white-space:nowrap; flex-shrink:0; }
   .explorer-wrap { max-width:1340px; margin:0 auto; padding:1.8rem 2rem 3rem; }
   .stat-pills { display:flex; gap:0.7rem; flex-wrap:wrap; margin-bottom:1.6rem; }
   .stat-pill { display:inline-flex; align-items:center; gap:0.45rem; background:var(--card); border:1px solid var(--border); border-radius:99px; padding:0.32rem 0.95rem; font-size:0.76rem; font-weight:800; color:var(--muted); letter-spacing:0.04em; }
@@ -179,14 +178,14 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
   .map-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:relative;}
   .map-panel::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 25%,rgba(59,200,232,0.06) 0%,transparent 65%);pointer-events:none;z-index:0;}
   .map-panel-hd{padding:0.85rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;position:relative;z-index:1;}
-  .map-panel-title{font-size:0.67rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);}
+  .map-panel-title{font-size:0.78rem;font-weight:900;letter-spacing:0.10em;text-transform:uppercase;color:rgba(220,235,248,0.92);}
   .map-body{padding:1rem 1.2rem 1.2rem;position:relative;z-index:1;}
   #map-canvas{width:100%;display:block;cursor:default;border-radius:8px;}
-  .line-legend{display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;padding:0.45rem 0;margin-bottom:0.55rem;border-bottom:1px solid rgba(255,255,255,0.07);}
-  .ll-item{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.68rem;font-weight:700;color:rgba(180,200,220,0.65);letter-spacing:0.04em;}
-  .ll-dash{display:inline-block;width:22px;height:0;border-top:2px dashed rgba(180,200,220,0.5);}
-  .ll-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:rgba(180,200,220,0.5);}
-  .ll-arr{font-size:0.8rem;color:rgba(180,200,220,0.5);}
+  
+  
+  
+  
+  
 
 </style>
 </head>
@@ -211,7 +210,6 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
       <h1>What Can Go Wrong? 🫁</h1>
       <p>Pick any part of the respiratory system to see what diseases can affect it — and how a breathing problem in one spot can ripple through your entire body.</p>
     </div>
-    <div class="header-hint">👆 Click a node on the map to explore</div>
   </div>
 </div>
 
@@ -241,11 +239,6 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
         <span class="map-panel-title">THE RESPIRATORY SYSTEM MAP — CLICK ANY NODE TO EXPLORE</span>
       </div>
       <div class="map-body">
-        <div class="line-legend">
-          <span class="ll-item"><span class="ll-dash"></span><span class="ll-text">Connection</span></span>
-          <span class="ll-item"><span class="ll-dot"></span><span class="ll-text">System node</span></span>
-          <span class="ll-item"><span class="ll-arr">→</span><span class="ll-text">Hover lines for labels</span></span>
-        </div>
         <canvas id="map-canvas"></canvas>
       </div>
     </div>
@@ -479,7 +472,7 @@ function setPanel(organ, dIdx) {
   var CONNS = [["nose","trachea"],["trachea","bronchi"],["pleura","rightlung"],["bronchi","leftlung"],["bronchi","rightlung"],["leftlung","alveoli"],["rightlung","alveoli"],["alveoli","diaphragm"]];
   var COL   = '#3bc8e8';
 
-  var sel=null, hov=null, hovC=null;
+  var sel=null, hov=null, hovC=null, dotT=0;
   var mc=document.getElementById('map-canvas');
   var cx=mc.getContext('2d');
   var DPR=window.devicePixelRatio||1;
@@ -493,7 +486,6 @@ function setPanel(organ, dIdx) {
   }
   window.addEventListener('resize',resize);
 
-  // CSS-pixel position of node
   function pos(id){
     var n=NODES[id], W=mc.width/DPR, H=mc.height/DPR;
     return {x:n.x*W, y:n.y*H, r:n.r};
@@ -501,32 +493,54 @@ function setPanel(organ, dIdx) {
   function ctrl(a,b){ return {cx:(a.x+b.x)/2+(b.y-a.y)*0.28, cy:(a.y+b.y)/2-(b.x-a.x)*0.28}; }
   function bez(f,cc,t2,t){ return {x:(1-t)*(1-t)*f.x+2*(1-t)*t*cc.cx+t*t*t2.x, y:(1-t)*(1-t)*f.y+2*(1-t)*t*cc.cy+t*t*t2.y}; }
 
-  function pill(text,x,y){
-    cx.save(); cx.font='700 10px Nunito,sans-serif';
-    var tw=cx.measureText(text).width, pw=tw+16, ph=20, rr=6, px=x-pw/2, py=y-ph/2;
-    cx.fillStyle='rgba(8,15,28,0.93)'; cx.globalAlpha=1;
-    cx.beginPath(); cx.moveTo(px+rr,py); cx.lineTo(px+pw-rr,py); cx.quadraticCurveTo(px+pw,py,px+pw,py+rr);
-    cx.lineTo(px+pw,py+ph-rr); cx.quadraticCurveTo(px+pw,py+ph,px+pw-rr,py+ph);
-    cx.lineTo(px+rr,py+ph); cx.quadraticCurveTo(px,py+ph,px,py+ph-rr);
-    cx.lineTo(px,py+rr); cx.quadraticCurveTo(px,py,px+rr,py); cx.closePath(); cx.fill();
-    cx.strokeStyle=COL; cx.lineWidth=1; cx.globalAlpha=0.6; cx.stroke();
-    cx.fillStyle=COL; cx.globalAlpha=1; cx.textAlign='center'; cx.textBaseline='middle';
-    cx.fillText(text,x,y); cx.restore();
+  function drawDot(bx,by,r,alpha){
+    // glow halo
+    var g=cx.createRadialGradient(bx,by,0,bx,by,r*3.5);
+    g.addColorStop(0,COL); g.addColorStop(1,'rgba(0,0,0,0)');
+    cx.save(); cx.fillStyle=g; cx.globalAlpha=alpha*0.55;
+    cx.beginPath(); cx.arc(bx,by,r*3.5,0,Math.PI*2); cx.fill(); cx.restore();
+    // bright core
+    cx.save(); cx.beginPath(); cx.arc(bx,by,r,0,Math.PI*2);
+    cx.fillStyle=COL; cx.globalAlpha=alpha; cx.fill(); cx.restore();
+    // white centre spark
+    cx.save(); cx.beginPath(); cx.arc(bx,by,r*0.45,0,Math.PI*2);
+    cx.fillStyle='#ffffff'; cx.globalAlpha=alpha*0.85; cx.fill(); cx.restore();
   }
 
   function draw(){
     var W=mc.width/DPR, H=mc.height/DPR;
     cx.clearRect(0,0,W,H);
+    dotT=(dotT+0.0035)%1;
 
     // ── connections ──────────────────────────────────────────────────────
-    CONNS.forEach(function(c){
-      var f=pos(c[0]), t=pos(c[1]), cc=ctrl(f,t), iH=(hovC===c);
-      cx.save(); cx.beginPath(); cx.moveTo(f.x,f.y); cx.quadraticCurveTo(cc.cx,cc.cy,t.x,t.y);
-      cx.strokeStyle=COL; cx.globalAlpha=iH?0.25:0.09; cx.lineWidth=iH?16:9; cx.stroke(); cx.restore();
-      cx.save(); cx.beginPath(); cx.moveTo(f.x,f.y); cx.quadraticCurveTo(cc.cx,cc.cy,t.x,t.y);
-      cx.strokeStyle=COL; cx.globalAlpha=iH?0.95:0.45; cx.lineWidth=iH?2.5:1.8;
-      cx.setLineDash([6,4]); cx.stroke(); cx.setLineDash([]); cx.restore();
-      if(iH){ var m=bez(f,cc,t,0.5); pill(NODES[c[0]].lbl+' → '+NODES[c[1]].lbl,m.x,m.y); }
+    CONNS.forEach(function(c,ci){
+      var f=pos(c[0]), t2=pos(c[1]), cc=ctrl(f,t2), iH=(hovC===c);
+
+      // glow track
+      cx.save(); cx.beginPath(); cx.moveTo(f.x,f.y);
+      cx.quadraticCurveTo(cc.cx,cc.cy,t2.x,t2.y);
+      cx.strokeStyle=COL; cx.globalAlpha=iH?0.25:0.09;
+      cx.lineWidth=iH?16:9; cx.stroke(); cx.restore();
+
+      // dashed line
+      cx.save(); cx.beginPath(); cx.moveTo(f.x,f.y);
+      cx.quadraticCurveTo(cc.cx,cc.cy,t2.x,t2.y);
+      cx.strokeStyle=COL; cx.globalAlpha=iH?0.95:0.45;
+      cx.lineWidth=iH?2.5:1.8; cx.setLineDash([6,4]); cx.stroke();
+      cx.setLineDash([]); cx.restore();
+
+      // flowing dots — 2 per connection, staggered by index
+      var offset=(ci*0.37)%1;
+      for(var d=0;d<2;d++){
+        var tVal=((dotT + offset + d*0.50)%1);
+        // keep dot off the node circles (trim first/last 12%)
+        var tClamped=0.12+tVal*0.76;
+        var bp=bez(f,cc,t2,tClamped);
+        var alpha=iH?0.95:0.70;
+        // fade near ends so dot dissolves into node
+        var fade=Math.min(tClamped/0.12, (1-tClamped)/0.12, 1);
+        drawDot(bp.x,bp.y,3.5,alpha*fade);
+      }
     });
 
     // ── nodes ─────────────────────────────────────────────────────────────
@@ -534,7 +548,6 @@ function setPanel(organ, dIdx) {
       var p=pos(id), n=NODES[id];
       var iS=(sel===id), iH=(hov===id);
 
-      // wide outer glow — MUCH brighter on hover/select
       var glowR = iS ? p.r*3.4 : (iH ? p.r*3.0 : p.r*2.2);
       var glowA = iS ? 0.55    : (iH ? 0.45    : 0.20);
       var g=cx.createRadialGradient(p.x,p.y,p.r*0.2,p.x,p.y,glowR);
@@ -542,40 +555,33 @@ function setPanel(organ, dIdx) {
       cx.save(); cx.fillStyle=g; cx.globalAlpha=glowA;
       cx.beginPath(); cx.arc(p.x,p.y,glowR,0,Math.PI*2); cx.fill(); cx.restore();
 
-      // base circle — visible accent fill, not black
       var fillA = iS ? 0.40 : (iH ? 0.32 : 0.18);
       cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
       cx.fillStyle=COL; cx.globalAlpha=fillA; cx.fill(); cx.restore();
 
-      // slight dark overlay to give depth (NOT opaque)
       cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r-1,0,Math.PI*2);
       cx.fillStyle='rgba(8,14,24,0.45)'; cx.globalAlpha=1; cx.fill(); cx.restore();
 
-      // bright stroke ring
       var strokeW = iS ? 3.5 : (iH ? 3.0 : 2.2);
       var strokeA = iS ? 1.0 : (iH ? 1.0 : 0.80);
       cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
       cx.strokeStyle=COL; cx.lineWidth=strokeW; cx.globalAlpha=strokeA; cx.stroke(); cx.restore();
 
-      // hover inner bright ring
       if(iH && !iS){
         cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r-3,0,Math.PI*2);
         cx.strokeStyle=COL; cx.lineWidth=1.5; cx.globalAlpha=0.50; cx.stroke(); cx.restore();
       }
 
-      // pulse ring when selected
       if(iS){
         var pt=(Date.now()%1800)/1800;
         cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r+pt*p.r*1.3,0,Math.PI*2);
         cx.strokeStyle=COL; cx.lineWidth=2.2; cx.globalAlpha=(1-pt)*0.60; cx.stroke(); cx.restore();
       }
 
-      // emoji — sized to fill circle
       cx.save(); cx.font=(p.r*1.08)+'px serif';
       cx.textAlign='center'; cx.textBaseline='middle'; cx.globalAlpha=1;
       cx.fillText(n.ico,p.x,p.y+1); cx.restore();
 
-      // label beneath
       var lsz=Math.max(11,Math.round(p.r*0.52));
       cx.save(); cx.font='800 '+lsz+'px Nunito,sans-serif';
       cx.fillStyle=iS?COL:(iH?'#ffffff':'rgba(232,244,251,0.85)');
@@ -586,7 +592,6 @@ function setPanel(organ, dIdx) {
 
   function loop(){ draw(); requestAnimationFrame(loop); }
 
-  // ── click — use offsetX/Y (already in CSS px, matches pos()) ────────────
   mc.addEventListener('click',function(e){
     var mx=e.offsetX, my=e.offsetY, hit=null;
     Object.keys(NODES).forEach(function(id){
@@ -611,9 +616,9 @@ function setPanel(organ, dIdx) {
     });
     if(!onN){
       CONNS.forEach(function(c){
-        var f=pos(c[0]),t=pos(c[1]),cc=ctrl(f,t);
+        var f=pos(c[0]),t2=pos(c[1]),cc=ctrl(f,t2);
         for(var i=0;i<=20;i++){
-          var bp=bez(f,cc,t,i/20);
+          var bp=bez(f,cc,t2,i/20);
           if(Math.sqrt((mx-bp.x)*(mx-bp.x)+(my-bp.y)*(my-bp.y))<10){onC=c;break;}
         }
       });

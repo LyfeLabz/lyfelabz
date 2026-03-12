@@ -52,8 +52,6 @@
   @keyframes pdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.65)} }
   .page-header h1 { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,3.8vw,2.9rem); line-height:1.1; margin-bottom:0.35rem; background:linear-gradient(135deg,#fff 20%,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
   .page-header p { color:var(--muted); font-size:0.95rem; max-width:460px; }
-  .header-hint { display:flex; align-items:center; gap:0.55rem; font-size:0.8rem; color:var(--muted); font-weight:700; background:rgba(255,255,255,0.04); border:1px solid var(--border); padding:0.55rem 1rem; border-radius:11px; white-space:nowrap; flex-shrink:0; }
-
   /* EXPLORER */
   .explorer-wrap { max-width:1340px; margin:0 auto; padding:1.8rem 2rem 3rem; }
 
@@ -84,7 +82,7 @@
   /* MAP PANEL */
   .map-panel { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:1.5rem; position:relative; overflow:hidden; }
   .map-panel::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 30%, rgba(231,76,111,0.04) 0%,transparent 60%); pointer-events:none; }
-  .map-label { font-size:0.67rem; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:1rem; }
+  .map-label { font-size:0.78rem; font-weight:900; letter-spacing:0.10em; text-transform:uppercase; color:rgba(220,235,248,0.92); margin-bottom:0.6rem; }
   #map-canvas { width:100%; display:block; cursor:default; }
 
   /* INFO PANEL */
@@ -385,12 +383,6 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 
-  .line-legend{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;padding:0.55rem 0;margin-bottom:0.6rem;border-bottom:1px solid rgba(255,255,255,0.06);}
-  .ll-item{display:inline-flex;align-items:center;gap:0.42rem;font-size:0.68rem;font-weight:700;color:rgba(180,200,220,0.7);letter-spacing:0.04em;}
-  .ll-dash{display:inline-block;width:22px;height:2px;background:rgba(180,200,220,0.45);border-top:2px dashed rgba(180,200,220,0.55);}
-  .ll-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:rgba(180,200,220,0.55);box-shadow:0 0 4px rgba(180,200,220,0.4);}
-  .ll-arrow{font-size:0.78rem;color:rgba(180,200,220,0.55);}
-
 </style>
 </head>
 <body>
@@ -413,7 +405,6 @@ body.stem-active .stem-detail {
       <p>The body's delivery network — transporting oxygen, nutrients, and waste to and from every cell, 24 hours a day.</p>
 
     </div>
-    <div class="header-hint"><span>👆</span><span>Click any node to explore it · Toggle systems to see connections</span></div>
   </div>
 </div>
 
@@ -440,7 +431,7 @@ body.stem-active .stem-detail {
     <button class="stog self" disabled>🫀 Circulatory (You Are Here)</button>
     <button class="stog resp" id="tog-resp" onclick="toggleSys('resp',this)">🫁 Respiratory</button>
     <button class="stog dige" id="tog-dige" onclick="toggleSys('dige',this)">🫄 Digestive</button>
-    <button class="stog excr" id="tog-excr" onclick="toggleSys('excr',this)">♻️ Excretory</button>
+    <button class="stog excr" id="tog-excr" onclick="toggleSys('excr',this)">🚽 Excretory</button>
     <button class="stog skel" id="tog-skel" onclick="toggleSys('skel',this)">🦴 Skeletal</button>
     <button class="stog immu" id="tog-immu" onclick="toggleSys('immu',this)">🛡️ Immune</button>
   </div>
@@ -449,12 +440,7 @@ body.stem-active .stem-detail {
 
     <!-- MAP CANVAS -->
     <div class="map-panel">
-      <div class="map-label">Circulatory System Map — Click any node to explore</div>
-      <div class="line-legend">
-        <span class="ll-item"><span class="ll-dash"></span><span class="ll-text">Connection pathway</span></span>
-        <span class="ll-item"><span class="ll-dot"></span><span class="ll-text">Direction of flow</span></span>
-        <span class="ll-item"><span class="ll-arrow">→</span><span class="ll-text">Hover a line to see its label</span></span>
-      </div>
+      <div class="map-label">CIRCULATORY SYSTEM MAP — CLICK ANY NODE TO EXPLORE</div>
       <canvas id="map-canvas"></canvas>
     </div>
 
@@ -492,7 +478,7 @@ body.stem-active .stem-detail {
         <p>After the small intestine breaks down food, blood vessels lining the intestinal wall absorb <strong>glucose, amino acids, and fatty acids</strong> directly into the bloodstream and carry them to every cell in the body.</p>
       </div>
       <div class="c-card" id="cc-excr">
-        <div class="c-card-hd"><span class="c-ico">♻️</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#69d97a">Excretory System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🚽</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#69d97a">Excretory System</div></div></div>
         <p>The excretory system removes waste from the blood in three ways: the <strong>kidneys</strong> filter liquid waste (urea → urine), the <strong>large intestine</strong> expels solid waste while returning absorbed water to the bloodstream, and the <strong>lungs</strong> expel gaseous CO₂ with every exhale.</p>
       </div>
       <div class="c-card" id="cc-skel">

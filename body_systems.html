@@ -275,20 +275,21 @@
   #systems { background: var(--dark); }
   .systems-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.2rem;
     margin-top: 2.5rem;
   }
   .system-card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 18px;
-    padding: 2rem;
+    padding: 1.6rem 1.5rem 1.4rem;
     transition: all 0.3s;
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    gap: 0.4rem;
   }
   .system-card::before {
     content: '';
@@ -1222,7 +1223,7 @@ body.stem-active .stem-detail {
         <div class="system-name">Circulatory System</div>
         <div class="system-summary">Transports oxygen, nutrients, and waste throughout the body.</div>
         <div class="system-desc">The <strong>heart</strong> pumps blood around the body through <strong>veins</strong> and <strong>arteries</strong>. Blood acts as the delivery service — bringing what cells need and carrying away what they don't.</div>
-        <a href="system_circulatory.html" class="explore-btn">Explore 🫀 Interactive Map</a>
+        <a href="system_circulatory.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card digestive">
@@ -1230,7 +1231,7 @@ body.stem-active .stem-detail {
         <div class="system-name">Digestive System</div>
         <div class="system-summary">Breaks down food into nutrients and energy for the body to absorb.</div>
         <div class="system-desc">Food travels from the <strong>mouth</strong> → <strong>stomach</strong> → <strong>small intestine</strong>, where nutrients are absorbed into the bloodstream. The large intestine removes solid waste.</div>
-        <a href="system_digestive.html" class="explore-btn">Explore 🫄 Interactive Map</a>
+        <a href="system_digestive.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card respiratory">
@@ -1238,7 +1239,7 @@ body.stem-active .stem-detail {
         <div class="system-name">Respiratory System</div>
         <div class="system-summary">Moves air in and out of the body through breathing.</div>
         <div class="system-desc">We inhale air through the <strong>nose</strong> and <strong>mouth</strong>, down to the <strong>lungs</strong>. Oxygen passes into the blood, and carbon dioxide waste is exhaled out.</div>
-        <a href="system_respiratory.html" class="explore-btn">Explore 🫁 Interactive Map</a>
+        <a href="system_respiratory.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card excretory">
@@ -1246,7 +1247,7 @@ body.stem-active .stem-detail {
         <div class="system-name">Excretory System</div>
         <div class="system-summary">Removes solid, liquid, and gaseous waste from the body.</div>
         <div class="system-desc">Three types of waste removal keep the body in balance: the <strong>large intestine</strong> removes solid waste, the <strong>bladder</strong> stores and removes liquid waste, and the <strong>lungs</strong> remove gaseous CO₂. Removing waste maintains <strong>homeostasis</strong>.</div>
-        <a href="system_excretory.html" class="explore-btn">Explore 🚽 Interactive Map</a>
+        <a href="system_excretory.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card skeletal">
@@ -1254,7 +1255,7 @@ body.stem-active .stem-detail {
         <div class="system-name">Skeletal System</div>
         <div class="system-summary">Provides structure, supports movement, and protects organs.</div>
         <div class="system-desc"><strong>Bones</strong> give the body its shape. <strong>Ligaments</strong> connect bones to bones. <strong>Tendons</strong> connect bones to muscles. Bone marrow — found inside bones — produces blood cells.</div>
-        <a href="system_skeletal.html" class="explore-btn">Explore 🦴 Interactive Map</a>
+        <a href="system_skeletal.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card muscular">
@@ -1262,7 +1263,7 @@ body.stem-active .stem-detail {
         <div class="system-name">Muscular System</div>
         <div class="system-summary">Allows movement of the body and movement of materials through the body.</div>
         <div class="system-desc">Three types: <strong>Cardiac</strong> muscle pumps blood (heart). <strong>Skeletal</strong> muscle connects to bones for movement (hamstrings). <strong>Smooth</strong> muscle moves materials through organs (small intestine).</div>
-        <a href="system_muscular.html" class="explore-btn">Explore 💪 Interactive Map</a>
+        <a href="system_muscular.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card nervous">
@@ -1270,7 +1271,7 @@ body.stem-active .stem-detail {
         <div class="system-name">Nervous System</div>
         <div class="system-summary">Detects, interprets, and responds to information from the environment.</div>
         <div class="system-desc">The <strong>brain</strong> is the control center. The <strong>spinal cord</strong> relays signals between brain and body. <strong>Neurons</strong> are specialized cells that carry electrical signals throughout the body at high speed.</div>
-        <a href="system_nervous.html" class="explore-btn">Explore 🧠 Interactive Map</a>
+        <a href="system_nervous.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
       <div class="system-card immune">
@@ -1278,7 +1279,7 @@ body.stem-active .stem-detail {
         <div class="system-name">Immune System</div>
         <div class="system-summary">Defends the body against harmful bacteria, viruses, and parasites.</div>
         <div class="system-desc"><strong>White blood cells</strong> are produced in our bones and attack foreign invaders. <strong>Lymph nodes</strong> filter out germs that accumulate in cells, tissues, and blood, preventing infection from spreading.</div>
-        <a href="system_immune.html" class="explore-btn">Explore 🛡️ Interactive Map</a>
+        <a href="system_immune.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
     </div>
@@ -1499,7 +1500,7 @@ body.stem-active .stem-detail {
         <div class="dis-name">Circulatory System</div>
         <div class="dis-tagline">Heart · Blood · Vessels</div>
         <div class="dis-desc">From heart attacks and arrhythmias to anemia and blood clots — explore what happens when the body's delivery network breaks down.</div>
-        <a href="disease_circulatory.html" class="dis-link">Explore Diseases</a>
+        <a href="disease_circulatory.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
       <!-- DIGESTIVE -->
@@ -1508,7 +1509,7 @@ body.stem-active .stem-detail {
         <div class="dis-name">Digestive System</div>
         <div class="dis-tagline">Stomach · Intestines · Liver</div>
         <div class="dis-desc">Crohn's disease, ulcers, liver failure, and more — when the body can't absorb what it needs.</div>
-        <a href="disease_digestive.html" class="dis-link">Explore Diseases</a>
+        <a href="disease_digestive.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
       <!-- RESPIRATORY -->
@@ -1517,7 +1518,7 @@ body.stem-active .stem-detail {
         <div class="dis-name">Respiratory System</div>
         <div class="dis-tagline">Lungs · Airways · Gas Exchange</div>
         <div class="dis-desc">Asthma, pneumonia, COPD, and more — how breathing disorders affect oxygen delivery to every cell.</div>
-        <a href="disease_respiratory.html" class="dis-link">Explore Diseases</a>
+        <a href="disease_respiratory.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
       <!-- EXCRETORY -->
@@ -1526,7 +1527,7 @@ body.stem-active .stem-detail {
         <div class="dis-name">Excretory System</div>
         <div class="dis-tagline">Kidneys · Lungs · Large Intestine</div>
         <div class="dis-desc">Kidney disease, kidney stones, and what happens when the body can't remove its own waste.</div>
-        <a href="disease_excretory.html" class="dis-link">Explore Diseases</a>
+        <a href="disease_excretory.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
       <!-- SKELETAL -->
@@ -1535,7 +1536,7 @@ body.stem-active .stem-detail {
         <div class="dis-name">Skeletal System</div>
         <div class="dis-tagline">Bones · Joints · Marrow</div>
         <div class="dis-desc">Osteoporosis, arthritis, fractures, and bone marrow disorders — when the body's framework weakens.</div>
-        <a href="disease_skeletal.html" class="dis-link">Explore Diseases</a>
+        <a href="disease_skeletal.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
       <!-- MUSCULAR -->
@@ -1544,7 +1545,7 @@ body.stem-active .stem-detail {
         <div class="dis-name">Muscular System</div>
         <div class="dis-tagline">Cardiac · Skeletal · Smooth Muscle</div>
         <div class="dis-desc">Muscular dystrophy, myasthenia gravis, and what happens when muscle tissue stops working properly.</div>
-        <a href="disease_muscular.html" class="dis-link">Explore Diseases</a>
+        <a href="disease_muscular.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
       <!-- NERVOUS -->
@@ -1553,7 +1554,7 @@ body.stem-active .stem-detail {
         <div class="dis-name">Nervous System</div>
         <div class="dis-tagline">Brain · Spinal Cord · Neurons</div>
         <div class="dis-desc">Multiple sclerosis, epilepsy, stroke, and Parkinson's — disorders of the body's master controller.</div>
-        <a href="disease_nervous.html" class="dis-link">Explore Diseases</a>
+        <a href="disease_nervous.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
       <!-- IMMUNE -->
@@ -1562,7 +1563,7 @@ body.stem-active .stem-detail {
         <div class="dis-name">Immune System</div>
         <div class="dis-tagline">White Blood Cells · Lymph Nodes</div>
         <div class="dis-desc">Allergies, autoimmune diseases, and immunodeficiencies — when the body attacks itself or can't defend at all.</div>
-        <a href="disease_immune.html" class="dis-link">Explore Diseases</a>
+        <a href="disease_immune.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
     </div>    </div>

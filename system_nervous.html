@@ -41,7 +41,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(10,18,28,0.97);backdrop-fi
 
 .panels{display:grid;grid-template-columns:1fr 400px;gap:1.4rem;align-items:start;}
 .map-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.5rem;position:relative;}
-.map-label{font-size:0.67rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;}
+.map-label{font-size:0.78rem;font-weight:900;letter-spacing:0.10em;text-transform:uppercase;color:rgba(220,235,248,0.92);margin-bottom:0.6rem;}
 #map-canvas{width:100%;display:block;cursor:default;}
 .info-panel{display:flex;flex-direction:column;gap:1rem;position:sticky;top:80px;}
 .info-stack{position:relative;min-height:200px;}
@@ -329,12 +329,6 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 
-  .line-legend{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;padding:0.55rem 0;margin-bottom:0.6rem;border-bottom:1px solid rgba(255,255,255,0.06);}
-  .ll-item{display:inline-flex;align-items:center;gap:0.42rem;font-size:0.68rem;font-weight:700;color:rgba(180,200,220,0.7);letter-spacing:0.04em;}
-  .ll-dash{display:inline-block;width:22px;height:2px;background:rgba(180,200,220,0.45);border-top:2px dashed rgba(180,200,220,0.55);}
-  .ll-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:rgba(180,200,220,0.55);box-shadow:0 0 4px rgba(180,200,220,0.4);}
-  .ll-arrow{font-size:0.78rem;color:rgba(180,200,220,0.55);}
-
 </style>
 </head>
 <body>
@@ -351,7 +345,6 @@ body.stem-active .stem-detail {
       <p>The body's command and communication network — processing every sensation, thought, and movement at up to 268 mph.</p>
 
     </div>
-    <div class="header-hint"><span>👆</span><span>Click any node · Hover lines for labels · Toggle systems</span></div>
   </div>
 </div>
 <div class="ls-focus">
@@ -384,7 +377,7 @@ body.stem-active .stem-detail {
   </div>
   <div class="panels">
     <div class="map-panel">
-      <div class="map-label">The Nervous System Map — Click any node to explore</div>
+      <div class="map-label">NERVOUS SYSTEM MAP — CLICK ANY NODE TO EXPLORE</div>
       <canvas id="map-canvas"></canvas>
     </div>
     <div class="info-panel">
