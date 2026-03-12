@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | Immune System — Diseases &amp; Disorders</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #1de9b6;
+    --accent-dim: rgba(29,233,182,0.10);
+    --accent-glow: rgba(29,233,182,0.35);
+    --accent-border: rgba(29,233,182,0.45);
+    --teal: #1de9b6; --gold: #f5c842; --gold-glow: rgba(245,200,66,0.35);
+    --purple: #9b59b6; --green: #2ecc71; --orange: #e67e22;
+    --dark: #0c1520; --card: #172030; --card2: #1e2d42;
+    --text: #e8f4fb; --muted: #6a92ad; --border: rgba(255,255,255,0.07);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--dark); color:var(--text); line-height:1.6; overflow-x:hidden; }
+  nav { position:sticky; top:0; z-index:200; background:rgba(10,18,28,0.97); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0.8rem 2.5rem; }
+  .nav-logo { font-family:'Orbitron',sans-serif; font-size:1.2rem; font-weight:900; color:var(--gold); text-decoration:none; letter-spacing:0.06em; text-shadow:0 0 18px var(--gold-glow); }
+  .nav-center { display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:var(--muted); font-weight:700; }
+  .nav-center .sep { opacity:0.3; } .nav-center .cur { color:var(--accent); }
+  .nav-back { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-dim); border:1px solid var(--accent-border); padding:0.32rem 0.9rem; border-radius:99px; text-decoration:none; }
+  .page-header { background:linear-gradient(135deg,#0a1520 0%,#081c18 50%,#0c1520 100%); padding:2.2rem 2.5rem 2rem; position:relative; overflow:hidden; border-bottom:1px solid rgba(29,233,182,0.14); }
+  .page-header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 18% 60%,rgba(29,233,182,0.08) 0%,transparent 55%),radial-gradient(ellipse at 80% 25%,rgba(33,150,243,0.05) 0%,transparent 55%); pointer-events:none; }
+  .header-inner { max-width:1340px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:2rem; flex-wrap:wrap; position:relative; }
+  .header-badge { display:inline-flex; align-items:center; gap:0.5rem; background:var(--accent-dim); border:1px solid var(--accent-border); color:var(--accent); padding:0.32rem 1rem; border-radius:99px; font-size:0.73rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.85rem; }
+  .pulse-dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:pdot 1.8s ease-in-out infinite; flex-shrink:0; }
+  @keyframes pdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.65)} }
+  .page-header h1 { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,3.8vw,2.9rem); line-height:1.1; margin-bottom:0.35rem; background:linear-gradient(135deg,#fff 20%,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .page-header p { color:var(--muted); font-size:0.95rem; max-width:500px; line-height:1.65; }
+  .header-hint { display:flex; align-items:center; gap:0.55rem; font-size:0.82rem; color:var(--text); font-weight:800; background:var(--accent-dim); border:1px solid var(--accent-border); padding:0.65rem 1.1rem; border-radius:11px; white-space:nowrap; flex-shrink:0; }
+  .explorer-wrap { max-width:1340px; margin:0 auto; padding:1.8rem 2rem 3rem; }
+  .stat-pills { display:flex; gap:0.7rem; flex-wrap:wrap; margin-bottom:1.6rem; }
+  .stat-pill { display:inline-flex; align-items:center; gap:0.45rem; background:var(--card); border:1px solid var(--border); border-radius:99px; padding:0.32rem 0.95rem; font-size:0.76rem; font-weight:800; color:var(--muted); }
+  .stat-pill .sv { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--accent); margin-right:0.15rem; }
+  .panels { display:grid; grid-template-columns:1fr 430px; gap:1.4rem; align-items:start; }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+   }
+   }
+  
+  
+  
+  
+  
+  
+  
+  
+   70%{opacity:0;transform:scale(1.4)} 100%{opacity:0} }
+  
+  
+  
+  .info-panel { position:sticky; top:80px; display:flex; flex-direction:column; gap:1rem; }
+  .i-idle { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2.5rem 2rem; text-align:center; }
+  .i-idle.gone { display:none; }
+  .i-idle-icon { font-size:3rem; display:block; margin-bottom:0.8rem; }
+  .i-idle-title { font-family:'Fredoka One',cursive; font-size:1.3rem; margin-bottom:0.4rem; }
+  .i-idle-desc { color:var(--muted); font-size:0.9rem; line-height:1.65; margin-bottom:1rem; }
+  .i-idle-arrows { display:flex; justify-content:center; gap:0.5rem; flex-wrap:wrap; }
+  .i-idle-chip { background:var(--accent-dim); border:1px solid var(--accent-border); color:var(--accent); border-radius:99px; padding:0.25rem 0.75rem; font-size:0.73rem; font-weight:800; }
+  .i-card { background:var(--card); border:1px solid var(--border); border-radius:20px; overflow:hidden; display:none; }
+  .i-card.on { display:block; animation:fup 0.28s ease both; }
+  @keyframes fup { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .i-card-hd { padding:1.2rem 1.4rem 1rem; border-bottom:1px solid var(--border); background:rgba(29,233,182,0.06); }
+  .i-card-sys { font-size:0.66rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin-bottom:0.3rem; display:flex; align-items:center; gap:0.4rem; }
+  .i-card-name { font-family:'Fredoka One',cursive; font-size:1.5rem; line-height:1.1; color:var(--text); margin-bottom:0.3rem; }
+  .i-card-desc { font-size:0.84rem; color:var(--muted); line-height:1.6; }
+  .dtab-row { display:flex; border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+  .dtab-row::-webkit-scrollbar { display:none; }
+  .dtab { flex-shrink:0; padding:0.65rem 1rem; font-size:0.76rem; font-weight:800; color:var(--muted); background:none; border:none; border-bottom:2.5px solid transparent; cursor:pointer; font-family:'Nunito',sans-serif; transition:color .15s,border-color .15s; white-space:nowrap; }
+  .dtab:hover { color:var(--text); } .dtab.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .ripple-wrap { padding:1rem 1.4rem 0.8rem; display:flex; flex-direction:column; gap:0.7rem; }
+  .sev-badge { display:inline-flex; align-items:center; gap:0.35rem; padding:0.28rem 0.9rem; border-radius:99px; font-size:0.71rem; font-weight:800; letter-spacing:0.06em; margin-bottom:0.25rem; width:fit-content; }
+  .sev-high { background:rgba(192,57,43,0.2); color:#ff8a7a; border:1px solid rgba(192,57,43,0.4); }
+  .sev-med  { background:rgba(230,126,34,0.18); color:#f0a050; border:1px solid rgba(230,126,34,0.4); }
+  .sev-low  { background:rgba(46,204,113,0.15); color:#5ddb8a; border:1px solid rgba(46,204,113,0.35); }
+  .ripple-block { border-radius:12px; padding:0.85rem 1rem; border-left:3px solid transparent; opacity:0; transform:translateY(8px); transition:opacity .38s ease,transform .38s ease; }
+  .ripple-block.show { opacity:1; transform:translateY(0); }
+  .ripple-block.r1 { background:rgba(29,233,182,0.09); border-left-color:var(--accent); }
+  .ripple-block.r2 { background:rgba(155,89,182,0.1); border-left-color:var(--purple); }
+  .ripple-block.r3 { background:rgba(245,200,66,0.07); border-left-color:var(--gold); }
+  .rb-label { font-size:0.67rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.22rem; display:flex; align-items:center; gap:0.35rem; }
+  .r1 .rb-label { color:var(--accent); } .r2 .rb-label { color:var(--purple); } .r3 .rb-label { color:var(--gold); }
+  .rb-title { font-size:0.9rem; font-weight:800; color:var(--text); margin-bottom:0.22rem; }
+  .rb-text  { font-size:0.81rem; color:var(--muted); line-height:1.65; }
+  .dyk-card { margin:0 1.4rem 1.2rem; background:rgba(245,200,66,0.07); border:1px solid rgba(245,200,66,0.2); border-radius:12px; padding:0.75rem 1rem; display:flex; gap:0.6rem; align-items:flex-start; opacity:0; transform:translateY(6px); transition:opacity .4s .3s ease,transform .4s .3s ease; }
+  .dyk-card.show { opacity:1; transform:translateY(0); }
+  .dyk-icon { font-size:1.1rem; flex-shrink:0; margin-top:0.05rem; }
+  .dyk-label { font-size:0.64rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:0.15rem; }
+  .dyk-text  { font-size:0.79rem; color:rgba(232,244,251,0.7); line-height:1.6; }
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2.2rem 2rem; text-align:center; margin-top:0.5rem; }
+  footer .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--accent); margin-bottom:0.35rem; }
+  footer p { color:var(--muted); font-size:0.83rem; } footer a { color:var(--teal); text-decoration:none; } footer a:hover { text-decoration:underline; }
+  @media(max-width:960px){ .panels{grid-template-columns:1fr} .info-panel{position:static} }
+  @media(max-width:600px){ nav{padding:0.8rem 1.2rem} .nav-center{display:none} .page-header{padding:1.6rem 1.2rem 1.3rem} .explorer-wrap{padding:1.2rem 1rem 2rem} .header-hint{display:none} }
+</style>
+<style>
+.ls-focus { display:none; }
+body.ls-active .ls-focus { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0.45rem 0.55rem; width:fit-content; max-width:760px; margin:1.6rem auto; padding:1.1rem 1.8rem 1.2rem; background:rgba(59,200,232,0.05); border:1px solid rgba(59,200,232,0.2); border-radius:16px; animation:lsFadeIn 0.35s ease both; }
+@keyframes lsFadeIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:translateY(0)} }
+.ls-focus-label { font-size:0.72rem; font-weight:900; letter-spacing:0.13em; text-transform:uppercase; color:rgba(59,200,232,0.75); width:100%; text-align:center; margin-bottom:0.5rem; }
+.ls-badge { position:relative; display:inline-flex; align-items:center; gap:0.35rem; font-family:'Nunito',sans-serif; font-size:0.86rem; font-weight:700; line-height:1; color:rgba(255,255,255,0.82); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16); border-radius:99px; padding:0.35rem 0.9rem; cursor:default; white-space:nowrap; overflow:visible; }
+.ls-badge[data-tip]::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 9px); left:50%; transform:translateX(-50%); width:200px; padding:0.5rem 0.75rem; background:#0c1a28; color:#b8ccd8; font-size:0.68rem; font-weight:500; line-height:1.5; white-space:normal; text-align:center; border-radius:9px; border:1px solid rgba(255,255,255,0.11); box-shadow:0 8px 28px rgba(0,0,0,0.55); pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999; }
+.ls-badge[data-tip]:hover::after { opacity:1; }
+.ls-badge[data-tip]::before { content:''; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(255,255,255,0.11); pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999; }
+.ls-badge[data-tip]:hover::before { opacity:1; }
+</style>
+<style>
+.stem-focus { display:none; }
+body.stem-active .stem-focus { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0.45rem 0.55rem; width:fit-content; max-width:760px; margin:0.5rem auto 1.6rem; padding:1.1rem 1.8rem 1.2rem; background:rgba(46,204,113,0.05); border:1px solid rgba(46,204,113,0.2); border-radius:16px; animation:stemFadeIn 0.35s ease both; }
+@keyframes stemFadeIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:translateY(0)} }
+.stem-focus-label { font-size:0.72rem; font-weight:900; letter-spacing:0.13em; text-transform:uppercase; color:rgba(46,204,113,0.75); width:100%; text-align:center; margin-bottom:0.5rem; }
+.stem-badge { position:relative; display:inline-flex; align-items:center; cursor:default; font-family:'Nunito',sans-serif; font-size:0.86rem; font-weight:700; color:rgba(255,255,255,0.82); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16); border-radius:99px; padding:0.35rem 0.9rem; white-space:nowrap; }
+.stem-badge[data-tip]::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 9px); left:50%; transform:translateX(-50%); width:220px; padding:0.5rem 0.75rem; background:#0c1a28; color:#b8ccd8; font-size:0.68rem; line-height:1.5; white-space:normal; text-align:center; border-radius:9px; border:1px solid rgba(46,204,113,0.2); box-shadow:0 8px 28px rgba(0,0,0,0.55); pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999; }
+.stem-badge[data-tip]:hover::after { opacity:1; }
+.stem-badge[data-tip]::before { content:''; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(46,204,113,0.2); pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999; }
+.stem-badge[data-tip]:hover::before { opacity:1; }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  .map-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:relative;}
+  .map-panel::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 25%,rgba(29,233,182,0.06) 0%,transparent 65%);pointer-events:none;z-index:0;}
+  .map-panel-hd{padding:0.85rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;position:relative;z-index:1;}
+  .map-panel-title{font-size:0.67rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);}
+  .map-body{padding:1rem 1.2rem 1.2rem;position:relative;z-index:1;}
+  #map-canvas{width:100%;display:block;cursor:default;border-radius:8px;}
+  .line-legend{display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;padding:0.45rem 0;margin-bottom:0.55rem;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .ll-item{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.68rem;font-weight:700;color:rgba(180,200,220,0.65);letter-spacing:0.04em;}
+  .ll-dash{display:inline-block;width:22px;height:0;border-top:2px dashed rgba(180,200,220,0.5);}
+  .ll-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:rgba(180,200,220,0.5);}
+  .ll-arr{font-size:0.8rem;color:rgba(180,200,220,0.5);}
+
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">LYFELABZ</a>
+  <div class="nav-center">
+    <a href="body_systems.html" style="color:var(--muted);text-decoration:none;">Body Systems</a>
+    <span class="sep">›</span>
+    <a href="system_immune.html" style="color:var(--muted);text-decoration:none;">Immune</a>
+    <span class="sep">›</span>
+    <span class="cur">Diseases &amp; Disorders</span>
+  </div>
+  <a class="nav-back" href="body_systems.html#diseases">← Body Systems</a>
+</nav>
+<div class="page-header">
+  <div class="header-inner">
+    <div>
+      <div class="header-badge"><span class="pulse-dot"></span> Immune System · Diseases &amp; Disorders</div>
+      <h1>What Can Go Wrong? 🛡️</h1>
+      <p>Select any part of the immune system to discover what diseases can affect it — and how a defense failure or overreaction ripples through the entire body.</p>
+    </div>
+    <div class="header-hint">👆 Click a node on the map to explore</div>
+  </div>
+</div>
+<div class="explorer-wrap">
+  <div class="ls-focus">
+    <span class="ls-focus-label">🔬 Learning Science Focus</span>
+    <span class="ls-badge" data-tip="Students drive their own exploration by choosing which organ to investigate. — Freeman et al., 2014">🎯 Active Learning</span>
+    <span class="ls-badge" data-tip="Three-level ripple structure builds causal reasoning from part to system to person. — Dunlosky et al., 2013">💬 Elaboration</span>
+    <span class="ls-badge" data-tip="Visual map plus written explanations activate both visual and verbal memory channels. — Noetel et al., 2022">🖼️ Dual Coding</span>
+    <span class="ls-badge" data-tip="Real disease examples make abstract physiology concrete and memorable. — Schwartz et al., 2011">🔬 Concrete Examples</span>
+  </div>
+  <div class="stem-focus">
+    <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
+    <span class="stem-badge" data-tip="Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.">6.MS-LS1-3</span>
+  </div>
+  <div class="stat-pills">
+    <div class="stat-pill"><span class="sv">7</span> System Parts</div>
+    <div class="stat-pill"><span class="sv">14+</span> Diseases &amp; Disorders</div>
+    <div class="stat-pill"><span class="sv">3</span> Impact Levels per Disease</div>
+    <div class="stat-pill"><span class="sv">🔴</span> Serious &nbsp;·&nbsp; <span class="sv">🟡</span> Moderate &nbsp;·&nbsp; <span class="sv">🟢</span> Manageable</div>
+  </div>
+  <div class="panels">
+    <div class="map-panel">
+      <div class="map-panel-hd">
+        <span class="map-panel-title">THE IMMUNE SYSTEM MAP — CLICK ANY NODE TO EXPLORE</span>
+      </div>
+      <div class="map-body">
+        <div class="line-legend">
+          <span class="ll-item"><span class="ll-dash"></span><span class="ll-text">Connection</span></span>
+          <span class="ll-item"><span class="ll-dot"></span><span class="ll-text">System node</span></span>
+          <span class="ll-item"><span class="ll-arr">→</span><span class="ll-text">Hover lines for labels</span></span>
+        </div>
+        <canvas id="map-canvas"></canvas>
+      </div>
+    </div>
+
+    
+
+    
+
+    <div class="info-panel">
+      <div class="i-idle" id="idle-state">
+        <span class="i-idle-icon">🛡️</span>
+        <div class="i-idle-title">Select a Node</div>
+        <div class="i-idle-desc">Click any organ or structure on the map to learn about its diseases — and how a problem there ripples through the whole body.</div>
+      </div>
+      <div class="i-card" id="info-card">
+        <div class="i-card-hd">
+          <div class="i-card-sys"><span class="pulse-dot"></span> Immune System</div>
+          <div class="i-card-name" id="panel-name"></div>
+          <div class="i-card-desc" id="panel-desc"></div>
+        </div>
+        <div class="dtab-row" id="dtab-row"></div>
+        <div class="ripple-wrap">
+          <span class="sev-badge" id="sev-badge"></span>
+          <div class="ripple-block r1" id="r1"><div class="rb-label">🔬 What Goes Wrong</div><div class="rb-title" id="r1-title"></div><div class="rb-text" id="r1-text"></div></div>
+          <div class="ripple-block r2" id="r2"><div class="rb-label">📡 How It Spreads</div><div class="rb-title" id="r2-title"></div><div class="rb-text" id="r2-text"></div></div>
+          <div class="ripple-block r3" id="r3"><div class="rb-label">🧍 How You Feel It</div><div class="rb-title" id="r3-title"></div><div class="rb-text" id="r3-text"></div></div>
+        </div>
+        <div class="dyk-card" id="dyk-card"><span class="dyk-icon">💡</span><div><div class="dyk-label">Did You Know?</div><div class="dyk-text" id="dyk-text"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer>
+  <div class="logo">🛡️ LyfeLabz · Immune System — Diseases &amp; Disorders</div>
+  <p style="margin-bottom:0.6rem;">
+    <a href="body_systems.html#diseases">← Diseases &amp; Disorders</a>
+    &nbsp;·&nbsp;
+    <a href="system_immune.html">Immune Map</a>
+    &nbsp;·&nbsp;
+    <a href="index.html">Learning Hub</a>
+  </p>
+  <p>© 2025 LyfeLabz · Educational Use</p>
+</footer>
+<script>
+const DATA = {
+  "marrow": {
+    "name": "Bone Marrow",
+    "desc": "The factory where all immune cells are born — stem cells in the marrow produce red blood cells, platelets, and all types of white blood cells. Without marrow, the immune system has no workers.",
+    "quickfact": "All your immune cells start life in bone marrow as identical stem cells. One stem cell can produce every type of blood and immune cell — red cells, platelets, neutrophils, B cells, T cell precursors — through different developmental pathways!",
+    "diseases": [
+      {
+        "name": "Bone Marrow Failure",
+        "sev": "high",
+        "l1": {
+          "t": "Stem Cells Are Destroyed and Can't Produce Immune Cells",
+          "b": "Autoimmune attacks, radiation, chemotherapy, or infections destroy the stem cells in bone marrow. Without stem cells, the production of ALL blood cells — including every immune cell — stops entirely."
+        },
+        "l2": {
+          "t": "The Entire Immune System Collapses Simultaneously",
+          "b": "With no white blood cells, the body is defenseless against bacteria, viruses, and fungi — normally harmless germs become life-threatening. With no platelets, uncontrolled bleeding occurs. With no red cells, extreme anemia develops."
+        },
+        "l3": {
+          "t": "Life-Threatening Infections, Bleeding, and Severe Anemia",
+          "b": "Infections from normally harmless organisms, spontaneous bleeding from gums and skin, profound fatigue from anemia, and fever. Bone marrow failure is a hematologic emergency requiring bone marrow transplant or immunosuppressive treatment to survive."
+        }
+      },
+      {
+        "name": "Myeloma",
+        "sev": "high",
+        "l1": {
+          "t": "Plasma Cells in the Marrow Become Cancerous and Multiply",
+          "b": "Multiple myeloma is a cancer where plasma cells (antibody-producing cells in bone marrow) mutate and divide uncontrollably. The marrow fills with abnormal myeloma cells that crowd out normal blood cell production."
+        },
+        "l2": {
+          "t": "Marrow Overcrowding Destroys Bones from Within",
+          "b": "Myeloma cells release chemicals that activate bone-eating cells (osteoclasts) while suppressing bone-building cells. Bones thin and develop 'punched out' holes. Calcium floods the bloodstream from dissolved bone. The kidneys are damaged by abnormal proteins."
+        },
+        "l3": {
+          "t": "Bone Pain, Fractures Without Trauma, Kidney Damage",
+          "b": "Deep bone pain (especially in the spine and ribs), fractures occurring without significant impact, fatigue, kidney damage from abnormal proteins in the blood, and frequent infections from suppressed normal immune function. Treated with chemotherapy and stem cell transplant."
+        }
+      }
+    ]
+  },
+  "thymus": {
+    "name": "Thymus",
+    "desc": "A gland in the chest where immature T cells from bone marrow travel to mature — the thymus teaches them to recognize 'self' from 'non-self' and destroys those that would attack the body's own tissues.",
+    "quickfact": "The thymus is most active in childhood — it's the size of a large strawberry in infancy. After puberty it gradually shrinks and is replaced by fat. By age 75, only 15% of the thymus remains functional, which is part of why the elderly have weaker immune responses.",
+    "diseases": [
+      {
+        "name": "Thymoma",
+        "sev": "high",
+        "l1": {
+          "t": "A Tumor Grows in the Thymus Gland",
+          "b": "Thymoma is a tumor arising from the thymus epithelial cells. It's rare but has a unique association with autoimmune conditions — particularly myasthenia gravis, where the thymus inappropriately educates T cells to attack the body."
+        },
+        "l2": {
+          "t": "The Thymus Tumor Miseducates the Immune System",
+          "b": "An abnormal thymus produces T cells that escape the normal self-tolerance education. These T cells attack the body's own tissues. Additionally, thymoma can spread locally to the lungs and heart, compressing these structures."
+        },
+        "l3": {
+          "t": "Chest Pressure, Myasthenia Gravis Symptoms, Shortness of Breath",
+          "b": "Many thymomas are found incidentally on chest imaging. Large ones cause chest pressure, cough, and shortness of breath. Associated myasthenia gravis causes muscle weakness especially of the eyes, face, and swallowing. Surgery is the primary treatment."
+        }
+      },
+      {
+        "name": "DiGeorge Syndrome",
+        "sev": "high",
+        "l1": {
+          "t": "Thymus Fails to Develop — T Cells Can't Mature",
+          "b": "A chromosomal deletion (chromosome 22q11.2) prevents the thymus and parathyroid glands from developing normally. Without a thymus, T cells from bone marrow have nowhere to mature and learn to function."
+        },
+        "l2": {
+          "t": "Without Mature T Cells, Viral and Fungal Infections Are Lethal",
+          "b": "T cells are essential for fighting viruses and fungi. Without them, infections from normally harmless viruses (like cytomegalovirus or RSV) or fungi (like Candida or Pneumocystis) become life-threatening. Autoimmunity also develops from dysregulated B cells."
+        },
+        "l3": {
+          "t": "Severe Infections in Infancy, Heart Defects, Low Calcium Seizures",
+          "b": "Recurrent severe infections from infancy, heart defects (from the same chromosome deletion affecting heart development), seizures from low calcium (missing parathyroid glands), and learning difficulties. Treated with thymus transplant or T cell infusions."
+        }
+      }
+    ]
+  },
+  "lymphnodes": {
+    "name": "Lymph Nodes",
+    "desc": "Over 600 small bean-shaped structures throughout the body — they filter lymph fluid, trap pathogens, and are where immune responses are activated. They swell when actively fighting infection.",
+    "quickfact": "Swollen lymph nodes ('swollen glands') are actually a good sign! They swell because immune cells inside them are rapidly multiplying to fight an infection. The swelling means your immune system is responding correctly — and the enlargement usually disappears within 2 weeks.",
+    "diseases": [
+      {
+        "name": "Lymphoma",
+        "sev": "high",
+        "l1": {
+          "t": "Lymphocytes (Immune Cells) in the Lymph Nodes Become Cancerous",
+          "b": "Lymphoma begins when a lymphocyte (B cell or T cell) in a lymph node undergoes a mutation and starts dividing uncontrollably. The lymph node swells with cancerous cells and the cancer can spread to other nodes, organs, and bone marrow."
+        },
+        "l2": {
+          "t": "Cancer Spreads Through the Lymphatic System",
+          "b": "The lymphatic system is a connected network throughout the body — cancer cells can travel from one lymph node to the next. As the cancer spreads and disrupts immune cell production, normal immune function collapses."
+        },
+        "l3": {
+          "t": "Painless Swollen Lymph Nodes, Night Sweats, Weight Loss",
+          "b": "Enlarged, painless lymph nodes in the neck, armpit, or groin that persist without infection, drenching night sweats, unexplained weight loss, fever, and fatigue. Hodgkin lymphoma (with a specific cancer cell type) has a ~90% cure rate with chemotherapy."
+        }
+      },
+      {
+        "name": "Lymphedema",
+        "sev": "med",
+        "l1": {
+          "t": "Damaged Lymph Nodes Can't Drain Lymph Fluid",
+          "b": "When lymph nodes are surgically removed (for cancer staging) or damaged by radiation or infection, the lymph fluid has no pathway back to the bloodstream from that region. Protein-rich fluid accumulates in the affected limb."
+        },
+        "l2": {
+          "t": "Stagnant Lymph Fluid Creates a Breeding Ground for Infection",
+          "b": "Pooled lymph fluid causes massive swelling. The stagnant fluid is a perfect environment for bacteria — the affected limb is prone to severe cellulitis (skin infection). Chronic protein accumulation causes the limb tissues to permanently harden."
+        },
+        "l3": {
+          "t": "Permanent Swelling of an Arm or Leg, Heaviness, Recurring Infections",
+          "b": "A chronically swollen limb (usually an arm after breast cancer lymph node removal, or a leg) that feels heavy and tight. Recurring skin infections (cellulitis). Irreversible hardening (fibrosis) of the limb over years without management. Treated with compression garments and manual drainage."
+        }
+      }
+    ]
+  },
+  "spleen": {
+    "name": "Spleen",
+    "desc": "The largest lymphatic organ — it filters blood (removing old red blood cells and platelets), stores immune cells, and mounts rapid immune responses to blood-borne pathogens.",
+    "quickfact": "Your spleen acts as a blood reservoir — it stores about 200–500ml of blood and can rapidly dump it into circulation if you're shocked or have sudden heavy bleeding. It also holds a reserve army of monocytes (immune cells) ready to deploy to injury sites within minutes!",
+    "diseases": [
+      {
+        "name": "Splenomegaly (Enlarged Spleen)",
+        "sev": "med",
+        "l1": {
+          "t": "The Spleen Swells Up from Excess Activity",
+          "b": "Infections (mono, malaria), blood disorders, or liver disease cause the spleen to become massively overloaded — it swells from its normal fist-size to sometimes the size of a football as it tries to filter massive amounts of abnormal cells."
+        },
+        "l2": {
+          "t": "Enlarged Spleen Traps and Destroys Too Many Blood Cells",
+          "b": "An overactive enlarged spleen hyperdestoys red blood cells (causing anemia), white blood cells (worsening immune function), and platelets (causing bleeding risk). It pushes on the stomach and left kidney."
+        },
+        "l3": {
+          "t": "Left Upper Abdominal Pain, Early Fullness When Eating, Fatigue",
+          "b": "A feeling of fullness or pain in the upper left abdomen that can radiate to the left shoulder. Early fullness when eating (spleen pressing on the stomach). Fatigue from anemia. Enlarged spleens can rupture spontaneously — a life-threatening emergency."
+        }
+      },
+      {
+        "name": "Splenic Rupture",
+        "sev": "high",
+        "l1": {
+          "t": "The Spleen Tears Open and Bleeds Internally",
+          "b": "A direct blow to the abdomen (or spontaneous rupture from an enlarged spleen from mono or malaria) tears the spleen's capsule. The spleen is richly vascular — a rupture causes massive internal bleeding into the abdominal cavity within minutes."
+        },
+        "l2": {
+          "t": "Rapid Blood Loss Causes Hemorrhagic Shock",
+          "b": "The spleen can bleed liters of blood into the abdomen within minutes. Blood pressure crashes, the heart races trying to maintain circulation, and vital organs quickly fail from lack of blood supply — hemorrhagic shock."
+        },
+        "l3": {
+          "t": "Sudden Severe Left Abdominal Pain, Falling Blood Pressure, Shock",
+          "b": "Sudden severe pain in the left upper abdomen and left shoulder, feeling faint, falling blood pressure, and rapid heart rate. Emergency surgery (splenectomy) or arterial embolization is required. After splenectomy, patients are lifelong-vulnerable to bacterial infections."
+        }
+      }
+    ]
+  },
+  "wbc": {
+    "name": "White Blood Cells",
+    "desc": "The immune system's soldiers — five main types (neutrophils, lymphocytes, monocytes, eosinophils, basophils) each specializing in different threats: bacteria, viruses, parasites, and allergens.",
+    "quickfact": "Your body makes about 100 billion white blood cells every single day! A single neutrophil (the most common WBC) lives only 8–12 hours in the bloodstream — so your bone marrow must constantly replace the army that keeps you alive.",
+    "diseases": [
+      {
+        "name": "Neutropenia",
+        "sev": "high",
+        "l1": {
+          "t": "Neutrophil Counts Drop — Bacteria Have No Main Enemy",
+          "b": "Neutrophils are the first responders to bacterial infections. Chemotherapy, certain medications, or bone marrow disorders reduce neutrophil counts to dangerously low levels — leaving the body almost defenseless against bacterial attack."
+        },
+        "l2": {
+          "t": "Bacteria That Never Normally Cause Problems Become Lethal",
+          "b": "Without neutrophils, even bacteria normally living on the skin or in the gut (like Staphylococcus or E. coli) can invade the bloodstream (sepsis). Fungal infections normally fought off effortlessly become life-threatening. Every fever in a neutropenic patient is an emergency."
+        },
+        "l3": {
+          "t": "Fever as the Only Warning Sign — Immediately Life-Threatening",
+          "b": "A single fever above 100.4°F (38°C) in a neutropenic patient is a medical emergency — they may have sepsis with no other warning signs because the inflammatory response is suppressed. Requires immediate broad-spectrum IV antibiotics."
+        }
+      },
+      {
+        "name": "Autoimmune Hemolytic Anemia",
+        "sev": "high",
+        "l1": {
+          "t": "White Blood Cells Attack the Body's Own Red Blood Cells",
+          "b": "Autoimmune hemolytic anemia (AIHA) occurs when the immune system mistakenly labels red blood cells as foreign — producing antibodies that tag them for destruction. Macrophages (a type of white blood cell) then devour the body's own red cells."
+        },
+        "l2": {
+          "t": "Mass Red Blood Cell Destruction Causes Rapid Anemia and Organ Stress",
+          "b": "As red blood cells are rapidly destroyed, hemoglobin floods the blood. The spleen and liver are overwhelmed trying to clear the debris. Bilirubin builds up causing jaundice. The bone marrow works at full capacity but can't replace cells fast enough."
+        },
+        "l3": {
+          "t": "Fatigue, Jaundice, Dark Urine, Rapid Heartbeat",
+          "b": "Profound fatigue and breathlessness (from anemia), yellow skin and eyes (from bilirubin), dark tea-colored urine (from hemoglobin in urine), and a rapid heartbeat as the heart compensates. Treated with steroids to suppress the immune attack."
+        }
+      }
+    ]
+  },
+  "antibodies": {
+    "name": "Antibodies &amp; B Cells",
+    "desc": "B cells are immune cells that produce antibodies — Y-shaped proteins that tag specific pathogens (bacteria, viruses) for destruction. Each B cell makes antibodies for only one specific target.",
+    "quickfact": "After you recover from an infection, some B cells become 'memory B cells' that remember that specific pathogen for decades — sometimes for life. This is exactly how vaccines work: they train your B cells to remember a pathogen without you ever getting sick from it!",
+    "diseases": [
+      {
+        "name": "Common Variable Immunodeficiency (CVID)",
+        "sev": "high",
+        "l1": {
+          "t": "B Cells Fail to Produce Adequate Antibodies",
+          "b": "CVID is one of the most common primary immunodeficiency diseases — B cells develop normally but fail to mature into plasma cells that secrete antibodies (immunoglobulins). Antibody levels in the blood are critically low."
+        },
+        "l2": {
+          "t": "Without Antibodies, Every Infection Becomes a Battle",
+          "b": "Antibodies are the immune system's long-term memory and precision weapons. Without them, the same infections recur because the body can't remember how to fight them. Encapsulated bacteria (pneumococcus, Haemophilus) that antibodies normally neutralize cause serious repeated pneumonias and meningitis."
+        },
+        "l3": {
+          "t": "Repeated Sinusitis, Pneumonia, and Gastrointestinal Infections",
+          "b": "Recurrent sinusitis, ear infections, and pneumonia from the same bacteria over and over despite antibiotic treatment. Chronic diarrhea from gut infections. Treated with regular intravenous immunoglobulin (IVIG) infusions — replacing antibodies from donated blood."
+        }
+      },
+      {
+        "name": "Allergies (IgE Overproduction)",
+        "sev": "low",
+        "l1": {
+          "t": "B Cells Make Excessive IgE Antibodies Against Harmless Things",
+          "b": "In allergies, B cells produce large amounts of IgE antibodies targeted at harmless substances (pollen, peanuts, cat dander). These IgE antibodies attach to mast cells throughout the body — arming them to react explosively on the next exposure."
+        },
+        "l2": {
+          "t": "IgE-Armed Mast Cells Flood the Body with Histamine",
+          "b": "The next exposure to the allergen triggers thousands of mast cells to simultaneously release histamine — causing the blood vessels to dilate and leak, airways to constrict, and mucus production to increase. In anaphylaxis, this reaction is systemic and fatal without treatment."
+        },
+        "l3": {
+          "t": "Sneezing, Hives, Swelling, Anaphylaxis",
+          "b": "Mild: runny nose, watery eyes, sneezing (hay fever), or skin redness (hives). Severe: anaphylaxis — throat swelling blocking the airway, blood pressure crash, and cardiac arrest. Anaphylaxis requires immediate epinephrine injection (EpiPen) — 911 must be called."
+        }
+      }
+    ]
+  },
+  "barriers": {
+    "name": "Physical Barriers (Innate Immunity)",
+    "desc": "The first line of defense — skin, mucous membranes, stomach acid, nasal cilia, and tears physically block or destroy most pathogens before the immune system needs to activate at all.",
+    "quickfact": "Your skin is the most effective immune defense you have — 1.5–2 square meters of tough, continuously renewing barrier. Pathogens that would kill you instantly if injected directly can't harm you at all when your skin is intact. A single cut or scratch is enough to let them in!",
+    "diseases": [
+      {
+        "name": "Eczema (Atopic Dermatitis)",
+        "sev": "low",
+        "l1": {
+          "t": "Skin Barrier Proteins Are Defective — the Barrier Leaks",
+          "b": "Mutations in filaggrin (a protein that maintains the skin's waterproof barrier) make the skin permeable. Moisture escapes, the skin dries out and cracks, and allergens and bacteria penetrate the skin — triggering immune inflammation."
+        },
+        "l2": {
+          "t": "Leaky Skin Barrier Allows Allergens to Sensitize the Immune System",
+          "b": "Allergens entering through cracked skin (rather than the normal mucous membrane route) trigger an abnormal IgE immune response. This explains why eczema often progresses to asthma and food allergies ('the atopic march') — the immune system learns wrong responses."
+        },
+        "l3": {
+          "t": "Itchy, Inflamed, Cracked, and Weeping Skin",
+          "b": "Intensely itchy red patches — especially inside elbows, behind knees, on the face — that crack, ooze, and crust. Scratching worsens the skin damage and allows bacterial infections (Staphylococcus). Treated with moisturizers, steroid creams, and avoiding triggers."
+        }
+      },
+      {
+        "name": "Anaphylaxis",
+        "sev": "high",
+        "l1": {
+          "t": "The Entire Immune System Activates Simultaneously at the Skin Level",
+          "b": "A systemic allergic trigger (injected venom, eaten peanuts, IV medication) causes IgE antibodies on mast cells throughout the entire body to activate at once — releasing massive histamine systemically rather than locally."
+        },
+        "l2": {
+          "t": "Every Blood Vessel Dilates and Every Airway Constricts Simultaneously",
+          "b": "Systemic histamine release causes every blood vessel to dilate and leak fluid — blood pressure crashes (distributive shock). At the same time, airway smooth muscle constricts massively — the throat swells shut. Both happen within minutes."
+        },
+        "l3": {
+          "t": "Throat Closing, Plummeting Blood Pressure, Loss of Consciousness",
+          "b": "Swelling of the throat (stridor), difficulty breathing, hives across the body, blood pressure dropping causing fainting, and cardiac arrest within minutes if untreated. The ONLY first-line treatment is epinephrine (EpiPen) injected immediately — antihistamines alone cannot reverse anaphylaxis."
+        }
+      }
+    ]
+  }
+};
+function setPanel(organ, dIdx) {
+  const d = DATA[organ]; if (!d) return;
+  const dis = d.diseases[dIdx];
+  document.getElementById('panel-name').innerHTML = d.name;
+  document.getElementById('panel-desc').textContent = d.desc;
+  const row = document.getElementById('dtab-row'); row.innerHTML = '';
+  d.diseases.forEach((dd, i) => {
+    const b = document.createElement('button');
+    b.className = 'dtab' + (i === dIdx ? ' active' : '');
+    b.textContent = dd.name;
+    b.onclick = () => setPanel(organ, i);
+    row.appendChild(b);
+  });
+  const sev = document.getElementById('sev-badge');
+  if(dis.sev==='high'){sev.className='sev-badge sev-high';sev.textContent='🔴 Serious Condition';}
+  else if(dis.sev==='med'){sev.className='sev-badge sev-med';sev.textContent='🟡 Moderate Condition';}
+  else{sev.className='sev-badge sev-low';sev.textContent='🟢 Manageable Condition';}
+  ['r1','r2','r3'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  const dyk=document.getElementById('dyk-card'); dyk.classList.remove('show');
+  document.getElementById('r1-title').textContent=dis.l1.t; document.getElementById('r1-text').textContent=dis.l1.b;
+  document.getElementById('r2-title').textContent=dis.l2.t; document.getElementById('r2-text').textContent=dis.l2.b;
+  document.getElementById('r3-title').textContent=dis.l3.t; document.getElementById('r3-text').textContent=dis.l3.b;
+  document.getElementById('dyk-text').textContent=d.quickfact;
+  requestAnimationFrame(()=>{
+    setTimeout(()=>document.getElementById('r1').classList.add('show'),40);
+    setTimeout(()=>document.getElementById('r2').classList.add('show'),150);
+    setTimeout(()=>document.getElementById('r3').classList.add('show'),260);
+    setTimeout(()=>dyk.classList.add('show'),360);
+  });
+}
+
+</script>
+<script>
+  if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
+  if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
+
+
+
+(function(){
+  var NODES = {
+  marrow:{x:0.5,y:0.13,r:28,ico:'🏥',lbl:'Bone Marrow'},
+  thymus:{x:0.21,y:0.34,r:26,ico:'⭕',lbl:'Thymus'},
+  lymphnodes:{x:0.79,y:0.34,r:26,ico:'🔬',lbl:'Lymph Nodes'},
+  spleen:{x:0.5,y:0.51,r:28,ico:'🫘',lbl:'Spleen'},
+  wbc:{x:0.21,y:0.72,r:26,ico:'🦠',lbl:'White Blood Cells'},
+  antibodies:{x:0.79,y:0.72,r:26,ico:'💉',lbl:'B Cells/Antibodies'},
+  barriers:{x:0.5,y:0.88,r:24,ico:'🧱',lbl:'Physical Barriers'}
+};
+  var CONNS = [["marrow","thymus"],["marrow","lymphnodes"],["marrow","spleen"],["spleen","wbc"],["spleen","antibodies"],["wbc","barriers"],["antibodies","barriers"],["thymus","wbc"],["lymphnodes","antibodies"]];
+  var COL   = '#1de9b6';
+
+  var sel=null, hov=null, hovC=null;
+  var mc=document.getElementById('map-canvas');
+  var cx=mc.getContext('2d');
+  var DPR=window.devicePixelRatio||1;
+
+  function resize(){
+    var w=mc.parentElement.clientWidth;
+    var h=Math.max(380,Math.round(w*0.85));
+    mc.style.width=w+'px'; mc.style.height=h+'px';
+    mc.width=Math.round(w*DPR); mc.height=Math.round(h*DPR);
+    cx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize',resize);
+
+  // CSS-pixel position of node
+  function pos(id){
+    var n=NODES[id], W=mc.width/DPR, H=mc.height/DPR;
+    return {x:n.x*W, y:n.y*H, r:n.r};
+  }
+  function ctrl(a,b){ return {cx:(a.x+b.x)/2+(b.y-a.y)*0.28, cy:(a.y+b.y)/2-(b.x-a.x)*0.28}; }
+  function bez(f,cc,t2,t){ return {x:(1-t)*(1-t)*f.x+2*(1-t)*t*cc.cx+t*t*t2.x, y:(1-t)*(1-t)*f.y+2*(1-t)*t*cc.cy+t*t*t2.y}; }
+
+  function pill(text,x,y){
+    cx.save(); cx.font='700 10px Nunito,sans-serif';
+    var tw=cx.measureText(text).width, pw=tw+16, ph=20, rr=6, px=x-pw/2, py=y-ph/2;
+    cx.fillStyle='rgba(8,15,28,0.93)'; cx.globalAlpha=1;
+    cx.beginPath(); cx.moveTo(px+rr,py); cx.lineTo(px+pw-rr,py); cx.quadraticCurveTo(px+pw,py,px+pw,py+rr);
+    cx.lineTo(px+pw,py+ph-rr); cx.quadraticCurveTo(px+pw,py+ph,px+pw-rr,py+ph);
+    cx.lineTo(px+rr,py+ph); cx.quadraticCurveTo(px,py+ph,px,py+ph-rr);
+    cx.lineTo(px,py+rr); cx.quadraticCurveTo(px,py,px+rr,py); cx.closePath(); cx.fill();
+    cx.strokeStyle=COL; cx.lineWidth=1; cx.globalAlpha=0.6; cx.stroke();
+    cx.fillStyle=COL; cx.globalAlpha=1; cx.textAlign='center'; cx.textBaseline='middle';
+    cx.fillText(text,x,y); cx.restore();
+  }
+
+  function draw(){
+    var W=mc.width/DPR, H=mc.height/DPR;
+    cx.clearRect(0,0,W,H);
+
+    // ── connections ──────────────────────────────────────────────────────
+    CONNS.forEach(function(c){
+      var f=pos(c[0]), t=pos(c[1]), cc=ctrl(f,t), iH=(hovC===c);
+      cx.save(); cx.beginPath(); cx.moveTo(f.x,f.y); cx.quadraticCurveTo(cc.cx,cc.cy,t.x,t.y);
+      cx.strokeStyle=COL; cx.globalAlpha=iH?0.25:0.09; cx.lineWidth=iH?16:9; cx.stroke(); cx.restore();
+      cx.save(); cx.beginPath(); cx.moveTo(f.x,f.y); cx.quadraticCurveTo(cc.cx,cc.cy,t.x,t.y);
+      cx.strokeStyle=COL; cx.globalAlpha=iH?0.95:0.45; cx.lineWidth=iH?2.5:1.8;
+      cx.setLineDash([6,4]); cx.stroke(); cx.setLineDash([]); cx.restore();
+      if(iH){ var m=bez(f,cc,t,0.5); pill(NODES[c[0]].lbl+' → '+NODES[c[1]].lbl,m.x,m.y); }
+    });
+
+    // ── nodes ─────────────────────────────────────────────────────────────
+    Object.keys(NODES).forEach(function(id){
+      var p=pos(id), n=NODES[id];
+      var iS=(sel===id), iH=(hov===id);
+
+      // wide outer glow — MUCH brighter on hover/select
+      var glowR = iS ? p.r*3.4 : (iH ? p.r*3.0 : p.r*2.2);
+      var glowA = iS ? 0.55    : (iH ? 0.45    : 0.20);
+      var g=cx.createRadialGradient(p.x,p.y,p.r*0.2,p.x,p.y,glowR);
+      g.addColorStop(0,COL); g.addColorStop(1,'rgba(0,0,0,0)');
+      cx.save(); cx.fillStyle=g; cx.globalAlpha=glowA;
+      cx.beginPath(); cx.arc(p.x,p.y,glowR,0,Math.PI*2); cx.fill(); cx.restore();
+
+      // base circle — visible accent fill, not black
+      var fillA = iS ? 0.40 : (iH ? 0.32 : 0.18);
+      cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.fillStyle=COL; cx.globalAlpha=fillA; cx.fill(); cx.restore();
+
+      // slight dark overlay to give depth (NOT opaque)
+      cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r-1,0,Math.PI*2);
+      cx.fillStyle='rgba(8,14,24,0.45)'; cx.globalAlpha=1; cx.fill(); cx.restore();
+
+      // bright stroke ring
+      var strokeW = iS ? 3.5 : (iH ? 3.0 : 2.2);
+      var strokeA = iS ? 1.0 : (iH ? 1.0 : 0.80);
+      cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.strokeStyle=COL; cx.lineWidth=strokeW; cx.globalAlpha=strokeA; cx.stroke(); cx.restore();
+
+      // hover inner bright ring
+      if(iH && !iS){
+        cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r-3,0,Math.PI*2);
+        cx.strokeStyle=COL; cx.lineWidth=1.5; cx.globalAlpha=0.50; cx.stroke(); cx.restore();
+      }
+
+      // pulse ring when selected
+      if(iS){
+        var pt=(Date.now()%1800)/1800;
+        cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r+pt*p.r*1.3,0,Math.PI*2);
+        cx.strokeStyle=COL; cx.lineWidth=2.2; cx.globalAlpha=(1-pt)*0.60; cx.stroke(); cx.restore();
+      }
+
+      // emoji — sized to fill circle
+      cx.save(); cx.font=(p.r*1.08)+'px serif';
+      cx.textAlign='center'; cx.textBaseline='middle'; cx.globalAlpha=1;
+      cx.fillText(n.ico,p.x,p.y+1); cx.restore();
+
+      // label beneath
+      var lsz=Math.max(11,Math.round(p.r*0.52));
+      cx.save(); cx.font='800 '+lsz+'px Nunito,sans-serif';
+      cx.fillStyle=iS?COL:(iH?'#ffffff':'rgba(232,244,251,0.85)');
+      cx.globalAlpha=1; cx.textAlign='center'; cx.textBaseline='top';
+      cx.fillText(n.lbl,p.x,p.y+p.r+6); cx.restore();
+    });
+  }
+
+  function loop(){ draw(); requestAnimationFrame(loop); }
+
+  // ── click — use offsetX/Y (already in CSS px, matches pos()) ────────────
+  mc.addEventListener('click',function(e){
+    var mx=e.offsetX, my=e.offsetY, hit=null;
+    Object.keys(NODES).forEach(function(id){
+      var p=pos(id);
+      if(Math.sqrt((mx-p.x)*(mx-p.x)+(my-p.y)*(my-p.y)) < p.r+10) hit=id;
+    });
+    if(hit){
+      sel=hit;
+      var idle=document.getElementById('idle-state');
+      var card=document.getElementById('info-card');
+      if(idle) idle.classList.add('gone');
+      if(card) card.classList.add('on');
+      if(typeof setPanel==='function') setPanel(hit,0);
+    }
+  });
+
+  mc.addEventListener('mousemove',function(e){
+    var mx=e.offsetX, my=e.offsetY, onN=null, onC=null;
+    Object.keys(NODES).forEach(function(id){
+      var p=pos(id);
+      if(Math.sqrt((mx-p.x)*(mx-p.x)+(my-p.y)*(my-p.y))<p.r+10) onN=id;
+    });
+    if(!onN){
+      CONNS.forEach(function(c){
+        var f=pos(c[0]),t=pos(c[1]),cc=ctrl(f,t);
+        for(var i=0;i<=20;i++){
+          var bp=bez(f,cc,t,i/20);
+          if(Math.sqrt((mx-bp.x)*(mx-bp.x)+(my-bp.y)*(my-bp.y))<10){onC=c;break;}
+        }
+      });
+    }
+    hov=onN; hovC=onC;
+    mc.style.cursor=(onN||onC)?'pointer':'default';
+  });
+
+  mc.addEventListener('mouseleave',function(){ hov=null; hovC=null; });
+
+  window.addEventListener('load',function(){
+    setTimeout(function(){ resize(); loop(); },30);
+  });
+})();
+
+</script>
+</body>
+</html>

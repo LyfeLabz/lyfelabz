@@ -328,6 +328,13 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::after,
   .stem-badge[data-tip]::before { display: none; }
 }
+
+  .line-legend{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;padding:0.55rem 0;margin-bottom:0.6rem;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .ll-item{display:inline-flex;align-items:center;gap:0.42rem;font-size:0.68rem;font-weight:700;color:rgba(180,200,220,0.7);letter-spacing:0.04em;}
+  .ll-dash{display:inline-block;width:22px;height:2px;background:rgba(180,200,220,0.45);border-top:2px dashed rgba(180,200,220,0.55);}
+  .ll-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:rgba(180,200,220,0.55);box-shadow:0 0 4px rgba(180,200,220,0.4);}
+  .ll-arrow{font-size:0.78rem;color:rgba(180,200,220,0.55);}
+
 </style>
 </head>
 <body>
@@ -431,14 +438,14 @@ var organData={
   immune:{ico:'🛡️',name:'Immune System',sys:'Immune',col:'#1de9b6',role:'The respiratory tract is a major entry point for pathogens. Cilia sweep debris out, macrophages in the alveoli engulf bacteria and viruses, and lymph nodes in the chest filter threats.',fact:'<strong>Fun Fact:</strong> When you sneeze, air travels at up to 100 mph — your body forcefully expelling pathogens from the upper respiratory tract.'}
 };
 var NODE_DEFS={
-  nose:{x:0.5,y:0.05,r:19,system:'resp'},
-  trachea:{x:0.5,y:0.22,r:17,system:'resp'},
-  bronchi:{x:0.5,y:0.4,r:18,system:'resp'},
-  lungs:{x:0.24,y:0.56,r:24,system:'resp'},
-  alveoli:{x:0.76,y:0.52,r:19,system:'resp'},
-  diaphragm:{x:0.5,y:0.74,r:18,system:'resp'},
-  circulatory:{x:0.14,y:0.3,r:18,system:'circ'},
-  immune:{x:0.86,y:0.3,r:17,system:'immu'}
+  nose:{x:0.5,y:0.05,r:26,system:'resp'},
+  trachea:{x:0.5,y:0.22,r:23,system:'resp'},
+  bronchi:{x:0.5,y:0.4,r:24,system:'resp'},
+  lungs:{x:0.24,y:0.56,r:32,system:'resp'},
+  alveoli:{x:0.76,y:0.52,r:26,system:'resp'},
+  diaphragm:{x:0.5,y:0.74,r:24,system:'resp'},
+  circulatory:{x:0.14,y:0.3,r:24,system:'circ'},
+  immune:{x:0.86,y:0.3,r:23,system:'immu'}
 };
 var CONNECTIONS=[
   {from:'nose',to:'trachea',label:'filtered air flows in',sys:'resp'},
@@ -482,7 +489,7 @@ ctx.save();var g=ctx.createRadialGradient(p.x,p.y,p.r*0.5,p.x,p.y,p.r*2.8);g.add
 ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=(isSel||isHov)?col+'33':'#132030';ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=isSel?3.2:(isHov?2.5:1.8);ctx.globalAlpha=isSel?1.0:(isHov?0.95:0.80);ctx.stroke();ctx.restore();
 if(isSel){var t=(Date.now()%1800)/1800;ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,p.r+t*p.r*1.4,0,Math.PI*2);ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.globalAlpha=(1-t)*0.65;ctx.stroke();ctx.restore();}
 ctx.save();ctx.font=(p.r*0.95)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=1;ctx.fillText(data.ico,p.x,p.y+1);ctx.restore();
-ctx.save();ctx.font='800 '+Math.max(10,Math.round(p.r*0.54))+'px Nunito,sans-serif';ctx.fillStyle=isSel?col:'#e8f4fb';ctx.globalAlpha=isSel?1:0.90;ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(data.name,p.x,p.y+p.r+5);if(isSel||isHov){ctx.font='700 9px Nunito,sans-serif';ctx.fillStyle=col;ctx.globalAlpha=0.75;ctx.fillText(data.sys,p.x,p.y+p.r+20);}ctx.restore();});}
+ctx.save();ctx.font='800 '+Math.max(12,Math.round(p.r*0.54))+'px Nunito,sans-serif';ctx.fillStyle=isSel?col:'#e8f4fb';ctx.globalAlpha=isSel?1:0.90;ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(data.name,p.x,p.y+p.r+5);if(isSel||isHov){ctx.font='700 9px Nunito,sans-serif';ctx.fillStyle=col;ctx.globalAlpha=0.75;ctx.fillText(data.sys,p.x,p.y+p.r+20);}ctx.restore();});}
 function loop(){particles.forEach(function(p){p.update();});draw();requestAnimationFrame(loop);}
 canvas.addEventListener('click',function(e){var rect=canvas.getBoundingClientRect();var sx=canvas.width/rect.width,sy=canvas.height/rect.height;var mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy;var hit=null;visNodes().forEach(function(id){var p=nodePos(id);if(Math.sqrt((mx-p.x)*(mx-p.x)+(my-p.y)*(my-p.y))<p.r+8)hit=id;});if(hit){selectedNode=hit;var d=organData[hit];document.getElementById('c-ico').textContent=d.ico;document.getElementById('c-name').textContent=d.name;document.getElementById('c-sys').textContent=d.sys+' System';document.getElementById('c-sys').style.color=d.col;document.getElementById('c-role').textContent=d.role;document.getElementById('c-fact').innerHTML=d.fact;document.getElementById('i-idle').classList.add('gone');document.getElementById('i-card').classList.add('on');}});
 canvas.addEventListener('mousemove',function(e){var rect=canvas.getBoundingClientRect();var sx=canvas.width/rect.width,sy=canvas.height/rect.height;var mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy;var onNode=null;visNodes().forEach(function(id){var p=nodePos(id);if(Math.sqrt((mx-p.x)*(mx-p.x)+(my-p.y)*(my-p.y))<p.r+8)onNode=id;});var onConn=null;if(!onNode){visConns().forEach(function(conn){var f=nodePos(conn.from),t2=nodePos(conn.to),c=ctrl(conn);for(var i=0;i<=20;i++){var t=i/20;var pt=bezPt(f,c.cx,c.cy,t2,t);if(Math.sqrt((mx-pt.x)*(mx-pt.x)+(my-pt.y)*(my-pt.y))<10){onConn=conn;break;}}});}hoveredNode=onNode;hoveredConn=onConn;canvas.style.cursor=(onNode||onConn)?'pointer':'default';});

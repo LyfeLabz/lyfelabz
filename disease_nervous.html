@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | Nervous System — Diseases &amp; Disorders</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #9b59b6;
+    --accent-dim: rgba(155,89,182,0.12);
+    --accent-glow: rgba(155,89,182,0.35);
+    --accent-border: rgba(155,89,182,0.45);
+    --teal: #1de9b6; --gold: #f5c842; --gold-glow: rgba(245,200,66,0.35);
+    --purple: #9b59b6; --green: #2ecc71; --orange: #e67e22;
+    --dark: #0c1520; --card: #172030; --card2: #1e2d42;
+    --text: #e8f4fb; --muted: #6a92ad; --border: rgba(255,255,255,0.07);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--dark); color:var(--text); line-height:1.6; overflow-x:hidden; }
+  nav { position:sticky; top:0; z-index:200; background:rgba(10,18,28,0.97); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0.8rem 2.5rem; }
+  .nav-logo { font-family:'Orbitron',sans-serif; font-size:1.2rem; font-weight:900; color:var(--gold); text-decoration:none; letter-spacing:0.06em; text-shadow:0 0 18px var(--gold-glow); }
+  .nav-center { display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:var(--muted); font-weight:700; }
+  .nav-center .sep { opacity:0.3; } .nav-center .cur { color:var(--accent); }
+  .nav-back { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-dim); border:1px solid var(--accent-border); padding:0.32rem 0.9rem; border-radius:99px; text-decoration:none; }
+  .page-header { background:linear-gradient(135deg,#0a1520 0%,#100d1c 50%,#0c1520 100%); padding:2.2rem 2.5rem 2rem; position:relative; overflow:hidden; border-bottom:1px solid rgba(155,89,182,0.14); }
+  .page-header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 18% 60%,rgba(155,89,182,0.09) 0%,transparent 55%),radial-gradient(ellipse at 80% 25%,rgba(33,150,243,0.05) 0%,transparent 55%); pointer-events:none; }
+  .header-inner { max-width:1340px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:2rem; flex-wrap:wrap; position:relative; }
+  .header-badge { display:inline-flex; align-items:center; gap:0.5rem; background:var(--accent-dim); border:1px solid var(--accent-border); color:var(--accent); padding:0.32rem 1rem; border-radius:99px; font-size:0.73rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.85rem; }
+  .pulse-dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:pdot 1.8s ease-in-out infinite; flex-shrink:0; }
+  @keyframes pdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.65)} }
+  .page-header h1 { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,3.8vw,2.9rem); line-height:1.1; margin-bottom:0.35rem; background:linear-gradient(135deg,#fff 20%,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .page-header p { color:var(--muted); font-size:0.95rem; max-width:500px; line-height:1.65; }
+  .header-hint { display:flex; align-items:center; gap:0.55rem; font-size:0.82rem; color:var(--text); font-weight:800; background:var(--accent-dim); border:1px solid var(--accent-border); padding:0.65rem 1.1rem; border-radius:11px; white-space:nowrap; flex-shrink:0; }
+  .explorer-wrap { max-width:1340px; margin:0 auto; padding:1.8rem 2rem 3rem; }
+  .stat-pills { display:flex; gap:0.7rem; flex-wrap:wrap; margin-bottom:1.6rem; }
+  .stat-pill { display:inline-flex; align-items:center; gap:0.45rem; background:var(--card); border:1px solid var(--border); border-radius:99px; padding:0.32rem 0.95rem; font-size:0.76rem; font-weight:800; color:var(--muted); }
+  .stat-pill .sv { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--accent); margin-right:0.15rem; }
+  .panels { display:grid; grid-template-columns:1fr 430px; gap:1.4rem; align-items:start; }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+   }
+   }
+  
+  
+  
+  
+  
+  
+  
+  
+   70%{opacity:0;transform:scale(1.4)} 100%{opacity:0} }
+  
+  
+  
+  .info-panel { position:sticky; top:80px; display:flex; flex-direction:column; gap:1rem; }
+  .i-idle { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2.5rem 2rem; text-align:center; }
+  .i-idle.gone { display:none; }
+  .i-idle-icon { font-size:3rem; display:block; margin-bottom:0.8rem; }
+  .i-idle-title { font-family:'Fredoka One',cursive; font-size:1.3rem; margin-bottom:0.4rem; }
+  .i-idle-desc { color:var(--muted); font-size:0.9rem; line-height:1.65; margin-bottom:1rem; }
+  .i-idle-arrows { display:flex; justify-content:center; gap:0.5rem; flex-wrap:wrap; }
+  .i-idle-chip { background:var(--accent-dim); border:1px solid var(--accent-border); color:var(--accent); border-radius:99px; padding:0.25rem 0.75rem; font-size:0.73rem; font-weight:800; }
+  .i-card { background:var(--card); border:1px solid var(--border); border-radius:20px; overflow:hidden; display:none; }
+  .i-card.on { display:block; animation:fup 0.28s ease both; }
+  @keyframes fup { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .i-card-hd { padding:1.2rem 1.4rem 1rem; border-bottom:1px solid var(--border); background:rgba(155,89,182,0.06); }
+  .i-card-sys { font-size:0.66rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin-bottom:0.3rem; display:flex; align-items:center; gap:0.4rem; }
+  .i-card-name { font-family:'Fredoka One',cursive; font-size:1.5rem; line-height:1.1; color:var(--text); margin-bottom:0.3rem; }
+  .i-card-desc { font-size:0.84rem; color:var(--muted); line-height:1.6; }
+  .dtab-row { display:flex; border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+  .dtab-row::-webkit-scrollbar { display:none; }
+  .dtab { flex-shrink:0; padding:0.65rem 1rem; font-size:0.76rem; font-weight:800; color:var(--muted); background:none; border:none; border-bottom:2.5px solid transparent; cursor:pointer; font-family:'Nunito',sans-serif; transition:color .15s,border-color .15s; white-space:nowrap; }
+  .dtab:hover { color:var(--text); } .dtab.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .ripple-wrap { padding:1rem 1.4rem 0.8rem; display:flex; flex-direction:column; gap:0.7rem; }
+  .sev-badge { display:inline-flex; align-items:center; gap:0.35rem; padding:0.28rem 0.9rem; border-radius:99px; font-size:0.71rem; font-weight:800; letter-spacing:0.06em; margin-bottom:0.25rem; width:fit-content; }
+  .sev-high { background:rgba(192,57,43,0.2); color:#ff8a7a; border:1px solid rgba(192,57,43,0.4); }
+  .sev-med  { background:rgba(230,126,34,0.18); color:#f0a050; border:1px solid rgba(230,126,34,0.4); }
+  .sev-low  { background:rgba(46,204,113,0.15); color:#5ddb8a; border:1px solid rgba(46,204,113,0.35); }
+  .ripple-block { border-radius:12px; padding:0.85rem 1rem; border-left:3px solid transparent; opacity:0; transform:translateY(8px); transition:opacity .38s ease,transform .38s ease; }
+  .ripple-block.show { opacity:1; transform:translateY(0); }
+  .ripple-block.r1 { background:rgba(155,89,182,0.09); border-left-color:var(--accent); }
+  .ripple-block.r2 { background:rgba(155,89,182,0.1); border-left-color:var(--purple); }
+  .ripple-block.r3 { background:rgba(245,200,66,0.07); border-left-color:var(--gold); }
+  .rb-label { font-size:0.67rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.22rem; display:flex; align-items:center; gap:0.35rem; }
+  .r1 .rb-label { color:var(--accent); } .r2 .rb-label { color:var(--purple); } .r3 .rb-label { color:var(--gold); }
+  .rb-title { font-size:0.9rem; font-weight:800; color:var(--text); margin-bottom:0.22rem; }
+  .rb-text  { font-size:0.81rem; color:var(--muted); line-height:1.65; }
+  .dyk-card { margin:0 1.4rem 1.2rem; background:rgba(245,200,66,0.07); border:1px solid rgba(245,200,66,0.2); border-radius:12px; padding:0.75rem 1rem; display:flex; gap:0.6rem; align-items:flex-start; opacity:0; transform:translateY(6px); transition:opacity .4s .3s ease,transform .4s .3s ease; }
+  .dyk-card.show { opacity:1; transform:translateY(0); }
+  .dyk-icon { font-size:1.1rem; flex-shrink:0; margin-top:0.05rem; }
+  .dyk-label { font-size:0.64rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:0.15rem; }
+  .dyk-text  { font-size:0.79rem; color:rgba(232,244,251,0.7); line-height:1.6; }
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2.2rem 2rem; text-align:center; margin-top:0.5rem; }
+  footer .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--accent); margin-bottom:0.35rem; }
+  footer p { color:var(--muted); font-size:0.83rem; } footer a { color:var(--teal); text-decoration:none; } footer a:hover { text-decoration:underline; }
+  @media(max-width:960px){ .panels{grid-template-columns:1fr} .info-panel{position:static} }
+  @media(max-width:600px){ nav{padding:0.8rem 1.2rem} .nav-center{display:none} .page-header{padding:1.6rem 1.2rem 1.3rem} .explorer-wrap{padding:1.2rem 1rem 2rem} .header-hint{display:none} }
+</style>
+<style>
+.ls-focus { display:none; }
+body.ls-active .ls-focus { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0.45rem 0.55rem; width:fit-content; max-width:760px; margin:1.6rem auto; padding:1.1rem 1.8rem 1.2rem; background:rgba(59,200,232,0.05); border:1px solid rgba(59,200,232,0.2); border-radius:16px; animation:lsFadeIn 0.35s ease both; }
+@keyframes lsFadeIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:translateY(0)} }
+.ls-focus-label { font-size:0.72rem; font-weight:900; letter-spacing:0.13em; text-transform:uppercase; color:rgba(59,200,232,0.75); width:100%; text-align:center; margin-bottom:0.5rem; }
+.ls-badge { position:relative; display:inline-flex; align-items:center; gap:0.35rem; font-family:'Nunito',sans-serif; font-size:0.86rem; font-weight:700; line-height:1; color:rgba(255,255,255,0.82); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16); border-radius:99px; padding:0.35rem 0.9rem; cursor:default; white-space:nowrap; overflow:visible; }
+.ls-badge[data-tip]::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 9px); left:50%; transform:translateX(-50%); width:200px; padding:0.5rem 0.75rem; background:#0c1a28; color:#b8ccd8; font-size:0.68rem; font-weight:500; line-height:1.5; white-space:normal; text-align:center; border-radius:9px; border:1px solid rgba(255,255,255,0.11); box-shadow:0 8px 28px rgba(0,0,0,0.55); pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999; }
+.ls-badge[data-tip]:hover::after { opacity:1; }
+.ls-badge[data-tip]::before { content:''; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(255,255,255,0.11); pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999; }
+.ls-badge[data-tip]:hover::before { opacity:1; }
+</style>
+<style>
+.stem-focus { display:none; }
+body.stem-active .stem-focus { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0.45rem 0.55rem; width:fit-content; max-width:760px; margin:0.5rem auto 1.6rem; padding:1.1rem 1.8rem 1.2rem; background:rgba(46,204,113,0.05); border:1px solid rgba(46,204,113,0.2); border-radius:16px; animation:stemFadeIn 0.35s ease both; }
+@keyframes stemFadeIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:translateY(0)} }
+.stem-focus-label { font-size:0.72rem; font-weight:900; letter-spacing:0.13em; text-transform:uppercase; color:rgba(46,204,113,0.75); width:100%; text-align:center; margin-bottom:0.5rem; }
+.stem-badge { position:relative; display:inline-flex; align-items:center; cursor:default; font-family:'Nunito',sans-serif; font-size:0.86rem; font-weight:700; color:rgba(255,255,255,0.82); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16); border-radius:99px; padding:0.35rem 0.9rem; white-space:nowrap; }
+.stem-badge[data-tip]::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 9px); left:50%; transform:translateX(-50%); width:220px; padding:0.5rem 0.75rem; background:#0c1a28; color:#b8ccd8; font-size:0.68rem; line-height:1.5; white-space:normal; text-align:center; border-radius:9px; border:1px solid rgba(46,204,113,0.2); box-shadow:0 8px 28px rgba(0,0,0,0.55); pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999; }
+.stem-badge[data-tip]:hover::after { opacity:1; }
+.stem-badge[data-tip]::before { content:''; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(46,204,113,0.2); pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999; }
+.stem-badge[data-tip]:hover::before { opacity:1; }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  .map-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:relative;}
+  .map-panel::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 25%,rgba(155,89,182,0.06) 0%,transparent 65%);pointer-events:none;z-index:0;}
+  .map-panel-hd{padding:0.85rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;position:relative;z-index:1;}
+  .map-panel-title{font-size:0.67rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);}
+  .map-body{padding:1rem 1.2rem 1.2rem;position:relative;z-index:1;}
+  #map-canvas{width:100%;display:block;cursor:default;border-radius:8px;}
+  .line-legend{display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;padding:0.45rem 0;margin-bottom:0.55rem;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .ll-item{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.68rem;font-weight:700;color:rgba(180,200,220,0.65);letter-spacing:0.04em;}
+  .ll-dash{display:inline-block;width:22px;height:0;border-top:2px dashed rgba(180,200,220,0.5);}
+  .ll-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:rgba(180,200,220,0.5);}
+  .ll-arr{font-size:0.8rem;color:rgba(180,200,220,0.5);}
+
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">LYFELABZ</a>
+  <div class="nav-center">
+    <a href="body_systems.html" style="color:var(--muted);text-decoration:none;">Body Systems</a>
+    <span class="sep">›</span>
+    <a href="system_nervous.html" style="color:var(--muted);text-decoration:none;">Nervous</a>
+    <span class="sep">›</span>
+    <span class="cur">Diseases &amp; Disorders</span>
+  </div>
+  <a class="nav-back" href="body_systems.html#diseases">← Body Systems</a>
+</nav>
+<div class="page-header">
+  <div class="header-inner">
+    <div>
+      <div class="header-badge"><span class="pulse-dot"></span> Nervous System · Diseases &amp; Disorders</div>
+      <h1>What Can Go Wrong? 🧠</h1>
+      <p>Select any part of the nervous system to discover what diseases can affect it — and how a disruption in the brain or nerves ripples through the entire body.</p>
+    </div>
+    <div class="header-hint">👆 Click a node on the map to explore</div>
+  </div>
+</div>
+<div class="explorer-wrap">
+  <div class="ls-focus">
+    <span class="ls-focus-label">🔬 Learning Science Focus</span>
+    <span class="ls-badge" data-tip="Students drive their own exploration by choosing which organ to investigate. — Freeman et al., 2014">🎯 Active Learning</span>
+    <span class="ls-badge" data-tip="Three-level ripple structure builds causal reasoning from part to system to person. — Dunlosky et al., 2013">💬 Elaboration</span>
+    <span class="ls-badge" data-tip="Visual map plus written explanations activate both visual and verbal memory channels. — Noetel et al., 2022">🖼️ Dual Coding</span>
+    <span class="ls-badge" data-tip="Real disease examples make abstract physiology concrete and memorable. — Schwartz et al., 2011">🔬 Concrete Examples</span>
+  </div>
+  <div class="stem-focus">
+    <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
+    <span class="stem-badge" data-tip="Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.">6.MS-LS1-3</span>
+  </div>
+  <div class="stat-pills">
+    <div class="stat-pill"><span class="sv">7</span> System Parts</div>
+    <div class="stat-pill"><span class="sv">14+</span> Diseases &amp; Disorders</div>
+    <div class="stat-pill"><span class="sv">3</span> Impact Levels per Disease</div>
+    <div class="stat-pill"><span class="sv">🔴</span> Serious &nbsp;·&nbsp; <span class="sv">🟡</span> Moderate &nbsp;·&nbsp; <span class="sv">🟢</span> Manageable</div>
+  </div>
+  <div class="panels">
+    <div class="map-panel">
+      <div class="map-panel-hd">
+        <span class="map-panel-title">THE NERVOUS SYSTEM MAP — CLICK ANY NODE TO EXPLORE</span>
+      </div>
+      <div class="map-body">
+        <div class="line-legend">
+          <span class="ll-item"><span class="ll-dash"></span><span class="ll-text">Connection</span></span>
+          <span class="ll-item"><span class="ll-dot"></span><span class="ll-text">System node</span></span>
+          <span class="ll-item"><span class="ll-arr">→</span><span class="ll-text">Hover lines for labels</span></span>
+        </div>
+        <canvas id="map-canvas"></canvas>
+      </div>
+    </div>
+
+    
+
+    
+
+    <div class="info-panel">
+      <div class="i-idle" id="idle-state">
+        <span class="i-idle-icon">🧠</span>
+        <div class="i-idle-title">Select a Node</div>
+        <div class="i-idle-desc">Click any organ or structure on the map to learn about its diseases — and how a problem there ripples through the whole body.</div>
+      </div>
+      <div class="i-card" id="info-card">
+        <div class="i-card-hd">
+          <div class="i-card-sys"><span class="pulse-dot"></span> Nervous System</div>
+          <div class="i-card-name" id="panel-name"></div>
+          <div class="i-card-desc" id="panel-desc"></div>
+        </div>
+        <div class="dtab-row" id="dtab-row"></div>
+        <div class="ripple-wrap">
+          <span class="sev-badge" id="sev-badge"></span>
+          <div class="ripple-block r1" id="r1"><div class="rb-label">🔬 What Goes Wrong</div><div class="rb-title" id="r1-title"></div><div class="rb-text" id="r1-text"></div></div>
+          <div class="ripple-block r2" id="r2"><div class="rb-label">📡 How It Spreads</div><div class="rb-title" id="r2-title"></div><div class="rb-text" id="r2-text"></div></div>
+          <div class="ripple-block r3" id="r3"><div class="rb-label">🧍 How You Feel It</div><div class="rb-title" id="r3-title"></div><div class="rb-text" id="r3-text"></div></div>
+        </div>
+        <div class="dyk-card" id="dyk-card"><span class="dyk-icon">💡</span><div><div class="dyk-label">Did You Know?</div><div class="dyk-text" id="dyk-text"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer>
+  <div class="logo">🧠 LyfeLabz · Nervous System — Diseases &amp; Disorders</div>
+  <p style="margin-bottom:0.6rem;">
+    <a href="body_systems.html#diseases">← Diseases &amp; Disorders</a>
+    &nbsp;·&nbsp;
+    <a href="system_nervous.html">Nervous Map</a>
+    &nbsp;·&nbsp;
+    <a href="index.html">Learning Hub</a>
+  </p>
+  <p>© 2025 LyfeLabz · Educational Use</p>
+</footer>
+<script>
+const DATA = {
+  "brain": {
+    "name": "Brain",
+    "desc": "The control center — about 3 pounds of tissue containing 86 billion neurons. It processes all sensory information, controls voluntary movement, regulates body functions, stores memories, and generates thought.",
+    "quickfact": "Your brain uses about 20% of all the energy your body produces — despite being only 2% of your body weight! It runs entirely on glucose and stops working within seconds if blood flow cuts off, which is why strokes are so damaging so quickly.",
+    "diseases": [
+      {
+        "name": "Stroke",
+        "sev": "high",
+        "l1": {
+          "t": "Blood Flow to Part of the Brain Is Blocked or Cut Off",
+          "b": "An ischemic stroke happens when a blood clot blocks an artery to the brain — brain cells start dying within minutes from oxygen starvation. A hemorrhagic stroke happens when a blood vessel bursts inside the brain."
+        },
+        "l2": {
+          "t": "Brain Cells Die Permanently — the Functions They Controlled Are Lost",
+          "b": "Every minute of stroke, about 2 million brain cells die. The affected brain region permanently loses its function — whether that's speech, movement of the right arm, vision, or memory, depending on which area is affected."
+        },
+        "l3": {
+          "t": "Sudden Face Drooping, Arm Weakness, Slurred Speech",
+          "b": "FAST: Face drooping on one side, Arm weakness (one arm drifts down), Speech slurred or absent, Time to call 911. Every second counts — clot-busting medication can restore blood flow if given within 3–4.5 hours of symptom onset."
+        }
+      },
+      {
+        "name": "Brain Tumor",
+        "sev": "high",
+        "l1": {
+          "t": "Abnormal Cells Grow Inside the Brain",
+          "b": "Brain tumors can be primary (originating in the brain) or secondary (cancer spreading from elsewhere — lung, breast, melanoma). Growing tumors compress surrounding brain tissue, increasing pressure inside the skull."
+        },
+        "l2": {
+          "t": "Growing Tumor Increases Pressure and Shifts Brain Structures",
+          "b": "As the tumor grows, it raises intracranial pressure — compressing the brain against the skull. The brainstem can be pushed downward (herniation) through the skull base, compressing vital centers for breathing and heartbeat."
+        },
+        "l3": {
+          "t": "Headaches, Personality Changes, Seizures, Vision Loss",
+          "b": "Headaches worst in the morning and when lying down, nausea, personality or mood changes, seizures, vision problems, and weakness on one side. Highly variable depending on tumor location — treatment includes surgery, radiation, and chemotherapy."
+        }
+      }
+    ]
+  },
+  "spinal": {
+    "name": "Spinal Cord",
+    "desc": "A cable of nerve tissue running from the brainstem to the lower back — carrying signals from the brain to the body (motor) and from the body to the brain (sensory). Encased and protected by the vertebrae.",
+    "quickfact": "The spinal cord is only about 18 inches long and about as wide as your thumb — but it carries ALL communication between your brain and the rest of your body. Injuring it can instantly paralyze everything below the injury level, permanently.",
+    "diseases": [
+      {
+        "name": "Spinal Cord Injury",
+        "sev": "high",
+        "l1": {
+          "t": "Trauma Crushes, Severs, or Compresses the Spinal Cord",
+          "b": "Car accidents, falls, sports injuries, or violence can damage the spinal cord through compression, crushing, or severing. Unlike most tissues, spinal cord neurons cannot regenerate — damage is typically permanent."
+        },
+        "l2": {
+          "t": "All Functions Below the Injury Level Are Disrupted Immediately",
+          "b": "The spinal cord is the only pathway between the brain and the body below the injury. Everything below — movement, sensation, bladder, bowel, sexual function, and blood pressure regulation — is instantly affected."
+        },
+        "l3": {
+          "t": "Paralysis, Loss of Sensation, Loss of Bladder Control",
+          "b": "Complete loss of movement and sensation below the injury level (paraplegia if the legs, quadriplegia if arms and legs). Loss of bladder and bowel control, sexual dysfunction, and blood pressure instability. No cure; rehabilitation maximizes remaining function."
+        }
+      },
+      {
+        "name": "Multiple Sclerosis",
+        "sev": "high",
+        "l1": {
+          "t": "The Immune System Strips the Protective Coating from Nerve Fibers",
+          "b": "Multiple sclerosis (MS) is an autoimmune disease where the immune system attacks myelin — the fatty insulation wrapped around nerve fibers in the brain and spinal cord. Without myelin, nerve signals slow down or fail completely."
+        },
+        "l2": {
+          "t": "Patchy Demyelination Disrupts Random Functions Across the Body",
+          "b": "As myelin is destroyed in patches throughout the CNS, signals become scrambled. MS attacks are unpredictable — each one can affect different functions depending on where new demyelination occurs: vision, balance, legs, bladder, or cognition."
+        },
+        "l3": {
+          "t": "Vision Loss, Numbness, Balance Problems, Fatigue",
+          "b": "Sudden episodes of blurred or double vision, numbness or tingling in limbs, poor balance, muscle weakness, and profound fatigue (MS fatigue is different from tiredness — it's overwhelming and unrelieved by rest). MS is managed but not cured."
+        }
+      }
+    ]
+  },
+  "cerebellum": {
+    "name": "Cerebellum",
+    "desc": "The 'little brain' at the back of the skull — it coordinates movement, balance, and fine motor control. It receives input from the motor cortex and sensory systems and fine-tunes muscle activity in real time.",
+    "quickfact": "The cerebellum is only about 10% of the brain's volume, but it contains more than 50% of all the brain's neurons! It processes sensory information so rapidly that it fine-tunes your movements faster than your conscious brain can even register them.",
+    "diseases": [
+      {
+        "name": "Ataxia",
+        "sev": "high",
+        "l1": {
+          "t": "Cerebellar Cells Are Damaged and Can't Coordinate Movement",
+          "b": "Ataxia (from Greek: 'lack of order') occurs when cerebellar cells malfunction — from genetic mutations, strokes, tumors, or immune attacks. Without proper cerebellar processing, movements become uncoordinated and jerky."
+        },
+        "l2": {
+          "t": "Every Movement Becomes Inaccurate",
+          "b": "The cerebellum normally smooths out every movement and tells muscles exactly how hard and for how long to fire. Without it, patients overshoot targets (dysmetria), walk with a wide lurching gait, and lose the ability to perform sequences of movements."
+        },
+        "l3": {
+          "t": "Stumbling Walk, Slurred Speech, Uncoordinated Hands",
+          "b": "A wide-based stumbling gait that looks like someone who's drunk, slurred speech (dysarthria), difficulty with fine motor tasks like writing or buttoning, and involuntary eye movements (nystagmus). Treatment depends on the underlying cause."
+        }
+      },
+      {
+        "name": "Cerebellar Stroke",
+        "sev": "high",
+        "l1": {
+          "t": "Blood Supply to the Cerebellum Is Cut Off",
+          "b": "A blood clot or hemorrhage in the arteries supplying the cerebellum causes rapid death of cerebellar tissue — just as in other strokes. The cerebellum is in the posterior fossa of the skull, where blood can pool and compress the brainstem."
+        },
+        "l2": {
+          "t": "Swelling in the Posterior Fossa Threatens the Brainstem",
+          "b": "Unlike strokes in the front of the brain, cerebellar strokes can cause dangerous swelling in the confined posterior fossa. This swelling can compress the brainstem — where breathing and heart rate centers are located — causing sudden death."
+        },
+        "l3": {
+          "t": "Sudden Severe Headache, Vomiting, and Loss of Balance",
+          "b": "Sudden intense headache (worst headache of life), vomiting, severe dizziness, inability to stand or walk, and rapid deterioration. Some cerebellar strokes require emergency surgery to relieve pressure. Time-critical emergency."
+        }
+      }
+    ]
+  },
+  "cranial": {
+    "name": "Cranial Nerves",
+    "desc": "12 pairs of nerves that emerge directly from the brain and connect to the face, eyes, ears, nose, and major organs — controlling everything from vision and smell to facial expression and heart rate.",
+    "quickfact": "Cranial nerve X (the Vagus nerve) is the longest of the 12 — it runs all the way from the brainstem down to your colon, controlling your heart rate, breathing rate, and most of your digestive system! 'Vagus' means 'wanderer' in Latin.",
+    "diseases": [
+      {
+        "name": "Trigeminal Neuralgia",
+        "sev": "high",
+        "l1": {
+          "t": "The Trigeminal Nerve (CN V) Misfires with Electric Pain",
+          "b": "The trigeminal nerve carries sensation from the face to the brain. In trigeminal neuralgia, a blood vessel pressing on the nerve root at the brainstem causes it to fire spontaneously — generating severe electrical shock-like pain signals."
+        },
+        "l2": {
+          "t": "Repeated Pain Signals Sensitize the Nerve",
+          "b": "Each episode of pain can trigger the next — the nerve becomes increasingly hypersensitized. Activities as minor as talking, chewing, a light breeze on the face, or brushing teeth can trigger an attack."
+        },
+        "l3": {
+          "t": "Sudden, Severe Electric Shock Pain in the Face",
+          "b": "Sudden, intense, stabbing electric pain on one side of the face lasting seconds to 2 minutes — often described as the worst pain in human medicine. Triggered by touch, chewing, or cold air. Treated with anticonvulsant medications or microvascular surgery."
+        }
+      },
+      {
+        "name": "Optic Neuritis",
+        "sev": "med",
+        "l1": {
+          "t": "The Optic Nerve Becomes Inflamed and Signal Transmission Fails",
+          "b": "The optic nerve (CN II) carries visual signals from the retina to the brain. Inflammation — often from multiple sclerosis or autoimmune attack — damages the myelin on the optic nerve, blurring or eliminating vision in that eye."
+        },
+        "l2": {
+          "t": "Visual Signals Are Scrambled Before Reaching the Brain",
+          "b": "Demyelinated optic nerve fibers can't carry high-frequency visual signals reliably. Colors appear washed out. Heat worsens symptoms (Uhthoff's phenomenon) because warm temperatures further slow demyelinated nerve conduction."
+        },
+        "l3": {
+          "t": "Blurry Vision, Pain with Eye Movement, Faded Colors",
+          "b": "Blurred or lost vision in one eye (usually only one at a time), aching pain behind the eye that worsens with eye movement, and colors appearing less vibrant — especially red. Most cases recover partially or fully within weeks to months."
+        }
+      }
+    ]
+  },
+  "pns": {
+    "name": "Peripheral Nerves",
+    "desc": "All the nerves outside the brain and spinal cord — the 31 spinal nerve pairs carrying motor commands to muscles and sensory information back, plus the nerves reaching every fingertip and toe.",
+    "quickfact": "Nerve signals travel at different speeds depending on whether the nerve is myelinated or not. Myelinated motor nerve signals can reach 270 mph — that's faster than a Formula 1 racing car! Unmyelinated pain fibers crawl along at just 2 mph.",
+    "diseases": [
+      {
+        "name": "Peripheral Neuropathy",
+        "sev": "med",
+        "l1": {
+          "t": "Peripheral Nerve Fibers Are Damaged and Can't Transmit Properly",
+          "b": "Diabetes, alcohol, vitamin deficiencies (especially B12), and chemotherapy can damage the long peripheral nerve fibers — particularly in the hands and feet where nerves are longest and most vulnerable to poor blood supply or toxins."
+        },
+        "l2": {
+          "t": "Damaged Nerves Send Wrong Signals or No Signals",
+          "b": "Partially damaged fibers send scrambled signals — perceived as burning, tingling, or electric shocks. Completely damaged fibers send no signal — causing numbness. Motor fiber damage causes weakness and muscle wasting in the affected limbs."
+        },
+        "l3": {
+          "t": "Tingling, Burning Pain, Numbness in Hands and Feet",
+          "b": "A burning, pins-and-needles sensation usually starting in both feet and moving upward — or in the fingertips. Numbness means patients can't feel wounds forming on their feet. Loss of balance from absent sensory feedback. Treat the underlying cause."
+        }
+      },
+      {
+        "name": "Guillain-Barré Syndrome",
+        "sev": "high",
+        "l1": {
+          "t": "The Immune System Attacks the Peripheral Nerves' Myelin Coating",
+          "b": "Usually triggered by a respiratory or gastrointestinal infection, the immune system mistakenly attacks peripheral nerve myelin. An ascending demyelination begins in the legs and travels upward over days to weeks."
+        },
+        "l2": {
+          "t": "Paralysis Climbs Upward Toward the Diaphragm",
+          "b": "As demyelination progresses upward through the spinal cord level, paralysis follows. When it reaches the chest level, the diaphragm is affected — the patient can no longer breathe independently. About 25% of patients need a ventilator."
+        },
+        "l3": {
+          "t": "Progressive Weakness Starting in Legs, Then Arms, Then Breathing",
+          "b": "Weakness and tingling beginning in the feet and moving up the body over days — progressing to full paralysis. Most patients recover fully over months as myelin regrows, but recovery is slow. The acute phase is life-threatening and requires ICU monitoring."
+        }
+      }
+    ]
+  },
+  "autonomic": {
+    "name": "Autonomic Nervous System",
+    "desc": "The automatic control system — regulates heart rate, blood pressure, breathing rate, digestion, pupil size, sweating, and sexual arousal without conscious thought. Divided into sympathetic ('fight or flight') and parasympathetic ('rest and digest').",
+    "quickfact": "Your autonomic nervous system regulates thousands of body functions every second. When you stand up, it instantly increases heart rate and constricts leg blood vessels to keep blood from pooling in your legs — all in less than 3 seconds, without you thinking about it!",
+    "diseases": [
+      {
+        "name": "POTS (Postural Orthostatic Tachycardia)",
+        "sev": "med",
+        "l1": {
+          "t": "The ANS Fails to Regulate Heart Rate When Standing Up",
+          "b": "Normally, the autonomic nervous system constricts blood vessels when you stand to maintain blood pressure. In POTS, this response is impaired — blood pools in the legs, the brain gets less blood, and the heart races to compensate."
+        },
+        "l2": {
+          "t": "Heart Racing and Reduced Brain Blood Flow Cause System-Wide Effects",
+          "b": "The racing heart (tachycardia by definition means over 100+ beats per minute, often reaching 150+) is fatiguing and unsustainable. Reduced brain blood flow causes cognitive impairment ('brain fog'), dizziness, and fainting."
+        },
+        "l3": {
+          "t": "Dizziness, Racing Heart, Fainting When Standing",
+          "b": "Lightheadedness and racing heartbeat immediately upon standing, brain fog, fatigue, and fainting. Symptoms dramatically improve when lying down. POTS disproportionately affects teenage girls and young women. Treated with increased salt and fluid intake."
+        }
+      },
+      {
+        "name": "Autonomic Neuropathy",
+        "sev": "high",
+        "l1": {
+          "t": "Nerves Controlling Automatic Body Functions Are Damaged",
+          "b": "Long-term diabetes, Parkinson's disease, or autoimmune conditions damage the autonomic nerves — the fibers controlling involuntary functions like heartbeat regulation, sweating, digestion, and blood pressure control."
+        },
+        "l2": {
+          "t": "Every Automatic System Becomes Unreliable Simultaneously",
+          "b": "Without autonomic regulation, blood pressure swings wildly between lying and standing (causing fainting). The heart can't speed up with exercise. The stomach stops emptying (gastroparesis). The bladder can't empty. Sweating becomes abnormal."
+        },
+        "l3": {
+          "t": "Dizziness on Standing, Digestive Issues, Sweating Problems",
+          "b": "Fainting when standing, the inability to regulate body temperature through sweating, unpredictable digestion, urinary retention, and dangerous blood pressure drops. One of the most disabling complications of long-term diabetes."
+        }
+      }
+    ]
+  },
+  "synapse": {
+    "name": "Synapses &amp; Neurotransmitters",
+    "desc": "The gaps between neurons where communication happens — one neuron releases chemical messengers (neurotransmitters like dopamine, serotonin, acetylcholine) across the gap, and the next neuron detects them and fires or stays quiet.",
+    "quickfact": "Your brain has about 100 trillion synapses — 1,000 synapses for every single neuron! And each synapse can be strengthened or weakened based on use — this synaptic plasticity is literally how learning and memory work at the cellular level.",
+    "diseases": [
+      {
+        "name": "Parkinson's Disease",
+        "sev": "high",
+        "l1": {
+          "t": "Dopamine-Producing Neurons Die in the Substantia Nigra",
+          "b": "Parkinson's disease is caused by the death of neurons in a brain region called the substantia nigra — the main source of dopamine for the motor control circuits. By the time symptoms appear, about 80% of these neurons are already gone."
+        },
+        "l2": {
+          "t": "Without Dopamine, Movement Signals Get Stuck in the 'On' Position",
+          "b": "Dopamine normally allows smooth movement initiation and stopping. Without it, the basal ganglia circuits become stuck — muscles can't relax properly, movements are slow and trembling, and starting and stopping movement requires enormous effort."
+        },
+        "l3": {
+          "t": "Resting Tremor, Rigid Muscles, Shuffling Walk, Expressionless Face",
+          "b": "A characteristic tremor that appears at rest (not during movement), muscle rigidity, very slow movements (bradykinesia), a shuffling gait with small steps, and reduced facial expressions. Treated with levodopa to replace dopamine. No cure — progressive disease."
+        }
+      },
+      {
+        "name": "Depression (Neurotransmitter Imbalance)",
+        "sev": "med",
+        "l1": {
+          "t": "Serotonin and Dopamine Signaling in the Brain Is Disrupted",
+          "b": "While not fully understood, depression involves imbalances in neurotransmitter systems — particularly serotonin, dopamine, and norepinephrine — combined with changes in brain structure, stress hormones, and inflammatory signals."
+        },
+        "l2": {
+          "t": "Disrupted Brain Chemistry Affects Every System in the Body",
+          "b": "Depression affects sleep, appetite, immune function, and pain perception — not just mood. Stress hormones (cortisol) remain chronically elevated, suppressing the immune system and damaging the hippocampus. The cardiovascular risk doubles."
+        },
+        "l3": {
+          "t": "Persistent Sadness, Loss of Interest, Physical Symptoms",
+          "b": "Persistent low mood, loss of interest in activities once enjoyed, sleep disturbances, appetite changes, fatigue, difficulty concentrating, and physical symptoms like headaches and back pain. Depression is a medical illness — treated with therapy, medication, and lifestyle changes."
+        }
+      }
+    ]
+  }
+};
+function setPanel(organ, dIdx) {
+  const d = DATA[organ]; if (!d) return;
+  const dis = d.diseases[dIdx];
+  document.getElementById('panel-name').innerHTML = d.name;
+  document.getElementById('panel-desc').textContent = d.desc;
+  const row = document.getElementById('dtab-row'); row.innerHTML = '';
+  d.diseases.forEach((dd, i) => {
+    const b = document.createElement('button');
+    b.className = 'dtab' + (i === dIdx ? ' active' : '');
+    b.textContent = dd.name;
+    b.onclick = () => setPanel(organ, i);
+    row.appendChild(b);
+  });
+  const sev = document.getElementById('sev-badge');
+  if(dis.sev==='high'){sev.className='sev-badge sev-high';sev.textContent='🔴 Serious Condition';}
+  else if(dis.sev==='med'){sev.className='sev-badge sev-med';sev.textContent='🟡 Moderate Condition';}
+  else{sev.className='sev-badge sev-low';sev.textContent='🟢 Manageable Condition';}
+  ['r1','r2','r3'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  const dyk=document.getElementById('dyk-card'); dyk.classList.remove('show');
+  document.getElementById('r1-title').textContent=dis.l1.t; document.getElementById('r1-text').textContent=dis.l1.b;
+  document.getElementById('r2-title').textContent=dis.l2.t; document.getElementById('r2-text').textContent=dis.l2.b;
+  document.getElementById('r3-title').textContent=dis.l3.t; document.getElementById('r3-text').textContent=dis.l3.b;
+  document.getElementById('dyk-text').textContent=d.quickfact;
+  requestAnimationFrame(()=>{
+    setTimeout(()=>document.getElementById('r1').classList.add('show'),40);
+    setTimeout(()=>document.getElementById('r2').classList.add('show'),150);
+    setTimeout(()=>document.getElementById('r3').classList.add('show'),260);
+    setTimeout(()=>dyk.classList.add('show'),360);
+  });
+}
+
+</script>
+<script>
+  if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
+  if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
+
+
+
+(function(){
+  var NODES = {
+  brain:{x:0.5,y:0.13,r:30,ico:'🧠',lbl:'Brain'},
+  cerebellum:{x:0.21,y:0.3,r:26,ico:'🎮',lbl:'Cerebellum'},
+  cranial:{x:0.79,y:0.3,r:26,ico:'👁️',lbl:'Cranial Nerves'},
+  spinal:{x:0.5,y:0.44,r:28,ico:'🔗',lbl:'Spinal Cord'},
+  pns:{x:0.21,y:0.67,r:26,ico:'⚡',lbl:'Peripheral NS'},
+  autonomic:{x:0.79,y:0.67,r:26,ico:'⚙️',lbl:'Autonomic NS'},
+  synapse:{x:0.5,y:0.85,r:24,ico:'🔌',lbl:'Synapses'}
+};
+  var CONNS = [["brain","cerebellum"],["brain","cranial"],["brain","spinal"],["spinal","pns"],["spinal","autonomic"],["spinal","synapse"],["pns","synapse"]];
+  var COL   = '#9b59b6';
+
+  var sel=null, hov=null, hovC=null;
+  var mc=document.getElementById('map-canvas');
+  var cx=mc.getContext('2d');
+  var DPR=window.devicePixelRatio||1;
+
+  function resize(){
+    var w=mc.parentElement.clientWidth;
+    var h=Math.max(380,Math.round(w*0.85));
+    mc.style.width=w+'px'; mc.style.height=h+'px';
+    mc.width=Math.round(w*DPR); mc.height=Math.round(h*DPR);
+    cx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize',resize);
+
+  // CSS-pixel position of node
+  function pos(id){
+    var n=NODES[id], W=mc.width/DPR, H=mc.height/DPR;
+    return {x:n.x*W, y:n.y*H, r:n.r};
+  }
+  function ctrl(a,b){ return {cx:(a.x+b.x)/2+(b.y-a.y)*0.28, cy:(a.y+b.y)/2-(b.x-a.x)*0.28}; }
+  function bez(f,cc,t2,t){ return {x:(1-t)*(1-t)*f.x+2*(1-t)*t*cc.cx+t*t*t2.x, y:(1-t)*(1-t)*f.y+2*(1-t)*t*cc.cy+t*t*t2.y}; }
+
+  function pill(text,x,y){
+    cx.save(); cx.font='700 10px Nunito,sans-serif';
+    var tw=cx.measureText(text).width, pw=tw+16, ph=20, rr=6, px=x-pw/2, py=y-ph/2;
+    cx.fillStyle='rgba(8,15,28,0.93)'; cx.globalAlpha=1;
+    cx.beginPath(); cx.moveTo(px+rr,py); cx.lineTo(px+pw-rr,py); cx.quadraticCurveTo(px+pw,py,px+pw,py+rr);
+    cx.lineTo(px+pw,py+ph-rr); cx.quadraticCurveTo(px+pw,py+ph,px+pw-rr,py+ph);
+    cx.lineTo(px+rr,py+ph); cx.quadraticCurveTo(px,py+ph,px,py+ph-rr);
+    cx.lineTo(px,py+rr); cx.quadraticCurveTo(px,py,px+rr,py); cx.closePath(); cx.fill();
+    cx.strokeStyle=COL; cx.lineWidth=1; cx.globalAlpha=0.6; cx.stroke();
+    cx.fillStyle=COL; cx.globalAlpha=1; cx.textAlign='center'; cx.textBaseline='middle';
+    cx.fillText(text,x,y); cx.restore();
+  }
+
+  function draw(){
+    var W=mc.width/DPR, H=mc.height/DPR;
+    cx.clearRect(0,0,W,H);
+
+    // ── connections ──────────────────────────────────────────────────────
+    CONNS.forEach(function(c){
+      var f=pos(c[0]), t=pos(c[1]), cc=ctrl(f,t), iH=(hovC===c);
+      cx.save(); cx.beginPath(); cx.moveTo(f.x,f.y); cx.quadraticCurveTo(cc.cx,cc.cy,t.x,t.y);
+      cx.strokeStyle=COL; cx.globalAlpha=iH?0.25:0.09; cx.lineWidth=iH?16:9; cx.stroke(); cx.restore();
+      cx.save(); cx.beginPath(); cx.moveTo(f.x,f.y); cx.quadraticCurveTo(cc.cx,cc.cy,t.x,t.y);
+      cx.strokeStyle=COL; cx.globalAlpha=iH?0.95:0.45; cx.lineWidth=iH?2.5:1.8;
+      cx.setLineDash([6,4]); cx.stroke(); cx.setLineDash([]); cx.restore();
+      if(iH){ var m=bez(f,cc,t,0.5); pill(NODES[c[0]].lbl+' → '+NODES[c[1]].lbl,m.x,m.y); }
+    });
+
+    // ── nodes ─────────────────────────────────────────────────────────────
+    Object.keys(NODES).forEach(function(id){
+      var p=pos(id), n=NODES[id];
+      var iS=(sel===id), iH=(hov===id);
+
+      // wide outer glow — MUCH brighter on hover/select
+      var glowR = iS ? p.r*3.4 : (iH ? p.r*3.0 : p.r*2.2);
+      var glowA = iS ? 0.55    : (iH ? 0.45    : 0.20);
+      var g=cx.createRadialGradient(p.x,p.y,p.r*0.2,p.x,p.y,glowR);
+      g.addColorStop(0,COL); g.addColorStop(1,'rgba(0,0,0,0)');
+      cx.save(); cx.fillStyle=g; cx.globalAlpha=glowA;
+      cx.beginPath(); cx.arc(p.x,p.y,glowR,0,Math.PI*2); cx.fill(); cx.restore();
+
+      // base circle — visible accent fill, not black
+      var fillA = iS ? 0.40 : (iH ? 0.32 : 0.18);
+      cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.fillStyle=COL; cx.globalAlpha=fillA; cx.fill(); cx.restore();
+
+      // slight dark overlay to give depth (NOT opaque)
+      cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r-1,0,Math.PI*2);
+      cx.fillStyle='rgba(8,14,24,0.45)'; cx.globalAlpha=1; cx.fill(); cx.restore();
+
+      // bright stroke ring
+      var strokeW = iS ? 3.5 : (iH ? 3.0 : 2.2);
+      var strokeA = iS ? 1.0 : (iH ? 1.0 : 0.80);
+      cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.strokeStyle=COL; cx.lineWidth=strokeW; cx.globalAlpha=strokeA; cx.stroke(); cx.restore();
+
+      // hover inner bright ring
+      if(iH && !iS){
+        cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r-3,0,Math.PI*2);
+        cx.strokeStyle=COL; cx.lineWidth=1.5; cx.globalAlpha=0.50; cx.stroke(); cx.restore();
+      }
+
+      // pulse ring when selected
+      if(iS){
+        var pt=(Date.now()%1800)/1800;
+        cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r+pt*p.r*1.3,0,Math.PI*2);
+        cx.strokeStyle=COL; cx.lineWidth=2.2; cx.globalAlpha=(1-pt)*0.60; cx.stroke(); cx.restore();
+      }
+
+      // emoji — sized to fill circle
+      cx.save(); cx.font=(p.r*1.08)+'px serif';
+      cx.textAlign='center'; cx.textBaseline='middle'; cx.globalAlpha=1;
+      cx.fillText(n.ico,p.x,p.y+1); cx.restore();
+
+      // label beneath
+      var lsz=Math.max(11,Math.round(p.r*0.52));
+      cx.save(); cx.font='800 '+lsz+'px Nunito,sans-serif';
+      cx.fillStyle=iS?COL:(iH?'#ffffff':'rgba(232,244,251,0.85)');
+      cx.globalAlpha=1; cx.textAlign='center'; cx.textBaseline='top';
+      cx.fillText(n.lbl,p.x,p.y+p.r+6); cx.restore();
+    });
+  }
+
+  function loop(){ draw(); requestAnimationFrame(loop); }
+
+  // ── click — use offsetX/Y (already in CSS px, matches pos()) ────────────
+  mc.addEventListener('click',function(e){
+    var mx=e.offsetX, my=e.offsetY, hit=null;
+    Object.keys(NODES).forEach(function(id){
+      var p=pos(id);
+      if(Math.sqrt((mx-p.x)*(mx-p.x)+(my-p.y)*(my-p.y)) < p.r+10) hit=id;
+    });
+    if(hit){
+      sel=hit;
+      var idle=document.getElementById('idle-state');
+      var card=document.getElementById('info-card');
+      if(idle) idle.classList.add('gone');
+      if(card) card.classList.add('on');
+      if(typeof setPanel==='function') setPanel(hit,0);
+    }
+  });
+
+  mc.addEventListener('mousemove',function(e){
+    var mx=e.offsetX, my=e.offsetY, onN=null, onC=null;
+    Object.keys(NODES).forEach(function(id){
+      var p=pos(id);
+      if(Math.sqrt((mx-p.x)*(mx-p.x)+(my-p.y)*(my-p.y))<p.r+10) onN=id;
+    });
+    if(!onN){
+      CONNS.forEach(function(c){
+        var f=pos(c[0]),t=pos(c[1]),cc=ctrl(f,t);
+        for(var i=0;i<=20;i++){
+          var bp=bez(f,cc,t,i/20);
+          if(Math.sqrt((mx-bp.x)*(mx-bp.x)+(my-bp.y)*(my-bp.y))<10){onC=c;break;}
+        }
+      });
+    }
+    hov=onN; hovC=onC;
+    mc.style.cursor=(onN||onC)?'pointer':'default';
+  });
+
+  mc.addEventListener('mouseleave',function(){ hov=null; hovC=null; });
+
+  window.addEventListener('load',function(){
+    setTimeout(function(){ resize(); loop(); },30);
+  });
+})();
+
+</script>
+</body>
+</html>

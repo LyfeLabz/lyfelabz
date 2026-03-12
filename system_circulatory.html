@@ -384,6 +384,13 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::after,
   .stem-badge[data-tip]::before { display: none; }
 }
+
+  .line-legend{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;padding:0.55rem 0;margin-bottom:0.6rem;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .ll-item{display:inline-flex;align-items:center;gap:0.42rem;font-size:0.68rem;font-weight:700;color:rgba(180,200,220,0.7);letter-spacing:0.04em;}
+  .ll-dash{display:inline-block;width:22px;height:2px;background:rgba(180,200,220,0.45);border-top:2px dashed rgba(180,200,220,0.55);}
+  .ll-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:rgba(180,200,220,0.55);box-shadow:0 0 4px rgba(180,200,220,0.4);}
+  .ll-arrow{font-size:0.78rem;color:rgba(180,200,220,0.55);}
+
 </style>
 </head>
 <body>
@@ -443,6 +450,11 @@ body.stem-active .stem-detail {
     <!-- MAP CANVAS -->
     <div class="map-panel">
       <div class="map-label">Circulatory System Map — Click any node to explore</div>
+      <div class="line-legend">
+        <span class="ll-item"><span class="ll-dash"></span><span class="ll-text">Connection pathway</span></span>
+        <span class="ll-item"><span class="ll-dot"></span><span class="ll-text">Direction of flow</span></span>
+        <span class="ll-item"><span class="ll-arrow">→</span><span class="ll-text">Hover a line to see its label</span></span>
+      </div>
       <canvas id="map-canvas"></canvas>
     </div>
 
@@ -565,18 +577,18 @@ const organData = {
 // ─────────────────────────────────────────────
 const NODE_DEFS = {
   // Circulatory core
-  heart:          { x:0.36, y:0.22, r:26, system:'circ' },  // top centre
-  arteries:       { x:0.16, y:0.40, r:20, system:'circ' },  // far left
-  veins:          { x:0.74, y:0.50, r:20, system:'circ' },  // far right
-  blood:          { x:0.34, y:0.54, r:18, system:'circ' },  // mid centre, moved up
-  capillaries:    { x:0.34, y:0.84, r:17, system:'circ' },  // bottom centre
+  heart:          { x:0.36, y:0.22, r:35, system:'circ' },  // top centre
+  arteries:       { x:0.16, y:0.40, r:27, system:'circ' },  // far left
+  veins:          { x:0.74, y:0.50, r:27, system:'circ' },  // far right
+  blood:          { x:0.34, y:0.54, r:24, system:'circ' },  // mid centre, moved up
+  capillaries:    { x:0.34, y:0.84, r:23, system:'circ' },  // bottom centre
   // Overlay nodes — all pushed to edges, staggered so nothing sits on centre spine
-  lungs:          { x:0.64, y:0.06, r:21, system:'resp' },  // very top
-  smallintestine: { x:0.06, y:0.55, r:19, system:'dige' },  // far left mid
-  kidneys:        { x:0.93, y:0.45, r:19, system:'excr' },  // far right mid
-  largeintestine: { x:0.86, y:0.68, r:18, system:'excr' },  // far right lower
-  bonemarrow:     { x:0.18, y:0.68, r:19, system:'skel' },  // left of centre lower (away from capillaries)
-  lymphnodes:     { x:0.90, y:0.18, r:18, system:'immu' },  // top right
+  lungs:          { x:0.64, y:0.06, r:28, system:'resp' },  // very top
+  smallintestine: { x:0.06, y:0.55, r:26, system:'dige' },  // far left mid
+  kidneys:        { x:0.93, y:0.45, r:26, system:'excr' },  // far right mid
+  largeintestine: { x:0.86, y:0.68, r:24, system:'excr' },  // far right lower
+  bonemarrow:     { x:0.18, y:0.68, r:26, system:'skel' },  // left of centre lower (away from capillaries)
+  lymphnodes:     { x:0.90, y:0.18, r:24, system:'immu' },  // top right
 };
 
 const CONNECTIONS = [
@@ -856,7 +868,7 @@ function draw() {
 
     // Label below node
     ctx.save();
-    ctx.font = `800 ${Math.max(10, r * 0.52)}px Nunito, sans-serif`;
+    ctx.font = `800 ${Math.max(12, r * 0.52)}px Nunito, sans-serif`;
     ctx.fillStyle = isSelected ? col : '#e8f4fb';
     ctx.globalAlpha = isSelected ? 1 : 0.85;
     ctx.textAlign = 'center';

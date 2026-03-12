@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | Circulatory System — Diseases &amp; Disorders</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #c0392b;
+    --accent-dim:  rgba(192,57,43,0.15);
+    --accent-glow: rgba(192,57,43,0.35);
+    --accent-border:rgba(192,57,43,0.45);
+    --teal:        #3bc8e8;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --purple:      #9b59b6;
+    --green:       #2ecc71;
+    --orange:      #e67e22;
+    --dark:        #0c1520;
+    --card:        #172030;
+    --card2:       #1e2d42;
+    --text:        #e8f4fb;
+    --muted:       #6a92ad;
+    --border:      rgba(255,255,255,0.07);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--dark); color:var(--text); line-height:1.6; overflow-x:hidden; }
+
+  /* ── NAV ───────────────────────────────────────────── */
+  nav { position:sticky; top:0; z-index:200; background:rgba(10,18,28,0.97); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0.8rem 2.5rem; }
+  .nav-logo { font-family:'Orbitron',sans-serif; font-size:1.2rem; font-weight:900; color:var(--gold); text-decoration:none; letter-spacing:0.06em; text-shadow:0 0 18px var(--gold-glow); }
+  .nav-center { display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:var(--muted); font-weight:700; }
+  .nav-center .sep { opacity:0.3; }
+  .nav-center .cur { color:var(--accent); }
+  .nav-back { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-dim); border:1px solid var(--accent-border); padding:0.32rem 0.9rem; border-radius:99px; text-decoration:none; transition:all 0.2s; }
+  .nav-back:hover { background:rgba(192,57,43,0.25); }
+
+  /* ── PAGE HEADER ────────────────────────────────────── */
+  .page-header { background:linear-gradient(135deg,#0a1520 0%,#1a0e0e 50%,#0c1520 100%); padding:2.2rem 2.5rem 2rem; position:relative; overflow:hidden; border-bottom:1px solid rgba(192,57,43,0.14); }
+  .page-header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 18% 60%, rgba(192,57,43,0.12) 0%,transparent 55%),radial-gradient(ellipse at 80% 25%, rgba(59,200,232,0.05) 0%,transparent 55%); pointer-events:none; }
+  .header-inner { max-width:1340px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:2rem; flex-wrap:wrap; position:relative; }
+  .header-badge { display:inline-flex; align-items:center; gap:0.5rem; background:var(--accent-dim); border:1px solid var(--accent-border); color:var(--accent); padding:0.32rem 1rem; border-radius:99px; font-size:0.73rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.85rem; }
+  .pulse-dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:pdot 1.8s ease-in-out infinite; flex-shrink:0; }
+  @keyframes pdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.65)} }
+  .page-header h1 { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,3.8vw,2.9rem); line-height:1.1; margin-bottom:0.35rem; background:linear-gradient(135deg,#fff 20%,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .page-header p { color:var(--muted); font-size:0.95rem; max-width:500px; line-height:1.65; }
+  .header-hint { display:flex; align-items:center; gap:0.55rem; font-size:0.82rem; color:var(--text); font-weight:800; background:var(--accent-dim); border:1px solid var(--accent-border); padding:0.65rem 1.1rem; border-radius:11px; white-space:nowrap; flex-shrink:0; animation:hintpulse 2.5s ease-in-out infinite; }
+  @keyframes hintpulse { 0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0)} 50%{box-shadow:0 0 0 6px rgba(192,57,43,0)} }
+
+  /* ── EXPLORER WRAP ──────────────────────────────────── */
+  .explorer-wrap { max-width:1340px; margin:0 auto; padding:1.8rem 2rem 3rem; }
+
+  /* ── STAT PILLS ─────────────────────────────────────── */
+  .stat-pills { display:flex; gap:0.7rem; flex-wrap:wrap; margin-bottom:1.6rem; }
+  .stat-pill { display:inline-flex; align-items:center; gap:0.45rem; background:var(--card); border:1px solid var(--border); border-radius:99px; padding:0.32rem 0.95rem; font-size:0.76rem; font-weight:800; color:var(--muted); letter-spacing:0.04em; }
+  .stat-pill .sv { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--accent); margin-right:0.15rem; }
+
+  /* ── MAIN PANELS GRID ───────────────────────────────── */
+  .panels { display:grid; grid-template-columns:1fr 430px; gap:1.4rem; align-items:start; }
+
+  /* ── MAP PANEL ──────────────────────────────────────── */
+  
+  
+  
+  
+  
+  
+
+  /* ── SVG NODES ──────────────────────────────────────── */
+  
+  
+  
+  
+   }
+   }
+  
+  
+  
+  
+  
+  
+  
+
+  /* heart pulse ring */
+  .heart-ring { fill:none; stroke:var(--accent); stroke-width:2.5; opacity:0; transform-origin:240px 208px; animation:heartbeat 2s ease-out infinite; }
+  @keyframes heartbeat {
+    0%  { opacity:0.7; transform:scale(1); }
+    70% { opacity:0;   transform:scale(1.45); }
+    100%{ opacity:0;   transform:scale(1.45); }
+  }
+
+  
+  
+  
+
+  /* ── INFO PANEL ─────────────────────────────────────── */
+  .info-panel { position:sticky; top:80px; display:flex; flex-direction:column; gap:1rem; }
+
+  /* idle state */
+  .i-idle { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2.5rem 2rem; text-align:center; transition:opacity 0.3s, transform 0.3s; }
+  .i-idle.gone { display:none; }
+  .i-idle-icon { font-size:3rem; display:block; margin-bottom:0.8rem; }
+  .i-idle-title { font-family:'Fredoka One',cursive; font-size:1.3rem; margin-bottom:0.4rem; }
+  .i-idle-desc { color:var(--muted); font-size:0.9rem; line-height:1.65; margin-bottom:1rem; }
+  .i-idle-arrows { display:flex; justify-content:center; gap:0.5rem; flex-wrap:wrap; }
+  .i-idle-chip { background:var(--accent-dim); border:1px solid var(--accent-border); color:var(--accent); border-radius:99px; padding:0.25rem 0.75rem; font-size:0.73rem; font-weight:800; }
+
+  /* info card */
+  .i-card { background:var(--card); border:1px solid var(--border); border-radius:20px; overflow:hidden; display:none; }
+  .i-card.on { display:block; animation:fup 0.28s ease both; }
+  @keyframes fup { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  .i-card-hd { padding:1.2rem 1.4rem 1rem; border-bottom:1px solid var(--border); background:rgba(192,57,43,0.06); }
+  .i-card-sys { font-size:0.66rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin-bottom:0.3rem; display:flex; align-items:center; gap:0.4rem; }
+  .i-card-name { font-family:'Fredoka One',cursive; font-size:1.5rem; line-height:1.1; color:var(--text); margin-bottom:0.3rem; }
+  .i-card-desc { font-size:0.84rem; color:var(--muted); line-height:1.6; }
+
+  /* disease tabs */
+  .dtab-row { display:flex; border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+  .dtab-row::-webkit-scrollbar { display:none; }
+  .dtab { flex-shrink:0; padding:0.65rem 1rem; font-size:0.76rem; font-weight:800; color:var(--muted); background:none; border:none; border-bottom:2.5px solid transparent; cursor:pointer; font-family:'Nunito',sans-serif; transition:color .15s, border-color .15s; white-space:nowrap; letter-spacing:0.03em; }
+  .dtab:hover { color:var(--text); }
+  .dtab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+  /* ripple blocks */
+  .ripple-wrap { padding:1rem 1.4rem 0.8rem; display:flex; flex-direction:column; gap:0.7rem; }
+  .sev-badge { display:inline-flex; align-items:center; gap:0.35rem; padding:0.28rem 0.9rem; border-radius:99px; font-size:0.71rem; font-weight:800; letter-spacing:0.06em; margin-bottom:0.25rem; width:fit-content; }
+  .sev-high { background:rgba(192,57,43,0.2);  color:#ff8a7a; border:1px solid rgba(192,57,43,0.4); }
+  .sev-med  { background:rgba(230,126,34,0.18); color:#f0a050; border:1px solid rgba(230,126,34,0.4); }
+  .sev-low  { background:rgba(46,204,113,0.15); color:#5ddb8a; border:1px solid rgba(46,204,113,0.35); }
+
+  .ripple-block { border-radius:12px; padding:0.85rem 1rem; border-left:3px solid transparent; opacity:0; transform:translateY(8px); transition:opacity .38s ease, transform .38s ease; }
+  .ripple-block.show { opacity:1; transform:translateY(0); }
+  .ripple-block.r1 { background:rgba(192,57,43,0.1);  border-left-color:var(--accent); }
+  .ripple-block.r2 { background:rgba(155,89,182,0.1); border-left-color:var(--purple); }
+  .ripple-block.r3 { background:rgba(59,200,232,0.08); border-left-color:var(--teal); }
+  .rb-label { font-size:0.67rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.22rem; display:flex; align-items:center; gap:0.35rem; }
+  .r1 .rb-label { color:var(--accent); }
+  .r2 .rb-label { color:var(--purple); }
+  .r3 .rb-label { color:var(--teal); }
+  .rb-title { font-size:0.9rem; font-weight:800; color:var(--text); margin-bottom:0.22rem; }
+  .rb-text  { font-size:0.81rem; color:var(--muted); line-height:1.65; }
+
+  /* did you know */
+  .dyk-card { margin:0 1.4rem 1.2rem; background:rgba(245,200,66,0.07); border:1px solid rgba(245,200,66,0.2); border-radius:12px; padding:0.75rem 1rem; display:flex; gap:0.6rem; align-items:flex-start; opacity:0; transform:translateY(6px); transition:opacity .4s .3s ease, transform .4s .3s ease; }
+  .dyk-card.show { opacity:1; transform:translateY(0); }
+  .dyk-icon { font-size:1.1rem; flex-shrink:0; margin-top:0.05rem; }
+  .dyk-label { font-size:0.64rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:0.15rem; }
+  .dyk-text  { font-size:0.79rem; color:rgba(232,244,251,0.7); line-height:1.6; }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2.2rem 2rem; text-align:center; margin-top:0.5rem; }
+  footer .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--accent); margin-bottom:0.35rem; }
+  footer p { color:var(--muted); font-size:0.83rem; }
+  footer a { color:var(--teal); text-decoration:none; }
+  footer a:hover { text-decoration:underline; }
+
+  @media(max-width:960px){ .panels{grid-template-columns:1fr} .info-panel{position:static} }
+  @media(max-width:600px){ nav{padding:0.8rem 1.2rem} .nav-center{display:none} .page-header{padding:1.6rem 1.2rem 1.3rem} .explorer-wrap{padding:1.2rem 1rem 2rem} .header-hint{display:none} }
+</style>
+
+<style>
+/* ── Learning Science Badges ─────────────────────────────────────────
+   Hidden by default; shown when body.ls-active is set via sessionStorage.
+   Educators toggle this from the index page — resets when tab is closed.
+──────────────────────────────────────────────────────────────────── */
+.ls-focus { display:none; }
+body.ls-active .ls-focus {
+  display:flex; align-items:center; justify-content:center;
+  flex-wrap:wrap; gap:0.45rem 0.55rem;
+  width:fit-content; max-width:760px;
+  margin:1.6rem auto; padding:1.1rem 1.8rem 1.2rem; box-sizing:border-box;
+  background:rgba(59,200,232,0.05); border:1px solid rgba(59,200,232,0.2);
+  border-radius:16px; animation:lsFadeIn 0.35s ease both;
+}
+@keyframes lsFadeIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:translateY(0)} }
+.ls-focus-label {
+  font-size:0.72rem; font-weight:900; letter-spacing:0.13em; text-transform:uppercase;
+  color:rgba(59,200,232,0.75); white-space:nowrap; width:100%; text-align:center; margin-bottom:0.5rem;
+}
+.ls-badge {
+  position:relative; display:inline-flex; align-items:center; gap:0.35rem;
+  font-family:'Nunito',sans-serif; font-size:0.86rem; font-weight:700; line-height:1;
+  color:rgba(255,255,255,0.82); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16);
+  border-radius:99px; padding:0.35rem 0.9rem; cursor:default; white-space:nowrap;
+  transition:background 0.18s,border-color 0.18s,color 0.18s; overflow:visible;
+}
+.ls-badge:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.22); color:rgba(255,255,255,0.92); }
+.ls-badge[data-tip]::after {
+  content:attr(data-tip); position:absolute; bottom:calc(100% + 9px); left:50%; transform:translateX(-50%);
+  width:200px; padding:0.5rem 0.75rem; background:#0c1a28; color:#b8ccd8; font-size:0.68rem;
+  font-weight:500; line-height:1.5; white-space:normal; text-align:center;
+  border-radius:9px; border:1px solid rgba(255,255,255,0.11); box-shadow:0 8px 28px rgba(0,0,0,0.55);
+  pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999;
+}
+.ls-badge[data-tip]:hover::after { opacity:1; }
+.ls-badge[data-tip]::before {
+  content:''; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%);
+  border:5px solid transparent; border-top-color:rgba(255,255,255,0.11);
+  pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999;
+}
+.ls-badge[data-tip]:hover::before { opacity:1; }
+@media(max-width:480px){
+  .ls-badge[data-tip]::after,.ls-badge[data-tip]::before { display:none; }
+  body.ls-active .ls-focus { max-width:calc(100% - 2.4rem); padding:0.75rem 1rem; gap:0.4rem 0.5rem; }
+}
+</style>
+
+<style>
+/* ── MA STE Standards ────────────────────────────────────────────── */
+.stem-focus { display:none; }
+body.stem-active .stem-focus {
+  display:flex; align-items:center; justify-content:center;
+  flex-wrap:wrap; gap:0.45rem 0.55rem;
+  width:fit-content; max-width:760px;
+  margin:0.5rem auto 1.6rem; padding:1.1rem 1.8rem 1.2rem; box-sizing:border-box;
+  background:rgba(46,204,113,0.05); border:1px solid rgba(46,204,113,0.2);
+  border-radius:16px; animation:stemFadeIn 0.35s ease both;
+}
+@keyframes stemFadeIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:translateY(0)} }
+.stem-focus-label {
+  font-size:0.72rem; font-weight:900; letter-spacing:0.13em; text-transform:uppercase;
+  color:rgba(46,204,113,0.75); width:100%; text-align:center; margin-bottom:0.5rem;
+}
+.stem-badge {
+  position:relative; display:inline-flex; align-items:center; cursor:default;
+  font-family:'Nunito',sans-serif; font-size:0.86rem; font-weight:700; line-height:1;
+  color:rgba(255,255,255,0.82); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16);
+  border-radius:99px; padding:0.35rem 0.9rem; white-space:nowrap;
+}
+.stem-badge[data-tip]::after {
+  content:attr(data-tip); position:absolute; bottom:calc(100% + 9px); left:50%; transform:translateX(-50%);
+  width:220px; padding:0.5rem 0.75rem; background:#0c1a28; color:#b8ccd8; font-size:0.68rem;
+  font-weight:500; line-height:1.5; white-space:normal; text-align:center;
+  border-radius:9px; border:1px solid rgba(46,204,113,0.2); box-shadow:0 8px 28px rgba(0,0,0,0.55);
+  pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999;
+}
+.stem-badge[data-tip]:hover::after { opacity:1; }
+.stem-badge[data-tip]::before {
+  content:''; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%);
+  border:5px solid transparent; border-top-color:rgba(46,204,113,0.2);
+  pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999;
+}
+.stem-badge[data-tip]:hover::before { opacity:1; }
+@media(max-width:480px){
+  .stem-badge[data-tip]::after,.stem-badge[data-tip]::before { display:none; }
+}
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  .map-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:relative;}
+  .map-panel::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 25%,rgba(192,57,43,0.06) 0%,transparent 65%);pointer-events:none;z-index:0;}
+  .map-panel-hd{padding:0.85rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;position:relative;z-index:1;}
+  .map-panel-title{font-size:0.67rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);}
+  .map-body{padding:1rem 1.2rem 1.2rem;position:relative;z-index:1;}
+  #map-canvas{width:100%;display:block;cursor:default;border-radius:8px;}
+  .line-legend{display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;padding:0.45rem 0;margin-bottom:0.55rem;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .ll-item{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.68rem;font-weight:700;color:rgba(180,200,220,0.65);letter-spacing:0.04em;}
+  .ll-dash{display:inline-block;width:22px;height:0;border-top:2px dashed rgba(180,200,220,0.5);}
+  .ll-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:rgba(180,200,220,0.5);}
+  .ll-arr{font-size:0.8rem;color:rgba(180,200,220,0.5);}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">LYFELABZ</a>
+  <div class="nav-center">
+    <a href="body_systems.html" style="color:var(--muted);text-decoration:none;">Body Systems</a>
+    <span class="sep">›</span>
+    <a href="system_circulatory.html" style="color:var(--muted);text-decoration:none;">Circulatory</a>
+    <span class="sep">›</span>
+    <span class="cur">Diseases &amp; Disorders</span>
+  </div>
+  <a class="nav-back" href="body_systems.html#diseases">← Body Systems</a>
+</nav>
+
+<div class="page-header">
+  <div class="header-inner">
+    <div>
+      <div class="header-badge"><span class="pulse-dot"></span> Circulatory System · Diseases &amp; Disorders</div>
+      <h1>What Can Go Wrong? 🩺</h1>
+      <p>Pick any part of the circulatory system to see what diseases can affect it — and how a problem in one small spot can ripple all the way to how a person feels every day.</p>
+    </div>
+    <div class="header-hint">👆 Click a node on the map to explore</div>
+  </div>
+</div>
+
+<div class="explorer-wrap">
+
+  <!-- Educator Mode: Learning Science badges (visible when ls-active) -->
+  <div class="ls-focus">
+    <span class="ls-focus-label">🔬 Learning Science Focus</span>
+    <span class="ls-badge" data-tip="Students interact with the map and choose what to explore — they drive the learning. — Freeman et al., 2014">🎯 Active Learning</span>
+    <span class="ls-badge" data-tip="Each disease is shown at three levels — part, system, person — building causal reasoning step by step. — Dunlosky et al., 2013">💬 Elaboration</span>
+    <span class="ls-badge" data-tip="Visual map + text descriptions activate two memory channels simultaneously for richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
+    <span class="ls-badge" data-tip="Severity indicators and ripple framing make abstract concepts like disease progression concrete and memorable.">🧠 Concrete Examples</span>
+  </div>
+
+  <!-- Educator Mode: MA STE Standards (visible when stem-active) -->
+  <div class="stem-focus">
+    <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
+    <span class="stem-badge" data-tip="Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.">6.MS-LS1-3</span>
+    <span class="stem-badge" data-tip="Develop a model to describe how food is rearranged through chemical reactions — includes how nutrients and oxygen are delivered via blood.">6.MS-LS1-7</span>
+  </div>
+
+  <div class="stat-pills">
+    <div class="stat-pill"><span class="sv">8</span> System Parts</div>
+    <div class="stat-pill"><span class="sv">20+</span> Diseases &amp; Disorders</div>
+    <div class="stat-pill"><span class="sv">3</span> Impact Levels per Disease</div>
+    <div class="stat-pill"><span class="sv">🔴</span> Serious &nbsp;·&nbsp; <span class="sv">🟡</span> Moderate &nbsp;·&nbsp; <span class="sv">🟢</span> Manageable</div>
+  </div>
+
+  <div class="panels">
+
+    <!-- MAP -->
+    <div class="map-panel">
+      <div class="map-panel-hd">
+        <span class="map-panel-title">THE CIRCULATORY SYSTEM MAP — CLICK ANY NODE TO EXPLORE</span>
+      </div>
+      <div class="map-body">
+        <div class="line-legend">
+          <span class="ll-item"><span class="ll-dash"></span><span class="ll-text">Connection</span></span>
+          <span class="ll-item"><span class="ll-dot"></span><span class="ll-text">System node</span></span>
+          <span class="ll-item"><span class="ll-arr">→</span><span class="ll-text">Hover lines for labels</span></span>
+        </div>
+        <canvas id="map-canvas"></canvas>
+      </div>
+    </div>
+
+    
+
+    
+
+    <!-- INFO PANEL -->
+    <div class="info-panel">
+
+      <!-- IDLE STATE — shown until student clicks a node -->
+      <div class="i-idle" id="idle-state">
+        <span class="i-idle-icon">🫀</span>
+        <div class="i-idle-title">Select a Node</div>
+        <div class="i-idle-desc">Click any organ or structure on the map to learn about its diseases — and how a problem there ripples through the whole body.</div>
+      </div>
+
+      <!-- INFO CARD — revealed on click -->
+      <div class="i-card" id="info-card">
+        <div class="i-card-hd">
+          <div class="i-card-sys"><span class="pulse-dot"></span> Circulatory System</div>
+          <div class="i-card-name" id="panel-name"></div>
+          <div class="i-card-desc" id="panel-desc"></div>
+        </div>
+
+        <div class="dtab-row" id="dtab-row"></div>
+
+        <div class="ripple-wrap">
+          <span class="sev-badge" id="sev-badge"></span>
+
+          <div class="ripple-block r1" id="r1">
+            <div class="rb-label">🔬 What Goes Wrong</div>
+            <div class="rb-title" id="r1-title"></div>
+            <div class="rb-text"  id="r1-text"></div>
+          </div>
+          <div class="ripple-block r2" id="r2">
+            <div class="rb-label">📡 How It Spreads</div>
+            <div class="rb-title" id="r2-title"></div>
+            <div class="rb-text"  id="r2-text"></div>
+          </div>
+          <div class="ripple-block r3" id="r3">
+            <div class="rb-label">🧍 How You Feel It</div>
+            <div class="rb-title" id="r3-title"></div>
+            <div class="rb-text"  id="r3-text"></div>
+          </div>
+        </div>
+
+        <!-- DID YOU KNOW -->
+        <div class="dyk-card" id="dyk-card">
+          <span class="dyk-icon">💡</span>
+          <div>
+            <div class="dyk-label">Did You Know?</div>
+            <div class="dyk-text" id="dyk-text"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /info-panel -->
+  </div><!-- /panels -->
+</div><!-- /explorer-wrap -->
+
+<footer>
+  <div class="logo">🩺 LyfeLabz · Circulatory System — Diseases &amp; Disorders</div>
+  <p style="margin-bottom:0.6rem;">
+    <a href="body_systems.html#diseases">← Diseases &amp; Disorders</a>
+    &nbsp;·&nbsp;
+    <a href="body_systems.html">Body Systems</a>
+    &nbsp;·&nbsp;
+    <a href="index.html">Learning Hub</a>
+  </p>
+  <p>© 2025 LyfeLabz · Educational Use</p>
+</footer>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────────
+   DATA — all descriptions written at 6th-grade reading level
+   Each organ has: name, desc, quickfact, diseases[]
+   Each disease has: name, sev (high/med/low), l1/l2/l3 {t, b}
+   l1 = What Goes Wrong (the part itself)
+   l2 = How It Spreads (the whole system)
+   l3 = How You Feel It (the person)
+───────────────────────────────────────────────────────────────────────── */
+const DATA = {
+
+  heart:{
+    name:"Heart",
+    desc:"The body's pump — it beats about 100,000 times a day to push blood to every cell in your body.",
+    quickfact:"Your heart is about the size of your fist and beats around 100,000 times every single day — that's over 35 million times a year!",
+    diseases:[
+      {name:"Heart Failure",sev:"high",
+        l1:{t:"The Heart Pump Gets Weak",b:"The heart muscle becomes too weak to squeeze hard enough. Think of it like a pump with a dying battery — it's still working, but barely moving blood with each beat."},
+        l2:{t:"Blood Backs Up in the Body",b:"Because the heart can't pump fast enough, blood starts backing up into the lungs and body like a traffic jam. The lungs can fill with fluid and other organs don't get enough oxygen."},
+        l3:{t:"Always Tired & Out of Breath",b:"You feel exhausted all the time, even doing small things. Climbing stairs feels impossible, and your legs and ankles can swell up with extra fluid."}},
+      {name:"Heart Attack",sev:"high",
+        l1:{t:"Part of the Heart Loses Its Blood Supply",b:"A blood clot completely blocks one of the small arteries that feeds the heart muscle. Without blood, that section of the heart starts to die — like a plant wilting without water."},
+        l2:{t:"The Damaged Area Stops Helping",b:"The dead section can't contract anymore, so the rest of the heart has to work extra hard. That extra strain can cause dangerous irregular rhythms and even more damage."},
+        l3:{t:"Crushing Chest Pain & Emergency",b:"Classic signs include severe chest pain (often described as someone sitting on your chest), pain in the arm or jaw, sweating, and feeling faint. This is always a 911 emergency."}},
+      {name:"Arrhythmia",sev:"med",
+        l1:{t:"The Heart's Electrical System Gets Scrambled",b:"Your heart beats because of electrical signals. When those signals get out of order, the heart may beat too fast, too slow, or in a completely random pattern — it loses its rhythm."},
+        l2:{t:"Blood Pumping Becomes Less Efficient",b:"When the heart doesn't beat in the right rhythm, it doesn't fill and empty properly. In some types, blood can pool inside the heart and form dangerous clots."},
+        l3:{t:"Fluttering, Dizziness & Fainting",b:"You might feel your heart fluttering, skipping beats, or pounding. You could feel dizzy or even pass out. Some arrhythmias can increase the risk of stroke."}},
+    ]},
+
+  lungs:{
+    name:"Pulmonary Circulation",
+    desc:"The short blood pathway from the heart to the lungs and back — this is where blood picks up oxygen and drops off carbon dioxide.",
+    quickfact:"Blood makes the entire trip from your heart to your lungs and back in less than one second — it's one of the fastest parts of the whole blood circuit!",
+    diseases:[
+      {name:"Pulmonary Hypertension",sev:"high",
+        l1:{t:"Blood Vessels in the Lungs Get Too Narrow",b:"The small blood vessels inside the lungs slowly get stiff and narrow, making it really hard for blood to flow through. It's like trying to squeeze water through a crimped garden hose."},
+        l2:{t:"The Right Side of the Heart Gets Overworked",b:"The right side of the heart has to push much harder to force blood through the narrow lung vessels. Over time, all that extra work causes the right side of the heart to weaken and eventually fail."},
+        l3:{t:"Breathless Even at Rest",b:"Even gentle walking causes severe shortness of breath. Lips and fingertips may turn bluish from lack of oxygen. This condition seriously limits what a person can do each day."}},
+      {name:"Pulmonary Embolism",sev:"high",
+        l1:{t:"A Blood Clot Gets Stuck in the Lung",b:"A blood clot — usually formed in a leg vein — breaks loose, travels through the bloodstream, and gets lodged inside a blood vessel in the lung. That section of the lung is cut off."},
+        l2:{t:"The Blocked Lung Area Can't Exchange Oxygen",b:"The blocked area receives air but no blood, so no oxygen can be absorbed. The heart has to strain hard to push blood through, and blood pressure can crash suddenly."},
+        l3:{t:"Sudden Sharp Chest Pain & Emergency",b:"Symptoms hit fast: sharp chest pain, very rapid breathing, coughing up blood, and a racing heart. A large PE can cause a person to collapse. This is always a medical emergency."}}
+    ]},
+
+  arteries:{
+    name:"Arteries & Aorta",
+    desc:"Thick, strong blood vessels that carry oxygen-rich blood away from the heart to every part of your body.",
+    quickfact:"If you laid all your arteries end to end, they would stretch over 25,000 miles — nearly enough to circle the Earth!",
+    diseases:[
+      {name:"Atherosclerosis",sev:"high",
+        l1:{t:"Fatty Deposits Clog the Artery Walls",b:"Over time, fatty substances called plaques build up inside the artery walls, making them narrow and stiff — like gunk building up inside a pipe. Blood has less room to flow through."},
+        l2:{t:"Organs Downstream Get Less Blood",b:"With less blood getting through, organs and muscles don't receive enough oxygen. If a plaque breaks open, a clot can form instantly and completely block the artery."},
+        l3:{t:"Heart Attack, Stroke, or Leg Pain",b:"Depending on which artery is clogged: a heart attack (heart arteries), a stroke (brain arteries), or painful cramping in the legs that doesn't heal. Atherosclerosis is the leading cause of death worldwide."}},
+      {name:"Hypertension",sev:"med",
+        l1:{t:"Too Much Pressure Inside the Arteries",b:"Blood pressure stays dangerously high all the time — like water pressure that's turned up way too strong. This slowly damages the inside walls of arteries throughout the whole body."},
+        l2:{t:"Heart and Kidneys Have to Work Harder",b:"The heart has to pump against that high pressure, causing the heart wall to thicken. The kidneys — which help control blood pressure — get damaged too, making the problem even worse."},
+        l3:{t:"Usually No Warning — Until Something Breaks",b:"Hypertension almost never causes symptoms, which is why it's called the 'silent killer.' It can go unnoticed for years until it causes a stroke, heart attack, or kidney failure."}},
+      {name:"Aortic Aneurysm",sev:"high",
+        l1:{t:"A Section of the Main Artery Balloons Outward",b:"A weak spot in the aorta (the body's biggest artery) slowly stretches and bulges outward like an overfilled balloon. It can grow for years without causing any pain."},
+        l2:{t:"If It Bursts, Blood Pressure Instantly Collapses",b:"A rupture causes massive internal bleeding in seconds. Blood pressure drops to near zero almost instantly and every organ in the body loses its blood supply all at once."},
+        l3:{t:"Silent — Until a Life-Threatening Rupture",b:"Most people have no symptoms at all — until it ruptures, which is almost always fatal without emergency surgery. This is why doctors screen for it in high-risk patients."}}
+    ]},
+
+  veins:{
+    name:"Veins & Venous System",
+    desc:"Blood vessels that carry used blood back to the heart. Veins have tiny one-way valves to keep blood moving in the right direction.",
+    quickfact:"Veins have tiny flap-like valves inside them — like a turnstile — that keep blood from flowing backwards. Without them, gravity would pull all your blood down to your feet!",
+    diseases:[
+      {name:"Deep Vein Thrombosis (DVT)",sev:"med",
+        l1:{t:"A Blood Clot Forms Deep in a Leg Vein",b:"A clot develops inside one of the large veins deep in the leg, usually because blood is moving too slowly or the vein wall got injured. It blocks blood from returning to the heart normally."},
+        l2:{t:"The Clot Can Break Off and Travel to the Lungs",b:"If the clot breaks loose, it can ride through the bloodstream straight to the lungs — causing a pulmonary embolism, which can be immediately life-threatening."},
+        l3:{t:"Swollen, Red, Painful Leg",b:"One leg becomes swollen, warm, and painful — especially when walking. DVT is treated as a medical emergency because of the lung clot risk, even though the leg symptoms might seem mild."}},
+      {name:"Chronic Venous Insufficiency",sev:"low",
+        l1:{t:"Vein Valves Stop Working Properly",b:"The one-way valves inside leg veins weaken and stop keeping blood moving upward. Blood starts pooling in the lower legs under the pull of gravity."},
+        l2:{t:"Pressure Builds Up in the Leg Veins",b:"The backed-up blood causes higher pressure in the leg veins. Fluid leaks out into the surrounding tissue over time, causing swelling and damage to the skin."},
+        l3:{t:"Swollen, Achy Legs & Slow-Healing Sores",b:"Legs feel heavy and sore, especially after standing. Skin becomes discolored. In severe cases, painful open sores called venous ulcers develop and are very slow to heal."}}
+    ]},
+
+  capillaries:{
+    name:"Capillaries",
+    desc:"Tiny microscopic blood vessels — so narrow only one red blood cell can pass at a time. This is where oxygen and nutrients are actually delivered to cells.",
+    quickfact:"Capillaries are so incredibly thin that red blood cells must squeeze through them single-file! If you unraveled all the capillaries in your body, they'd stretch about 25,000 miles.",
+    diseases:[
+      {name:"Diabetic Microangiopathy",sev:"high",
+        l1:{t:"High Blood Sugar Slowly Damages Tiny Vessels",b:"In people with diabetes, having too much sugar in the blood for too long slowly destroys the walls of capillaries. The damaged walls become thicker but let things leak through that shouldn't."},
+        l2:{t:"Critical Organs Stop Getting Enough Oxygen",b:"The damaged capillaries can't deliver enough oxygen. This happens all over the body at once — in the eyes, kidneys, and nerves — causing problems in all three places at the same time."},
+        l3:{t:"Blindness, Kidney Failure & Nerve Damage",b:"Damaged eye capillaries can cause blindness (diabetic retinopathy). Kidney capillaries failing leads to kidney failure. Nerve damage causes painful numbness in the hands and feet."}},
+      {name:"Capillary Leak Syndrome",sev:"high",
+        l1:{t:"Capillary Walls Suddenly Become Leaky",b:"Without warning, capillary walls throughout the body become extremely leaky, allowing fluid and proteins to pour out of the bloodstream into the surrounding tissues."},
+        l2:{t:"Blood Volume Crashes and Circulation Fails",b:"As fluid escapes, blood becomes dangerously thick and concentrated. Blood pressure collapses within hours as there isn't enough fluid left in the bloodstream to keep circulation going."},
+        l3:{t:"Sudden Dangerous Shock & Whole-Body Swelling",b:"Rapid drop in blood pressure, severe swelling all over the body, and potential death from circulatory collapse. It's very rare but extremely dangerous when it happens."}}
+    ]},
+
+  blood:{
+    name:"Blood",
+    desc:"The body's transport liquid — it carries oxygen, nutrients, and hormones to cells, and picks up waste products to be cleaned out.",
+    quickfact:"Your body has about 5 liters of blood (roughly a large soda bottle's worth), and it completes a full circuit through your entire body in about 60 seconds!",
+    diseases:[
+      {name:"Anemia",sev:"med",
+        l1:{t:"Not Enough Red Blood Cells to Carry Oxygen",b:"Red blood cells are the body's oxygen delivery trucks. Anemia happens when there aren't enough of them — from low iron, blood loss, or the cells breaking down too fast. Less oxygen gets delivered."},
+        l2:{t:"The Heart Works Overtime to Compensate",b:"The heart beats faster and harder trying to get enough oxygen to the body despite having fewer red blood cells. This extra strain on the heart can eventually cause serious problems."},
+        l3:{t:"Exhausted, Pale & Out of Breath",b:"You feel constantly tired, look pale, have trouble concentrating at school, and get short of breath during even easy activities like walking across a room. Everything feels harder than it should."}},
+      {name:"Sickle Cell Disease",sev:"high",
+        l1:{t:"Red Blood Cells Grow Into the Wrong Shape",b:"A genetic mutation causes red blood cells to form into a sickle (crescent moon) shape instead of a round disc. These abnormal cells are stiff and get stuck easily in narrow blood vessels."},
+        l2:{t:"Stuck Cells Block Blood Flow & Break Down Early",b:"Sickle-shaped cells clog tiny blood vessels, cutting off oxygen to tissues and causing severe pain. They also wear out and break down much faster than normal cells, causing chronic anemia."},
+        l3:{t:"Severe Pain Crises, Stroke Risk & Organ Damage",b:"Episodes of intense pain (called pain crises) can last for days. Risk of stroke is much higher than normal. Over time, organs like the kidneys, spleen, and liver are slowly damaged."}},
+      {name:"Polycythemia",sev:"med",
+        l1:{t:"Too Many Red Blood Cells — Blood Gets Too Thick",b:"The body produces way too many red blood cells, making the blood as thick as syrup instead of its normal watery consistency. Thick blood moves much more slowly through vessels."},
+        l2:{t:"Clots Form More Easily & the Heart Strains",b:"Slow, thick blood is far more likely to form dangerous clots that can block arteries. The heart also has to push much harder to move thick blood, increasing its workload significantly."},
+        l3:{t:"Flushed Face, Headaches & Clot Risk",b:"The face looks permanently reddish-flushed. Frequent headaches, itchy skin (especially after bathing), and a high risk of stroke and dangerous blood clots that require ongoing medical management."}}
+    ]},
+
+  coronary:{
+    name:"Coronary Vessels",
+    desc:"Small but critical arteries that wrap around the outside of the heart and supply the heart muscle itself with the blood it needs to keep beating.",
+    quickfact:"The coronary arteries are only about as wide as a drinking straw — but they're responsible for keeping the hardest-working muscle in your entire body alive and pumping!",
+    diseases:[
+      {name:"Coronary Artery Disease",sev:"high",
+        l1:{t:"Plaques Slowly Narrow the Heart's Own Arteries",b:"Fatty plaques build up inside the small arteries that feed the heart muscle, making them narrower over years. The heart muscle gets less blood, especially when it needs more during exercise."},
+        l2:{t:"The Heart Muscle Gets Starved During Exercise",b:"When you exercise, your heart needs more blood — but the narrowed coronary arteries can't deliver it. The oxygen-starved heart muscle struggles to contract properly during exertion."},
+        l3:{t:"Chest Tightness During Exercise & Heart Attack Risk",b:"Chest tightness or pressure during physical activity (called angina) that goes away with rest. If a plaque suddenly ruptures, a full heart attack can happen. CAD is the #1 cause of death worldwide."}},
+      {name:"Coronary Vasospasm",sev:"med",
+        l1:{t:"A Heart Artery Suddenly Squeezes Itself Shut",b:"Without any blockage, a coronary artery temporarily clamps shut on its own, cutting off blood to part of the heart. This can happen during rest or sleep — even in young, healthy people."},
+        l2:{t:"Temporary Oxygen Shortage Can Trigger Dangerous Rhythms",b:"The sudden blockage starves the heart muscle of oxygen, just like a blockage from a clot would. This can trigger life-threatening irregular heartbeats during the spasm."},
+        l3:{t:"Chest Pain at Rest & Risk of Cardiac Arrest",b:"Chest pain that hits while sitting still or sleeping — not during exercise. Can cause cardiac arrest in young people who appear completely healthy. It often goes undetected by standard tests."}}
+    ]},
+
+  plasma:{
+    name:"Plasma",
+    desc:"The pale yellow liquid part of blood — it makes up over half of your blood's volume and carries proteins, hormones, and nutrients.",
+    quickfact:"Plasma is about 92% water — but that watery liquid is what carries all the proteins, hormones, nutrients, and clotting factors that keep your body running!",
+    diseases:[
+      {name:"Hypoproteinemia",sev:"med",
+        l1:{t:"Not Enough Proteins in the Blood",b:"Plasma normally contains proteins (especially albumin) that act like sponges, keeping fluid inside the blood vessels. When protein levels drop too low, that fluid leaks out into surrounding tissues."},
+        l2:{t:"Fluid Leaves the Blood and Builds Up in Tissues",b:"Without enough proteins to hold fluid in, blood volume drops. Circulation weakens and the heart has less to pump. Meanwhile, the escaped fluid causes swelling throughout the body."},
+        l3:{t:"Swollen Body, Weakness & Frequent Infections",b:"Swelling appears in the belly, legs, and even the lungs. The person feels weak, gets sick more often (because immune proteins are also low), and wounds heal very slowly."}},
+      {name:"DIC (Blood Clotting Emergency)",sev:"high",
+        l1:{t:"Clotting Factors Get Used Up All at Once",b:"A serious illness causes the blood to start clotting everywhere throughout the whole body at once. This uses up all the clotting factors — so now the blood can't clot anywhere it actually needs to."},
+        l2:{t:"Tiny Clots Block Organs While Blood Pours Out",b:"Microscopic clots block blood flow in vessels throughout every organ. At the same time, the lack of clotting factors means the person bleeds uncontrollably from every wound and IV site."},
+        l3:{t:"Multi-Organ Failure — One of the Most Dangerous Conditions",b:"Patients bleed from their IV sites, gums, and internally, while kidneys, lungs, and liver start shutting down simultaneously. DIC requires emergency intensive care and has a very high mortality rate."}},
+    ]}
+
+};
+
+/* ── PANEL UPDATE ───────────────────────────────────────────── */
+function setPanel(organ, dIdx) {
+  const d = DATA[organ];
+  if (!d) return;
+  const dis = d.diseases[dIdx];
+
+  document.getElementById('panel-name').textContent = d.name;
+  document.getElementById('panel-desc').textContent = d.desc;
+
+  // Build disease tabs
+  const row = document.getElementById('dtab-row');
+  row.innerHTML = '';
+  d.diseases.forEach((dd, i) => {
+    const b = document.createElement('button');
+    b.className = 'dtab' + (i === dIdx ? ' active' : '');
+    b.textContent = dd.name;
+    b.onclick = () => setPanel(organ, i);
+    row.appendChild(b);
+  });
+
+  // Severity badge
+  const sev = document.getElementById('sev-badge');
+  if (dis.sev === 'high') { sev.className = 'sev-badge sev-high'; sev.textContent = '🔴 Serious Condition'; }
+  else if (dis.sev === 'med') { sev.className = 'sev-badge sev-med'; sev.textContent = '🟡 Moderate Condition'; }
+  else { sev.className = 'sev-badge sev-low'; sev.textContent = '🟢 Manageable Condition'; }
+
+  // Ripple blocks — reset then animate in
+  ['r1', 'r2', 'r3'].forEach(id => document.getElementById(id).classList.remove('show'));
+  const dyk = document.getElementById('dyk-card');
+  dyk.classList.remove('show');
+
+  document.getElementById('r1-title').textContent = dis.l1.t;
+  document.getElementById('r1-text').textContent  = dis.l1.b;
+  document.getElementById('r2-title').textContent = dis.l2.t;
+  document.getElementById('r2-text').textContent  = dis.l2.b;
+  document.getElementById('r3-title').textContent = dis.l3.t;
+  document.getElementById('r3-text').textContent  = dis.l3.b;
+
+  // Did You Know fact — from organ (same for all diseases of that organ)
+  document.getElementById('dyk-text').textContent = d.quickfact;
+
+  requestAnimationFrame(() => {
+    setTimeout(() => document.getElementById('r1').classList.add('show'), 40);
+    setTimeout(() => document.getElementById('r2').classList.add('show'), 150);
+    setTimeout(() => document.getElementById('r3').classList.add('show'), 260);
+    setTimeout(() => dyk.classList.add('show'), 360);
+  });
+}
+
+/* ── NODE CLICK HANDLERS ────────────────────────────────────── */
+
+</script>
+<!-- Educator mode: activate ls-active / stem-active classes from sessionStorage -->
+<script>
+  if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
+  if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
+
+
+
+(function(){
+  var NODES = {
+  arteries:{x:0.5,y:0.12,r:28,ico:'🔴',lbl:'Arteries'},
+  lungs:{x:0.2,y:0.27,r:26,ico:'🫁',lbl:'Lungs'},
+  coronary:{x:0.8,y:0.27,r:26,ico:'❤️‍🔥',lbl:'Coronary'},
+  heart:{x:0.5,y:0.4,r:32,ico:'🫀',lbl:'Heart'},
+  veins:{x:0.2,y:0.57,r:26,ico:'🔵',lbl:'Veins'},
+  blood:{x:0.5,y:0.69,r:26,ico:'🩸',lbl:'Blood'},
+  capillaries:{x:0.2,y:0.83,r:26,ico:'🔬',lbl:'Capillaries'},
+  plasma:{x:0.8,y:0.83,r:26,ico:'🧬',lbl:'Plasma'}
+};
+  var CONNS = [["arteries","lungs"],["arteries","coronary"],["arteries","heart"],["heart","veins"],["heart","blood"],["lungs","heart"],["blood","capillaries"],["blood","plasma"],["veins","capillaries"]];
+  var COL   = '#c0392b';
+
+  var sel=null, hov=null, hovC=null;
+  var mc=document.getElementById('map-canvas');
+  var cx=mc.getContext('2d');
+  var DPR=window.devicePixelRatio||1;
+
+  function resize(){
+    var w=mc.parentElement.clientWidth;
+    var h=Math.max(380,Math.round(w*0.85));
+    mc.style.width=w+'px'; mc.style.height=h+'px';
+    mc.width=Math.round(w*DPR); mc.height=Math.round(h*DPR);
+    cx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize',resize);
+
+  // CSS-pixel position of node
+  function pos(id){
+    var n=NODES[id], W=mc.width/DPR, H=mc.height/DPR;
+    return {x:n.x*W, y:n.y*H, r:n.r};
+  }
+  function ctrl(a,b){ return {cx:(a.x+b.x)/2+(b.y-a.y)*0.28, cy:(a.y+b.y)/2-(b.x-a.x)*0.28}; }
+  function bez(f,cc,t2,t){ return {x:(1-t)*(1-t)*f.x+2*(1-t)*t*cc.cx+t*t*t2.x, y:(1-t)*(1-t)*f.y+2*(1-t)*t*cc.cy+t*t*t2.y}; }
+
+  function pill(text,x,y){
+    cx.save(); cx.font='700 10px Nunito,sans-serif';
+    var tw=cx.measureText(text).width, pw=tw+16, ph=20, rr=6, px=x-pw/2, py=y-ph/2;
+    cx.fillStyle='rgba(8,15,28,0.93)'; cx.globalAlpha=1;
+    cx.beginPath(); cx.moveTo(px+rr,py); cx.lineTo(px+pw-rr,py); cx.quadraticCurveTo(px+pw,py,px+pw,py+rr);
+    cx.lineTo(px+pw,py+ph-rr); cx.quadraticCurveTo(px+pw,py+ph,px+pw-rr,py+ph);
+    cx.lineTo(px+rr,py+ph); cx.quadraticCurveTo(px,py+ph,px,py+ph-rr);
+    cx.lineTo(px,py+rr); cx.quadraticCurveTo(px,py,px+rr,py); cx.closePath(); cx.fill();
+    cx.strokeStyle=COL; cx.lineWidth=1; cx.globalAlpha=0.6; cx.stroke();
+    cx.fillStyle=COL; cx.globalAlpha=1; cx.textAlign='center'; cx.textBaseline='middle';
+    cx.fillText(text,x,y); cx.restore();
+  }
+
+  function draw(){
+    var W=mc.width/DPR, H=mc.height/DPR;
+    cx.clearRect(0,0,W,H);
+
+    // ── connections ──────────────────────────────────────────────────────
+    CONNS.forEach(function(c){
+      var f=pos(c[0]), t=pos(c[1]), cc=ctrl(f,t), iH=(hovC===c);
+      cx.save(); cx.beginPath(); cx.moveTo(f.x,f.y); cx.quadraticCurveTo(cc.cx,cc.cy,t.x,t.y);
+      cx.strokeStyle=COL; cx.globalAlpha=iH?0.25:0.09; cx.lineWidth=iH?16:9; cx.stroke(); cx.restore();
+      cx.save(); cx.beginPath(); cx.moveTo(f.x,f.y); cx.quadraticCurveTo(cc.cx,cc.cy,t.x,t.y);
+      cx.strokeStyle=COL; cx.globalAlpha=iH?0.95:0.45; cx.lineWidth=iH?2.5:1.8;
+      cx.setLineDash([6,4]); cx.stroke(); cx.setLineDash([]); cx.restore();
+      if(iH){ var m=bez(f,cc,t,0.5); pill(NODES[c[0]].lbl+' → '+NODES[c[1]].lbl,m.x,m.y); }
+    });
+
+    // ── nodes ─────────────────────────────────────────────────────────────
+    Object.keys(NODES).forEach(function(id){
+      var p=pos(id), n=NODES[id];
+      var iS=(sel===id), iH=(hov===id);
+
+      // wide outer glow — MUCH brighter on hover/select
+      var glowR = iS ? p.r*3.4 : (iH ? p.r*3.0 : p.r*2.2);
+      var glowA = iS ? 0.55    : (iH ? 0.45    : 0.20);
+      var g=cx.createRadialGradient(p.x,p.y,p.r*0.2,p.x,p.y,glowR);
+      g.addColorStop(0,COL); g.addColorStop(1,'rgba(0,0,0,0)');
+      cx.save(); cx.fillStyle=g; cx.globalAlpha=glowA;
+      cx.beginPath(); cx.arc(p.x,p.y,glowR,0,Math.PI*2); cx.fill(); cx.restore();
+
+      // base circle — visible accent fill, not black
+      var fillA = iS ? 0.40 : (iH ? 0.32 : 0.18);
+      cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.fillStyle=COL; cx.globalAlpha=fillA; cx.fill(); cx.restore();
+
+      // slight dark overlay to give depth (NOT opaque)
+      cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r-1,0,Math.PI*2);
+      cx.fillStyle='rgba(8,14,24,0.45)'; cx.globalAlpha=1; cx.fill(); cx.restore();
+
+      // bright stroke ring
+      var strokeW = iS ? 3.5 : (iH ? 3.0 : 2.2);
+      var strokeA = iS ? 1.0 : (iH ? 1.0 : 0.80);
+      cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.strokeStyle=COL; cx.lineWidth=strokeW; cx.globalAlpha=strokeA; cx.stroke(); cx.restore();
+
+      // hover inner bright ring
+      if(iH && !iS){
+        cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r-3,0,Math.PI*2);
+        cx.strokeStyle=COL; cx.lineWidth=1.5; cx.globalAlpha=0.50; cx.stroke(); cx.restore();
+      }
+
+      // pulse ring when selected
+      if(iS){
+        var pt=(Date.now()%1800)/1800;
+        cx.save(); cx.beginPath(); cx.arc(p.x,p.y,p.r+pt*p.r*1.3,0,Math.PI*2);
+        cx.strokeStyle=COL; cx.lineWidth=2.2; cx.globalAlpha=(1-pt)*0.60; cx.stroke(); cx.restore();
+      }
+
+      // emoji — sized to fill circle
+      cx.save(); cx.font=(p.r*1.08)+'px serif';
+      cx.textAlign='center'; cx.textBaseline='middle'; cx.globalAlpha=1;
+      cx.fillText(n.ico,p.x,p.y+1); cx.restore();
+
+      // label beneath
+      var lsz=Math.max(11,Math.round(p.r*0.52));
+      cx.save(); cx.font='800 '+lsz+'px Nunito,sans-serif';
+      cx.fillStyle=iS?COL:(iH?'#ffffff':'rgba(232,244,251,0.85)');
+      cx.globalAlpha=1; cx.textAlign='center'; cx.textBaseline='top';
+      cx.fillText(n.lbl,p.x,p.y+p.r+6); cx.restore();
+    });
+  }
+
+  function loop(){ draw(); requestAnimationFrame(loop); }
+
+  // ── click — use offsetX/Y (already in CSS px, matches pos()) ────────────
+  mc.addEventListener('click',function(e){
+    var mx=e.offsetX, my=e.offsetY, hit=null;
+    Object.keys(NODES).forEach(function(id){
+      var p=pos(id);
+      if(Math.sqrt((mx-p.x)*(mx-p.x)+(my-p.y)*(my-p.y)) < p.r+10) hit=id;
+    });
+    if(hit){
+      sel=hit;
+      var idle=document.getElementById('idle-state');
+      var card=document.getElementById('info-card');
+      if(idle) idle.classList.add('gone');
+      if(card) card.classList.add('on');
+      if(typeof setPanel==='function') setPanel(hit,0);
+    }
+  });
+
+  mc.addEventListener('mousemove',function(e){
+    var mx=e.offsetX, my=e.offsetY, onN=null, onC=null;
+    Object.keys(NODES).forEach(function(id){
+      var p=pos(id);
+      if(Math.sqrt((mx-p.x)*(mx-p.x)+(my-p.y)*(my-p.y))<p.r+10) onN=id;
+    });
+    if(!onN){
+      CONNS.forEach(function(c){
+        var f=pos(c[0]),t=pos(c[1]),cc=ctrl(f,t);
+        for(var i=0;i<=20;i++){
+          var bp=bez(f,cc,t,i/20);
+          if(Math.sqrt((mx-bp.x)*(mx-bp.x)+(my-bp.y)*(my-bp.y))<10){onC=c;break;}
+        }
+      });
+    }
+    hov=onN; hovC=onC;
+    mc.style.cursor=(onN||onC)?'pointer':'default';
+  });
+
+  mc.addEventListener('mouseleave',function(){ hov=null; hovC=null; });
+
+  window.addEventListener('load',function(){
+    setTimeout(function(){ resize(); loop(); },30);
+  });
+})();
+
+</script>
+</body>
+</html>
