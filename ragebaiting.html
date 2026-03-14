@@ -334,7 +334,10 @@
   .discussion-q p { font-size: 0.93rem; color: var(--text-muted); line-height: 1.6; }
 
   /* FOOTER */
-  footer { background: var(--darker); border-top: 1px solid var(--border); padding: 3.5rem 1.5rem 2rem; }
+  footer { background: var(--darker); border-top: 1px solid var(--border); padding: 2rem; text-align: center; }
+  footer .logo { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--gold); margin-bottom: 0.3rem; }
+  footer p { color: var(--text-muted); font-size: 0.82rem; }
+  footer a { color: var(--gold); text-decoration: none; }
   .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-bottom: 2.5rem; }
   @media (max-width: 640px) { .footer-inner { grid-template-columns: 1fr; } }
   .footer-logo { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
@@ -1193,29 +1196,10 @@ body.ls-active .ls-focus {
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-inner">
-    <div>
-      <div class="footer-logo"><span style="font-size:1.2rem">🛡️</span><span class="footer-logo-text">LYFELABZ</span></div>
-      <p>Empowering middle school students with media literacy skills to navigate the digital world safely and wisely.</p>
-    </div>
-    <div>
-      <h4>Quick Links</h4>
-      <ul class="footer-links">
-        <li><a href="#learn">What is Rage Bait?</a></li>
-        <li><a href="#watch">Watch the Video</a></li>
-        <li><a href="#real-life">Real Life Connection</a></li>
-        <li><a href="#real-power">Real Power</a></li>
-        <li><a href="#spot">Interactive Game</a></li>
-        <li><a href="#tools">Detection Tools</a></li>
-        <li><a href="#resources">Resources</a></li>
-      </ul>
-    </div>
-    <div>
-      <h4>Remember</h4>
-      <p style="font-style:italic">"Don't let someone else's anger become your own. Stay curious, stay kind, stay critical."</p>
-    </div>
-  </div>
-  <div class="footer-bottom"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a><br>&copy; 2026 LyfeLabz. Created for educational purposes.</div>
+  <div class="logo">🧠 LyfeLabz · Don't Take the Bait</div>
+  <p>Part of <a href="index.html#psych">Psychology</a></p>
+  <p style="margin-top:0.6rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a></p>
+  <p style="margin-top:0.3rem">© 2026 LyfeLabz · Educational Use</p>
 </footer>
 
 <script>
