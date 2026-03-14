@@ -453,7 +453,7 @@ function setPanel(organ, dIdx) {
   largeint:{x:0.25,y:0.81,r:26,ico:'📦',lbl:'Large Intestine'},
   rectum:{x:0.5,y:0.91,r:24,ico:'🚪',lbl:'Rectum'}
 };
-  var CONNS = [["mouth","esophagus"],["esophagus","stomach"],["liver","stomach"],["pancreas","stomach"],["stomach","smallint"],["smallint","largeint"],["largeint","rectum"]];
+  var CONNS = [["mouth","esophagus"],["esophagus","stomach"],["stomach","smallint"],["liver","smallint"],["pancreas","smallint"],["smallint","largeint"],["largeint","rectum"]];
   var COL   = '#ff9800';
 
   var sel=null, hov=null, hovC=null, dotT=0;

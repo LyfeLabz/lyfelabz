@@ -642,7 +642,7 @@ function setPanel(organ, dIdx) {
   capillaries:{x:0.2,y:0.83,r:26,ico:'🔬',lbl:'Capillaries'},
   plasma:{x:0.8,y:0.83,r:26,ico:'🧬',lbl:'Plasma'}
 };
-  var CONNS = [["arteries","lungs"],["arteries","coronary"],["arteries","heart"],["heart","veins"],["heart","blood"],["lungs","heart"],["blood","capillaries"],["blood","plasma"],["veins","capillaries"]];
+  var CONNS = [["heart","arteries"],["arteries","lungs"],["arteries","coronary"],["heart","blood"],["lungs","heart"],["blood","capillaries"],["blood","plasma"],["capillaries","veins"],["veins","heart"]];
   var COL   = '#e74c3c';
 
   var sel=null, hov=null, hovC=null, dotT=0;

@@ -472,7 +472,7 @@ function setPanel(organ, dIdx) {
   alveoli:{x:0.5,y:0.76,r:26,ico:'🔬',lbl:'Alveoli'},
   diaphragm:{x:0.5,y:0.91,r:24,ico:'💨',lbl:'Diaphragm'}
 };
-  var CONNS = [["nose","trachea"],["trachea","bronchi"],["pleura","rightlung"],["bronchi","leftlung"],["bronchi","rightlung"],["leftlung","alveoli"],["rightlung","alveoli"],["alveoli","diaphragm"]];
+  var CONNS = [["nose","trachea"],["trachea","bronchi"],["diaphragm","bronchi"],["pleura","leftlung"],["pleura","rightlung"],["bronchi","leftlung"],["bronchi","rightlung"],["leftlung","alveoli"],["rightlung","alveoli"]];
   var COL   = '#3bc8e8';
 
   var sel=null, hov=null, hovC=null, dotT=0;
