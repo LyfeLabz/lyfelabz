@@ -769,6 +769,20 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::after,
   .stem-badge[data-tip]::before { display: none; }
 }
+/* ── Driving Question ── */
+.driving-question {
+  max-width: 760px; margin: 1.6rem auto 0; padding: 1.1rem 1.6rem;
+  background: rgba(59,200,232,0.06); border: 1px solid rgba(59,200,232,0.22);
+  border-left: 4px solid #3bc8e8; border-radius: 14px;
+  display: flex; align-items: flex-start; gap: 0.85rem; box-sizing: border-box;
+}
+.dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+.dq-body { flex: 1; }
+.dq-label {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: rgba(59,200,232,0.75); margin-bottom: 0.3rem;
+}
+.dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -792,12 +806,15 @@ body.stem-active .stem-detail {
   <span class="hero-cells">🔬</span>
   <span class="hero-cells">🏭</span>
   <span class="hero-cells">⚡</span>
-  <div class="hero-badge">LyfeLabz · Biology · Lesson 3</div>
+  <div class="hero-badge">Biology · Lesson 3</div>
   <h1>Cell Organelles 🧫</h1>
   <p>Everything you need to ace your quiz on <strong>Cell Organelles</strong> — explore what's inside plant and animal cells, see how it all fits together with the Cell City analogy, then test yourself!</p>
-  <div class="hero-btns">
-    <a href="#organelles" class="btn btn-primary">Explore Organelles 🔬</a>
-    <a href="#quiz" class="btn btn-outline">Jump to Quiz 📝</a>
+  <div class="driving-question">
+    <div class="dq-icon">🔍</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">If a cell is the smallest unit of life, what's keeping it alive on the inside?</div>
+    </div>
   </div>
 
 </header>
@@ -819,7 +836,7 @@ body.stem-active .stem-detail {
 <!-- ORGANELLES REFERENCE SECTION -->
 <section id="organelles">
   <div class="container">
-    <span class="section-label">Slide Deck</span>
+    <span class="section-label">📖 Lesson Notes</span>
     <h2 class="section-title">Cell Organelles 🧫</h2>
     <p class="section-desc">Organelles are structures inside a cell that each do a specialized job. Think of them as the departments of a tiny city.</p>
     <div class="org-grid">
