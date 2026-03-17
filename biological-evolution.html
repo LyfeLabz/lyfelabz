@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | Biological Evolution</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #c48a4e;
+    --accent-dim:  rgba(196,138,78,0.15);
+    --accent-glow: rgba(196,138,78,0.35);
+    --accent-dark: #9e6b35;
+    --accent2:     #e8a96a;
+    --teal:        #1de9b6;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #100f0a;
+    --dark2:       #18150d;
+    --card:        #1e1a10;
+    --text:        #f5eed8;
+    --text-muted:  #b0a07a;
+    --border:      rgba(196,138,78,0.18);
+    --red:         #e74c3c;
+    --purple:      #9b59b6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  #stars {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0; opacity: 0.45;
+  }
+
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(12,11,8,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-dim);
+    border: 1px solid rgba(196,138,78,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(196,138,78,0.25); border-color: rgba(196,138,78,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0e0c07 0%, #1a1508 50%, #0d0e08 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(196,138,78,0.09) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(232,169,106,0.06) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
+  .hero-badge {
+    display: inline-block; background: var(--accent-dim);
+    border: 1px solid rgba(196,138,78,0.4); color: var(--accent);
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(240,228,200,0.78); max-width: 600px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+
+  /* ── DRIVING QUESTION ── */
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(196,138,78,0.07); border: 1px solid rgba(196,138,78,0.3);
+    border-left: 4px solid var(--accent); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(196,138,78,0.8); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(196,138,78,0.05); border: 1px solid rgba(196,138,78,0.2);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(196,138,78,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+  /* ── MA STE STANDARDS ── */
+  .stem-focus { display: none; }
+  body.stem-active .stem-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 0.5rem auto 1.6rem; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(46,204,113,0.05); border: 1px solid rgba(46,204,113,0.2);
+    border-radius: 16px; animation: stemFadeIn 0.35s ease both;
+  }
+  @keyframes stemFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .stem-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(46,204,113,0.75); width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .stem-badge {
+    position: relative; cursor: default; display: inline-flex; align-items: center;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px; padding: 0.35rem 0.9rem; white-space: nowrap;
+  }
+  .stem-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 220px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(46,204,113,0.2); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .stem-badge[data-tip]:hover::after { opacity: 1; }
+  .stem-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(46,204,113,0.2);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .stem-badge[data-tip]:hover::before { opacity: 1; }
+  .stem-detail { display: none; }
+  body.stem-active .stem-detail {
+    width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
+    text-align: center; animation: stemFadeIn 0.35s ease both;
+  }
+  .stem-show-btn {
+    background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
+  }
+  .stem-show-btn:hover { color: rgba(46,204,113,0.85); }
+  .stem-detail-body {
+    display: none; margin-top: 0.5rem;
+    background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
+    border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
+  }
+  .stem-detail.stem-open .stem-detail-body { display: block; }
+  .stem-std-row {
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
+  .stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent);
+    background: var(--accent-dim); border: 1px solid rgba(196,138,78,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(240,228,200,0.78); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(196,138,78,0.08) 0%, rgba(196,138,78,0.03) 100%);
+    border: 1.5px solid rgba(196,138,78,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 3.5rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .phenomenon-body { flex: 1; min-width: 220px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+    background: var(--accent-dim); border: 1px solid rgba(196,138,78,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 {
+    font-family: 'Fredoka One', cursive; font-size: 1.5rem;
+    margin-bottom: 0.4rem; color: var(--text); line-height: 1.25;
+  }
+  .phenomenon-body p { color: rgba(240,228,200,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; }
+  .read-aloud-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.35rem 0.9rem; border-radius: 99px; cursor: pointer;
+    border: 1px solid rgba(196,138,78,0.5);
+    background: var(--accent-dim); color: var(--accent);
+    text-shadow: 0 0 8px rgba(196,138,78,0.6);
+    box-shadow: 0 0 8px rgba(196,138,78,0.2), inset 0 0 6px rgba(196,138,78,0.05);
+    transition: all 0.25s; white-space: nowrap; flex-shrink: 0;
+  }
+  .read-aloud-btn:hover {
+    background: rgba(196,138,78,0.22); border-color: rgba(196,138,78,0.85);
+    text-shadow: 0 0 12px rgba(196,138,78,0.9);
+    box-shadow: 0 0 16px rgba(196,138,78,0.45), 0 0 32px rgba(196,138,78,0.2), inset 0 0 8px rgba(196,138,78,0.1);
+  }
+  .read-aloud-btn.speaking {
+    background: rgba(29,233,182,0.12); border-color: rgba(29,233,182,0.6); color: var(--teal);
+    text-shadow: 0 0 10px rgba(29,233,182,0.8);
+    box-shadow: 0 0 14px rgba(29,233,182,0.35), 0 0 28px rgba(29,233,182,0.15);
+    animation: pulse-teal 1.6s ease-in-out infinite;
+  }
+  .read-aloud-btn.paused {
+    background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.55); color: var(--gold);
+    text-shadow: 0 0 8px rgba(245,200,66,0.7);
+    box-shadow: 0 0 10px rgba(245,200,66,0.25), inset 0 0 6px rgba(245,200,66,0.05);
+  }
+  @keyframes pulse-teal {
+    0%, 100% { box-shadow: 0 0 10px rgba(29,233,182,0.3), 0 0 22px rgba(29,233,182,0.1); }
+    50%       { box-shadow: 0 0 20px rgba(29,233,182,0.55), 0 0 40px rgba(29,233,182,0.25); }
+  }
+  .card-body { color: rgba(240,228,200,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(232,169,106,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.amber  { background: rgba(196,138,78,0.07);  border-left: 3px solid var(--accent); color: rgba(240,228,200,0.85); }
+  .callout.teal   { background: rgba(29,233,182,0.06);  border-left: 3px solid var(--teal);   color: rgba(240,228,200,0.85); }
+  .callout.purple { background: rgba(155,89,182,0.08);  border-left: 3px solid var(--purple); color: rgba(240,228,200,0.85); }
+
+  /* ── NATURAL SELECTION CYCLE ── */
+  .ns-cycle-instructions {
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 0.75rem 1rem;
+    font-size: 0.88rem; color: rgba(240,234,216,0.75); line-height: 1.6;
+    margin-bottom: 1.2rem;
+  }
+  .ns-cycle-inst-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .ns-cycle-wrap {
+    display: flex; flex-direction: row; align-items: flex-start; gap: 1.5rem;
+    margin: 0.5rem 0 1rem;
+  }
+  .ns-cycle-svg {
+    width: 420px; min-width: 420px; height: auto; flex-shrink: 0;
+    filter: drop-shadow(0 4px 20px rgba(196,138,78,0.1));
+  }
+  .cy-node { transition: opacity 0.2s; }
+  .cy-node:hover .cy-ring { stroke: rgba(196,138,78,0.8); stroke-width: 3; }
+  .cy-node.active .cy-ring { stroke: var(--accent); stroke-width: 3; fill: rgba(196,138,78,0.12); }
+  .ns-cycle-detail {
+    flex: 1;
+    background: rgba(196,138,78,0.06);
+    border: 1px solid rgba(196,138,78,0.25);
+    border-left: 4px solid var(--accent);
+    border-radius: 14px; padding: 1.2rem 1.4rem;
+    min-height: 180px; display: flex; align-items: center;
+    transition: opacity 0.2s;
+  }
+  .cy-detail-inner { width: 100%; }
+  .cy-detail-step {
+    font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em;
+    text-transform: uppercase; color: rgba(196,138,78,0.85); margin-bottom: 0.3rem;
+  }
+  .cy-detail-title {
+    font-family: 'Fredoka One', cursive; font-size: 1.2rem;
+    color: #f5ead8; margin-bottom: 0.6rem; line-height: 1.3;
+  }
+  .cy-detail-body {
+    font-size: 0.92rem; color: rgba(240,234,216,0.82); line-height: 1.72;
+  }
+  @media (max-width: 800px) {
+    .ns-cycle-wrap { flex-direction: column; align-items: center; }
+    .ns-cycle-svg { width: 100%; min-width: unset; max-width: 420px; }
+    .ns-cycle-detail { min-height: unset; width: 100%; }
+  }
+
+  /* ── EVIDENCE SECTION ── */
+  #evidence { background: var(--dark2); }
+  .evidence-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem; margin-top: 1.5rem; align-items: start;
+  }
+  @media (max-width: 900px) { .evidence-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 580px) { .evidence-grid { grid-template-columns: 1fr; } }
+  .ev-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    overflow: hidden; cursor: pointer;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  }
+  .ev-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
+  .ev-card.ev-fossils:hover     { border-color: rgba(196,138,78,0.5); }
+  .ev-card.ev-dna:hover         { border-color: rgba(41,212,245,0.5); }
+  .ev-card.ev-homologous:hover  { border-color: rgba(61,220,132,0.5); }
+  .ev-card.ev-analogous:hover   { border-color: rgba(155,89,182,0.5); }
+  .ev-card.ev-vestigial:hover   { border-color: rgba(231,76,60,0.5); }
+  .ev-card-top { padding: 1.4rem 1.5rem 0.8rem; display: flex; align-items: flex-start; gap: 1rem; }
+  .ev-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+  .ev-fossils    .ev-icon { background: rgba(196,138,78,0.15); }
+  .ev-dna        .ev-icon { background: rgba(41,212,245,0.12); }
+  .ev-homologous .ev-icon { background: rgba(61,220,132,0.12); }
+  .ev-analogous  .ev-icon { background: rgba(155,89,182,0.12); }
+  .ev-vestigial  .ev-icon { background: rgba(231,76,60,0.1);   }
+  .ev-info { flex: 1; }
+  .ev-title { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.2rem; }
+  .ev-subtitle { font-size: 0.78rem; color: rgba(176,160,122,0.9); }
+  .ev-toggle-row {
+    padding: 0 1.5rem 1rem; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em;
+    display: flex; align-items: center; gap: 0.35rem;
+  }
+  .ev-fossils    .ev-toggle-row { color: var(--accent); }
+  .ev-dna        .ev-toggle-row { color: #29d4f5; }
+  .ev-homologous .ev-toggle-row { color: #3ddc84; }
+  .ev-analogous  .ev-toggle-row { color: #b47fff; }
+  .ev-vestigial  .ev-toggle-row { color: #e87070; }
+  .ev-arrow { transition: transform 0.2s; }
+  .ev-card.open .ev-arrow { transform: rotate(90deg); }
+  .ev-body {
+    display: none; padding: 1rem 1.5rem 1.4rem;
+    font-size: 0.92rem; color: rgba(240,228,200,0.84); line-height: 1.72;
+    border-top: 1px solid var(--border);
+  }
+  .ev-card.open .ev-body { display: block; }
+  .ev-example {
+    margin-top: 0.8rem; padding: 0.75rem 1rem; border-radius: 10px;
+    font-size: 0.85rem; line-height: 1.6; border-left: 3px solid;
+  }
+  .ev-fossils    .ev-example { background: rgba(196,138,78,0.07);  border-left-color: var(--accent); }
+  .ev-dna        .ev-example { background: rgba(41,212,245,0.06);  border-left-color: #29d4f5; }
+  .ev-homologous .ev-example { background: rgba(61,220,132,0.06);  border-left-color: #3ddc84; }
+  .ev-analogous  .ev-example { background: rgba(155,89,182,0.07);  border-left-color: #b47fff; }
+  .ev-vestigial  .ev-example { background: rgba(231,76,60,0.06);   border-left-color: #e87070; }
+
+  /* ── STRUCTURES COMPARISON ── */
+  #structures { background: var(--dark); }
+  .struct-compare-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 1.2rem; margin-top: 1.5rem;
+  }
+  .struct-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem; border-top: 3px solid;
+  }
+  .struct-card.homologous { border-top-color: #3ddc84; }
+  .struct-card.analogous  { border-top-color: #b47fff; }
+  .struct-card.vestigial  { border-top-color: #e87070; }
+  .struct-card-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; margin-bottom: 0.3rem; }
+  .struct-card.homologous .struct-card-title { color: #3ddc84; }
+  .struct-card.analogous  .struct-card-title { color: #b47fff; }
+  .struct-card.vestigial  .struct-card-title { color: #e87070; }
+  .struct-rule {
+    font-size: 0.78rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 0.25rem 0.75rem; border-radius: 99px; display: inline-block; margin-bottom: 0.8rem;
+  }
+  .homologous .struct-rule { background: rgba(61,220,132,0.1);  color: #3ddc84; border: 1px solid rgba(61,220,132,0.3); }
+  .analogous  .struct-rule { background: rgba(180,127,255,0.1); color: #b47fff; border: 1px solid rgba(180,127,255,0.3); }
+  .vestigial  .struct-rule { background: rgba(231,76,60,0.1);   color: #e87070; border: 1px solid rgba(231,76,60,0.3); }
+  .struct-examples { color: rgba(240,228,200,0.82); font-size: 0.88rem; line-height: 1.7; list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+  .struct-examples li::before { content: '→ '; opacity: 0.45; }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num {
+    font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted);
+    width: 2rem; height: 2rem; border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border);
+    cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02);
+    font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif;
+    text-align: left; color: rgba(240,228,200,0.9); width: 100%;
+  }
+  .quiz-option:hover:not(.disabled) { border-color: rgba(196,138,78,0.5); background: rgba(196,138,78,0.06); }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(29,233,182,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(29,233,182,0.4) !important; background: rgba(29,233,182,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback {
+    display: none; font-size: 0.85rem; margin-top: 0.8rem;
+    padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700;
+  }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(29,233,182,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: rgba(176,160,122,0.9); white-space: nowrap; }
+  .score-board {
+    display: none; background: var(--card); border: 2px solid var(--accent);
+    border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem;
+    box-shadow: 0 0 40px rgba(196,138,78,0.15);
+  }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(240,228,200,0.82); font-size: 1.1rem; margin-bottom: 1.5rem; }
+  .reset-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px;
+    font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s;
+  }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,138,78,0.4); }
+
+  /* ── CONTINUE ── */
+  #continue { background: var(--dark2); }
+  .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
+  .cont-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.6rem 1.5rem; text-decoration: none;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .cont-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
+  .cont-card.ext:hover  { border-color: rgba(155,89,182,0.5); }
+  .cont-card.game:hover { border-color: rgba(61,220,132,0.5); }
+  .cont-card.map:hover  { border-color: rgba(196,138,78,0.5); }
+  .cont-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .cont-card.ext  .cont-icon { background: rgba(155,89,182,0.15); }
+  .cont-card.game .cont-icon { background: rgba(61,220,132,0.12); }
+  .cont-card.map  .cont-icon { background: rgba(196,138,78,0.12); }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
+  .cont-desc { font-size: 0.86rem; color: rgba(240,228,200,0.78); line-height: 1.6; }
+  .cont-link {
+    display: inline-flex; align-items: center; gap: 0.35rem; align-self: flex-start;
+    margin-top: auto; padding: 0.4rem 1.1rem; border-radius: 99px;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.04em; text-decoration: none; transition: all 0.2s;
+  }
+  .cont-card.ext  .cont-link { background: rgba(155,89,182,0.2);  border: 1px solid rgba(155,89,182,0.5);  color: #c39bd3; }
+  .cont-card.game .cont-link { background: rgba(61,220,132,0.15); border: 1px solid rgba(61,220,132,0.4);  color: #3ddc84; }
+  .cont-card.map  .cont-link { background: var(--accent-dim);     border: 1px solid rgba(196,138,78,0.5);  color: var(--accent2); }
+  .cont-link:hover { opacity: 0.8; transform: translateX(3px); }
+
+  /* ── KEY CONCEPTS ── */
+  #concepts { background: var(--dark); }
+  .concepts-grid { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1.5rem; }
+  .concept-tag { font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; cursor: default; transition: opacity 0.2s; }
+  .concept-tag:hover { opacity: 0.75; }
+  .ct-amber  { color: var(--accent2); background: var(--accent-dim);       border-color: rgba(196,138,78,0.35); }
+  .ct-teal   { color: #1de9b6;        background: rgba(29,233,182,0.08);   border-color: rgba(29,233,182,0.3); }
+  .ct-green  { color: #3ddc84;        background: rgba(61,220,132,0.08);   border-color: rgba(61,220,132,0.3); }
+  .ct-purple { color: #b47fff;        background: rgba(180,127,255,0.08);  border-color: rgba(180,127,255,0.3); }
+  .ct-blue   { color: #7cc8f8;        background: rgba(41,140,212,0.1);    border-color: rgba(41,140,212,0.3); }
+  .ct-red    { color: #e87070;        background: rgba(231,76,60,0.08);    border-color: rgba(231,76,60,0.3); }
+
+  /* ── FOOTER ── */
+  footer { background: #080600; border-top: 1px solid var(--border); padding: 3rem 2rem; text-align: center; }
+  footer .logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--accent); margin-bottom: 0.5rem; }
+  footer p { color: rgba(176,160,122,0.8); font-size: 0.9rem; }
+  footer a {
+    color: var(--gold); text-decoration: none; font-size: 0.83rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.3); padding: 0.3rem 0.9rem; border-radius: 99px; transition: border-color 0.2s;
+  }
+  footer a:hover { border-color: rgba(245,200,66,0.6); }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="#lesson">Lesson</a></li>
+    <li><a href="#evidence">Evidence</a></li>
+    <li><a href="#structures">Structures</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+  </ul>
+  <a href="index.html#geo" class="nav-back">← Rocks Tell Stories</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">🦴</span>
+  <span class="hero-float">🧬</span>
+  <span class="hero-float">🐋</span>
+  <span class="hero-float">🦎</span>
+  <div class="hero-badge">Rocks Tell Stories · Lesson 1</div>
+  <h1>Biological Evolution 🧬</h1>
+  <p>Life on Earth doesn't stay the same — it changes, adapts, and evolves across millions of years. The question is: how?</p>
+  <div class="driving-question">
+    <div class="dq-icon">🔍</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">How did a dog-sized land animal become a 60-foot ocean giant — and what does that tell us about how all life on Earth changes?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Phenomenon-first learning activates curiosity before instruction begins — students are more likely to retain content they felt motivated to learn.">🔍 Phenomenon-First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking content into digestible sections prevents working memory overload, especially for middle schoolers encountering new vocabulary. — Sweller et al., 2019">🧠 Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing vocabulary terms with real-world examples builds multiple memory pathways for better retrieval. — Noetel et al., 2022">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes quiz questions improve long-term retention more than re-reading alone. — Roediger &amp; Karpicke, 2006">✅ Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Interleaving: comparing homologous, analogous, and vestigial structures side-by-side strengthens discrimination and deeper understanding. — Kornell &amp; Bjork, 2008">🔀 Interleaved Comparison</span>
+</div>
+
+<!-- MA STE STANDARDS -->
+<div class="stem-focus">
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 7–8</span>
+  <span class="stem-badge" data-tip="LS4.B: Natural Selection — how natural selection leads to adaptation over generations.">MS-LS4-4</span>
+  <span class="stem-badge" data-tip="LS4.A: Evidence of Common Ancestry — fossils, DNA, and homologous structures as evidence for evolution.">MS-LS4-1</span>
+  <span class="stem-badge" data-tip="LS4.B: Natural Selection — organisms with advantageous traits increase in proportion over time.">MS-LS4-2</span>
+  <span class="stem-badge" data-tip="LS4.B: Natural Selection — mathematical representations of how traits change in populations over time.">MS-LS4-6</span>
+</div>
+<div class="stem-detail" id="stem-detail-1">
+  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-1')">▸ Show standard descriptions</button>
+  <div class="stem-detail-body">
+    <div class="stem-std-row">
+      <span class="stem-std-code">MS-LS4-4</span>
+      <span class="stem-std-text">Construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals' probability of surviving and reproducing in a specific environment.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">MS-LS4-1</span>
+      <span class="stem-std-text">Analyze and interpret data for patterns in the fossil record that document the existence, diversity, extinction, and change of life forms throughout the history of life on Earth.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">MS-LS4-2</span>
+      <span class="stem-std-text">Apply concepts of statistics and probability to support explanations that organisms with an advantageous heritable trait tend to increase in proportion to organisms lacking this trait.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">MS-LS4-6</span>
+      <span class="stem-std-text">Use mathematical representations to support explanations of how natural selection may lead to increases and decreases of specific traits in populations over time.</span>
+    </div>
+  </div>
+</div>
+
+<!-- LESSON NOTES -->
+<section id="lesson">
+  <div class="container">
+    <span class="section-label">📖 Lesson Notes</span>
+    <h2 class="section-title">Biological Evolution 🧬</h2>
+    <p class="section-desc">All life on Earth shares a common history of change. Here's how it works — and the evidence that proves it.</p>
+
+    <!-- Phenomenon anchor card -->
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">🐋</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Real Fossil Evidence</div>
+        <h3>The Whale That Could Walk</h3>
+        <p>Ambulocetus natans — "the walking whale that swims" — lived 48 million years ago. It had four legs for walking, webbed feet for paddling, and a flexible spine that could power it through water. It was neither fully land animal nor fully sea creature. That in-between state is exactly what makes it extraordinary: it's evolution caught in the act.</p>
+      </div>
+    </div>
+
+    <div class="content-card" id="card-overview">
+      <div class="card-header">
+        <div class="card-title">Evolution Overview</div>
+        <button class="read-aloud-btn" onclick="toggleRead('card-overview', this)" aria-label="Read this section aloud">🔊 Read Aloud</button>
+      </div>
+      <div class="card-body">
+        <p><span class="vocab" title="Biological evolution: the change in populations of organisms over many generations due to environmental pressures">Biological evolution</span> means that populations of organisms change over time due to <span class="vocab" title="Environmental pressures: challenges from the environment — predators, food scarcity, climate change — that favor certain traits">environmental pressures</span>. It does not happen to a single organism during its lifetime. It happens to entire populations across many generations.</p>
+        <p>The engine of evolution is <span class="vocab" title="Natural selection: the process by which organisms with traits that help them survive are more likely to reproduce and pass those traits to offspring">natural selection</span>. It works as a continuous cycle — each generation feeds into the next.</p>
+
+        <!-- NATURAL SELECTION CYCLE DIAGRAM -->
+        <div class="ns-cycle-instructions">
+          <span class="ns-cycle-inst-icon">👆</span>
+          Click each numbered step to read what happens at that stage — then notice what the dashed arrow means.
+        </div>
+
+        <div class="ns-cycle-wrap">
+          <svg class="ns-cycle-svg" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg">
+            <!-- Outer ring track -->
+            <circle cx="240" cy="240" r="168" fill="none" stroke="rgba(196,138,78,0.15)" stroke-width="2" stroke-dasharray="7 5"/>
+
+            <defs>
+              <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                <polygon points="0 0, 8 4, 0 8" fill="rgba(196,138,78,0.65)"/>
+              </marker>
+            </defs>
+
+            <!-- Connecting arrows between nodes (arc paths between node perimeters) -->
+            <!-- 1→2 (top to right) -->
+            <path d="M 318 108 A 168 168 0 0 1 405 215" fill="none" stroke="rgba(196,138,78,0.4)" stroke-width="2" marker-end="url(#arr)"/>
+            <!-- 2→3 (right to bottom-right) -->
+            <path d="M 406 265 A 168 168 0 0 1 336 385" fill="none" stroke="rgba(196,138,78,0.4)" stroke-width="2" marker-end="url(#arr)"/>
+            <!-- 3→4 (bottom-right to bottom-left) -->
+            <path d="M 300 408 A 168 168 0 0 1 178 408" fill="none" stroke="rgba(196,138,78,0.4)" stroke-width="2" marker-end="url(#arr)"/>
+            <!-- 4→5 (bottom-left to left) -->
+            <path d="M 144 385 A 168 168 0 0 1 74 265" fill="none" stroke="rgba(196,138,78,0.4)" stroke-width="2" marker-end="url(#arr)"/>
+            <!-- 5→1 dashed (completes cycle) -->
+            <path d="M 74 215 A 168 168 0 0 1 162 108" fill="none" stroke="rgba(196,138,78,0.6)" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+
+            <!-- Center display area -->
+            <circle cx="240" cy="240" r="100" fill="rgba(24,21,13,0.97)" stroke="rgba(196,138,78,0.2)" stroke-width="1.5"/>
+            <text id="cy-num" x="240" y="222" text-anchor="middle" font-family="'Fredoka One', cursive" font-size="36" fill="rgba(196,138,78,0.85)">🔄</text>
+            <foreignObject id="cy-text-fo" x="148" y="232" width="184" height="72">
+              <div xmlns="http://www.w3.org/1999/xhtml" id="cy-text" style="font-family:'Nunito',sans-serif;font-size:12px;color:rgba(240,234,216,0.7);text-align:center;line-height:1.5;padding:0 6px;">Click any step to explore</div>
+            </foreignObject>
+
+            <!-- NODE 1 — Variation (top) -->
+            <g class="cy-node" onclick="cycleClick(1)" style="cursor:pointer" id="cy-node-1">
+              <circle cx="240" cy="72" r="44" fill="#1e1a10" stroke="rgba(196,138,78,0.35)" stroke-width="2" class="cy-ring"/>
+              <text x="240" y="63" text-anchor="middle" font-size="22">🦠</text>
+              <text x="240" y="84" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="12" fill="rgba(240,234,216,0.85)">Variation</text>
+              <text x="240" y="99" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="12" fill="rgba(240,234,216,0.85)">Exists</text>
+              <!-- Step number badge -->
+              <circle cx="272" cy="48" r="11" fill="rgba(196,138,78,0.85)"/>
+              <text x="272" y="53" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="12" fill="#100f0a">1</text>
+            </g>
+
+            <!-- NODE 2 — Pressure (right) -->
+            <g class="cy-node" onclick="cycleClick(2)" style="cursor:pointer" id="cy-node-2">
+              <circle cx="408" cy="240" r="44" fill="#1e1a10" stroke="rgba(196,138,78,0.35)" stroke-width="2" class="cy-ring"/>
+              <text x="408" y="231" text-anchor="middle" font-size="22">⚡</text>
+              <text x="408" y="252" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="11" fill="rgba(240,234,216,0.85)">Env. Pressure</text>
+              <text x="408" y="266" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="11" fill="rgba(240,234,216,0.85)">Applied</text>
+              <circle cx="440" cy="216" r="11" fill="rgba(196,138,78,0.85)"/>
+              <text x="440" y="221" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="12" fill="#100f0a">2</text>
+            </g>
+
+            <!-- NODE 3 — Survival (bottom right) -->
+            <g class="cy-node" onclick="cycleClick(3)" style="cursor:pointer" id="cy-node-3">
+              <circle cx="340" cy="388" r="44" fill="#1e1a10" stroke="rgba(196,138,78,0.35)" stroke-width="2" class="cy-ring"/>
+              <text x="340" y="379" text-anchor="middle" font-size="22">🏆</text>
+              <text x="340" y="400" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="11" fill="rgba(240,234,216,0.85)">Best-Suited</text>
+              <text x="340" y="414" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="11" fill="rgba(240,234,216,0.85)">Survive</text>
+              <circle cx="376" cy="366" r="11" fill="rgba(196,138,78,0.85)"/>
+              <text x="376" y="371" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="12" fill="#100f0a">3</text>
+            </g>
+
+            <!-- NODE 4 — Inheritance (bottom left) -->
+            <g class="cy-node" onclick="cycleClick(4)" style="cursor:pointer" id="cy-node-4">
+              <circle cx="140" cy="388" r="44" fill="#1e1a10" stroke="rgba(196,138,78,0.35)" stroke-width="2" class="cy-ring"/>
+              <text x="140" y="379" text-anchor="middle" font-size="22">👶</text>
+              <text x="140" y="400" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="11" fill="rgba(240,234,216,0.85)">Traits Passed</text>
+              <text x="140" y="414" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="11" fill="rgba(240,234,216,0.85)">to Offspring</text>
+              <circle cx="104" cy="366" r="11" fill="rgba(196,138,78,0.85)"/>
+              <text x="104" y="371" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="12" fill="#100f0a">4</text>
+            </g>
+
+            <!-- NODE 5 — Population Changes (left) -->
+            <g class="cy-node" onclick="cycleClick(5)" style="cursor:pointer" id="cy-node-5">
+              <circle cx="72" cy="240" r="44" fill="#1e1a10" stroke="rgba(196,138,78,0.35)" stroke-width="2" class="cy-ring"/>
+              <text x="72" y="231" text-anchor="middle" font-size="22">📈</text>
+              <text x="72" y="252" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="11" fill="rgba(240,234,216,0.85)">Population</text>
+              <text x="72" y="266" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="11" fill="rgba(240,234,216,0.85)">Changes</text>
+              <circle cx="40" cy="216" r="11" fill="rgba(196,138,78,0.85)"/>
+              <text x="40" y="221" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="12" fill="#100f0a">5</text>
+            </g>
+          </svg>
+
+          <!-- Expanded detail panel -->
+          <div class="ns-cycle-detail" id="cy-detail">
+            <div class="cy-detail-inner" id="cy-detail-inner">
+              <div class="cy-detail-step" id="cy-detail-step"></div>
+              <div class="cy-detail-title" id="cy-detail-title"></div>
+              <div class="cy-detail-body" id="cy-detail-body"></div>
+              <div style="margin-top: 1rem;">
+                <button class="read-aloud-btn" id="cy-read-btn" onclick="toggleCycleRead(this)" aria-label="Read this step aloud">🔊 Read Aloud</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p style="font-size:0.8rem; color:var(--text-muted); text-align:center; margin-top:0.5rem; opacity:0.7;">↻ This cycle repeats across every generation — that dashed arrow back to Step 1 is the key: evolution never stops.</p>
+        <div class="callout amber">
+          <span class="callout-icon">🐸</span>
+          <div class="callout-body"><strong>Real World — Chernobyl Tree Frogs:</strong> After the nuclear disaster in 1986, tree frogs in the radiation zone evolved noticeably darker skin — a trait that reduces radiation damage. Within just a few decades, the population had visibly changed. Natural selection doesn't always need millions of years when environmental pressure is extreme.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-card" id="card-variation">
+      <div class="card-header">
+        <div class="card-title">Variation in Populations</div>
+        <button class="read-aloud-btn" onclick="toggleRead('card-variation', this)" aria-label="Read this section aloud">🔊 Read Aloud</button>
+      </div>
+      <div class="card-body">
+        <p>No two individuals in a population are exactly identical. These differences in traits — like color, size, speed, disease resistance, or behavior — are called <span class="vocab" title="Variation: differences in traits among individuals within the same population">variation</span>. Variation is the essential raw material that natural selection works with. Without differences between individuals, there is nothing for the environment to act on.</p>
+
+        <p><strong>Where does variation come from?</strong> Two main sources:</p>
+        <div class="callout amber">
+          <span class="callout-icon">🧬</span>
+          <div class="callout-body"><strong>Mutations:</strong> Random changes in an organism's DNA can create new traits. Most mutations are neutral or harmful, but occasionally one gives an individual a survival advantage — and that's where new variation enters a population.</div>
+        </div>
+        <div class="callout amber">
+          <span class="callout-icon">🔀</span>
+          <div class="callout-body"><strong>Sexual Reproduction:</strong> When two parents reproduce, their genes combine in new ways in each offspring. This shuffling means siblings — even from the same parents — can be surprisingly different from each other. Every new combination is a new roll of the dice.</div>
+        </div>
+
+        <p><strong>Not all variation counts for evolution.</strong> Only <span class="vocab" title="Heritable variation: variation caused by genes that can be passed from parent to offspring. A scar, a tan, or a broken bone are not heritable — they can't be passed on.">heritable variation</span> — variation encoded in genes that can be passed to offspring — matters for natural selection. A giraffe that breaks its leg during its lifetime doesn't pass a "broken leg" trait to its young. But a giraffe born with naturally stronger bones can.</p>
+
+        <div class="callout teal">
+          <span class="callout-icon">🐦</span>
+          <div class="callout-body"><strong>Darwin's Finches:</strong> On the Galápagos Islands, finches from the same ancestor evolved different beak shapes depending on the food available on each island — thick crushing beaks for seeds, narrow probing beaks for insects, hooked beaks for fruit. The variation in beak shape already existed in the ancestral population. The different islands simply selected for different versions of that variation. This is <span class="vocab" title="Adaptation: a heritable trait that increases an organism's ability to survive and reproduce in its specific environment">adaptation</span> in action.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-card" id="card-traits">
+      <div class="card-header">
+        <div class="card-title">Traits Are Passed to Offspring</div>
+        <button class="read-aloud-btn" onclick="toggleRead('card-traits', this)" aria-label="Read this section aloud">🔊 Read Aloud</button>
+      </div>
+      <div class="card-body">
+        <p>For natural selection to drive evolution, helpful traits must be <span class="vocab" title="Heritable: capable of being passed from parent to offspring through genes">heritable</span> — encoded in genes that parents pass to their offspring. When a trait improves survival, the individuals who carry it reproduce more. Their offspring inherit the trait. Those offspring also reproduce more. Each generation, the proportion of individuals carrying the helpful trait grows — and after enough generations, the population itself has changed.</p>
+
+        <div class="callout amber">
+          <span class="callout-icon">🦒</span>
+          <div class="callout-body"><strong>Giraffe Necks:</strong> Early giraffes varied in neck length — this variation was heritable. During droughts, only the tallest trees had leaves. Longer-necked giraffes could reach that food, survived, and had more offspring who also tended toward longer necks. Shorter-necked individuals left fewer descendants. Across thousands of generations, the average neck length in the population increased. No giraffe "decided" to grow a longer neck — the environment selected for an already-existing heritable trait.</div>
+        </div>
+
+        <p><strong>How fast does this happen?</strong> It depends on how strong the pressure is. Under intense pressure, a population can shift noticeably within decades:</p>
+
+        <div class="callout teal">
+          <span class="callout-icon">🦋</span>
+          <div class="callout-body"><strong>Peppered Moths — Industrial England:</strong> Before the Industrial Revolution, most peppered moths were light-colored, blending into pale tree bark. Dark moths existed but were rare — they stood out and were easily eaten by birds. When factories covered trees in black soot, the environment flipped: light moths now stood out, and dark moths were camouflaged. Within just 50 years, dark moths went from rare to dominant across industrial regions — a dramatic, documented shift driven entirely by heritable color variation and a change in environmental pressure.</div>
+        </div>
+
+        <div class="callout purple">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body"><strong>Key Misconception:</strong> Evolution is <em>not</em> directed or purposeful. The giraffe population didn't "try" to get taller necks. The moths didn't "decide" to become darker. In both cases, the variation already existed in the population. The environment simply changed which version of the trait was more likely to survive and reproduce. The population followed.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVIDENCE -->
+<section id="evidence">
+  <div class="container">
+    <span class="section-label">🔬 Evidence</span>
+    <h2 class="section-title">Five Types of Evidence for Evolution</h2>
+    <p class="section-desc">Scientists have multiple independent lines of evidence — each one pointing to the same conclusion. Click each card to explore.</p>
+
+    <div class="evidence-grid">
+
+      <!-- 1. FOSSIL -->
+      <div class="ev-card ev-fossils" onclick="toggleEv(this)">
+        <div class="ev-card-top">
+          <div class="ev-icon">🦴</div>
+          <div class="ev-info">
+            <div class="ev-title">Fossil Evidence</div>
+            <div class="ev-subtitle">Remains preserved from the past</div>
+          </div>
+        </div>
+        <div class="ev-toggle-row">Explore <span class="ev-arrow">›</span></div>
+        <div class="ev-body">
+          <p><span class="vocab" title="Fossil: the preserved remains or traces of organisms that lived in the past">Fossils</span> are preserved remains or traces of organisms. The fossil record creates a timeline of life on Earth — showing how organisms appeared, changed, and sometimes disappeared.</p>
+          <p style="margin-top:0.7rem;"><span class="vocab" title="Transitional fossil: a fossil showing traits from two different groups, revealing an evolutionary link between them">Transitional fossils</span> are especially powerful — they show characteristics from two different groups, bridging one type of organism to another.</p>
+          <div class="ev-example">
+            🐋 <strong>Whale Timeline:</strong> Pakicetus (52 mya) walked on land → Ambulocetus (48 mya) walked AND swam → Rodhocetus (47 mya) mostly aquatic → Basilosaurus (37 mya) fully aquatic → modern whales. Each step is preserved in the fossil record.
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. HOMOLOGOUS -->
+      <div class="ev-card ev-homologous" onclick="toggleEv(this)">
+        <div class="ev-card-top">
+          <div class="ev-icon">🦴</div>
+          <div class="ev-info">
+            <div class="ev-title">Homologous Structures</div>
+            <div class="ev-subtitle">Same structure · Different job</div>
+          </div>
+        </div>
+        <div class="ev-toggle-row">Explore <span class="ev-arrow">›</span></div>
+        <div class="ev-body">
+          <p><span class="vocab" title="Homologous structures: body parts structurally similar across species because they evolved from a shared ancestor, even if used for different functions today">Homologous structures</span> are body parts that are structurally similar across different species — because they were inherited from the same ancestor. They may serve very different functions today, but their underlying structure reveals shared evolutionary history.</p>
+          <div class="ev-example">
+            🦅 The human arm, whale flipper, bat wing, bird wing, and opossum foreleg all contain the same bones — humerus, radius, ulna. Reshaped for grasping, swimming, and flying — but the blueprint is identical.
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. ANALOGOUS -->
+      <div class="ev-card ev-analogous" onclick="toggleEv(this)">
+        <div class="ev-card-top">
+          <div class="ev-icon">🦋</div>
+          <div class="ev-info">
+            <div class="ev-title">Analogous Structures</div>
+            <div class="ev-subtitle">Same job · Different structure</div>
+          </div>
+        </div>
+        <div class="ev-toggle-row">Explore <span class="ev-arrow">›</span></div>
+        <div class="ev-body">
+          <p><span class="vocab" title="Analogous structures: body parts that perform the same function in different species but evolved independently — no shared structural ancestry">Analogous structures</span> perform the same function but evolved independently in unrelated species. This is called <span class="vocab" title="Convergent evolution: when unrelated species independently evolve similar traits in response to similar environmental pressures">convergent evolution</span> — different starting points, similar solutions.</p>
+          <div class="ev-example">
+            🦇 A butterfly wing and a bat wing both allow flight — but a butterfly wing is made of chitin membrane while a bat wing stretches skin over elongated finger bones. Same job; completely different engineering.
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. VESTIGIAL -->
+      <div class="ev-card ev-vestigial" onclick="toggleEv(this)">
+        <div class="ev-card-top">
+          <div class="ev-icon">🔬</div>
+          <div class="ev-info">
+            <div class="ev-title">Vestigial Structures</div>
+            <div class="ev-subtitle">Evolution's leftovers</div>
+          </div>
+        </div>
+        <div class="ev-toggle-row">Explore <span class="ev-arrow">›</span></div>
+        <div class="ev-body">
+          <p><span class="vocab" title="Vestigial structures: body parts that were functional in ancestors but have reduced function in modern organisms due to evolution">Vestigial structures</span> are body parts that served an important purpose in an ancestor but are no longer needed today. They're powerful evidence that organisms descend from ancestors with very different lifestyles.</p>
+          <div class="ev-example">
+            🫀 <strong>Human appendix:</strong> Helped digest tough plant material in plant-eating ancestors — no essential function today.<br><br>
+            🐋 <strong>Whale hip bones:</strong> Tiny pelvis bones buried inside whale bodies — leftovers from when their ancestors walked on land.<br><br>
+            🐧 <strong>Penguin wings:</strong> Can't fly, but have the same bone structure as flying birds — evidence of a flying ancestor.
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. DNA -->
+      <div class="ev-card ev-dna" onclick="toggleEv(this)">
+        <div class="ev-card-top">
+          <div class="ev-icon">🧬</div>
+          <div class="ev-info">
+            <div class="ev-title">DNA Evidence</div>
+            <div class="ev-subtitle">The molecular blueprint shared by all life</div>
+          </div>
+        </div>
+        <div class="ev-toggle-row">Explore <span class="ev-arrow">›</span></div>
+        <div class="ev-body">
+          <p>All living things share the same genetic code — <span class="vocab" title="DNA: the molecule that carries genetic instructions for the development and function of all living organisms">DNA</span>. The more DNA two species share, the more recently they diverged from a <span class="vocab" title="Common ancestor: an ancestral species from which two or more species evolved">common ancestor</span>.</p>
+          <div class="ev-example">
+            🐒 Humans and chimpanzees share <strong>98–99% of their DNA.</strong> Humans and mice share ~85%. Even humans and bananas share roughly 60% — because all life on Earth traces back to the same ancient ancestors.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- STRUCTURES COMPARISON -->
+<section id="structures">
+  <div class="container">
+    <span class="section-label">📐 Comparison</span>
+    <h2 class="section-title">Homologous vs. Analogous vs. Vestigial</h2>
+    <p class="section-desc">Three types of structures — each one tells a different story about evolutionary history. Here's how to keep them straight.</p>
+    <div class="struct-compare-grid">
+      <div class="struct-card homologous">
+        <div class="struct-card-title">🟢 Homologous Structures</div>
+        <div class="struct-rule">Same structure → Different job</div>
+        <ul class="struct-examples">
+          <li>Human arm, whale flipper, bat wing — same bones</li>
+          <li>Resemblance comes from shared ancestry</li>
+          <li>Evidence of a common ancestor</li>
+        </ul>
+      </div>
+      <div class="struct-card analogous">
+        <div class="struct-card-title">🟣 Analogous Structures</div>
+        <div class="struct-rule">Same job → Different structure</div>
+        <ul class="struct-examples">
+          <li>Butterfly wing vs. bat wing — both fly, built differently</li>
+          <li>Resemblance comes from similar pressures, not ancestry</li>
+          <li>Evidence of convergent evolution</li>
+        </ul>
+      </div>
+      <div class="struct-card vestigial">
+        <div class="struct-card-title">🔴 Vestigial Structures</div>
+        <div class="struct-rule">Used to work → No longer needed</div>
+        <ul class="struct-examples">
+          <li>Human appendix, whale hip bones, penguin wings</li>
+          <li>Reduced or no current function</li>
+          <li>Evidence of an organism's evolutionary history</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">✅ Quiz</span>
+    <h2 class="section-title">Biological Evolution Quiz 🧬</h2>
+    <p class="section-desc">10 questions. Instant feedback on every answer — and real explanations, not just right or wrong.</p>
+    <div class="quiz-progress">
+      <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
+      <div class="progress-text" id="q1-progress-text">0 / 10</div>
+    </div>
+    <div id="quiz1-questions"></div>
+    <div class="score-board" id="q1-score">
+      <div class="big-score" id="q1-score-num"></div>
+      <p id="q1-score-msg"></p>
+      <button class="reset-btn" onclick="resetQuiz(1)">Try Again</button>
+    </div>
+  </div>
+</section>
+
+<!-- KEY CONCEPTS -->
+<section id="concepts">
+  <div class="container">
+    <span class="section-label">📚 Key Concepts</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc">Every term below appeared in this lesson. Hover over any card to review its meaning.</p>
+    <div class="concepts-grid">
+      <span class="concept-tag ct-amber">Biological Evolution</span>
+      <span class="concept-tag ct-amber">Natural Selection</span>
+      <span class="concept-tag ct-amber">Environmental Pressure</span>
+      <span class="concept-tag ct-teal">Variation</span>
+      <span class="concept-tag ct-teal">Adaptation</span>
+      <span class="concept-tag ct-teal">Heredity</span>
+      <span class="concept-tag ct-amber">Fossil</span>
+      <span class="concept-tag ct-amber">Transitional Fossil</span>
+      <span class="concept-tag ct-blue">DNA Evidence</span>
+      <span class="concept-tag ct-blue">Common Ancestor</span>
+      <span class="concept-tag ct-green">Homologous Structures</span>
+      <span class="concept-tag ct-purple">Analogous Structures</span>
+      <span class="concept-tag ct-purple">Convergent Evolution</span>
+      <span class="concept-tag ct-red">Vestigial Structures</span>
+    </div>
+  </div>
+</section>
+
+<!-- CONTINUE -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">🚀 Keep Going</span>
+    <h2 class="section-title">Continue Learning</h2>
+    <p class="section-desc">The lesson is just the beginning. Go deeper, test your skills, or see how it all connects.</p>
+    <div class="continue-grid">
+      <a href="biological-evolution-extension.html" class="cont-card ext">
+        <div class="cont-icon">🔭</div>
+        <div class="cont-name">Extension</div>
+        <div class="cont-desc">Artificial selection, antibiotic resistance, mass extinctions, and the tree of life.</div>
+        <span class="cont-link">Explore →</span>
+      </a>
+      <a href="biological-evolution-games.html" class="cont-card game">
+        <div class="cont-icon">🎮</div>
+        <div class="cont-name">Games</div>
+        <div class="cont-desc">Natural selection simulations, structure-sorting challenges, and evolution timeline puzzles.</div>
+        <span class="cont-link">Play →</span>
+      </a>
+      <a href="biological-evolution-map.html" class="cont-card map">
+        <div class="cont-icon">🗺️</div>
+        <div class="cont-name">Concept Map</div>
+        <div class="cont-desc">See how natural selection, evidence, and structures connect in an interactive visual map.</div>
+        <span class="cont-link">Explore →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">LYFELABZ</div>
+  <p>Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <p style="margin-top:0.8rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+    <a href="about.html">About LyfeLabz</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="learning-science.html" style="color:#3bc8e8; border-color:rgba(59,200,232,0.4);">Why It Works</a>
+  </p>
+  <p style="margin-top:1rem; font-size:0.72rem; color:rgba(180,200,220,0.3); letter-spacing:0.05em;">© 2026 LyfeLabz · Educational Use</p>
+</footer>
+
+<!-- SESSION CHECK -->
+<script>
+  if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
+  if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
+</script>
+
+<script>
+function toggleEv(card) { card.classList.toggle('open'); }
+function toggleStemDetail(id) {
+  var el = document.getElementById(id);
+  el.classList.toggle('stem-open');
+  var btn = el.querySelector('.stem-show-btn');
+  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
+}
+</script>
+
+<!-- QUIZ ENGINE -->
+<script>
+const quizData = {
+  1: {
+    total: 10,
+    questions: [
+      {
+        q: "What is biological evolution?",
+        options: [
+          "A single organism changing its traits during its lifetime",
+          "A population changing over many generations due to environmental pressures",
+          "One species instantly turning into a completely different species",
+          "Only the strongest animals surviving in the wild"
+        ],
+        correct: 1,
+        explanation: "Biological evolution describes populations — not individuals — changing over many generations. A single organism cannot evolve; evolution is a shift in how often certain traits appear across an entire population over time."
+      },
+      {
+        q: "In natural selection, which organisms are MOST likely to reproduce and pass on their traits?",
+        options: [
+          "The largest organisms in a population",
+          "The oldest organisms in a population",
+          "Organisms with traits best suited to their environment",
+          "Organisms that migrate to new environments"
+        ],
+        correct: 2,
+        explanation: "Natural selection favors organisms whose traits help them survive in their specific environment — not necessarily the biggest or oldest. Better survival means more reproduction, which means those traits get passed on more often."
+      },
+      {
+        q: "Over many generations, a population of beetles on dark soil shifts toward darker coloring. What most likely caused this?",
+        options: [
+          "All light-colored beetles decided to change their color",
+          "Darker beetles were camouflaged, survived longer, and passed on the dark-color trait",
+          "Dark soil chemicals changed the coloring of all beetles",
+          "Light-colored beetles all moved to a different environment"
+        ],
+        correct: 1,
+        explanation: "This is natural selection. Dark beetles blended into the soil, were harder for predators to spot, survived longer, reproduced more, and passed the dark-color trait to offspring. Over generations, dark coloring became more common in the population."
+      },
+      {
+        q: "Why is variation in a population essential for natural selection to work?",
+        options: [
+          "Variation gives organisms a reason to migrate",
+          "Without differences between individuals, there is nothing for the environment to select",
+          "Variation guarantees all organisms will survive",
+          "Variation is only important in large populations"
+        ],
+        correct: 1,
+        explanation: "Variation — differences in traits — is the raw material natural selection acts on. If all individuals were identical, no trait would give a survival advantage over any other. Variation is what makes selection possible."
+      },
+      {
+        q: "Ambulocetus is considered a transitional fossil because it:",
+        options: [
+          "Is the oldest fossil ever found",
+          "Contains DNA scientists have been able to sequence",
+          "Shows traits from both land mammals and marine animals",
+          "Proves that whales evolved from sharks"
+        ],
+        correct: 2,
+        explanation: "Transitional fossils display characteristics of two different groups, revealing an evolutionary link. Ambulocetus had four limbs for walking AND swimming adaptations — showing a clear bridge between land-walking ancestors and modern whales."
+      },
+      {
+        q: "Humans and chimpanzees share 98–99% of their DNA. What does this most strongly suggest?",
+        options: [
+          "Humans evolved directly from chimpanzees",
+          "Humans and chimpanzees are classified as the same species",
+          "Humans and chimpanzees share a relatively recent common ancestor",
+          "DNA similarity is not a reliable indicator of evolutionary relationships"
+        ],
+        correct: 2,
+        explanation: "High DNA similarity means two species diverged from a common ancestor recently in evolutionary time — not that one came from the other. Humans and chimps share a common ancestor; neither evolved from the other."
+      },
+      {
+        q: "A human arm, whale flipper, and bat wing all contain the same underlying bones. These are examples of:",
+        options: [
+          "Analogous structures",
+          "Vestigial structures",
+          "Homologous structures",
+          "Transitional structures"
+        ],
+        correct: 2,
+        explanation: "Homologous structures are structurally similar body parts inherited from a shared ancestor. The same set of bones — humerus, radius, ulna — appears in human arms, whale flippers, and bat wings, reshaped by evolution for different functions but revealing shared ancestry."
+      },
+      {
+        q: "A dolphin fin and a shark fin both allow efficient swimming, but dolphins are mammals and sharks are fish that evolved separately. These fins are best described as:",
+        options: [
+          "Homologous — they evolved from the same ancestor",
+          "Vestigial — they were once used for walking on land",
+          "Analogous — they evolved independently for the same function",
+          "Transitional — they show traits from two different groups"
+        ],
+        correct: 2,
+        explanation: "Analogous structures perform the same function but evolved independently. Dolphin and shark fins both enable swimming but have very different internal structures. This is convergent evolution — similar solutions reached by unrelated species facing similar pressures."
+      },
+      {
+        q: "Whales have small, non-functional hip and leg bones buried inside their bodies. What type of structures are these, and what do they tell us?",
+        options: [
+          "Homologous; evidence that whales and fish share a common ancestor",
+          "Vestigial; evidence that whales descended from land-walking ancestors",
+          "Analogous; evidence that whales evolved the same traits as land animals",
+          "Transitional; evidence that whales are still evolving legs"
+        ],
+        correct: 1,
+        explanation: "Vestigial structures are body parts that were functional in ancestors but are no longer needed. Whale hip and leg bones are leftovers from land-walking ancestors that lived 50+ million years ago — powerful evidence of their evolutionary past."
+      },
+      {
+        q: "Which statement best explains why evolution is described as happening to populations, not individuals?",
+        options: [
+          "Individual organisms can change their DNA throughout their lifetime in response to the environment",
+          "Only the strongest individuals evolve while weaker ones remain unchanged",
+          "Evolution is a change in how often certain traits appear in a population across generations through reproduction",
+          "Populations only evolve when they move to a new environment"
+        ],
+        correct: 2,
+        explanation: "An individual's DNA doesn't change in response to the environment. Evolution works through reproduction: organisms with helpful traits have more offspring, those traits appear more often in the next generation, and gradually the trait becomes more common in the population. It's a change in the population — not the individual."
+      }
+    ]
+  }
+};
+
+const quizState = { 1: { answered: 0, correct: 0 } };
+
+function buildQuiz(num) {
+  const data = quizData[num];
+  const container = document.getElementById(`quiz${num}-questions`);
+  container.innerHTML = '';
+  quizState[num] = { answered: 0, correct: 0 };
+  updateProgress(num);
+  data.questions.forEach((q, qi) => {
+    const letters = ['A','B','C','D'];
+    const optionsHTML = q.options.map((opt, oi) => `
+      <button class="quiz-option" onclick="selectAnswer(${num}, ${qi}, ${oi})" id="q${num}-${qi}-${oi}">
+        <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
+      </button>`).join('');
+    const card = document.createElement('div');
+    card.className = 'quiz-card'; card.id = `q${num}-card-${qi}`;
+    card.innerHTML = `
+      <div class="quiz-header">
+        <div class="quiz-num">${qi + 1}</div>
+        <div class="quiz-question-text">${q.q}</div>
+      </div>
+      <div class="quiz-options">${optionsHTML}</div>
+      <div class="option-feedback" id="q${num}-feedback-${qi}"></div>`;
+    container.appendChild(card);
+  });
+}
+
+function selectAnswer(quizNum, qi, chosenIndex) {
+  const q = quizData[quizNum].questions[qi];
+  const isCorrect = chosenIndex === q.correct;
+  q.options.forEach((_, oi) => {
+    const btn = document.getElementById(`q${quizNum}-${qi}-${oi}`);
+    btn.classList.add('disabled');
+    if (oi === q.correct) btn.classList.add('revealed-correct');
+  });
+  document.getElementById(`q${quizNum}-${qi}-${chosenIndex}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+  const feedback = document.getElementById(`q${quizNum}-feedback-${qi}`);
+  if (isCorrect) {
+    feedback.className = 'option-feedback correct-fb';
+    feedback.innerHTML = '✅ Correct! ' + q.explanation;
+    quizState[quizNum].correct++;
+  } else {
+    feedback.className = 'option-feedback incorrect-fb';
+    feedback.innerHTML = '❌ Not quite. ' + q.explanation;
+  }
+  quizState[quizNum].answered++;
+  updateProgress(quizNum);
+  if (quizState[quizNum].answered === quizData[quizNum].total) showScore(quizNum);
+}
+
+function updateProgress(num) {
+  const total = quizData[num].total, answered = quizState[num].answered;
+  document.getElementById(`q${num}-progress`).style.width = (answered / total * 100) + '%';
+  document.getElementById(`q${num}-progress-text`).textContent = `${answered} / ${total}`;
+}
+
+function showScore(num) {
+  const { correct, answered } = quizState[num];
+  const pct = Math.round(correct / answered * 100);
+  const msg = pct === 100 ? '🏆 Perfect score! You know your evolution inside and out!'
+    : pct >= 80 ? '🌟 Great work! You clearly studied — review any you missed.'
+    : pct >= 60 ? '📚 Good effort! Go back over the notes and try again.'
+    : "💪 Keep going — review each section carefully. You've got this!";
+  document.getElementById(`q${num}-score-num`).textContent = `${correct}/${answered}`;
+  document.getElementById(`q${num}-score-msg`).textContent = msg;
+  const sb = document.getElementById(`q${num}-score`);
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetQuiz(num) {
+  document.getElementById(`q${num}-score`).classList.remove('show');
+  buildQuiz(num);
+}
+
+buildQuiz(1);
+</script>
+
+<!-- READ ALOUD — Web Speech API -->
+<script>
+(function() {
+  // State tracker: which card is currently active
+  var activeCard = null;
+  var activeBtn  = null;
+  var utterance  = null;
+
+  // Extract clean readable text from a card (strips emoji, excess whitespace)
+  function getCardText(cardId) {
+    var card = document.getElementById(cardId);
+    if (!card) return '';
+    // Clone so we don't touch the live DOM
+    var clone = card.cloneNode(true);
+    // Remove the button itself from the read text
+    var btn = clone.querySelector('.read-aloud-btn');
+    if (btn) btn.remove();
+    // Remove the cycle diagram SVG and instruction box — not meaningful as speech
+    var svg = clone.querySelector('svg');
+    if (svg) svg.remove();
+    var inst = clone.querySelector('.ns-cycle-instructions');
+    if (inst) inst.remove();
+    var cycleWrap = clone.querySelector('.ns-cycle-wrap');
+    if (cycleWrap) cycleWrap.remove();
+    // Get plain text, clean up whitespace and stray symbols
+    var raw = clone.innerText || clone.textContent || '';
+    return raw
+      .replace(/[🔊🦠⚡🏆👶📈🔄🐦🦒💡🐸🔀🧬🦋]/gu, '')
+      .replace(/[\u{1F300}-\u{1FFFF}]/gu, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
+
+  function resetBtn(btn) {
+    btn.textContent = '🔊 Read Aloud';
+    btn.classList.remove('speaking', 'paused');
+  }
+
+  function stopAll() {
+    window.speechSynthesis.cancel();
+    if (activeBtn) resetBtn(activeBtn);
+    activeCard = null;
+    activeBtn  = null;
+    utterance  = null;
+  }
+
+  // Extract card title and body separately
+  function getCardParts(cardId) {
+    var card = document.getElementById(cardId);
+    if (!card) return { title: '', body: '' };
+    var titleEl = card.querySelector('.card-title');
+    var title = titleEl ? titleEl.textContent.trim() : '';
+
+    var clone = card.cloneNode(true);
+    var btn = clone.querySelector('.read-aloud-btn');
+    if (btn) btn.remove();
+    var svg = clone.querySelector('svg');
+    if (svg) svg.remove();
+    var inst = clone.querySelector('.ns-cycle-instructions');
+    if (inst) inst.remove();
+    var cycleWrap = clone.querySelector('.ns-cycle-wrap');
+    if (cycleWrap) cycleWrap.remove();
+    var titleClone = clone.querySelector('.card-title');
+    if (titleClone) titleClone.remove();
+
+    var raw = clone.innerText || clone.textContent || '';
+    var body = raw
+      .replace(/[🔊🦠⚡🏆👶📈🔄🐦🦒💡🐸🔀🧬🦋]/gu, '')
+      .replace(/[\u{1F300}-\u{1FFFF}]/gu, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    return { title: title, body: body };
+  }
+
+  function getPreferredVoice() {
+    var voices = window.speechSynthesis.getVoices();
+    return voices.find(function(v) {
+      return /Samantha|Karen|Google US English|Microsoft Aria|Zira/i.test(v.name);
+    }) || voices.find(function(v) {
+      return v.lang === 'en-US' && !v.name.toLowerCase().includes('compact');
+    });
+  }
+
+  // Speak title, then pause, then body — queued as three utterances
+  function speakWithPause(title, body, onDone, onErr) {
+    // Small delay required — Chrome silently drops speak() called immediately after cancel()
+    setTimeout(function() {
+      var voice = getPreferredVoice();
+
+      function makeUtt(text, rate, vol) {
+        var u = new SpeechSynthesisUtterance(text);
+        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
+        if (voice) u.voice = voice;
+        return u;
+      }
+
+      var uttTitle = makeUtt(title, 0.82, 1);
+      var uttPause = makeUtt('...', 0.1,  0);  // silent ~700ms gap
+      var uttBody  = makeUtt(body,  0.82, 1);
+
+      uttBody.onend   = onDone;
+      uttBody.onerror = onErr;
+      utterance = uttBody;
+
+      window.speechSynthesis.speak(uttTitle);
+      window.speechSynthesis.speak(uttPause);
+      window.speechSynthesis.speak(uttBody);
+    }, 100);
+  }
+
+  // Expose helpers globally so toggleCycleRead (outer script) can reach them
+  window.speakWithPause   = speakWithPause;
+  window.getPreferredVoice = getPreferredVoice;
+
+  window.toggleRead = function(cardId, btn) {
+    // If this card is currently speaking, toggle pause/resume
+    if (activeCard === cardId) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        btn.textContent = '⏸ Pause';
+        btn.classList.remove('paused');
+        btn.classList.add('speaking');
+      } else if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        btn.textContent = '▶ Resume';
+        btn.classList.remove('speaking');
+        btn.classList.add('paused');
+      } else {
+        stopAll();
+      }
+      return;
+    }
+
+    // Different card clicked — stop whatever was playing
+    stopAll();
+
+    var parts = getCardParts(cardId);
+    if (!parts.body) return;
+
+    activeCard = cardId;
+    activeBtn  = btn;
+    btn.textContent = '⏸ Pause';
+    btn.classList.add('speaking');
+
+    speakWithPause(
+      parts.title,
+      parts.body,
+      function() { if (activeBtn) resetBtn(activeBtn); activeCard = null; activeBtn = null; },
+      function() { if (activeBtn) resetBtn(activeBtn); activeCard = null; activeBtn = null; }
+    );
+  };
+
+  // Stop speech if user navigates away
+  window.addEventListener('beforeunload', function() {
+    window.speechSynthesis.cancel();
+  });
+
+  // Chrome bug: speech stops after ~15s unless we nudge it
+  setInterval(function() {
+    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+      window.speechSynthesis.pause();
+      window.speechSynthesis.resume();
+    }
+  }, 12000);
+})();
+</script>
+
+<!-- NATURAL SELECTION CYCLE LOGIC -->
+<script>
+const cycleSteps = {
+  1: {
+    label: 'Step 1 of 5',
+    title: 'Variation Exists in the Population',
+    body: 'Individuals within a population are not identical — they have slightly different traits like size, color, speed, or disease resistance. This variation is the raw material that natural selection works with. Without it, there is nothing to select.'
+  },
+  2: {
+    label: 'Step 2 of 5',
+    title: 'The Environment Creates Pressure',
+    body: 'Predators, food scarcity, disease, climate change, or radiation create challenges. Not all individuals can handle these pressures equally — and that difference determines who survives long enough to reproduce. (Example: Chernobyl frogs faced intense radiation pressure.)'
+  },
+  3: {
+    label: 'Step 3 of 5',
+    title: 'Best-Suited Traits Survive',
+    body: 'Organisms whose traits better match the environmental challenge survive longer and reproduce more. This is not a choice — individuals with helpful traits simply have a statistical advantage. Organisms without those traits reproduce less, or don\'t survive at all.'
+  },
+  4: {
+    label: 'Step 4 of 5',
+    title: 'Traits Are Passed to Offspring',
+    body: 'Through heredity, survivors pass their helpful traits to the next generation. Because survivors reproduce more, the next generation contains a higher proportion of the helpful trait than the generation before it.'
+  },
+  5: {
+    label: 'Step 5 of 5 → back to Step 1',
+    title: 'The Population Changes Over Time',
+    body: 'After many generations, the helpful trait has become significantly more common in the population. The population has evolved. But crucially — this new population still has variation, the environment still applies pressure, and the entire cycle begins again. Evolution never stops.'
+  }
+};
+
+let activeNode = null;
+
+function cycleClick(num) {
+  const step = cycleSteps[num];
+
+  // Reset cycle read button whenever a new node is clicked
+  const cyBtn = document.getElementById('cy-read-btn');
+  if (cyBtn) {
+    window.speechSynthesis.cancel();
+    cyBtn.textContent = '🔊 Read Aloud';
+    cyBtn.classList.remove('speaking', 'paused');
+    cyBtn._speaking = false;
+  }
+
+  // Update detail panel
+  document.getElementById('cy-detail-step').textContent  = step.label;
+  document.getElementById('cy-detail-title').textContent = step.title;
+  document.getElementById('cy-detail-body').textContent  = step.body;
+
+  // Update center of SVG
+  document.getElementById('cy-num').textContent  = num;
+  document.getElementById('cy-text').textContent = step.title;
+
+  // Toggle active class on nodes
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('cy-node-' + i).classList.toggle('active', i === num);
+  }
+  activeNode = num;
+}
+
+window.toggleCycleRead = function(btn) {
+  // If speaking, pause/resume
+  if (btn._speaking) {
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      btn.textContent = '⏸ Pause';
+      btn.classList.remove('paused');
+      btn.classList.add('speaking');
+    } else if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.pause();
+      btn.textContent = '▶ Resume';
+      btn.classList.remove('speaking');
+      btn.classList.add('paused');
+    } else {
+      btn.textContent = '🔊 Read Aloud';
+      btn.classList.remove('speaking', 'paused');
+      btn._speaking = false;
+    }
+    return;
+  }
+
+  // Stop any card reading in progress
+  window.speechSynthesis.cancel();
+  // Also reset any active card button
+  document.querySelectorAll('.read-aloud-btn').forEach(function(b) {
+    if (b !== btn) { b.textContent = '🔊 Read Aloud'; b.classList.remove('speaking','paused'); }
+  });
+
+  // Build text from the current step
+  const titleEl = document.getElementById('cy-detail-title');
+  const bodyEl  = document.getElementById('cy-detail-body');
+  if (!titleEl || !bodyEl) return;
+  const title = titleEl.textContent.trim();
+  const body  = bodyEl.textContent.trim();
+  if (!body) return;
+
+  btn._speaking = true;
+  btn.textContent = '⏸ Pause';
+  btn.classList.add('speaking');
+
+  speakWithPause(
+    title,
+    body,
+    function() { btn.textContent = '🔊 Read Aloud'; btn.classList.remove('speaking','paused'); btn._speaking = false; },
+    function() { btn.textContent = '🔊 Read Aloud'; btn.classList.remove('speaking','paused'); btn._speaking = false; }
+  );
+};
+
+// Default to step 1 on load
+window.addEventListener('DOMContentLoaded', function() { cycleClick(1); });
+</script>
+
+<!-- STARFIELD — warm amber/gold tint for Rocks Tell Stories -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = document.body.scrollHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / 4200);
+  for (let i = 0; i < count; i++) {
+    stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2, a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2 });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(240,210,160,${alpha})`; ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize(); requestAnimationFrame(draw);
+</script>
+
+</body>
+</html>

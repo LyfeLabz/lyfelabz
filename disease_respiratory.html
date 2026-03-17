@@ -187,6 +187,67 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
   
   
 
+
+  /* ── READ ALOUD ── */
+  .i-card-hd { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+  .read-aloud-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.32rem 0.85rem; border-radius: 99px; cursor: pointer;
+    border: 1px solid rgba(59,200,232,0.45);
+    background: rgba(59,200,232,0.1); color: #3bc8e8;
+    text-shadow: 0 0 8px rgba(59,200,232,0.55);
+    box-shadow: 0 0 8px rgba(59,200,232,0.18), inset 0 0 6px rgba(59,200,232,0.05);
+    transition: all 0.25s; white-space: nowrap; flex-shrink: 0;
+  }
+  .read-aloud-btn:hover {
+    background: rgba(59,200,232,0.22); border-color: rgba(59,200,232,0.8);
+    text-shadow: 0 0 12px rgba(59,200,232,0.85);
+    box-shadow: 0 0 16px rgba(59,200,232,0.42), 0 0 32px rgba(59,200,232,0.18);
+  }
+  .read-aloud-btn.speaking {
+    background: rgba(29,233,182,0.12); border-color: rgba(29,233,182,0.6); color: #1de9b6;
+    text-shadow: 0 0 10px rgba(29,233,182,0.8);
+    animation: ra-pulse 1.6s ease-in-out infinite;
+  }
+  .read-aloud-btn.paused {
+    background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.55); color: #f5c842;
+    text-shadow: 0 0 8px rgba(245,200,66,0.7);
+    box-shadow: 0 0 10px rgba(245,200,66,0.22);
+  }
+  @keyframes ra-pulse {
+    0%,100% { box-shadow: 0 0 10px rgba(29,233,182,0.28), 0 0 22px rgba(29,233,182,0.1); }
+    50%      { box-shadow: 0 0 20px rgba(29,233,182,0.52), 0 0 40px rgba(29,233,182,0.22); }
+  }
+
+  /* ── RIPPLE READ ALOUD ── */
+  .rb-label { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .rb-read-btn {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.65rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.22rem 0.65rem; border-radius: 99px; cursor: pointer;
+    border: 1px solid rgba(59,200,232,0.45);
+    background: rgba(59,200,232,0.1); color: #3bc8e8;
+    text-shadow: 0 0 6px rgba(59,200,232,0.5);
+    box-shadow: 0 0 6px rgba(59,200,232,0.15);
+    transition: all 0.25s; white-space: nowrap; flex-shrink: 0;
+  }
+  .rb-read-btn:hover {
+    background: rgba(59,200,232,0.22); border-color: rgba(59,200,232,0.8);
+    text-shadow: 0 0 10px rgba(59,200,232,0.85);
+    box-shadow: 0 0 14px rgba(59,200,232,0.38), 0 0 28px rgba(59,200,232,0.15);
+  }
+  .rb-read-btn.speaking {
+    background: rgba(29,233,182,0.12); border-color: rgba(29,233,182,0.6); color: #1de9b6;
+    text-shadow: 0 0 8px rgba(29,233,182,0.8);
+    animation: ra-pulse 1.6s ease-in-out infinite;
+  }
+  .rb-read-btn.paused {
+    background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.55); color: #f5c842;
+    text-shadow: 0 0 6px rgba(245,200,66,0.7);
+  }
 </style>
 </head>
 <body>
@@ -261,22 +322,23 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
           <div class="i-card-sys"><span class="pulse-dot"></span> Respiratory System</div>
           <div class="i-card-name" id="panel-name"></div>
           <div class="i-card-desc" id="panel-desc"></div>
+          <button class="read-aloud-btn" id="dis-read-btn" onclick="toggleDisRead(this)">🔊 Read Aloud</button>
         </div>
         <div class="dtab-row" id="dtab-row"></div>
         <div class="ripple-wrap">
           <span class="sev-badge" id="sev-badge"></span>
           <div class="ripple-block r1" id="r1">
-            <div class="rb-label">🔬 What Goes Wrong</div>
+            <div class="rb-label">🔬 What Goes Wrong<button class="rb-read-btn" onclick="toggleRippleRead('r1',this)">🔊</button></div>
             <div class="rb-title" id="r1-title"></div>
             <div class="rb-text"  id="r1-text"></div>
           </div>
           <div class="ripple-block r2" id="r2">
-            <div class="rb-label">📡 How It Spreads</div>
+            <div class="rb-label">📡 How It Spreads<button class="rb-read-btn" onclick="toggleRippleRead('r2',this)">🔊</button></div>
             <div class="rb-title" id="r2-title"></div>
             <div class="rb-text"  id="r2-text"></div>
           </div>
           <div class="ripple-block r3" id="r3">
-            <div class="rb-label">🧍 How You Feel It</div>
+            <div class="rb-label">🧍 How You Feel It<button class="rb-read-btn" onclick="toggleRippleRead('r3',this)">🔊</button></div>
             <div class="rb-title" id="r3-title"></div>
             <div class="rb-text"  id="r3-text"></div>
           </div>
@@ -454,6 +516,154 @@ function setPanel(organ, dIdx) {
 }
 
 
+</script>
+<script>
+(function() {
+  function getVoice() {
+    var voices = window.speechSynthesis.getVoices();
+    return voices.find(function(v) {
+      return /Samantha|Karen|Google US English|Microsoft Aria|Zira/i.test(v.name);
+    }) || voices.find(function(v) {
+      return v.lang === 'en-US' && !v.name.toLowerCase().includes('compact');
+    });
+  }
+  function resetBtn() {
+    var btn = document.getElementById('dis-read-btn');
+    if (!btn) return;
+    btn.textContent = '🔊 Read Aloud';
+    btn.classList.remove('speaking','paused');
+    btn._speaking = false;
+  }
+
+  // Hook into setPanel so button resets on every new node/tab selection
+  var _origSetPanel = window.setPanel;
+  window.setPanel = function(organ, dIdx) {
+    resetBtn();
+    window.speechSynthesis.cancel();
+    if (_origSetPanel) _origSetPanel(organ, dIdx);
+  };
+
+  window.toggleDisRead = function(btn) {
+    if (btn._speaking) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        btn.textContent = '⏸ Pause'; btn.classList.remove('paused'); btn.classList.add('speaking');
+      } else if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        btn.textContent = '▶ Resume'; btn.classList.remove('speaking'); btn.classList.add('paused');
+      } else { resetBtn(); }
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    var organ  = document.getElementById('panel-name')  ? document.getElementById('panel-name').textContent.trim()  : '';
+    var desc   = document.getElementById('panel-desc')  ? document.getElementById('panel-desc').textContent.trim()  : '';
+    // Active disease tab
+    var activeTab = document.querySelector('.dtab.active');
+    var disease = activeTab ? activeTab.textContent.trim() : '';
+    var r1t = document.getElementById('r1-title') ? document.getElementById('r1-title').textContent.trim() : '';
+    var r1b = document.getElementById('r1-text')  ? document.getElementById('r1-text').textContent.trim()  : '';
+    var r2t = document.getElementById('r2-title') ? document.getElementById('r2-title').textContent.trim() : '';
+    var r2b = document.getElementById('r2-text')  ? document.getElementById('r2-text').textContent.trim()  : '';
+    var r3t = document.getElementById('r3-title') ? document.getElementById('r3-title').textContent.trim() : '';
+    var r3b = document.getElementById('r3-text')  ? document.getElementById('r3-text').textContent.trim()  : '';
+    var dyk = document.getElementById('dyk-text') ? document.getElementById('dyk-text').textContent.trim() : '';
+
+    if (!organ || !disease) return;
+
+    btn._speaking = true; btn.textContent = '⏸ Pause'; btn.classList.add('speaking');
+
+    setTimeout(function() {
+      var voice = getVoice();
+      function makeUtt(text, rate, vol) {
+        var u = new SpeechSynthesisUtterance(text);
+        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
+        if (voice) u.voice = voice; return u;
+      }
+      var utts = [
+        makeUtt(organ + '. ' + disease + '.', 0.82, 1),
+        makeUtt('...', 0.1, 0),
+        makeUtt('What goes wrong. ' + r1t + '. ' + r1b, 0.82, 1),
+        makeUtt('...', 0.1, 0),
+        makeUtt('How it spreads. ' + r2t + '. ' + r2b, 0.82, 1),
+        makeUtt('...', 0.1, 0),
+        makeUtt('How you feel it. ' + r3t + '. ' + r3b, 0.82, 1),
+        makeUtt('...', 0.1, 0),
+        makeUtt('Did you know. ' + dyk, 0.82, 1),
+      ];
+      utts[utts.length - 1].onend  = function() { resetBtn(); };
+      utts[utts.length - 1].onerror= function() { resetBtn(); };
+      utts.forEach(function(u) { window.speechSynthesis.speak(u); });
+    }, 100);
+  };
+
+  
+  // ── RIPPLE BLOCK READ ALOUD ──────────────────────────────────
+  window.toggleRippleRead = function(blockId, btn) {
+    var titleEl = document.getElementById(blockId + '-title');
+    var textEl  = document.getElementById(blockId + '-text');
+    if (!titleEl || !textEl) return;
+
+    if (btn._speaking) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        btn.textContent = '⏸'; btn.classList.remove('paused'); btn.classList.add('speaking');
+      } else if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        btn.textContent = '▶'; btn.classList.remove('speaking'); btn.classList.add('paused');
+      } else {
+        btn.textContent = '🔊'; btn.classList.remove('speaking','paused'); btn._speaking = false;
+      }
+      return;
+    }
+
+    // Stop anything else playing and reset all ripple buttons
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.rb-read-btn').forEach(function(b) {
+      b.textContent = '🔊'; b.classList.remove('speaking','paused'); b._speaking = false;
+    });
+
+    var title = titleEl.textContent.trim();
+    var text  = textEl.textContent.trim();
+    if (!title && !text) return;
+
+    btn._speaking = true; btn.textContent = '⏸'; btn.classList.add('speaking');
+
+    setTimeout(function() {
+      var voice = getVoice ? getVoice() : null;
+      function makeUtt(t, rate, vol) {
+        var u = new SpeechSynthesisUtterance(t);
+        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
+        if (voice) u.voice = voice; return u;
+      }
+      var uttTitle = makeUtt(title, 0.82, 1);
+      var uttPause = makeUtt('...', 0.1, 0);
+      var uttText  = makeUtt(text,  0.82, 1);
+      uttText.onend = uttText.onerror = function() {
+        btn.textContent = '🔊'; btn.classList.remove('speaking','paused'); btn._speaking = false;
+      };
+      window.speechSynthesis.speak(uttTitle);
+      window.speechSynthesis.speak(uttPause);
+      window.speechSynthesis.speak(uttText);
+    }, 100);
+  };
+
+  // Reset ripple buttons when setPanel is called (new node or disease tab)
+  var _origSetPanel2 = window.setPanel;
+  window.setPanel = function(organ, dIdx) {
+    document.querySelectorAll('.rb-read-btn').forEach(function(b) {
+      b.textContent = '🔊'; b.classList.remove('speaking','paused'); b._speaking = false;
+    });
+    window.speechSynthesis.cancel();
+    if (_origSetPanel2) _origSetPanel2(organ, dIdx);
+  };
+  window.addEventListener('beforeunload', function() { window.speechSynthesis.cancel(); });
+  setInterval(function() {
+    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+      window.speechSynthesis.pause(); window.speechSynthesis.resume();
+    }
+  }, 12000);
+})();
 </script>
 <script>
   if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');

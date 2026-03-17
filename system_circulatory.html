@@ -133,6 +133,41 @@
 
   @media(max-width:960px){ .panels{grid-template-columns:1fr} .info-panel{position:static} }
   @media(max-width:600px){ nav{padding:0.8rem 1.2rem} .nav-center{display:none} .page-header{padding:1.6rem 1.2rem 1.3rem} .explorer-wrap{padding:1.2rem 1rem 2rem} }
+
+  /* ── READ ALOUD ── */
+  .i-card-hd { justify-content: space-between; align-items: flex-start; }
+  .c-card-hd { justify-content: space-between; }
+  .c-card-hd .read-aloud-btn { font-size: 0.67rem; padding: 0.25rem 0.7rem; flex-shrink: 0; margin-left: auto; }
+  .read-aloud-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.32rem 0.85rem; border-radius: 99px; cursor: pointer;
+    border: 1px solid rgba(59,200,232,0.45);
+    background: rgba(59,200,232,0.1); color: #3bc8e8;
+    text-shadow: 0 0 8px rgba(59,200,232,0.55);
+    box-shadow: 0 0 8px rgba(59,200,232,0.18), inset 0 0 6px rgba(59,200,232,0.05);
+    transition: all 0.25s; white-space: nowrap; flex-shrink: 0;
+  }
+  .read-aloud-btn:hover {
+    background: rgba(59,200,232,0.22); border-color: rgba(59,200,232,0.8);
+    text-shadow: 0 0 12px rgba(59,200,232,0.85);
+    box-shadow: 0 0 16px rgba(59,200,232,0.42), 0 0 32px rgba(59,200,232,0.18), inset 0 0 8px rgba(59,200,232,0.1);
+  }
+  .read-aloud-btn.speaking {
+    background: rgba(29,233,182,0.12); border-color: rgba(29,233,182,0.6); color: #1de9b6;
+    text-shadow: 0 0 10px rgba(29,233,182,0.8);
+    animation: ra-pulse 1.6s ease-in-out infinite;
+  }
+  .read-aloud-btn.paused {
+    background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.55); color: #f5c842;
+    text-shadow: 0 0 8px rgba(245,200,66,0.7);
+    box-shadow: 0 0 10px rgba(245,200,66,0.22);
+  }
+  @keyframes ra-pulse {
+    0%,100% { box-shadow: 0 0 10px rgba(29,233,182,0.28), 0 0 22px rgba(29,233,182,0.1); }
+    50%      { box-shadow: 0 0 20px rgba(29,233,182,0.52), 0 0 40px rgba(29,233,182,0.22); }
+  }
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
@@ -456,6 +491,7 @@ body.stem-active .stem-detail {
               <div class="i-card-sys" id="c-sys">Circulatory System</div>
               <div class="i-card-name" id="c-name">Heart</div>
             </div>
+            <button class="read-aloud-btn" id="map-read-btn" onclick="toggleMapRead(this)">🔊 Read Aloud</button>
           </div>
           <div class="i-card-body">
             <div class="i-sec-lbl">🔬 Role in the Circulatory System</div>
@@ -467,23 +503,23 @@ body.stem-active .stem-detail {
       </div>
 
       <div class="c-card" id="cc-resp">
-        <div class="c-card-hd"><span class="c-ico">🫁</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#3bc8e8">Respiratory System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🫁</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#3bc8e8">Respiratory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Respiratory" data-body="The circulatory and respiratory systems are inseparable partners. Blood travels from the heart to the lungs via pulmonary circulation to pick up oxygen and drop off carbon dioxide. Without the respiratory system loading oxygen into red blood cells, the circulatory system would be delivering empty packages.">🔊 Read Aloud</button></div>
         <p>The circulatory and respiratory systems are <strong>inseparable partners</strong>. Blood travels from the heart to the lungs via pulmonary circulation to pick up oxygen and drop off CO₂. Without the respiratory system loading oxygen into red blood cells, the circulatory system would be delivering empty packages.</p>
       </div>
       <div class="c-card" id="cc-dige">
-        <div class="c-card-hd"><span class="c-ico">🫄</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#ff9d45">Digestive System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🫄</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#ff9d45">Digestive System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Digestive" data-body="After the small intestine breaks down food, blood vessels lining the intestinal wall absorb glucose, amino acids, and fatty acids directly into the bloodstream and carry them to every cell in the body.">🔊 Read Aloud</button></div>
         <p>After the small intestine breaks down food, blood vessels lining the intestinal wall absorb <strong>glucose, amino acids, and fatty acids</strong> directly into the bloodstream and carry them to every cell in the body.</p>
       </div>
       <div class="c-card" id="cc-excr">
-        <div class="c-card-hd"><span class="c-ico">🚽</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#69d97a">Excretory System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🚽</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#69d97a">Excretory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Excretory" data-body="The excretory system removes waste from the blood in three ways: the kidneys filter liquid waste as urea into urine, the large intestine expels solid waste while returning absorbed water to the bloodstream, and the lungs expel gaseous carbon dioxide with every exhale.">🔊 Read Aloud</button></div>
         <p>The excretory system removes waste from the blood in three ways: the <strong>kidneys</strong> filter liquid waste (urea → urine), the <strong>large intestine</strong> expels solid waste while returning absorbed water to the bloodstream, and the <strong>lungs</strong> expel gaseous CO₂ with every exhale.</p>
       </div>
       <div class="c-card" id="cc-skel">
-        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Skeletal" data-body="Red bone marrow inside the femur and sternum manufactures all blood cells — red cells to carry oxygen and white cells to fight infection. Without the skeletal system, the circulatory system could not maintain its cellular supply.">🔊 Read Aloud</button></div>
         <p>Red bone marrow inside the femur and sternum <strong>manufactures all blood cells</strong> — red cells to carry oxygen and white cells to fight infection. Without the skeletal system, the circulatory system could not maintain its cellular supply.</p>
       </div>
       <div class="c-card" id="cc-immu">
-        <div class="c-card-hd"><span class="c-ico">🛡️</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#1de9b6">Immune System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🛡️</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#1de9b6">Immune System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Immune" data-body="The circulatory system is the immune system's highway network. White blood cells and antibodies travel through blood vessels to infection sites anywhere in the body. Lymph nodes filter pathogens out of the blood before they can spread.">🔊 Read Aloud</button></div>
         <p>The circulatory system is the immune system's <strong>highway network</strong>. White blood cells and antibodies travel through blood vessels to infection sites anywhere in the body. Lymph nodes filter pathogens out of the blood before they can spread.</p>
       </div>
     </div>
@@ -927,6 +963,10 @@ canvas.addEventListener('click', e => {
   if (hit) {
     selectedNode = hit;
     const d = organData[hit];
+    // Reset read-aloud button and cancel any speech when new node selected
+    window.speechSynthesis.cancel();
+    const rb = document.getElementById('map-read-btn');
+    if (rb) { rb.textContent = '🔊 Read Aloud'; rb.classList.remove('speaking','paused'); rb._speaking = false; }
     document.getElementById('c-ico').textContent  = d.ico;
     document.getElementById('c-name').textContent = d.name;
     document.getElementById('c-sys').textContent  = d.sys + ' System';
@@ -1000,6 +1040,142 @@ function toggleSys(key, btn) {
 // ─────────────────────────────────────────────
 resize();
 loop();
+</script>
+<script>
+// ── READ ALOUD — Web Speech API ──────────────────────────────
+(function() {
+  var speaking = false;
+
+  function getVoice() {
+    var voices = window.speechSynthesis.getVoices();
+    return voices.find(function(v) {
+      return /Samantha|Karen|Google US English|Microsoft Aria|Zira/i.test(v.name);
+    }) || voices.find(function(v) {
+      return v.lang === 'en-US' && !v.name.toLowerCase().includes('compact');
+    });
+  }
+
+  function resetBtn(btn) {
+    btn.textContent = '🔊 Read Aloud';
+    btn.classList.remove('speaking', 'paused');
+    btn._speaking = false;
+    speaking = false;
+  }
+
+  window.toggleMapRead = function(btn) {
+    if (btn._speaking) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        btn.textContent = '⏸ Pause';
+        btn.classList.remove('paused'); btn.classList.add('speaking');
+      } else if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        btn.textContent = '▶ Resume';
+        btn.classList.remove('speaking'); btn.classList.add('paused');
+      } else {
+        resetBtn(btn);
+      }
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    var name  = (document.getElementById('c-name')  || {}).textContent || '';
+    var role  = (document.getElementById('c-role')  || {}).textContent || '';
+    var fact  = (document.getElementById('c-fact')  || {}).textContent || '';
+    if (!role) return;
+
+    btn._speaking = true;
+    btn.textContent = '⏸ Pause';
+    btn.classList.add('speaking');
+    speaking = true;
+
+    setTimeout(function() {
+      var voice = getVoice();
+      function makeUtt(text, rate, vol) {
+        var u = new SpeechSynthesisUtterance(text);
+        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
+        if (voice) u.voice = voice;
+        return u;
+      }
+      var uttName  = makeUtt(name,         0.82, 1);
+      var uttPause = makeUtt('...',         0.1,  0);
+      var uttRole  = makeUtt(role,          0.82, 1);
+      var uttPause2= makeUtt('...',         0.1,  0);
+      var uttFact  = makeUtt('Fun fact. ' + fact, 0.82, 1);
+
+      uttFact.onend = uttFact.onerror = function() { resetBtn(btn); };
+
+      window.speechSynthesis.speak(uttName);
+      window.speechSynthesis.speak(uttPause);
+      window.speechSynthesis.speak(uttRole);
+      window.speechSynthesis.speak(uttPause2);
+      window.speechSynthesis.speak(uttFact);
+    }, 100);
+  };
+
+  window.addEventListener('beforeunload', function() { window.speechSynthesis.cancel(); });
+
+  // Generic read for connected system cards — title/body from data attributes
+  window.toggleGenericRead = function(btn) {
+    var title = btn.getAttribute('data-title') || '';
+    var body  = btn.getAttribute('data-body')  || '';
+    if (!body) return;
+    var key = 'generic:' + title;
+
+    // Reuse the same active tracking as toggleMapRead
+    if (btn._speaking) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        btn.textContent = '⏸ Pause';
+        btn.classList.remove('paused'); btn.classList.add('speaking');
+      } else if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        btn.textContent = '▶ Resume';
+        btn.classList.remove('speaking'); btn.classList.add('paused');
+      } else {
+        resetBtn(btn);
+      }
+      return;
+    }
+
+    // Stop any other speech and reset all buttons
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.read-aloud-btn').forEach(function(b) {
+      if (b !== btn) { b.textContent = '🔊 Read Aloud'; b.classList.remove('speaking','paused'); b._speaking = false; }
+    });
+
+    btn._speaking = true;
+    btn.textContent = '⏸ Pause';
+    btn.classList.add('speaking');
+    speaking = true;
+
+    setTimeout(function() {
+      var voice = getVoice();
+      function makeUtt(text, rate, vol) {
+        var u = new SpeechSynthesisUtterance(text);
+        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
+        if (voice) u.voice = voice;
+        return u;
+      }
+      var uttTitle = makeUtt(title, 0.82, 1);
+      var uttPause = makeUtt('...', 0.1,  0);
+      var uttBody  = makeUtt(body,  0.82, 1);
+      uttBody.onend = uttBody.onerror = function() { resetBtn(btn); speaking = false; };
+      window.speechSynthesis.speak(uttTitle);
+      window.speechSynthesis.speak(uttPause);
+      window.speechSynthesis.speak(uttBody);
+    }, 100);
+  };
+
+  // Chrome 15s bug workaround
+  setInterval(function() {
+    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+      window.speechSynthesis.pause();
+      window.speechSynthesis.resume();
+    }
+  }, 12000);
+})();
 </script>
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 </body>

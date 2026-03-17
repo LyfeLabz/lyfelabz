@@ -335,6 +335,41 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 
+
+  /* ── READ ALOUD ── */
+  .i-card-hd { justify-content: space-between !important; align-items: flex-start !important; }
+  .c-card-hd { justify-content: space-between; }
+  .c-card-hd .read-aloud-btn { font-size: 0.67rem; padding: 0.25rem 0.7rem; flex-shrink: 0; margin-left: auto; }
+  .read-aloud-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.32rem 0.85rem; border-radius: 99px; cursor: pointer;
+    border: 1px solid rgba(59,200,232,0.45);
+    background: rgba(59,200,232,0.1); color: #3bc8e8;
+    text-shadow: 0 0 8px rgba(59,200,232,0.55);
+    box-shadow: 0 0 8px rgba(59,200,232,0.18), inset 0 0 6px rgba(59,200,232,0.05);
+    transition: all 0.25s; white-space: nowrap; flex-shrink: 0;
+  }
+  .read-aloud-btn:hover {
+    background: rgba(59,200,232,0.22); border-color: rgba(59,200,232,0.8);
+    text-shadow: 0 0 12px rgba(59,200,232,0.85);
+    box-shadow: 0 0 16px rgba(59,200,232,0.42), 0 0 32px rgba(59,200,232,0.18);
+  }
+  .read-aloud-btn.speaking {
+    background: rgba(29,233,182,0.12); border-color: rgba(29,233,182,0.6); color: #1de9b6;
+    text-shadow: 0 0 10px rgba(29,233,182,0.8);
+    animation: ra-pulse 1.6s ease-in-out infinite;
+  }
+  .read-aloud-btn.paused {
+    background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.55); color: #f5c842;
+    text-shadow: 0 0 8px rgba(245,200,66,0.7);
+    box-shadow: 0 0 10px rgba(245,200,66,0.22);
+  }
+  @keyframes ra-pulse {
+    0%,100% { box-shadow: 0 0 10px rgba(29,233,182,0.28), 0 0 22px rgba(29,233,182,0.1); }
+    50%      { box-shadow: 0 0 20px rgba(29,233,182,0.52), 0 0 40px rgba(29,233,182,0.22); }
+  }
 </style>
 </head>
 <body>
@@ -397,6 +432,7 @@ body.stem-active .stem-detail {
           <div class="i-card-hd">
             <div class="i-card-ico" id="c-ico">🧠</div>
             <div><div class="i-card-sys" id="c-sys">The Nervous System</div><div class="i-card-name" id="c-name"></div></div>
+            <button class="read-aloud-btn" id="map-read-btn" onclick="toggleMapRead(this)">🔊 Read Aloud</button>
           </div>
           <div class="i-card-body">
             <div class="i-sec-lbl">🔬 Role in the Nervous System</div>
@@ -407,31 +443,31 @@ body.stem-active .stem-detail {
         </div>
       </div>
       <div class="c-card" id="cc-circ">
-        <div class="c-card-hd"><span class="c-ico">🫀</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#e74c6f">Circulatory System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🫀</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#e74c6f">Circulatory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Circulatory" data-body="The brain demands constant uninterrupted blood flow — 10 seconds without it causes unconsciousness. The autonomic nervous system continuously monitors and adjusts heart rate and vessel tone in real time.">🔊 Read Aloud</button></div>
         <p>The brain demands <strong>constant uninterrupted blood flow</strong> — 10 seconds without it causes unconsciousness. The autonomic nervous system continuously monitors and adjusts heart rate and vessel tone in real time.</p>
       </div>
       <div class="c-card" id="cc-musc">
-        <div class="c-card-hd"><span class="c-ico">💪</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#ff6b6b">Muscular System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">💪</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#ff6b6b">Muscular System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Muscular" data-body="Every voluntary movement originates in the motor cortex, travels down the spinal cord, and arrives at muscles via motor neurons. The cerebellum fine-tunes timing so movements are smooth and coordinated.">🔊 Read Aloud</button></div>
         <p><strong>Every voluntary movement</strong> originates in the motor cortex, travels down the spinal cord, and arrives at muscles via motor neurons. The cerebellum fine-tunes timing so movements are smooth and coordinated.</p>
       </div>
       <div class="c-card" id="cc-resp">
-        <div class="c-card-hd"><span class="c-ico">🫁</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#3bc8e8">Respiratory System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🫁</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#3bc8e8">Respiratory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Respiratory" data-body="The brain stem controls breathing automatically — adjusting rate and depth based on carbon dioxide levels in the blood. You can consciously override it briefly, but the brain stem always takes back control.">🔊 Read Aloud</button></div>
         <p>The <strong>brain stem controls breathing automatically</strong> — adjusting rate and depth based on CO₂ levels in the blood. You can consciously override it briefly, but the brain stem always takes back control.</p>
       </div>
       <div class="c-card" id="cc-dige">
-        <div class="c-card-hd"><span class="c-ico">🫄</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#ff9d45">Digestive System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🫄</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#ff9d45">Digestive System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Digestive" data-body="The gut has its own enteric nervous system — 500 million neurons that manage digestion semi-independently. It communicates with the brain via the vagus nerve, which is why stress and emotions directly affect digestion.">🔊 Read Aloud</button></div>
         <p>The gut has its own <strong>enteric nervous system</strong> — 500 million neurons that manage digestion semi-independently. It communicates with the brain via the vagus nerve, which is why stress and emotions directly affect digestion.</p>
       </div>
       <div class="c-card" id="cc-excr">
-        <div class="c-card-hd"><span class="c-ico">🚽</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#69d97a">Excretory System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🚽</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#69d97a">Excretory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Excretory" data-body="The nervous system sends signals to the bladder to control urination timing, and monitors blood chemistry to trigger kidney function adjustments — including water retention during dehydration or stress.">🔊 Read Aloud</button></div>
         <p>The nervous system <strong>sends signals to the bladder</strong> to control urination timing, and monitors blood chemistry to trigger kidney function adjustments — including water retention during dehydration or stress.</p>
       </div>
       <div class="c-card" id="cc-skel">
-        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Skeletal" data-body="Sensory neurons in bones and joints detect pain, pressure, and position, sending constant feedback to the brain so it can maintain balance, posture, and protect the skeleton from damage.">🔊 Read Aloud</button></div>
         <p>Sensory neurons in <strong>bones and joints detect pain, pressure, and position</strong> (proprioception), sending constant feedback to the brain so it can maintain balance, posture, and protect the skeleton from damage.</p>
       </div>
       <div class="c-card" id="cc-immu">
-        <div class="c-card-hd"><span class="c-ico">🛡️</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#1de9b6">Immune System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🛡️</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#1de9b6">Immune System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Immune" data-body="The nervous system communicates with immune cells via neurotransmitters and neuropeptides. Chronic stress activates the stress response, suppressing immune function — which is why stressed people get sick more easily.">🔊 Read Aloud</button></div>
         <p>The nervous system communicates with immune cells via <strong>neurotransmitters and neuropeptides</strong>. Chronic stress activates the stress response, suppressing immune function — which is why stressed people get sick more easily.</p>
       </div>
     </div>
@@ -459,6 +495,11 @@ var organData={
   pns:{ico:'🕸️',name:'Peripheral Nervous System',sys:'Nervous',col:'#c9aaff',role:'Connects the brain and spinal cord to the rest of the body via 43 pairs of nerves. The somatic division controls voluntary movements; the autonomic controls unconscious functions like heart rate and digestion.',fact:'<strong>Fun Fact:</strong> The longest single nerve cell in your body stretches from your spinal cord to your big toe — over 3 feet long in a tall person.'},
   senses:{ico:'👁️',name:'Sensory Organs',sys:'Nervous',col:'#9988ff',role:'Eyes, ears, nose, tongue, and skin convert physical stimuli into electrical signals that travel to the brain for interpretation. Without sensory input, the brain would have no information about the world.',fact:'<strong>Fun Fact:</strong> Your eyes can detect a single photon of light in complete darkness. In good conditions, you could see a candle flame from 30 miles away.'},
   muscular:{ico:'💪',name:'Muscular System',sys:'Muscular',col:'#ff6b6b',role:'Controls all voluntary muscle movement via motor neurons. The neuromuscular junction is where nerve meets muscle. The cerebellum coordinates timing for smooth, precise movement.',fact:'<strong>Fun Fact:</strong> Playing a musical instrument requires coordinating hundreds of muscles with millisecond timing. Musicians literally develop extra neural connections in the motor cortex.'},
+  respiratory:{ico:'🫁',name:'Respiratory System',sys:'Respiratory',col:'#3bc8e8',role:'The brain stem automatically controls breathing rate and depth based on carbon dioxide levels in the blood. You can consciously override breathing briefly, but the brain stem always retakes control.',fact:'<strong>Fun Fact:</strong> You breathe about 22,000 times a day — and the brain manages every single breath automatically, even while you sleep.'},
+  digestive:{ico:'🫄',name:'Digestive System',sys:'Digestive',col:'#ff9d45',role:'The enteric nervous system — 500 million neurons in the gut — manages digestion semi-independently and communicates with the brain via the vagus nerve. Stress and emotions directly affect digestion through this gut-brain axis.',fact:'<strong>Fun Fact:</strong> The gut-brain connection is so strong that anxiety can cause nausea and excitement can cause "butterflies" — your digestive system responds to emotions in real time.'},
+  excretory:{ico:'🚽',name:'Excretory System',sys:'Excretory',col:'#69d97a',role:'The nervous system controls the bladder through both voluntary and involuntary signals. It also monitors blood chemistry — triggering kidney adjustments for water retention during dehydration or stress.',fact:'<strong>Fun Fact:</strong> The urge to urinate is triggered when the bladder holds just 150–200 mL — but you can consciously delay it until it holds 400 mL or more thanks to voluntary nervous control.'},
+  skeletal:{ico:'🦴',name:'Skeletal System',sys:'Skeletal',col:'#c8d8e8',role:'Sensory neurons in bones and joints continuously detect pain, pressure, and position (proprioception), sending feedback to the brain to maintain balance and protect the skeleton from damage.',fact:'<strong>Fun Fact:</strong> Proprioception — your sense of where your body is in space — relies on thousands of tiny sensors in joints and muscles sending constant position data to the brain.'},
+  immune:{ico:'🛡️',name:'Immune System',sys:'Immune',col:'#1de9b6',role:'The nervous system communicates with immune cells via neurotransmitters and neuropeptides. Chronic stress suppresses immune function — which is why people under prolonged stress get sick more easily.',fact:'<strong>Fun Fact:</strong> Laughing has been shown to increase natural killer cell activity and boost immune function — the nervous system literally makes your immune system stronger when you feel good.'},
   circulatory:{ico:'🫀',name:'Circulatory System',sys:'Circulatory',col:'#e74c6f',role:'The brain is extremely sensitive to blood flow — a 10-second interruption causes unconsciousness. The nervous system monitors blood pressure and adjusts heart rate and vessel tone in real time.',fact:'<strong>Fun Fact:</strong> The brain has its own waste-flushing system (the glymphatic system) that clears metabolic waste — including proteins linked to Alzheimer\'s — primarily during deep sleep.'},
   respiratory:{ico:'🫁',name:'Respiratory System',sys:'Respiratory',col:'#3bc8e8',role:'The brain stem (medulla oblongata) automatically controls breathing rate based on CO₂ levels in the blood. You can consciously override it briefly, but the brain stem always reasserts control.',fact:'<strong>Fun Fact:</strong> Hiccups are caused by the phrenic nerve — the nerve that controls your diaphragm — being irritated. The nerve runs from your brain stem all the way down to your diaphragm.'},
   digestive:{ico:'🫄',name:'Digestive System',sys:'Digestive',col:'#ff9d45',role:'The enteric nervous system — 500 million neurons embedded in the gut walls — controls digestion semi-independently. It communicates with the brain via the vagus nerve; stress and emotions directly affect gut function.',fact:'<strong>Fun Fact:</strong> Your gut produces about 95% of your body\'s serotonin — a key mood chemical. The gut–brain connection is so strong scientists call the enteric nervous system your "second brain."'},
@@ -541,6 +582,107 @@ canvas.addEventListener('mouseleave',function(){hoveredNode=null;hoveredConn=nul
 function toggleSys(key,btn){if(activeSystems[key]){delete activeSystems[key];btn.classList.remove('on');}else{activeSystems[key]=true;btn.classList.add('on');}var cc=document.getElementById('cc-'+key);if(cc)cc.classList.toggle('on',!!activeSystems[key]);spawnParticles();}
 resize();loop();
 
+</script>
+<script>
+(function() {
+  function getVoice() {
+    var voices = window.speechSynthesis.getVoices();
+    return voices.find(function(v) {
+      return /Samantha|Karen|Google US English|Microsoft Aria|Zira/i.test(v.name);
+    }) || voices.find(function(v) {
+      return v.lang === 'en-US' && !v.name.toLowerCase().includes('compact');
+    });
+  }
+  function resetBtn(btn) {
+    btn.textContent = '🔊 Read Aloud';
+    btn.classList.remove('speaking','paused');
+    btn._speaking = false;
+  }
+  function stopAll() {
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.read-aloud-btn').forEach(function(b) {
+      b.textContent = '🔊 Read Aloud'; b.classList.remove('speaking','paused'); b._speaking = false;
+    });
+  }
+
+  window.toggleMapRead = function(btn) {
+    if (btn._speaking) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        btn.textContent = '⏸ Pause'; btn.classList.remove('paused'); btn.classList.add('speaking');
+      } else if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        btn.textContent = '▶ Resume'; btn.classList.remove('speaking'); btn.classList.add('paused');
+      } else { resetBtn(btn); }
+      return;
+    }
+    stopAll();
+    var name = (document.getElementById('c-name') || {}).textContent || '';
+    var role = (document.getElementById('c-role') || {}).textContent || '';
+    var fact = (document.getElementById('c-fact') || {}).textContent || '';
+    if (!role) return;
+    btn._speaking = true; btn.textContent = '⏸ Pause'; btn.classList.add('speaking');
+    setTimeout(function() {
+      var voice = getVoice();
+      function makeUtt(text, rate, vol) {
+        var u = new SpeechSynthesisUtterance(text);
+        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
+        if (voice) u.voice = voice; return u;
+      }
+      var uttName   = makeUtt(name,                0.82, 1);
+      var uttPause  = makeUtt('...',               0.1,  0);
+      var uttRole   = makeUtt(role,                0.82, 1);
+      var uttPause2 = makeUtt('...',               0.1,  0);
+      var uttFact   = makeUtt('Fun fact. ' + fact, 0.82, 1);
+      uttFact.onend = uttFact.onerror = function() { resetBtn(btn); };
+      window.speechSynthesis.speak(uttName);
+      window.speechSynthesis.speak(uttPause);
+      window.speechSynthesis.speak(uttRole);
+      window.speechSynthesis.speak(uttPause2);
+      window.speechSynthesis.speak(uttFact);
+    }, 100);
+  };
+
+  window.toggleGenericRead = function(btn) {
+    var title = btn.getAttribute('data-title') || '';
+    var body  = btn.getAttribute('data-body')  || '';
+    if (!body) return;
+    if (btn._speaking) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        btn.textContent = '⏸ Pause'; btn.classList.remove('paused'); btn.classList.add('speaking');
+      } else if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        btn.textContent = '▶ Resume'; btn.classList.remove('speaking'); btn.classList.add('paused');
+      } else { resetBtn(btn); }
+      return;
+    }
+    stopAll();
+    btn._speaking = true; btn.textContent = '⏸ Pause'; btn.classList.add('speaking');
+    setTimeout(function() {
+      var voice = getVoice();
+      function makeUtt(text, rate, vol) {
+        var u = new SpeechSynthesisUtterance(text);
+        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
+        if (voice) u.voice = voice; return u;
+      }
+      var uttTitle = makeUtt(title, 0.82, 1);
+      var uttPause = makeUtt('...', 0.1,  0);
+      var uttBody  = makeUtt(body,  0.82, 1);
+      uttBody.onend = uttBody.onerror = function() { resetBtn(btn); };
+      window.speechSynthesis.speak(uttTitle);
+      window.speechSynthesis.speak(uttPause);
+      window.speechSynthesis.speak(uttBody);
+    }, 100);
+  };
+
+  window.addEventListener('beforeunload', function() { window.speechSynthesis.cancel(); });
+  setInterval(function() {
+    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+      window.speechSynthesis.pause(); window.speechSynthesis.resume();
+    }
+  }, 12000);
+})();
 </script>
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 </body>

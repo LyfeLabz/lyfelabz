@@ -335,6 +335,41 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 
+
+  /* ── READ ALOUD ── */
+  .i-card-hd { justify-content: space-between !important; align-items: flex-start !important; }
+  .c-card-hd { justify-content: space-between; }
+  .c-card-hd .read-aloud-btn { font-size: 0.67rem; padding: 0.25rem 0.7rem; flex-shrink: 0; margin-left: auto; }
+  .read-aloud-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.32rem 0.85rem; border-radius: 99px; cursor: pointer;
+    border: 1px solid rgba(59,200,232,0.45);
+    background: rgba(59,200,232,0.1); color: #3bc8e8;
+    text-shadow: 0 0 8px rgba(59,200,232,0.55);
+    box-shadow: 0 0 8px rgba(59,200,232,0.18), inset 0 0 6px rgba(59,200,232,0.05);
+    transition: all 0.25s; white-space: nowrap; flex-shrink: 0;
+  }
+  .read-aloud-btn:hover {
+    background: rgba(59,200,232,0.22); border-color: rgba(59,200,232,0.8);
+    text-shadow: 0 0 12px rgba(59,200,232,0.85);
+    box-shadow: 0 0 16px rgba(59,200,232,0.42), 0 0 32px rgba(59,200,232,0.18);
+  }
+  .read-aloud-btn.speaking {
+    background: rgba(29,233,182,0.12); border-color: rgba(29,233,182,0.6); color: #1de9b6;
+    text-shadow: 0 0 10px rgba(29,233,182,0.8);
+    animation: ra-pulse 1.6s ease-in-out infinite;
+  }
+  .read-aloud-btn.paused {
+    background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.55); color: #f5c842;
+    text-shadow: 0 0 8px rgba(245,200,66,0.7);
+    box-shadow: 0 0 10px rgba(245,200,66,0.22);
+  }
+  @keyframes ra-pulse {
+    0%,100% { box-shadow: 0 0 10px rgba(29,233,182,0.28), 0 0 22px rgba(29,233,182,0.1); }
+    50%      { box-shadow: 0 0 20px rgba(29,233,182,0.52), 0 0 40px rgba(29,233,182,0.22); }
+  }
 </style>
 </head>
 <body>
@@ -393,6 +428,7 @@ body.stem-active .stem-detail {
           <div class="i-card-hd">
             <div class="i-card-ico" id="c-ico">💪</div>
             <div><div class="i-card-sys" id="c-sys">The Muscular System</div><div class="i-card-name" id="c-name"></div></div>
+            <button class="read-aloud-btn" id="map-read-btn" onclick="toggleMapRead(this)">🔊 Read Aloud</button>
           </div>
           <div class="i-card-body">
             <div class="i-sec-lbl">🔬 Role in the Muscular System</div>
@@ -403,15 +439,15 @@ body.stem-active .stem-detail {
         </div>
       </div>
       <div class="c-card" id="cc-skel">
-        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Skeletal" data-body="Muscles attach to bones via tendons and pull on them as levers. The two systems are so interdependent they are often called the musculoskeletal system — one is nearly useless without the other.">🔊 Read Aloud</button></div>
         <p>Muscles attach to bones via <strong>tendons and pull on them as levers</strong>. The two systems are so interdependent they are often called the musculoskeletal system — one is nearly useless without the other.</p>
       </div>
       <div class="c-card" id="cc-nerv">
-        <div class="c-card-hd"><span class="c-ico">🧠</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#b388ff">Nervous System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🧠</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#b388ff">Nervous System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Nervous" data-body="Every voluntary movement starts as a nerve impulse. Motor neurons carry signals from the brain to the neuromuscular junction, where acetylcholine triggers muscle fibres to contract.">🔊 Read Aloud</button></div>
         <p><strong>Every voluntary movement</strong> starts as a nerve impulse. Motor neurons carry signals from the brain to the neuromuscular junction, where acetylcholine triggers muscle fibres to contract.</p>
       </div>
       <div class="c-card" id="cc-circ">
-        <div class="c-card-hd"><span class="c-ico">🫀</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#e74c6f">Circulatory System</div></div></div>
+        <div class="c-card-hd"><span class="c-ico">🫀</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#e74c6f">Circulatory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Circulatory" data-body="Working muscles need oxygen and glucose delivered fast. Blood flow can increase 20 times during exercise. The circulatory system also removes lactic acid and carbon dioxide as waste products of muscle activity.">🔊 Read Aloud</button></div>
         <p>Working muscles need <strong>oxygen and glucose delivered fast</strong>. Blood flow can increase 20x during exercise. The circulatory system also removes lactic acid and CO2 as waste products of muscle activity.</p>
       </div>
     </div>
@@ -439,6 +475,7 @@ var organData={
   tendons:{ico:'🔗',name:'Tendons',sys:'Muscular',col:'#ffaa88',role:'Tough bands of collagen that attach muscles to bones, transferring force into movement. The Achilles tendon can withstand forces of 10x body weight during running.',fact:'<strong>Fun Fact:</strong> The Achilles tendon is the thickest and strongest tendon in the body, yet the most commonly ruptured — usually during explosive movements.'},
   fascia:{ico:'🕸️',name:'Fascia',sys:'Muscular',col:'#ffcc99',role:'A network of connective tissue wrapping around every muscle, organ, nerve, and blood vessel. Provides structural support, reduces friction, and transmits mechanical forces between structures.',fact:'<strong>Fun Fact:</strong> If you removed every tissue except fascia, you would still see a perfect 3D outline of your body — fascia forms a continuous web from head to toe.'},
   skeletal_sys:{ico:'🦴',name:'Skeletal System',sys:'Skeletal',col:'#c8d8e8',role:'Muscles attach to bones via tendons and pull on them to create movement. Bones act as levers; joints are the pivot points. Without the skeletal system, muscles would contract with nowhere to pull.',fact:'<strong>Fun Fact:</strong> The bicep is attached to the radius in a way that gives a mechanical disadvantage — it must exert about 10x more force than the weight being lifted, trading force for speed and range.'},
+  circulatory:{ico:'🫀',name:'Circulatory System',sys:'Circulatory',col:'#e74c6f',role:'Working muscles demand 20x more blood than at rest. The circulatory system rapidly dilates vessels into active muscles to deliver oxygen and glucose, while removing carbon dioxide and lactic acid as waste.',fact:'<strong>Fun Fact:</strong> During intense exercise, your heart can pump over 20 litres of blood per minute — five times the resting rate.'},
   nervous:{ico:'🧠',name:'Nervous System',sys:'Nervous',col:'#b388ff',role:'Every voluntary muscle contraction begins as a nerve impulse from the motor cortex. Motor neurons carry signals to muscles via neuromuscular junctions. The cerebellum coordinates timing for smooth movement.',fact:'<strong>Fun Fact:</strong> Playing a musical instrument requires coordinating hundreds of muscles with millisecond timing. Musicians develop extra neural connections in the motor cortex.'},
   circulatory:{ico:'🫀',name:'Circulatory System',sys:'Circulatory',col:'#e74c6f',role:'Working muscles demand oxygen and glucose, and the circulatory system delivers. Blood flow to active muscles increases up to 20x during exercise. Muscles also produce lactic acid and CO2 that blood carries away.',fact:'<strong>Fun Fact:</strong> During intense exercise, muscles consume oxygen 100x faster than at rest — the circulatory and respiratory systems work at maximum capacity just to keep up.'}
 };
@@ -505,6 +542,107 @@ canvas.addEventListener('mouseleave',function(){hoveredNode=null;hoveredConn=nul
 function toggleSys(key,btn){if(activeSystems[key]){delete activeSystems[key];btn.classList.remove('on');}else{activeSystems[key]=true;btn.classList.add('on');}var cc=document.getElementById('cc-'+key);if(cc)cc.classList.toggle('on',!!activeSystems[key]);spawnParticles();}
 resize();loop();
 
+</script>
+<script>
+(function() {
+  function getVoice() {
+    var voices = window.speechSynthesis.getVoices();
+    return voices.find(function(v) {
+      return /Samantha|Karen|Google US English|Microsoft Aria|Zira/i.test(v.name);
+    }) || voices.find(function(v) {
+      return v.lang === 'en-US' && !v.name.toLowerCase().includes('compact');
+    });
+  }
+  function resetBtn(btn) {
+    btn.textContent = '🔊 Read Aloud';
+    btn.classList.remove('speaking','paused');
+    btn._speaking = false;
+  }
+  function stopAll() {
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.read-aloud-btn').forEach(function(b) {
+      b.textContent = '🔊 Read Aloud'; b.classList.remove('speaking','paused'); b._speaking = false;
+    });
+  }
+
+  window.toggleMapRead = function(btn) {
+    if (btn._speaking) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        btn.textContent = '⏸ Pause'; btn.classList.remove('paused'); btn.classList.add('speaking');
+      } else if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        btn.textContent = '▶ Resume'; btn.classList.remove('speaking'); btn.classList.add('paused');
+      } else { resetBtn(btn); }
+      return;
+    }
+    stopAll();
+    var name = (document.getElementById('c-name') || {}).textContent || '';
+    var role = (document.getElementById('c-role') || {}).textContent || '';
+    var fact = (document.getElementById('c-fact') || {}).textContent || '';
+    if (!role) return;
+    btn._speaking = true; btn.textContent = '⏸ Pause'; btn.classList.add('speaking');
+    setTimeout(function() {
+      var voice = getVoice();
+      function makeUtt(text, rate, vol) {
+        var u = new SpeechSynthesisUtterance(text);
+        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
+        if (voice) u.voice = voice; return u;
+      }
+      var uttName   = makeUtt(name,                0.82, 1);
+      var uttPause  = makeUtt('...',               0.1,  0);
+      var uttRole   = makeUtt(role,                0.82, 1);
+      var uttPause2 = makeUtt('...',               0.1,  0);
+      var uttFact   = makeUtt('Fun fact. ' + fact, 0.82, 1);
+      uttFact.onend = uttFact.onerror = function() { resetBtn(btn); };
+      window.speechSynthesis.speak(uttName);
+      window.speechSynthesis.speak(uttPause);
+      window.speechSynthesis.speak(uttRole);
+      window.speechSynthesis.speak(uttPause2);
+      window.speechSynthesis.speak(uttFact);
+    }, 100);
+  };
+
+  window.toggleGenericRead = function(btn) {
+    var title = btn.getAttribute('data-title') || '';
+    var body  = btn.getAttribute('data-body')  || '';
+    if (!body) return;
+    if (btn._speaking) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        btn.textContent = '⏸ Pause'; btn.classList.remove('paused'); btn.classList.add('speaking');
+      } else if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        btn.textContent = '▶ Resume'; btn.classList.remove('speaking'); btn.classList.add('paused');
+      } else { resetBtn(btn); }
+      return;
+    }
+    stopAll();
+    btn._speaking = true; btn.textContent = '⏸ Pause'; btn.classList.add('speaking');
+    setTimeout(function() {
+      var voice = getVoice();
+      function makeUtt(text, rate, vol) {
+        var u = new SpeechSynthesisUtterance(text);
+        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
+        if (voice) u.voice = voice; return u;
+      }
+      var uttTitle = makeUtt(title, 0.82, 1);
+      var uttPause = makeUtt('...', 0.1,  0);
+      var uttBody  = makeUtt(body,  0.82, 1);
+      uttBody.onend = uttBody.onerror = function() { resetBtn(btn); };
+      window.speechSynthesis.speak(uttTitle);
+      window.speechSynthesis.speak(uttPause);
+      window.speechSynthesis.speak(uttBody);
+    }, 100);
+  };
+
+  window.addEventListener('beforeunload', function() { window.speechSynthesis.cancel(); });
+  setInterval(function() {
+    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+      window.speechSynthesis.pause(); window.speechSynthesis.resume();
+    }
+  }, 12000);
+})();
 </script>
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 </body>
