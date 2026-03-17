@@ -697,7 +697,8 @@ function visibleNodes() {
 }
 
 function visibleConnections() {
-  return CONNECTIONS.filter(c => activeSystems.has(c.sys));
+  const visNodes = new Set(visibleNodes());
+  return CONNECTIONS.filter(c => activeSystems.has(c.sys) && visNodes.has(c.from) && visNodes.has(c.to));
 }
 
 // ─────────────────────────────────────────────
