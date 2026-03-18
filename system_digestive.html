@@ -1051,9 +1051,12 @@ function generateQuizReport() {
     const answered = chosen !== -1;
     const hex = q.pillColor.replace('#','');
     const accent = [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)];
+    // Set fonts BEFORE splitTextToSize so widths match render font
+    bold(10);
     const qFull    = 'Q'+(qi+1)+':  '+clean(q.text);
     const qLines   = doc.splitTextToSize(qFull, CW-26);
     const qCount   = Math.min(qLines.length, 3);
+    normal(10);
     const expLines = doc.splitTextToSize(clean(q.explanation||''), CW-26);
     const expCount = Math.min(expLines.length, 5);
     const ansLines = answered ? (!correct && chosen>=0 ? 2 : 1) : 0;
@@ -1073,13 +1076,13 @@ function generateQuizReport() {
       let subY = y + 13 + qCount*6 + 2;
       if (!correct && chosen>=0) {
         const sc = clean(q.options[chosen]);
-        italic(9); t(C.red); doc.text('You chose: '+(sc.length>85?sc.slice(0,85)+'...':sc), ML+7, subY); subY+=5.5;
+        italic(10); t(C.red); doc.text('You chose: '+(sc.length>85?sc.slice(0,85)+'...':sc), ML+7, subY); subY+=5.5;
         const corr = clean(q.options[q.correct]);
-        italic(9); t(C.green); doc.text('Correct answer: '+(corr.length>85?corr.slice(0,85)+'...':corr), ML+7, subY); subY+=6;
-      } else { italic(9); t(C.green); doc.text('Correct!', ML+7, subY); subY+=6; }
+        italic(10); t(C.green); doc.text('Correct answer: '+(corr.length>85?corr.slice(0,85)+'...':corr), ML+7, subY); subY+=6;
+      } else { italic(10); t(C.green); doc.text('Correct!', ML+7, subY); subY+=6; }
       const expDisplay = expLines.slice(0,5);
       if (expLines.length>5) expDisplay[4]=expDisplay[4].replace(/\.?\s*$/,'...');
-      normal(9.5); t(C.muted); doc.text(expDisplay, ML+7, subY, {lineHeightFactor:1.4});
+      t(C.muted); doc.text(expDisplay, ML+7, subY, {lineHeightFactor:1.4});
     }
     y += rowH + 2;
   });

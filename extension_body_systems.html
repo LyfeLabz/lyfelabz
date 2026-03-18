@@ -1000,9 +1000,12 @@ function generateReport() {
     y+=19;
 
     qResults.forEach(function(res,i){
+      // Set fonts BEFORE splitTextToSize so widths match render font
+      bold(10);
       var qFull='Q'+(res.qi+1)+':  '+clean(res.q.text);
       var qLines=doc.splitTextToSize(qFull, CW-26);
       var qCount=Math.min(qLines.length,3);
+      normal(10);
       var expText=clean(res.q.explanation||'');
       var expLines=doc.splitTextToSize(expText, CW-26);
       var expCount=Math.min(expLines.length,5);
@@ -1025,22 +1028,22 @@ function generateReport() {
       // Question text (up to 3 lines, wraps naturally)
       var qDisplay=qLines.slice(0,3);
       if(qLines.length>3) qDisplay[2]=qDisplay[2].replace(/\.?\s*$/,'...');
-      bold(11); t(C.dgrey);
+      bold(10); t(C.dgrey);
       doc.text(qDisplay, ML+16, y+6.5, {lineHeightFactor:1.45});
 
       if(res.answered){
         var subY=y+8+qCount*6;
         if(!res.correct&&res.chosenText){
           var sc=clean(res.chosenText); if(sc.length>85) sc=sc.substring(0,85)+'...';
-          italic(9); t(C.red); doc.text('You chose: '+sc, ML+16, subY); subY+=5.5;
+          italic(10); t(C.red); doc.text('You chose: '+sc, ML+16, subY); subY+=5.5;
           var corr=clean(res.q.options[res.q.correct]); if(corr.length>85) corr=corr.substring(0,85)+'...';
-          italic(9); t(C.green); doc.text('Correct answer: '+corr, ML+16, subY); subY+=6;
+          italic(10); t(C.green); doc.text('Correct answer: '+corr, ML+16, subY); subY+=6;
         } else {
-          italic(9); t(C.green); doc.text('Correct!', ML+16, subY); subY+=6;
+          italic(10); t(C.green); doc.text('Correct!', ML+16, subY); subY+=6;
         }
         var expDisplay=expLines.slice(0,5);
         if(expLines.length>5) expDisplay[4]=expDisplay[4].replace(/\.?\s*$/,'...');
-        normal(9.5); t(C.muted); doc.text(expDisplay, ML+16, subY, {lineHeightFactor:1.4});
+        t(C.muted); doc.text(expDisplay, ML+16, subY, {lineHeightFactor:1.4});
       }
       y+=rowH+2;
     });
