@@ -403,7 +403,7 @@ body.stem-active .stem-detail {
     display:flex; align-items:center; gap:0.75rem;
     padding:1rem 1.6rem; border-radius:14px 14px 0 0;
     background:linear-gradient(135deg,rgba(255,107,107,0.12),rgba(255,107,107,0.06));
-    border:1px solid rgba(255,107,107,0.28); border-bottom:none; margin-top:2rem;
+    border:1px solid rgba(255,107,107,0.28); border-bottom:none; 
   }
   .quiz-section-hd .q-ico { font-size:1.5rem; }
   .quiz-section-hd .q-title { font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--text); }
@@ -440,13 +440,14 @@ body.stem-active .stem-detail {
   .quiz-turnin-bar {
     display:flex; align-items:center; justify-content:space-between;
     gap:1rem; margin-top:1.6rem; padding:0.9rem 1.4rem;
-    background:var(--card2); border:1px solid rgba(255,107,107,0.2);
+    background:var(--card2); border:1.5px solid rgba(255,255,255,0.42);
     border-radius:13px; flex-wrap:wrap;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.07), 0 0 24px rgba(255,255,255,0.04);
   }
   .quiz-turnin-left { display:flex; align-items:center; gap:0.7rem; flex:1; min-width:200px; }
   .quiz-turnin-ico { font-size:1.4rem; flex-shrink:0; }
   .quiz-turnin-label { font-size:0.7rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:#ff6b6b; margin-bottom:0.15rem; }
-  .quiz-turnin-hint { font-size:0.78rem; color:var(--muted); font-weight:600; }
+  .quiz-turnin-hint { font-size:1rem; color:var(--muted); font-weight:700; }
   .quiz-turnin-right { display:flex; align-items:center; gap:0.75rem; flex-shrink:0; flex-wrap:wrap; }
   .quiz-name-input {
     background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,107,107,0.28);
@@ -478,6 +479,7 @@ body.stem-active .stem-detail {
   .quiz-notice ul { list-style:none; display:flex; flex-direction:column; gap:0.25rem; }
   .quiz-notice ul li { font-size:0.83rem; font-weight:700; color:#f08090; display:flex; align-items:center; gap:0.45rem; }
   .quiz-notice ul li::before { content:''; width:5px; height:5px; border-radius:50%; background:#e74c3c; flex-shrink:0; }
+  .quiz-container { border:1.5px solid rgba(255,255,255,0.42); border-radius:16px; margin-top:2rem; box-shadow:0 0 0 1px rgba(255,255,255,0.06), 0 0 32px rgba(255,255,255,0.03); }
   @media(max-width:600px){ .quiz-wrap{padding:0 1rem 2rem;} .quiz-turnin-bar{flex-direction:column;align-items:flex-start;} .quiz-turnin-right{width:100%;flex-direction:column;} .quiz-name-input{width:100%;} .quiz-btn-turnin{width:100%;justify-content:center;} }
 
 </style>
@@ -574,6 +576,7 @@ body.stem-active .stem-detail {
      CONNECTION QUIZ
 ════════════════════════════════════════════════════════════ -->
 <div class="quiz-wrap" id="connection-quiz">
+  <div class="quiz-container">
   <div class="quiz-section-hd">
     <span class="q-ico">🔬</span>
     <div>
@@ -658,6 +661,7 @@ body.stem-active .stem-detail {
       <ul id="quiz-notice-list"></ul>
     </div>
   </div>
+  </div><!-- /quiz-container -->
 </div>
 
 <footer>
@@ -904,34 +908,41 @@ function updateQuizProgress() {
 //  PDF GENERATOR
 // ─────────────────────────────────────────────
 function generateQuizReport() {
-  if (!window.jspdf) { alert('PDF library still loading — try again in a moment.'); return; }
+  const rawName = document.getElementById('quiz-name').value.trim();
+  const studentName = rawName || 'Student';
+  const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
 
-  // Guard: all questions answered?
+  if (!window.jspdf) {
+    alert('PDF library is still loading — please wait a moment and try again.');
+    return;
+  }
+
   if (quizAnswered.size < QUIZ.length) {
     const notice = document.getElementById('quiz-notice');
     const list   = document.getElementById('quiz-notice-list');
     list.innerHTML = '';
-    QUIZ.forEach((q, qi) => {
+    QUIZ.forEach((q,qi) => {
       if (!quizAnswered.has(qi)) {
         const li = document.createElement('li');
-        li.textContent = `Q${qi + 1}: ${q.pill} — not answered`;
+        li.textContent = 'Q'+(qi+1)+': '+q.pill+' - not answered';
         list.appendChild(li);
       }
     });
     notice.classList.add('show');
-    notice.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    notice.scrollIntoView({behavior:'smooth',block:'nearest'});
     return;
   }
   document.getElementById('quiz-notice').classList.remove('show');
 
-  const studentName = document.getElementById('quiz-name').value.trim() || 'Student';
-  const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  if (!window.jspdf) {
+    alert('PDF library is still loading — please wait a moment and try again.');
+    return;
+  }
 
-  // Sanitize text for jsPDF (no emoji, fix subscripts)
-  function clean(s) {
-    if (!s) return '';
-    return s
-      .replace(/O₂/g,'O2').replace(/CO₂/g,'CO2')
+  function clean(str) {
+    if (!str) return '';
+    return str
+      .replace(/O[\u2082]/g,'O2').replace(/CO[\u2082]/g,'CO2')
       .replace(/[\u2080-\u209C]/g, m => String.fromCharCode(m.charCodeAt(0)-0x2050))
       .replace(/[\u{1F000}-\u{1FFFF}]/gu,'').replace(/[\u{2600}-\u{27BF}]/gu,'')
       .replace(/[\u{FE00}-\u{FEFF}]/gu,'').replace(/[\u200D]/g,'')
@@ -940,185 +951,187 @@ function generateQuizReport() {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'letter', orientation:'portrait' });
-  const PW=215.9, PH=279.4, ML=13, MR=13, CW=PW-ML-MR;
+  const PW=215.9, PH=279.4, ML=14, MR=14, CW=PW-ML-MR;
 
-  // Colour palette — circulatory red theme
   const C = {
-    dark:    [10,17,26],   navy:  [20,38,58],    navy2: [26,47,72],
-    red:     [231,76,60],  redDk: [180,40,28],   redLt: [255,235,232],
-    teal:    [59,200,232], gold:  [245,200,66],
-    white:   [255,255,255],lgrey: [248,250,252],  mgrey: [226,232,240],
-    dgrey:   [51,65,85],   muted: [100,116,139],
-    green:   [22,163,74],  grnLt: [220,252,231],
-    crimson: [204,43,72],
+    dark:[10,17,26], navy:[20,38,58], navy2:[26,47,72],
+    teal:[59,200,232], tealDk:[14,126,158], teal10:[240,252,255], teal20:[207,243,250],
+    gold:[245,200,66], goldSft:[254,247,214],
+    white:[255,255,255], lgrey:[248,250,252], mgrey:[226,232,240],
+    dgrey:[51,65,85], muted:[100,116,139],
+    green:[22,163,74], red:[204,43,72],
   };
 
-  function f(c){ doc.setFillColor(c[0],c[1],c[2]); }
-  function s(c){ doc.setDrawColor(c[0],c[1],c[2]); }
-  function t(c){ doc.setTextColor(c[0],c[1],c[2]); }
-  function bold(sz)  { doc.setFont('helvetica','bold');   doc.setFontSize(sz); }
-  function normal(sz){ doc.setFont('helvetica','normal'); doc.setFontSize(sz); }
-  function italic(sz){ doc.setFont('helvetica','italic'); doc.setFontSize(sz); }
-  function rr(x,y,w,h,r,style){ doc.roundedRect(x,y,w,h,r,r,style); }
+  const f  = c => doc.setFillColor(c[0],c[1],c[2]);
+  const s  = c => doc.setDrawColor(c[0],c[1],c[2]);
+  const t  = c => doc.setTextColor(c[0],c[1],c[2]);
+  const bold   = sz => { doc.setFont('helvetica','bold');   doc.setFontSize(sz); };
+  const normal = sz => { doc.setFont('helvetica','normal'); doc.setFontSize(sz); };
+  const italic = sz => { doc.setFont('helvetica','italic'); doc.setFontSize(sz); };
+  const rr = (x,y,w,h,r,style) => doc.roundedRect(x,y,w,h,r,r,style);
+
+
 
   let y = 0;
-  function checkPage(need) {
-    if (y+need > PH-18) { doc.addPage(); y=0; contHeader(); }
-  }
-  function contHeader() {
-    f(C.navy); doc.rect(0,0,PW,10,'F');
-    f(C.red);  doc.rect(0,0,PW,1.5,'F');
-    bold(8); t(C.red); doc.text('LYFELABZ  \u00B7  Circulatory System  \u00B7  Connection Quiz', ML, 7);
-    bold(8); t(C.gold); doc.text(clean(studentName), PW-MR, 7, {align:'right'});
-    y = 13;
+
+  function checkPage(needed) {
+    if (y + needed > PH - 16) { doc.addPage(); y = 0; drawContHeader(); }
   }
 
-  // ── COVER HEADER ─────────────────────────────────────────────
-  f(C.dark); doc.rect(0,0,PW,48,'F');
-  f(C.red);  doc.rect(0,0,PW,2.5,'F');
-  f([60,15,10]); doc.rect(0,0,PW*0.5,48,'F');
+  function drawContHeader() {
+    f(C.navy); doc.rect(0,0,PW,12,'F');
+    f(C.teal); doc.rect(0,0,PW,1.8,'F');
+    bold(10); t(C.teal);
+    doc.text('LYFELABZ  \u00B7  Muscular System  \u00B7  Connection Quiz', ML, 8.5);
+    bold(10); t(C.gold);
+    doc.text(clean(studentName), PW-MR, 8.5, {align:'right'});
+    y = 15;
+  }
 
-  bold(22); t(C.gold); doc.text('LYFELABZ', ML, 19);
-  f(C.gold); doc.rect(ML,21.2,36,0.7,'F');
-  bold(8); t(C.red); doc.text('CIRCULATORY SYSTEM  \u00B7  INTERACTIVE MAP', ML, 28);
+  // ── COVER ──────────────────────────────────────────────────────
+  const hdrH = 72;
+  // Right box: navy/blue-grey (was dark)
+  f(C.navy2); doc.rect(0,0,PW,hdrH,'F');
+  // Left box: dark/black
+  f(C.dark);  doc.rect(0,0,PW*0.45,hdrH,'F');
+  // Teal stripe across full top
+  f(C.teal); doc.rect(0,0,PW,2.5,'F');
 
-  bold(13); t(C.white); doc.text('CONNECTION QUIZ REPORT', PW-MR, 17, {align:'right'});
-  italic(8); t([255,180,160]); doc.text('Body Systems  \u00B7  Cross-System Interactions', PW-MR, 24, {align:'right'});
-  normal(8); t(C.muted); doc.text(date, PW-MR, 31, {align:'right'});
-  y = 48;
+  // LYFELABZ wordmark centred in the LEFT (black) box
+  const boxW   = PW * 0.45;
+  const boxMid = boxW / 2;
+  const wordSz = 44;
+  bold(wordSz);
+  // Measure the FULL string as one unit for accurate centering
+  const totalW = doc.getTextWidth('LyfeLabz');
+  const lyfeW  = doc.getTextWidth('Lyfe');
+  const wordX  = boxMid - totalW / 2;
+  const wordY  = hdrH / 2 + wordSz * 0.32;
+  // Draw full word white first (correctly centred), then overdraw Labz in gold
+  t(C.white); doc.text('LyfeLabz', wordX, wordY);
+  t(C.gold);  doc.text('Labz', wordX + lyfeW, wordY);
 
-  // ── STUDENT + SCORE STRIP ─────────────────────────────────────
+  // Right side: report card labels
+  bold(20); t(C.white);
+  doc.text('STUDENT REPORT CARD', PW - MR, 28, {align:'right'});
+  italic(13); t(C.teal);
+  doc.text('Muscular System  \u00B7  Connection Quiz', PW - MR, 43, {align:'right'});
+  normal(11); t(C.muted);
+  doc.text(date, PW - MR, 57, {align:'right'});
+  y = hdrH;
+
+  // ── SCORE STRIP ────────────────────────────────────────────────
   const finalScore = QUIZ.reduce((sum,q,qi) => sum + (quizChoices[qi]===q.correct?1:0), 0);
-  const pct = Math.round((finalScore/QUIZ.length)*100);
-  const grade = pct===100?'A+':pct>=80?'A':pct>=60?'B':pct>=40?'C':'Try Again';
-  const gradeCol = pct>=80?C.teal:pct>=60?C.gold:C.crimson;
+  const grade    = finalScore===QUIZ.length?'A':finalScore===QUIZ.length-1?'B':'Needs More Practice';
+  const gradeCol = finalScore===QUIZ.length?C.teal:finalScore===QUIZ.length-1?C.gold:C.red;
 
-  f(C.navy2); doc.rect(0,y,PW,15,'F');
-  bold(11); t(C.white); doc.text(clean(studentName), ML, y+10);
-  bold(11); t(C.red);   doc.text(`${finalScore} / ${QUIZ.length}`, PW/2, y+10, {align:'center'});
-  normal(7); t(C.muted); doc.text('SCORE', PW/2, y+14.2, {align:'center'});
-  bold(14); t(gradeCol); doc.text(grade, PW-MR, y+10.5, {align:'right'});
-  normal(7); t(C.muted); doc.text('GRADE', PW-MR, y+14.2, {align:'right'});
+  f(C.navy2); doc.rect(0,y,PW,20,'F');
+  bold(14); t(C.white);  doc.text(clean(studentName), ML, y+13);
+  bold(14); t(C.teal);   doc.text(finalScore+' / '+QUIZ.length, PW/2, y+13, {align:'center'});
+  normal(9); t(C.muted); doc.text('TOTAL SCORE', PW/2, y+18.5, {align:'center'});
+  bold(16); t(gradeCol); doc.text(grade, PW-MR, y+14, {align:'right'});
+  normal(9); t(C.muted); doc.text('GRADE', PW-MR, y+18.5, {align:'right'});
+  y += 20;
+
+  // ── PROGRESS BAR ───────────────────────────────────────────────
+  y += 6;
+  f(C.mgrey); rr(ML,y,CW,6,2,'F');
+  f(C.teal);  rr(ML,y,Math.max((finalScore/QUIZ.length)*CW,finalScore>0?4:0),6,2,'F');
+  normal(9.5); t(C.muted);
+  doc.text(finalScore+' of '+QUIZ.length+' questions correctly answered', ML, y+11);
+  y += 18;
+
+  // ── SECTION LABEL ──────────────────────────────────────────────
+  f(C.teal20); rr(ML,y,CW,10,2,'F');
+  bold(9.5); t(C.tealDk); doc.text('QUESTION BREAKDOWN', ML+5, y+7.2);
+  bold(9); t(C.muted); doc.text('5 QUESTIONS  \u00B7  ANSWERS & EXPLANATIONS INCLUDED', PW-MR, y+7.2, {align:'right'});
   y += 15;
 
-  // ── PROGRESS BAR ──────────────────────────────────────────────
-  y += 5;
-  f(C.mgrey); rr(ML,y,CW,5,2,'F');
-  f(C.red); rr(ML,y,Math.max((finalScore/QUIZ.length)*CW, finalScore>0?4:0),5,2,'F');
-  normal(7); t(C.muted);
-  doc.text(`${pct}%  correct  \u00B7  ${finalScore} of ${QUIZ.length} questions`, ML, y+9);
-  y += 15;
-
-  // ── SECTION LABEL ─────────────────────────────────────────────
-  f([255,235,232]); rr(ML,y,CW,8,2,'F');
-  bold(7); t(C.redDk); doc.text('QUESTION BREAKDOWN  \u00B7  ANSWERS & EXPLANATIONS', ML+4, y+5.5);
-  y += 12;
-
-  // ── QUESTION CARDS ────────────────────────────────────────────
-  QUIZ.forEach((q, qi) => {
-    const chosen  = quizChoices[qi];
+  // ── QUESTION CARDS ─────────────────────────────────────────────
+  QUIZ.forEach(function(q, qi) {
+    const chosen  = quizChoices[qi] !== undefined ? quizChoices[qi] : -1;
     const correct = chosen === q.correct;
-
-    // Pill colour from hex → RGB
+    const answered = chosen !== -1;
     const hex = q.pillColor.replace('#','');
-    const pc  = [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)];
-    const pcLt = pc.map(v => Math.round(v*0.18 + 237*0.82)); // very light tint
+    const accent = [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)];
+    const qFull    = 'Q'+(qi+1)+':  '+clean(q.text);
+    const qLines   = doc.splitTextToSize(qFull, CW-26);
+    const qCount   = Math.min(qLines.length, 3);
+    const expLines = doc.splitTextToSize(clean(q.explanation||''), CW-26);
+    const expCount = Math.min(expLines.length, 5);
+    const ansLines = answered ? (!correct && chosen>=0 ? 2 : 1) : 0;
+    const rowH = 10 + qCount*6 + (answered ? ansLines*5.5 + expCount*5.2 + 5 : 0);
+    checkPage(rowH + 3);
+    f(qi%2===0?C.lgrey:C.white); doc.rect(ML,y,CW,rowH,'F');
+    f(accent); doc.rect(ML,y,3,rowH,'F');
+    bold(7.5); t(accent); doc.text(clean(q.pill).toUpperCase(), ML+7, y+7);
+    if (answered) {
+      f(correct?C.green:C.red); doc.circle(PW-MR-5,y+rowH-7,3,'F');
 
-    // Estimate row height
-    const qLines  = doc.splitTextToSize(clean(q.text), CW-22);
-    const expLines = doc.splitTextToSize(clean(q.explanation), CW-22);
-    const chosenLines = chosen !== undefined ? doc.splitTextToSize(clean(q.options[chosen]), CW-36) : [];
-    const corrLines   = !correct && chosen !== undefined ? doc.splitTextToSize(clean(q.options[q.correct]), CW-36) : [];
-
-    const rowH = 8                             // pill label
-      + qLines.length * 4.5 + 3               // question
-      + (correct ? 5 : 10 + corrLines.length*4) // answer lines
-      + expLines.slice(0,4).length * 4.2 + 8; // explanation
-
-    checkPage(rowH + 4);
-
-    // Card background
-    f(C.lgrey); rr(ML,y,CW,rowH,3,'F');
-    f(pc); doc.rect(ML,y,3,rowH,'F');
-
-    // Pill label
-    bold(6.5); t(pc);
-    doc.text(clean(q.pill).toUpperCase(), ML+7, y+5.5);
-
-    // Status badge (right)
-    f(correct?C.green:C.crimson);
-    rr(PW-MR-14, y+2, 14, 7, 3, 'F');
-    bold(7.5); t(C.white);
-    doc.text(correct?'C':'X', PW-MR-7, y+7.2, {align:'center'});
-
-    let cy = y + 10;
-
-    // Question text
-    bold(8); t(C.dgrey);
+    }
     const qDisplay = qLines.slice(0,3);
     if (qLines.length>3) qDisplay[2]=qDisplay[2].replace(/\.?\s*$/,'...');
-    doc.text(qDisplay, ML+7, cy);
-    cy += qDisplay.length * 4.5 + 4;
-
-    // Chosen answer
-    if (!correct) {
-      const shortC = clean(q.options[chosen]);
-      italic(6.5); t(C.crimson);
-      doc.text('You chose: ' + (shortC.length>75?shortC.slice(0,75)+'...':shortC), ML+7, cy);
-      cy += 4.5;
-      const shortRight = clean(q.options[q.correct]);
-      italic(6.5); t(C.green);
-      doc.text('Correct: ' + (shortRight.length>75?shortRight.slice(0,75)+'...':shortRight), ML+7, cy);
-      cy += 5.5;
-    } else {
-      italic(6.5); t(C.green);
-      doc.text('Correct!  ' + clean(q.options[chosen]).slice(0,80), ML+7, cy);
-      cy += 5.5;
+    bold(10); t(C.dgrey); doc.text(qDisplay, ML+7, y+13);
+    if (answered) {
+      let subY = y + 13 + qCount*6 + 2;
+      if (!correct && chosen>=0) {
+        const sc = clean(q.options[chosen]);
+        italic(9); t(C.red); doc.text('You chose: '+(sc.length>85?sc.slice(0,85)+'...':sc), ML+7, subY); subY+=5.5;
+        const corr = clean(q.options[q.correct]);
+        italic(9); t(C.green); doc.text('Correct answer: '+(corr.length>85?corr.slice(0,85)+'...':corr), ML+7, subY); subY+=6;
+      } else { italic(9); t(C.green); doc.text('Correct!', ML+7, subY); subY+=6; }
+      const expDisplay = expLines.slice(0,5);
+      if (expLines.length>5) expDisplay[4]=expDisplay[4].replace(/\.?\s*$/,'...');
+      normal(9.5); t(C.muted); doc.text(expDisplay, ML+7, subY, {lineHeightFactor:1.4});
     }
-
-    // Explanation
-    const expDisplay = expLines.slice(0,4);
-    if (expLines.length>4) expDisplay[3]=expDisplay[3].replace(/\.?\s*$/,'...');
-    normal(6.8); t(C.muted);
-    doc.text(expDisplay, ML+7, cy);
-
-    y += rowH + 4;
+    y += rowH + 2;
   });
 
-  // ── PERFORMANCE MESSAGE ───────────────────────────────────────
-  checkPage(28);
-  y += 4;
-  const feedbackTitle = pct===100?'Perfect Score':pct>=80?'Excellent Work':pct>=60?'Good Effort':'Keep Studying';
-  const feedbackMsg   = pct===100
-    ? 'Outstanding — you understood every cross-system connection on the map.'
-    : pct>=80
-    ? 'Strong understanding of how the circulatory system connects to other body systems.'
-    : pct>=60
-    ? 'Good effort! Re-read the connection cards on the map to review what you missed.'
-    : 'Head back to the map, toggle each connection pill, and re-read the cards before trying again.';
+  // ── FEEDBACK ───────────────────────────────────────────────────
+  // ── FEEDBACK ───────────────────────────────────────────────────
+  checkPage(36); y+=6;
+  const feedbackTitle = finalScore===QUIZ.length?'Perfect Score':finalScore===QUIZ.length-1?'Good Work':'Keep Studying';
+  const feedbackMsg = finalScore===QUIZ.length
+    ? 'Outstanding — you understood every cross-system connection on the Muscular System map.'
+    : finalScore===QUIZ.length-1
+    ? 'Strong work! You understood most connections. Review the one you missed above and re-read that connection card.'
+    : 'Head back to the map, toggle each connection pill, and re-read the cards carefully before trying again.';
+  
 
-  f([255,235,232]); s(C.red); doc.setLineWidth(0.5);
-  rr(ML,y,CW,24,4,'FD');
-  bold(9); t(C.redDk); doc.text(`${feedbackTitle}  -  Overall Feedback`, ML+6, y+8);
-  normal(8.5); t(C.dgrey);
-  doc.text(doc.splitTextToSize(feedbackMsg, CW-12), ML+6, y+15);
-  y += 30;
+  f(C.teal10); s(C.teal); doc.setLineWidth(0.6); rr(ML,y,CW,30,5,'FD');
+  bold(13); t(C.tealDk); doc.text(feedbackTitle+'  —  Overall Feedback', ML+7, y+10);
+  normal(10.5); t(C.dgrey);
+  var msgLines=doc.splitTextToSize(feedbackMsg,CW-14);
+  doc.text(msgLines, ML+7, y+19, {lineHeightFactor:1.5});
+  y+=36;
 
-  // ── FOOTER ────────────────────────────────────────────────────
-  const totalPages = doc.getNumberOfPages();
-  for (let p=1; p<=totalPages; p++) {
+  // ── FOOTER ─────────────────────────────────────────────────────
+  var totalPages=doc.getNumberOfPages();
+  for(var p=1;p<=totalPages;p++){
     doc.setPage(p);
-    const fy = PH-12;
-    f(C.navy); doc.rect(0,fy,PW,12,'F');
-    f(C.red);  doc.rect(0,fy,PW,1,'F');
-    bold(8); t(C.red); doc.text('LYFELABZ', ML, fy+7);
-    normal(7); t(C.muted);
-    doc.text('lyfelabz.com  \u00B7  Circulatory System  \u00B7  Connection Quiz  \u00B7  \u00A9 2026 LyfeLabz', ML+26, fy+7);
-    normal(7); t(C.muted); doc.text(`Page ${p} of ${totalPages}`, PW-MR, fy+7, {align:'right'});
+    var fy=PH-13;
+    f(C.navy); doc.rect(0,fy,PW,13,'F');
+    f(C.teal); doc.rect(0,fy,PW,1.2,'F');
+    bold(9); t(C.teal); doc.text('LYFELABZ',ML,fy+8.5);
+    normal(8); t(C.muted);
+    doc.text('lyfelabz.com  \u00B7  Muscular System  \u00B7  Connection Quiz  \u00B7  \u00A9 2026 LyfeLabz', ML+24, fy+8.5);
+    normal(8); t(C.muted); doc.text('Page '+p+' of '+totalPages, PW-MR, fy+8.5, {align:'right'});
   }
 
   window.open(doc.output('bloburl'), '_blank');
 }
+
+// ── Demo hotkey: Cmd+Shift+1 — randomly answers all unanswered questions ──
+document.addEventListener('keydown', function(e) {
+  if (e.metaKey && e.shiftKey && e.key === '1') {
+    e.preventDefault();
+    QUIZ.forEach(function(q, qi) {
+      if (!quizAnswered.has(qi)) {
+        answerQuiz(qi, Math.floor(Math.random() * q.options.length));
+      }
+    });
+  }
+});
 </script>
 </body>
 </html>

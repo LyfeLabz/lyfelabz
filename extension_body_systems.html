@@ -793,6 +793,25 @@ function resetAll() {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// ── Demo hotkey: Cmd+Shift+1 — randomly answers all unanswered questions ──
+document.addEventListener('keydown', function(e) {
+  if (e.metaKey && e.shiftKey && e.key === '1') {
+    e.preventDefault();
+    CASES.forEach(function(c) {
+      c.questions.forEach(function(q, qi) {
+        // Only fill questions not yet answered
+        if (!caseQAnswered[c.id] || !caseQAnswered[c.id].has(qi)) {
+          const chosen = Math.floor(Math.random() * q.options.length);
+          answerCase(c.id, qi, chosen);
+        }
+      });
+    });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// REPORT CARD PDF GENERATOR
+// ══════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════
 // REPORT CARD PDF GENERATOR
 // ══════════════════════════════════════════════════════════════════
@@ -806,19 +825,17 @@ function generateReport() {
     return;
   }
 
-  // ── Guard: block if any questions unanswered ──────────────────
+  // Guard: block if any questions unanswered
   if (totalAnswered < totalQuestions) {
     const notice = document.getElementById('turnin-notice');
     const list   = document.getElementById('turnin-notice-list');
     list.innerHTML = '';
     CASES.forEach((c, idx) => {
-      const missing = c.questions
-        .map((_,qi) => qi)
+      const missing = c.questions.map((_,qi) => qi)
         .filter(qi => !caseQAnswered[c.id] || !caseQAnswered[c.id].has(qi));
       if (missing.length > 0) {
         const li = document.createElement('li');
-        const qNums = missing.map(qi => `Q${qi+1}`).join(', ');
-        li.textContent = `Case ${idx+1}: ${c.title.replace(/[^\x00-\x7F]/g,'')} — ${qNums} not answered`;
+        li.textContent = `Case ${idx+1}: ${c.title.replace(/[^\x00-\x7F]/g,'')} — ${missing.map(qi=>`Q${qi+1}`).join(', ')} not answered`;
         list.appendChild(li);
       }
     });
@@ -826,378 +843,288 @@ function generateReport() {
     notice.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     return;
   }
-
-  // All answered — clear any old notice
   document.getElementById('turnin-notice').classList.remove('show');
 
-  // ── Text sanitizer: strip emoji + problematic Unicode for jsPDF ──
   function clean(str) {
     if (!str) return '';
     return str
-      // subscript/superscript numbers
-      .replace(/O[\u2082]/g, 'O2')
-      .replace(/CO[\u2082]/g, 'CO2')
-      .replace(/[\u2080-\u209C]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x2050))
-      // strip emoji (broad Unicode ranges)
-      .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
-      .replace(/[\u{2600}-\u{27BF}]/gu, '')
-      .replace(/[\u{FE00}-\u{FEFF}]/gu, '')
-      .replace(/[\u200D]/g, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
+      .replace(/O[\u2082]/g,'O2').replace(/CO[\u2082]/g,'CO2')
+      .replace(/[\u2080-\u209C]/g, m => String.fromCharCode(m.charCodeAt(0)-0x2050))
+      .replace(/[\u{1F000}-\u{1FFFF}]/gu,'').replace(/[\u{2600}-\u{27BF}]/gu,'')
+      .replace(/[\u{FE00}-\u{FEFF}]/gu,'').replace(/[\u200D]/g,'')
+      .replace(/\s{2,}/g,' ').trim();
   }
 
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
-
-  const PW = 215.9, PH = 279.4;
-  const ML = 13, MR = 13;
-  const CW = PW - ML - MR;
+  const doc = new jsPDF({ unit:'mm', format:'letter', orientation:'portrait' });
+  const PW=215.9, PH=279.4, ML=14, MR=14, CW=PW-ML-MR;
 
   const C = {
-    dark:       [10,  17,  26],
-    navy:       [20,  38,  58],
-    navy2:      [26,  47,  72],
-    teal:       [59,  200, 232],
-    tealDark:   [14,  126, 158],
-    teal10:     [240, 252, 255],
-    teal20:     [207, 243, 250],
-    gold:       [245, 200, 66],
-    goldSoft:   [254, 247, 214],
-    white:      [255, 255, 255],
-    lgrey:      [248, 250, 252],
-    mgrey:      [226, 232, 240],
-    dgrey:      [51,  65,  85],
-    muted:      [100, 116, 139],
-    green:      [22,  163, 74],
-    red:        [204, 43,  72],
-    purple:     [124, 58,  237],
+    dark:[10,17,26], navy:[20,38,58], navy2:[26,47,72],
+    teal:[59,200,232], tealDk:[14,126,158], teal10:[240,252,255], teal20:[207,243,250],
+    gold:[245,200,66], goldSft:[254,247,214],
+    white:[255,255,255], lgrey:[248,250,252], mgrey:[226,232,240],
+    dgrey:[51,65,85], muted:[100,116,139],
+    green:[22,163,74], red:[204,43,72],
   };
+  const CASE_ACCENTS = { 1:[44,160,190], 2:[180,45,80], 4:[140,100,210], 5:[22,180,140], 6:[60,170,90] };
 
-  const CASE_ACCENTS = {
-    1: [44,  160, 190],
-    2: [180, 45,  80],
-    4: [140, 100, 210],
-    5: [22,  180, 140],
-    6: [60,  170, 90],
-  };
+  const f  = c => doc.setFillColor(c[0],c[1],c[2]);
+  const s  = c => doc.setDrawColor(c[0],c[1],c[2]);
+  const t  = c => doc.setTextColor(c[0],c[1],c[2]);
+  const bold   = sz => { doc.setFont('helvetica','bold');   doc.setFontSize(sz); };
+  const normal = sz => { doc.setFont('helvetica','normal'); doc.setFontSize(sz); };
+  const italic = sz => { doc.setFont('helvetica','italic'); doc.setFontSize(sz); };
+  const rr = (x,y,w,h,r,style) => doc.roundedRect(x,y,w,h,r,r,style);
 
-  function f(c)  { doc.setFillColor(c[0], c[1], c[2]); }
-  function s(c)  { doc.setDrawColor(c[0], c[1], c[2]); }
-  function t(c)  { doc.setTextColor(c[0], c[1], c[2]); }
-  function bold(sz)   { doc.setFont('helvetica','bold');   doc.setFontSize(sz); }
-  function normal(sz) { doc.setFont('helvetica','normal'); doc.setFontSize(sz); }
-  function italic(sz) { doc.setFont('helvetica','italic'); doc.setFontSize(sz); }
-  function rr(x,y,w,h,r,style) { doc.roundedRect(x,y,w,h,r,r,style); }
+  // Grade scale (exact score out of 15)
+  function getGrade(score, total) {
+    if (total === 15) {
+      if (score === 15) return 'A';
+      if (score === 14) return 'A-';
+      if (score === 13) return 'B+';
+      if (score === 12) return 'B';
+      if (score === 11) return 'C';
+      return 'Needs More Practice';
+    }
+    const p = score/total;
+    return p===1?'A':p>=0.93?'A-':p>=0.87?'B+':p>=0.8?'B':p>=0.73?'C':'Needs More Practice';
+  }
 
   let y = 0;
 
   function checkPage(needed) {
-    if (y + needed > PH - 18) {
-      doc.addPage();
-      y = 0;
-      drawContHeader();
-    }
+    if (y + needed > PH - 16) { doc.addPage(); y = 0; drawContHeader(); }
   }
 
   function drawContHeader() {
-    f(C.navy); doc.rect(0, 0, PW, 10, 'F');
-    f(C.teal);  doc.rect(0, 0, PW, 1.5, 'F');
-    bold(8); t(C.teal);
-    doc.text('LYFELABZ  \u00B7  Medical Mysteries Report Card', ML, 7);
-    bold(8); t(C.gold);
-    doc.text(clean(studentName), PW - MR, 7, { align: 'right' });
-    y = 13;
+    f(C.navy); doc.rect(0,0,PW,12,'F');
+    f(C.teal); doc.rect(0,0,PW,1.8,'F');
+    bold(10); t(C.teal);
+    doc.text('LYFELABZ  \u00B7  Medical Mysteries Report Card', ML, 8.5);
+    bold(10); t(C.gold);
+    doc.text(clean(studentName), PW-MR, 8.5, {align:'right'});
+    y = 15;
   }
 
-  // ── COVER HEADER ─────────────────────────────────────────────
-  f(C.dark); doc.rect(0, 0, PW, 48, 'F');
-  f(C.teal); doc.rect(0, 0, PW, 2.5, 'F');
-  f([18, 50, 72]); doc.rect(0, 0, PW * 0.5, 48, 'F');
+  // ── COVER ──────────────────────────────────────────────────────
+  const hdrH = 72;
+  // Right box: navy/blue-grey (was dark)
+  f(C.navy2); doc.rect(0,0,PW,hdrH,'F');
+  // Left box: dark/black
+  f(C.dark);  doc.rect(0,0,PW*0.45,hdrH,'F');
+  // Teal stripe across full top
+  f(C.teal); doc.rect(0,0,PW,2.5,'F');
 
-  bold(22); t(C.gold);
-  doc.text('LYFELABZ', ML, 19);
-  f(C.gold); doc.rect(ML, 21.2, 36, 0.7, 'F');
-  bold(8); t(C.teal);
-  doc.text('SOLVING MEDICAL MYSTERIES', ML, 28);
+  // LYFELABZ wordmark centred in the LEFT (black) box
+  const boxW   = PW * 0.45;
+  const boxMid = boxW / 2;
+  const wordSz = 44;
+  bold(wordSz);
+  // Measure the FULL string as one unit for accurate centering
+  const totalW = doc.getTextWidth('LyfeLabz');
+  const lyfeW  = doc.getTextWidth('Lyfe');
+  const wordX  = boxMid - totalW / 2;
+  const wordY  = hdrH / 2 + wordSz * 0.32;
+  // Draw full word white first (correctly centred), then overdraw Labz in gold
+  t(C.white); doc.text('LyfeLabz', wordX, wordY);
+  t(C.gold);  doc.text('Labz', wordX + lyfeW, wordY);
 
-  bold(13); t(C.white);
-  doc.text('STUDENT REPORT CARD', PW - MR, 17, { align: 'right' });
-  italic(8); t([179, 136, 255]);
-  doc.text('Extension Activity  \u00B7  Body Systems', PW - MR, 24, { align: 'right' });
-  normal(8); t(C.muted);
-  doc.text(date, PW - MR, 31, { align: 'right' });
-  y = 48;
+  // Right side: report card labels
+  bold(20); t(C.white);
+  doc.text('STUDENT REPORT CARD', PW - MR, 28, {align:'right'});
+  italic(13); t(C.teal);
+  doc.text('Medical Mysteries  \u00B7  Extension Activity', PW - MR, 43, {align:'right'});
+  normal(11); t(C.muted);
+  doc.text(date, PW - MR, 57, {align:'right'});
+  y = hdrH;
 
-  // ── STUDENT INFO STRIP ────────────────────────────────────────
-  f(C.navy2); doc.rect(0, y, PW, 15, 'F');
+  // ── SCORE STRIP ────────────────────────────────────────────────
+  f(C.navy2); doc.rect(0,y,PW,20,'F');
+  let finalScore=0;
+  CASES.forEach(function(c){ c.questions.forEach(function(q,qi){
+    var fb=document.getElementById('cfb-'+c.id+'-'+qi);
+    if(fb && fb.classList.contains('correct-fb')) finalScore++;
+  }); });
 
-  bold(11); t(C.white);
-  doc.text(clean(studentName), ML, y + 10);
+  const grade=getGrade(finalScore,totalQuestions);
+  const gradeCol=finalScore>=13?C.teal:finalScore>=11?C.gold:C.red;
 
-  // Compute score from DOM at Turn In time
-  let finalScore = 0;
-  CASES.forEach(function(c) {
-    c.questions.forEach(function(q, qi) {
-      var fb = document.getElementById('cfb-' + c.id + '-' + qi);
-      if (fb && fb.classList.contains('correct-fb')) finalScore++;
-    });
-  });
+  bold(14); t(C.white); doc.text(clean(studentName), ML, y+13);
+  bold(14); t(C.teal);  doc.text(finalScore+' / '+totalQuestions, PW/2, y+13, {align:'center'});
+  normal(9); t(C.muted); doc.text('TOTAL SCORE', PW/2, y+18.5, {align:'center'});
+  bold(16); t(gradeCol); doc.text(grade, PW-MR, y+14, {align:'right'});
+  normal(9); t(C.muted); doc.text('GRADE', PW-MR, y+18.5, {align:'right'});
+  y+=20;
 
-  const pct = totalQuestions > 0 ? Math.round((finalScore / totalQuestions) * 100) : 0;
-  const grade = pct === 100 ? 'A+' : pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'Needs Review';
-  const gradeCol = pct >= 90 ? C.teal : pct >= 70 ? C.gold : C.red;
+  // ── PROGRESS BAR ───────────────────────────────────────────────
+  y+=6;
+  f(C.mgrey); rr(ML,y,CW,6,2,'F');
+  const barFill=totalQuestions>0?Math.max((finalScore/totalQuestions)*CW,finalScore>0?4:0):0;
+  f(C.teal); rr(ML,y,barFill,6,2,'F');
+  normal(9.5); t(C.muted);
+  doc.text(finalScore+' of '+totalQuestions+' questions correctly answered', ML, y+11);
+  y+=18;
 
-  bold(11); t(C.teal);
-  doc.text(finalScore + ' / ' + totalQuestions, PW / 2, y + 10, { align: 'center' });
-  normal(7); t(C.muted);
-  doc.text('TOTAL SCORE', PW / 2, y + 14.2, { align: 'center' });
-
-  bold(14); t(gradeCol);
-  doc.text(grade, PW - MR, y + 10.5, { align: 'right' });
-  normal(7); t(C.muted);
-  doc.text('GRADE', PW - MR, y + 14.2, { align: 'right' });
-  y += 15;
-
-  // ── PROGRESS BAR ──────────────────────────────────────────────
-  y += 5;
-  f(C.mgrey); rr(ML, y, CW, 5, 2, 'F');
-  const barFill = totalQuestions > 0 ? Math.max((finalScore / totalQuestions) * CW, finalScore > 0 ? 4 : 0) : 0;
-  f(C.teal); rr(ML, y, barFill, 5, 2, 'F');
-  normal(7); t(C.muted);
-  doc.text(pct + '%  correct  \u00B7  ' + finalScore + ' of ' + totalQuestions + ' questions answered', ML, y + 9);
-  y += 15;
-
-  // ── SECTION LABEL ─────────────────────────────────────────────
-  f(C.teal20); rr(ML, y, CW, 8, 2, 'F');
-  bold(7); t(C.tealDark);
-  doc.text('CASE  BREAKDOWN', ML + 4, y + 5.5);
-  bold(7); t(C.muted);
-  doc.text('3 QUESTIONS PER CASE  \u00B7  FULL EXPLANATIONS BELOW EACH ANSWER', PW - MR, y + 5.5, { align: 'right' });
-  y += 12;
+  // ── SECTION LABEL ──────────────────────────────────────────────
+  f(C.teal20); rr(ML,y,CW,10,2,'F');
+  bold(9.5); t(C.tealDk); doc.text('CASE  BREAKDOWN', ML+5, y+7.2);
+  bold(9); t(C.muted); doc.text('3 QUESTIONS PER CASE  \u00B7  EXPLANATIONS INCLUDED', PW-MR, y+7.2, {align:'right'});
+  y+=15;
 
   // ══════════════════════════════════════════════════════════════
-  // CASE CARDS
+  // CASE CARDS — flow continuously
   // ══════════════════════════════════════════════════════════════
   CASES.forEach(function(c, cIdx) {
     var accent = CASE_ACCENTS[c.id] || C.teal;
-
-    var caseScore = 0;
-    var qResults = [];
-    c.questions.forEach(function(q, qi) {
-      var fb = document.getElementById('cfb-' + c.id + '-' + qi);
-      var correct = fb && fb.classList.contains('correct-fb');
-      var answered = fb && (fb.classList.contains('correct-fb') || fb.classList.contains('incorrect-fb'));
-      if (correct) caseScore++;
-      var chosenIdx = (caseChoices[c.id] !== undefined && caseChoices[c.id][qi] !== undefined) ? caseChoices[c.id][qi] : -1;
-      var chosenText = chosenIdx >= 0 ? q.options[chosenIdx] : '';
-      qResults.push({ q: q, qi: qi, correct: correct, answered: answered, chosenText: chosenText });
+    var caseScore=0, qResults=[];
+    c.questions.forEach(function(q,qi){
+      var fb=document.getElementById('cfb-'+c.id+'-'+qi);
+      var correct=fb&&fb.classList.contains('correct-fb');
+      var answered=fb&&(fb.classList.contains('correct-fb')||fb.classList.contains('incorrect-fb'));
+      if(correct) caseScore++;
+      var chosenIdx=(caseChoices[c.id]!==undefined&&caseChoices[c.id][qi]!==undefined)?caseChoices[c.id][qi]:-1;
+      qResults.push({q:q,qi:qi,correct:correct,answered:answered,chosenText:chosenIdx>=0?q.options[chosenIdx]:''});
     });
+    var caseComplete=qResults.every(function(r){return r.answered;});
 
-    var caseComplete = qResults.every(function(r){ return r.answered; });
+    // Keep case header with at least first question
+    checkPage(36);
+    f(accent); rr(ML,y,CW,17,2,'F');
+    bold(12); t(C.white); doc.text('Case '+(cIdx+1)+': '+clean(c.title), ML+5, y+9);
+    italic(9); t([210,235,248]);
+    doc.text('Patient: '+c.patient.name+', Age '+c.patient.age+'  \u00B7  Grade '+c.patient.grade, ML+5, y+15);
+    var badgeW=18, badgeX=PW-MR-badgeW-2;
+    f(C.white); rr(badgeX,y+3,badgeW,10,3,'F');
+    bold(10); t(accent); doc.text(caseScore+' / '+c.questions.length, badgeX+badgeW/2, y+10, {align:'center'});
+    y+=19;
 
-    // Estimate card height
-    var rowH = 30; // per question (with explanation)
-    var diagH = caseComplete ? 14 : 0;
-    var totalCardH = 14 + c.questions.length * (rowH + 1) + diagH + 7;
-    checkPage(totalCardH);
+    qResults.forEach(function(res,i){
+      var qFull='Q'+(res.qi+1)+':  '+clean(res.q.text);
+      var qLines=doc.splitTextToSize(qFull, CW-26);
+      var qCount=Math.min(qLines.length,3);
+      var expText=clean(res.q.explanation||'');
+      var expLines=doc.splitTextToSize(expText, CW-26);
+      var expCount=Math.min(expLines.length,5);
+      var ansLines=res.answered?(!res.correct&&res.chosenText?2:1):0;
+      var rowH=8+qCount*6+(res.answered?ansLines*5.5+expCount*5.2+5:0);
 
-    // Case header bar
-    f(accent); rr(ML, y, CW, 12, 2, 'F');
-    bold(9); t(C.white);
-    doc.text('Case ' + (cIdx + 1) + ': ' + clean(c.title), ML + 4, y + 6.5);
-    italic(7); t([210, 235, 248]);
-    doc.text('Patient: ' + c.patient.name + ', Age ' + c.patient.age + '  \u00B7  Grade ' + c.patient.grade, ML + 4, y + 11);
+      checkPage(rowH+3);
+      f(i%2===0?C.lgrey:C.white); doc.rect(ML,y,CW,rowH,'F');
+      f(accent); doc.rect(ML,y,3,rowH,'F');
 
-    // Score badge
-    var badgeW = 14, badgeX = PW - MR - badgeW - 2;
-    f(C.white); rr(badgeX, y + 2.5, badgeW, 7, 3, 'F');
-    bold(8); t(accent);
-    doc.text(caseScore + ' / ' + c.questions.length, badgeX + badgeW / 2, y + 7.5, { align: 'center' });
-    y += 14;
+      // Status dot
+      if(res.answered){
+        f(res.correct?C.green:C.red); doc.circle(ML+9,y+7,3.5,'F');
 
-    // Question rows with full explanation
-    qResults.forEach(function(res, i) {
-      // Measure how many lines the explanation takes
-      var expText = clean(res.q.explanation || '');
-      var expLines = doc.splitTextToSize(expText, CW - 22);
-      var expCount = Math.min(expLines.length, 4);
-      var rowH = 14 + (res.answered ? (expCount * 4.5) + ((!res.correct && res.chosenText) ? 10 : 5) : 0);
-
-      checkPage(rowH + 2);
-
-      f(i % 2 === 0 ? C.lgrey : C.white);
-      doc.rect(ML, y, CW, rowH, 'F');
-      f(accent); doc.rect(ML, y, 2.5, rowH, 'F');
-
-      // Status circle
-      if (res.answered) {
-        f(res.correct ? C.green : C.red);
-        doc.circle(ML + 8, y + 6, 2.8, 'F');
-        bold(7); t(C.white);
-        doc.text(res.correct ? 'C' : 'X', ML + 6.6, y + 8.3);
       } else {
-        f(C.mgrey); doc.circle(ML + 8, y + 6, 2.8, 'F');
-        normal(7); t(C.muted);
-        doc.text('-', ML + 7.4, y + 8.3);
+        f(C.mgrey); doc.circle(ML+9,y+7,3.5,'F');
+        normal(9); t(C.muted); doc.text('-',ML+8.5,y+9.6);
       }
 
-      // Question text (one line, truncated)
-      var qFull = 'Q' + (res.qi + 1) + ':  ' + clean(res.q.text);
-      var qLineArr = doc.splitTextToSize(qFull, CW - 22);
-      var qLine = qLineArr[0] + (qLineArr.length > 1 ? '...' : '');
-      bold(7.5); t(C.dgrey);
-      doc.text(qLine, ML + 13, y + 5.2);
+      // Question text (up to 3 lines, wraps naturally)
+      var qDisplay=qLines.slice(0,3);
+      if(qLines.length>3) qDisplay[2]=qDisplay[2].replace(/\.?\s*$/,'...');
+      bold(11); t(C.dgrey);
+      doc.text(qDisplay, ML+16, y+6.5, {lineHeightFactor:1.45});
 
-      if (res.answered) {
-        var subY = y + 10;
-
-        if (!res.correct && res.chosenText) {
-          // Wrong answer chosen
-          var shortC = clean(res.chosenText);
-          if (shortC.length > 72) shortC = shortC.substring(0, 72) + '...';
-          italic(6.5); t(C.red);
-          doc.text('You chose: ' + shortC, ML + 13, subY);
-          subY += 4.5;
-
-          // Correct answer
-          var correctText = clean(res.q.options[res.q.correct]);
-          if (correctText.length > 72) correctText = correctText.substring(0, 72) + '...';
-          italic(6.5); t(C.green);
-          doc.text('Correct answer: ' + correctText, ML + 13, subY);
-          subY += 5.5;
+      if(res.answered){
+        var subY=y+8+qCount*6;
+        if(!res.correct&&res.chosenText){
+          var sc=clean(res.chosenText); if(sc.length>85) sc=sc.substring(0,85)+'...';
+          italic(9); t(C.red); doc.text('You chose: '+sc, ML+16, subY); subY+=5.5;
+          var corr=clean(res.q.options[res.q.correct]); if(corr.length>85) corr=corr.substring(0,85)+'...';
+          italic(9); t(C.green); doc.text('Correct answer: '+corr, ML+16, subY); subY+=6;
         } else {
-          italic(6.5); t(C.green);
-          doc.text('Correct!', ML + 13, subY);
-          subY += 5.5;
+          italic(9); t(C.green); doc.text('Correct!', ML+16, subY); subY+=6;
         }
-
-        // Full explanation
-        var expDisplay = expLines.slice(0, 4);
-        if (expLines.length > 4) expDisplay[3] = expDisplay[3].replace(/\.?\s*$/, '...');
-        normal(6.8); t(C.muted);
-        doc.text(expDisplay, ML + 13, subY);
+        var expDisplay=expLines.slice(0,5);
+        if(expLines.length>5) expDisplay[4]=expDisplay[4].replace(/\.?\s*$/,'...');
+        normal(9.5); t(C.muted); doc.text(expDisplay, ML+16, subY, {lineHeightFactor:1.4});
       }
-
-      y += rowH + 1;
+      y+=rowH+2;
     });
 
     // Diagnosis strip
-    if (caseComplete) {
-      checkPage(diagH + 3);
-      f(C.goldSoft); rr(ML, y, CW, diagH, 2, 'F');
-      f(C.gold); doc.rect(ML, y, 2.5, diagH, 'F');
-      bold(6.5); t([140, 100, 0]);
-      doc.text('DIAGNOSIS UNLOCKED:', ML + 6, y + 5);
-      bold(9); t(C.dark);
-      doc.text(clean(c.diagnosis.name), ML + 6, y + 11);
-      var sx = ML + 6 + doc.getTextWidth(clean(c.diagnosis.name)) + 4;
-      c.diagnosis.systems.forEach(function(sys) {
-        var col = sys.col.match(/\w\w/g).map(function(x){ return parseInt(x, 16); });
-        var sW = doc.getTextWidth(clean(sys.name)) + 6;
-        s(col); doc.setLineWidth(0.5);
-        rr(sx, y + 7.5, sW, 5, 2, 'D');
-        t(col); normal(6.5);
-        doc.text(clean(sys.name), sx + sW / 2, y + 11.2, { align: 'center' });
-        sx += sW + 3;
+    if(caseComplete){
+      var diagH=18; checkPage(diagH+4);
+      f(C.goldSft); rr(ML,y,CW,diagH,2,'F');
+      f(C.gold); doc.rect(ML,y,3,diagH,'F');
+      bold(8); t([140,100,0]); doc.text('DIAGNOSIS UNLOCKED:', ML+7, y+7);
+      bold(12); t(C.dark); doc.text(clean(c.diagnosis.name), ML+7, y+14.5);
+      var sx=ML+7+doc.getTextWidth(clean(c.diagnosis.name))+5;
+      c.diagnosis.systems.forEach(function(sys){
+        var col=sys.col.match(/\w\w/g).map(function(x){return parseInt(x,16);});
+        bold(9); var sW=doc.getTextWidth(clean(sys.name))+8;
+        s(col); doc.setLineWidth(0.5); rr(sx,y+9,sW,7,2,'D');
+        t(col); doc.text(clean(sys.name),sx+sW/2,y+14.5,{align:'center'});
+        sx+=sW+4;
       });
-      y += diagH + 3;
+      y+=diagH+4;
     }
-    y += 5;
+    y+=6;
   });
 
-  // ══════════════════════════════════════════════════════════════
-  // BODY SYSTEMS PERFORMANCE SUMMARY
-  // Fixed: tally per answered question (each question counted once)
-  // ══════════════════════════════════════════════════════════════
-  checkPage(65);
-  y += 3;
-  f(C.teal20); rr(ML, y, CW, 8, 2, 'F');
-  bold(7); t(C.tealDark);
-  doc.text('BODY SYSTEMS PERFORMANCE SUMMARY', ML + 4, y + 5.5);
-  bold(7); t(C.muted);
-  doc.text('QUESTIONS TOUCHING EACH SYSTEM', PW - MR, y + 5.5, { align: 'right' });
-  y += 12;
+  // ── SYSTEMS SUMMARY ────────────────────────────────────────────
+  checkPage(70); y+=4;
+  f(C.teal20); rr(ML,y,CW,12,2,'F');
+  bold(10.5); t(C.tealDk); doc.text('BODY SYSTEMS PERFORMANCE SUMMARY', ML+5, y+8.5);
+  y+=16;
 
-  // Tally: for each answered question, credit each of the case's diagnosis systems ONCE
-  var sysScore = {}, sysTotal = {};
-  CASES.forEach(function(c) {
-    c.questions.forEach(function(q, qi) {
-      var fb = document.getElementById('cfb-' + c.id + '-' + qi);
-      var correct = fb && fb.classList.contains('correct-fb');
-      var answered = fb && (fb.classList.contains('correct-fb') || fb.classList.contains('incorrect-fb'));
-      if (!answered) return;
-      // Each system gets +1 for this question being answered, +1 correct if correct
-      c.diagnosis.systems.forEach(function(sys) {
-        if (!sysTotal[sys.name]) { sysTotal[sys.name] = 0; sysScore[sys.name] = 0; }
-        sysTotal[sys.name]++;
-        if (correct) sysScore[sys.name]++;
-      });
+  var sysScore={}, sysTotal={};
+  CASES.forEach(function(c){c.questions.forEach(function(q,qi){
+    var fb=document.getElementById('cfb-'+c.id+'-'+qi);
+    var correct=fb&&fb.classList.contains('correct-fb');
+    var answered=fb&&(fb.classList.contains('correct-fb')||fb.classList.contains('incorrect-fb'));
+    if(!answered) return;
+    c.diagnosis.systems.forEach(function(sys){
+      if(!sysTotal[sys.name]){sysTotal[sys.name]=0;sysScore[sys.name]=0;}
+      sysTotal[sys.name]++; if(correct) sysScore[sys.name]++;
     });
+  });});
+
+  var allSys=Object.keys(sysTotal), colW=(CW-10)/2;
+  allSys.forEach(function(sys,i){
+    var col=i%2, xOff=ML+col*(colW+10);
+    if(col===0&&i>0) y+=18;
+    checkPage(18);
+    var sc=sysScore[sys],tot=sysTotal[sys],sp=tot>0?sc/tot:0;
+    var barCol=sp>=0.8?C.teal:sp>=0.5?C.gold:C.red;
+    bold(10.5); t(C.dgrey); doc.text(sys,xOff,y+5);
+    normal(9); t(C.muted); doc.text(sc+'/'+tot,xOff+colW,y+5,{align:'right'});
+    f(C.mgrey); rr(xOff,y+7,colW,5,1.5,'F');
+    f(barCol);  rr(xOff,y+7,Math.max(sp*colW,sp>0?4:0),5,1.5,'F');
   });
+  if(allSys.length%2!==0) y+=18;
+  y+=18;
 
-  var allSys = Object.keys(sysTotal);
-  if (allSys.length === 0) {
-    normal(8); t(C.muted);
-    doc.text('Complete the cases to see your systems breakdown.', ML, y + 6);
-    y += 14;
-  } else {
-    var colCount = 2, colW = (CW - 8) / colCount;
-    allSys.forEach(function(sys, i) {
-      var col = i % colCount;
-      var xOff = ML + col * (colW + 8);
-      if (col === 0 && i > 0) y += 15;
-      checkPage(15);
+  // ── FEEDBACK ───────────────────────────────────────────────────
+  checkPage(36); y+=6;
+  var feedbackMsg=finalScore===15
+    ?'Perfect score! Every case solved correctly. You think like a real doctor.'
+    :finalScore>=13?'Excellent diagnostic skills! You clearly understand how body systems connect.'
+    :finalScore>=11?'Good effort! Review the case explanations above to strengthen your understanding.'
+    :'Keep studying — re-read each diagnosis explanation carefully and try again.';
+  var feedbackTitle=finalScore===15?'Perfect Score':finalScore>=13?'Excellent Work':finalScore>=11?'Good Effort':'Keep Studying';
 
-      var sc = sysScore[sys], tot = sysTotal[sys];
-      var sp = tot > 0 ? sc / tot : 0;
-      var barCol = sp >= 0.8 ? C.teal : sp >= 0.5 ? C.gold : C.red;
+  f(C.teal10); s(C.teal); doc.setLineWidth(0.6); rr(ML,y,CW,30,5,'FD');
+  bold(13); t(C.tealDk); doc.text(feedbackTitle+'  \u2014  Overall Feedback', ML+7, y+10);
+  normal(10.5); t(C.dgrey);
+  var msgLines=doc.splitTextToSize(feedbackMsg,CW-14);
+  doc.text(msgLines, ML+7, y+19, {lineHeightFactor:1.5});
+  y+=36;
 
-      bold(8); t(C.dgrey); doc.text(sys, xOff, y + 4);
-      normal(7); t(C.muted); doc.text(sc + '/' + tot, xOff + colW, y + 4, { align: 'right' });
-      f(C.mgrey); rr(xOff, y + 6, colW, 3.5, 1, 'F');
-      f(barCol);  rr(xOff, y + 6, Math.max(sp * colW, sp > 0 ? 3 : 0), 3.5, 1, 'F');
-    });
-    if (allSys.length % 2 !== 0) y += 15;
-    y += 15;
-  }
-
-  // ── FEEDBACK MESSAGE ──────────────────────────────────────────
-  checkPage(28);
-  y += 5;
-  var feedbackMsg = pct === 100
-    ? 'Perfect score! Every case solved correctly. You think like a real doctor.'
-    : pct >= 80
-    ? 'Excellent diagnostic skills! You clearly understand how body systems connect.'
-    : pct >= 60
-    ? 'Good effort! Review the case explanations above to strengthen your understanding.'
-    : totalAnswered === 0
-    ? 'No questions answered yet. Complete the cases and turn in again.'
-    : 'Keep studying — use the explanations above to review what each system does and try again.';
-  var feedbackTitle = pct === 100 ? 'Perfect Score' : pct >= 80 ? 'Excellent Work' : pct >= 60 ? 'Good Effort' : 'Keep Going';
-
-  f(C.teal10); s(C.teal); doc.setLineWidth(0.5);
-  rr(ML, y, CW, 24, 4, 'FD');
-  bold(9); t(C.tealDark);
-  doc.text(feedbackTitle + '  -  Overall Feedback', ML + 6, y + 8);
-  normal(8.5); t(C.dgrey);
-  var msgLines = doc.splitTextToSize(feedbackMsg, CW - 12);
-  doc.text(msgLines, ML + 6, y + 15);
-  y += 30;
-
-  // ── FOOTER on every page ──────────────────────────────────────
-  var totalPages = doc.getNumberOfPages();
-  for (var p = 1; p <= totalPages; p++) {
+  // ── FOOTER ─────────────────────────────────────────────────────
+  var totalPages=doc.getNumberOfPages();
+  for(var p=1;p<=totalPages;p++){
     doc.setPage(p);
-    var footerY = PH - 12;
-    f(C.navy); doc.rect(0, footerY, PW, 12, 'F');
-    f(C.teal);  doc.rect(0, footerY, PW, 1, 'F');
-    bold(8); t(C.teal);
-    doc.text('LYFELABZ', ML, footerY + 7);
-    normal(7); t(C.muted);
-    doc.text('lyfelabz.com  \u00B7  Solving Medical Mysteries  \u00B7  Educational Use Only  \u00B7  \u00A9 2026 LyfeLabz', ML + 26, footerY + 7);
-    normal(7); t(C.muted);
-    doc.text('Page ' + p + ' of ' + totalPages, PW - MR, footerY + 7, { align: 'right' });
+    var fy=PH-13;
+    f(C.navy); doc.rect(0,fy,PW,13,'F');
+    f(C.teal); doc.rect(0,fy,PW,1.2,'F');
+    bold(9); t(C.teal); doc.text('LYFELABZ',ML,fy+8.5);
+    normal(8); t(C.muted);
+    doc.text('lyfelabz.com  \u00B7  Solving Medical Mysteries  \u00B7  Educational Use Only  \u00B7  \u00A9 2026 LyfeLabz', ML+24, fy+8.5);
+    normal(8); t(C.muted); doc.text('Page '+p+' of '+totalPages, PW-MR, fy+8.5, {align:'right'});
   }
 
   window.open(doc.output('bloburl'), '_blank');
