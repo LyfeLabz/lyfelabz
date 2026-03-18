@@ -778,8 +778,8 @@ function updateScore() {
     bar.classList.add('ready');
     btn.classList.add('ready');
     hint.textContent = 'All questions answered — enter your name and click Turn In!';
-    // Clear any existing notice
     document.getElementById('turnin-notice').classList.remove('show');
+    document.getElementById('student-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
   } else {
     bar.classList.remove('ready');
     btn.classList.remove('ready');
