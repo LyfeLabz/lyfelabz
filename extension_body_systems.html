@@ -43,8 +43,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(10,18,28,0.97);backdrop-fi
 .hw-step{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:1rem 1.4rem;text-align:center;min-width:140px;max-width:180px;}
 .hw-step .ico{font-size:1.8rem;display:block;margin-bottom:0.4rem;}
 .hw-step .lbl{font-size:0.78rem;font-weight:800;color:var(--muted);}
-.main{max-width:960px;margin:0 auto;padding:3rem 2rem 4rem;}
-.score-bar{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1rem 1.8rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:2.5rem;flex-wrap:wrap;}
+.main{max-width:960px;margin:0 auto;padding:1.2rem 2rem 4rem;}
+.score-bar{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1rem 1.8rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0;flex-wrap:wrap;position:sticky;top:58px;z-index:150;backdrop-filter:blur(12px);}
 .score-info{display:flex;align-items:center;gap:1.5rem;}
 .score-num{font-family:'Fredoka One',cursive;font-size:2rem;color:var(--accent);line-height:1;}
 .score-label{font-size:0.75rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
@@ -146,7 +146,7 @@ footer p{color:var(--muted);font-size:0.82rem;}footer a{color:var(--teal);text-d
   flex-shrink: 0;
 }
 .turnin-label {
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -154,9 +154,9 @@ footer p{color:var(--muted);font-size:0.82rem;}footer a{color:var(--teal);text-d
   margin-bottom: 0.22rem;
 }
 .turnin-hint {
-  font-size: 0.78rem;
+  font-size: 1rem;
   color: var(--muted);
-  font-weight: 600;
+  font-weight: 700;
 }
 .turnin-input-wrap {
   display: flex;
@@ -519,16 +519,6 @@ body.stem-active .stem-detail {
 </div>
 
 
-  <div class="score-bar">
-    <div class="score-info">
-      <div><div class="score-num" id="q-num">0</div><div class="score-label">Answered</div></div>
-    </div>
-    <div class="progress-wrap">
-      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-      <div class="progress-text" id="progress-text">0 of 21 questions</div>
-    </div>
-  </div>
-
   <!-- ── Turn-In Bar ──────────────────────────────────────────── -->
   <div class="turnin-bar">
     <div class="turnin-left">
@@ -557,7 +547,17 @@ body.stem-active .stem-detail {
     <ul class="turnin-notice-list" id="turnin-notice-list"></ul>
   </div>
 
-  <div id="cases-container"></div>
+  <div class="score-bar">
+    <div class="score-info">
+      <div><div class="score-num" id="q-num">0</div><div class="score-label">Answered</div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-text" id="progress-text">0 of 21 questions</div>
+    </div>
+  </div>
+
+  <div id="cases-container" style="margin-top:1.5rem;"></div>
 
 </div>
 
