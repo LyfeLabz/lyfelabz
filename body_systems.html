@@ -99,6 +99,7 @@
     text-decoration: none;
   }
 
+
   /* ===== HERO ===== */
   .hero {
     background: linear-gradient(135deg, #071520 0%, #0e2840 50%, #081a2e 100%);
@@ -289,7 +290,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.4rem;
   }
   .system-card::before {
     content: '';
@@ -317,7 +318,7 @@
   .system-desc {
     color: var(--text-muted);
     font-size: 0.86rem;
-    margin-bottom: 0; flex: 1; line-height: 1.6;
+    margin-bottom: 0; flex: 1; line-height: 1.6; padding-bottom: 0.8rem;
   }
   .system-connections {
     display: flex;
@@ -737,46 +738,6 @@
     transition: all 0.25s;
   }
   .btn-extension:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(155,89,182,0.5); }
-
-  /* ── READ ALOUD BUTTON ── */
-  .read-aloud-btn {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 800;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 0.32rem 0.85rem; border-radius: 99px; cursor: pointer;
-    border: 1px solid rgba(59,200,232,0.45);
-    background: rgba(59,200,232,0.1); color: var(--accent);
-    text-shadow: 0 0 8px rgba(59,200,232,0.55);
-    box-shadow: 0 0 8px rgba(59,200,232,0.18), inset 0 0 6px rgba(59,200,232,0.05);
-    transition: all 0.25s; white-space: nowrap;
-  }
-  .read-aloud-btn:hover {
-    background: rgba(59,200,232,0.22); border-color: rgba(59,200,232,0.8);
-    text-shadow: 0 0 12px rgba(59,200,232,0.85);
-    box-shadow: 0 0 16px rgba(59,200,232,0.42), 0 0 32px rgba(59,200,232,0.18), inset 0 0 8px rgba(59,200,232,0.1);
-  }
-  .read-aloud-btn.speaking {
-    background: rgba(29,233,182,0.12); border-color: rgba(29,233,182,0.6); color: var(--teal);
-    text-shadow: 0 0 10px rgba(29,233,182,0.8);
-    animation: ra-pulse 1.6s ease-in-out infinite;
-  }
-  .read-aloud-btn.paused {
-    background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.55); color: var(--gold);
-    text-shadow: 0 0 8px rgba(245,200,66,0.7);
-    box-shadow: 0 0 10px rgba(245,200,66,0.22);
-  }
-  @keyframes ra-pulse {
-    0%,100% { box-shadow: 0 0 10px rgba(29,233,182,0.28), 0 0 22px rgba(29,233,182,0.1); }
-    50%      { box-shadow: 0 0 20px rgba(29,233,182,0.52), 0 0 40px rgba(29,233,182,0.22); }
-  }
-  /* system cards — button stacks below desc */
-  .system-card .read-aloud-btn { align-self: flex-start; }
-  /* conn-header — icon+name grouped left, button pushed right */
-  .conn-header { justify-content: flex-start; }
-  .conn-header-group { display: flex; align-items: center; gap: 0.65rem; flex: 1; }
-  .conn-header .read-aloud-btn { flex-shrink: 0; font-size: 0.67rem; padding: 0.25rem 0.7rem; margin-left: auto; }
-  /* dis-card — button sits between desc and link */
-  .dis-card .read-aloud-btn { align-self: flex-start; }
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
@@ -1086,7 +1047,7 @@ body.stem-active .stem-detail {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.4rem;
   transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
 }
 .dis-card::before {
@@ -1132,7 +1093,7 @@ body.stem-active .stem-detail {
   align-items: center;
   gap: 0.45rem;
   align-self: flex-start;
-  margin-top: auto;
+  margin-top: 0.8rem;
   padding: 0.38rem 1.1rem;
   border-radius: 99px;
   font-family: 'Nunito', sans-serif;
@@ -1158,20 +1119,111 @@ body.stem-active .stem-detail {
   margin-top: 0.7rem; letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-/* ── Driving Question ── */
-.driving-question {
-  max-width: 760px; margin: 1.6rem auto 0; padding: 1.1rem 1.6rem;
-  background: rgba(59,200,232,0.06); border: 1px solid rgba(59,200,232,0.22);
-  border-left: 4px solid #3bc8e8; border-radius: 14px;
-  display: flex; align-items: flex-start; gap: 0.85rem; box-sizing: border-box;
-}
-.dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
-.dq-body { flex: 1; }
-.dq-label {
-  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
-  color: rgba(59,200,232,0.75); margin-bottom: 0.3rem;
-}
-.dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ===== ASSIGNMENT GUIDES DROPDOWN ===== */
+  .assign-dropdown {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1rem;
+  }
+  .assign-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.85rem 2.5rem;
+    border-radius: 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    background: transparent;
+    border: 2px solid rgba(245,200,66,0.45);
+    color: var(--gold);
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    z-index: 1;
+  }
+  .assign-toggle:hover {
+    border-color: var(--gold);
+    background: rgba(245,200,66,0.07);
+    box-shadow: 0 0 18px rgba(245,200,66,0.2);
+  }
+  .assign-toggle[aria-expanded="true"] {
+    border-color: var(--gold);
+    color: var(--gold);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: transparent;
+  }
+  .assign-toggle-caret {
+    font-size: 0.85rem;
+    transition: transform 0.25s;
+    line-height: 1;
+  }
+  .assign-toggle[aria-expanded="true"] .assign-toggle-caret {
+    transform: rotate(180deg);
+  }
+  .assign-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    justify-content: center;
+    padding: 1.1rem 1.6rem;
+    background: rgba(20,36,52,0.97);
+    border: 2px solid var(--gold);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    width: 100%;
+    /* collapsed by default */
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.25s ease;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .assign-panel.open {
+    max-height: 120px;
+    opacity: 1;
+    padding-top: 1.1rem;
+    padding-bottom: 1.1rem;
+  }
+  .assignment-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.52rem 1.3rem;
+    border-radius: 99px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    transition: all 0.22s;
+    white-space: nowrap;
+  }
+  .assignment-pill-maps {
+    color: #3bc8e8;
+    border: 1.5px solid rgba(59,200,232,0.45);
+    background: rgba(59,200,232,0.07);
+  }
+  .assignment-pill-maps:hover {
+    background: rgba(59,200,232,0.15);
+    border-color: #3bc8e8;
+    box-shadow: 0 0 18px rgba(59,200,232,0.3);
+  }
+  .assignment-pill-mm {
+    color: #b388ff;
+    border: 1.5px solid rgba(179,136,255,0.45);
+    background: rgba(179,136,255,0.07);
+  }
+  .assignment-pill-mm:hover {
+    background: rgba(179,136,255,0.15);
+    border-color: #b388ff;
+    box-shadow: 0 0 18px rgba(179,136,255,0.3);
+  }
 </style>
 </head>
 <body>
@@ -1184,6 +1236,7 @@ body.stem-active .stem-detail {
     <li><a href="#systems">Systems</a></li>
     <li><a href="#connections">Connections</a></li>
     <li><a href="#diseases">Diseases</a></li>
+    <li><a href="#extension">Extension</a></li>
     <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
   </ul>
@@ -1196,18 +1249,29 @@ body.stem-active .stem-detail {
   <span class="hero-floats">🦴</span>
   <span class="hero-floats">🧠</span>
   <span class="hero-floats">🫁</span>
-  <div class="hero-badge">Biology · Lesson 4</div>
+  <div class="hero-badge">LyfeLabz · Biology · Lesson 4</div>
   <h1>Body Systems 🫀</h1>
   <p>Explore how the body's major systems work together — from cells to organs — to keep every living organism alive and in balance.</p>
-  <div class="driving-question">
-    <div class="dq-icon">🔍</div>
-    <div class="dq-body">
-      <div class="dq-label">Driving Question</div>
-      <div class="dq-text">When you sprint for a bus, what's actually happening inside your body — and how many systems kick in at once?</div>
+  <div class="hero-btns">
+    <a href="#hierarchy" class="btn btn-primary">Start Studying 🚀</a>
+    <a href="#quiz" class="btn btn-outline">Jump to Quiz 📝</a>
+  </div>
+
+  <!-- ASSIGNMENT GUIDES DROPDOWN -->
+  <div class="assign-dropdown" id="assignDropdown">
+    <button class="assign-toggle" onclick="toggleAssign()" aria-expanded="false" aria-controls="assignPanel">
+      <span class="assign-toggle-icon">📋</span>
+      <span class="assign-toggle-label">Assignment Guides</span>
+      <span class="assign-toggle-caret">▾</span>
+    </button>
+    <div class="assign-panel" id="assignPanel" role="region">
+      <a href="flowchart_circulatory_system.html" target="_blank" class="assignment-pill assignment-pill-maps">🗺️ Interactive Maps ↗</a>
+      <a href="flowchart_medical_mysteries.html" target="_blank" class="assignment-pill assignment-pill-mm">🩺 Medical Mysteries ↗</a>
     </div>
   </div>
 
 </header>
+
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
   <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. — Schroeder et al., 2018">🗂️ Concept Formation</span>
@@ -1229,7 +1293,7 @@ body.stem-active .stem-detail {
 <!-- HIERARCHY -->
 <section id="hierarchy">
   <div class="container">
-    <span class="section-label">📖 Lesson Notes</span>
+    <span class="section-label">Slide Deck</span>
     <h2 class="section-title">From Cells to Body Systems 🔬</h2>
     <p class="section-desc">Life is organized in levels. Each level is built from the one below — and if any level fails, everything above it is affected.</p>
 
@@ -1285,67 +1349,59 @@ body.stem-active .stem-detail {
 
         <div class="systems-grid">
 
-      <div class="system-card circulatory" id="sc-circulatory">
+      <div class="system-card circulatory">
         <span class="system-icon">🫀</span>
         <div class="system-name">Circulatory System</div>
         <div class="system-desc">The <strong>heart</strong> pumps blood through <strong>arteries</strong> and <strong>veins</strong>, transporting oxygen, nutrients, and waste to and from cells throughout the body.</div>
-        <button class="read-aloud-btn" onclick="toggleCardRead('sc-circulatory',this)">🔊 Read Aloud</button>
         <a href="system_circulatory.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
-      <div class="system-card digestive" id="sc-digestive">
+      <div class="system-card digestive">
         <span class="system-icon">🫄</span>
         <div class="system-name">Digestive System</div>
         <div class="system-desc">Breaks down food as it moves from the <strong>mouth</strong> → <strong>stomach</strong> → <strong>small intestine</strong>, absorbing nutrients into the bloodstream while the <strong>large intestine</strong> removes solid waste.</div>
-        <button class="read-aloud-btn" onclick="toggleCardRead('sc-digestive',this)">🔊 Read Aloud</button>
         <a href="system_digestive.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
-      <div class="system-card respiratory" id="sc-respiratory">
+      <div class="system-card respiratory">
         <span class="system-icon">🫁</span>
         <div class="system-name">Respiratory System</div>
         <div class="system-desc">Moves air in and out of the body as oxygen enters the <strong>lungs</strong> and passes into the blood, while carbon dioxide waste is exhaled.</div>
-        <button class="read-aloud-btn" onclick="toggleCardRead('sc-respiratory',this)">🔊 Read Aloud</button>
         <a href="system_respiratory.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
-      <div class="system-card excretory" id="sc-excretory">
+      <div class="system-card excretory">
         <span class="system-icon">🚽</span>
         <div class="system-name">Excretory System</div>
         <div class="system-desc">Removes solid, liquid, and gaseous wastes from the body through the <strong>large intestine</strong>, <strong>bladder</strong>, and <strong>lungs</strong>, helping maintain homeostasis.</div>
-        <button class="read-aloud-btn" onclick="toggleCardRead('sc-excretory',this)">🔊 Read Aloud</button>
         <a href="system_excretory.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
-      <div class="system-card skeletal" id="sc-skeletal">
+      <div class="system-card skeletal">
         <span class="system-icon">🦴</span>
         <div class="system-name">Skeletal System</div>
         <div class="system-desc">Provides structure, protects organs, and supports movement as <strong>bones</strong> give the body its shape and <strong>bone marrow</strong> inside them produces blood cells.</div>
-        <button class="read-aloud-btn" onclick="toggleCardRead('sc-skeletal',this)">🔊 Read Aloud</button>
         <a href="system_skeletal.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
-      <div class="system-card muscular" id="sc-muscular">
+      <div class="system-card muscular">
         <span class="system-icon">💪</span>
         <div class="system-name">Muscular System</div>
         <div class="system-desc">Allows movement of the body and materials through it using <strong>skeletal muscle</strong> to move bones, <strong>cardiac muscle</strong> to pump the heart, and <strong>smooth muscle</strong> to push materials through organs.</div>
-        <button class="read-aloud-btn" onclick="toggleCardRead('sc-muscular',this)">🔊 Read Aloud</button>
         <a href="system_muscular.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
-      <div class="system-card nervous" id="sc-nervous">
+      <div class="system-card nervous">
         <span class="system-icon">🧠</span>
         <div class="system-name">Nervous System</div>
         <div class="system-desc">Detects, interprets, and responds to information as the <strong>brain</strong> acts as the control center, the <strong>spinal cord</strong> relays signals, and <strong>neurons</strong> carry electrical signals throughout the body.</div>
-        <button class="read-aloud-btn" onclick="toggleCardRead('sc-nervous',this)">🔊 Read Aloud</button>
         <a href="system_nervous.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
-      <div class="system-card immune" id="sc-immune">
+      <div class="system-card immune">
         <span class="system-icon">🛡️</span>
         <div class="system-name">Immune System</div>
         <div class="system-desc">Defends the body against harmful bacteria, viruses, and parasites as <strong>white blood cells</strong> attack foreign invaders and <strong>lymph nodes</strong> filter germs from cells, tissues, and blood.</div>
-        <button class="read-aloud-btn" onclick="toggleCardRead('sc-immune',this)">🔊 Read Aloud</button>
         <a href="system_immune.html" class="explore-btn">Explore Interactive Map</a>
       </div>
 
@@ -1364,8 +1420,8 @@ body.stem-active .stem-detail {
       <!-- NERVOUS — spans full width, first ─────────────────────────────── -->
       <div class="conn-card nervous-featured">
         <div class="conn-header nervous">
-          <div class="conn-header-group"><span class="conn-header-icon">🧠</span><span class="conn-header-name">Nervous — The Master Controller</span></div>
-          <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Nervous System — The Master Controller" data-body="The brain and spinal cord send and receive signals through neurons to coordinate every other system. Nothing in the body operates without nervous system involvement. Circulatory: Regulates heart rate and blood pressure through autonomic signals — speeding up during stress, slowing during rest. Muscular: Motor neurons carry signals from the brain to muscles, triggering every voluntary movement and reflex. Respiratory: Controls breathing rate and depth — adjusting oxygen intake based on activity level and carbon dioxide levels in the blood. Digestive: The enteric nervous system coordinates peristalsis, enzyme release, and appetite signals. Excretory: Sends signals to the bladder to control urination, and monitors blood chemistry to trigger kidney function adjustments. Immune: Communicates with immune cells via neurotransmitters — chronic stress suppresses immunity. Skeletal: Detects pain and pressure through sensory neurons in bones and joints, protecting the skeleton and guiding posture and balance.">🔊 Read Aloud</button>
+          <span class="conn-header-icon">🧠</span>
+          <span class="conn-header-name">Nervous — The Master Controller</span>
         </div>
         <div class="nervous-intro">The brain and spinal cord send and receive signals through neurons to coordinate every other system. Nothing in the body operates without nervous system involvement.</div>
         <div class="nervous-connections-grid">
@@ -1403,8 +1459,8 @@ body.stem-active .stem-detail {
       <!-- CIRCULATORY -->
       <div class="conn-card">
         <div class="conn-header circulatory">
-          <div class="conn-header-group"><span class="conn-header-icon">🫀</span><span class="conn-header-name">Circulatory</span></div>
-          <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Circulatory System" data-body="Respiratory: Blood picks up oxygen from the lungs and delivers it to every cell in the body. Digestive: Blood transports absorbed nutrients from the small intestine to cells throughout the body. Excretory: Blood carries metabolic waste products to excretory organs for removal. Immune: Blood vessels deliver white blood cells to sites of infection anywhere in the body.">🔊 Read Aloud</button>
+          <span class="conn-header-icon">🫀</span>
+          <span class="conn-header-name">Circulatory</span>
         </div>
         <div class="conn-rows">
           <div class="conn-row">
@@ -1429,8 +1485,8 @@ body.stem-active .stem-detail {
       <!-- MUSCULAR -->
       <div class="conn-card">
         <div class="conn-header muscular">
-          <div class="conn-header-group"><span class="conn-header-icon">💪</span><span class="conn-header-name">Muscular</span></div>
-          <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Muscular System" data-body="Digestive: Smooth muscle in the digestive tract pushes food along through peristalsis. Circulatory: The heart is a muscle — cardiac muscle contraction pumps blood through the entire body; skeletal muscles also help push blood back through veins. Skeletal: Muscles attach to bones via tendons and pull on them to create all movement — neither system works without the other.">🔊 Read Aloud</button>
+          <span class="conn-header-icon">💪</span>
+          <span class="conn-header-name">Muscular</span>
         </div>
         <div class="conn-rows">
           <div class="conn-row">
@@ -1451,8 +1507,8 @@ body.stem-active .stem-detail {
       <!-- SKELETAL -->
       <div class="conn-card">
         <div class="conn-header skeletal">
-          <div class="conn-header-group"><span class="conn-header-icon">🦴</span><span class="conn-header-name">Skeletal</span></div>
-          <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Skeletal System" data-body="Muscular: Muscles pull on bones via tendons to create movement at joints. Circulatory: Bone marrow produces red and white blood cells for the circulatory and immune systems.">🔊 Read Aloud</button>
+          <span class="conn-header-icon">🦴</span>
+          <span class="conn-header-name">Skeletal</span>
         </div>
         <div class="conn-rows">
           <div class="conn-row">
@@ -1469,8 +1525,8 @@ body.stem-active .stem-detail {
       <!-- RESPIRATORY -->
       <div class="conn-card">
         <div class="conn-header respiratory">
-          <div class="conn-header-group"><span class="conn-header-icon">🫁</span><span class="conn-header-name">Respiratory</span></div>
-          <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Respiratory System" data-body="Excretory: The lungs remove carbon dioxide — a gaseous waste product — from the body when we exhale. Circulatory: Blood travels to the lungs to pick up oxygen and drop off carbon dioxide — the two systems are inseparable gas exchange partners.">🔊 Read Aloud</button>
+          <span class="conn-header-icon">🫁</span>
+          <span class="conn-header-name">Respiratory</span>
         </div>
         <div class="conn-rows">
           <div class="conn-row">
@@ -1487,8 +1543,8 @@ body.stem-active .stem-detail {
       <!-- DIGESTIVE -->
       <div class="conn-card">
         <div class="conn-header digestive">
-          <div class="conn-header-group"><span class="conn-header-icon">🫄</span><span class="conn-header-name">Digestive</span></div>
-          <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Digestive System" data-body="Immune: The gut lining is one of the body's largest immune barriers — gut bacteria and immune cells work together to block pathogens from entering the bloodstream. Excretory: Solid waste passes to the large intestine for elimination; the liver filters toxins from digested material before they reach general circulation.">🔊 Read Aloud</button>
+          <span class="conn-header-icon">🫄</span>
+          <span class="conn-header-name">Digestive</span>
         </div>
         <div class="conn-rows">
           <div class="conn-row">
@@ -1505,8 +1561,8 @@ body.stem-active .stem-detail {
       <!-- EXCRETORY -->
       <div class="conn-card">
         <div class="conn-header excretory">
-          <div class="conn-header-group"><span class="conn-header-icon">🚽</span><span class="conn-header-name">Excretory</span></div>
-          <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Excretory System" data-body="Circulatory: The kidneys filter waste from the blood — receiving blood via the renal artery and returning clean blood via the renal vein. Respiratory: The lungs excrete carbon dioxide gas — a metabolic waste product — with every exhale, working alongside the kidneys to keep blood chemistry balanced.">🔊 Read Aloud</button>
+          <span class="conn-header-icon">🚽</span>
+          <span class="conn-header-name">Excretory</span>
         </div>
         <div class="conn-rows">
           <div class="conn-row">
@@ -1523,8 +1579,8 @@ body.stem-active .stem-detail {
       <!-- IMMUNE -->
       <div class="conn-card">
         <div class="conn-header immune">
-          <div class="conn-header-group"><span class="conn-header-icon">🛡️</span><span class="conn-header-name">Immune</span></div>
-          <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Immune System" data-body="Skeletal: Red and white blood cells — including the immune system's key fighters — are produced in bone marrow inside the skeletal system. Circulatory: The bloodstream carries white blood cells and antibodies to any site of infection anywhere in the body.">🔊 Read Aloud</button>
+          <span class="conn-header-icon">🛡️</span>
+          <span class="conn-header-name">Immune</span>
         </div>
         <div class="conn-rows">
           <div class="conn-row">
@@ -1561,11 +1617,11 @@ body.stem-active .stem-detail {
 
     <div class="diseases-grid">
 
+      <!-- CIRCULATORY -->
       <div class="dis-card active-dis dis-circulatory">
         <span class="dis-icon">🫀</span>
         <div class="dis-name">Circulatory System</div>
         <div class="dis-desc">From heart attacks and arrhythmias to anemia and blood clots — explore what happens when the body's delivery network breaks down.</div>
-        <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Circulatory System — When Things Go Wrong" data-body="From heart attacks and arrhythmias to anemia and blood clots — explore what happens when the body's delivery network breaks down.">🔊 Read Aloud</button>
         <a href="disease_circulatory.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
@@ -1574,7 +1630,6 @@ body.stem-active .stem-detail {
         <span class="dis-icon">🫄</span>
         <div class="dis-name">Digestive System</div>
         <div class="dis-desc">Crohn's disease, ulcers, liver failure, and more — when the body can't absorb what it needs.</div>
-        <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Digestive System — When Things Go Wrong" data-body="Crohn's disease, ulcers, liver failure, and more — when the body can't absorb what it needs.">🔊 Read Aloud</button>
         <a href="disease_digestive.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
@@ -1583,7 +1638,6 @@ body.stem-active .stem-detail {
         <span class="dis-icon">🫁</span>
         <div class="dis-name">Respiratory System</div>
         <div class="dis-desc">Asthma, pneumonia, COPD, and more — how breathing disorders affect oxygen delivery to every cell.</div>
-        <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Respiratory System — When Things Go Wrong" data-body="Asthma, pneumonia, COPD, and more — how breathing disorders affect oxygen delivery to every cell.">🔊 Read Aloud</button>
         <a href="disease_respiratory.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
@@ -1592,7 +1646,6 @@ body.stem-active .stem-detail {
         <span class="dis-icon">🚽</span>
         <div class="dis-name">Excretory System</div>
         <div class="dis-desc">Kidney disease, kidney stones, and what happens when the body can't remove its own waste.</div>
-        <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Excretory System — When Things Go Wrong" data-body="Kidney disease, kidney stones, and what happens when the body can't remove its own waste.">🔊 Read Aloud</button>
         <a href="disease_excretory.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
@@ -1601,7 +1654,6 @@ body.stem-active .stem-detail {
         <span class="dis-icon">🦴</span>
         <div class="dis-name">Skeletal System</div>
         <div class="dis-desc">Osteoporosis, arthritis, fractures, and bone marrow disorders — when the body's framework weakens.</div>
-        <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Skeletal System — When Things Go Wrong" data-body="Osteoporosis, arthritis, fractures, and bone marrow disorders — when the body's framework weakens.">🔊 Read Aloud</button>
         <a href="disease_skeletal.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
@@ -1610,7 +1662,6 @@ body.stem-active .stem-detail {
         <span class="dis-icon">💪</span>
         <div class="dis-name">Muscular System</div>
         <div class="dis-desc">Muscular dystrophy, myasthenia gravis, and what happens when muscle tissue stops working properly.</div>
-        <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Muscular System — When Things Go Wrong" data-body="Muscular dystrophy, myasthenia gravis, and what happens when muscle tissue stops working properly.">🔊 Read Aloud</button>
         <a href="disease_muscular.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
@@ -1619,7 +1670,6 @@ body.stem-active .stem-detail {
         <span class="dis-icon">🧠</span>
         <div class="dis-name">Nervous System</div>
         <div class="dis-desc">Multiple sclerosis, epilepsy, stroke, and Parkinson's — disorders of the body's master controller.</div>
-        <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Nervous System — When Things Go Wrong" data-body="Multiple sclerosis, epilepsy, stroke, and Parkinson's disease — disorders of the body's master controller.">🔊 Read Aloud</button>
         <a href="disease_nervous.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
@@ -1628,7 +1678,6 @@ body.stem-active .stem-detail {
         <span class="dis-icon">🛡️</span>
         <div class="dis-name">Immune System</div>
         <div class="dis-desc">Allergies, autoimmune diseases, and immunodeficiencies — when the body attacks itself or can't defend at all.</div>
-        <button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Immune System — When Things Go Wrong" data-body="Allergies, autoimmune diseases, and immunodeficiencies — when the body attacks itself or can't defend at all.">🔊 Read Aloud</button>
         <a href="disease_immune.html" class="dis-link">Explore Disease Maps</a>
       </div>
 
@@ -1638,7 +1687,7 @@ body.stem-active .stem-detail {
 
 
 <!-- EXTENSION BANNER -->
-<div style="background:var(--dark2); padding: 0 2rem 4rem;">
+<div id="extension" style="background:var(--dark2); padding: 0 2rem 4rem;">
   <div class="container">
     <div class="extension-banner">
       <div class="extension-banner-icon">🩺</div>
@@ -1877,167 +1926,22 @@ function resetQuiz(num) {
 
 buildQuiz(1);
 </script>
-<!-- READ ALOUD — Web Speech API -->
-<script>
-(function() {
-  var activeCard = null;
-  var activeBtn  = null;
-
-  function getPreferredVoice() {
-    var voices = window.speechSynthesis.getVoices();
-    return voices.find(function(v) {
-      return /Samantha|Karen|Google US English|Microsoft Aria|Zira/i.test(v.name);
-    }) || voices.find(function(v) {
-      return v.lang === 'en-US' && !v.name.toLowerCase().includes('compact');
-    });
-  }
-
-  function resetBtn(btn) {
-    btn.textContent = '🔊 Read Aloud';
-    btn.classList.remove('speaking', 'paused');
-  }
-
-  function stopAll() {
-    window.speechSynthesis.cancel();
-    if (activeBtn) resetBtn(activeBtn);
-    activeCard = null;
-    activeBtn  = null;
-  }
-
-  function speakCard(cardId, btn) {
-    var card = document.getElementById(cardId);
-    if (!card) return;
-
-    var nameEl = card.querySelector('.system-name');
-    var descEl = card.querySelector('.system-desc');
-    var title  = nameEl ? nameEl.textContent.trim() : '';
-    var body   = descEl ? descEl.textContent.trim() : '';
-    if (!body) return;
-
-    activeCard = cardId;
-    activeBtn  = btn;
-    btn.textContent = '⏸ Pause';
-    btn.classList.add('speaking');
-
-    // Small delay required — Chrome silently drops speak() called immediately after cancel()
-    setTimeout(function() {
-      var voice = getPreferredVoice();
-
-      function makeUtt(text, rate, vol) {
-        var u = new SpeechSynthesisUtterance(text);
-        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
-        if (voice) u.voice = voice;
-        return u;
-      }
-
-      var uttTitle = makeUtt(title, 0.82, 1);
-      var uttPause = makeUtt('...', 0.1,  0);
-      var uttBody  = makeUtt(body,  0.82, 1);
-
-      uttBody.onend = function() {
-        if (activeBtn) resetBtn(activeBtn);
-        activeCard = null; activeBtn = null;
-      };
-      uttBody.onerror = function() {
-        if (activeBtn) resetBtn(activeBtn);
-        activeCard = null; activeBtn = null;
-      };
-
-      window.speechSynthesis.speak(uttTitle);
-      window.speechSynthesis.speak(uttPause);
-      window.speechSynthesis.speak(uttBody);
-    }, 100);
-  }
-
-  // Generic read for conn-cards and dis-cards — title/body stored as data attributes
-  window.toggleGenericRead = function(btn) {
-    var title = btn.getAttribute('data-title') || '';
-    var body  = btn.getAttribute('data-body')  || '';
-    if (!body) return;
-
-    // Reuse activeCard slot with a unique key derived from title
-    var key = 'generic:' + title;
-
-    if (activeCard === key) {
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
-        btn.textContent = '⏸ Pause';
-        btn.classList.remove('paused'); btn.classList.add('speaking');
-      } else if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.pause();
-        btn.textContent = '▶ Resume';
-        btn.classList.remove('speaking'); btn.classList.add('paused');
-      } else {
-        stopAll();
-      }
-      return;
-    }
-
-    stopAll();
-    activeCard = key;
-    activeBtn  = btn;
-    btn.textContent = '⏸ Pause';
-    btn.classList.add('speaking');
-
-    setTimeout(function() {
-      var voice = getPreferredVoice();
-      function makeUtt(text, rate, vol) {
-        var u = new SpeechSynthesisUtterance(text);
-        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
-        if (voice) u.voice = voice;
-        return u;
-      }
-      var uttTitle = makeUtt(title, 0.82, 1);
-      var uttPause = makeUtt('...', 0.1,  0);
-      var uttBody  = makeUtt(body,  0.82, 1);
-      uttBody.onend = uttBody.onerror = function() {
-        if (activeBtn) resetBtn(activeBtn);
-        activeCard = null; activeBtn = null;
-      };
-      window.speechSynthesis.speak(uttTitle);
-      window.speechSynthesis.speak(uttPause);
-      window.speechSynthesis.speak(uttBody);
-    }, 100);
-  };
-
-  window.toggleCardRead = function(cardId, btn) {
-    // Same card — toggle pause/resume
-    if (activeCard === cardId) {
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
-        btn.textContent = '⏸ Pause';
-        btn.classList.remove('paused');
-        btn.classList.add('speaking');
-      } else if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.pause();
-        btn.textContent = '▶ Resume';
-        btn.classList.remove('speaking');
-        btn.classList.add('paused');
-      } else {
-        stopAll();
-      }
-      return;
-    }
-    // Different card — stop current, start new
-    stopAll();
-    speakCard(cardId, btn);
-  };
-
-  // Stop on page navigation
-  window.addEventListener('beforeunload', function() {
-    window.speechSynthesis.cancel();
-  });
-
-  // Chrome 15s bug workaround
-  setInterval(function() {
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-      window.speechSynthesis.pause();
-      window.speechSynthesis.resume();
-    }
-  }, 12000);
-})();
-</script>
-
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
+<script>
+function toggleAssign() {
+  const btn   = document.querySelector('.assign-toggle');
+  const panel = document.getElementById('assignPanel');
+  const open  = panel.classList.toggle('open');
+  btn.setAttribute('aria-expanded', open);
+}
+// Close when clicking outside
+document.addEventListener('click', function(e) {
+  const dropdown = document.getElementById('assignDropdown');
+  if (dropdown && !dropdown.contains(e.target)) {
+    document.getElementById('assignPanel').classList.remove('open');
+    document.querySelector('.assign-toggle').setAttribute('aria-expanded', 'false');
+  }
+});
+</script>
 </body>
 </html>

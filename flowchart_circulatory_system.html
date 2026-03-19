@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz · Systems Interactive Maps — How To Complete</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dark:   #0c1520;
+    --navy:   #172030;
+    --card:   #1e2d42;
+    --accent: #e74c3c;
+    --teal:   #3bc8e8;
+    --teal2:  #1de9b6;
+    --gold:   #f5c842;
+    --orange: #ff9d45;
+    --purple: #b388ff;
+    --green:  #69d97a;
+    --slate:  #c8d8e8;
+    --muted:  #6a92ad;
+    --text:   #e8f4fb;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1.5rem 3rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+  .site-logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+  .site-logo span { color: var(--gold); }
+  .page-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    background: linear-gradient(135deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.15;
+    margin-bottom: 0.5rem;
+  }
+  .page-sub {
+    font-size: 1rem;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .flow {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: center;
+  }
+
+  .step {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.3rem 1.5rem;
+    position: relative;
+  }
+  .step::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+    border-radius: 18px 0 0 18px;
+    background: var(--step-color, var(--teal));
+  }
+  .step-num {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--step-color, var(--teal));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: var(--dark);
+    flex-shrink: 0;
+    box-shadow: 0 0 20px color-mix(in srgb, var(--step-color, var(--teal)) 40%, transparent);
+  }
+  .step-body { flex: 1; }
+  .step-icon { font-size: 1.5rem; line-height: 1; margin-bottom: 0.3rem; }
+  .step-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: var(--step-color, var(--teal));
+    margin-bottom: 0.35rem;
+    line-height: 1.2;
+  }
+  .step-desc {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .step-tip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  /* Pill-style connection labels */
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.65rem;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.22rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    border: 1.5px solid;
+  }
+
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.3rem 0;
+  }
+  .arrow-line {
+    width: 3px;
+    height: 28px;
+    background: linear-gradient(180deg, var(--accent), var(--orange));
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+  .arrow-head {
+    width: 0; height: 0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-top: 12px solid var(--orange);
+    opacity: 0.7;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    padding: 0.5rem 1.2rem;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    margin: 0.5rem 0 0.3rem;
+  }
+
+  .done-badge {
+    background: linear-gradient(135deg, var(--accent), var(--orange));
+    color: #fff;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    padding: 0.9rem 2.5rem;
+    border-radius: 99px;
+    margin-top: 0.8rem;
+    box-shadow: 0 0 30px rgba(231,76,60,0.35);
+    letter-spacing: 0.04em;
+  }
+
+  .c-red    { --step-color: #e74c3c; }
+  .c-teal   { --step-color: #3bc8e8; }
+  .c-teal2  { --step-color: #1de9b6; }
+  .c-gold   { --step-color: #f5c842; }
+  .c-orange { --step-color: #ff9d45; }
+  .c-purple { --step-color: #b388ff; }
+  .c-green  { --step-color: #69d97a; }
+  .c-slate  { --step-color: #c8d8e8; }
+
+  .hl       { color: var(--gold); }
+  .hl-red   { color: var(--accent); }
+  .hl-teal  { color: var(--teal); }
+  .hl-teal2 { color: var(--teal2); }
+  .hl-green { color: var(--green); }
+
+  @media print {
+    body { background: #fff; color: #111; padding: 1rem; }
+    .step { background: #f5f7fa; border-color: #dde4ed; }
+    .step-desc { color: #222; }
+    .section-label { color: #555; background: #eee; border-color: #ccc; }
+    .done-badge { background: #e74c3c; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="site-logo"><span>Lyfe</span>Labz</div>
+  <h1 class="page-title">🗺️ Systems Interactive Maps<br>How To Complete the Activity</h1>
+  <p class="page-sub">We are using the <strong>Circulatory System</strong> as our example — the same steps apply to all 8 body systems</p>
+</div>
+
+<div class="flow">
+
+  <!-- STEP 1 -->
+  <div class="step c-red">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-icon">🌐</div>
+      <div class="step-title">Get to the Body Systems Page</div>
+      <div class="step-desc">
+        1. Open your browser and go to <span class="hl">lyfelabz.com</span><br>
+        2. Scroll down to the <span class="hl">Biology</span> section and find the <span class="hl-red">Body Systems</span> card — click it<br>
+        3. On the Body Systems page, click <span class="hl-teal">🗺️ SYSTEMS</span> in the header — this jumps to the <span class="hl">Eight Major Body Systems 🩺</span> section
+      </div>
+      <div class="step-tip">📋 Your assignment: choose <strong>6 of the 8</strong> body systems and complete the Connection Quiz for each one</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <!-- STEP 2 -->
+  <div class="step c-teal">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-icon">🗺️</div>
+      <div class="step-title">Open the Circulatory System Map</div>
+      <div class="step-desc">From the <span class="hl">Eight Major Body Systems</span> section, find the <span class="hl-red">Circulatory System</span> card.<br>
+      Click its <span class="hl-teal">interactive map link</span> to open the map page.<br>
+      You will see a <span class="hl-teal">map with circles (called nodes)</span> — click any circle to read about that part of the system. A card will appear on the right showing its <span class="hl">role and a fun fact</span>.</div>
+      <div class="step-tip">🖱️ Try clicking: Heart 🫀 · Arteries 🩸 · Veins · Blood 🔴 · Capillaries</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <!-- STEP 3 -->
+  <div class="step c-orange">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-icon">💊</div>
+      <div class="step-title">Toggle the Connection Pills</div>
+      <div class="step-desc">Above the map, find the coloured <span class="hl">connection pills</span>. Click each one to show how the circulatory system connects to other body systems.<br>
+      After clicking, a <span class="hl-teal">connection card appears on the right</span> — read it carefully!</div>
+      <div class="pill-row">
+        <span class="pill" style="color:#3bc8e8;border-color:rgba(59,200,232,0.5);background:rgba(59,200,232,0.1);">🫁 Respiratory</span>
+        <span class="pill" style="color:#ff9d45;border-color:rgba(255,157,69,0.5);background:rgba(255,157,69,0.1);">🫄 Digestive</span>
+        <span class="pill" style="color:#69d97a;border-color:rgba(105,217,122,0.5);background:rgba(105,217,122,0.1);">🚽 Excretory</span>
+        <span class="pill" style="color:#c8d8e8;border-color:rgba(200,216,232,0.4);background:rgba(200,216,232,0.07);">🦴 Skeletal</span>
+        <span class="pill" style="color:#1de9b6;border-color:rgba(29,233,182,0.5);background:rgba(29,233,182,0.08);">🛡️ Immune</span>
+      </div>
+      <div class="step-tip">📖 The quiz questions come from these connection cards — read them all!</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <!-- STEP 4 -->
+  <div class="step c-gold">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-icon">⬇️</div>
+      <div class="step-title">Scroll Down to the Connection Quiz</div>
+      <div class="step-desc">Scroll all the way down past the map.<br>
+      You will find the <span class="hl">Connection Quiz</span> section with a white border around it.<br>
+      Or click the <span class="hl-teal">Connection Quiz ↓</span> pill in the page header to jump straight there.</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <!-- STEP 5 -->
+  <div class="step c-red">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <div class="step-icon">🧠</div>
+      <div class="step-title">Answer the 5 Questions</div>
+      <div class="step-desc">Each question has a <span class="hl">coloured pill label</span> showing which connection card the answer comes from.<br>
+      Click <span class="hl-teal">A, B, C, or D</span> to choose your answer.<br>
+      Your choice will <span class="hl-red">glow in the system's accent colour</span> when selected.</div>
+      <div class="step-tip">🔙 Go back up and re-read the connection cards if you're not sure!</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <!-- STEP 6 -->
+  <div class="step c-teal2">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <div class="step-icon">✅</div>
+      <div class="step-title">All 5 Questions Answered?</div>
+      <div class="step-desc">When all 5 are answered, the <span class="hl-teal2">progress bar glows</span> and the <span class="hl">Generate Report</span> button lights up.<br>
+      The hint text will say: <span class="hl-teal">"All questions answered — enter your name and generate your report!"</span></div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <!-- STEP 7 -->
+  <div class="step c-teal">
+    <div class="step-num">7</div>
+    <div class="step-body">
+      <div class="step-icon">✏️</div>
+      <div class="step-title">Type Your Name</div>
+      <div class="step-desc">In the <span class="hl">Report Card section</span> at the bottom of the quiz, find the name box.<br>
+      Click it and type your <span class="hl">first and last name</span>.</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <!-- STEP 8 -->
+  <div class="step c-green">
+    <div class="step-num">8</div>
+    <div class="step-body">
+      <div class="step-icon">📄</div>
+      <div class="step-title">Click "Generate Report"</div>
+      <div class="step-desc">Click the glowing <span class="hl-green">📄 Generate Report</span> button.<br>
+      Your PDF report card will open in a <span class="hl">new browser tab</span> — it shows your score, grade, and explanations for every question.</div>
+      <div class="step-tip">⚠️ If you missed a question, a red message will tell you which one!</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <!-- STEP 9 -->
+  <div class="step c-gold">
+    <div class="step-num">9</div>
+    <div class="step-body">
+      <div class="step-icon">💾</div>
+      <div class="step-title">Save, Rename & Upload</div>
+      <div class="step-desc">In the PDF tab, click the <span class="hl">⬇️ Download</span> button (top-right of screen).<br>
+      Rename the file: <span class="hl">YourName_Circulatory_Quiz</span><br>
+      <span class="hl-teal">Repeat steps 1–8</span> for each of your other 5 chosen body systems.<br>
+      When you have all 6 PDFs, upload them all to <span class="hl-green">Google Classroom</span>.</div>
+      <div class="step-tip">📎 You need 6 report card PDFs total — one for each system you chose</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <!-- DONE -->
+  <div class="done-badge">🎉 You're done! Great work!</div>
+
+</div>
+
+</body>
+</html>
