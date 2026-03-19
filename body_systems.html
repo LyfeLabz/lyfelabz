@@ -1172,108 +1172,6 @@ body.stem-active .stem-detail {
   color: rgba(59,200,232,0.75); margin-bottom: 0.3rem;
 }
 .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
-
-  /* ===== ASSIGNMENT GUIDES DROPDOWN ===== */
-  .assign-dropdown {
-    position: relative;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 1.5rem;
-  }
-  .assign-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    padding: 0.85rem 2.5rem;
-    border-radius: 12px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 1rem;
-    font-weight: 800;
-    background: transparent;
-    border: 2px solid rgba(245,200,66,0.45);
-    color: var(--gold);
-    cursor: pointer;
-    transition: all 0.25s;
-    position: relative;
-    z-index: 1;
-  }
-  .assign-toggle:hover {
-    border-color: var(--gold);
-    background: rgba(245,200,66,0.07);
-    box-shadow: 0 0 18px rgba(245,200,66,0.2);
-  }
-  .assign-toggle[aria-expanded="true"] {
-    border-color: var(--gold);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-bottom-color: transparent;
-  }
-  .assign-toggle-caret {
-    font-size: 0.85rem;
-    transition: transform 0.25s;
-    line-height: 1;
-  }
-  .assign-toggle[aria-expanded="true"] .assign-toggle-caret {
-    transform: rotate(180deg);
-  }
-  .assign-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    padding: 1.1rem 1.6rem;
-    background: rgba(20,36,52,0.97);
-    border: 2px solid var(--gold);
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    width: 100%;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.25s ease;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  .assign-panel.open {
-    max-height: 150px;
-    opacity: 1;
-    padding-top: 1.1rem;
-    padding-bottom: 1.1rem;
-  }
-  .assignment-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.52rem 1.3rem;
-    border-radius: 99px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 900;
-    letter-spacing: 0.05em;
-    text-decoration: none;
-    transition: all 0.22s;
-    white-space: nowrap;
-  }
-  .assignment-pill-maps {
-    color: #3bc8e8;
-    border: 1.5px solid rgba(59,200,232,0.45);
-    background: rgba(59,200,232,0.07);
-  }
-  .assignment-pill-maps:hover {
-    background: rgba(59,200,232,0.15);
-    border-color: #3bc8e8;
-    box-shadow: 0 0 18px rgba(59,200,232,0.3);
-  }
-  .assignment-pill-mm {
-    color: #b388ff;
-    border: 1.5px solid rgba(179,136,255,0.45);
-    background: rgba(179,136,255,0.07);
-  }
-  .assignment-pill-mm:hover {
-    background: rgba(179,136,255,0.15);
-    border-color: #b388ff;
-    box-shadow: 0 0 18px rgba(179,136,255,0.3);
-  }
 </style>
 </head>
 <body>
@@ -1286,7 +1184,6 @@ body.stem-active .stem-detail {
     <li><a href="#systems">Systems</a></li>
     <li><a href="#connections">Connections</a></li>
     <li><a href="#diseases">Diseases</a></li>
-    <li><a href="#extension">Extension</a></li>
     <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
   </ul>
@@ -1307,18 +1204,6 @@ body.stem-active .stem-detail {
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
       <div class="dq-text">When you sprint for a bus, what's actually happening inside your body — and how many systems kick in at once?</div>
-    </div>
-  </div>
-
-  <!-- ASSIGNMENT GUIDES DROPDOWN -->
-  <div class="assign-dropdown" id="assignDropdown">
-    <button class="assign-toggle" onclick="toggleAssign()" aria-expanded="false" aria-controls="assignPanel">
-      <span>📋 Assignment Guides</span>
-      <span class="assign-toggle-caret">▾</span>
-    </button>
-    <div class="assign-panel" id="assignPanel" role="region">
-      <a href="flowchart_circulatory_system.html" target="_blank" class="assignment-pill assignment-pill-maps">🗺️ Interactive Maps ↗</a>
-      <a href="flowchart_medical_mysteries.html" target="_blank" class="assignment-pill assignment-pill-mm">🩺 Medical Mysteries ↗</a>
     </div>
   </div>
 
@@ -1753,7 +1638,7 @@ body.stem-active .stem-detail {
 
 
 <!-- EXTENSION BANNER -->
-<div id="extension" style="background:var(--dark2); padding: 0 2rem 4rem; scroll-margin-top: 70px;">
+<div style="background:var(--dark2); padding: 0 2rem 4rem;">
   <div class="container">
     <div class="extension-banner">
       <div class="extension-banner-icon">🩺</div>
@@ -1995,16 +1880,29 @@ buildQuiz(1);
 <!-- READ ALOUD — Web Speech API -->
 <script>
 (function() {
-  var activeCard = null;
-  var activeBtn  = null;
+  var activeKey = null;
+  var activeBtn = null;
 
-  function getPreferredVoice() {
+  // Wait for voices to load before trying to use them (ChromeOS fix)
+  function getVoice(callback) {
     var voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      callback(pickVoice(voices));
+    } else {
+      window.speechSynthesis.addEventListener('voiceschanged', function() {
+        callback(pickVoice(window.speechSynthesis.getVoices()));
+      }, { once: true });
+    }
+  }
+
+  function pickVoice(voices) {
+    // Prefer named high-quality voices, but accept any en-US including compact
     return voices.find(function(v) {
       return /Samantha|Karen|Google US English|Microsoft Aria|Zira/i.test(v.name);
-    }) || voices.find(function(v) {
-      return v.lang === 'en-US' && !v.name.toLowerCase().includes('compact');
-    });
+    })
+    || voices.find(function(v) { return v.lang === 'en-US'; })
+    || voices.find(function(v) { return v.lang.startsWith('en'); })
+    || voices[0];
   }
 
   function resetBtn(btn) {
@@ -2015,65 +1913,41 @@ buildQuiz(1);
   function stopAll() {
     window.speechSynthesis.cancel();
     if (activeBtn) resetBtn(activeBtn);
-    activeCard = null;
-    activeBtn  = null;
+    activeKey = null;
+    activeBtn = null;
   }
 
-  function speakCard(cardId, btn) {
-    var card = document.getElementById(cardId);
-    if (!card) return;
-
-    var nameEl = card.querySelector('.system-name');
-    var descEl = card.querySelector('.system-desc');
-    var title  = nameEl ? nameEl.textContent.trim() : '';
-    var body   = descEl ? descEl.textContent.trim() : '';
-    if (!body) return;
-
-    activeCard = cardId;
-    activeBtn  = btn;
+  function speak(key, btn, text) {
+    activeKey = key;
+    activeBtn = btn;
     btn.textContent = '⏸ Pause';
     btn.classList.add('speaking');
 
-    // Small delay required — Chrome silently drops speak() called immediately after cancel()
-    setTimeout(function() {
-      var voice = getPreferredVoice();
+    getVoice(function(voice) {
+      // Single utterance with natural comma pause — avoids queue distortion on ChromeOS
+      var utt = new SpeechSynthesisUtterance(text);
+      utt.rate  = 1.0;   // rate at 1.0 prevents algorithmic stretching on ChromeOS
+      utt.pitch = 1.0;
+      utt.lang  = 'en-US';
+      utt.volume = 1.0;
+      if (voice) utt.voice = voice;
 
-      function makeUtt(text, rate, vol) {
-        var u = new SpeechSynthesisUtterance(text);
-        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
-        if (voice) u.voice = voice;
-        return u;
-      }
-
-      var uttTitle = makeUtt(title, 0.82, 1);
-      var uttPause = makeUtt('...', 0.1,  0);
-      var uttBody  = makeUtt(body,  0.82, 1);
-
-      uttBody.onend = function() {
+      utt.onend = utt.onerror = function() {
         if (activeBtn) resetBtn(activeBtn);
-        activeCard = null; activeBtn = null;
-      };
-      uttBody.onerror = function() {
-        if (activeBtn) resetBtn(activeBtn);
-        activeCard = null; activeBtn = null;
+        activeKey = null;
+        activeBtn = null;
       };
 
-      window.speechSynthesis.speak(uttTitle);
-      window.speechSynthesis.speak(uttPause);
-      window.speechSynthesis.speak(uttBody);
-    }, 100);
+      // Small delay — Chrome/ChromeOS can drop speak() called right after cancel()
+      setTimeout(function() {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utt);
+      }, 80);
+    });
   }
 
-  // Generic read for conn-cards and dis-cards — title/body stored as data attributes
-  window.toggleGenericRead = function(btn) {
-    var title = btn.getAttribute('data-title') || '';
-    var body  = btn.getAttribute('data-body')  || '';
-    if (!body) return;
-
-    // Reuse activeCard slot with a unique key derived from title
-    var key = 'generic:' + title;
-
-    if (activeCard === key) {
+  window.toggleCardRead = function(cardId, btn) {
+    if (activeKey === cardId) {
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
         btn.textContent = '⏸ Pause';
@@ -2082,92 +1956,47 @@ buildQuiz(1);
         window.speechSynthesis.pause();
         btn.textContent = '▶ Resume';
         btn.classList.remove('speaking'); btn.classList.add('paused');
-      } else {
-        stopAll();
-      }
+      } else { stopAll(); }
       return;
     }
-
     stopAll();
-    activeCard = key;
-    activeBtn  = btn;
-    btn.textContent = '⏸ Pause';
-    btn.classList.add('speaking');
-
-    setTimeout(function() {
-      var voice = getPreferredVoice();
-      function makeUtt(text, rate, vol) {
-        var u = new SpeechSynthesisUtterance(text);
-        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
-        if (voice) u.voice = voice;
-        return u;
-      }
-      var uttTitle = makeUtt(title, 0.82, 1);
-      var uttPause = makeUtt('...', 0.1,  0);
-      var uttBody  = makeUtt(body,  0.82, 1);
-      uttBody.onend = uttBody.onerror = function() {
-        if (activeBtn) resetBtn(activeBtn);
-        activeCard = null; activeBtn = null;
-      };
-      window.speechSynthesis.speak(uttTitle);
-      window.speechSynthesis.speak(uttPause);
-      window.speechSynthesis.speak(uttBody);
-    }, 100);
+    var card = document.getElementById(cardId);
+    if (!card) return;
+    var name = (card.querySelector('.system-name') || {}).textContent || '';
+    var desc = (card.querySelector('.system-desc') || {}).textContent || '';
+    if (!desc) return;
+    // Combine into one utterance with a comma for a natural pause
+    speak(cardId, btn, name + ', ' + desc);
   };
 
-  window.toggleCardRead = function(cardId, btn) {
-    // Same card — toggle pause/resume
-    if (activeCard === cardId) {
+  window.toggleGenericRead = function(btn) {
+    var title = btn.getAttribute('data-title') || '';
+    var body  = btn.getAttribute('data-body')  || '';
+    if (!body) return;
+    var key = 'generic:' + title;
+    if (activeKey === key) {
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
         btn.textContent = '⏸ Pause';
-        btn.classList.remove('paused');
-        btn.classList.add('speaking');
+        btn.classList.remove('paused'); btn.classList.add('speaking');
       } else if (window.speechSynthesis.speaking) {
         window.speechSynthesis.pause();
         btn.textContent = '▶ Resume';
-        btn.classList.remove('speaking');
-        btn.classList.add('paused');
-      } else {
-        stopAll();
-      }
+        btn.classList.remove('speaking'); btn.classList.add('paused');
+      } else { stopAll(); }
       return;
     }
-    // Different card — stop current, start new
     stopAll();
-    speakCard(cardId, btn);
+    speak(key, btn, (title ? title + ', ' : '') + body);
   };
 
-  // Stop on page navigation
   window.addEventListener('beforeunload', function() {
     window.speechSynthesis.cancel();
   });
 
-  // Chrome 15s bug workaround
-  setInterval(function() {
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-      window.speechSynthesis.pause();
-      window.speechSynthesis.resume();
-    }
-  }, 12000);
 })();
 </script>
 
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
-<script>
-function toggleAssign() {
-  const btn   = document.querySelector('.assign-toggle');
-  const panel = document.getElementById('assignPanel');
-  const open  = panel.classList.toggle('open');
-  btn.setAttribute('aria-expanded', open);
-}
-document.addEventListener('click', function(e) {
-  const dropdown = document.getElementById('assignDropdown');
-  if (dropdown && !dropdown.contains(e.target)) {
-    document.getElementById('assignPanel').classList.remove('open');
-    document.querySelector('.assign-toggle').setAttribute('aria-expanded', 'false');
-  }
-});
-</script>
 </body>
 </html>
