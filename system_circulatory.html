@@ -774,7 +774,497 @@ body.stem-active .stem-detail {
   <p style="margin-top:0.3rem">© 2026 LyfeLabz · Educational Use</p>
 </footer>
 
+<script>
+// ─────────────────────────────────────────────
+//  DATA
+// ─────────────────────────────────────────────
+const organData = {
+  heart:      { ico:'🫀', name:'The Heart',          sys:'Circulatory', col:'#e74c3c',
+    role:'The heart is the engine of the circulatory system — a muscular pump that beats ~100,000 times every day. Its four chambers drive two loops simultaneously: pulmonary circulation (to the lungs for oxygen) and systemic circulation (out to the entire body).',
+    fact:'<strong>Fun Fact:</strong> Your heart beats about 3 billion times over a lifetime without ever taking a break. The "lub-dub" sound is your heart valves snapping shut.' },
+  arteries:   { ico:'🩸', name:'Arteries',            sys:'Circulatory', col:'#e74c3c',
+    role:'Arteries carry oxygen-rich blood away from the heart at high pressure. The aorta — the body\'s largest artery — branches into smaller arteries that reach every organ and tissue. Their thick, muscular walls absorb the force of each heartbeat.',
+    fact:'<strong>Fun Fact:</strong> The aorta is about as wide as a garden hose (~1 inch). By the time blood reaches your fingertips it\'s flowing through capillaries thinner than a hair.' },
+  veins:      { ico:'💉', name:'Veins',               sys:'Circulatory', col:'#3bc8e8',
+    role:'Veins return oxygen-depleted blood back to the heart. The superior and inferior vena cava drain the upper and lower body into the right atrium. One-way valves inside veins prevent blood from flowing backward.',
+    fact:'<strong>Fun Fact:</strong> About 70% of your blood is in your veins at any moment — they act as a reservoir. Veins look blue through skin because of how light interacts with deoxygenated blood.' },
+  capillaries:{ ico:'🕸️', name:'Capillaries',         sys:'Circulatory', col:'#e74c3c',
+    role:'Capillaries are the microscopic exchange points of the circulatory system. Their walls are just one cell thick, allowing oxygen and nutrients to pass into tissues while CO₂ and waste pass back in. Every cell in your body is within a few cell-widths of a capillary.',
+    fact:'<strong>Fun Fact:</strong> If all your capillaries were laid end to end, they would stretch ~40,000 km — enough to circle the Earth at the equator!' },
+  blood:      { ico:'🔴', name:'Blood',               sys:'Circulatory', col:'#f5c842',
+    role:'Blood is the cargo of the system — a liquid tissue containing red blood cells (carry O₂), white blood cells (fight infection), platelets (seal wounds), and plasma (transports nutrients, hormones, and waste products).',
+    fact:'<strong>Fun Fact:</strong> A single drop of blood contains ~5 million red blood cells. Each one lives about 120 days and makes roughly 75,000 trips around your body.' },
+  // Respiratory
+  lungs:      { ico:'🫁', name:'Lungs',               sys:'Respiratory', col:'#3bc8e8',
+    role:'The lungs are the oxygen loading dock for the circulatory system. Blood arriving from the heart is low in oxygen and high in CO₂. Inside the lungs, CO₂ is released into exhaled air while fresh oxygen crosses the thin alveoli walls into the bloodstream.',
+    fact:'<strong>Fun Fact:</strong> Your lungs contain ~480 million tiny air sacs (alveoli). Spread flat, they\'d cover an area about the size of a tennis court!' },
+  // Digestive
+  smallintestine: { ico:'🫄', name:'Small Intestine', sys:'Digestive',   col:'#ff9d45',
+    role:'The small intestine is where nutrients from digested food cross into the bloodstream. Tiny finger-like projections called villi line the walls and absorb glucose, amino acids, and fatty acids directly into blood vessels for the circulatory system to distribute.',
+    fact:'<strong>Fun Fact:</strong> The small intestine is about 20 feet (6 metres) long — far longer than the large intestine despite its name. It\'s tightly coiled to fit inside your abdomen.' },
+  // Excretory
+  kidneys:    { ico:'🫘', name:'Kidneys',             sys:'Excretory',   col:'#69d97a',
+    role:'The kidneys are the blood\'s filtration system. They continuously remove urea, excess salts, and water from the blood, returning clean, balanced blood to circulation. They also produce EPO, a hormone that tells bone marrow to make more red blood cells.',
+    fact:'<strong>Fun Fact:</strong> Your kidneys filter your entire blood supply about 40 times per day — processing ~180 litres of blood daily.' },
+  // Skeletal
+  bonemarrow: { ico:'🦴', name:'Bone Marrow',         sys:'Skeletal',    col:'#c8d8e8',
+    role:'Red bone marrow inside the femur, sternum, and other large bones is the factory for all blood cells — producing red blood cells (oxygen carriers), white blood cells (immune fighters), and platelets (clotting agents).',
+    fact:'<strong>Fun Fact:</strong> Bone marrow produces about 2 million red blood cells every second — roughly 173 billion new cells per day — to replace worn-out ones.' },
+  // Excretory extra
+  largeintestine: { ico:'🟤', name:'Large Intestine', sys:'Excretory',   col:'#69d97a',
+    role:'The large intestine absorbs water and electrolytes from waste matter and returns them to the bloodstream. It then compacts and expels solid waste. The circulatory system delivers blood to absorb those final nutrients from the colon wall.',
+    fact:'<strong>Fun Fact:</strong> The large intestine hosts trillions of bacteria — your gut microbiome — which produce vitamins like B12 and K that enter the bloodstream.' },
+  // Immune
+  lymphnodes: { ico:'🛡️', name:'Lymph Nodes',        sys:'Immune',      col:'#1de9b6',
+    role:'Lymph nodes filter lymph fluid — a liquid derived from blood plasma — trapping bacteria, viruses, and pathogens before they can re-enter the bloodstream. They house white blood cells that identify and destroy captured invaders.',
+    fact:'<strong>Fun Fact:</strong> You have ~600 lymph nodes in your body. When a doctor checks for "swollen glands," they\'re feeling whether lymph nodes are enlarged from fighting an infection.' },
+};
 
+// ─────────────────────────────────────────────
+//  NODE POSITIONS  (fractions of canvas, 0–1)
+//  Spread wide to reduce overlap
+// ─────────────────────────────────────────────
+const NODE_DEFS = {
+  // Circulatory core
+  heart:          { x:0.36, y:0.22, r: 32, system:'circ' },  // top centre
+  arteries:       { x:0.16, y:0.40, r:27, system:'circ' },  // far left
+  veins:          { x:0.74, y:0.50, r:27, system:'circ' },  // far right
+  blood:          { x:0.34, y:0.54, r:24, system:'circ' },  // mid centre, moved up
+  capillaries:    { x:0.34, y:0.84, r:23, system:'circ' },  // bottom centre
+  // Overlay nodes — all pushed to edges, staggered so nothing sits on centre spine
+  lungs:          { x:0.64, y:0.06, r:28, system:'resp' },  // very top
+  smallintestine: { x:0.06, y:0.55, r:26, system:'dige' },  // far left mid
+  kidneys:        { x:0.93, y:0.45, r:26, system:'excr' },  // far right mid
+  largeintestine: { x:0.86, y:0.68, r:24, system:'excr' },  // far right lower
+  bonemarrow:     { x:0.18, y:0.68, r:26, system:'skel' },  // left of centre lower (away from capillaries)
+  lymphnodes:     { x:0.90, y:0.18, r:24, system:'immu' },  // top right
+};
+
+const CONNECTIONS = [
+  { from:'heart',         to:'arteries',       label:'pumps O2-rich blood',      sys:'circ' },
+  { from:'arteries',      to:'capillaries',    label:'delivers to tissues',       sys:'circ' },
+  { from:'capillaries',   to:'veins',          label:'collects depleted blood',   sys:'circ' },
+  { from:'veins',         to:'heart',          label:'returns to heart',          sys:'circ' },
+  { from:'heart',         to:'blood',          label:'circulates blood cells',    sys:'circ' },
+  { from:'blood',         to:'capillaries',    label:'exchanges O2/CO2',          sys:'circ' },
+  { from:'lungs',         to:'heart',          label:'delivers O2-rich blood',    sys:'resp' },
+  { from:'heart',         to:'lungs',          label:'sends blood for gas exchange', sys:'resp' },
+  { from:'smallintestine',to:'blood',          label:'absorbs nutrients',         sys:'dige' },
+  { from:'arteries',      to:'smallintestine', label:'supplies blood',            sys:'dige' },
+  { from:'arteries',      to:'kidneys',        label:'delivers blood to filter',  sys:'excr' },
+  { from:'kidneys',       to:'veins',          label:'returns filtered blood',    sys:'excr' },
+  { from:'arteries',      to:'largeintestine', label:'supplies blood',            sys:'excr' },
+  { from:'largeintestine',to:'veins',          label:'returns absorbed water',    sys:'excr' },
+  { from:'blood',         to:'lungs',          label:'expels CO2 gas waste',      sys:'excr' },
+  { from:'bonemarrow',    to:'blood',          label:'produces blood cells',      sys:'skel' },
+  { from:'arteries',      to:'bonemarrow',     label:'supplies oxygen',           sys:'skel' },
+  { from:'blood',         to:'lymphnodes',     label:'delivers white cells',      sys:'immu' },
+  { from:'lymphnodes',    to:'veins',          label:'returns filtered lymph',    sys:'immu' },
+];
+
+// Colours per system
+const SYS_COLOR = {
+  circ: '#e74c3c',
+  resp: '#3bc8e8',
+  dige: '#ff9d45',
+  excr: '#69d97a',
+  skel: '#c8d8e8',
+  immu: '#1de9b6',
+};
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+const activeSystems = new Set(['circ']);
+let selectedNode = null;
+let hoveredNode   = null;
+let hoveredConn   = null;
+let particles = [];
+let animFrame;
+
+// ─────────────────────────────────────────────
+//  CANVAS SETUP
+// ─────────────────────────────────────────────
+const canvas = document.getElementById('map-canvas');
+const ctx = canvas.getContext('2d');
+  const DPR = window.devicePixelRatio || 1;
+
+function resize() {
+  const panel = canvas.parentElement;
+  const w = panel.clientWidth;
+  const h = Math.max(380, Math.round(w * 0.85));
+  canvas.style.width  = w + 'px';
+  canvas.style.height = h + 'px';
+  canvas.width  = Math.round(w * DPR);
+  canvas.height = Math.round(h * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  spawnParticles();
+  draw();
+}
+
+window.addEventListener('resize', resize);
+
+// ─────────────────────────────────────────────
+//  NODE PIXEL POSITIONS
+// ─────────────────────────────────────────────
+function nodePos(id) {
+  const n = NODE_DEFS[id];
+  return { x: n.x * (canvas.width/DPR), y: n.y * (canvas.height/DPR), r: n.r };
+}
+
+function visibleNodes() {
+  return Object.keys(NODE_DEFS).filter(id => {
+    const sys = NODE_DEFS[id].system;
+    return activeSystems.has(sys);
+  });
+}
+
+function visibleConnections() {
+  const visNodes = new Set(visibleNodes());
+  return CONNECTIONS.filter(c => activeSystems.has(c.sys) && visNodes.has(c.from) && visNodes.has(c.to));
+}
+
+// ─────────────────────────────────────────────
+//  PARTICLES
+// ─────────────────────────────────────────────
+class Particle {
+  constructor(conn) {
+    this.conn = conn;
+    this.t = Math.random(); // 0–1 along path
+    this.speed = 0.004 + Math.random() * 0.003;
+    this.size = 2.5 + Math.random() * 1.5;
+    this.opacity = 0.7 + Math.random() * 0.3;
+  }
+  update() {
+    this.t += this.speed;
+    if (this.t > 1) this.t = 0;
+  }
+  pos() {
+    const from = nodePos(this.conn.from);
+    const to   = nodePos(this.conn.to);
+    // Curved path using quadratic bezier
+    const cx = (from.x + to.x) / 2 + (to.y - from.y) * 0.18;
+    const cy = (from.y + to.y) / 2 - (to.x - from.x) * 0.18;
+    const t = this.t;
+    return {
+      x: (1-t)*(1-t)*from.x + 2*(1-t)*t*cx + t*t*to.x,
+      y: (1-t)*(1-t)*from.y + 2*(1-t)*t*cy + t*t*to.y,
+    };
+  }
+}
+
+function spawnParticles() {
+  particles = [];
+  visibleConnections().forEach(conn => {
+    const count = 4 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < count; i++) {
+      particles.push(new Particle(conn));
+    }
+  });
+}
+
+// ─────────────────────────────────────────────
+//  DRAW
+// ─────────────────────────────────────────────
+function drawLabel(text, x, y, col) {
+  ctx.save();
+  ctx.font = '700 10px Nunito, sans-serif';
+  const tw = ctx.measureText(text).width;
+  const pw = tw+14, ph=18, px=x-tw/2-7, py=y-9, r=5;
+  ctx.fillStyle = 'rgba(8,16,28,0.90)';
+  ctx.globalAlpha = 1;
+  ctx.beginPath();
+  ctx.moveTo(px+r,py); ctx.lineTo(px+pw-r,py);
+  ctx.quadraticCurveTo(px+pw,py,px+pw,py+r);
+  ctx.lineTo(px+pw,py+ph-r);
+  ctx.quadraticCurveTo(px+pw,py+ph,px+pw-r,py+ph);
+  ctx.lineTo(px+r,py+ph);
+  ctx.quadraticCurveTo(px,py+ph,px,py+ph-r);
+  ctx.lineTo(px,py+r); ctx.quadraticCurveTo(px,py,px+r,py);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.globalAlpha = 0.45; ctx.stroke();
+  ctx.fillStyle = col; ctx.globalAlpha = 0.95;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const visConn = visibleConnections();
+  const visNodes = visibleNodes();
+
+  // ── Draw connection paths ──
+  visConn.forEach(conn => {
+    const from = nodePos(conn.from);
+    const to   = nodePos(conn.to);
+    const cx = (from.x + to.x) / 2 + (to.y - from.y) * 0.18;
+    const cy = (from.y + to.y) / 2 - (to.x - from.x) * 0.18;
+    const col = SYS_COLOR[conn.sys];
+
+    // Glow pass
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.quadraticCurveTo(cx, cy, to.x, to.y);
+    ctx.strokeStyle = col;
+    ctx.globalAlpha = 0.08;
+    ctx.lineWidth = 8;
+    ctx.stroke();
+    ctx.restore();
+
+    // Main line
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.quadraticCurveTo(cx, cy, to.x, to.y);
+    ctx.strokeStyle = col;
+    ctx.globalAlpha = 0.35;
+    ctx.lineWidth = 1.8;
+    ctx.setLineDash([6, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+
+    // Arrowhead at destination
+    drawArrow(from, { x:cx, y:cy }, to, col);
+
+    // Connection label — hover only
+    if (hoveredConn === conn || hoveredNode === conn.from || hoveredNode === conn.to) {
+      const t = 0.5;
+      const lx = (1-t)*(1-t)*from.x + 2*(1-t)*t*cx + t*t*to.x;
+      const ly = (1-t)*(1-t)*from.y + 2*(1-t)*t*cy + t*t*to.y;
+      drawLabel(conn.label, lx, ly, col);
+    }
+  });
+
+  // ── Draw particles ──
+  particles.forEach(p => {
+    if (!activeSystems.has(p.conn.sys)) return;
+    const pos = p.pos();
+    const col = SYS_COLOR[p.conn.sys];
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, p.size, 0, Math.PI * 2);
+    // Glow
+    const grad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, p.size * 3);
+    grad.addColorStop(0, col);
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.globalAlpha = p.opacity * 0.4;
+    ctx.arc(pos.x, pos.y, p.size * 3, 0, Math.PI * 2);
+    ctx.fill();
+    // Core dot
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = col;
+    ctx.globalAlpha = p.opacity;
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // ── Draw nodes ──
+  visNodes.forEach(id => {
+    const { x, y, r } = nodePos(id);
+    const def  = NODE_DEFS[id];
+    const data = organData[id];
+    const col  = data.col;
+    const isSelected = selectedNode === id;
+    const isHovered  = hoveredNode   === id;
+
+    // Outer glow ring
+    ctx.save();
+    const glow = ctx.createRadialGradient(x, y, r * 0.5, x, y, r * 2.5);
+    glow.addColorStop(0, col + '33');
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(x, y, r * 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Node fill
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = isSelected ? col : '#1a2f48';
+    ctx.globalAlpha = isSelected ? 0.95 : 1;
+    ctx.fill();
+    // Border
+    ctx.strokeStyle = col;
+    ctx.lineWidth = isSelected ? 3 : 2;
+    ctx.globalAlpha = isSelected ? 1 : 0.85;
+    ctx.stroke();
+    ctx.restore();
+
+    // Pulse ring if selected
+    if (isSelected) {
+      const t = (Date.now() % 1800) / 1800;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, r + t * r * 1.2, 0, Math.PI * 2);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = (1 - t) * 0.6;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Emoji icon
+    ctx.save();
+    ctx.font = `${r * 0.9}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.globalAlpha = 1;
+    ctx.fillText(data.ico, x, y + 1);
+    ctx.restore();
+
+    // Label below node
+    ctx.save();
+    ctx.font = `800 ${Math.max(12, r * 0.52)}px Nunito, sans-serif`;
+    ctx.fillStyle = isSelected ? col : '#e8f4fb';
+    ctx.globalAlpha = isSelected ? 1 : 0.85;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(data.name, x, y + r + 5);
+    // System tag — hover/select only
+    if (isSelected || isHovered) {
+      ctx.font = `700 9px Nunito, sans-serif`;
+      ctx.fillStyle = col;
+      ctx.globalAlpha = 0.75;
+      ctx.fillText(data.sys, x, y + r + 20);
+    }
+    ctx.restore();
+  });
+}
+
+function drawArrow(from, ctrl, to, col) {
+  // Compute tangent at t=0.95 on bezier
+  const t = 0.95;
+  const ax = 2*(1-t)*(ctrl.x - from.x) + 2*t*(to.x - ctrl.x);
+  const ay = 2*(1-t)*(ctrl.y - from.y) + 2*t*(to.y - ctrl.y);
+  const angle = Math.atan2(ay, ax);
+  const len = 8;
+  ctx.save();
+  ctx.translate(to.x, to.y);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(-len, -len * 0.45);
+  ctx.lineTo(-len, len * 0.45);
+  ctx.closePath();
+  ctx.fillStyle = col;
+  ctx.globalAlpha = 0.5;
+  ctx.fill();
+  ctx.restore();
+}
+
+// ─────────────────────────────────────────────
+//  ANIMATION LOOP
+// ─────────────────────────────────────────────
+function loop() {
+  particles.forEach(p => p.update());
+  draw();
+  animFrame = requestAnimationFrame(loop);
+}
+
+// ─────────────────────────────────────────────
+//  INTERACTION
+// ─────────────────────────────────────────────
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  let hit = null;
+  visibleNodes().forEach(id => {
+    const { x, y, r } = nodePos(id);
+    const dist = Math.hypot(mx - x, my - y);
+    if (dist < r + 8) hit = id;
+  });
+
+  if (hit) {
+    selectedNode = hit;
+    const d = organData[hit];
+    // Reset read-aloud button and cancel any speech when new node selected
+    window.speechSynthesis.cancel();
+    const rb = document.getElementById('map-read-btn');
+    if (rb) { rb.textContent = '🔊 Read Aloud'; rb.classList.remove('speaking','paused'); rb._speaking = false; }
+    document.getElementById('c-ico').textContent  = d.ico;
+    document.getElementById('c-name').textContent = d.name;
+    document.getElementById('c-sys').textContent  = d.sys + ' System';
+    document.getElementById('c-sys').style.color  = d.col;
+    document.getElementById('c-role').textContent = d.role;
+    document.getElementById('c-fact').innerHTML   = d.fact;
+    document.getElementById('i-idle').classList.add('gone');
+    document.getElementById('i-card').classList.add('on');
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top)  * scaleY;
+
+  let onNode = null;
+  visibleNodes().forEach(id => {
+    const { x, y, r } = nodePos(id);
+    if (Math.hypot(mx - x, my - y) < r + 8) onNode = id;
+  });
+
+  let onConn = null;
+  if (!onNode) {
+    visibleConnections().forEach(conn => {
+      const from = nodePos(conn.from);
+      const to   = nodePos(conn.to);
+      const cx = (from.x + to.x) / 2 + (to.y - from.y) * 0.22;
+      const cy = (from.y + to.y) / 2 - (to.x - from.x) * 0.22;
+      for (let i = 0; i <= 20; i++) {
+        const t = i / 20;
+        const px = (1-t)*(1-t)*from.x + 2*(1-t)*t*cx + t*t*to.x;
+        const py = (1-t)*(1-t)*from.y + 2*(1-t)*t*cy + t*t*to.y;
+        if (Math.hypot(mx - px, my - py) < 10) { onConn = conn; break; }
+      }
+    });
+  }
+
+  hoveredNode = onNode;
+  hoveredConn = onConn;
+  canvas.style.cursor = (onNode || onConn) ? 'pointer' : 'default';
+});
+
+canvas.addEventListener('mouseleave', () => {
+  hoveredNode = null;
+  hoveredConn = null;
+});
+
+// ─────────────────────────────────────────────
+//  SYSTEM TOGGLES
+// ─────────────────────────────────────────────
+function toggleSys(key, btn) {
+  if (activeSystems.has(key)) {
+    activeSystems.delete(key);
+    btn.classList.remove('on');
+  } else {
+    activeSystems.add(key);
+    btn.classList.add('on');
+  }
+  // Show/hide connection cards
+  const cc = document.getElementById('cc-' + key);
+  if (cc) cc.classList.toggle('on', activeSystems.has(key));
+  // Respawn particles for new connection set
+  spawnParticles();
+}
+
+// ─────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────
+resize();
+loop();
+</script>
 <script>
 /* Read Aloud — temporarily disabled */
 window.toggleCardRead    = function() {};
