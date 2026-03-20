@@ -1111,5 +1111,15 @@ function toggleStemMode() {
   resize();
   requestAnimationFrame(draw);
 </script>
+
+<script>
+  /* Teacher hotkey: Cmd+Shift+/ → WonderBox */
+  document.addEventListener('keydown', function(e) {
+    if (e.metaKey && e.shiftKey && e.key === '/') {
+      e.preventDefault();
+      window.open('https://wonderbox.lyfelabz.com', '_blank');
+    }
+  });
+</script>
 </body>
 </html>
