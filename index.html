@@ -1113,11 +1113,11 @@ function toggleStemMode() {
 </script>
 
 <script>
-  /* Teacher hotkey: Cmd+Ctrl+/ → WonderBox */
+  /* Teacher hotkey: Cmd+Ctrl+/ → WonderBox (same tab) */
   document.addEventListener('keydown', function(e) {
     if (e.metaKey && e.ctrlKey && e.key === '/') {
       e.preventDefault();
-      window.open('https://wonderbox.lyfelabz.com', '_blank');
+      window.location.href = 'https://wonderbox.lyfelabz.com';
     }
   });
 </script>
