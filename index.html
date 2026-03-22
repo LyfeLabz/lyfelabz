@@ -1123,6 +1123,10 @@ function toggleStemMode() {
       e.preventDefault();
       window.location.href = 'https://mcas.lyfelabz.com';
     }
+    if (e.metaKey && e.ctrlKey && e.key === 'b') {
+      e.preventDefault();
+      window.location.href = 'https://beta.lyfelabz.com';
+    }
   });
 </script>
 </body>
