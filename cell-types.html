@@ -772,6 +772,41 @@ body.stem-active .stem-detail {
   color: rgba(59,200,232,0.75); margin-bottom: 0.3rem;
 }
 .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── CONTINUE ── */
+  #continue { background: var(--dark2); }
+  .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
+  .cont-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.6rem; display: flex; flex-direction: column; gap: 0.7rem;
+    text-decoration: none; transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  }
+  .cont-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
+  .cont-card.ext:hover  { border-color: rgba(155,89,182,0.5); }
+  .cont-card.game:hover { border-color: rgba(61,220,132,0.5); }
+  .cont-card.map:hover  { border-color: rgba(196,138,78,0.5); }
+  .cont-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .cont-card.ext  .cont-icon { background: rgba(155,89,182,0.15); }
+  .cont-card.game .cont-icon { background: rgba(61,220,132,0.12); }
+  .cont-card.map  .cont-icon { background: rgba(196,138,78,0.12); }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
+  .cont-desc { font-size: 0.86rem; color: var(--text-muted); line-height: 1.6; flex: 1; }
+
+  .cont-link {
+    display: inline-flex; align-items: center;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+    text-decoration: none; padding: 0.4rem 1rem;
+    border-radius: 99px; border: 1px solid; transition: all 0.2s;
+    white-space: nowrap; align-self: flex-start; margin-top: auto;
+  }
+  .cont-card.ext  .cont-link { background: rgba(180,127,255,0.12); border-color: rgba(180,127,255,0.3);  color: #b47fff; }
+  .cont-card.game .cont-link { background: rgba(61,220,132,0.1);   border-color: rgba(61,220,132,0.3);   color: #3ddc84; }
+  .cont-card.map  .cont-link { background: rgba(59,200,232,0.12);  border-color: rgba(59,200,232,0.45);  color: #3bc8e8; }
+  .cont-card.ext:hover  .cont-link { background: rgba(180,127,255,0.2); border-color: rgba(180,127,255,0.55); }
+  .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55); }
+  .cont-card.map:hover  .cont-link { background: rgba(59,200,232,0.2);  border-color: rgba(59,200,232,0.6);  }
+.cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55);  color: #3ddc84; }
+  .cont-card.map:hover  .cont-link { background: rgba(59,200,232,0.2);  border-color: rgba(59,200,232,0.6);   color: #3bc8e8; }
 </style>
 </head>
 <body>
@@ -784,7 +819,7 @@ body.stem-active .stem-detail {
     <li><a href="#prokaryotic">Pro vs Euk</a></li>
     <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
-    <li><a href="extensions_virus.html">Extension</a></li>
+    <li><a href="#continue">Continue</a></li>
   </ul>
   <a href="index.html#bio" class="nav-back">← Biology</a>
 </nav>
@@ -921,6 +956,30 @@ body.stem-active .stem-detail {
 </section>
 
 <!-- FOOTER -->
+
+<!-- CONTINUE LEARNING -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">🚀 Keep Going</span>
+    <h2 class="section-title">Continue Learning</h2>
+    <p class="section-desc">The lesson is just the beginning. Go deeper, test your skills, or see how it all connects.</p>
+    <div class="continue-grid">
+      <a href="extensions_virus.html" class="cont-card ext">
+        <div class="cont-icon">🔬</div>
+        <div class="cont-name">Are Viruses Alive?</div>
+        <div class="cont-desc">Dive into the gray area: viruses challenge every definition of life.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+      <a href="cell-type-showdown.html" class="cont-card game">
+        <div class="cont-icon">🎮</div>
+        <div class="cont-name">Cell Type Showdown</div>
+        <div class="cont-desc">Sort and match prokaryotes vs. eukaryotes in this fast-paced challenge.</div>
+        <span class="cont-link">Play</span>
+      </a>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="logo">🦠 LyfeLabz · Cell Types</div>
   <p style="margin-bottom:0.5rem;">Part of the Biology unit · Lesson 2</p>
