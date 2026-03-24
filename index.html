@@ -15,6 +15,7 @@
 <title>LyfeLabz | Science Learning Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
+  html { font-size: 18px; }
   :root {
     --ink:      #0b0e1a;
     --ink2:     #111527;
@@ -36,6 +37,13 @@
     --phys:     #29d4f5;
     --sci:      #f5c842;
     --psych:    #f472b6;
+    --teal:     #3bc8e8;
+
+    /* Topic accent colors */
+    --life-science:   #3ddc84;
+    --phys-science:   #ff7043;
+    --earth-space:    #b47fff;
+    --tech-eng:       #f5c842;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -79,28 +87,39 @@
     text-decoration: none;
     letter-spacing: 0.06em;
     text-shadow: 0 0 18px var(--gold-glow);
-  }
-  .nav-links {
     display: flex;
-    gap: 2rem;
-    list-style: none;
+    align-items: center;
+    gap: 0.6rem;
   }
-  .nav-links a {
-    color: var(--muted);
-    text-decoration: none;
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+  .nav-how {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    transition: color 0.2s;
+    color: var(--astro);
+    text-decoration: none;
+    border: 1px solid rgba(180,127,255,0.6);
+    border-radius: 99px;
+    padding: 0.3rem 0.9rem;
+    white-space: nowrap;
+    background: rgba(180,127,255,0.1);
+    transition: all 0.2s;
   }
-  .nav-links a:hover { color: var(--gold); }
+  .nav-how:hover {
+    background: rgba(180,127,255,0.2);
+    border-color: rgba(180,127,255,0.9);
+  }
   .nav-why {
     font-size: 0.75rem;
     font-weight: 800;
     letter-spacing: 0.07em;
     text-transform: uppercase;
-    color: #3bc8e8;
+    color: var(--teal);
     text-decoration: none;
     border: 1px solid rgba(59,200,232,0.7);
     border-radius: 99px;
@@ -116,13 +135,13 @@
 
   /* ===== HERO ===== */
   .hero {
-    min-height: 86vh;
+    min-height: 70vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 8rem 2rem 6rem;
+    padding: 7rem 2rem 5rem;
     background:
       radial-gradient(ellipse 70% 55% at 50% 0%, rgba(180,127,255,0.10) 0%, transparent 70%),
       radial-gradient(ellipse 50% 40% at 80% 80%, rgba(41,212,245,0.06) 0%, transparent 60%),
@@ -163,73 +182,84 @@
     font-size: 1.15rem;
     color: var(--muted);
     max-width: 580px;
-    margin: 0 auto 1.5rem;
+    margin: 0 auto 2.5rem;
     line-height: 1.7;
     animation: fadeUp 0.7s 0.2s ease both;
   }
-  .subject-pills {
+
+  /* ===== FILTER SYSTEM ===== */
+  .filter-wrap {
     display: flex;
-    gap: 0.6rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 3rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2.8rem;
     animation: fadeUp 0.7s 0.3s ease both;
   }
-  .pill {
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 0.3rem 0.9rem;
-    border-radius: 99px;
-    border: 1px solid;
-    text-decoration: none;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
-  .pill:hover { opacity: 0.8; }
-  .pill-bio   { color: var(--bio);   background: rgba(61,220,132,0.1);  border-color: rgba(61,220,132,0.3); }
-  .pill-chem  { color: var(--chem);  background: rgba(255,112,67,0.1);  border-color: rgba(255,112,67,0.3); }
-  .pill-astro { color: var(--astro); background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3);}
-  .pill-geo   { color: var(--geo);   background: rgba(196,138,78,0.1);  border-color: rgba(196,138,78,0.3); }
-  .pill-phys  { color: var(--phys);  background: rgba(41,212,245,0.1);  border-color: rgba(41,212,245,0.3); }
-  .pill-psych { color: var(--psych); background: rgba(244,114,182,0.1); border-color: rgba(244,114,182,0.3); }
-  .pill-more  { color: var(--muted); background: rgba(123,120,158,0.1); border-color: rgba(123,120,158,0.25);}
-
-  .hero-btns {
+  .filter-row {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
     justify-content: center;
     flex-wrap: wrap;
-    animation: fadeUp 0.7s 0.4s ease both;
   }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.85rem 2.2rem;
-    border-radius: 12px;
+  .filter-pill {
     font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
     font-weight: 700;
-    font-size: 0.95rem;
-    text-decoration: none;
+    letter-spacing: 0.06em;
+    padding: 0.42rem 1.1rem;
+    border-radius: 99px;
+    border: 1.5px solid;
     cursor: pointer;
-    border: none;
-    transition: all 0.25s;
-    letter-spacing: 0.02em;
-  }
-  .btn-gold {
-    background: linear-gradient(135deg, var(--gold), #ff9a42);
-    color: #111;
-    box-shadow: 0 4px 24px rgba(245,200,66,0.35);
-  }
-  .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(245,200,66,0.5); }
-  .btn-ghost {
+    transition: all 0.2s ease;
     background: transparent;
-    border: 1.5px solid rgba(255,255,255,0.18);
-    color: var(--text);
+    white-space: nowrap;
   }
-  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Grade pills — gold active */
+  .fp-grade {
+    color: var(--muted);
+    border-color: rgba(255,255,255,0.14);
+  }
+  .fp-grade:hover:not(.active) {
+    color: var(--gold);
+    border-color: rgba(245,200,66,0.4);
+    background: rgba(245,200,66,0.06);
+  }
+  .fp-grade.active {
+    color: #111;
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 2px 14px rgba(245,200,66,0.4);
+  }
+
+  /* Topic pills — teal active */
+  .fp-topic {
+    color: var(--muted);
+    border-color: rgba(255,255,255,0.14);
+  }
+  .fp-topic:hover:not(.active) {
+    color: var(--teal);
+    border-color: rgba(59,200,232,0.4);
+    background: rgba(59,200,232,0.06);
+  }
+  .fp-topic.active {
+    color: #0b0e1a;
+    background: var(--teal);
+    border-color: var(--teal);
+    box-shadow: 0 2px 14px rgba(59,200,232,0.4);
+    font-weight: 800;
+  }
+
+  /* No-results state */
+  .filter-empty {
+    display: none;
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .filter-empty.visible { display: block; }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -295,25 +325,80 @@
     color: var(--muted);
     font-size: 1rem;
     max-width: 640px;
-    margin-bottom: 3rem;
+    margin-bottom: 2.5rem;
     line-height: 1.7;
   }
 
+  /* ===== TOPIC GROUP DIVIDERS ===== */
+  .topic-group { margin-bottom: 0.5rem; }
+  .topic-group-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1.5rem 0 1.1rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .topic-group-divider::before {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    border-radius: 2px;
+  }
+  .tg-life .topic-group-divider::before    { background: var(--life-science); }
+  .tg-physical .topic-group-divider::before { background: var(--phys-science); }
+  .tg-earth .topic-group-divider::before   { background: var(--earth-space); }
+  .tg-tech .topic-group-divider::before    { background: var(--tech-eng); }
+  .tg-psych .topic-group-divider::before   { background: var(--psych); }
+
+  .topic-group-icon { font-size: 1.6rem; line-height: 1; }
+  .topic-group-name {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+  .tg-life    .topic-group-name { color: var(--life-science); }
+  .tg-physical .topic-group-name { color: var(--phys-science); }
+  .tg-earth   .topic-group-name { color: var(--earth-space); }
+  .tg-tech    .topic-group-name { color: var(--tech-eng); }
+  .tg-psych   .topic-group-name { color: var(--psych); }
+
+  .topic-group-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border-radius: 99px;
+    border: 1px solid;
+    margin-left: auto;
+  }
+  .tg-life    .topic-group-tag { color: var(--life-science);  background: rgba(61,220,132,0.08);  border-color: rgba(61,220,132,0.28); }
+  .tg-physical .topic-group-tag { color: var(--phys-science); background: rgba(255,112,67,0.08);  border-color: rgba(255,112,67,0.28); }
+  .tg-earth   .topic-group-tag { color: var(--earth-space);   background: rgba(180,127,255,0.08); border-color: rgba(180,127,255,0.28); }
+  .tg-tech    .topic-group-tag { color: var(--tech-eng);      background: rgba(245,200,66,0.08);  border-color: rgba(245,200,66,0.28); }
+  .tg-psych   .topic-group-tag { color: var(--psych);         background: rgba(244,114,182,0.08); border-color: rgba(244,114,182,0.28); }
+
   /* ===== SUBJECT BLOCKS ===== */
   #subjects { background: var(--ink2); }
-  .subject-block { margin-bottom: 3.5rem; }
+  .subject-block { margin-bottom: 1.2rem; }
   .subject-block:last-child { margin-bottom: 0; }
+  .topic-group:last-child .subject-block:last-child { margin-bottom: 0; }
 
   .subject-header {
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-bottom: 1.25rem;
-    padding-bottom: 0.9rem;
+    padding-bottom: 0.7rem;
     border-bottom: 1px solid var(--border);
   }
-  .subject-icon { font-size: 1.8rem; line-height: 1; }
-  .subject-title { font-family: 'Sora', sans-serif; font-size: 1.25rem; font-weight: 800; }
+  .subject-icon { font-size: 1.6rem; line-height: 1; }
+  .subject-title { font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--muted); }
   .subject-badge {
     font-size: 0.7rem;
     font-weight: 700;
@@ -321,38 +406,26 @@
     text-transform: uppercase;
     padding: 0.22rem 0.7rem;
     border-radius: 99px;
-    border: 1px solid;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--muted);
     margin-left: auto;
   }
-
-  .sb-bio   .subject-header { border-color: rgba(61,220,132,0.2); }
-  .sb-chem  .subject-header { border-color: rgba(255,112,67,0.2); }
-  .sb-astro .subject-header { border-color: rgba(180,127,255,0.2); }
-  .sb-geo   .subject-header { border-color: rgba(196,138,78,0.2); }
-  .sb-phys  .subject-header { border-color: rgba(41,212,245,0.2); }
-  .sb-sci   .subject-header { border-color: rgba(245,200,66,0.2); }
-  .sb-psych .subject-header { border-color: rgba(244,114,182,0.2); }
-
-  .sb-bio   .subject-title { color: var(--bio); }
-  .sb-chem  .subject-title { color: var(--chem); }
-  .sb-astro .subject-title { color: var(--astro); }
-  .sb-geo   .subject-title { color: var(--geo); }
-  .sb-phys  .subject-title { color: var(--phys); }
-  .sb-sci   .subject-title { color: var(--sci); }
-  .sb-psych .subject-title { color: var(--psych); }
-
-  .badge-bio   { color: var(--bio);   background: rgba(61,220,132,0.1);  border-color: rgba(61,220,132,0.3); }
-  .badge-chem  { color: var(--chem);  background: rgba(255,112,67,0.1);  border-color: rgba(255,112,67,0.3); }
-  .badge-astro { color: var(--astro); background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3);}
-  .badge-geo   { color: var(--geo);   background: rgba(196,138,78,0.1);  border-color: rgba(196,138,78,0.3); }
-  .badge-phys  { color: var(--phys);  background: rgba(41,212,245,0.1);  border-color: rgba(41,212,245,0.3); }
-  .badge-sci   { color: var(--sci);   background: rgba(245,200,66,0.1);  border-color: rgba(245,200,66,0.3); }
-  .badge-psych { color: var(--psych); background: rgba(244,114,182,0.1); border-color: rgba(244,114,182,0.3); }
+  .grade-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.6rem;
+    border-radius: 99px;
+    border: 1px solid rgba(245,200,66,0.3);
+    color: var(--gold);
+    background: rgba(245,200,66,0.07);
+  }
 
   /* Unit cards */
   .unit-row {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.2rem;
   }
   .unit-card {
@@ -363,15 +436,16 @@
     display: flex;
     flex-direction: column;
     transition: transform 0.28s, border-color 0.28s, box-shadow 0.28s;
+    scroll-margin-top: 80px;
   }
   .unit-card:hover { transform: translateY(-4px); box-shadow: 0 14px 44px rgba(0,0,0,0.4); }
-  .sb-bio   .unit-card:hover { border-color: rgba(61,220,132,0.35); }
-  .sb-chem  .unit-card:hover { border-color: rgba(255,112,67,0.35); }
-  .sb-astro .unit-card:hover { border-color: rgba(180,127,255,0.35); }
-  .sb-geo   .unit-card:hover { border-color: rgba(196,138,78,0.35); }
-  .sb-phys  .unit-card:hover { border-color: rgba(41,212,245,0.35); }
-  .sb-sci   .unit-card:hover { border-color: rgba(245,200,66,0.35); }
-  .sb-psych .unit-card:hover { border-color: rgba(244,114,182,0.35); }
+
+  /* Per-topic hover tints */
+  .tg-life    .unit-card:hover { border-color: rgba(61,220,132,0.35); }
+  .tg-physical .unit-card:hover { border-color: rgba(255,112,67,0.35); }
+  .tg-earth   .unit-card:hover { border-color: rgba(180,127,255,0.35); }
+  .tg-tech    .unit-card:hover { border-color: rgba(245,200,66,0.35); }
+  .tg-psych   .unit-card:hover { border-color: rgba(244,114,182,0.35); }
 
   .unit-top { padding: 1.4rem 1.6rem 0.8rem; flex: 1; }
   .unit-name {
@@ -430,16 +504,9 @@
   .ulink.map {
     background: rgba(59,200,232,0.12);
     border-color: rgba(59,200,232,0.45);
-    color: #3bc8e8;
+    color: var(--teal);
   }
-  .ulink.map:hover { background: rgba(59,200,232,0.2); border-color: rgba(59,200,232,0.6); color: #3bc8e8; }
-  .ulink.ext {
-    background: rgba(180,127,255,0.12);
-    color: var(--astro);
-    border-color: rgba(180,127,255,0.3);
-    font-weight: 700;
-  }
-  .ulink.ext:hover { background: rgba(180,127,255,0.2); border-color: rgba(180,127,255,0.55); color: var(--astro); }
+  .ulink.map:hover { background: rgba(59,200,232,0.2); border-color: rgba(59,200,232,0.6); color: var(--teal); }
   .ulink.dis {
     background: rgba(180,127,255,0.12);
     color: var(--astro);
@@ -454,8 +521,7 @@
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
-    margin-top: 1.2rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
   }
   .legend-label {
     font-size: 0.78rem;
@@ -467,8 +533,6 @@
   }
   .legend-pill {
     pointer-events: none;
-    font-size: 0.72rem !important;
-    padding: 0.22rem 0.8rem !important;
   }
 
   .coming-label {
@@ -529,6 +593,58 @@
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--ink); }
   ::-webkit-scrollbar-thumb { background: var(--card2); border-radius: 3px; }
+
+  /* ===== HIDDEN ROOM: BEHAVIORAL SCIENCE ===== */
+  .psych-locked { display: none !important; }
+  body.psych-unlocked .psych-locked { display: revert !important; }
+
+  @keyframes psychReveal {
+    0%   { opacity: 0; transform: translateY(18px) scale(0.97); filter: blur(4px); }
+    60%  { opacity: 1; filter: blur(0); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  body.psych-unlocked .tg-psych {
+    animation: psychReveal 0.55s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  body.psych-unlocked .fp-topic[data-topic="behavioral-science"] {
+    animation: psychReveal 0.4s 0.1s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  #psych-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(244,114,182,0.15);
+    border: 1px solid rgba(244,114,182,0.5);
+    color: var(--psych);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.6rem 1.4rem;
+    border-radius: 99px;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    white-space: nowrap;
+  }
+  #psych-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ===== FILTER TRANSITION ===== */
+  .subject-block, .topic-group {
+    transition: opacity 0.25s ease;
+  }
+  .subject-block.hidden {
+    display: none;
+  }
+  .topic-group.hidden {
+    display: none;
+  }
 </style>
 </head>
 <body>
@@ -537,44 +653,53 @@
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo">LYFELABZ</a>
-  <a href="learning-science.html" class="nav-why">Why It Works</a>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <div class="nav-right">
+    <a href="#how" class="nav-how">How It's Built</a>
+    <a href="learning-science.html" class="nav-why">Why It Works</a>
+  </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-eyebrow">Science Learning Hub</div>
+  <div class="hero-eyebrow">Middle School Science Learning Hub</div>
   <h1>
     <span class="word-lyfe">Lyfe</span><span class="word-labz">Labz</span>
   </h1>
-  <p class="hero-sub">Your interactive science classroom — biology, chemistry, astronomy, geology, physics, and more. Explore, practice, and master every unit.</p>
+  <p class="hero-sub">Interactive science, built for middle school.<br>Filter by grade and topic to find exactly what you're studying.</p>
 
-  <div class="subject-pills">
-    <a href="#bio" class="pill pill-bio">🌱 Biology</a>
-    <a href="#chem" class="pill pill-chem">🧪 Chemistry</a>
-    <a href="#astro" class="pill pill-astro">🔭 Astronomy</a>
-    <a href="#geo" class="pill pill-geo">🪨 Rocks Tell Stories</a>
-    <a href="#phys" class="pill pill-phys">⚡ Physics</a>
-    <a href="#psych" class="pill pill-psych">🧠 Psychology</a>
-    <span class="pill pill-more">+ More</span>
+  <!-- FILTER SYSTEM -->
+  <div class="filter-wrap">
+    <!-- Row 1: Grade -->
+    <div class="filter-row" id="grade-filters">
+      <button class="filter-pill fp-grade active" data-grade="all">All Grades</button>
+      <button class="filter-pill fp-grade" data-grade="6">Grade 6</button>
+      <button class="filter-pill fp-grade" data-grade="7">Grade 7</button>
+      <button class="filter-pill fp-grade" data-grade="8">Grade 8</button>
+    </div>
+    <!-- Row 2: Topic -->
+    <div class="filter-row" id="topic-filters">
+      <button class="filter-pill fp-topic active" data-topic="all">All Topics</button>
+      <button class="filter-pill fp-topic" data-topic="life-science">🌱 Life Science</button>
+      <button class="filter-pill fp-topic" data-topic="earth-space">🌍 Earth &amp; Space</button>
+      <button class="filter-pill fp-topic" data-topic="physical-science">⚡ Physical Science</button>
+      <button class="filter-pill fp-topic" data-topic="tech-engineering">🔧 Tech &amp; Engineering</button>
+      <button class="filter-pill fp-topic psych-locked" data-topic="behavioral-science">🧠 Behavioral Science</button>
+    </div>
   </div>
 
-  <div class="hero-btns">
-    <a href="#subjects" class="btn btn-gold">🚀 Explore All Units</a>
-    <a href="#how" class="btn btn-ghost">How It's Built</a>
-  </div>
 </section>
 
 <!-- STATS BAR -->
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat-item">
-      <span class="stat-num">7</span>
-      <span class="stat-label">Science Subjects</span>
+      <span class="stat-num">4</span>
+      <span class="stat-label">Topic Areas</span>
     </div>
     <div class="stat-item">
-      <span class="stat-num">5</span>
-      <span class="stat-label">Live Units</span>
+      <span class="stat-num">3</span>
+      <span class="stat-label">Grade Levels</span>
     </div>
     <div class="stat-item">
       <span class="stat-num">∞</span>
@@ -590,275 +715,290 @@
 <!-- SUBJECTS -->
 <section id="subjects">
   <div class="container">
-    <div class="section-eyebrow">All Units</div>
-    <h2 class="section-title">Find Your Subject</h2>
-    <p class="section-desc">Browse every unit by subject area. Click any card to get started — new units are added throughout the school year!</p>
+    <div class="section-eyebrow" style="color:var(--astro);background:rgba(180,127,255,0.1);border-color:rgba(180,127,255,0.3);">Explore</div>
+    <h2 class="section-title">Choose Your Lab</h2>
     <div class="pill-legend">
-      <span class="legend-label">Each card may include:</span>
+      <span class="legend-label">Each lab may include:</span>
       <span class="ulink live legend-pill">Lesson</span>
       <span class="ulink ext legend-pill">Extension</span>
       <span class="ulink game legend-pill">Game</span>
       <span class="ulink map legend-pill">Interactive Map</span>
     </div>
 
-    <!-- BIOLOGY -->
-    <span id="bio" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
-    <div class="subject-block sb-bio">
-      <div class="subject-header">
-        <span class="subject-icon">🌱</span>
-        <span class="subject-title">Biology</span>
-        <span class="subject-badge badge-bio">Life Science</span>
+    <!-- ─── TOPIC GROUP: LIFE SCIENCE ─────────────────────────── -->
+    <div class="topic-group tg-life" data-group="life-science">
+      <div class="topic-group-divider">
+        <span class="topic-group-icon">🌱</span>
+        <span class="topic-group-name">Life Science</span>
       </div>
-      <div class="unit-row">
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Characteristics of Life</div>
-            <div class="unit-desc">The 6 characteristics every living thing shares — and how to apply them to determine what's alive.</div>
-          </div>
-          <div class="unit-links">
-            <a href="characteristics.html" class="ulink live">Lesson</a>
-            <a href="extension_gray_zone.html" class="ulink ext">The Gray Zone</a>
-            <a href="is-it-alive.html" class="ulink game">Is It Alive?</a>
-          </div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Cell Types</div>
-            <div class="unit-desc">Unicellular vs. multicellular, prokaryotic vs. eukaryotic — the building blocks of all living things.</div>
-          </div>
-          <div class="unit-links">
-            <a href="cell-types.html" class="ulink live">Lesson</a>
-            <a href="extensions_virus.html" class="ulink ext">Are Viruses Alive?</a>
-            <a href="cell-type-showdown.html" class="ulink game">Cell Type Showdown</a>
-          </div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Cell Organelles</div>
-            <div class="unit-desc">Inside plant and animal cells — nuclei, mitochondria, chloroplasts, and more, using real-world analogies.</div>
-          </div>
-          <div class="unit-links">
-            <a href="organelles.html" class="ulink live">Lesson</a>
-            <a href="extension_organelles.html" class="ulink ext">Protein Pathway</a>
-            <a href="cell-explorer.html" class="ulink game">Cell Explorer</a>
-            <a href="neuron-explorer.html" class="ulink ext">Neuron Explorer</a>
-          </div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Human Body Systems</div>
-            <div class="unit-desc">Circulatory, digestive, nervous systems and more — how organs work together to keep us alive.</div>
-          </div>
-          <div class="unit-links">
-            <a href="body_systems.html" class="ulink live">Lesson</a>
-            <a href="extension_body_systems.html" class="ulink ext">Medical Mysteries</a>
-            <a href="game_exercise.html" class="ulink game">Exercise Simulator</a>
-            <a href="game_relay.html" class="ulink game">Relay Race</a>
-            <a href="body_systems.html#systems" class="ulink map">System Maps</a>
-            <a href="body_systems.html#diseases" class="ulink dis">Disease Maps</a>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- CHEMISTRY -->
-    <span id="chem" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
-    <div class="subject-block sb-chem">
-      <div class="subject-header">
-        <span class="subject-icon">🧪</span>
-        <span class="subject-title">Chemistry</span>
-        <span class="subject-badge badge-chem">Physical Science</span>
+      <!-- Life Science — Grade 6 -->
+      <span id="bio" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="life-science" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card" id="unit-characteristics">
+            <div class="unit-top">
+              <div class="unit-name">Characteristics of Life</div>
+              <div class="unit-desc">The 6 characteristics every living thing shares — and how to apply them to determine what's alive.</div>
+            </div>
+            <div class="unit-links">
+              <a href="characteristics.html" class="ulink live">Lesson</a>
+              <a href="extension_gray_zone.html" class="ulink ext">The Gray Zone</a>
+              <a href="is-it-alive.html" class="ulink game">Is It Alive?</a>
+            </div>
+          </div>
+          <div class="unit-card" id="unit-cell-types">
+            <div class="unit-top">
+              <div class="unit-name">Cell Types</div>
+              <div class="unit-desc">Unicellular vs. multicellular, prokaryotic vs. eukaryotic — the building blocks of all living things.</div>
+            </div>
+            <div class="unit-links">
+              <a href="cell-types.html" class="ulink live">Lesson</a>
+              <a href="extensions_virus.html" class="ulink ext">Are Viruses Alive?</a>
+              <a href="cell-type-showdown.html" class="ulink game">Cell Type Showdown</a>
+            </div>
+          </div>
+          <div class="unit-card" id="unit-organelles">
+            <div class="unit-top">
+              <div class="unit-name">Cell Organelles</div>
+              <div class="unit-desc">Inside plant and animal cells — nuclei, mitochondria, chloroplasts, and more, using real-world analogies.</div>
+            </div>
+            <div class="unit-links">
+              <a href="organelles.html" class="ulink live">Lesson</a>
+              <a href="extension_organelles.html" class="ulink ext">Protein Pathway</a>
+              <a href="cell-explorer.html" class="ulink game">Cell Explorer</a>
+              <a href="neuron-explorer.html" class="ulink ext">Neuron Explorer</a>
+            </div>
+          </div>
+          <div class="unit-card" id="unit-body-systems">
+            <div class="unit-top">
+              <div class="unit-name">Human Body Systems</div>
+              <div class="unit-desc">Circulatory, digestive, nervous systems and more — how organs work together to keep us alive.</div>
+            </div>
+            <div class="unit-links">
+              <a href="body_systems.html" class="ulink live">Lesson</a>
+              <a href="extension_body_systems.html" class="ulink ext">Medical Mysteries</a>
+              <a href="game_exercise.html" class="ulink game">Exercise Simulator</a>
+              <a href="game_relay.html" class="ulink game">Relay Race</a>
+              <a href="body_systems.html#systems" class="ulink map">System Maps</a>
+              <a href="body_systems.html#diseases" class="ulink dis">Disease Maps</a>
+            </div>
+          </div>
+          <div class="unit-card" id="unit-biological-evolution">
+            <div class="unit-top">
+              <div class="unit-name">Biological Evolution</div>
+              <div class="unit-desc">Natural selection, adaptation, evidence from fossils and DNA, and how life on Earth has changed over millions of years.</div>
+            </div>
+            <div class="unit-links">
+              <a href="biological-evolution.html" class="ulink live">Lesson</a>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="unit-row">
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Matter &amp; Its Properties</div>
-            <div class="unit-desc">Physical vs. chemical properties, states of matter, and the particle model of matter.</div>
-          </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Atoms, Elements &amp; the Periodic Table</div>
-            <div class="unit-desc">Atomic structure, protons, neutrons, electrons, and how to navigate the periodic table.</div>
-          </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Chemical Reactions</div>
-            <div class="unit-desc">Reactants, products, indicators of chemical change, conservation of mass, and balancing equations.</div>
-          </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-      </div>
-    </div>
 
-    <!-- ASTRONOMY -->
-    <span id="astro" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
-    <div class="subject-block sb-astro">
-      <div class="subject-header">
-        <span class="subject-icon">🔭</span>
-        <span class="subject-title">Astronomy</span>
-        <span class="subject-badge badge-astro">Earth &amp; Space Science</span>
-      </div>
-      <div class="unit-row">
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">The Solar System</div>
-            <div class="unit-desc">Planets, moons, dwarf planets, asteroids, and what holds the solar system together.</div>
-          </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Stars &amp; the Life Cycle of Stars</div>
-            <div class="unit-desc">Nebulae, main sequence, red giants, supernovae, black holes — how stars are born and die.</div>
-          </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Earth, Moon &amp; Sun System</div>
-            <div class="unit-desc">Moon phases, tides, eclipses, seasons, and Earth's rotation and revolution.</div>
-          </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-      </div>
-    </div>
+    </div><!-- /tg-life -->
 
-    <!-- GEOLOGY -->
-    <span id="geo" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
-    <div class="subject-block sb-geo">
-      <div class="subject-header">
-        <span class="subject-icon">🪨</span>
-        <span class="subject-title">Rocks Tell Stories</span>
-        <span class="subject-badge badge-geo">Earth Science</span>
+    <!-- ─── TOPIC GROUP: EARTH & SPACE ────────────────────────── -->
+    <div class="topic-group tg-earth" data-group="earth-space">
+      <div class="topic-group-divider">
+        <span class="topic-group-icon">🌍</span>
+        <span class="topic-group-name">Earth &amp; Space</span>
       </div>
-      <div class="unit-row">
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Biological Evolution</div>
-            <div class="unit-desc">Natural selection, adaptation, evidence from fossils and DNA, and how life on Earth has changed over millions of years.</div>
-          </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Layers of Time</div>
-            <div class="unit-desc">Igneous, sedimentary, and metamorphic rocks — how each type forms and what the layers reveal about Earth's history.</div>
-          </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Continental Drift</div>
-            <div class="unit-desc">How continents move, tectonic plate boundaries, earthquakes, volcanoes, and the forces that shape landmasses over time.</div>
-          </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-      </div>
-    </div>
 
-    <!-- PHYSICS -->
-    <span id="phys" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
-    <div class="subject-block sb-phys">
-      <div class="subject-header">
-        <span class="subject-icon">⚡</span>
-        <span class="subject-title">Physics</span>
-        <span class="subject-badge badge-phys">Physical Science</span>
-      </div>
-      <div class="unit-row">
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Forces &amp; Motion</div>
-            <div class="unit-desc">Newton's laws, speed, velocity, acceleration, friction, and balanced vs. unbalanced forces.</div>
+      <!-- Astronomy — Grades 6–8 -->
+      <span id="astro" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="earth-space" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">The Solar System</div>
+              <div class="unit-desc">Planets, moons, dwarf planets, asteroids, and what holds the solar system together.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
           </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Energy</div>
-            <div class="unit-desc">Kinetic and potential energy, thermal, light, sound, and electrical energy — and how energy transfers.</div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Stars &amp; the Life Cycle of Stars</div>
+              <div class="unit-desc">Nebulae, main sequence, red giants, supernovae, black holes — how stars are born and die.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
           </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Waves, Sound &amp; Light</div>
-            <div class="unit-desc">Wavelength, frequency, amplitude, the electromagnetic spectrum, reflection, and refraction.</div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Earth, Moon &amp; Sun System</div>
+              <div class="unit-desc">Moon phases, tides, eclipses, seasons, and Earth's rotation and revolution.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
           </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
         </div>
       </div>
-    </div>
 
-    <!-- SCIENCE PRACTICES -->
-    <span id="sci" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
-    <div class="subject-block sb-sci">
-      <div class="subject-header">
-        <span class="subject-icon">🧪</span>
-        <span class="subject-title">Good Science Practices</span>
-        <span class="subject-badge badge-sci">Scientific Method</span>
-      </div>
-      <div class="unit-row">
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">The Scientific Method</div>
-            <div class="unit-desc">Observations, hypotheses, variables, controlled experiments, data analysis, and writing conclusions.</div>
+      <!-- Earth Science — Grades 6–7 -->
+      <span id="geo" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="earth-space" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Layers of Time</div>
+              <div class="unit-desc">Igneous, sedimentary, and metamorphic rocks — how each type forms and what the layers reveal about Earth's history.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
           </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Data, Graphs &amp; Measurement</div>
-            <div class="unit-desc">Reading and creating bar, line, and scatter plot graphs. SI units and measurement tools.</div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Continental Drift</div>
+              <div class="unit-desc">How continents move, tectonic plate boundaries, earthquakes, volcanoes, and the forces that shape landmasses over time.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
           </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Lab Safety</div>
-            <div class="unit-desc">Safety symbols, proper equipment use, MSDS basics, and rules every scientist follows in the lab.</div>
-          </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
         </div>
       </div>
-    </div>
+    </div><!-- /tg-earth -->
 
-    <!-- PSYCHOLOGY -->
-    <span id="psych" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
-    <div class="subject-block sb-psych">
-      <div class="subject-header">
-        <span class="subject-icon">🧠</span>
-        <span class="subject-title">Psychology</span>
-        <span class="subject-badge badge-psych">Behavioral Science</span>
+    
+    <!-- ─── TOPIC GROUP: PHYSICAL SCIENCE ────────────────────── -->
+    <div class="topic-group tg-physical" data-group="physical-science">
+      <div class="topic-group-divider">
+        <span class="topic-group-icon">⚡</span>
+        <span class="topic-group-name">Physical Science</span>
       </div>
-      <div class="unit-row">
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Rage Baiting &amp; Media Manipulation</div>
-            <div class="unit-desc">How outrage is engineered online, why your brain falls for it, and how to become a smarter media consumer.</div>
+
+      <!-- Chemistry — Grade 8 -->
+      <span id="chem" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="physical-science" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Matter &amp; Its Properties</div>
+              <div class="unit-desc">Physical vs. chemical properties, states of matter, and the particle model of matter.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
           </div>
-          <div class="unit-links">
-            <a href="ragebaiting.html" class="ulink live">Lesson</a>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Atoms, Elements &amp; the Periodic Table</div>
+              <div class="unit-desc">Atomic structure, protons, neutrons, electrons, and how to navigate the periodic table.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
           </div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Cognitive Biases</div>
-            <div class="unit-desc">The mental shortcuts your brain takes — confirmation bias, anchoring, the Dunning-Kruger effect, and more.</div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Chemical Reactions</div>
+              <div class="unit-desc">Reactants, products, indicators of chemical change, conservation of mass, and balancing equations.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
           </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-        </div>
-        <div class="unit-card">
-          <div class="unit-top">
-            <div class="unit-name">Emotional Regulation &amp; Social Influence</div>
-            <div class="unit-desc">How emotions are processed, why peer pressure works, and strategies for managing your own responses.</div>
-          </div>
-          <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
         </div>
       </div>
+
+      <!-- Physics — Grade 8 -->
+      <span id="phys" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="physical-science" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Forces &amp; Motion</div>
+              <div class="unit-desc">Newton's laws, speed, velocity, acceleration, friction, and balanced vs. unbalanced forces.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Energy</div>
+              <div class="unit-desc">Kinetic and potential energy, thermal, light, sound, and electrical energy — and how energy transfers.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Waves, Sound &amp; Light</div>
+              <div class="unit-desc">Wavelength, frequency, amplitude, the electromagnetic spectrum, reflection, and refraction.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tg-physical -->
+
+    
+    <!-- ─── TOPIC GROUP: TECH & ENGINEERING ──────────────────── -->
+    <div class="topic-group tg-tech" data-group="tech-engineering">
+      <div class="topic-group-divider">
+        <span class="topic-group-icon">🔧</span>
+        <span class="topic-group-name">Tech &amp; Engineering</span>
+      </div>
+
+      <!-- Science & Engineering Practices — All Grades -->
+      <span id="sci" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="tech-engineering" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">The Scientific Method</div>
+              <div class="unit-desc">Observations, hypotheses, variables, controlled experiments, data analysis, and writing conclusions.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Data, Graphs &amp; Measurement</div>
+              <div class="unit-desc">Reading and creating bar, line, and scatter plot graphs. SI units and measurement tools.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Lab Safety</div>
+              <div class="unit-desc">Safety symbols, proper equipment use, MSDS basics, and rules every scientist follows in the lab.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tg-tech -->
+
+    <!-- ─── TOPIC GROUP: BEHAVIORAL SCIENCE ─────────────────── -->
+    <div class="topic-group tg-psych psych-locked" data-group="behavioral-science">
+      <div class="topic-group-divider">
+        <span class="topic-group-icon">🧠</span>
+        <span class="topic-group-name">Behavioral Science</span>
+      </div>
+
+      <span id="psych" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="behavioral-science" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Rage Baiting &amp; Media Manipulation</div>
+              <div class="unit-desc">How outrage is engineered online, why your brain falls for it, and how to become a smarter media consumer.</div>
+            </div>
+            <div class="unit-links">
+              <a href="ragebaiting.html" class="ulink live">Lesson</a>
+            </div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Cognitive Biases</div>
+              <div class="unit-desc">The mental shortcuts your brain takes — confirmation bias, anchoring, the Dunning-Kruger effect, and more.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Emotional Regulation &amp; Social Influence</div>
+              <div class="unit-desc">How emotions are processed, why peer pressure works, and strategies for managing your own responses.</div>
+            </div>
+            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tg-psych -->
+
+    <!-- No results message -->
+    <div class="filter-empty" id="filter-empty">
+      <p style="font-size:1.5rem; margin-bottom:0.75rem;">🔍</p>
+      <p style="font-weight:700; margin-bottom:0.4rem; color:var(--text);">No units yet for that combination</p>
+      <p>New content is added throughout the year — check back soon, or try a different filter.</p>
     </div>
 
   </div>
@@ -867,7 +1007,7 @@
 <!-- HOW IT WORKS -->
 <section id="how">
   <div class="container">
-    <div class="section-eyebrow">How It's Built</div>
+    <div class="section-eyebrow" style="color:var(--astro);background:rgba(180,127,255,0.1);border-color:rgba(180,127,255,0.3);">How It's Built</div>
     <h2 class="section-title">Designed for Learners</h2>
     <p class="section-desc">LyfeLabz makes reviewing science engaging, effective, and fun. Here's how every unit is structured.</p>
     <div class="how-grid">
@@ -909,10 +1049,7 @@
     <a href="learning-science.html" class="nav-why">Why It Works</a>
   </p>
 
-  <!-- ── Educator Mode Toggles ─────────────────────────────────────────
-       Sits below footer links. Side-by-side buttons — one per mode.
-       Resets automatically when the browser tab is closed.
-  ─────────────────────────────────────────────────────────────────── -->
+  <!-- ── Educator Mode Toggles ── -->
   <div id="edu-toggle-wrap" style="
     margin-top: 2rem;
     padding-top: 1.4rem;
@@ -926,7 +1063,7 @@
     <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
       <button id="edu-toggle-btn" onclick="toggleEduMode()" style="
         display: inline-flex; align-items: center; gap: 0.6rem;
-        font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 800;
+        font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; font-weight: 800;
         letter-spacing: 0.06em; text-transform: uppercase; border-radius: 99px;
         padding: 0.5rem 1.3rem; cursor: pointer; transition: all 0.22s ease;
         border: 1px solid rgba(59,200,232,0.8); background: rgba(59,200,232,0.18); color: #3bc8e8;
@@ -936,7 +1073,7 @@
       </button>
       <button id="stem-toggle-btn" onclick="toggleStemMode()" style="
         display: inline-flex; align-items: center; gap: 0.6rem;
-        font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 800;
+        font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; font-weight: 800;
         letter-spacing: 0.06em; text-transform: uppercase; border-radius: 99px;
         padding: 0.5rem 1.3rem; cursor: pointer; transition: all 0.22s ease;
         border: 1px solid rgba(46,204,113,0.7); background: rgba(46,204,113,0.12); color: #2ecc71;
@@ -952,7 +1089,7 @@
 
   <p style="margin-top:1rem;font-size:0.72rem;color:rgba(180,200,220,0.35);letter-spacing:0.05em;">© 2026 LyfeLabz · Educational Use</p>
 
-  <!-- Last updated badge — pulls latest commit from GitHub API -->
+  <!-- Last updated badge -->
   <div id="last-updated-bar" style="
     margin-top: 1.2rem;
     font-size: 0.72rem;
@@ -968,12 +1105,12 @@
     <span id="last-updated-text">Checking for updates…</span>
   </div>
   <script>
-    fetch('https://api.github.com/repos/lyfelabz/lyfelabz-beta/commits?per_page=1')
+    fetch('https://api.github.com/repos/lyfelabz/lyfelabz/commits?per_page=1')
       .then(function(r){ return r.json(); })
       .then(function(data){
         var el = document.getElementById('last-updated-text');
         if(!el || !data[0]) return;
-        var raw = data[0].commit.author.date;          // ISO 8601
+        var raw = data[0].commit.author.date;
         var d   = new Date(raw);
         var opts = { year:'numeric', month:'long', day:'numeric',
                      hour:'2-digit', minute:'2-digit', timeZoneName:'short' };
@@ -986,12 +1123,66 @@
   </script>
 </footer>
 
+<!-- ===== FILTER LOGIC ===== -->
 <script>
-/* ── Educator Mode — sessionStorage toggle ──────────────────────────
-   Key: 'lyfelabz-ls'  Values: 'on' | (absent)
-   Each content page checks this on load and adds body.ls-active.
-   Closing the tab clears sessionStorage automatically.
-────────────────────────────────────────────────────────────────── */
+var activeGrade = 'all';
+var activeTopic = 'all';
+
+function runFilter() {
+  var blocks  = document.querySelectorAll('.subject-block');
+  var groups  = document.querySelectorAll('.topic-group');
+  var anyVisible = false;
+
+  blocks.forEach(function(block) {
+    var grades   = (block.dataset.grades || '').split(' ');
+    var topic    = block.dataset.topic || '';
+    var gradeOk  = activeGrade === 'all' || grades.indexOf(activeGrade) > -1;
+    var topicOk  = activeTopic === 'all' || topic === activeTopic;
+    if (gradeOk && topicOk) {
+      block.classList.remove('hidden');
+      anyVisible = true;
+    } else {
+      block.classList.add('hidden');
+    }
+  });
+
+  // Hide topic group headers if all their subject-blocks are hidden
+  groups.forEach(function(group) {
+    var visible = group.querySelectorAll('.subject-block:not(.hidden)');
+    if (visible.length === 0) {
+      group.classList.add('hidden');
+    } else {
+      group.classList.remove('hidden');
+    }
+  });
+
+  var emptyMsg = document.getElementById('filter-empty');
+  if (emptyMsg) emptyMsg.classList.toggle('visible', !anyVisible);
+}
+
+// Grade pills
+document.querySelectorAll('.fp-grade').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.fp-grade').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    activeGrade = btn.dataset.grade;
+    runFilter();
+  });
+});
+
+// Topic pills
+document.querySelectorAll('.fp-topic').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.fp-topic').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    activeTopic = btn.dataset.topic;
+    runFilter();
+  });
+});
+</script>
+
+<!-- ===== EDUCATOR MODE ===== -->
+<script>
 function syncEduToggleUI(isOn) {
   var btn  = document.getElementById('edu-toggle-btn');
   var dot  = document.getElementById('edu-toggle-dot');
@@ -1013,27 +1204,14 @@ function syncEduToggleUI(isOn) {
     lbl.textContent        = 'Enable Educator Mode';
   }
 }
-
 function toggleEduMode() {
   var isOn = sessionStorage.getItem('lyfelabz-ls') === 'on';
   var next = !isOn;
-  if (next) {
-    sessionStorage.setItem('lyfelabz-ls', 'on');
-  } else {
-    sessionStorage.removeItem('lyfelabz-ls');
-  }
+  if (next) { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+  else       { sessionStorage.removeItem('lyfelabz-ls'); }
   syncEduToggleUI(next);
 }
 
-// Reflect current state on page load
-(function() {
-  syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on');
-  syncStemToggleUI(sessionStorage.getItem('lyfelabz-stem') === 'on');
-})();
-</script>
-
-<script>
-/* ── MA STE Standards toggle ── */
 function syncStemToggleUI(isOn) {
   var btn  = document.getElementById('stem-toggle-btn');
   var dot  = document.getElementById('stem-toggle-dot');
@@ -1062,6 +1240,11 @@ function toggleStemMode() {
   else       { sessionStorage.removeItem('lyfelabz-stem'); }
   syncStemToggleUI(next);
 }
+
+(function() {
+  syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on');
+  syncStemToggleUI(sessionStorage.getItem('lyfelabz-stem') === 'on');
+})();
 </script>
 
 <!-- Animated Starfield -->
@@ -1111,6 +1294,50 @@ function toggleStemMode() {
   resize();
   requestAnimationFrame(draw);
 </script>
+<!-- HIDDEN ROOM TOAST -->
+<div id="psych-toast">🧠 Behavioral Science unlocked</div>
+
+<!-- HIDDEN ROOM: type "psych" anywhere to reveal Behavioral Science -->
+<script>
+(function() {
+  var SEQ = 'psych';
+  var buf = '';
+  var TIMEOUT = 1800;
+  var timer = null;
+
+  function unlock() {
+    if (document.body.classList.contains('psych-unlocked')) return;
+    document.body.classList.add('psych-unlocked');
+    sessionStorage.setItem('lyfelabz-psych', 'on');
+    var toast = document.getElementById('psych-toast');
+    if (toast) {
+      toast.classList.add('show');
+      setTimeout(function() { toast.classList.remove('show'); }, 3200);
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement.isContentEditable) return;
+    if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      buf += e.key.toLowerCase();
+      if (buf.length > SEQ.length) buf = buf.slice(-SEQ.length);
+      clearTimeout(timer);
+      timer = setTimeout(function() { buf = ''; }, TIMEOUT);
+      if (buf === SEQ) {
+        buf = '';
+        clearTimeout(timer);
+        unlock();
+      }
+    }
+  });
+
+  // Persist unlock for the session
+  if (sessionStorage.getItem('lyfelabz-psych') === 'on') {
+    document.body.classList.add('psych-unlocked');
+  }
+})();
+</script>
 
 <script>
   /* Teacher hotkeys */
@@ -1129,5 +1356,6 @@ function toggleStemMode() {
     }
   });
 </script>
+
 </body>
 </html>

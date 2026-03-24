@@ -36,6 +36,8 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  html { font-size: 18px; }
+
   body {
     font-family: 'Nunito', sans-serif;
     background: var(--dark);
@@ -283,37 +285,6 @@
   }
   .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
   .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; }
-  .read-aloud-btn {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 800;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 0.35rem 0.9rem; border-radius: 99px; cursor: pointer;
-    border: 1px solid rgba(196,138,78,0.5);
-    background: var(--accent-dim); color: var(--accent);
-    text-shadow: 0 0 8px rgba(196,138,78,0.6);
-    box-shadow: 0 0 8px rgba(196,138,78,0.2), inset 0 0 6px rgba(196,138,78,0.05);
-    transition: all 0.25s; white-space: nowrap; flex-shrink: 0;
-  }
-  .read-aloud-btn:hover {
-    background: rgba(196,138,78,0.22); border-color: rgba(196,138,78,0.85);
-    text-shadow: 0 0 12px rgba(196,138,78,0.9);
-    box-shadow: 0 0 16px rgba(196,138,78,0.45), 0 0 32px rgba(196,138,78,0.2), inset 0 0 8px rgba(196,138,78,0.1);
-  }
-  .read-aloud-btn.speaking {
-    background: rgba(29,233,182,0.12); border-color: rgba(29,233,182,0.6); color: var(--teal);
-    text-shadow: 0 0 10px rgba(29,233,182,0.8);
-    box-shadow: 0 0 14px rgba(29,233,182,0.35), 0 0 28px rgba(29,233,182,0.15);
-    animation: pulse-teal 1.6s ease-in-out infinite;
-  }
-  .read-aloud-btn.paused {
-    background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.55); color: var(--gold);
-    text-shadow: 0 0 8px rgba(245,200,66,0.7);
-    box-shadow: 0 0 10px rgba(245,200,66,0.25), inset 0 0 6px rgba(245,200,66,0.05);
-  }
-  @keyframes pulse-teal {
-    0%, 100% { box-shadow: 0 0 10px rgba(29,233,182,0.3), 0 0 22px rgba(29,233,182,0.1); }
-    50%       { box-shadow: 0 0 20px rgba(29,233,182,0.55), 0 0 40px rgba(29,233,182,0.25); }
-  }
   .card-body { color: rgba(240,228,200,0.88); font-size: 0.97rem; line-height: 1.75; }
   .card-body p { margin-bottom: 1rem; }
   .card-body p:last-child { margin-bottom: 0; }
@@ -409,16 +380,23 @@
   .ev-title { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.2rem; }
   .ev-subtitle { font-size: 0.78rem; color: rgba(176,160,122,0.9); }
   .ev-toggle-row {
-    padding: 0 1.5rem 1rem; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em;
-    display: flex; align-items: center; gap: 0.35rem;
+    padding: 0 1.5rem 1.1rem; display: flex;
   }
-  .ev-fossils    .ev-toggle-row { color: var(--accent); }
-  .ev-dna        .ev-toggle-row { color: #29d4f5; }
-  .ev-homologous .ev-toggle-row { color: #3ddc84; }
-  .ev-analogous  .ev-toggle-row { color: #b47fff; }
-  .ev-vestigial  .ev-toggle-row { color: #e87070; }
-  .ev-arrow { transition: transform 0.2s; }
-  .ev-card.open .ev-arrow { transform: rotate(90deg); }
+  .ev-pill {
+    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 0.3rem 0.9rem; border-radius: 99px; border: 1px solid;
+    transition: background 0.2s, box-shadow 0.2s; cursor: pointer;
+  }
+  .ev-fossils    .ev-pill { color: var(--accent); border-color: rgba(196,138,78,0.4); background: rgba(196,138,78,0.08); }
+  .ev-dna        .ev-pill { color: #29d4f5;       border-color: rgba(41,212,245,0.4);  background: rgba(41,212,245,0.08); }
+  .ev-homologous .ev-pill { color: #3ddc84;       border-color: rgba(61,220,132,0.4);  background: rgba(61,220,132,0.08); }
+  .ev-analogous  .ev-pill { color: #b47fff;       border-color: rgba(155,89,182,0.4);  background: rgba(155,89,182,0.08); }
+  .ev-vestigial  .ev-pill { color: #e87070;       border-color: rgba(231,76,60,0.4);   background: rgba(231,76,60,0.08); }
+  .ev-fossils    .ev-pill:hover { background: rgba(196,138,78,0.18); }
+  .ev-dna        .ev-pill:hover { background: rgba(41,212,245,0.18); }
+  .ev-homologous .ev-pill:hover { background: rgba(61,220,132,0.18); }
+  .ev-analogous  .ev-pill:hover { background: rgba(155,89,182,0.18); }
+  .ev-vestigial  .ev-pill:hover { background: rgba(231,76,60,0.18); }
   .ev-body {
     display: none; padding: 1rem 1.5rem 1.4rem;
     font-size: 0.92rem; color: rgba(240,228,200,0.84); line-height: 1.72;
@@ -453,14 +431,16 @@
   .struct-card.analogous  .struct-card-title { color: #b47fff; }
   .struct-card.vestigial  .struct-card-title { color: #e87070; }
   .struct-rule {
-    font-size: 0.78rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
-    padding: 0.25rem 0.75rem; border-radius: 99px; display: inline-block; margin-bottom: 0.8rem;
+    font-size: 0.68rem; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 0.22rem 0.65rem; border-radius: 99px; display: inline-block;
+    margin-bottom: 0.8rem; white-space: nowrap;
   }
   .homologous .struct-rule { background: rgba(61,220,132,0.1);  color: #3ddc84; border: 1px solid rgba(61,220,132,0.3); }
   .analogous  .struct-rule { background: rgba(180,127,255,0.1); color: #b47fff; border: 1px solid rgba(180,127,255,0.3); }
   .vestigial  .struct-rule { background: rgba(231,76,60,0.1);   color: #e87070; border: 1px solid rgba(231,76,60,0.3); }
   .struct-examples { color: rgba(240,228,200,0.82); font-size: 0.88rem; line-height: 1.7; list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
-  .struct-examples li::before { content: '→ '; opacity: 0.45; }
+  .struct-examples li { display: flex; gap: 0.5rem; align-items: flex-start; }
+  .struct-examples li::before { content: '→'; opacity: 0.45; flex-shrink: 0; margin-top: 0.05em; }
 
   /* ── QUIZ ── */
   .quiz-section { background: var(--dark2); }
@@ -512,36 +492,45 @@
   }
   .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,138,78,0.4); }
 
+  /* ── VIDEO ── */
+  .video-wrapper {
+    position: relative; padding-bottom: 56.25%; height: 0;
+    border-radius: 20px; overflow: hidden;
+    border: 2px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    max-width: 860px; margin: 0 auto;
+  }
+  .video-wrapper iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:none; }
+
   /* ── CONTINUE ── */
   #continue { background: var(--dark2); }
   .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
   .cont-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
-    padding: 1.6rem 1.5rem; text-decoration: none;
-    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+    border-radius: 18px; padding: 1.6rem 1.5rem; text-decoration: none;
+    transition: transform 0.25s, box-shadow 0.25s;
     display: flex; flex-direction: column; gap: 0.5rem;
+    position: relative; overflow: hidden;
   }
+  .cont-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .cont-card.ext  { background: rgba(155,89,182,0.12); border: 1px solid rgba(155,89,182,0.35); }
+  .cont-card.game { background: rgba(61,220,132,0.1);  border: 1px solid rgba(61,220,132,0.35); }
+  .cont-card.map  { background: rgba(196,138,78,0.1);  border: 1px solid rgba(196,138,78,0.35); }
+  .cont-card.ext::before  { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+  .cont-card.game::before { background: linear-gradient(90deg, #3ddc84, #1de9b6); }
+  .cont-card.map::before  { background: linear-gradient(90deg, #c48a4e, #f5c842); }
   .cont-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
-  .cont-card.ext:hover  { border-color: rgba(155,89,182,0.5); }
-  .cont-card.game:hover { border-color: rgba(61,220,132,0.5); }
-  .cont-card.map:hover  { border-color: rgba(196,138,78,0.5); }
+  .cont-card.ext:hover  { border-color: rgba(155,89,182,0.6); box-shadow: 0 14px 40px rgba(155,89,182,0.15); }
+  .cont-card.game:hover { border-color: rgba(61,220,132,0.6);  box-shadow: 0 14px 40px rgba(61,220,132,0.12); }
+  .cont-card.map:hover  { border-color: rgba(196,138,78,0.6);  box-shadow: 0 14px 40px rgba(196,138,78,0.12); }
   .cont-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.3rem; }
-  .cont-card.ext  .cont-icon { background: rgba(155,89,182,0.15); }
-  .cont-card.game .cont-icon { background: rgba(61,220,132,0.12); }
-  .cont-card.map  .cont-icon { background: rgba(196,138,78,0.12); }
+  .cont-card.ext  .cont-icon { background: rgba(155,89,182,0.2); }
+  .cont-card.game .cont-icon { background: rgba(61,220,132,0.18); }
+  .cont-card.map  .cont-icon { background: rgba(196,138,78,0.18); }
   .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
-  .cont-desc { font-size: 0.86rem; color: rgba(240,228,200,0.78); line-height: 1.6; }
-  .cont-link {
-    display: inline-flex; align-items: center; gap: 0.35rem; align-self: flex-start;
-    margin-top: auto; padding: 0.4rem 1.1rem; border-radius: 99px;
-    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.04em; text-decoration: none; transition: all 0.2s;
-  }
-  .cont-card.ext  .cont-link { background: rgba(155,89,182,0.2);  border: 1px solid rgba(155,89,182,0.5);  color: #c39bd3; }
-  .cont-card.game .cont-link { background: rgba(61,220,132,0.15); border: 1px solid rgba(61,220,132,0.4);  color: #3ddc84; }
-  .cont-card.map  .cont-link { background: var(--accent-dim);     border: 1px solid rgba(196,138,78,0.5);  color: var(--accent2); }
-  .cont-link:hover { opacity: 0.8; transform: translateX(3px); }
-
-  /* ── KEY CONCEPTS ── */
+  .cont-desc { font-size: 0.86rem; color: rgba(240,228,200,0.82); line-height: 1.6; }
+/* ── KEY CONCEPTS ── */
   #concepts { background: var(--dark); }
   .concepts-grid { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1.5rem; }
   .concept-tag { font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; cursor: default; transition: opacity 0.2s; }
@@ -569,6 +558,22 @@
     .quiz-options { padding-left: 0; }
     .option-feedback { padding-left: 1rem; }
   }
+
+  .cont-link {
+    display: inline-flex; align-items: center;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+    text-decoration: none; padding: 0.4rem 1rem;
+    border-radius: 99px; border: 1px solid; transition: all 0.2s;
+    white-space: nowrap; align-self: flex-start; margin-top: auto;
+  }
+  .cont-card.ext  .cont-link { background: rgba(180,127,255,0.12); border-color: rgba(180,127,255,0.3);  color: #b47fff; }
+  .cont-card.game .cont-link { background: rgba(61,220,132,0.1);   border-color: rgba(61,220,132,0.3);   color: #3ddc84; }
+  .cont-card.map  .cont-link { background: rgba(59,200,232,0.12);  border-color: rgba(59,200,232,0.45);  color: #3bc8e8; }
+  .cont-card.ext:hover  .cont-link { background: rgba(180,127,255,0.2); border-color: rgba(180,127,255,0.55); }
+  .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55); }
+  .cont-card.map:hover  .cont-link { background: rgba(59,200,232,0.2);  border-color: rgba(59,200,232,0.6);  }
+.cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55);  color: #3ddc84; }
+  .cont-card.map:hover  .cont-link { background: rgba(59,200,232,0.2);  border-color: rgba(59,200,232,0.6);   color: #3bc8e8; }
 </style>
 </head>
 <body>
@@ -582,9 +587,11 @@
     <li><a href="#lesson">Lesson</a></li>
     <li><a href="#evidence">Evidence</a></li>
     <li><a href="#structures">Structures</a></li>
+    <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">Continue</a></li>
   </ul>
-  <a href="index.html#geo" class="nav-back">← Rocks Tell Stories</a>
+  <a href="index.html#unit-biological-evolution" class="nav-back">← Life Science</a>
 </nav>
 
 <!-- HERO -->
@@ -593,7 +600,7 @@
   <span class="hero-float">🧬</span>
   <span class="hero-float">🐋</span>
   <span class="hero-float">🦎</span>
-  <div class="hero-badge">Rocks Tell Stories · Lesson 1</div>
+  <div class="hero-badge">Life Science · Lesson 5</div>
   <h1>Biological Evolution 🧬</h1>
   <p>Life on Earth doesn't stay the same — it changes, adapts, and evolves across millions of years. The question is: how?</p>
   <div class="driving-question">
@@ -665,7 +672,6 @@
     <div class="content-card" id="card-overview">
       <div class="card-header">
         <div class="card-title">Evolution Overview</div>
-        <button class="read-aloud-btn" onclick="toggleRead('card-overview', this)" aria-label="Read this section aloud">🔊 Read Aloud</button>
       </div>
       <div class="card-body">
         <p><span class="vocab" title="Biological evolution: the change in populations of organisms over many generations due to environmental pressures">Biological evolution</span> means that populations of organisms change over time due to <span class="vocab" title="Environmental pressures: challenges from the environment — predators, food scarcity, climate change — that favor certain traits">environmental pressures</span>. It does not happen to a single organism during its lifetime. It happens to entire populations across many generations.</p>
@@ -766,7 +772,6 @@
               <div class="cy-detail-title" id="cy-detail-title"></div>
               <div class="cy-detail-body" id="cy-detail-body"></div>
               <div style="margin-top: 1rem;">
-                <button class="read-aloud-btn" id="cy-read-btn" onclick="toggleCycleRead(this)" aria-label="Read this step aloud">🔊 Read Aloud</button>
               </div>
             </div>
           </div>
@@ -782,7 +787,6 @@
     <div class="content-card" id="card-variation">
       <div class="card-header">
         <div class="card-title">Variation in Populations</div>
-        <button class="read-aloud-btn" onclick="toggleRead('card-variation', this)" aria-label="Read this section aloud">🔊 Read Aloud</button>
       </div>
       <div class="card-body">
         <p>No two individuals in a population are exactly identical. These differences in traits — like color, size, speed, disease resistance, or behavior — are called <span class="vocab" title="Variation: differences in traits among individuals within the same population">variation</span>. Variation is the essential raw material that natural selection works with. Without differences between individuals, there is nothing for the environment to act on.</p>
@@ -809,7 +813,6 @@
     <div class="content-card" id="card-traits">
       <div class="card-header">
         <div class="card-title">Traits Are Passed to Offspring</div>
-        <button class="read-aloud-btn" onclick="toggleRead('card-traits', this)" aria-label="Read this section aloud">🔊 Read Aloud</button>
       </div>
       <div class="card-body">
         <p>For natural selection to drive evolution, helpful traits must be <span class="vocab" title="Heritable: capable of being passed from parent to offspring through genes">heritable</span> — encoded in genes that parents pass to their offspring. When a trait improves survival, the individuals who carry it reproduce more. Their offspring inherit the trait. Those offspring also reproduce more. Each generation, the proportion of individuals carrying the helpful trait grows — and after enough generations, the population itself has changed.</p>
@@ -853,7 +856,7 @@
             <div class="ev-subtitle">Remains preserved from the past</div>
           </div>
         </div>
-        <div class="ev-toggle-row">Explore <span class="ev-arrow">›</span></div>
+        <div class="ev-toggle-row"><span class="ev-pill">Explore</span></div>
         <div class="ev-body">
           <p><span class="vocab" title="Fossil: the preserved remains or traces of organisms that lived in the past">Fossils</span> are preserved remains or traces of organisms. The fossil record creates a timeline of life on Earth — showing how organisms appeared, changed, and sometimes disappeared.</p>
           <p style="margin-top:0.7rem;"><span class="vocab" title="Transitional fossil: a fossil showing traits from two different groups, revealing an evolutionary link between them">Transitional fossils</span> are especially powerful — they show characteristics from two different groups, bridging one type of organism to another.</p>
@@ -872,7 +875,7 @@
             <div class="ev-subtitle">Same structure · Different job</div>
           </div>
         </div>
-        <div class="ev-toggle-row">Explore <span class="ev-arrow">›</span></div>
+        <div class="ev-toggle-row"><span class="ev-pill">Explore</span></div>
         <div class="ev-body">
           <p><span class="vocab" title="Homologous structures: body parts structurally similar across species because they evolved from a shared ancestor, even if used for different functions today">Homologous structures</span> are body parts that are structurally similar across different species — because they were inherited from the same ancestor. They may serve very different functions today, but their underlying structure reveals shared evolutionary history.</p>
           <div class="ev-example">
@@ -890,7 +893,7 @@
             <div class="ev-subtitle">Same job · Different structure</div>
           </div>
         </div>
-        <div class="ev-toggle-row">Explore <span class="ev-arrow">›</span></div>
+        <div class="ev-toggle-row"><span class="ev-pill">Explore</span></div>
         <div class="ev-body">
           <p><span class="vocab" title="Analogous structures: body parts that perform the same function in different species but evolved independently — no shared structural ancestry">Analogous structures</span> perform the same function but evolved independently in unrelated species. This is called <span class="vocab" title="Convergent evolution: when unrelated species independently evolve similar traits in response to similar environmental pressures">convergent evolution</span> — different starting points, similar solutions.</p>
           <div class="ev-example">
@@ -908,7 +911,7 @@
             <div class="ev-subtitle">Evolution's leftovers</div>
           </div>
         </div>
-        <div class="ev-toggle-row">Explore <span class="ev-arrow">›</span></div>
+        <div class="ev-toggle-row"><span class="ev-pill">Explore</span></div>
         <div class="ev-body">
           <p><span class="vocab" title="Vestigial structures: body parts that were functional in ancestors but have reduced function in modern organisms due to evolution">Vestigial structures</span> are body parts that served an important purpose in an ancestor but are no longer needed today. They're powerful evidence that organisms descend from ancestors with very different lifestyles.</p>
           <div class="ev-example">
@@ -928,7 +931,7 @@
             <div class="ev-subtitle">The molecular blueprint shared by all life</div>
           </div>
         </div>
-        <div class="ev-toggle-row">Explore <span class="ev-arrow">›</span></div>
+        <div class="ev-toggle-row"><span class="ev-pill">Explore</span></div>
         <div class="ev-body">
           <p>All living things share the same genetic code — <span class="vocab" title="DNA: the molecule that carries genetic instructions for the development and function of all living organisms">DNA</span>. The more DNA two species share, the more recently they diverged from a <span class="vocab" title="Common ancestor: an ancestral species from which two or more species evolved">common ancestor</span>.</p>
           <div class="ev-example">
@@ -949,8 +952,8 @@
     <p class="section-desc">Three types of structures — each one tells a different story about evolutionary history. Here's how to keep them straight.</p>
     <div class="struct-compare-grid">
       <div class="struct-card homologous">
-        <div class="struct-card-title">🟢 Homologous Structures</div>
-        <div class="struct-rule">Same structure → Different job</div>
+        <div class="struct-card-title">Homologous Structures</div>
+        <div class="struct-rule">Same structure · Different job</div>
         <ul class="struct-examples">
           <li>Human arm, whale flipper, bat wing — same bones</li>
           <li>Resemblance comes from shared ancestry</li>
@@ -958,8 +961,8 @@
         </ul>
       </div>
       <div class="struct-card analogous">
-        <div class="struct-card-title">🟣 Analogous Structures</div>
-        <div class="struct-rule">Same job → Different structure</div>
+        <div class="struct-card-title">Analogous Structures</div>
+        <div class="struct-rule">Same job · Different structure</div>
         <ul class="struct-examples">
           <li>Butterfly wing vs. bat wing — both fly, built differently</li>
           <li>Resemblance comes from similar pressures, not ancestry</li>
@@ -967,14 +970,26 @@
         </ul>
       </div>
       <div class="struct-card vestigial">
-        <div class="struct-card-title">🔴 Vestigial Structures</div>
-        <div class="struct-rule">Used to work → No longer needed</div>
+        <div class="struct-card-title">Vestigial Structures</div>
+        <div class="struct-rule">Once useful · Now faded away</div>
         <ul class="struct-examples">
           <li>Human appendix, whale hip bones, penguin wings</li>
           <li>Reduced or no current function</li>
           <li>Evidence of an organism's evolutionary history</li>
         </ul>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- WATCH & LEARN -->
+<section id="watch" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">🎬 Watch &amp; Learn</span>
+    <h2 class="section-title">Natural Selection in Action</h2>
+    <p class="section-desc" style="margin-bottom:2rem;">The Amoeba Sisters break down natural selection with real-world examples — frogs, bacteria, antibiotic resistance, and biological fitness. A great companion to everything on this page.</p>
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/7VM9YxmULuo" allowfullscreen></iframe>
     </div>
   </div>
 </section>
@@ -1024,30 +1039,31 @@
 </section>
 
 <!-- CONTINUE -->
+<!-- WATCH & LEARN -->
 <section id="continue">
   <div class="container">
     <span class="section-label">🚀 Keep Going</span>
     <h2 class="section-title">Continue Learning</h2>
-    <p class="section-desc">The lesson is just the beginning. Go deeper, test your skills, or see how it all connects.</p>
-    <div class="continue-grid">
-      <a href="biological-evolution-extension.html" class="cont-card ext">
+    <p class="section-desc" style="white-space:nowrap; max-width:none;">The lesson is just the beginning — go deeper, test your skills, or see how it all connects.</p>
+    <div class="continue-grid" style="text-align:left;">
+      <div class="cont-card ext coming">
         <div class="cont-icon">🔭</div>
         <div class="cont-name">Extension</div>
         <div class="cont-desc">Artificial selection, antibiotic resistance, mass extinctions, and the tree of life.</div>
-        <span class="cont-link">Explore →</span>
-      </a>
-      <a href="biological-evolution-games.html" class="cont-card game">
+        <span class="coming-label">🚧 Coming Soon</span>
+      </div>
+      <div class="cont-card game coming">
         <div class="cont-icon">🎮</div>
         <div class="cont-name">Games</div>
         <div class="cont-desc">Natural selection simulations, structure-sorting challenges, and evolution timeline puzzles.</div>
-        <span class="cont-link">Play →</span>
-      </a>
-      <a href="biological-evolution-map.html" class="cont-card map">
+        <span class="coming-label">🚧 Coming Soon</span>
+      </div>
+      <div class="cont-card map coming">
         <div class="cont-icon">🗺️</div>
         <div class="cont-name">Concept Map</div>
         <div class="cont-desc">See how natural selection, evidence, and structures connect in an interactive visual map.</div>
-        <span class="cont-link">Explore →</span>
-      </a>
+        <span class="coming-label">🚧 Coming Soon</span>
+      </div>
     </div>
   </div>
 </section>
@@ -1278,172 +1294,6 @@ function resetQuiz(num) {
 buildQuiz(1);
 </script>
 
-<!-- READ ALOUD — Web Speech API -->
-<script>
-(function() {
-  // State tracker: which card is currently active
-  var activeCard = null;
-  var activeBtn  = null;
-  var utterance  = null;
-
-  // Extract clean readable text from a card (strips emoji, excess whitespace)
-  function getCardText(cardId) {
-    var card = document.getElementById(cardId);
-    if (!card) return '';
-    // Clone so we don't touch the live DOM
-    var clone = card.cloneNode(true);
-    // Remove the button itself from the read text
-    var btn = clone.querySelector('.read-aloud-btn');
-    if (btn) btn.remove();
-    // Remove the cycle diagram SVG and instruction box — not meaningful as speech
-    var svg = clone.querySelector('svg');
-    if (svg) svg.remove();
-    var inst = clone.querySelector('.ns-cycle-instructions');
-    if (inst) inst.remove();
-    var cycleWrap = clone.querySelector('.ns-cycle-wrap');
-    if (cycleWrap) cycleWrap.remove();
-    // Get plain text, clean up whitespace and stray symbols
-    var raw = clone.innerText || clone.textContent || '';
-    return raw
-      .replace(/[🔊🦠⚡🏆👶📈🔄🐦🦒💡🐸🔀🧬🦋]/gu, '')
-      .replace(/[\u{1F300}-\u{1FFFF}]/gu, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
-  }
-
-  function resetBtn(btn) {
-    btn.textContent = '🔊 Read Aloud';
-    btn.classList.remove('speaking', 'paused');
-  }
-
-  function stopAll() {
-    window.speechSynthesis.cancel();
-    if (activeBtn) resetBtn(activeBtn);
-    activeCard = null;
-    activeBtn  = null;
-    utterance  = null;
-  }
-
-  // Extract card title and body separately
-  function getCardParts(cardId) {
-    var card = document.getElementById(cardId);
-    if (!card) return { title: '', body: '' };
-    var titleEl = card.querySelector('.card-title');
-    var title = titleEl ? titleEl.textContent.trim() : '';
-
-    var clone = card.cloneNode(true);
-    var btn = clone.querySelector('.read-aloud-btn');
-    if (btn) btn.remove();
-    var svg = clone.querySelector('svg');
-    if (svg) svg.remove();
-    var inst = clone.querySelector('.ns-cycle-instructions');
-    if (inst) inst.remove();
-    var cycleWrap = clone.querySelector('.ns-cycle-wrap');
-    if (cycleWrap) cycleWrap.remove();
-    var titleClone = clone.querySelector('.card-title');
-    if (titleClone) titleClone.remove();
-
-    var raw = clone.innerText || clone.textContent || '';
-    var body = raw
-      .replace(/[🔊🦠⚡🏆👶📈🔄🐦🦒💡🐸🔀🧬🦋]/gu, '')
-      .replace(/[\u{1F300}-\u{1FFFF}]/gu, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
-    return { title: title, body: body };
-  }
-
-  function getPreferredVoice() {
-    var voices = window.speechSynthesis.getVoices();
-    return voices.find(function(v) {
-      return /Samantha|Karen|Google US English|Microsoft Aria|Zira/i.test(v.name);
-    }) || voices.find(function(v) {
-      return v.lang === 'en-US' && !v.name.toLowerCase().includes('compact');
-    });
-  }
-
-  // Speak title, then pause, then body — queued as three utterances
-  function speakWithPause(title, body, onDone, onErr) {
-    // Small delay required — Chrome silently drops speak() called immediately after cancel()
-    setTimeout(function() {
-      var voice = getPreferredVoice();
-
-      function makeUtt(text, rate, vol) {
-        var u = new SpeechSynthesisUtterance(text);
-        u.rate = rate; u.pitch = 1; u.lang = 'en-US'; u.volume = vol;
-        if (voice) u.voice = voice;
-        return u;
-      }
-
-      var uttTitle = makeUtt(title, 0.82, 1);
-      var uttPause = makeUtt('...', 0.1,  0);  // silent ~700ms gap
-      var uttBody  = makeUtt(body,  0.82, 1);
-
-      uttBody.onend   = onDone;
-      uttBody.onerror = onErr;
-      utterance = uttBody;
-
-      window.speechSynthesis.speak(uttTitle);
-      window.speechSynthesis.speak(uttPause);
-      window.speechSynthesis.speak(uttBody);
-    }, 100);
-  }
-
-  // Expose helpers globally so toggleCycleRead (outer script) can reach them
-  window.speakWithPause   = speakWithPause;
-  window.getPreferredVoice = getPreferredVoice;
-
-  window.toggleRead = function(cardId, btn) {
-    // If this card is currently speaking, toggle pause/resume
-    if (activeCard === cardId) {
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
-        btn.textContent = '⏸ Pause';
-        btn.classList.remove('paused');
-        btn.classList.add('speaking');
-      } else if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.pause();
-        btn.textContent = '▶ Resume';
-        btn.classList.remove('speaking');
-        btn.classList.add('paused');
-      } else {
-        stopAll();
-      }
-      return;
-    }
-
-    // Different card clicked — stop whatever was playing
-    stopAll();
-
-    var parts = getCardParts(cardId);
-    if (!parts.body) return;
-
-    activeCard = cardId;
-    activeBtn  = btn;
-    btn.textContent = '⏸ Pause';
-    btn.classList.add('speaking');
-
-    speakWithPause(
-      parts.title,
-      parts.body,
-      function() { if (activeBtn) resetBtn(activeBtn); activeCard = null; activeBtn = null; },
-      function() { if (activeBtn) resetBtn(activeBtn); activeCard = null; activeBtn = null; }
-    );
-  };
-
-  // Stop speech if user navigates away
-  window.addEventListener('beforeunload', function() {
-    window.speechSynthesis.cancel();
-  });
-
-  // Chrome bug: speech stops after ~15s unless we nudge it
-  setInterval(function() {
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-      window.speechSynthesis.pause();
-      window.speechSynthesis.resume();
-    }
-  }, 12000);
-})();
-</script>
 
 <!-- NATURAL SELECTION CYCLE LOGIC -->
 <script>
@@ -1480,15 +1330,6 @@ let activeNode = null;
 function cycleClick(num) {
   const step = cycleSteps[num];
 
-  // Reset cycle read button whenever a new node is clicked
-  const cyBtn = document.getElementById('cy-read-btn');
-  if (cyBtn) {
-    window.speechSynthesis.cancel();
-    cyBtn.textContent = '🔊 Read Aloud';
-    cyBtn.classList.remove('speaking', 'paused');
-    cyBtn._speaking = false;
-  }
-
   // Update detail panel
   document.getElementById('cy-detail-step').textContent  = step.label;
   document.getElementById('cy-detail-title').textContent = step.title;
@@ -1505,53 +1346,6 @@ function cycleClick(num) {
   activeNode = num;
 }
 
-window.toggleCycleRead = function(btn) {
-  // If speaking, pause/resume
-  if (btn._speaking) {
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-      btn.textContent = '⏸ Pause';
-      btn.classList.remove('paused');
-      btn.classList.add('speaking');
-    } else if (window.speechSynthesis.speaking) {
-      window.speechSynthesis.pause();
-      btn.textContent = '▶ Resume';
-      btn.classList.remove('speaking');
-      btn.classList.add('paused');
-    } else {
-      btn.textContent = '🔊 Read Aloud';
-      btn.classList.remove('speaking', 'paused');
-      btn._speaking = false;
-    }
-    return;
-  }
-
-  // Stop any card reading in progress
-  window.speechSynthesis.cancel();
-  // Also reset any active card button
-  document.querySelectorAll('.read-aloud-btn').forEach(function(b) {
-    if (b !== btn) { b.textContent = '🔊 Read Aloud'; b.classList.remove('speaking','paused'); }
-  });
-
-  // Build text from the current step
-  const titleEl = document.getElementById('cy-detail-title');
-  const bodyEl  = document.getElementById('cy-detail-body');
-  if (!titleEl || !bodyEl) return;
-  const title = titleEl.textContent.trim();
-  const body  = bodyEl.textContent.trim();
-  if (!body) return;
-
-  btn._speaking = true;
-  btn.textContent = '⏸ Pause';
-  btn.classList.add('speaking');
-
-  speakWithPause(
-    title,
-    body,
-    function() { btn.textContent = '🔊 Read Aloud'; btn.classList.remove('speaking','paused'); btn._speaking = false; },
-    function() { btn.textContent = '🔊 Read Aloud'; btn.classList.remove('speaking','paused'); btn._speaking = false; }
-  );
-};
 
 // Default to step 1 on load
 window.addEventListener('DOMContentLoaded', function() { cycleClick(1); });
