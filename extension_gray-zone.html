@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LyfeLabz | Extension: The Gray Zone</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+  html { font-size: 18px; }
+  :root {
+    --green: #2ecc71;
+    --green-dark: #27ae60;
+    --blue: #3498db;
+    --blue-dark: #2980b9;
+    --teal: #1abc9c;
+    --purple: #9b59b6;
+    --red: #e74c3c;
+    --orange: #e67e22;
+    --yellow: #f1c40f;
+    --gold: #f5c842;
+    --gold-glow: rgba(245,200,66,0.35);
+    --dark: #1a2535;
+    --dark2: #243447;
+    --card: #1e2f42;
+    --text: #e8f4f8;
+    --text-muted: #8aafca;
+    --border: rgba(52,152,219,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--green); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--green); background: rgba(46,204,113,0.1);
+    border: 1px solid rgba(46,204,113,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0f2535 100%);
+    padding: 6rem 2rem 5rem; text-align: center; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(241,196,15,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(231,76,60,0.07) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block; background: rgba(241,196,15,0.15);
+    border: 1px solid rgba(241,196,15,0.4); color: var(--yellow);
+    padding: 0.4rem 1.2rem; border-radius: 99px; font-size: 0.8rem;
+    font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--yellow));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.15rem; color: var(--text-muted); max-width: 720px;
+    margin: 0 auto 2.5rem; position: relative;
+  }
+  .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; }
+  .btn {
+    display: inline-block; padding: 0.85rem 2.5rem; border-radius: 12px;
+    font-weight: 800; font-size: 1rem; text-decoration: none; transition: all 0.25s;
+    cursor: pointer; border: none; font-family: 'Nunito', sans-serif;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--yellow), var(--orange)); color: #1a1a1a; box-shadow: 0 4px 20px rgba(241,196,15,0.3); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(241,196,15,0.45); }
+  .btn-outline { background: transparent; border: 2px solid rgba(255,255,255,0.2); color: var(--text); }
+  .btn-outline:hover { border-color: var(--yellow); color: var(--yellow); }
+
+  .hero-cells {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-cells:nth-child(1) { top: 10%; left: 8%; animation-delay: 0s; }
+  .hero-cells:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-cells:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-cells:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5rem 2rem; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--yellow);
+    background: rgba(241,196,15,0.1); border: 1px solid rgba(241,196,15,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  .section-label-green {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--green);
+    background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: var(--text-muted); font-size: 1.05rem; max-width: 760px; margin-bottom: 3rem; }
+
+  /* ===== CASE CARDS ===== */
+  .case-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem; margin-top: 2rem;
+  }
+  .case-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.8rem; transition: all 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .case-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--yellow), var(--orange));
+  }
+  .case-card:hover { transform: translateY(-4px); border-color: rgba(241,196,15,0.35); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
+  .case-icon { font-size: 2.4rem; margin-bottom: 0.8rem; display: block; }
+  .case-name { font-weight: 900; font-size: 1.1rem; color: var(--yellow); margin-bottom: 0.5rem; }
+  .case-desc { color: var(--text-muted); font-size: 0.93rem; }
+  .case-verdict {
+    display: inline-block; margin-top: 0.9rem;
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.25rem 0.75rem; border-radius: 99px;
+    background: rgba(241,196,15,0.12); border: 1px solid rgba(241,196,15,0.3); color: var(--yellow);
+  }
+
+  /* ===== ANALYSIS BLOCKS ===== */
+  .analysis-block {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 2.2rem; margin-bottom: 2rem;
+  }
+  .analysis-header {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+    padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+  }
+  .analysis-icon { font-size: 2.5rem; flex-shrink: 0; }
+  .analysis-title {
+    font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--text);
+  }
+  .analysis-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem; }
+
+  /* ===== CHECKLIST ===== */
+  .check-item {
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    padding: 0.9rem 1.2rem; border-radius: 14px;
+    border: 2px solid var(--border); background: rgba(255,255,255,0.02); margin-bottom: 0.7rem;
+  }
+  .check-left {
+    width: 40px; height: 40px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+    background: rgba(52,152,219,0.10); font-size: 1.2rem;
+  }
+  .check-title { font-weight: 900; font-size: 0.95rem; }
+  .check-note { color: var(--text-muted); font-size: 0.88rem; margin-top: 0.2rem; }
+  .pill-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  .pill {
+    font-size: 0.7rem; font-weight: 900; padding: 0.22rem 0.65rem;
+    border-radius: 99px; letter-spacing: 0.04em; text-transform: uppercase; border: 1px solid transparent;
+  }
+  .pill-yes { background: rgba(46,204,113,0.15); color: var(--green); border-color: rgba(46,204,113,0.3); }
+  .pill-no { background: rgba(231,76,60,0.10); color: #ff8a8a; border-color: rgba(231,76,60,0.25); }
+  .pill-partial { background: rgba(241,196,15,0.10); color: var(--yellow); border-color: rgba(241,196,15,0.25); }
+
+  .analysis-verdict {
+    display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem;
+    background: rgba(241,196,15,0.06); border: 1px solid rgba(241,196,15,0.2);
+    border-radius: 14px; padding: 1rem 1.4rem;
+  }
+  .verdict-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--yellow); margin-bottom: 0.25rem; }
+  .verdict-text { color: var(--text-muted); font-size: 0.92rem; }
+
+  /* ===== CER BUILDER ===== */
+  .cer-case {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 2rem; margin-bottom: 1.8rem;
+  }
+  .cer-case-header {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.6rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+  }
+  .cer-case-icon { font-size: 2.2rem; flex-shrink: 0; }
+  .cer-case-title { font-family: 'Fredoka One', cursive; font-size: 1.4rem; }
+  .cer-case-sub { color: var(--text-muted); font-size: 0.88rem; margin-top: 0.15rem; }
+  .cer-step { margin-bottom: 1.2rem; }
+  .cer-step-header {
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem;
+  }
+  .cer-step-letter {
+    font-family: 'Fredoka One', cursive; font-size: 1.5rem; line-height: 1;
+    color: var(--yellow); width: 2rem; flex-shrink: 0;
+  }
+  .cer-step-label { font-weight: 900; font-size: 0.95rem; }
+  .cer-step-prompt { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 0.8rem; padding-left: 2.75rem; }
+  .cer-options { display: flex; flex-direction: column; gap: 0.55rem; padding-left: 2.75rem; }
+  .cer-option {
+    display: flex; align-items: flex-start; gap: 0.7rem; padding: 0.85rem 1.1rem;
+    border-radius: 12px; border: 2px solid var(--border); cursor: pointer;
+    transition: all 0.2s; background: rgba(255,255,255,0.02);
+    font-size: 0.92rem; font-weight: 600; font-family: 'Nunito', sans-serif;
+    text-align: left; color: var(--text); width: 100%;
+  }
+  .cer-option:hover:not(.cer-disabled) { border-color: rgba(241,196,15,0.4); background: rgba(241,196,15,0.04); }
+  .cer-option.cer-correct { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
+  .cer-option.cer-incorrect { border-color: var(--red) !important; background: rgba(231,76,60,0.08) !important; }
+  .cer-option.cer-revealed { border-color: rgba(46,204,113,0.35) !important; background: rgba(46,204,113,0.05) !important; }
+  .cer-option.cer-disabled { pointer-events: none; }
+  .cer-opt-letter { font-weight: 900; color: var(--text-muted); min-width: 1.1rem; font-size: 0.82rem; flex-shrink: 0; padding-top: 0.05rem; }
+  .cer-feedback {
+    display: none; font-size: 0.84rem; margin-top: 0.7rem; padding: 0.75rem 1rem;
+    border-radius: 10px; font-weight: 700; margin-left: 2.75rem;
+  }
+  .cer-feedback.cer-fb-correct { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+  .cer-feedback.cer-fb-incorrect { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .cer-locked {
+    padding: 1rem 1.2rem; margin-left: 2.75rem; border-radius: 12px;
+    background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.08);
+    color: var(--text-muted); font-size: 0.88rem; font-style: italic;
+  }
+  .cer-complete {
+    margin-top: 1.2rem; padding: 1rem 1.4rem; border-radius: 14px;
+    background: linear-gradient(135deg,rgba(46,204,113,0.1),rgba(26,188,156,0.05));
+    border: 1px solid rgba(46,204,113,0.3); text-align: center;
+    font-weight: 900; color: var(--green); font-size: 0.95rem; display: none;
+  }
+  .cer-complete.show { display: block; animation: fadeIn 0.4s ease; }
+
+  /* ===== MINI PANEL ===== */
+  .mini-panel {
+    background: linear-gradient(135deg, rgba(241,196,15,0.08), rgba(231,76,60,0.05));
+    border: 1px solid rgba(241,196,15,0.2); border-radius: 20px; padding: 2.2rem; margin-top: 2.5rem;
+  }
+  .mini-panel h3 { font-family: 'Fredoka One', cursive; font-size: 1.6rem; margin-bottom: 0.6rem; }
+  .mini-panel p { color: var(--text-muted); }
+
+  /* ===== QUIZ ===== */
+  .quiz-section { background: var(--dark2); }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.2rem; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num {
+    font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted);
+    width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .quiz-question-text { font-weight: 800; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option {
+    display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1.2rem;
+    border-radius: 12px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s;
+    background: rgba(255,255,255,0.02); font-size: 0.95rem; font-weight: 600;
+    font-family: 'Nunito', sans-serif; text-align: left; color: var(--text); width: 100%;
+  }
+  .quiz-option:hover:not(.selected):not(.disabled) { border-color: rgba(52,152,219,0.5); background: rgba(52,152,219,0.06); }
+  .quiz-option.correct { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red) !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(46,204,113,0.4) !important; background: rgba(46,204,113,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback {
+    display: none; font-size: 0.85rem; margin-top: 0.8rem; padding: 0.8rem 1.2rem;
+    border-radius: 10px; padding-left: 3rem; font-weight: 700;
+  }
+  .option-feedback.correct-fb { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--yellow), var(--orange)); border-radius: 99px; transition: width 0.4s; width: 0%; }
+  .progress-text { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; min-width: 70px; text-align: right; }
+  .score-board {
+    display: none; background: linear-gradient(135deg, rgba(241,196,15,0.1), rgba(231,76,60,0.05));
+    border: 2px solid rgba(241,196,15,0.3); border-radius: 20px; padding: 2.5rem; text-align: center; margin-top: 1.5rem;
+  }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .score-board .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--yellow); line-height: 1; margin-bottom: 0.5rem; }
+  .score-board p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .reset-btn {
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark)); color: #fff; border: none;
+    padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 1rem;
+    cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s;
+  }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+  /* ===== FOOTER ===== */
+  footer { background: #0d1720; border-top: 1px solid var(--border); padding: 3rem 2rem; text-align: center; }
+  footer .logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--yellow); margin-bottom: 0.5rem; }
+  footer p { color: var(--text-muted); font-size: 0.9rem; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+  }
+</style>
+<style>
+/* ── Learning Science Badges (inline) ── */
+.ls-focus { display: none; }
+body.ls-active .ls-focus {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.45rem 0.55rem;
+  width: fit-content; max-width: 760px; margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box; background: rgba(59,200,232,0.05); border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+}
+@keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+.ls-focus-label {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: rgba(59,200,232,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+}
+.ls-badge {
+  position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+  font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+  color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 99px; padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap;
+  transition: background 0.18s, border-color 0.18s, color 0.18s; overflow: visible;
+}
+.ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); color: rgba(255,255,255,0.92); }
+.ls-badge[data-tip]::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%);
+  width: 200px; padding: 0.5rem 0.75rem; background: #0c1a28; color: #b8ccd8; font-size: 0.68rem;
+  font-weight: 500; line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+}
+.ls-badge[data-tip]:hover::after { opacity: 1; }
+.ls-badge[data-tip]::before {
+  content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+  pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+}
+.ls-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after, .ls-badge[data-tip]::before { display: none; }
+  body.ls-active .ls-focus { max-width: calc(100% - 2.4rem); padding: 0.75rem 1rem; gap: 0.4rem 0.5rem; }
+}
+</style>
+<style>
+/* ── MA STE Standards (inline) ── */
+.stem-focus { display: none; }
+body.stem-active .stem-focus {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.45rem 0.55rem;
+  width: fit-content; max-width: 760px; margin: 0.5rem auto 1.6rem; padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box; background: rgba(46,204,113,0.05); border: 1px solid rgba(46,204,113,0.2);
+  border-radius: 16px; animation: stemFadeIn 0.35s ease both;
+}
+@keyframes stemFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+.stem-focus-label {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: rgba(46,204,113,0.75); width: 100%; text-align: center; margin-bottom: 0.5rem;
+}
+.stem-badge {
+  position: relative; cursor: default; display: inline-flex; align-items: center;
+  font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+  color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 99px; padding: 0.35rem 0.9rem; white-space: nowrap;
+}
+.stem-badge[data-tip]::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%);
+  width: 220px; padding: 0.5rem 0.75rem; background: #0c1a28; color: #b8ccd8; font-size: 0.68rem;
+  font-weight: 500; line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+  border: 1px solid rgba(46,204,113,0.2); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+}
+.stem-badge[data-tip]:hover::after { opacity: 1; }
+.stem-badge[data-tip]::before {
+  content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: rgba(46,204,113,0.2);
+  pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+}
+.stem-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) { .stem-badge[data-tip]::after, .stem-badge[data-tip]::before { display: none; } }
+</style>
+</head>
+
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="#cases">The Cases</a></li>
+    <li><a href="#analyze">Analyze</a></li>
+    <li><a href="#cer">CER Builder</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+  </ul>
+  <a href="lesson_characteristics.html" class="nav-back">← Characteristics of Life</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-cells">🔥</span>
+  <span class="hero-cells">🤖</span>
+  <span class="hero-cells">🌱</span>
+  <span class="hero-cells">🔮</span>
+  <div class="hero-badge">Extension</div>
+  <h1>The Gray Zone ⚠️</h1>
+  <p>You know the six characteristics of life. Now apply them to things that don't fit neatly into <em>living</em> or <em>nonliving</em>. Use evidence — not instinct — to make your case.</p>
+  <div class="hero-btns">
+    <a href="#cases" class="btn btn-primary">Meet the Cases 🔍</a>
+    <a href="#cer" class="btn btn-outline">Jump to CER Builder ✍️</a>
+  </div>
+</header>
+
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Prior misconceptions are directly confronted with evidence, prompting genuine revision of understanding. — Posner et al., 1982">🔄 Conceptual Change</span>
+  <span class="ls-badge" data-tip="Students explain the 'why' behind facts, building deep causal understanding rather than surface recall. — Dunlosky et al., 2013">💬 Elaboration</span>
+  <span class="ls-badge" data-tip="Students reflect on their own thinking, building the self-regulation skills that transfer across subjects. — Dent & Koenka, 2016">🔍 Metacognition</span>
+  <span class="ls-badge" data-tip="Surprising or personally relevant questions activate intrinsic motivation, sustaining engagement longer. — Lazowski & Hulleman, 2016">✨ Curiosity Drive</span>
+</div>
+<div class="stem-focus">
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
+  <span class="stem-badge" data-tip="Provide evidence that all organisms (unicellular and multicellular) are made of cells.">6.MS-LS1-1</span>
+</div>
+
+<!-- THE FIVE CASES -->
+<section id="cases" style="background:var(--dark2);">
+  <div class="container">
+    <span class="section-label">The Gray Zone</span>
+    <h2 class="section-title">Five Things That Break the Rules ⚠️</h2>
+    <p class="section-desc">Each of these cases seems like it <em>might</em> be alive — or at least shows some signs of life. Scroll through them, then head to the analysis section to run each one through the six characteristics.</p>
+    <div class="case-grid">
+
+      <div class="case-card">
+        <span class="case-icon">🔥</span>
+        <div class="case-name">Fire</div>
+        <div class="case-desc">Fire grows larger, consumes fuel and oxygen, releases energy, and responds to wind and water. It can even "reproduce" by spreading to new material. Scientists have studied fire for centuries — and debate about its nature continues.</div>
+        <span class="case-verdict">Interesting Case</span>
+      </div>
+
+      <div class="case-card">
+        <span class="case-icon">🔮</span>
+        <div class="case-name">Crystals</div>
+        <div class="case-desc">Salt crystals and snowflakes grow by adding new layers of atoms in a perfectly organized pattern. They can even "repair" themselves. They form in response to conditions like temperature and salt concentration. But there's no cell in sight.</div>
+        <span class="case-verdict">Interesting Case</span>
+      </div>
+
+      <div class="case-card">
+        <span class="case-icon">🌱</span>
+        <div class="case-name">A Dormant Seed</div>
+        <div class="case-desc">A seed can sit dry in a drawer for years — not growing, not using energy, not responding to anything. Scientists agree seeds are alive. But if a living thing can do absolutely nothing for years, what does "alive" even mean?</div>
+        <span class="case-verdict">Interesting Case</span>
+      </div>
+
+      <div class="case-card">
+        <span class="case-icon">🐴</span>
+        <div class="case-name">A Mule</div>
+        <div class="case-desc">Mules are the offspring of a horse and a donkey. They are healthy, strong animals — they eat, grow, respond to their environment, and maintain homeostasis. There's just one problem: nearly all mules are sterile and cannot reproduce.</div>
+        <span class="case-verdict">Interesting Case</span>
+      </div>
+
+      <div class="case-card">
+        <span class="case-icon">🤖</span>
+        <div class="case-name">A Robot (or AI)</div>
+        <div class="case-desc">Modern robots move, sense their environment, respond to stimuli, and use energy. Some AI systems can even generate copies of themselves. They are made of materials manufactured by humans — no cells involved. Does that matter?</div>
+        <span class="case-verdict">Interesting Case</span>
+      </div>
+
+    </div>
+
+    <div class="mini-panel" style="margin-top:3rem;">
+      <h3>🤔 Remember the Rules</h3>
+      <p>To count as <strong style="color:var(--text);">alive</strong>, something must meet <strong style="color:var(--text);">all six</strong> characteristics of life. Finding one or two doesn't cut it. As you analyze each case below, ask yourself: <em>how many does it actually meet — and does it meet them independently?</em></p>
+    </div>
+  </div>
+</section>
+
+<!-- ANALYSIS -->
+<section id="analyze" style="background:var(--dark);">
+  <div class="container">
+    <span class="section-label">Deep Dive</span>
+    <h2 class="section-title">Run the Checklist 🧪</h2>
+    <p class="section-desc">For each case, review all six characteristics. Decide how well — or how poorly — each one is met. The verdict is yours.</p>
+
+    <!-- FIRE -->
+    <div class="analysis-block">
+      <div class="analysis-header">
+        <div class="analysis-icon">🔥</div>
+        <div>
+          <div class="analysis-title">Fire</div>
+          <div class="analysis-subtitle">Looks alive. Grows, spreads, consumes fuel. But is it?</div>
+        </div>
+      </div>
+      <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Fire is a chemical reaction — the rapid oxidation of fuel. It has no cells, no membrane, no genetic material.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Fire releases energy through combustion. But "using" energy for life processes is different from burning fuel — fire just converts it to heat and light with no purpose.</div><div class="pill-row"><span class="pill pill-partial">Technically, but Differently</span></div></div></div>
+      <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Fire grows larger when more fuel is present. But this is not true biological growth — it's just expansion of a reaction.</div><div class="pill-row"><span class="pill pill-partial">Sort Of — Not Biological</span></div></div></div>
+      <div class="check-item"><div class="check-left">👶</div><div><div class="check-title">Reproduce</div><div class="check-note">Fire spreads to new material and seems to "reproduce." But it doesn't pass on genetic information or produce independent offspring — it just ignites nearby fuel.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">👁️</div><div><div class="check-title">Respond to Stimuli</div><div class="check-note">Fire changes based on wind, oxygen, and fuel. But this is physics — not a biological response from a sensing organism.</div><div class="pill-row"><span class="pill pill-partial">Responds, but Not Biologically</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚖️</div><div><div class="check-title">Maintain Homeostasis</div><div class="check-note">Fire does not regulate an internal environment. It simply burns until the fuel or oxygen runs out.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="analysis-verdict">
+        <div style="font-size:2rem;">🔥</div>
+        <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">Fire fails the most critical tests: no cells, no reproduction with genetic transfer, no homeostasis. Its "growth" and "response" are physical reactions, not biological processes. Most scientists agree — fire is <strong style="color:var(--text);">not alive</strong>.</div></div>
+      </div>
+    </div>
+
+    <!-- CRYSTALS -->
+    <div class="analysis-block">
+      <div class="analysis-header">
+        <div class="analysis-icon">🔮</div>
+        <div>
+          <div class="analysis-title">Crystals</div>
+          <div class="analysis-subtitle">They grow in organized patterns and respond to their environment — but that's about it.</div>
+        </div>
+      </div>
+      <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Crystals are made of repeating atomic or molecular patterns — not cells. There is no membrane, cytoplasm, or genetic material.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Crystals do not consume or process energy. They form through thermodynamic processes, not metabolism.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Crystals do grow — by adding layers of atoms to their surface. But this growth requires no cellular machinery or energy processing. A crystal growing in a solution is closer to construction than biology.</div><div class="pill-row"><span class="pill pill-partial">Grows, but Not Biologically</span></div></div></div>
+      <div class="check-item"><div class="check-left">👶</div><div><div class="check-title">Reproduce</div><div class="check-note">Crystals do not reproduce. A crystal can break into pieces, and those pieces can seed new crystals — but no genetic information is passed on.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">👁️</div><div><div class="check-title">Respond to Stimuli</div><div class="check-note">Crystals form differently based on temperature, pressure, and concentration. But they do not sense and respond — they just react to chemistry.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚖️</div><div><div class="check-title">Maintain Homeostasis</div><div class="check-note">Crystals have no internal environment to regulate. They simply stop growing when conditions change.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="analysis-verdict">
+        <div style="font-size:2rem;">🔮</div>
+        <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">Crystals' "growth" is the most life-like feature they have — but they fail five of six characteristics entirely. They are a good reminder that growth alone is not enough to qualify as life.</div></div>
+      </div>
+    </div>
+
+    <!-- DORMANT SEED -->
+    <div class="analysis-block">
+      <div class="analysis-header">
+        <div class="analysis-icon">🌱</div>
+        <div>
+          <div class="analysis-title">A Dormant Seed</div>
+          <div class="analysis-subtitle">Scientifically alive — but currently doing absolutely nothing.</div>
+        </div>
+      </div>
+      <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Yes — a seed contains a tiny embryonic plant made of living cells, even when dormant. The cells are there, just inactive.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">A dormant seed uses almost no energy — its metabolism is near zero. But the cells are still technically alive and capable of activating when conditions are right.</div><div class="pill-row"><span class="pill pill-partial">Meets — At Extremely Low Level</span></div></div></div>
+      <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Not right now. A dormant seed has paused its growth. It has the potential to grow when it germinates.</div><div class="pill-row"><span class="pill pill-partial">Paused — Potential Is There</span></div></div></div>
+      <div class="check-item"><div class="check-left">👶</div><div><div class="check-title">Reproduce</div><div class="check-note">The seed itself is a product of reproduction — it carries the genetic information needed to make a new plant when it germinates.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">👁️</div><div><div class="check-title">Respond to Stimuli</div><div class="check-note">When the seed detects the right conditions — moisture, warmth, light — it breaks dormancy and germinates. That's a response to stimuli.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚖️</div><div><div class="check-title">Maintain Homeostasis</div><div class="check-note">During dormancy, a seed's homeostasis is essentially suspended — but the structures needed to maintain it are preserved and intact.</div><div class="pill-row"><span class="pill pill-partial">Suspended — Not Eliminated</span></div></div></div>
+      <div class="analysis-verdict">
+        <div style="font-size:2rem;">🌱</div>
+        <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">This case reveals something important: being alive doesn't require constantly <em>doing</em> all six things. A dormant seed is <strong style="color:var(--text);">alive</strong> — it has the full biological machinery, just temporarily paused. Life is a capacity, not just a behavior.</div></div>
+      </div>
+    </div>
+
+    <!-- MULE -->
+    <div class="analysis-block">
+      <div class="analysis-header">
+        <div class="analysis-icon">🐴</div>
+        <div>
+          <div class="analysis-title">A Mule</div>
+          <div class="analysis-subtitle">Meets five of six characteristics — but reproduction is where things get complicated.</div>
+        </div>
+      </div>
+      <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Absolutely — mules are complex multicellular organisms with trillions of specialized cells.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Mules eat, digest food, and use the energy to power all life processes.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Mules are born small and grow into large, strong adult animals over time.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">👶</div><div><div class="check-title">Reproduce</div><div class="check-note">This is the problem. Nearly all mules are sterile due to a chromosomal mismatch — horses have 64 chromosomes and donkeys have 62, so mule cells can't complete the division needed to make gametes.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">👁️</div><div><div class="check-title">Respond to Stimuli</div><div class="check-note">Mules are famously responsive — they sense danger, recognize their owners, and react to their environment like any animal.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚖️</div><div><div class="check-title">Maintain Homeostasis</div><div class="check-note">Mules regulate body temperature, blood chemistry, and internal systems continuously.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="analysis-verdict">
+        <div style="font-size:2rem;">🐴</div>
+        <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">This is the hardest case. A mule is clearly alive by any common-sense definition — it thinks, feels, works, and thrives. But if we apply the six characteristics strictly, it fails reproduction. This raises a real scientific question: <em>should a sterile individual be considered nonliving?</em> Most biologists say mules are absolutely <strong style="color:var(--text);">alive</strong>, which suggests the six characteristics describe life as a system, not a checklist every individual must fully satisfy.</div></div>
+      </div>
+    </div>
+
+    <!-- ROBOT -->
+    <div class="analysis-block">
+      <div class="analysis-header">
+        <div class="analysis-icon">🤖</div>
+        <div>
+          <div class="analysis-title">A Robot (or AI)</div>
+          <div class="analysis-subtitle">Gets surprisingly far — but stumbles on the most important ones.</div>
+        </div>
+      </div>
+      <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Robots are made of metal, plastic, silicon, and code. Not a single cell in sight.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Robots and AIs use electricity to power all of their functions. That's energy input and use — but not through metabolism.</div><div class="pill-row"><span class="pill pill-partial">Uses Energy — Not Through Metabolism</span></div></div></div>
+      <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Robots don't grow. Some AI systems can "learn" and improve over time — but that's software updating, not biological development.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">👶</div><div><div class="check-title">Reproduce</div><div class="check-note">A robot can't make another robot on its own. Some AI programs can generate copies of their code — but this requires human-built infrastructure and passes no genetic material.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">👁️</div><div><div class="check-title">Respond to Stimuli</div><div class="check-note">This is a robot's strongest case. Sensors, cameras, and AI processing allow robots to detect and respond to their environment in sophisticated ways.</div><div class="pill-row"><span class="pill pill-partial">Meets — But by Programming, Not Biology</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚖️</div><div><div class="check-title">Maintain Homeostasis</div><div class="check-note">Some robots regulate their internal temperature or battery charge. But this is engineering design, not a biological homeostatic system.</div><div class="pill-row"><span class="pill pill-partial">Sort Of — Through Engineering</span></div></div></div>
+      <div class="analysis-verdict">
+        <div style="font-size:2rem;">🤖</div>
+        <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">Robots are the most thought-provoking case because they get <em>closer</em> than crystals or fire — especially on energy and responding to stimuli. But they have no cells, no biological reproduction, and no metabolism. As AI continues to develop, this case will become even harder to dismiss. For now, robots are <strong style="color:var(--text);">not alive</strong> — but the conversation is worth having.</div></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CER BUILDER -->
+<section id="cer" style="background:var(--dark2);">
+  <div class="container">
+    <span class="section-label-green">CER Builder</span>
+    <h2 class="section-title">Build the Argument ✍️</h2>
+    <p class="section-desc">Work through three cases below. For each one, choose the best <strong style="color:var(--text);">Claim</strong>, then the strongest <strong style="color:var(--text);">Evidence</strong>, then the best <strong style="color:var(--text);">Reasoning</strong> — in order. Each step unlocks after the previous one is correct.</p>
+
+    <div id="cer-cases"></div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Quiz</span>
+    <h2 class="section-title">Gray Zone Reasoning Quiz 🧠</h2>
+    <p class="section-desc">Eight questions to test your thinking on the edge cases. Click an answer for instant feedback.</p>
+
+    <div class="quiz-progress">
+      <div class="progress-bar"><div class="progress-fill" id="q-progress"></div></div>
+      <div class="progress-text" id="q-progress-text">0 / 8</div>
+    </div>
+    <div id="quiz-questions"></div>
+    <div class="score-board" id="q-score">
+      <div class="big-score" id="q-score-num">0/8</div>
+      <p id="q-score-msg"></p>
+      <button class="reset-btn" onclick="resetQuiz()">🔄 Try Again</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">⚠️ LyfeLabz · The Gray Zone</div>
+  <p style="margin-bottom:0.5rem;">Extension for Characteristics of Life</p>
+  <p style="margin-top:0.6rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a></p>
+  <p>© 2026 LyfeLabz · Educational Use</p>
+</footer>
+
+<script>
+// ── Guided CER Builder ────────────────────────────────────────────
+const cerCases = [
+  {
+    icon: '🔥', title: 'Fire', sub: 'Argue: Fire is NOT alive',
+    steps: [
+      {
+        letter: 'C', label: 'Claim',
+        prompt: 'Choose the strongest claim about whether fire is alive.',
+        options: [
+          'Fire is alive because it grows, uses energy, and spreads to new material.',
+          'Fire is not alive because it fails the majority of the six characteristics of life.',
+          'Fire might be alive — scientists are still debating cases like this one.'
+        ],
+        correct: 1,
+        correctFb: '✅ Strong claim! It takes a clear position and signals that evidence (the six characteristics) will follow.',
+        incorrectFb: '❌ Not the strongest choice. A good claim takes a definite position and hints at the evidence. Option B does this best.'
+      },
+      {
+        letter: 'E', label: 'Evidence',
+        prompt: 'Your claim is locked in. Now choose the evidence that best supports it.',
+        options: [
+          'Fire is hot and bright, which are not properties of living things.',
+          'Fire does not meet "Made of Cells" — it has no cells or genetic material — and it cannot reproduce by passing on heritable information.',
+          'Fire goes out when oxygen runs out, similar to how animals die without air.'
+        ],
+        correct: 1,
+        correctFb: '✅ Excellent evidence! It names two specific characteristics, explains what fire lacks, and avoids vague comparisons.',
+        incorrectFb: '❌ That\'s not strong scientific evidence. Good evidence names a specific characteristic and explains why fire fails it. Option B does both.'
+      },
+      {
+        letter: 'R', label: 'Reasoning',
+        prompt: 'Now connect your evidence to your claim. Choose the best reasoning.',
+        options: [
+          'This supports my claim because fire is dangerous, and we don\'t consider dangerous things alive.',
+          'This supports my claim because failing "Made of Cells" and "Reproduce" shows fire lacks the two most fundamental requirements for life — even though it does show some life-like behaviors.',
+          'This supports my claim because scientists have studied fire for centuries and never found cells in it.'
+        ],
+        correct: 1,
+        correctFb: '✅ Perfect reasoning! It connects the evidence back to the claim, explains WHY those characteristics matter, and even acknowledges fire\'s life-like qualities — the mark of a strong argument.',
+        incorrectFb: '❌ Reasoning should explain WHY the evidence supports the claim. Option B does this by connecting the failed characteristics to what life fundamentally requires.'
+      }
+    ]
+  },
+  {
+    icon: '🐴', title: 'A Mule', sub: 'Argue: A mule IS alive',
+    steps: [
+      {
+        letter: 'C', label: 'Claim',
+        prompt: 'Choose the strongest claim about whether a mule is alive.',
+        options: [
+          'A mule is not alive because it cannot reproduce, which is one of the six characteristics.',
+          'A mule is alive because it meets five of the six characteristics of life.',
+          'Whether a mule is alive depends on whether it can reproduce later in its life.'
+        ],
+        correct: 1,
+        correctFb: '✅ Strong claim! It takes a clear position and signals the evidence — the five characteristics — that will follow.',
+        incorrectFb: '❌ Not the strongest. The best claim takes a clear position and points toward the evidence. Option B does this without unnecessary hedging.'
+      },
+      {
+        letter: 'E', label: 'Evidence',
+        prompt: 'Choose the evidence that best supports the claim that a mule is alive.',
+        options: [
+          'Mules are strong working animals used by humans for centuries.',
+          'Mules eat, grow, maintain body temperature, and respond to their environment — meeting five of the six characteristics.',
+          'Mules were created by crossbreeding horses and donkeys, so they follow different biological rules.'
+        ],
+        correct: 1,
+        correctFb: '✅ Strong evidence! It names four specific characteristics and directly supports the claim that mules meet the criteria for life.',
+        incorrectFb: '❌ That\'s not scientific evidence. Good evidence names specific characteristics of life and shows how the mule meets them. Option B does this directly.'
+      },
+      {
+        letter: 'R', label: 'Reasoning',
+        prompt: 'Now connect your evidence to your claim. Choose the best reasoning.',
+        options: [
+          'This supports my claim because strong animals are always alive.',
+          'This supports my claim because mules can feel pain, which is a sign of life.',
+          'This supports my claim because meeting five characteristics — including having cells, using energy, maintaining homeostasis, and responding to stimuli — shows a mule has all the core biological systems of life. Sterility affects one characteristic but does not eliminate the others.'
+        ],
+        correct: 2,
+        correctFb: '✅ Excellent reasoning! It connects the evidence to the claim, explains why the five characteristics matter, and directly addresses the one characteristic a mule fails — that\'s what separates a good argument from a great one.',
+        incorrectFb: '❌ Reasoning must explain WHY the evidence supports the claim. Option C does this by explaining what the five characteristics reveal about mule biology and addressing the counterargument head-on.'
+      }
+    ]
+  },
+  {
+    icon: '🤖', title: 'A Robot', sub: 'Argue: A robot is NOT alive',
+    steps: [
+      {
+        letter: 'C', label: 'Claim',
+        prompt: 'Choose the strongest claim about whether a robot is alive.',
+        options: [
+          'A robot is alive because it uses energy and responds to stimuli just like living things do.',
+          'Whether a robot is alive depends on how advanced its AI is.',
+          'A robot is not alive because, despite some life-like behaviors, it fails the most fundamental characteristics of life.'
+        ],
+        correct: 2,
+        correctFb: '✅ Strong claim! It takes a clear position, acknowledges the life-like behaviors (showing awareness of the counterargument), and sets up the evidence.',
+        incorrectFb: '❌ Not the strongest. A good claim takes a definite position and acknowledges complexity without hedging. Option C does this best.'
+      },
+      {
+        letter: 'E', label: 'Evidence',
+        prompt: 'Choose the evidence that best supports the claim that a robot is not alive.',
+        options: [
+          'Robots are made in factories, not born, which means they cannot be alive.',
+          'Robots do not have feelings or emotions, which means they are not alive.',
+          'Robots have no cells and cannot reproduce biologically — they are built from metal and silicon with no genetic material to pass on.'
+        ],
+        correct: 2,
+        correctFb: '✅ Strong evidence! It targets two specific characteristics — "Made of Cells" and "Reproduce" — and explains exactly what robots lack.',
+        incorrectFb: '❌ That\'s not strong scientific evidence. Good evidence names specific characteristics of life and explains how robots fail them. Option C does both precisely.'
+      },
+      {
+        letter: 'R', label: 'Reasoning',
+        prompt: 'Now connect your evidence to your claim. Choose the best reasoning.',
+        options: [
+          'This supports my claim because "Made of Cells" is the most foundational characteristic — all known life is cellular. A robot\'s ability to use electricity or respond to sensors is engineered behavior, not biology, and cannot substitute for living cells.',
+          'This supports my claim because robots are too expensive and complex to be considered alive.',
+          'This supports my claim because anything built by humans cannot qualify as a living thing.'
+        ],
+        correct: 0,
+        correctFb: '✅ Perfect reasoning! It explains WHY "Made of Cells" matters above all, draws the critical distinction between engineered and biological behavior, and directly addresses why the robot\'s life-like features don\'t count.',
+        incorrectFb: '❌ Reasoning must explain WHY the evidence proves the claim. Option A does this by explaining the significance of cells and distinguishing engineered behavior from biological life.'
+      }
+    ]
+  }
+];
+
+const cerState = cerCases.map(() => ({ step: 0, done: false }));
+
+function buildCER() {
+  const container = document.getElementById('cer-cases');
+  container.innerHTML = '';
+
+  cerCases.forEach((c, ci) => {
+    const el = document.createElement('div');
+    el.className = 'cer-case';
+    el.id = `cer-case-${ci}`;
+
+    const stepsHTML = c.steps.map((s, si) => buildStepHTML(ci, si, s, si === 0)).join('');
+
+    el.innerHTML = `
+      <div class="cer-case-header">
+        <div class="cer-case-icon">${c.icon}</div>
+        <div>
+          <div class="cer-case-title">${c.title}</div>
+          <div class="cer-case-sub">${c.sub}</div>
+        </div>
+      </div>
+      ${stepsHTML}
+      <div class="cer-complete" id="cer-complete-${ci}">🎯 Argument complete! Great scientific reasoning.</div>
+    `;
+    container.appendChild(el);
+  });
+}
+
+function buildStepHTML(ci, si, s, unlocked) {
+  const letters = ['A', 'B', 'C'];
+  const optionsHTML = s.options.map((opt, oi) => `
+    <button class="cer-option" id="cer-${ci}-${si}-${oi}" onclick="cerSelect(${ci},${si},${oi})">
+      <span class="cer-opt-letter">${letters[oi]}</span>
+      <span>${opt}</span>
+    </button>
+  `).join('');
+
+  return `
+    <div class="cer-step" id="cer-step-${ci}-${si}">
+      <div class="cer-step-header">
+        <div class="cer-step-letter">${s.letter}</div>
+        <div class="cer-step-label">${s.label}</div>
+      </div>
+      <div class="cer-step-prompt">${s.prompt}</div>
+      ${unlocked
+        ? `<div class="cer-options" id="cer-opts-${ci}-${si}">${optionsHTML}</div>
+           <div class="cer-feedback" id="cer-fb-${ci}-${si}"></div>`
+        : `<div class="cer-locked" id="cer-opts-${ci}-${si}">🔒 Complete the ${si === 1 ? 'Claim' : 'Evidence'} step first.</div>
+           <div class="cer-feedback" id="cer-fb-${ci}-${si}"></div>`
+      }
+    </div>
+  `;
+}
+
+function cerSelect(ci, si, chosen) {
+  const s = cerCases[ci].steps[si];
+  const isCorrect = chosen === s.correct;
+  const letters = ['A','B','C'];
+
+  // Disable all options in this step
+  s.options.forEach((_, oi) => {
+    const btn = document.getElementById(`cer-${ci}-${si}-${oi}`);
+    btn.classList.add('cer-disabled');
+    if (oi === s.correct) btn.classList.add('cer-revealed');
+  });
+  document.getElementById(`cer-${ci}-${si}-${chosen}`).classList.add(isCorrect ? 'cer-correct' : 'cer-incorrect');
+
+  // Show feedback
+  const fb = document.getElementById(`cer-fb-${ci}-${si}`);
+  fb.className = `cer-feedback ${isCorrect ? 'cer-fb-correct' : 'cer-fb-incorrect'}`;
+  fb.innerHTML = isCorrect ? s.correctFb : s.incorrectFb;
+
+  if (isCorrect) {
+    cerState[ci].step = si + 1;
+    if (si + 1 < cerCases[ci].steps.length) {
+      unlockStep(ci, si + 1);
+    } else {
+      cerState[ci].done = true;
+      document.getElementById(`cer-complete-${ci}`).classList.add('show');
+    }
+  }
+}
+
+function unlockStep(ci, si) {
+  const s = cerCases[ci].steps[si];
+  const letters = ['A','B','C'];
+  const optsEl = document.getElementById(`cer-opts-${ci}-${si}`);
+  optsEl.innerHTML = s.options.map((opt, oi) => `
+    <button class="cer-option" id="cer-${ci}-${si}-${oi}" onclick="cerSelect(${ci},${si},${oi})">
+      <span class="cer-opt-letter">${letters[oi]}</span>
+      <span>${opt}</span>
+    </button>
+  `).join('');
+  optsEl.className = 'cer-options';
+
+  // Update prompt from locked to real prompt
+  const stepEl = document.getElementById(`cer-step-${ci}-${si}`);
+  const promptEl = stepEl.querySelector('.cer-step-prompt');
+  promptEl.textContent = s.prompt;
+
+  // Smooth scroll nudge
+  setTimeout(() => optsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+}
+
+buildCER();
+</script>
+
+<script>
+const quizData = {
+  total: 8,
+  questions: [
+    {
+      q: "Fire grows, consumes fuel, and even spreads to new material. Why do most scientists still say fire is NOT alive?",
+      options: [
+        "Fire is too hot to be considered alive",
+        "Fire fails the most important tests: it has no cells, no genetic material, and cannot reproduce with heritable information",
+        "Fire does not grow fast enough to be considered alive",
+        "Fire uses too much oxygen to qualify as a living thing"
+      ],
+      correct: 1,
+      explanation: "Even though fire shows some life-like behaviors, it has no cells and cannot pass on genetic information. Its 'growth' and 'spread' are chemistry, not biology."
+    },
+    {
+      q: "A crystal grows by adding layers of atoms in an organized pattern. Which characteristic of life does this MOST resemble — and why is it still not enough?",
+      options: [
+        "Reproduce — but crystals can't pass genetic information to offspring",
+        "Grow and develop — but crystal growth requires no cellular machinery, energy metabolism, or genetic instructions",
+        "Maintain homeostasis — but crystals have no internal environment to regulate",
+        "Respond to stimuli — but crystals don't have sensors"
+      ],
+      correct: 1,
+      explanation: "Crystal growth resembles 'Grow and develop,' but biological growth is driven by cells, DNA, and metabolism. Crystal growth is just atoms stacking up through chemistry — no biology involved."
+    },
+    {
+      q: "A seed can sit dormant in a drawer for years without growing, using energy, or responding to anything. Why do scientists still consider it alive?",
+      options: [
+        "Because seeds are made of cells and have the biological machinery to resume all life functions when conditions are right",
+        "Because seeds contain water and need oxygen",
+        "Because seeds are too small to be considered nonliving",
+        "Because dormancy counts as maintaining homeostasis"
+      ],
+      correct: 0,
+      explanation: "Life is a capacity, not just a set of constant behaviors. A dormant seed has living cells and intact biological machinery — it's just paused. Being alive doesn't require constantly demonstrating all six characteristics."
+    },
+    {
+      q: "A mule is healthy, responsive, grows, uses energy, and maintains homeostasis — but cannot reproduce. What does this case BEST reveal about the six characteristics of life?",
+      options: [
+        "Mules are not alive because they fail reproduction",
+        "The six characteristics must all be met simultaneously by every individual organism",
+        "The six characteristics describe life as a system — not a checklist every single individual must fully satisfy",
+        "Reproduction is the least important of the six characteristics"
+      ],
+      correct: 2,
+      explanation: "Mules are clearly alive despite being sterile. This shows the six characteristics describe what living things do as a group and a lineage — not a test that every individual must pass on all six counts simultaneously."
+    },
+    {
+      q: "A robot uses electricity, responds to sensors, and can be programmed to copy its own code. Which characteristic does it MOST struggle to meet — and why?",
+      options: [
+        "Respond to stimuli — robots have no senses",
+        "Obtain and use energy — robots don't use energy",
+        "Made of cells — robots are built from non-biological materials with no living cells",
+        "Grow and develop — robots can upgrade their own software"
+      ],
+      correct: 2,
+      explanation: "Being made of cells is fundamental to life as we know it. Robots are made of metal, silicon, and plastic — no cellular structures, no metabolism, no genetic material. 'Made of cells' is the clearest failure."
+    },
+    {
+      q: "Which of the five Gray Zone cases is MOST clearly nonliving, because it fails nearly all six characteristics?",
+      options: [
+        "A dormant seed",
+        "A mule",
+        "A crystal",
+        "A robot"
+      ],
+      correct: 2,
+      explanation: "Crystals fail five of six characteristics completely. They have no cells, no energy metabolism, no reproduction, no homeostasis, and only a minimal chemical response to their environment. They're the clearest non-living case of the five."
+    },
+    {
+      q: "You are arguing that fire is NOT alive. Which piece of evidence is STRONGEST for your CER?",
+      options: [
+        "Fire is orange and living things are not usually orange",
+        "Fire does not have cells, does not reproduce with genetic information, and cannot maintain homeostasis",
+        "Fire goes out when there is no oxygen, and living things need oxygen",
+        "Fire moves quickly, and living things move slowly"
+      ],
+      correct: 1,
+      explanation: "Strong scientific evidence targets the most fundamental characteristics. Failing 'Made of cells,' 'Reproduce,' AND 'Maintain homeostasis' is a decisive three-part argument — much stronger than observations about color or speed."
+    },
+    {
+      q: "A classmate argues: 'Robots must be alive — they respond to stimuli AND use energy, just like we do.' What is the BEST counterargument?",
+      options: [
+        "Robots are too fast to be alive",
+        "Meeting two characteristics is not enough — living things must meet all six, and robots have no cells, no metabolism, and no biological reproduction",
+        "Robots don't respond to stimuli — they're just programmed",
+        "Using electricity is not the same as using energy at all"
+      ],
+      correct: 1,
+      explanation: "A strong counterargument acknowledges what the other side got right, then explains why it's still not enough. Meeting two characteristics doesn't qualify something as alive — all six must be present, and robots fundamentally lack cells and biological systems."
+    }
+  ]
+};
+
+const quizState = { answered: 0, correct: 0 };
+
+function buildQuiz() {
+  const container = document.getElementById('quiz-questions');
+  container.innerHTML = '';
+  quizState.answered = 0;
+  quizState.correct = 0;
+  updateProgress();
+
+  quizData.questions.forEach((q, qi) => {
+    const letters = ['A','B','C','D'];
+    const optionsHTML = q.options.map((opt, oi) => `
+      <button class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q-${qi}-${oi}">
+        <span class="option-letter">${letters[oi]}</span>
+        <span>${opt}</span>
+      </button>
+    `).join('');
+
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML = `
+      <div class="quiz-header">
+        <div class="quiz-num">${qi + 1}</div>
+        <div class="quiz-question-text">${q.q}</div>
+      </div>
+      <div class="quiz-options">${optionsHTML}</div>
+      <div class="option-feedback" id="q-feedback-${qi}"></div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function selectAnswer(qi, chosenIndex) {
+  const q = quizData.questions[qi];
+  const isCorrect = chosenIndex === q.correct;
+
+  q.options.forEach((_, oi) => {
+    const btn = document.getElementById(`q-${qi}-${oi}`);
+    btn.classList.add('disabled');
+    if (oi === q.correct) btn.classList.add('revealed-correct');
+  });
+
+  document.getElementById(`q-${qi}-${chosenIndex}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+
+  const feedback = document.getElementById(`q-feedback-${qi}`);
+  if (isCorrect) {
+    feedback.className = 'option-feedback correct-fb';
+    feedback.innerHTML = '✅ Correct! ' + q.explanation;
+    quizState.correct++;
+  } else {
+    feedback.className = 'option-feedback incorrect-fb';
+    feedback.innerHTML = '❌ Not quite. ' + q.explanation;
+  }
+
+  quizState.answered++;
+  updateProgress();
+  if (quizState.answered === quizData.total) showScore();
+}
+
+function updateProgress() {
+  const pct = (quizState.answered / quizData.total) * 100;
+  document.getElementById('q-progress').style.width = pct + '%';
+  document.getElementById('q-progress-text').textContent = `${quizState.answered} / ${quizData.total}`;
+}
+
+function showScore() {
+  const pct = Math.round((quizState.correct / quizData.total) * 100);
+  let msg = '';
+  if (pct === 100) msg = '🏆 Perfect! Your scientific reasoning is sharp.';
+  else if (pct >= 75) msg = '🌟 Great work! Review any you missed and you\'re set.';
+  else if (pct >= 50) msg = '📚 Solid start. Revisit the analysis section and try again.';
+  else msg = '💪 Keep going! Re-read the case analyses above, then retry.';
+
+  document.getElementById('q-score-num').textContent = `${quizState.correct}/${quizData.total}`;
+  document.getElementById('q-score-msg').textContent = msg;
+  document.getElementById('q-score').classList.add('show');
+  document.getElementById('q-score').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetQuiz() {
+  document.getElementById('q-score').classList.remove('show');
+  buildQuiz();
+}
+
+buildQuiz();
+</script>
+
+<script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
+</body>
+</html>
