@@ -910,7 +910,7 @@ function submitActivity() {
     p3c:           (document.querySelector('input[name="p3c"]:checked') || {}).value || '',
     p3d:           p3d,
 
-    synthesis:     document.getElementById('synthesis').value.trim(),
+    synthesis:     (document.querySelector('textarea#synthesis') || {value:''}).value.trim(),
   };
 
   var btn = document.getElementById('submitBtn');
