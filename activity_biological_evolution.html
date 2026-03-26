@@ -809,7 +809,7 @@ function updateProgress() {
   var filled = 0;
   // text inputs + textareas
   document.querySelectorAll('[data-track="true"]').forEach(function(el) {
-    if (el.value.trim().length > 2) filled++;
+    if (el.value.trim().length > 0) filled++;
   });
   // radio groups
   var radioGroups = ['p1c','p2d','p3b','p3c','p3d_choice'];
