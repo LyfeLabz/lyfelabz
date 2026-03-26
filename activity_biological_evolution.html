@@ -817,7 +817,7 @@ function updateProgress() {
     if (document.querySelector('input[name="'+name+'"]:checked')) filled++;
   });
 
-  var total = document.querySelectorAll('[data-track="true"]').length + radioGroups.length;
+  var total = 18; // 13 text/textarea fields + 5 radio groups
   var pct = Math.round((filled / total) * 100);
 
   // Update inline bar
