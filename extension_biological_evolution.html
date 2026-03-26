@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | Evidence of Evolution Activity</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  html { font-size: 18px; }
+
+  :root {
+    --accent:     #c48a4e;
+    --accent2:    #e8a96a;
+    --accent-dim: rgba(196,138,78,0.12);
+    --accent-rgb: 196,138,78;
+    --dark:       #0d1520;
+    --dark2:      #111e2e;
+    --card:       #141f2f;
+    --card2:      #1a2840;
+    --border:     rgba(196,138,78,0.15);
+    --text:       #f0e8d8;
+    --text-muted: rgba(240,228,200,0.6);
+    --green:      #3ddc84;
+    --purple:     #b47fff;
+    --teal:       #3bc8e8;
+    --red:        #e87070;
+    --gold:       #f5c842;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top:0; z-index:200;
+    background: rgba(10,18,28,0.97);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.8rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem;
+    font-weight: 900; color: var(--gold); text-decoration: none;
+    letter-spacing: 0.06em; text-shadow: 0 0 18px rgba(245,200,66,0.35);
+  }
+  .nav-links { display:flex; gap:1.5rem; list-style:none; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration:none;
+    font-size: 0.85rem; font-weight:700; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-back {
+    display: inline-flex; align-items:center; gap:0.4rem;
+    font-size: 0.78rem; font-weight:800; letter-spacing:0.08em;
+    text-transform: uppercase; color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(var(--accent-rgb),0.4);
+    padding: 0.32rem 0.9rem; border-radius:99px;
+    text-decoration:none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(var(--accent-rgb),0.22); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0d1520 0%, #1a2535 50%, #0f1e30 100%);
+    padding: 4rem 2rem 3.5rem; text-align:center; position:relative; overflow:hidden;
+  }
+  .hero::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(196,138,78,0.08) 0%, transparent 65%);
+  }
+  .hero-badge {
+    display:inline-block; background: var(--accent-dim);
+    border:1px solid rgba(var(--accent-rgb),0.4); color: var(--accent);
+    padding:0.35rem 1.1rem; border-radius:99px;
+    font-size:0.75rem; font-weight:800; letter-spacing:0.1em;
+    text-transform:uppercase; margin-bottom:1.4rem; position:relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height:1.1; margin-bottom:0.9rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; position:relative;
+  }
+  .hero p {
+    font-size:1.05rem; color: var(--text-muted);
+    max-width:580px; margin:0 auto; position:relative; line-height:1.7;
+  }
+
+  /* ── CONTAINER ── */
+  .container { max-width:860px; margin:0 auto; padding:0 2rem; }
+
+  /* ── SECTIONS ── */
+  section { padding: 3.5rem 2rem; }
+  section:nth-child(even) { background: var(--dark2); }
+
+  .section-label {
+    display:inline-block; font-size:0.75rem; font-weight:800;
+    letter-spacing:0.15em; text-transform:uppercase; color: var(--accent);
+    background: var(--accent-dim); border:1px solid rgba(var(--accent-rgb),0.3);
+    padding:0.3rem 0.9rem; border-radius:99px; margin-bottom:1rem;
+  }
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem,4vw,2.8rem);
+    margin-bottom:0.6rem; line-height:1.2;
+  }
+  .section-desc {
+    color: var(--text-muted); font-size:1.05rem;
+    max-width:680px; margin-bottom:2rem; line-height:1.7;
+  }
+
+  /* ── STUDENT INFO ── */
+  .info-grid {
+    display:grid; grid-template-columns:2fr 1fr 1fr; gap:1rem; margin-bottom:2.5rem;
+  }
+  .field-group { display:flex; flex-direction:column; gap:0.4rem; }
+  .field-label {
+    font-size:0.72rem; font-weight:900; letter-spacing:0.12em;
+    text-transform:uppercase; color: var(--accent);
+  }
+  input[type="text"], input[type="date"], textarea, select {
+    background: var(--card2); border:1px solid rgba(196,138,78,0.25);
+    border-radius:10px; padding:0.7rem 1rem;
+    color: var(--text); font-family:'Nunito',sans-serif;
+    font-size:0.92rem; font-weight:600; transition: border-color 0.2s;
+    width:100%;
+  }
+  input[type="text"]:focus, input[type="date"]:focus,
+  textarea:focus, select:focus {
+    outline:none; border-color: rgba(196,138,78,0.7);
+    box-shadow: 0 0 0 3px rgba(196,138,78,0.12);
+  }
+  textarea { resize:vertical; min-height:80px; line-height:1.6; }
+  input[type="date"] { color-scheme: dark; }
+
+  /* ── ACTIVITY CARD ── */
+  .activity-card {
+    background: var(--card); border:1px solid var(--border);
+    border-radius:18px; padding:2rem; margin-bottom:1.5rem;
+    position:relative; overflow:hidden;
+  }
+  .activity-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+  }
+  .activity-card h3 {
+    font-family:'Fredoka One',cursive; font-size:1.25rem;
+    color: var(--accent2); margin-bottom:1rem;
+  }
+  .activity-card p {
+    color: var(--text-muted); font-size:0.95rem; line-height:1.7; margin-bottom:1rem;
+  }
+  .activity-card p:last-child { margin-bottom:0; }
+
+  /* ── DEFINITION BOX ── */
+  .def-box { margin-bottom:1.5rem; }
+  .def-label {
+    font-size:0.72rem; font-weight:900; letter-spacing:0.12em;
+    text-transform:uppercase; color: var(--text-muted); margin-bottom:0.5rem;
+    display:block;
+  }
+
+  /* ── FUNCTION TABLE ── */
+  .func-table { width:100%; border-collapse:collapse; margin:1.2rem 0; }
+  .func-table th {
+    background: rgba(196,138,78,0.12); color: var(--accent);
+    font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase;
+    padding:0.7rem 1rem; text-align:left; border-bottom:1px solid var(--border);
+  }
+  .func-table td { padding:0.6rem 1rem; border-bottom:1px solid rgba(196,138,78,0.08); vertical-align:top; }
+  .func-table tr:last-child td { border-bottom:none; }
+  .animal-cell {
+    display:flex; align-items:center; gap:0.6rem;
+    font-weight:800; font-size:0.95rem; white-space:nowrap;
+  }
+  .animal-emoji { font-size:1.4rem; }
+  .func-table input[type="text"] { font-size:0.88rem; padding:0.55rem 0.8rem; }
+
+  /* ── MULTIPLE CHOICE ── */
+  .mc-block { margin-top:1.2rem; }
+  .mc-question {
+    font-weight:800; font-size:0.97rem; margin-bottom:0.9rem;
+    color: var(--text); line-height:1.5;
+  }
+  .mc-options { display:flex; flex-direction:column; gap:0.55rem; }
+  .mc-option {
+    display:flex; align-items:flex-start; gap:0.75rem;
+    background: var(--card2); border:1px solid rgba(196,138,78,0.15);
+    border-radius:10px; padding:0.75rem 1rem; cursor:pointer;
+    transition: all 0.2s; position:relative;
+  }
+  .mc-option:hover { border-color: rgba(196,138,78,0.45); background: rgba(196,138,78,0.06); }
+  .mc-option input[type="radio"] { display:none; }
+  .mc-option .radio-dot {
+    width:18px; height:18px; border-radius:50%;
+    border:2px solid rgba(196,138,78,0.4); flex-shrink:0; margin-top:0.1rem;
+    transition: all 0.2s; background:transparent;
+  }
+  .mc-option:has(input:checked) {
+    border-color: var(--accent); background: rgba(196,138,78,0.12);
+  }
+  .mc-option:has(input:checked) .radio-dot {
+    border-color: var(--accent); background: var(--accent);
+    box-shadow: 0 0 8px rgba(196,138,78,0.5);
+  }
+  .mc-option span { font-size:0.92rem; font-weight:600; line-height:1.5; }
+  .mc-letter {
+    font-size:0.7rem; font-weight:900; letter-spacing:0.1em;
+    color: var(--accent); min-width:16px; margin-top:0.15rem;
+  }
+
+  /* ── SHORT ANSWER ── */
+  .sa-block { margin-top:1.2rem; }
+  .sa-question {
+    font-weight:800; font-size:0.97rem; margin-bottom:0.7rem;
+    color: var(--text); line-height:1.5;
+  }
+
+  /* ── SYNTHESIS ── */
+  .synthesis-card {
+    background: linear-gradient(135deg, rgba(196,138,78,0.1) 0%, rgba(245,200,66,0.05) 100%);
+    border:1px solid rgba(196,138,78,0.35); border-radius:18px;
+    padding:2rem; margin-top:2rem;
+  }
+  .synthesis-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, #c48a4e, #f5c842, #c48a4e);
+  }
+  .synthesis-label {
+    font-size:0.72rem; font-weight:900; letter-spacing:0.15em; text-transform:uppercase;
+    color: var(--gold); background: rgba(245,200,66,0.1);
+    border:1px solid rgba(245,200,66,0.3); padding:0.25rem 0.8rem;
+    border-radius:99px; display:inline-block; margin-bottom:0.9rem;
+  }
+  .synthesis-card h3 {
+    font-family:'Fredoka One',cursive; font-size:1.3rem;
+    color: var(--gold); margin-bottom:0.8rem;
+  }
+  .synthesis-card .scenario {
+    background: rgba(0,0,0,0.25); border-left:3px solid var(--gold);
+    border-radius:0 10px 10px 0; padding:1rem 1.2rem;
+    font-size:0.95rem; color: var(--text); line-height:1.7; margin-bottom:1.2rem;
+    font-style:italic;
+  }
+
+  /* ── SUBMIT ── */
+  .submit-section {
+    background: var(--dark); padding:3rem 2rem; text-align:center;
+  }
+  .submit-btn {
+    display:inline-flex; align-items:center; gap:0.7rem;
+    font-family:'Nunito',sans-serif; font-size:1rem; font-weight:900;
+    letter-spacing:0.06em; text-transform:uppercase;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    color:#111; border:none; border-radius:99px;
+    padding:1rem 2.5rem; cursor:pointer;
+    box-shadow: 0 4px 24px rgba(196,138,78,0.35);
+    transition: all 0.25s;
+  }
+  .submit-btn:hover { transform:translateY(-2px); box-shadow: 0 8px 32px rgba(196,138,78,0.5); }
+  .submit-btn:active { transform:translateY(0); }
+  .submit-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+  .submit-note {
+    color: var(--text-muted); font-size:0.82rem; margin-top:1rem;
+    max-width:500px; margin-left:auto; margin-right:auto;
+  }
+
+  /* ── STATUS MESSAGES ── */
+  .status-msg {
+    display:none; margin-top:1.5rem; padding:1rem 1.5rem;
+    border-radius:12px; font-size:0.92rem; font-weight:700;
+    max-width:500px; margin-left:auto; margin-right:auto;
+  }
+  .status-msg.success {
+    display:block; background: rgba(61,220,132,0.12);
+    border:1px solid rgba(61,220,132,0.4); color: var(--green);
+  }
+  .status-msg.error {
+    display:block; background: rgba(232,112,112,0.1);
+    border:1px solid rgba(232,112,112,0.35); color: var(--red);
+  }
+  .status-msg.sending {
+    display:block; background: var(--accent-dim);
+    border:1px solid rgba(196,138,78,0.35); color: var(--accent);
+  }
+
+  /* ── REQUIRED INDICATOR ── */
+  .req { color: var(--accent); font-size:0.8rem; margin-left:2px; }
+
+  /* ── VALIDATION ── */
+  .field-error { border-color: rgba(232,112,112,0.6) !important; }
+  .error-hint {
+    font-size:0.72rem; color: var(--red); margin-top:0.3rem;
+    display:none; font-weight:700;
+  }
+  .error-hint.show { display:block; }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap {
+    background: rgba(196,138,78,0.1); border-radius:99px;
+    height:4px; margin:2rem 0 0; overflow:hidden;
+  }
+  .progress-bar-fill {
+    height:100%; border-radius:99px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    transition: width 0.4s ease; width:0%;
+  }
+  .progress-text {
+    font-size:0.72rem; font-weight:800; color: var(--text-muted);
+    margin-top:0.5rem; letter-spacing:0.06em; text-align:right;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background:#080e18; border-top:1px solid var(--border);
+    padding:2.5rem 2rem; text-align:center;
+  }
+  .footer-logo {
+    font-family:'Orbitron',sans-serif; font-size:1.1rem; font-weight:900;
+    color: var(--gold); letter-spacing:0.08em; margin-bottom:0.5rem;
+    text-shadow:0 0 12px rgba(245,200,66,0.35);
+  }
+  footer p { color: var(--text-muted); font-size:0.85rem; }
+  footer a { color: var(--accent); text-decoration:none; }
+
+  @media(max-width:600px) {
+    nav { padding:0.8rem 1.2rem; }
+    .nav-links { display:none; }
+    .info-grid { grid-template-columns:1fr; }
+    section { padding:2.5rem 1.2rem; }
+    .activity-card { padding:1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="#part1">Homologous</a></li>
+    <li><a href="#part2">Analogous</a></li>
+    <li><a href="#part3">Vestigial</a></li>
+    <li><a href="#synthesis">Synthesis</a></li>
+  </ul>
+  <a href="biological-evolution.html" class="nav-back">← Biological Evolution</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Extension</div>
+  <h1>Evidence of Evolution</h1>
+  <p>Explore how body structures across animals reveal the story of shared ancestry — and how life on Earth has changed over millions of years.</p>
+</div>
+
+<!-- STUDENT INFO -->
+<section id="info" style="background:var(--dark2); padding:2.5rem 2rem;">
+  <div class="container">
+    <span class="section-label">📋 Student Info</span>
+    <div class="info-grid" style="margin-top:1rem;">
+      <div class="field-group">
+        <label class="field-label" for="studentName">Full Name <span class="req">*</span></label>
+        <input type="text" id="studentName" placeholder="First Last" autocomplete="name">
+        <span class="error-hint" id="err-name">Please enter your name.</span>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="actDate">Date <span class="req">*</span></label>
+        <input type="date" id="actDate">
+        <span class="error-hint" id="err-date">Please enter today's date.</span>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="block">Block <span class="req">*</span></label>
+        <select id="block">
+          <option value="">Select…</option>
+          <option>A</option><option>B</option><option>C</option>
+          <option>D</option><option>E</option><option>F</option><option>G</option>
+        </select>
+        <span class="error-hint" id="err-block">Please select your block.</span>
+      </div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">0 of 16 questions answered</div>
+  </div>
+</section>
+
+<!-- PART I: HOMOLOGOUS -->
+<section id="part1">
+  <div class="container">
+    <span class="section-label">Part I</span>
+    <h2 class="section-title">Homologous Structures</h2>
+    <p class="section-desc">Structures inherited from a common ancestor — same bones, different jobs.</p>
+
+    <div class="activity-card">
+      <h3>Definition</h3>
+      <p>In your own words, define <strong>homologous structures</strong>:</p>
+      <div class="def-box">
+        <textarea id="homologousDef" data-track="true" placeholder="Homologous structures are…" rows="3"></textarea>
+      </div>
+    </div>
+
+    <div class="activity-card">
+      <h3>Part A — Function of Each Structure</h3>
+      <p>Describe what each animal uses its forelimb structure for.</p>
+      <table class="func-table">
+        <thead>
+          <tr>
+            <th>Animal</th>
+            <th>Function of the structure</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="animal-cell"><span class="animal-emoji">🧍</span><strong>Human</strong></div></td>
+            <td><input type="text" id="humanArm" data-track="true" placeholder="The human arm is used for…"></td>
+          </tr>
+          <tr>
+            <td><div class="animal-cell"><span class="animal-emoji">🐋</span><strong>Whale</strong></div></td>
+            <td><input type="text" id="whaleFlipper" data-track="true" placeholder="The whale flipper is used for…"></td>
+          </tr>
+          <tr>
+            <td><div class="animal-cell"><span class="animal-emoji">🐱</span><strong>Cat</strong></div></td>
+            <td><input type="text" id="catLeg" data-track="true" placeholder="The cat leg is used for…"></td>
+          </tr>
+          <tr>
+            <td><div class="animal-cell"><span class="animal-emoji">🦇</span><strong>Bat</strong></div></td>
+            <td><input type="text" id="batWing" data-track="true" placeholder="The bat wing is used for…"></td>
+          </tr>
+          <tr>
+            <td><div class="animal-cell"><span class="animal-emoji">🐊</span><strong>Crocodile</strong></div></td>
+            <td><input type="text" id="crocodileLeg" data-track="true" placeholder="The crocodile leg is used for…"></td>
+          </tr>
+          <tr>
+            <td><div class="animal-cell"><span class="animal-emoji">🐦</span><strong>Bird</strong></div></td>
+            <td><input type="text" id="birdWing" data-track="true" placeholder="The bird wing is used for…"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="activity-card">
+      <h3>Part C — Multiple Choice</h3>
+      <div class="mc-block">
+        <div class="mc-question">What does it mean when different animals have bones that are <em>built in a similar way</em>, even if they <em>use them for different things</em>?</div>
+        <div class="mc-options" id="p1c">
+          <label class="mc-option">
+            <input type="radio" name="p1c" value="a">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">A</span>
+            <span>They all live in the same environment</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p1c" value="b">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">B</span>
+            <span>They may have come from a common ancestor</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p1c" value="c">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">C</span>
+            <span>They all eat the same kind of food</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p1c" value="d">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">D</span>
+            <span>They have the same number of muscles</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PART II: ANALOGOUS -->
+<section id="part2">
+  <div class="container">
+    <span class="section-label">Part II</span>
+    <h2 class="section-title">Analogous Structures</h2>
+    <p class="section-desc">Structures that do the same job but evolved independently — similar function, different origin.</p>
+
+    <div class="activity-card">
+      <h3>Definition</h3>
+      <p>In your own words, define <strong>analogous structures</strong>:</p>
+      <div class="def-box">
+        <textarea id="analogousDef" data-track="true" placeholder="Analogous structures are…" rows="3"></textarea>
+      </div>
+    </div>
+
+    <div class="activity-card">
+      <h3>Part B &amp; C — Butterfly Wing vs. Bird Wing</h3>
+      <p>Examine Figure 2 from your worksheet showing a butterfly wing and a bird wing.</p>
+
+      <div class="sa-block">
+        <div class="sa-question">B. What is the <strong>job of the wings</strong> on both the butterfly and the bird?</div>
+        <input type="text" id="wingJob" data-track="true" placeholder="The job of both wings is…">
+      </div>
+      <div class="sa-block" style="margin-top:1rem;">
+        <div class="sa-question">C. How are the wings <strong>different</strong>?</div>
+        <textarea id="wingsDiffer" data-track="true" placeholder="The wings are different because…" rows="3"></textarea>
+      </div>
+    </div>
+
+    <div class="activity-card">
+      <h3>Part D — Multiple Choice</h3>
+      <div class="mc-block">
+        <div class="mc-question">Which of the following best describes <strong>analogous structures</strong>?</div>
+        <div class="mc-options" id="p2d">
+          <label class="mc-option">
+            <input type="radio" name="p2d" value="a">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">A</span>
+            <span>They have the same structure and function</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p2d" value="b">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">B</span>
+            <span>They look similar, but are from different species</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p2d" value="c">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">C</span>
+            <span>They no longer have a purpose</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p2d" value="d">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">D</span>
+            <span>They do the same job, but are built differently</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PART III: VESTIGIAL -->
+<section id="part3">
+  <div class="container">
+    <span class="section-label">Part III</span>
+    <h2 class="section-title">Vestigial Structures</h2>
+    <p class="section-desc">Body parts that have faded in function over generations — evidence of what an ancestor once needed.</p>
+
+    <div class="activity-card">
+      <h3>Definition</h3>
+      <p>In your own words, define <strong>vestigial structures</strong>:</p>
+      <div class="def-box">
+        <textarea id="vestigialDef" data-track="true" placeholder="Vestigial structures are…" rows="3"></textarea>
+      </div>
+    </div>
+
+    <div class="activity-card">
+      <h3>The Cavefish &amp; Minnow (Figure 3)</h3>
+      <p>The cavefish and minnow are related species — but the cavefish is <strong>blind</strong>. Use this to answer the questions below.</p>
+
+      <div class="mc-block">
+        <div class="mc-question">B. Why is <strong>eyesight not important</strong> for animals that live in dark caves?</div>
+        <div class="mc-options">
+          <label class="mc-option">
+            <input type="radio" name="p3b" value="a">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">A</span>
+            <span>There is no light in caves, so they don't need to see</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p3b" value="b">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">B</span>
+            <span>They sleep most of the time</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p3b" value="c">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">C</span>
+            <span>They are born without eyes</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p3b" value="d">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">D</span>
+            <span>They use their eyes for hunting</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="mc-block" style="margin-top:1.5rem;">
+        <div class="mc-question">C. What about the cavefish and the minnow suggests they <strong>share a common ancestor</strong>?</div>
+        <div class="mc-options">
+          <label class="mc-option">
+            <input type="radio" name="p3c" value="a">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">A</span>
+            <span>They live in the same environment</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p3c" value="b">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">B</span>
+            <span>Their body shapes and internal structures are similar</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p3c" value="c">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">C</span>
+            <span>They both have no eyes</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p3c" value="d">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">D</span>
+            <span>They are the same size and color</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="mc-block" style="margin-top:1.5rem;">
+        <div class="mc-question">D. What <strong>sense</strong> do you think is most important for the cavefish?</div>
+        <div class="mc-options">
+          <label class="mc-option">
+            <input type="radio" name="p3d_choice" value="Sight">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">A</span>
+            <span>Sight</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p3d_choice" value="Smell">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">B</span>
+            <span>Smell</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p3d_choice" value="Hearing">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">C</span>
+            <span>Hearing</span>
+          </label>
+          <label class="mc-option">
+            <input type="radio" name="p3d_choice" value="Taste">
+            <div class="radio-dot"></div>
+            <span class="mc-letter">D</span>
+            <span>Taste</span>
+          </label>
+        </div>
+        <div class="sa-block" style="margin-top:1rem;">
+          <div class="sa-question">Explain your answer:</div>
+          <textarea id="p3d_explain" data-track="true" placeholder="I think the most important sense is… because…" rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SYNTHESIS -->
+<section id="synthesis" style="background:var(--dark2);">
+  <div class="container">
+    <span class="section-label">🔬 Synthesis</span>
+    <h2 class="section-title">Putting It All Together</h2>
+    <p class="section-desc">Use everything from Parts I–III to tackle one final challenge question.</p>
+
+    <div class="synthesis-card" style="position:relative;">
+      <div class="synthesis-label">⚡ Challenge Question</div>
+      <h3>The Common Ancestor Claim</h3>
+      <div class="scenario">
+        "A student says: 'Bat wings and bird wings prove that bats and birds share a common ancestor.' Is this student correct? Use what you know about homologous vs. analogous structures to explain your answer."
+      </div>
+      <textarea id="synthesis" data-track="true" placeholder="The student is [correct / incorrect] because… Bat wings and bird wings are [homologous / analogous] structures because…" rows="6"></textarea>
+    </div>
+  </div>
+</section>
+
+<!-- SUBMIT -->
+<div class="submit-section">
+  <button class="submit-btn" id="submitBtn" onclick="submitActivity()">
+    ✅ Submit Activity
+  </button>
+  <p class="submit-note">Double-check your answers before submitting. You can only submit once.</p>
+  <div class="status-msg" id="statusMsg"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ</div>
+  <p>Life Science · Lesson 5 — Biological Evolution</p>
+  <p style="margin-top:0.6rem;">
+    <a href="biological-evolution.html">← Back to Lesson</a>
+    &nbsp;·&nbsp;
+    <a href="index.html">Learning Hub</a>
+  </p>
+  <p style="margin-top:0.8rem;font-size:0.72rem;color:rgba(180,200,220,0.3);">© 2026 LyfeLabz · Educational Use</p>
+</footer>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvvnE-h9XJdt0GKE_MX6JcZGl8Es7SAbMRZa1GjO_jPy99zB_D-JNZSHYNZ_1_jgZ8/exec';
+
+// ── PROGRESS TRACKING ────────────────────────────────────────────
+const TOTAL_QUESTIONS = 16; // 3 defs + 6 func table + 3 MC + 2 SA + 3 MC + 1 explain + 1 synthesis = 19 trackable
+
+function updateProgress() {
+  var filled = 0;
+  // text inputs + textareas
+  document.querySelectorAll('[data-track="true"]').forEach(function(el) {
+    if (el.value.trim().length > 2) filled++;
+  });
+  // radio groups
+  var radioGroups = ['p1c','p2d','p3b','p3c','p3d_choice'];
+  radioGroups.forEach(function(name) {
+    if (document.querySelector('input[name="'+name+'"]:checked')) filled++;
+  });
+
+  var total = document.querySelectorAll('[data-track="true"]').length + radioGroups.length;
+  var pct = Math.round((filled / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = filled + ' of ' + total + ' questions answered';
+}
+
+document.querySelectorAll('[data-track="true"]').forEach(function(el) {
+  el.addEventListener('input', updateProgress);
+});
+document.querySelectorAll('input[type="radio"]').forEach(function(el) {
+  el.addEventListener('change', updateProgress);
+});
+
+// ── VALIDATION ───────────────────────────────────────────────────
+function validate() {
+  var ok = true;
+
+  function checkField(id, errId) {
+    var el = document.getElementById(id);
+    var err = document.getElementById(errId);
+    if (!el.value.trim()) {
+      el.classList.add('field-error');
+      if (err) err.classList.add('show');
+      ok = false;
+    } else {
+      el.classList.remove('field-error');
+      if (err) err.classList.remove('show');
+    }
+  }
+
+  checkField('studentName', 'err-name');
+  checkField('actDate',     'err-date');
+  checkField('block',       'err-block');
+  return ok;
+}
+
+// ── SUBMIT ───────────────────────────────────────────────────────
+function submitActivity() {
+  if (!validate()) {
+    document.getElementById('info').scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+
+  var p3dChoice  = document.querySelector('input[name="p3d_choice"]:checked');
+  var p3dExplain = document.getElementById('p3d_explain').value.trim();
+  var p3d = (p3dChoice ? p3dChoice.value : '') + (p3dExplain ? ' — ' + p3dExplain : '');
+
+  var data = {
+    studentName:   document.getElementById('studentName').value.trim(),
+    date:          document.getElementById('actDate').value,
+    block:         document.getElementById('block').value,
+
+    homologousDef: document.getElementById('homologousDef').value.trim(),
+    humanArm:      document.getElementById('humanArm').value.trim(),
+    whaleFlipper:  document.getElementById('whaleFlipper').value.trim(),
+    catLeg:        document.getElementById('catLeg').value.trim(),
+    batWing:       document.getElementById('batWing').value.trim(),
+    crocodileLeg:  document.getElementById('crocodileLeg').value.trim(),
+    birdWing:      document.getElementById('birdWing').value.trim(),
+    p1c:           (document.querySelector('input[name="p1c"]:checked') || {}).value || '',
+
+    analogousDef:  document.getElementById('analogousDef').value.trim(),
+    wingJob:       document.getElementById('wingJob').value.trim(),
+    wingsDiffer:   document.getElementById('wingsDiffer').value.trim(),
+    p2d:           (document.querySelector('input[name="p2d"]:checked') || {}).value || '',
+
+    vestigialDef:  document.getElementById('vestigialDef').value.trim(),
+    p3b:           (document.querySelector('input[name="p3b"]:checked') || {}).value || '',
+    p3c:           (document.querySelector('input[name="p3c"]:checked') || {}).value || '',
+    p3d:           p3d,
+
+    synthesis:     document.getElementById('synthesis').value.trim(),
+  };
+
+  var btn = document.getElementById('submitBtn');
+  var msg = document.getElementById('statusMsg');
+  btn.disabled = true;
+  msg.className = 'status-msg sending';
+  msg.textContent = '⏳ Submitting your activity…';
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode:   'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(function() {
+    msg.className = 'status-msg success';
+    msg.textContent = '✅ Submitted! Your answers have been recorded. Great work.';
+    btn.textContent = '✅ Submitted';
+
+    // Lock all inputs after submission
+    document.querySelectorAll('input, textarea, select').forEach(function(el) {
+      el.disabled = true;
+    });
+  })
+  .catch(function(err) {
+    msg.className = 'status-msg error';
+    msg.textContent = '❌ Something went wrong. Check your connection and try again.';
+    btn.disabled = false;
+  });
+}
+
+// Set today's date as default
+(function() {
+  var d = new Date();
+  var yyyy = d.getFullYear();
+  var mm = String(d.getMonth()+1).padStart(2,'0');
+  var dd = String(d.getDate()).padStart(2,'0');
+  document.getElementById('actDate').value = yyyy+'-'+mm+'-'+dd;
+})();
+</script>
+</body>
+</html>
