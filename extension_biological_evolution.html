@@ -317,17 +317,48 @@
 
   /* ── PROGRESS ── */
   .progress-bar-wrap {
-    background: rgba(196,138,78,0.1); border-radius:99px;
-    height:4px; margin:2rem 0 0; overflow:hidden;
+    background: rgba(196,138,78,0.15); border-radius:99px;
+    height:8px; margin:2rem 0 0; overflow:hidden;
   }
   .progress-bar-fill {
     height:100%; border-radius:99px;
     background: linear-gradient(90deg, var(--accent), var(--gold));
     transition: width 0.4s ease; width:0%;
+    box-shadow: 0 0 8px rgba(196,138,78,0.5);
   }
   .progress-text {
     font-size:0.72rem; font-weight:800; color: var(--text-muted);
     margin-top:0.5rem; letter-spacing:0.06em; text-align:right;
+  }
+
+  /* ── STICKY PROGRESS BANNER ── */
+  .sticky-progress {
+    position: fixed; top: 58px; left: 0; right: 0; z-index: 190;
+    background: rgba(10,18,28,0.97); backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(196,138,78,0.2);
+    padding: 0.85rem 2.5rem 0.7rem;
+    display: flex; align-items: center; gap: 1.2rem;
+    transform: translateY(-120%);
+    transition: transform 0.3s ease;
+  }
+  .sticky-progress.visible { transform: translateY(0); }
+  .sticky-progress-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--accent); white-space: nowrap; flex-shrink: 0;
+  }
+  .sticky-progress-bar {
+    flex: 1; height: 8px; background: rgba(196,138,78,0.15);
+    border-radius: 99px; overflow: hidden;
+  }
+  .sticky-progress-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    transition: width 0.4s ease; width: 0%;
+    box-shadow: 0 0 8px rgba(196,138,78,0.5);
+  }
+  .sticky-progress-text {
+    font-size: 0.7rem; font-weight: 800; color: var(--text-muted);
+    white-space: nowrap; flex-shrink: 0;
   }
 
   /* ── FOOTER ── */
@@ -365,6 +396,15 @@
   </ul>
   <a href="biological-evolution.html" class="nav-back">← Biological Evolution</a>
 </nav>
+
+<!-- STICKY PROGRESS BANNER -->
+<div class="sticky-progress" id="stickyProgress">
+  <span class="sticky-progress-label">Progress</span>
+  <div class="sticky-progress-bar">
+    <div class="sticky-progress-fill" id="stickyFill"></div>
+  </div>
+  <span class="sticky-progress-text" id="stickyText">0 of 19</span>
+</div>
 
 <!-- HERO -->
 <div class="hero">
@@ -733,8 +773,30 @@ function updateProgress() {
 
   var total = document.querySelectorAll('[data-track="true"]').length + radioGroups.length;
   var pct = Math.round((filled / total) * 100);
+
+  // Update inline bar
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressText').textContent = filled + ' of ' + total + ' questions answered';
+
+  // Sync sticky bar
+  document.getElementById('stickyFill').style.width = pct + '%';
+  document.getElementById('stickyText').textContent = filled + ' of ' + total;
+}
+
+// Show sticky bar once student info section scrolls out of view
+var infoSection = document.getElementById('info');
+var stickyBar   = document.getElementById('stickyProgress');
+if (infoSection && stickyBar) {
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        stickyBar.classList.remove('visible');
+      } else {
+        stickyBar.classList.add('visible');
+      }
+    });
+  }, { threshold: 0, rootMargin: '0px 0px 0px 0px' });
+  observer.observe(infoSection);
 }
 
 document.querySelectorAll('[data-track="true"]').forEach(function(el) {
