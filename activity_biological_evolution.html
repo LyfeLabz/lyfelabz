@@ -800,7 +800,7 @@
 </footer>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydqD0IFZKRSXi8YZt3UcWlOLIL9WRqYwQuCBml0emV42i5682YDGXPW34xAf81yWjp/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwtbj5YUukO-8o9H7dUntXRtp5-0BpFEUNAf9rEIRXQ2rdIjLpLh6lS5mxXu92gU6L8/exec';
 
 // ── PROGRESS TRACKING ────────────────────────────────────────────
 const TOTAL_QUESTIONS = 16; // 3 defs + 6 func table + 3 MC + 2 SA + 3 MC + 1 explain + 1 synthesis = 19 trackable
@@ -919,11 +919,14 @@ function submitActivity() {
   msg.className = 'status-msg sending';
   msg.textContent = '⏳ Submitting your activity…';
 
-  fetch(SCRIPT_URL, {
-    method:  'POST',
-    mode:    'no-cors',
-    headers: { 'Content-Type': 'text/plain' },
-    body:    JSON.stringify(data)
+  var params = new URLSearchParams();
+  Object.keys(data).forEach(function(k) {
+    params.append(k, data[k]);
+  });
+
+  fetch(SCRIPT_URL + '?' + params.toString(), {
+    method: 'GET',
+    mode:   'no-cors'
   })
   .then(function() {
     msg.className = 'status-msg success';
