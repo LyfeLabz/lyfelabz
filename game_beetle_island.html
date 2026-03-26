@@ -142,6 +142,30 @@
   .footer-logo { font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:900; color:var(--gold); letter-spacing:0.08em; margin-bottom:0.4rem; }
   footer p { color:var(--muted); font-size:0.82rem; }
   footer a { color:var(--green); text-decoration:none; }
+
+  /* ── EDUCATOR / STEM TOGGLES ── */
+  .ls-focus, .stem-focus {
+    display: none; background: var(--dark2);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    padding: 0.7rem 2rem; display: flex; align-items: center;
+    gap: 0.6rem; flex-wrap: wrap;
+  }
+  body.ls-active   .ls-focus   { display: flex; }
+  body.stem-active .stem-focus { display: flex; }
+  .ls-focus   { display: none; }
+  .stem-focus { display: none; }
+  .ls-focus-label, .stem-focus-label {
+    font-size: 0.68rem; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); flex-shrink: 0;
+  }
+  .ls-badge, .stem-badge {
+    font-size: 0.68rem; font-weight: 800; padding: 0.22rem 0.7rem;
+    border-radius: 99px; cursor: help; transition: opacity 0.2s; white-space: nowrap;
+  }
+  .ls-badge   { background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.3); color: var(--teal); }
+  .stem-badge { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: var(--green); }
+  .ls-badge:hover, .stem-badge:hover { opacity: 0.75; }
+
 </style>
 </head>
 <body>
@@ -152,7 +176,7 @@
 </nav>
 
 <div class="hero">
-  <div class="hero-badge">Game</div>
+  <div class="hero-badge">Simulation</div>
   <h1>Beetle Island</h1>
   <p>Choose an environment and watch natural selection reshape a beetle population across generations — one survival roll at a time.</p>
 </div>
@@ -277,6 +301,27 @@
     <p id="outcomeMsg"></p>
   </div>
 
+</div>
+
+
+<!-- SESSION CHECK -->
+<script>
+  if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
+  if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
+</script>
+
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Simulations allow students to manipulate variables and observe outcomes — a key science practice that builds causal reasoning. — NGSS Science and Engineering Practices">🔬 Simulation & Modelling</span>
+  <span class="ls-badge" data-tip="Observing patterns across multiple runs builds inductive reasoning — students construct the rule from evidence rather than being told it. — Kirschner et al., 2006">🔍 Pattern Recognition</span>
+  <span class="ls-badge" data-tip="Low-stakes exploration reduces anxiety and increases engagement — students are more willing to take risks and test hypotheses. — Dweck, 2006">🎮 Low-Stakes Exploration</span>
+</div>
+
+<div class="stem-focus">
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 7–8</span>
+  <span class="stem-badge" data-tip="LS4.B: Natural Selection — how natural selection leads to adaptation of populations over generations.">MS-LS4-4</span>
+  <span class="stem-badge" data-tip="LS4.B: Natural Selection — mathematical representations of proportional changes in traits over time.">MS-LS4-6</span>
+  <span class="stem-badge" data-tip="Science Practice 2: Developing and using models — using a simulation as a model for natural selection in a population.">SP2: Modelling</span>
 </div>
 
 <footer>

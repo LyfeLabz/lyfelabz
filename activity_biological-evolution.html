@@ -381,6 +381,29 @@
     section { padding:2.5rem 1.2rem; }
     .activity-card { padding:1.5rem; }
   }
+
+  /* ── EDUCATOR / STEM TOGGLES ── */
+  .ls-focus   { display: none; }
+  .stem-focus { display: none; }
+  body.ls-active   .ls-focus   { display: flex; }
+  body.stem-active .stem-focus { display: flex; }
+  .ls-focus, .stem-focus {
+    background: rgba(13,21,32,0.9); border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0.7rem 2rem; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+  }
+  .ls-focus-label, .stem-focus-label {
+    font-size: 0.68rem; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted); flex-shrink: 0;
+  }
+  .ls-badge, .stem-badge {
+    font-size: 0.68rem; font-weight: 800; padding: 0.22rem 0.7rem;
+    border-radius: 99px; cursor: help; transition: opacity 0.2s; white-space: nowrap;
+  }
+  .ls-badge   { background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.3); color: #3bc8e8; }
+  .stem-badge { background: rgba(196,138,78,0.1); border: 1px solid rgba(196,138,78,0.3); color: var(--accent); }
+  .ls-badge:hover, .stem-badge:hover { opacity: 0.75; }
+
 </style>
 </head>
 <body>
@@ -397,7 +420,11 @@
   <a href="lesson_biological-evolution.html" class="nav-back">← Biological Evolution</a>
 </nav>
 
-<!-- STICKY PROGRESS BANNER -->
+<!-- SESSION CHECK -->
+<script>
+  if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
+  if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
+</script>
 <div class="sticky-progress" id="stickyProgress">
   <span class="sticky-progress-label">Progress</span>
   <div class="sticky-progress-bar">

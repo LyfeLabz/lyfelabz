@@ -381,6 +381,29 @@
     section { padding:2.5rem 1.2rem; }
     .activity-card { padding:1.5rem; }
   }
+
+  /* ── EDUCATOR / STEM TOGGLES ── */
+  .ls-focus   { display: none; }
+  .stem-focus { display: none; }
+  body.ls-active   .ls-focus   { display: flex; }
+  body.stem-active .stem-focus { display: flex; }
+  .ls-focus, .stem-focus {
+    background: var(--dark2); border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0.7rem 2rem; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+  }
+  .ls-focus-label, .stem-focus-label {
+    font-size: 0.68rem; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted); flex-shrink: 0;
+  }
+  .ls-badge, .stem-badge {
+    font-size: 0.68rem; font-weight: 800; padding: 0.22rem 0.7rem;
+    border-radius: 99px; cursor: help; transition: opacity 0.2s; white-space: nowrap;
+  }
+  .ls-badge   { background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.3); color: #3bc8e8; }
+  .stem-badge { background: rgba(196,138,78,0.1); border: 1px solid rgba(196,138,78,0.3); color: var(--accent); }
+  .ls-badge:hover, .stem-badge:hover { opacity: 0.75; }
+
 </style>
 </head>
 <body>
@@ -788,6 +811,26 @@
 </div>
 
 <!-- FOOTER -->
+
+<!-- SESSION CHECK -->
+<script>
+  if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
+  if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
+</script>
+
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Interleaving: comparing homologous, analogous, and vestigial structures side-by-side strengthens discrimination and reduces confusion between similar concepts. — Kornell &amp; Bjork, 2008">🔀 Interleaved Comparison</span>
+  <span class="ls-badge" data-tip="Elaborative interrogation: asking students to explain WHY structures are similar or different builds deeper causal understanding. — Dunlosky et al., 2013">💬 Elaboration</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: writing definitions and answers from memory strengthens long-term retention far more than re-reading. — Roediger &amp; Karpicke, 2006">✅ Retrieval Practice</span>
+</div>
+
+<div class="stem-focus">
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 7–8</span>
+  <span class="stem-badge" data-tip="LS4.A: Evidence of Common Ancestry — anatomical similarities as evidence for common ancestry and evolution.">MS-LS4-2</span>
+  <span class="stem-badge" data-tip="LS4.A: Evidence of Common Ancestry — fossils, DNA, and homologous structures as evidence for evolution.">MS-LS4-1</span>
+</div>
+
 <footer>
   <div class="footer-logo">LYFELABZ</div>
   <p>Life Science · Lesson 5 — Biological Evolution</p>

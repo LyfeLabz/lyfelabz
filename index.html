@@ -508,6 +508,13 @@
     font-weight: 700;
   }
   .ulink.game:hover { background: rgba(61,220,132,0.2); border-color: rgba(61,220,132,0.55); color: var(--bio); }
+  .ulink.sim {
+    background: rgba(245,130,50,0.08);
+    color: #f5a028;
+    border-color: rgba(245,130,50,0.35);
+    font-weight: 700;
+  }
+  .ulink.sim:hover { background: rgba(245,130,50,0.2); border-color: rgba(245,130,50,0.6); color: #f5a028; }
   .ulink.map {
     background: rgba(59,200,232,0.12);
     border-color: rgba(59,200,232,0.45);
@@ -729,6 +736,7 @@
       <span class="ulink live legend-pill">Lesson</span>
       <span class="ulink map legend-pill">Interactive Map</span>
       <span class="ulink activity legend-pill">✏️ Activity</span>
+      <span class="ulink sim legend-pill">Simulation</span>
       <span class="ulink ext legend-pill">Extension</span>
       <span class="ulink game legend-pill">Game</span>
     </div>
@@ -800,7 +808,8 @@
             <div class="unit-links">
               <a href="lesson_biological-evolution.html" class="ulink live">Lesson</a>
               <a href="activity_biological-evolution.html" class="ulink activity">✏️ Evidence of Evolution</a>
-              <a href="game_beetle_island.html" class="ulink game">Beetle Island</a>
+              <a href="game_beetle_island.html" class="ulink sim">Beetle Island</a>
+              <a href="extension_biological-evolution.html" class="ulink ext">Extension</a>
             </div>
           </div>
         </div>
@@ -1092,8 +1101,8 @@
         <span id="stem-toggle-label">Show MA STE Standards</span>
       </button>
     </div>
-    <div style="font-size:0.67rem; color:rgba(255,255,255,0.38); max-width:600px; text-align:center; line-height:1.5;" id="edu-toggle-hint">
-      Badges &amp; standards appear on every lesson, extension, game, and map — this session only.
+    <div style="font-size:0.63rem; color:rgba(255,255,255,0.38); max-width:900px; text-align:center; line-height:1.5; white-space:nowrap;" id="edu-toggle-hint">
+      Badges &amp; standards appear on every lesson, map, activity, extension, game, and simulation — this session only.
     </div>
   </div>
 
@@ -1136,7 +1145,7 @@
 <!-- ===== FILTER LOGIC ===== -->
 <script>
 var activeGrade = '6';
-var activeTopic = 'all';
+var activeTopics = new Set(['all']);
 
 function runFilter() {
   var blocks  = document.querySelectorAll('.subject-block');
@@ -1147,7 +1156,7 @@ function runFilter() {
     var grades   = (block.dataset.grades || '').split(' ');
     var topic    = block.dataset.topic || '';
     var gradeOk  = activeGrade === 'all' || grades.indexOf(activeGrade) > -1;
-    var topicOk  = activeTopic === 'all' || topic === activeTopic;
+    var topicOk  = activeTopics.has('all') || activeTopics.has(topic);
     if (gradeOk && topicOk) {
       block.classList.remove('hidden');
       anyVisible = true;
@@ -1180,12 +1189,33 @@ document.querySelectorAll('.fp-grade').forEach(function(btn) {
   });
 });
 
-// Topic pills
+// Topic pills — multi-select
 document.querySelectorAll('.fp-topic').forEach(function(btn) {
   btn.addEventListener('click', function() {
-    document.querySelectorAll('.fp-topic').forEach(function(b){ b.classList.remove('active'); });
-    btn.classList.add('active');
-    activeTopic = btn.dataset.topic;
+    var topic = btn.dataset.topic;
+    if (topic === 'all') {
+      // All Topics clears everything and resets
+      activeTopics = new Set(['all']);
+      document.querySelectorAll('.fp-topic').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+    } else {
+      // Remove 'all' if a specific topic is picked
+      activeTopics.delete('all');
+      document.querySelector('.fp-topic[data-topic="all"]').classList.remove('active');
+      // Toggle this topic
+      if (activeTopics.has(topic)) {
+        activeTopics.delete(topic);
+        btn.classList.remove('active');
+        // If nothing selected, revert to all
+        if (activeTopics.size === 0) {
+          activeTopics.add('all');
+          document.querySelector('.fp-topic[data-topic="all"]').classList.add('active');
+        }
+      } else {
+        activeTopics.add(topic);
+        btn.classList.add('active');
+      }
+    }
     runFilter();
   });
 });
