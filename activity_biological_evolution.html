@@ -103,7 +103,7 @@
   }
   .hero p {
     font-size:1.05rem; color: var(--text-muted);
-    max-width:580px; margin:0 auto; position:relative; line-height:1.7;
+    max-width:720px; margin:0 auto; position:relative; line-height:1.7;
   }
 
   /* ── CONTAINER ── */
@@ -410,7 +410,7 @@
 <div class="hero">
   <div class="hero-badge">Activity</div>
   <h1>Evidence of Evolution</h1>
-  <p>Explore how body structures across animals reveal the story of shared ancestry — and how life on Earth has changed over millions of years.</p>
+  <p>Explore how body structures across animals reveal the story of shared ancestry —<br>and how life on Earth has changed over millions of years.</p>
 </div>
 
 <!-- STUDENT INFO -->
@@ -800,7 +800,7 @@
 </footer>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwwEEgL6nZzRHeKHAJ3oHIC6ibE6Ji0UL-t4GDCfwJ5jAWKPvwAzyCnDA8AFKFgS6RL/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydqD0IFZKRSXi8YZt3UcWlOLIL9WRqYwQuCBml0emV42i5682YDGXPW34xAf81yWjp/exec';
 
 // ── PROGRESS TRACKING ────────────────────────────────────────────
 const TOTAL_QUESTIONS = 16; // 3 defs + 6 func table + 3 MC + 2 SA + 3 MC + 1 explain + 1 synthesis = 19 trackable
@@ -919,18 +919,20 @@ function submitActivity() {
   msg.className = 'status-msg sending';
   msg.textContent = '⏳ Submitting your activity…';
 
+  // form-urlencoded POST — simple request, no CORS preflight, works with Apps Script
+  var params = new URLSearchParams();
+  Object.keys(data).forEach(function(k) { params.append(k, data[k]); });
+
   fetch(SCRIPT_URL, {
-    method: 'POST',
-    mode:   'no-cors',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(data)
+    method:  'POST',
+    mode:    'no-cors',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body:    params.toString()
   })
   .then(function() {
     msg.className = 'status-msg success';
     msg.textContent = '✅ Submitted! Your answers have been recorded. Great work.';
     btn.textContent = '✅ Submitted';
-
-    // Lock all inputs after submission
     document.querySelectorAll('input, textarea, select').forEach(function(el) {
       el.disabled = true;
     });
