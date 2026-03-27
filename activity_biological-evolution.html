@@ -331,6 +331,20 @@
     margin-top:0.5rem; letter-spacing:0.06em; text-align:right;
   }
 
+  /* ── RESTORE BANNER ── */
+  .restore-banner {
+    display: none; align-items: center; justify-content: space-between;
+    background: rgba(61,220,132,0.1); border-bottom: 1px solid rgba(61,220,132,0.3);
+    padding: 0.55rem 2rem; gap: 1rem;
+  }
+  .restore-banner span { font-size: 0.82rem; font-weight: 700; color: #3ddc84; }
+  .restore-dismiss {
+    font-size: 0.72rem; font-weight: 900; background: none; border: none;
+    color: rgba(61,220,132,0.6); cursor: pointer; padding: 0.2rem 0.5rem;
+    letter-spacing: 0.05em; flex-shrink: 0;
+  }
+  .restore-dismiss:hover { color: #3ddc84; }
+
   /* ── STICKY PROGRESS BANNER ── */
   .sticky-progress {
     position: fixed; top: 58px; left: 0; right: 0; z-index: 190;
@@ -425,6 +439,12 @@
   if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
   if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
 </script>
+
+<!-- RESTORE BANNER -->
+<div class="restore-banner" id="restoreBanner">
+  <span>✅ Your progress has been restored — pick up where you left off.</span>
+  <button class="restore-dismiss" onclick="document.getElementById('restoreBanner').style.display='none'">Dismiss ×</button>
+</div>
 <div class="sticky-progress" id="stickyProgress">
   <span class="sticky-progress-label">Progress</span>
   <div class="sticky-progress-bar">
@@ -832,26 +852,89 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydqD0IFZKRSXi8YZt3U
 // ── PROGRESS TRACKING ────────────────────────────────────────────
 const TOTAL_QUESTIONS = 16; // 3 defs + 6 func table + 3 MC + 2 SA + 3 MC + 1 explain + 1 synthesis = 19 trackable
 
+// ── LOCAL STORAGE AUTO-SAVE ──────────────────────────────────────
+var LS_KEY = 'lyfelabz_activity_biological_evolution';
+var FIELD_IDS = [
+  'studentName','actDate','block',
+  'homologousDef','humanArm','whaleFlipper','catLeg','batWing','crocodileLeg','birdWing',
+  'analogousDef','wingJob','wingsDiffer',
+  'vestigialDef','p3d_explain','synthesis'
+];
+var RADIO_NAMES = ['p1c','p2d','p3b','p3c','p3d_choice'];
+
+function saveProgress() {
+  var saved = {};
+  FIELD_IDS.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) saved[id] = el.value;
+  });
+  RADIO_NAMES.forEach(function(name) {
+    var checked = document.querySelector('input[name="'+name+'"]:checked');
+    if (checked) saved['radio_'+name] = checked.value;
+  });
+  try { localStorage.setItem(LS_KEY, JSON.stringify(saved)); } catch(e) {}
+}
+
+function restoreProgress() {
+  var raw;
+  try { raw = localStorage.getItem(LS_KEY); } catch(e) {}
+  if (!raw) return;
+  var saved = JSON.parse(raw);
+  var anyRestored = false;
+  FIELD_IDS.forEach(function(id) {
+    if (saved[id] !== undefined && saved[id] !== '') {
+      var el = document.getElementById(id);
+      if (el) { el.value = saved[id]; anyRestored = true; }
+    }
+  });
+  RADIO_NAMES.forEach(function(name) {
+    if (saved['radio_'+name]) {
+      var radio = document.querySelector('input[name="'+name+'"][value="'+saved['radio_'+name]+'"]');
+      if (radio) { radio.checked = true; anyRestored = true; }
+    }
+  });
+  if (anyRestored) {
+    var banner = document.getElementById('restoreBanner');
+    if (banner) { banner.style.display = 'flex'; }
+    updateProgress();
+  }
+}
+
+function clearProgress() {
+  try { localStorage.removeItem(LS_KEY); } catch(e) {}
+}
+
+// Attach save to all fields
+document.querySelectorAll('[data-track="true"]').forEach(function(el) {
+  el.addEventListener('input', saveProgress);
+});
+document.querySelectorAll('input[type="radio"]').forEach(function(el) {
+  el.addEventListener('change', saveProgress);
+});
+// Also save name/date/block which aren't data-track
+['studentName','actDate','block'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('change', saveProgress);
+});
+
+// Restore on load
+restoreProgress();
+
 function updateProgress() {
   var filled = 0;
-  // text inputs + textareas
   document.querySelectorAll('[data-track="true"]').forEach(function(el) {
     if (el.value.trim().length > 0) filled++;
   });
-  // radio groups
   var radioGroups = ['p1c','p2d','p3b','p3c','p3d_choice'];
   radioGroups.forEach(function(name) {
     if (document.querySelector('input[name="'+name+'"]:checked')) filled++;
   });
 
-  var total = 18; // 13 text/textarea fields + 5 radio groups
+  var total = 18;
   var pct = Math.round((filled / total) * 100);
 
-  // Update inline bar
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressText').textContent = filled + ' of ' + total + ' questions answered';
-
-  // Sync sticky bar
   document.getElementById('stickyFill').style.width = pct + '%';
   document.getElementById('stickyText').textContent = filled + ' of ' + total;
 }
@@ -871,13 +954,6 @@ if (infoSection && stickyBar) {
   }, { threshold: 0, rootMargin: '0px 0px 0px 0px' });
   observer.observe(infoSection);
 }
-
-document.querySelectorAll('[data-track="true"]').forEach(function(el) {
-  el.addEventListener('input', updateProgress);
-});
-document.querySelectorAll('input[type="radio"]').forEach(function(el) {
-  el.addEventListener('change', updateProgress);
-});
 
 // ── VALIDATION ───────────────────────────────────────────────────
 function validate() {
@@ -959,6 +1035,7 @@ function submitActivity() {
     mode:   'no-cors'
   })
   .then(function() {
+    clearProgress();
     msg.className = 'status-msg success';
     msg.textContent = '✅ Submitted! Your answers have been recorded. Great work.';
     btn.textContent = '✅ Submitted';
