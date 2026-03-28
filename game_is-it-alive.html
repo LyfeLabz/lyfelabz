@@ -77,7 +77,15 @@
   .nav-badge{font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.22rem 0.7rem;border-radius:99px;color:var(--bio);background:rgba(61,220,132,0.1);border:1px solid rgba(61,220,132,0.3);}
 
   /* HERO */
-  .page-hero{padding:3.5rem 2rem 2rem;text-align:center;
+  .page-hero {
+  .hero-badge {
+    display:inline-block; background:rgba(61,220,132,0.1);
+    border:1px solid rgba(61,220,132,0.3); color:#3ddc84;
+    padding:0.3rem 0.9rem; border-radius:99px;
+    font-size:0.75rem; font-weight:800; letter-spacing:0.1em;
+    text-transform:uppercase; margin-bottom:1rem;
+  }
+  padding:3.5rem 2rem 2rem;text-align:center;
     background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(61,220,132,0.07) 0%,transparent 70%),
                radial-gradient(ellipse 40% 40% at 80% 80%,rgba(245,200,66,0.05) 0%,transparent 60%);}
   .page-eyebrow{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(61,220,132,0.1);border:1px solid rgba(61,220,132,0.3);color:var(--bio);padding:0.4rem 1.2rem;border-radius:99px;font-size:0.75rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:1.2rem;animation:fadeUp 0.5s ease both;}
@@ -475,7 +483,8 @@ body.stem-active .stem-detail {
 
 <div class="page-hero">
   <div class="page-eyebrow">🌱 Biology · Characteristics of Life · Game</div>
-  <h1>Is It <span class="title-accent">Alive?</span></h1>
+  <div class="hero-badge">Game</div>
+  <h1>Is It Alive? 🌿</h1>
   <p>A scientist drops a mystery thing on your lab bench. Check which of the <strong>6 characteristics of life</strong> it shows — then hit Verdict to find out if you're right!</p>
 
 </div>
