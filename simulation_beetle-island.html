@@ -332,7 +332,7 @@
 <!-- CONTEXT STRIP -->
 <div style="background:var(--dark2); border-bottom:1px solid var(--border); padding:2.5rem 2.5rem;">
   <div style="max-width:860px; margin:0 auto;">
-    <div style="font-size:0.72rem; font-weight:900; letter-spacing:0.15em; text-transform:uppercase; color:var(--green); margin-bottom:1.2rem;">🧬 The Science Behind the Simulation</div>
+    <div style="font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--green); margin-bottom:1.2rem;">🧬 The Science Behind the Simulation</div>
     <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1.2rem;">
 
       <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem 1.4rem; border-left:3px solid var(--green);">
@@ -403,7 +403,7 @@
 
       <div class="byb-qa-card">
         <div class="byb-q">Why does the environment change? Did the beetles move?</div>
-        <p class="byb-a">No — the beetles didn't move anywhere. <strong>The island itself changed around them.</strong> Environments change all the time: droughts turn forests into deserts, volcanic ash darkens soil, floods change ground cover. This is exactly what happened to the peppered moths in England — they didn't move to a sootier environment. The Industrial Revolution changed the trees they already lived on. The beetles here experience the same thing: the island changes, and the population must adapt or decline.</p>
+        <p class="byb-a">No — the beetles didn't move anywhere. <strong>The island itself changed around them.</strong> Environments change all the time: droughts turn forests into deserts, volcanic ash darkens soil, floods change ground cover. This is exactly what happened to the peppered moths in England — they didn't move to a sootier environment. The Industrial Revolution changed the trees they already lived on. The beetles here experience the same thing: <strong>the island changes, and the population must adapt or decline.</strong></p>
       </div>
 
       <div class="byb-qa-card">
@@ -679,10 +679,10 @@
 const MAX_POP   = 80;
 const MIN_POP   = 6;
 const START_POP = 50;
-const MAX_GENS  = 30;
-const MIN_GENS  = 15;  // give population time to rebound after event
-const STABLE_THRESHOLD = 85;
-const STABLE_RUNS = 3;
+const MAX_GENS  = 20;
+const MIN_GENS  = 12;
+const STABLE_THRESHOLD = 75;
+const STABLE_RUNS = 2;
 
 const SURVIVAL = {
   light: [0.82, 0.42],
@@ -711,6 +711,7 @@ var gen         = 0;
 var lightCount  = 25;
 var darkCount   = 25;
 var popHistory  = [{ l:25, d:25 }];
+var allHistory  = [{ l:25, d:25, gen:0 }]; // full record, never trimmed
 var speed       = 2;
 var timer       = null;
 var stableCount = 0;
@@ -824,78 +825,71 @@ function drawBeetle(ctx, x, y, type, size) {
   ctx.restore();
 }
 
-// ── CHART — BAR CHART ─────────────────────────────────────────────────────
+// ── CHART — TWO-BAR CURRENT STATE ─────────────────────────────────────────
 function drawChart() {
   var W = chart.width, H = chart.height || 160;
   cctx.clearRect(0,0,W,H);
 
-  if (popHistory.length < 2) {
-    cctx.fillStyle = 'rgba(240,220,185,0.25)';
-    cctx.font = '700 13px Nunito';
-    cctx.textAlign = 'center';
-    cctx.fillText('Bars will appear as generations pass', W/2, H/2);
-    cctx.textAlign = 'left';
-    return;
-  }
+  var total = lightCount + darkCount;
+  var lp = total ? Math.round((lightCount/total)*100) : 50;
+  var dp = 100 - lp;
 
-  var pad   = { t:10, r:8, b:28, l:36 };
-  var cW    = W - pad.l - pad.r;
-  var cH    = H - pad.t - pad.b;
-  var n     = popHistory.length;
-  var grpW  = cW / n;
-  var barW  = Math.max(2, grpW * 0.38);
-  var gap   = grpW * 0.06;
+  var pad  = { t:20, r:30, b:40, l:52 };
+  var cW   = W - pad.l - pad.r;
+  var cH   = H - pad.t - pad.b;
+  var barW = cW * 0.28;
+  var gap  = (cW - 2*barW) / 3;
 
-  // Y gridlines at 0, 25, 50, 75, 100
+  // Y gridlines
   cctx.lineWidth = 1;
   [0,25,50,75,100].forEach(function(v) {
     var y = pad.t + cH - (v/100)*cH;
     cctx.strokeStyle = 'rgba(245,160,40,0.1)';
     cctx.beginPath(); cctx.moveTo(pad.l, y); cctx.lineTo(W-pad.r, y); cctx.stroke();
-    cctx.fillStyle = 'rgba(240,220,185,0.45)';
-    cctx.font = '700 9px Nunito';
+    cctx.fillStyle = 'rgba(240,220,185,0.5)';
+    cctx.font = '700 10px Nunito';
     cctx.textAlign = 'right';
-    cctx.fillText(v+'%', pad.l - 4, y + 3);
+    cctx.fillText(v+'%', pad.l - 5, y + 4);
   });
 
-  // Bars
-  popHistory.forEach(function(h, i) {
-    var t  = h.l + h.d;
-    var lp = t ? (h.l / t) * 100 : 50;
-    var dp = 100 - lp;
-    var cx = pad.l + (i + 0.5) * grpW;
+  // Light bar
+  var lx = pad.l + gap;
+  var lh = (lp/100)*cH;
+  var lgrd = cctx.createLinearGradient(0, pad.t+cH-lh, 0, pad.t+cH);
+  lgrd.addColorStop(0, 'rgba(245,200,66,1)');
+  lgrd.addColorStop(1, 'rgba(200,150,40,0.7)');
+  cctx.fillStyle = lgrd;
+  cctx.beginPath();
+  cctx.roundRect ? cctx.roundRect(lx, pad.t+cH-lh, barW, lh, [6,6,0,0])
+                 : cctx.fillRect(lx, pad.t+cH-lh, barW, lh);
+  cctx.fill();
 
-    // Light bar (left of center)
-    var lh = (lp/100)*cH;
-    cctx.fillStyle = 'rgba(245,200,66,0.85)';
-    cctx.fillRect(cx - gap - barW, pad.t + cH - lh, barW, lh);
+  // Dark bar
+  var dx = pad.l + gap*2 + barW;
+  var dh = (dp/100)*cH;
+  var dgrd = cctx.createLinearGradient(0, pad.t+cH-dh, 0, pad.t+cH);
+  dgrd.addColorStop(0, 'rgba(160,100,50,1)');
+  dgrd.addColorStop(1, 'rgba(100,60,25,0.7)');
+  cctx.fillStyle = dgrd;
+  cctx.beginPath();
+  cctx.roundRect ? cctx.roundRect(dx, pad.t+cH-dh, barW, dh, [6,6,0,0])
+                 : cctx.fillRect(dx, pad.t+cH-dh, barW, dh);
+  cctx.fill();
 
-    // Dark bar (right of center)
-    var dh = (dp/100)*cH;
-    cctx.fillStyle = 'rgba(139,90,43,0.85)';
-    cctx.fillRect(cx + gap, pad.t + cH - dh, barW, dh);
+  // Labels under bars
+  cctx.font = '800 11px Nunito';
+  cctx.textAlign = 'center';
+  cctx.fillStyle = 'rgba(245,200,66,0.9)';
+  cctx.fillText('Light ' + lp + '%', lx + barW/2, pad.t + cH + 16);
+  cctx.fillStyle = 'rgba(180,120,60,0.9)';
+  cctx.fillText('Dark ' + dp + '%', dx + barW/2, pad.t + cH + 16);
 
-    // Gen label every 5 gens
-    var gn = h.gen !== undefined ? h.gen : i;
-    if (gn % 5 === 0) {
-      cctx.fillStyle = 'rgba(240,220,185,0.4)';
-      cctx.font = '700 9px Nunito';
-      cctx.textAlign = 'center';
-      cctx.fillText('G'+gn, cx, pad.t + cH + 14);
-    }
-  });
-
-  // Legend inside chart
-  cctx.fillStyle = 'rgba(245,200,66,0.85)';
-  cctx.fillRect(pad.l + 2, pad.t + 2, 10, 10);
-  cctx.fillStyle = 'rgba(240,220,185,0.6)';
-  cctx.font = '700 9px Nunito';
-  cctx.textAlign = 'left';
-  cctx.fillText('Light', pad.l + 15, pad.t + 11);
-  cctx.fillStyle = 'rgba(139,90,43,0.85)';
-  cctx.fillRect(pad.l + 46, pad.t + 2, 10, 10);
-  cctx.fillStyle = 'rgba(240,220,185,0.6)';
-  cctx.fillText('Dark', pad.l + 59, pad.t + 11);
+  // Value above bars
+  cctx.font = '900 12px Nunito';
+  cctx.fillStyle = 'rgba(245,200,66,0.95)';
+  cctx.fillText(lp + '%', lx + barW/2, pad.t + cH - lh - 6);
+  cctx.fillStyle = 'rgba(180,120,60,0.95)';
+  cctx.fillText(dp + '%', dx + barW/2, pad.t + cH - dh - 6);
 
   // Event marker line
   if (eventFired && eventGen > 0 && eventGen <= maxG) {
@@ -956,8 +950,9 @@ function step() {
   darkCount  = newDark;
   gen++;
 
-  popHistory.push({ l:lightCount, d:darkCount, gen:gen, event: (!eventFired && gen === eventGen) });
+  popHistory.push({ l:lightCount, d:darkCount, gen:gen });
   if (popHistory.length > MAX_GENS + 1) popHistory.shift();
+  allHistory.push({ l:lightCount, d:darkCount, gen:gen });
 
   updateUI();
 
@@ -1125,6 +1120,7 @@ function resetSim() {
   lightCount = 25;
   darkCount  = 25;
   popHistory  = [{ l:25, d:25, gen:0 }];
+  allHistory  = [{ l:25, d:25, gen:0 }];
   stableCount = 0;
   eventGen    = 0;
   eventType   = '';
@@ -1390,7 +1386,7 @@ function updateGraphDataTable() {
     return;
   }
   tbody.innerHTML = '';
-  var rows = popHistory.slice().reverse();
+  var rows = allHistory.slice().reverse();
   rows.forEach(function(h) {
     var t = h.l + h.d;
     var lp = t ? Math.round((h.l/t)*100) : 0;
