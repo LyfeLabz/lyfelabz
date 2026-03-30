@@ -294,7 +294,7 @@
 
 <div class="hero">
   <div class="hero-badge">Simulation</div>
-  <h1>Chernobyl Tree Frogs</h1>
+  <h1>Chernobyl Tree Frogs 🐸&#xFE0E;</h1>
   <p>How does a nuclear disaster change a frog population over time? Run the simulation and watch how melanin affects survival before and after the Chernobyl event.</p>
 </div>
 
@@ -1450,8 +1450,8 @@ function fireChernobylEvent() {
 }
 
 const SHEET_URLS = {
-  brown: 'https://script.google.com/macros/s/AKfycbyBvcn7G6-tqM9mxGSr24C2hPjn8EXRX796QC2reswS5xny4To0Z-EhNuGmhD7Q4keY5A/exec',
-  gay:   'https://script.google.com/macros/s/AKfycbzSWCQfGJ2xdt5znuspy0r6WlVzfl0wnmwhDPL7jLxaXwim-KA1nVPRxJR8i2l5YuR0/exec',
+  brown: 'PASTE_MR_BROWN_SCRIPT_URL_HERE',
+  gay:   'PASTE_MS_GAY_SCRIPT_URL_HERE',
 };
 
 function submitReflection() {
@@ -1467,10 +1467,11 @@ function submitReflection() {
   status.className = 'reflect-status sending';
   status.textContent = '⏳ Submitting…';
   const data = {
-    date: new Date().toLocaleDateString(),
+    tab:         'Chernobyl Frogs',
+    date:        new Date().toLocaleDateString(),
     environment: 'Before and After Disaster',
-    eventType: 'Chernobyl Disaster (Gen ' + eventGen + ')',
-    totalGens: gen,
+    eventType:   'Chernobyl Disaster (Gen ' + eventGen + ')',
+    totalGens:   gen,
     q1, q2, q3,
   };
   const params = new URLSearchParams();

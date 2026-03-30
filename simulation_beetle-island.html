@@ -328,7 +328,7 @@
 
 <div class="hero">
   <div class="hero-badge">Simulation</div>
-  <h1>Beetle Island</h1>
+  <h1>Beetle Island 🪲&#xFE0E;</h1>
   <p>Which beetles would survive best on this island — and how would the population change over time? Set the environment and find out.</p>
 </div>
 
@@ -1438,8 +1438,8 @@ function firePredatorEvent() {
 
 // ── SHEET SUBMISSION ────────────────────────────────────────────────────────
 var SHEET_URLS = {
-  brown: 'https://script.google.com/macros/s/AKfycbyBvcn7G6-tqM9mxGSr24C2hPjn8EXRX796QC2reswS5xny4To0Z-EhNuGmhD7Q4keY5A/exec',
-  gay:   'https://script.google.com/macros/s/AKfycbzSWCQfGJ2xdt5znuspy0r6WlVzfl0wnmwhDPL7jLxaXwim-KA1nVPRxJR8i2l5YuR0/exec',
+  brown: 'PASTE_MR_BROWN_SCRIPT_URL_HERE',
+  gay:   'PASTE_MS_GAY_SCRIPT_URL_HERE',
 };
 
 function submitReflection() {
@@ -1466,6 +1466,7 @@ function submitReflection() {
   var eventDesc = eventType === 'arrive' ? 'Predator Arrived (Gen ' + eventGen + ')' : 'Predator Left (Gen ' + eventGen + ')';
 
   var data = {
+    tab:         'Beetle Island',
     date:        new Date().toLocaleDateString(),
     environment: envNames[env] || env,
     eventType:   eventDesc,
