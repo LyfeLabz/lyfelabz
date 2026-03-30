@@ -516,20 +516,24 @@
   }
   .cont-card.ext  { background: rgba(155,89,182,0.12); border: 1px solid rgba(155,89,182,0.35); }
   .cont-card.game { background: rgba(61,220,132,0.1);  border: 1px solid rgba(61,220,132,0.35); }
+  .cont-card.sim  { background: rgba(245,160,40,0.08); border: 1px solid rgba(245,160,40,0.35); }
   .cont-card.map  { background: rgba(196,138,78,0.1);  border: 1px solid rgba(196,138,78,0.35); }
   .cont-card.activity { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.35); }
   .cont-card.ext::before  { background: linear-gradient(90deg, #b47fff, #7c3aed); }
   .cont-card.game::before { background: linear-gradient(90deg, #3ddc84, #1de9b6); }
+  .cont-card.sim::before  { background: linear-gradient(90deg, #f5a028, #f5c842); }
   .cont-card.map::before  { background: linear-gradient(90deg, #c48a4e, #f5c842); }
   .cont-card.activity::before { background: linear-gradient(90deg, #f5c842, #ff9a42); }
   .cont-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
   .cont-card.ext:hover  { border-color: rgba(155,89,182,0.6); box-shadow: 0 14px 40px rgba(155,89,182,0.15); }
   .cont-card.activity:hover { border-color: rgba(245,200,66,0.6); box-shadow: 0 14px 40px rgba(245,200,66,0.12); }
   .cont-card.game:hover { border-color: rgba(61,220,132,0.6);  box-shadow: 0 14px 40px rgba(61,220,132,0.12); }
+  .cont-card.sim:hover  { border-color: rgba(245,160,40,0.6);  box-shadow: 0 14px 40px rgba(245,160,40,0.12); }
   .cont-card.map:hover  { border-color: rgba(196,138,78,0.6);  box-shadow: 0 14px 40px rgba(196,138,78,0.12); }
   .cont-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.3rem; }
   .cont-card.ext  .cont-icon { background: rgba(155,89,182,0.2); }
   .cont-card.game .cont-icon { background: rgba(61,220,132,0.18); }
+  .cont-card.sim  .cont-icon { background: rgba(245,160,40,0.18); }
   .cont-card.map  .cont-icon { background: rgba(196,138,78,0.18); }
   .cont-card.activity .cont-icon { background: rgba(245,200,66,0.15); }
   .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
@@ -572,6 +576,7 @@
   }
   .cont-card.ext  .cont-link { background: rgba(180,127,255,0.12); border-color: rgba(180,127,255,0.3);  color: #b47fff; }
   .cont-card.game .cont-link { background: rgba(61,220,132,0.1);   border-color: rgba(61,220,132,0.3);   color: #3ddc84; }
+  .cont-card.sim  .cont-link { background: rgba(245,160,40,0.1);   border-color: rgba(245,160,40,0.35);  color: #f5a028; }
   .cont-card.map  .cont-link { background: rgba(59,200,232,0.12);  border-color: rgba(59,200,232,0.45);  color: #3bc8e8; }
   .cont-card.activity .cont-link { background: transparent; border-color: rgba(245,200,66,0.5); color: var(--gold); }
   .cont-card.ext:hover  .cont-link { background: rgba(180,127,255,0.2); border-color: rgba(180,127,255,0.55); }
@@ -1058,18 +1063,18 @@
         <div class="cont-desc">Explore homologous, analogous, and vestigial structures — and submit your answers digitally.</div>
         <span class="cont-link">Activity</span>
       </a>
-      <a href="simulation_beetle-island.html" class="cont-card game">
+      <a href="simulation_beetle-island.html" class="cont-card sim">
         <div class="cont-icon">🪲</div>
         <div class="cont-name">Beetle Island</div>
-        <div class="cont-desc">Set the environment and watch natural selection reshape a beetle population across 30 generations.</div>
-        <span class="cont-link">Play</span>
+        <div class="cont-desc">Set the environment and watch natural selection reshape a beetle population across generations.</div>
+        <span class="cont-link">Simulation</span>
       </a>
-      <div class="cont-card map coming">
-        <div class="cont-icon">🗺️</div>
-        <div class="cont-name">Concept Map</div>
-        <div class="cont-desc">See how natural selection, evidence, and structures connect in an interactive visual map.</div>
-        <span class="coming-label">🚧 Coming Soon</span>
-      </div>
+      <a href="simulation_chernobyl-frogs.html" class="cont-card sim">
+        <div class="cont-icon">🐸</div>
+        <div class="cont-name">Chernobyl Tree Frogs</div>
+        <div class="cont-desc">Explore how a nuclear disaster changed a frog population over time through the lens of natural selection.</div>
+        <span class="cont-link">Simulation</span>
+      </a>
     </div>
   </div>
 </section>
