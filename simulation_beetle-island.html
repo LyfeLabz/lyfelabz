@@ -216,6 +216,24 @@
   .graph-hint { font-size:0.78rem; color:var(--muted); line-height:1.6; }
   .graph-lock-msg { display:none; font-size:0.82rem; font-weight:700; color:var(--amber); background:rgba(245,160,40,0.1); border:1px solid rgba(245,160,40,0.3); border-radius:10px; padding:0.7rem 1rem; text-align:center; line-height:1.5; }
   .graph-lock-msg.show { display:block; }
+
+  /* ── PROGRESS BAR ── */
+  .graph-progress { margin-bottom:0.8rem; }
+  .graph-progress-label { font-size:0.70rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:0.4rem; display:flex; justify-content:space-between; align-items:center; }
+  .graph-progress-label span { font-family:'Fredoka One',cursive; font-size:0.95rem; letter-spacing:0; text-transform:none; }
+  .graph-progress-track { height:10px; background:var(--card2); border-radius:99px; overflow:hidden; border:1px solid var(--border); }
+  .graph-progress-fill { height:100%; border-radius:99px; transition:width 0.3s ease, background 0.4s ease; background:var(--gold); }
+  .graph-progress-fill.complete { background:var(--green); }
+
+  /* ── ACCURACY DISPLAY ── */
+  .accuracy-box { display:none; margin-top:0.8rem; background:rgba(61,220,132,0.08); border:1px solid rgba(61,220,132,0.3); border-radius:10px; padding:0.7rem 1rem; text-align:center; }
+  .accuracy-box.show { display:block; }
+  .accuracy-num { font-family:'Fredoka One',cursive; font-size:1.6rem; color:var(--green); line-height:1; }
+  .accuracy-lbl { font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-top:0.2rem; }
+
+  /* ── SUBMIT BUTTON STATES ── */
+  .reflect-submit-btn.locked-plot  { background:rgba(200,200,200,0.1); border:1px solid rgba(200,200,200,0.2); color:rgba(200,200,200,0.4); cursor:not-allowed; box-shadow:none; }
+  .reflect-submit-btn.locked-check { background:rgba(245,160,40,0.12); border:1px solid rgba(245,160,40,0.35); color:var(--amber); cursor:not-allowed; box-shadow:none; }
   .check-legend { display:none; margin-top:0.8rem; }
   .check-legend.show { display:flex; flex-direction:column; gap:0.3rem; }
   .check-legend-item { font-size:0.72rem; font-weight:700; color:var(--muted); display:flex; align-items:center; gap:0.5rem; }
@@ -435,7 +453,11 @@
     <!-- CANVAS -->
     <div class="graph-panel">
       <div class="panel-title"><span class="pticon">✏️</span> Plot Your Data</div>
-      <p style="font-size:0.82rem; color:var(--muted); margin-bottom:1rem; line-height:1.6;">Select a beetle color on the right, then click on the graph to plot each generation's percentage.</p>
+      <p style="font-size:0.82rem; color:var(--muted); margin-bottom:0.8rem; line-height:1.6;">Select a beetle color on the right, then click on each even-numbered generation (G0, G2, G4…) to plot that color's percentage. One point per color per generation.</p>
+      <div class="graph-progress">
+        <div class="graph-progress-label">Progress <span id="progressText">0 / 22</span></div>
+        <div class="graph-progress-track"><div class="graph-progress-fill" id="progressFill" style="width:0%"></div></div>
+      </div>
       <canvas id="graphCanvas" height="460"></canvas>
     </div>
 
@@ -480,7 +502,12 @@
         <div class="check-legend-item"><div class="check-legend-dot" style="background:rgba(139,90,43,0.35); border:1px dashed #8b5a2b;"></div>Actual dark %</div>
       </div>
 
-      <p class="graph-hint">Click anywhere on the graph to place a point. Each point snaps to the nearest generation.</p>
+      <div class="accuracy-box" id="accuracyBox">
+        <div class="accuracy-num" id="accuracyNum">—</div>
+        <div class="accuracy-lbl">Graph Accuracy</div>
+      </div>
+
+      <p class="graph-hint">Plot one point per color at G0, G2, G4… Click a filled slot to replace it.</p>
     </div>
 
   </div>
@@ -517,7 +544,7 @@
       <textarea class="reflect-input" id="reflectQ3" placeholder="I predict that… because…"></textarea>
     </div>
 
-    <button class="reflect-submit-btn" id="reflectSubmitBtn" onclick="submitReflection()">✅ Submit Reflection</button>
+    <button class="reflect-submit-btn locked-plot" id="reflectSubmitBtn" onclick="submitReflection()">Plot all points to unlock</button>
     <div class="reflect-status" id="reflectStatus"></div>
   </div>
 
@@ -959,9 +986,9 @@ function step() {
   allHistory.push({ l:lightCount, d:darkCount, gen:gen });
 
   updateUI();
+  saveState();
 
   var total = lightCount + darkCount;
-  var lp = total ? (lightCount / total) * 100 : 0;
   var dominant = Math.max(lp, 100 - lp);
 
   if (gen >= MIN_GENS && dominant >= STABLE_THRESHOLD) {
@@ -1146,10 +1173,18 @@ function resetSim() {
   if (wrap) wrap.classList.remove('show-tip');
   var callout = document.getElementById('graphCallout');
   if (callout) callout.style.display = 'none';
+  // Clear saved state and graph
+  try { localStorage.removeItem(LS_KEY); } catch(e) {}
+  userPoints = { light:{}, dark:{} };
+  showActual = false; graphChecked = false; graphAccuracy = null;
+  var box = document.getElementById('accuracyBox');
+  if (box) box.classList.remove('show');
+  document.getElementById('checkLegend').classList.remove('show');
   // Switch back to sim mode if in graph
   if (currentMode === 'graph') setMode('sim');
   updateDataTable();
   updateUI();
+  updateProgressBar();
 }
 
 function shuffle(arr) {
@@ -1163,11 +1198,64 @@ function shuffle(arr) {
 // ── GRAPH MODE ─────────────────────────────────────────────────────────────
 var currentMode   = 'sim';
 var plotColor     = 'light';
-var userPoints    = { light: [], dark: [] };  // [{gen, pct}]
+// Slot-based: userPoints[color][gen] = pct  (one point per colour per tick)
+var userPoints    = { light: {}, dark: {} };
 var showActual    = false;
+var graphChecked  = false;
+var graphAccuracy = null;
 var gCanvas, gctx;
 
 var GRAPH_PAD = { t:24, r:24, b:54, l:62 };
+var TICK_STEP  = 2;   // required every 2 gens, fixed
+
+function getRequiredTicks() {
+  var ticks = [];
+  for (var g = 0; g <= gen; g += TICK_STEP) ticks.push(g);
+  return ticks;
+}
+
+function countPlaced() {
+  var placed = 0;
+  var ticks  = getRequiredTicks();
+  ['light','dark'].forEach(function(c) {
+    ticks.forEach(function(t) {
+      if (userPoints[c][t] !== undefined) placed++;
+    });
+  });
+  return placed;
+}
+
+function totalRequired() { return getRequiredTicks().length * 2; }
+
+function isGraphComplete() { return gen > 0 && countPlaced() === totalRequired(); }
+
+function updateProgressBar() {
+  var placed = countPlaced(), required = totalRequired();
+  var pct = required > 0 ? Math.round((placed / required) * 100) : 0;
+  var fill  = document.getElementById('progressFill');
+  var label = document.getElementById('progressText');
+  if (fill)  { fill.style.width = pct + '%'; fill.className = 'graph-progress-fill' + (placed === required && required > 0 ? ' complete' : ''); }
+  if (label) label.textContent = placed + ' / ' + required;
+  updateSubmitButton();
+}
+
+function updateSubmitButton() {
+  var btn = document.getElementById('reflectSubmitBtn');
+  if (!btn) return;
+  if (!isGraphComplete()) {
+    btn.className = 'reflect-submit-btn locked-plot';
+    btn.textContent = 'Plot all points to unlock';
+    btn.disabled = true;
+  } else if (!graphChecked) {
+    btn.className = 'reflect-submit-btn locked-check';
+    btn.textContent = 'Check your graph to unlock';
+    btn.disabled = true;
+  } else {
+    btn.className = 'reflect-submit-btn';
+    btn.textContent = '✅ Submit Reflection';
+    btn.disabled = false;
+  }
+}
 
 function setMode(mode) {
   currentMode = mode;
@@ -1177,7 +1265,6 @@ function setMode(mode) {
   document.getElementById('tabGraph').classList.toggle('active', mode === 'graph');
 
   if (mode === 'graph') {
-    // Stop glow + hide tooltip once student clicks in
     var tab  = document.getElementById('tabGraph');
     var wrap = document.getElementById('graphTabWrap');
     if (tab)  tab.classList.remove('glowing');
@@ -1189,6 +1276,7 @@ function setMode(mode) {
       gctx = gCanvas.getContext('2d');
       updateGraphDataTable();
       drawGraphCanvas();
+      updateProgressBar();
       gCanvas.style.pointerEvents = gen === 0 ? 'none' : 'auto';
     }, 30);
   }
@@ -1201,19 +1289,20 @@ function setPlotColor(c) {
 }
 
 function getGraphCoords(e) {
-  var rect = gCanvas.getBoundingClientRect();
+  var rect   = gCanvas.getBoundingClientRect();
   var scaleX = gCanvas.width  / rect.width;
   var scaleY = gCanvas.height / rect.height;
   var mx = (e.clientX - rect.left) * scaleX;
   var my = (e.clientY - rect.top)  * scaleY;
-  var W = gCanvas.width, H = gCanvas.height;
-  var cW = W - GRAPH_PAD.l - GRAPH_PAD.r;
-  var cH = H - GRAPH_PAD.t - GRAPH_PAD.b;
-  var maxG = Math.max(gen, 1);
-  var rawGen = ((mx - GRAPH_PAD.l) / cW) * maxG;
+  var cW = gCanvas.width  - GRAPH_PAD.l - GRAPH_PAD.r;
+  var cH = gCanvas.height - GRAPH_PAD.t - GRAPH_PAD.b;
+  var rawGen = ((mx - GRAPH_PAD.l) / cW) * Math.max(gen, 1);
   var rawPct = 100 - ((my - GRAPH_PAD.t) / cH) * 100;
-  // Snap gen to nearest integer within range
-  var snappedGen = Math.max(0, Math.min(maxG, Math.round(rawGen)));
+  // Snap to nearest required tick
+  var ticks = getRequiredTicks();
+  var snappedGen = ticks.reduce(function(best, t) {
+    return Math.abs(t - rawGen) < Math.abs(best - rawGen) ? t : best;
+  }, ticks[0]);
   var snappedPct = Math.max(0, Math.min(100, Math.round(rawPct)));
   return { gen: snappedGen, pct: snappedPct };
 }
@@ -1224,19 +1313,17 @@ function drawGraphCanvas() {
   var cW = W - GRAPH_PAD.l - GRAPH_PAD.r;
   var cH = H - GRAPH_PAD.t - GRAPH_PAD.b;
   var maxG = Math.max(gen, 1);
+  var ticks = getRequiredTicks();
 
   gctx.clearRect(0,0,W,H);
-
-  // Background
   gctx.fillStyle = 'rgba(15,10,2,0.6)';
   gctx.fillRect(GRAPH_PAD.l, GRAPH_PAD.t, cW, cH);
 
-  // Grid lines + Y labels — every 5%
+  // Y gridlines — every 5%
   gctx.lineWidth = 1;
   for (var v = 0; v <= 100; v += 5) {
     var y = GRAPH_PAD.t + cH - (v/100)*cH;
-    var isMajor = v % 25 === 0;
-    var isMid   = v % 10 === 0;
+    var isMajor = v % 25 === 0, isMid = v % 10 === 0;
     gctx.strokeStyle = isMajor ? 'rgba(245,160,40,0.22)' : isMid ? 'rgba(245,160,40,0.12)' : 'rgba(245,160,40,0.06)';
     gctx.beginPath(); gctx.moveTo(GRAPH_PAD.l, y); gctx.lineTo(W-GRAPH_PAD.r, y); gctx.stroke();
     gctx.fillStyle = isMajor ? 'rgba(240,220,185,0.92)' : isMid ? 'rgba(240,220,185,0.65)' : 'rgba(240,220,185,0.40)';
@@ -1245,109 +1332,92 @@ function drawGraphCanvas() {
     gctx.fillText(v+'%', GRAPH_PAD.l - 6, y + 4);
   }
 
-  // X axis ticks — every gen up to maxG (max 20 labels)
-  var step = maxG <= 10 ? 1 : maxG <= 20 ? 2 : 5;
-  for (var g2 = 0; g2 <= maxG; g2 += step) {
+  // X ticks — every 2 gens with target indicators
+  ticks.forEach(function(g2) {
     var x = GRAPH_PAD.l + (g2/maxG)*cW;
-    gctx.strokeStyle = 'rgba(245,160,40,0.12)';
+    gctx.strokeStyle = 'rgba(245,160,40,0.12)'; gctx.lineWidth = 1;
     gctx.beginPath(); gctx.moveTo(x, GRAPH_PAD.t); gctx.lineTo(x, GRAPH_PAD.t+cH); gctx.stroke();
-    gctx.fillStyle = 'rgba(240,220,185,0.75)';
-    gctx.font = '700 12px Nunito';
-    gctx.textAlign = 'center';
+    gctx.strokeStyle = 'rgba(245,160,40,0.40)'; gctx.lineWidth = 2;
+    gctx.beginPath(); gctx.moveTo(x, GRAPH_PAD.t+cH); gctx.lineTo(x, GRAPH_PAD.t+cH+6); gctx.stroke();
+    gctx.lineWidth = 1;
+    gctx.fillStyle = 'rgba(240,220,185,0.75)'; gctx.font = '700 12px Nunito'; gctx.textAlign = 'center';
     gctx.fillText(g2, x, GRAPH_PAD.t + cH + 18);
-  }
+  });
 
   // Axis labels
-  gctx.fillStyle = 'rgba(240,220,185,0.88)';
-  gctx.font = '800 13px Nunito';
-  gctx.textAlign = 'center';
+  gctx.fillStyle = 'rgba(240,220,185,0.88)'; gctx.font = '800 13px Nunito'; gctx.textAlign = 'center';
   gctx.fillText('Generation', GRAPH_PAD.l + cW/2, H - 6);
-  gctx.save();
-  gctx.translate(13, GRAPH_PAD.t + cH/2);
-  gctx.rotate(-Math.PI/2);
-  gctx.fillText('% of Population', 0, 0);
-  gctx.restore();
+  gctx.save(); gctx.translate(13, GRAPH_PAD.t + cH/2); gctx.rotate(-Math.PI/2);
+  gctx.fillText('% of Population', 0, 0); gctx.restore();
 
-  // Actual data ghost lines (shown after Check)
+  // Empty slot indicators — ghost circles on unfilled ticks
+  var slotDefs = [
+    { key:'light', col:'rgba(245,200,66,0.25)',  offY:-10 },
+    { key:'dark',  col:'rgba(200,149,106,0.25)', offY:+10 },
+  ];
+  ticks.forEach(function(g2) {
+    var x = GRAPH_PAD.l + (g2/maxG)*cW;
+    slotDefs.forEach(function(cd) {
+      if (userPoints[cd.key][g2] === undefined) {
+        gctx.beginPath(); gctx.arc(x, GRAPH_PAD.t + cH/2 + cd.offY, 4, 0, Math.PI*2);
+        gctx.strokeStyle = cd.col; gctx.lineWidth = 1.5; gctx.stroke();
+      }
+    });
+  });
+
+  // Ghost actual lines (shown after Check)
   if (showActual && popHistory.length > 1) {
-    function drawGhost(color, dashed) {
-      gctx.beginPath();
-      gctx.strokeStyle = color;
-      gctx.lineWidth = 1.5;
-      gctx.setLineDash(dashed ? [4,3] : []);
+    function drawGhost(getVal, color) {
+      gctx.beginPath(); gctx.strokeStyle = color; gctx.lineWidth = 1.5; gctx.setLineDash([4,3]);
       popHistory.forEach(function(h, i) {
-        var t = h.l + h.d;
-        var pct = color.indexOf('c842') > -1 ? (t ? (h.l/t)*100 : 50) : (t ? (h.d/t)*100 : 50);
-        var gn = h.gen !== undefined ? h.gen : i;
-        var x = GRAPH_PAD.l + (gn/maxG)*cW;
+        var t = h.l + h.d, pct = getVal(h, t);
+        var x = GRAPH_PAD.l + ((h.gen||0)/maxG)*cW;
         var y = GRAPH_PAD.t + cH - (pct/100)*cH;
         i === 0 ? gctx.moveTo(x,y) : gctx.lineTo(x,y);
       });
-      gctx.stroke();
-      gctx.setLineDash([]);
+      gctx.stroke(); gctx.setLineDash([]);
     }
-    drawGhost('rgba(245,200,66,0.45)', false);
-    drawGhost('rgba(139,90,43,0.45)',  true);
+    drawGhost(function(h,t){ return t ? (h.l/t)*100 : 50; }, 'rgba(245,200,66,0.45)');
+    drawGhost(function(h,t){ return t ? (h.d/t)*100 : 50; }, 'rgba(139,90,43,0.45)');
   }
 
-  // User points + lines
-  function drawUserSeries(pts, color, dashed) {
-    if (pts.length === 0) return;
-    var sorted = pts.slice().sort(function(a,b){ return a.gen - b.gen; });
-    // Lines
-    gctx.beginPath();
-    gctx.strokeStyle = color;
-    gctx.lineWidth = 2;
-    gctx.setLineDash(dashed ? [4,3] : []);
-    sorted.forEach(function(p, i) {
-      var x = GRAPH_PAD.l + (p.gen/maxG)*cW;
-      var y = GRAPH_PAD.t + cH - (p.pct/100)*cH;
-      i === 0 ? gctx.moveTo(x,y) : gctx.lineTo(x,y);
+  // User slot points — connected line then dots
+  function drawSlotSeries(colorKey, dotColor) {
+    var pts = ticks.filter(function(t){ return userPoints[colorKey][t] !== undefined; })
+                   .map(function(t){ return { gen:t, pct:userPoints[colorKey][t] }; });
+    if (!pts.length) return;
+    gctx.beginPath(); gctx.strokeStyle = dotColor; gctx.lineWidth = 2; gctx.setLineDash([]);
+    pts.forEach(function(p,i){
+      var x = GRAPH_PAD.l+(p.gen/maxG)*cW, y = GRAPH_PAD.t+cH-(p.pct/100)*cH;
+      i===0 ? gctx.moveTo(x,y) : gctx.lineTo(x,y);
     });
     gctx.stroke();
-    gctx.setLineDash([]);
-    // Dots
-    sorted.forEach(function(p) {
-      var x = GRAPH_PAD.l + (p.gen/maxG)*cW;
-      var y = GRAPH_PAD.t + cH - (p.pct/100)*cH;
-      gctx.beginPath();
-      gctx.arc(x, y, 5, 0, Math.PI*2);
-      gctx.fillStyle = color;
-      gctx.fill();
-      gctx.strokeStyle = 'rgba(15,10,2,0.8)';
-      gctx.lineWidth = 1.5;
-      gctx.stroke();
-      // Gen label above dot
-      gctx.fillStyle = color;
-      gctx.font = '700 11px Nunito';
-      gctx.textAlign = 'center';
-      gctx.fillText('G'+p.gen, x, y - 10);
+    pts.forEach(function(p){
+      var x = GRAPH_PAD.l+(p.gen/maxG)*cW, y = GRAPH_PAD.t+cH-(p.pct/100)*cH;
+      gctx.beginPath(); gctx.arc(x,y,5,0,Math.PI*2); gctx.fillStyle=dotColor; gctx.fill();
+      gctx.strokeStyle='rgba(15,10,2,0.8)'; gctx.lineWidth=1.5; gctx.stroke();
+      gctx.fillStyle=dotColor; gctx.font='700 11px Nunito'; gctx.textAlign='center';
+      gctx.fillText('G'+p.gen, x, y-10);
     });
   }
+  drawSlotSeries('light', '#f5c842');
+  drawSlotSeries('dark',  '#c8956a');
 
-  drawUserSeries(userPoints.light, '#f5c842', false);
-  drawUserSeries(userPoints.dark,  '#c8956a', true);
-
-  // Event marker on graph canvas
+  // Event marker
   if (eventFired && eventGen > 0 && eventGen <= maxG) {
-    var ex = GRAPH_PAD.l + (eventGen / maxG) * cW;
-    gctx.beginPath();
-    gctx.strokeStyle = eventType === 'arrive' ? 'rgba(232,112,112,0.65)' : 'rgba(61,220,132,0.65)';
-    gctx.lineWidth = 2;
-    gctx.setLineDash([4, 3]);
-    gctx.moveTo(ex, GRAPH_PAD.t);
-    gctx.lineTo(ex, GRAPH_PAD.t + cH);
-    gctx.stroke();
+    var ex = GRAPH_PAD.l + (eventGen/maxG)*cW;
+    gctx.strokeStyle = eventType==='arrive' ? 'rgba(232,112,112,0.65)' : 'rgba(61,220,132,0.65)';
+    gctx.lineWidth=2; gctx.setLineDash([4,3]);
+    gctx.beginPath(); gctx.moveTo(ex,GRAPH_PAD.t); gctx.lineTo(ex,GRAPH_PAD.t+cH); gctx.stroke();
     gctx.setLineDash([]);
-    gctx.fillStyle = eventType === 'arrive' ? 'rgba(232,112,112,0.9)' : 'rgba(61,220,132,0.9)';
-    gctx.font = '800 9px Nunito';
-    gctx.textAlign = 'center';
-    gctx.fillText(eventType === 'arrive' ? '🦎 G'+eventGen : '🕊️ G'+eventGen, ex, GRAPH_PAD.t + 12);
-    gctx.textAlign = 'left';
+    gctx.fillStyle = eventType==='arrive' ? 'rgba(232,112,112,0.9)' : 'rgba(61,220,132,0.9)';
+    gctx.font='800 11px Nunito'; gctx.textAlign='center';
+    gctx.fillText(eventType==='arrive' ? '🦎 G'+eventGen : '🕊️ G'+eventGen, ex, GRAPH_PAD.t+14);
+    gctx.textAlign='left';
   }
 }
 
-// Click handler
+// Click handler — slot-based, one point per colour per required tick
 window.addEventListener('load', function() {
   setTimeout(function() {
     var gc = document.getElementById('graphCanvas');
@@ -1355,57 +1425,141 @@ window.addEventListener('load', function() {
     gc.addEventListener('click', function(e) {
       if (gen === 0) return;
       var coords = getGraphCoords(e);
-      userPoints[plotColor].push({ gen: coords.gen, pct: coords.pct });
-      showActual = false;
+      userPoints[plotColor][coords.gen] = coords.pct;
+      showActual=false; graphChecked=false; graphAccuracy=null;
       document.getElementById('checkLegend').classList.remove('show');
-      drawGraphCanvas();
+      document.getElementById('accuracyBox').classList.remove('show');
+      drawGraphCanvas(); updateProgressBar(); saveState();
     });
   }, 100);
 });
 
 function checkGraph() {
+  if (!isGraphComplete()) { alert('Plot a point for every required generation first.'); return; }
   if (popHistory.length < 2) return;
-  showActual = true;
+  showActual=true; graphChecked=true;
   document.getElementById('checkLegend').classList.add('show');
-  drawGraphCanvas();
+  // Calculate accuracy
+  var ticks=getRequiredTicks(), errors=[];
+  ticks.forEach(function(t) {
+    var h = allHistory.find(function(x){ return x.gen===t; });
+    if (!h) return;
+    var tot=h.l+h.d, actL=tot?(h.l/tot)*100:50, actD=100-actL;
+    if (userPoints.light[t]!==undefined) errors.push(Math.abs(userPoints.light[t]-actL));
+    if (userPoints.dark[t] !==undefined) errors.push(Math.abs(userPoints.dark[t] -actD));
+  });
+  var avg = errors.length ? errors.reduce(function(a,b){return a+b;},0)/errors.length : 0;
+  graphAccuracy = Math.max(0, Math.round(100-avg));
+  var box=document.getElementById('accuracyBox'), num=document.getElementById('accuracyNum');
+  if (box) box.classList.add('show');
+  if (num) num.textContent = graphAccuracy+'%';
+  drawGraphCanvas(); updateSubmitButton(); saveState();
 }
 
 function undoPoint() {
-  if (userPoints[plotColor].length > 0) {
-    userPoints[plotColor].pop();
-    drawGraphCanvas();
+  var ticks=getRequiredTicks().slice().reverse(), cols=['light','dark'];
+  for (var i=0; i<ticks.length; i++) {
+    for (var j=0; j<cols.length; j++) {
+      if (userPoints[cols[j]][ticks[i]] !== undefined) {
+        delete userPoints[cols[j]][ticks[i]];
+        showActual=false; graphChecked=false; graphAccuracy=null;
+        document.getElementById('checkLegend').classList.remove('show');
+        document.getElementById('accuracyBox').classList.remove('show');
+        drawGraphCanvas(); updateProgressBar(); saveState(); return;
+      }
+    }
   }
 }
 
 function clearGraph() {
-  userPoints = { light: [], dark: [] };
-  showActual = false;
+  userPoints={light:{},dark:{}};
+  showActual=false; graphChecked=false; graphAccuracy=null;
   document.getElementById('checkLegend').classList.remove('show');
-  drawGraphCanvas();
+  document.getElementById('accuracyBox').classList.remove('show');
+  drawGraphCanvas(); updateProgressBar(); saveState();
 }
 
 function updateGraphDataTable() {
-  var tbody = document.getElementById('graphDataTableBody');
+  var tbody=document.getElementById('graphDataTableBody');
   if (!tbody) return;
   if (popHistory.length <= 1) {
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; font-style:italic; opacity:0.5;">Run simulation first…</td></tr>';
+    tbody.innerHTML='<tr><td colspan="3" style="text-align:center; font-style:italic; opacity:0.5;">Run simulation first\u2026</td></tr>';
     return;
   }
-  tbody.innerHTML = '';
-  var rows = allHistory.slice().reverse();
-  rows.forEach(function(h) {
-    var t = h.l + h.d;
-    var lp = t ? Math.round((h.l/t)*100) : 0;
-    var dp = 100 - lp;
-    var gn = h.gen !== undefined ? h.gen : '—';
-    var isEvent = eventFired && gn === eventGen;
-    var tr = document.createElement('tr');
-    if (isEvent) tr.style.background = eventType === 'arrive' ? 'rgba(232,112,112,0.1)' : 'rgba(61,220,132,0.1)';
-    tr.innerHTML = '<td>' + gn + (isEvent ? (eventType === 'arrive' ? ' 🦎' : ' 🕊️') : '') + '</td>' +
-                   '<td class="td-light">' + lp + '%</td>' +
-                   '<td class="td-dark">' + dp + '%</td>';
+  tbody.innerHTML='';
+  allHistory.slice().reverse().forEach(function(h) {
+    var t=h.l+h.d, lp=t?Math.round((h.l/t)*100):0, dp=100-lp;
+    var gn=h.gen!==undefined?h.gen:'\u2014';
+    var isEvent=eventFired&&gn===eventGen;
+    var tr=document.createElement('tr');
+    if (isEvent) tr.style.background=eventType==='arrive'?'rgba(232,112,112,0.1)':'rgba(61,220,132,0.1)';
+    tr.innerHTML='<td>'+gn+(isEvent?(eventType==='arrive'?' 🦎':' 🕊️'):'')+
+                 '</td><td class="td-light">'+lp+'%</td><td class="td-dark">'+dp+'%</td>';
     tbody.appendChild(tr);
   });
+}
+
+// ── LOCAL STORAGE ───────────────────────────────────────────────────────────
+var LS_KEY = 'lyfelabz-beetle-island';
+
+function saveState() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      gen:gen, lightCount:lightCount, darkCount:darkCount, env:env,
+      eventGen:eventGen, eventType:eventType, eventFired:eventFired,
+      currentSurv:currentSurv, stableCount:stableCount,
+      popHistory:popHistory, allHistory:allHistory,
+      userPoints:userPoints, showActual:showActual,
+      graphChecked:graphChecked, graphAccuracy:graphAccuracy,
+      q1:(document.getElementById('reflectQ1')||{}).value||'',
+      q2:(document.getElementById('reflectQ2')||{}).value||'',
+      q3:(document.getElementById('reflectQ3')||{}).value||'',
+      teacher:(document.getElementById('reflectTeacher')||{}).value||'',
+    }));
+  } catch(e) {}
+}
+
+function restoreState() {
+  try {
+    var raw=localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    var s=JSON.parse(raw);
+    if (!s||s.gen===undefined) return false;
+    gen=s.gen; lightCount=s.lightCount; darkCount=s.darkCount; env=s.env||'light';
+    eventGen=s.eventGen||0; eventType=s.eventType||''; eventFired=s.eventFired||false;
+    currentSurv=s.currentSurv||null; stableCount=s.stableCount||0;
+    popHistory=s.popHistory||[{l:25,d:25,gen:0}];
+    allHistory=s.allHistory||[{l:25,d:25,gen:0}];
+    userPoints=s.userPoints||{light:{},dark:{}};
+    showActual=s.showActual||false; graphChecked=s.graphChecked||false;
+    graphAccuracy=s.graphAccuracy!==undefined?s.graphAccuracy:null;
+    // Restore env button
+    document.querySelectorAll('.env-btn').forEach(function(b){ b.classList.remove('active'); });
+    var ae=document.querySelector('.env-btn.'+env); if (ae) ae.classList.add('active');
+    // Restore reflection fields + wire save listeners
+    var flds={reflectQ1:'q1',reflectQ2:'q2',reflectQ3:'q3',reflectTeacher:'teacher'};
+    Object.keys(flds).forEach(function(id){
+      var el=document.getElementById(id);
+      if (el){ el.value=s[flds[id]]||''; el.addEventListener('input',saveState); }
+    });
+    updateUI();
+    if (gen>0) {
+      unlockGraphMode();
+      var q2p=document.getElementById('reflectQ2Prompt');
+      if (q2p&&eventFired) {
+        var evtN=eventType==='arrive'?'a new predator arrived':'the predator population crashed';
+        q2p.textContent='At generation '+eventGen+', '+evtN+'. What effect did this have on the beetle population trend?';
+      }
+    }
+    if (graphChecked&&graphAccuracy!==null) {
+      var box=document.getElementById('accuracyBox'),num=document.getElementById('accuracyNum');
+      if (box) box.classList.add('show');
+      if (num) num.textContent=graphAccuracy+'%';
+      if (showActual) document.getElementById('checkLegend').classList.add('show');
+    }
+    updateProgressBar();
+    return true;
+  } catch(e){ return false; }
 }
 
 // ── PREDATOR EVENT ─────────────────────────────────────────────────────────
@@ -1438,8 +1592,8 @@ function firePredatorEvent() {
 
 // ── SHEET SUBMISSION ────────────────────────────────────────────────────────
 var SHEET_URLS = {
-  brown: 'PASTE_MR_BROWN_SCRIPT_URL_HERE',
-  gay:   'PASTE_MS_GAY_SCRIPT_URL_HERE',
+  brown: 'https://script.google.com/macros/s/AKfycbyBvcn7G6-tqM9mxGSr24C2hPjn8EXRX796QC2reswS5xny4To0Z-EhNuGmhD7Q4keY5A/exec',
+  gay:   'https://script.google.com/macros/s/AKfycbzSWCQfGJ2xdt5znuspy0r6WlVzfl0wnmwhDPL7jLxaXwim-KA1nVPRxJR8i2l5YuR0/exec',
 };
 
 function submitReflection() {
@@ -1466,14 +1620,16 @@ function submitReflection() {
   var eventDesc = eventType === 'arrive' ? 'Predator Arrived (Gen ' + eventGen + ')' : 'Predator Left (Gen ' + eventGen + ')';
 
   var data = {
-    tab:         'Beetle Island',
-    date:        new Date().toLocaleDateString(),
-    environment: envNames[env] || env,
-    eventType:   eventDesc,
-    totalGens:   gen,
-    q1:          q1,
-    q2:          q2,
-    q3:          q3,
+    tab:           'Beetle Island',
+    date:          new Date().toLocaleDateString(),
+    environment:   envNames[env] || env,
+    eventType:     eventDesc,
+    totalGens:     gen,
+    graphComplete: isGraphComplete() ? '✅' : '❌',
+    accuracy:      graphAccuracy !== null ? graphAccuracy + '%' : '—',
+    q1:            q1,
+    q2:            q2,
+    q3:            q3,
   };
 
   var params = new URLSearchParams();
@@ -1486,6 +1642,7 @@ function submitReflection() {
     status.textContent = '✅ Submitted! Great work.';
     btn.textContent = '✅ Submitted';
     document.querySelectorAll('.reflect-input, .teacher-select').forEach(function(el) { el.disabled = true; });
+    try { localStorage.removeItem(LS_KEY); } catch(e) {}
   })
   .catch(function() {
     status.className = 'reflect-status error';
@@ -1503,10 +1660,27 @@ window.addEventListener('resize', function() {
 window.addEventListener('load', function() {
   setTimeout(function() {
     resizeCanvases();
-    updateUI();
-    // Sim tab glows on load to draw initial attention
+    var restored = restoreState();
+    if (!restored) updateUI();
+    // Wire reflection saveState listeners (fresh session, no restore)
+    if (!restored) {
+      ['reflectQ1','reflectQ2','reflectQ3','reflectTeacher'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('input', saveState);
+      });
+    }
+    // Sim tab glows on load if no restored state
     var simTab = document.getElementById('tabSim');
-    if (simTab) simTab.classList.add('glowing');
+    if (!restored && simTab) simTab.classList.add('glowing');
+
+    // Show restore banner if state was recovered
+    if (restored && gen > 0) {
+      var banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(61,220,132,0.12);border:1px solid rgba(61,220,132,0.4);color:#2ecc71;padding:0.55rem 1.2rem;border-radius:10px;font-size:0.82rem;font-weight:800;z-index:999;pointer-events:none;';
+      banner.textContent = '✅ Your progress has been restored.';
+      document.body.appendChild(banner);
+      setTimeout(function(){ banner.style.opacity='0'; banner.style.transition='opacity 0.6s'; setTimeout(function(){ banner.remove(); }, 700); }, 3000);
+    }
   }, 50);
 });
 </script>
