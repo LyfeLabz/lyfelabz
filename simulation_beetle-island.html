@@ -119,11 +119,14 @@
 
 
   /* ── DATA TABLE ── */
+  /* ── CHART PANEL — fixed height, never grows with sibling ── */
+  .chart-panel { align-self: start; }
+
   .data-table-wrap { overflow-x:auto; margin-top:0.5rem; }
-  .data-table { width:100%; border-collapse:collapse; font-size:0.78rem; }
-  .data-table th { background:rgba(245,160,40,0.12); color:var(--green); font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; padding:0.5rem 0.7rem; text-align:center; border-bottom:1px solid var(--border); }
+  .data-table { width:100%; border-collapse:collapse; font-size:0.72rem; }
+  .data-table th { background:rgba(245,160,40,0.12); color:var(--green); font-size:0.62rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; padding:0.4rem 0.5rem; text-align:center; border-bottom:1px solid var(--border); }
   .data-table th:first-child { text-align:left; }
-  .data-table td { padding:0.4rem 0.7rem; text-align:center; border-bottom:1px solid rgba(245,160,40,0.06); font-weight:700; color:var(--muted); transition:background 0.2s; }
+  .data-table td { padding:0.35rem 0.5rem; text-align:center; border-bottom:1px solid rgba(245,160,40,0.06); font-weight:700; color:var(--muted); transition:background 0.2s; }
   .data-table td:first-child { text-align:left; color:var(--green); font-weight:900; }
   .data-table tr:last-child td { border-bottom:none; }
   .data-table tr.new-row td { background:rgba(245,160,40,0.08); }
@@ -433,7 +436,7 @@
     <div class="graph-panel">
       <div class="panel-title"><span class="pticon">✏️</span> Plot Your Data</div>
       <p style="font-size:0.82rem; color:var(--muted); margin-bottom:1rem; line-height:1.6;">Select a beetle color on the right, then click on the graph to plot each generation's percentage.</p>
-      <canvas id="graphCanvas" height="320"></canvas>
+      <canvas id="graphCanvas" height="460"></canvas>
     </div>
 
     <!-- YOUR DATA TABLE -->
@@ -610,14 +613,15 @@
   </div>
 
   <!-- CHART -->
-  <div class="panel">
-    <div class="panel-title"><span class="pticon">📊</span> Population Each Generation</div>
-    <canvas id="chartCanvas" height="160"></canvas>
+  <div class="panel chart-panel">
+    <div class="panel-title"><span class="pticon">📊</span> Populations</div>
+    <canvas id="chartCanvas" height="460"></canvas>
   </div>
 
   <!-- DATA TABLE -->
   <div class="panel">
     <div class="panel-title"><span class="pticon">📋</span> Generation Data</div>
+    <p style="font-size:0.68rem; color:var(--muted); opacity:0.7; margin-bottom:0.5rem;">Scroll right to see all columns →</p>
     <div class="data-table-wrap">
       <table class="data-table" id="dataTable">
         <thead>
@@ -678,23 +682,24 @@
 // ── CONSTANTS ──────────────────────────────────────────────────────────────
 const MAX_POP   = 80;
 const MIN_POP   = 6;
+const MIN_MINORITY = 4;   // soft floor — minority colour never drops below ~5% of MAX_POP
 const START_POP = 50;
 const MAX_GENS  = 20;
 const MIN_GENS  = 12;
-const STABLE_THRESHOLD = 75;
-const STABLE_RUNS = 2;
+const STABLE_THRESHOLD = 88;
+const STABLE_RUNS = 3;
 
 const SURVIVAL = {
-  light: [0.82, 0.42],
-  dark:  [0.38, 0.85],
-  grass: [0.50, 0.68],
+  light: [0.76, 0.56],   // narrower gap → slower drift
+  dark:  [0.52, 0.78],
+  grass: [0.62, 0.68],
 };
 
 // Survival after predator ARRIVES (pressure intensifies)
 const SURVIVAL_PREDATOR_ON = {
-  light: [0.88, 0.22],
-  dark:  [0.18, 0.90],
-  grass: [0.40, 0.80],
+  light: [0.80, 0.38],   // still meaningful shift but not a wipeout
+  dark:  [0.34, 0.82],
+  grass: [0.54, 0.72],
 };
 
 // Survival after predator LEAVES (pressure nearly gone — both survive equally)
@@ -827,30 +832,36 @@ function drawBeetle(ctx, x, y, type, size) {
 
 // ── CHART — TWO-BAR CURRENT STATE ─────────────────────────────────────────
 function drawChart() {
-  var W = chart.width, H = chart.height || 160;
+  var W = chart.width, H = chart.height || 460;
   cctx.clearRect(0,0,W,H);
 
   var total = lightCount + darkCount;
   var lp = total ? Math.round((lightCount/total)*100) : 50;
   var dp = 100 - lp;
 
-  var pad  = { t:20, r:30, b:40, l:52 };
+  var pad  = { t:24, r:24, b:54, l:62 };
   var cW   = W - pad.l - pad.r;
   var cH   = H - pad.t - pad.b;
   var barW = cW * 0.28;
   var gap  = (cW - 2*barW) / 3;
 
-  // Y gridlines
+  // Background
+  cctx.fillStyle = 'rgba(15,10,2,0.6)';
+  cctx.fillRect(pad.l, pad.t, cW, cH);
+
+  // Y gridlines — every 5%, 3-tier brightness matching graph mode
   cctx.lineWidth = 1;
-  [0,25,50,75,100].forEach(function(v) {
+  for (var v = 0; v <= 100; v += 5) {
     var y = pad.t + cH - (v/100)*cH;
-    cctx.strokeStyle = 'rgba(245,160,40,0.1)';
+    var isMajor = v % 25 === 0;
+    var isMid   = v % 10 === 0;
+    cctx.strokeStyle = isMajor ? 'rgba(245,160,40,0.22)' : isMid ? 'rgba(245,160,40,0.12)' : 'rgba(245,160,40,0.06)';
     cctx.beginPath(); cctx.moveTo(pad.l, y); cctx.lineTo(W-pad.r, y); cctx.stroke();
-    cctx.fillStyle = 'rgba(240,220,185,0.5)';
-    cctx.font = '700 10px Nunito';
+    cctx.fillStyle = isMajor ? 'rgba(240,220,185,0.92)' : isMid ? 'rgba(240,220,185,0.65)' : 'rgba(240,220,185,0.40)';
+    cctx.font = isMajor ? '800 12px Nunito' : isMid ? '700 11px Nunito' : '600 10px Nunito';
     cctx.textAlign = 'right';
-    cctx.fillText(v+'%', pad.l - 5, y + 4);
-  });
+    cctx.fillText(v+'%', pad.l - 6, y + 4);
+  }
 
   // Light bar
   var lx = pad.l + gap;
@@ -877,46 +888,29 @@ function drawChart() {
   cctx.fill();
 
   // Labels under bars
-  cctx.font = '800 11px Nunito';
+  cctx.font = '800 13px Nunito';
   cctx.textAlign = 'center';
-  cctx.fillStyle = 'rgba(245,200,66,0.9)';
-  cctx.fillText('Light ' + lp + '%', lx + barW/2, pad.t + cH + 16);
-  cctx.fillStyle = 'rgba(180,120,60,0.9)';
-  cctx.fillText('Dark ' + dp + '%', dx + barW/2, pad.t + cH + 16);
+  cctx.fillStyle = 'rgba(245,200,66,0.92)';
+  cctx.fillText('Light', lx + barW/2, pad.t + cH + 18);
+  cctx.fillStyle = 'rgba(180,120,60,0.92)';
+  cctx.fillText('Dark', dx + barW/2, pad.t + cH + 18);
 
   // Value above bars
-  cctx.font = '900 12px Nunito';
-  cctx.fillStyle = 'rgba(245,200,66,0.95)';
-  cctx.fillText(lp + '%', lx + barW/2, pad.t + cH - lh - 6);
-  cctx.fillStyle = 'rgba(180,120,60,0.95)';
-  cctx.fillText(dp + '%', dx + barW/2, pad.t + cH - dh - 6);
+  cctx.font = '900 14px Nunito';
+  cctx.fillStyle = 'rgba(245,200,66,0.97)';
+  cctx.fillText(lp + '%', lx + barW/2, pad.t + cH - lh - 8);
+  cctx.fillStyle = 'rgba(180,120,60,0.97)';
+  cctx.fillText(dp + '%', dx + barW/2, pad.t + cH - dh - 8);
 
-  // Event marker line
-  if (eventFired && eventGen > 0 && eventGen <= maxG) {
-    var ex = pad.l + (eventGen / maxG) * cW;
-    cctx.beginPath();
-    cctx.strokeStyle = eventType === 'arrive' ? 'rgba(232,112,112,0.7)' : 'rgba(61,220,132,0.7)';
-    cctx.lineWidth = 2;
-    cctx.setLineDash([4, 3]);
-    cctx.moveTo(ex, pad.t);
-    cctx.lineTo(ex, pad.t + cH);
-    cctx.stroke();
-    cctx.setLineDash([]);
-    // Label
-    cctx.fillStyle = eventType === 'arrive' ? 'rgba(232,112,112,0.9)' : 'rgba(61,220,132,0.9)';
-    cctx.font = '800 9px Nunito';
-    cctx.textAlign = 'center';
-    cctx.fillText(eventType === 'arrive' ? '🦎 G'+eventGen : '🕊️ G'+eventGen, ex, pad.t + 10);
-    cctx.textAlign = 'left';
-  }
-
-  // X axis labels
-  cctx.fillStyle = 'rgba(200,240,215,0.4)';
-  cctx.font = '700 10px Nunito';
-  [0, Math.floor(maxG/2), maxG].forEach(function(i) {
-    var x = pad.l + (i/Math.max(maxG,1))*cW;
-    cctx.fillText('G'+popHistory[Math.min(i,popHistory.length-1)].gen||i, x-8, H-8);
-  });
+  // Y-axis title
+  cctx.save();
+  cctx.fillStyle = 'rgba(240,220,185,0.88)';
+  cctx.font = '800 13px Nunito';
+  cctx.textAlign = 'center';
+  cctx.translate(13, pad.t + cH/2);
+  cctx.rotate(-Math.PI/2);
+  cctx.fillText('% of Population', 0, 0);
+  cctx.restore();
 }
 
 // ── SIMULATION STEP ────────────────────────────────────────────────────────
@@ -939,10 +933,20 @@ function step() {
   var survivors = newLight + newDark;
   if (survivors === 0) { endSim('extinct'); return; }
 
-  var growth = Math.min(MAX_POP, Math.round(survivors * 1.6));
+  var growth = Math.min(MAX_POP, Math.round(survivors * 1.35));
   var lightRatio = newLight / survivors;
   newLight = Math.round(growth * lightRatio);
   newDark  = growth - newLight;
+
+  // Soft floor: keep minority colour above MIN_MINORITY so the population
+  // never fully locks in — preserves realism and keeps Q3 meaningful.
+  if (newLight < MIN_MINORITY && newDark > MIN_MINORITY) {
+    newLight = MIN_MINORITY;
+    newDark  = growth - newLight;
+  } else if (newDark < MIN_MINORITY && newLight > MIN_MINORITY) {
+    newDark  = MIN_MINORITY;
+    newLight = growth - newDark;
+  }
 
   if (newLight + newDark < MIN_POP) { endSim('extinct'); return; }
 
@@ -967,7 +971,7 @@ function step() {
     stableCount = 0;
   }
 
-  if (gen >= MAX_GENS) { endSim('evolved'); }
+  if (gen >= MAX_GENS) { endSim('evolved'); return; }
 }
 
 // ── UI UPDATES ─────────────────────────────────────────────────────────────
@@ -1163,7 +1167,7 @@ var userPoints    = { light: [], dark: [] };  // [{gen, pct}]
 var showActual    = false;
 var gCanvas, gctx;
 
-var GRAPH_PAD = { t:20, r:20, b:44, l:52 };
+var GRAPH_PAD = { t:24, r:24, b:54, l:62 };
 
 function setMode(mode) {
   currentMode = mode;
@@ -1227,37 +1231,39 @@ function drawGraphCanvas() {
   gctx.fillStyle = 'rgba(15,10,2,0.6)';
   gctx.fillRect(GRAPH_PAD.l, GRAPH_PAD.t, cW, cH);
 
-  // Grid lines + Y labels — every 10%
-  gctx.strokeStyle = 'rgba(245,160,40,0.1)';
+  // Grid lines + Y labels — every 5%
   gctx.lineWidth = 1;
-  for (var v = 0; v <= 100; v += 10) {
+  for (var v = 0; v <= 100; v += 5) {
     var y = GRAPH_PAD.t + cH - (v/100)*cH;
+    var isMajor = v % 25 === 0;
+    var isMid   = v % 10 === 0;
+    gctx.strokeStyle = isMajor ? 'rgba(245,160,40,0.22)' : isMid ? 'rgba(245,160,40,0.12)' : 'rgba(245,160,40,0.06)';
     gctx.beginPath(); gctx.moveTo(GRAPH_PAD.l, y); gctx.lineTo(W-GRAPH_PAD.r, y); gctx.stroke();
-    gctx.fillStyle = v % 50 === 0 ? 'rgba(240,220,185,0.65)' : 'rgba(240,220,185,0.35)';
-    gctx.font = v % 50 === 0 ? '800 10px Nunito' : '700 9px Nunito';
+    gctx.fillStyle = isMajor ? 'rgba(240,220,185,0.92)' : isMid ? 'rgba(240,220,185,0.65)' : 'rgba(240,220,185,0.40)';
+    gctx.font = isMajor ? '800 12px Nunito' : isMid ? '700 11px Nunito' : '600 10px Nunito';
     gctx.textAlign = 'right';
-    gctx.fillText(v+'%', GRAPH_PAD.l - 5, y + 3);
+    gctx.fillText(v+'%', GRAPH_PAD.l - 6, y + 4);
   }
 
   // X axis ticks — every gen up to maxG (max 20 labels)
   var step = maxG <= 10 ? 1 : maxG <= 20 ? 2 : 5;
   for (var g2 = 0; g2 <= maxG; g2 += step) {
     var x = GRAPH_PAD.l + (g2/maxG)*cW;
-    gctx.strokeStyle = 'rgba(245,160,40,0.1)';
+    gctx.strokeStyle = 'rgba(245,160,40,0.12)';
     gctx.beginPath(); gctx.moveTo(x, GRAPH_PAD.t); gctx.lineTo(x, GRAPH_PAD.t+cH); gctx.stroke();
-    gctx.fillStyle = 'rgba(240,220,185,0.45)';
-    gctx.font = '700 10px Nunito';
+    gctx.fillStyle = 'rgba(240,220,185,0.75)';
+    gctx.font = '700 12px Nunito';
     gctx.textAlign = 'center';
-    gctx.fillText(g2, x, GRAPH_PAD.t + cH + 14);
+    gctx.fillText(g2, x, GRAPH_PAD.t + cH + 18);
   }
 
   // Axis labels
-  gctx.fillStyle = 'rgba(240,220,185,0.6)';
-  gctx.font = '800 11px Nunito';
+  gctx.fillStyle = 'rgba(240,220,185,0.88)';
+  gctx.font = '800 13px Nunito';
   gctx.textAlign = 'center';
-  gctx.fillText('Generation', GRAPH_PAD.l + cW/2, H - 4);
+  gctx.fillText('Generation', GRAPH_PAD.l + cW/2, H - 6);
   gctx.save();
-  gctx.translate(12, GRAPH_PAD.t + cH/2);
+  gctx.translate(13, GRAPH_PAD.t + cH/2);
   gctx.rotate(-Math.PI/2);
   gctx.fillText('% of Population', 0, 0);
   gctx.restore();
@@ -1313,9 +1319,9 @@ function drawGraphCanvas() {
       gctx.stroke();
       // Gen label above dot
       gctx.fillStyle = color;
-      gctx.font = '700 9px Nunito';
+      gctx.font = '700 11px Nunito';
       gctx.textAlign = 'center';
-      gctx.fillText('G'+p.gen, x, y - 9);
+      gctx.fillText('G'+p.gen, x, y - 10);
     });
   }
 
@@ -1432,8 +1438,8 @@ function firePredatorEvent() {
 
 // ── SHEET SUBMISSION ────────────────────────────────────────────────────────
 var SHEET_URLS = {
-  brown: 'PASTE_MR_BROWN_SCRIPT_URL_HERE',
-  gay:   'PASTE_MS_GAY_SCRIPT_URL_HERE',
+  brown: 'https://script.google.com/macros/s/AKfycbyBvcn7G6-tqM9mxGSr24C2hPjn8EXRX796QC2reswS5xny4To0Z-EhNuGmhD7Q4keY5A/exec',
+  gay:   'https://script.google.com/macros/s/AKfycbzSWCQfGJ2xdt5znuspy0r6WlVzfl0wnmwhDPL7jLxaXwim-KA1nVPRxJR8i2l5YuR0/exec',
 };
 
 function submitReflection() {
