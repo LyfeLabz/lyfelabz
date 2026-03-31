@@ -704,22 +704,22 @@ const MAX_POP   = 80;
 const MIN_POP   = 6;
 const MIN_MINORITY = 4;   // soft floor — minority colour never drops below ~5% of MAX_POP
 const START_POP = 50;
-const MAX_GENS  = 20;
-const MIN_GENS  = 12;
-const STABLE_THRESHOLD = 88;
+const MAX_GENS  = 26;
+const MIN_GENS  = 14;
+const STABLE_THRESHOLD = 93;
 const STABLE_RUNS = 3;
 
 const SURVIVAL = {
-  light: [0.76, 0.56],   // narrower gap → slower drift
-  dark:  [0.52, 0.78],
-  grass: [0.62, 0.68],
+  light: [0.74, 0.60],   // gentle gap — slow, visible drift across 20+ gens
+  dark:  [0.56, 0.76],
+  grass: [0.64, 0.68],
 };
 
 // Survival after predator ARRIVES (pressure intensifies)
 const SURVIVAL_PREDATOR_ON = {
-  light: [0.80, 0.38],   // still meaningful shift but not a wipeout
-  dark:  [0.34, 0.82],
-  grass: [0.54, 0.72],
+  light: [0.78, 0.44],   // meaningful shift but floor prevents wipeout
+  dark:  [0.40, 0.80],
+  grass: [0.56, 0.72],
 };
 
 // Survival after predator LEAVES (pressure nearly gone — both survive equally)
@@ -981,7 +981,8 @@ function step() {
   updateUI();
   saveState();
 
-  var total = lightCount + darkCount;
+  var total    = lightCount + darkCount;
+  var lp       = total ? Math.round(lightCount / total * 100) : 50;
   var dominant = Math.max(lp, 100 - lp);
 
   if (gen >= MIN_GENS && dominant >= STABLE_THRESHOLD) {
@@ -1580,7 +1581,7 @@ function firePredatorEvent() {
 
 // ── SHEET SUBMISSION ────────────────────────────────────────────────────────
 var SHEET_URLS = {
-  brown: 'https://script.google.com/macros/s/AKfycbxa03RWNhasvH1NcK0o-Kq-7Hd926iP7SW1jTkv4Uz6DY1jMuZc41Fz5a1v3ikAPgJeUA/exec',
+  brown: 'https://script.google.com/macros/s/AKfycbyBvcn7G6-tqM9mxGSr24C2hPjn8EXRX796QC2reswS5xny4To0Z-EhNuGmhD7Q4keY5A/exec',
   gay:   'https://script.google.com/macros/s/AKfycbzSWCQfGJ2xdt5znuspy0r6WlVzfl0wnmwhDPL7jLxaXwim-KA1nVPRxJR8i2l5YuR0/exec',
 };
 
