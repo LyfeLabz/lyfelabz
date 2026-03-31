@@ -336,36 +336,6 @@
   <p>Which beetles would survive best on this island — and how would the population change over time? Set the environment and find out.</p>
 </div>
 
-<!-- CONTEXT STRIP -->
-<div style="background:var(--dark2); border-bottom:1px solid var(--border); padding:2.5rem 2.5rem;">
-  <div style="max-width:860px; margin:0 auto;">
-    <div style="font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--green); margin-bottom:1.2rem;">🧬 The Science Behind the Simulation</div>
-    <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1.2rem;">
-
-      <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem 1.4rem; border-left:3px solid var(--green);">
-        <div style="font-family:'Fredoka One',cursive; font-size:1rem; color:var(--green); margin-bottom:0.5rem;">Variation Exists</div>
-        <p style="font-size:0.85rem; color:var(--muted); line-height:1.65;">The beetle population starts with two coat colors — light and dark. This natural variation comes from inherited traits passed down through generations. No two beetles are identical.</p>
-      </div>
-
-      <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem 1.4rem; border-left:3px solid var(--teal);">
-        <div style="font-family:'Fredoka One',cursive; font-size:1rem; color:var(--teal); margin-bottom:0.5rem;">Environment Applies Pressure</div>
-        <p style="font-size:0.85rem; color:var(--muted); line-height:1.65;">Beetles that blend into their environment are harder for predators to spot — they survive longer and reproduce more. Beetles that stand out get eaten before they can pass on their traits.</p>
-      </div>
-
-      <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem 1.4rem; border-left:3px solid var(--gold);">
-        <div style="font-family:'Fredoka One',cursive; font-size:1rem; color:var(--gold); margin-bottom:0.5rem;">Traits Are Inherited</div>
-        <p style="font-size:0.85rem; color:var(--muted); line-height:1.65;">Survivors pass their coat color to offspring. Over many generations, the trait that helps survival becomes more common in the population — this is natural selection at work.</p>
-      </div>
-
-      <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.2rem 1.4rem; border-left:3px solid var(--red);">
-        <div style="font-family:'Fredoka One',cursive; font-size:1rem; color:var(--red); margin-bottom:0.5rem;">⚠️ Common Misconception</div>
-        <p style="font-size:0.85rem; color:var(--muted); line-height:1.65;">Beetles don't <em>choose</em> to change color. Individual beetles stay the same their whole lives. It's the <strong>population</strong> that changes — because survivors reproduce and pass on their traits.</p>
-      </div>
-
-    </div>
-  </div>
-</div>
-
 <!-- BEFORE YOU BEGIN -->
 <div class="byb-wrap">
   <div class="byb-inner">
@@ -374,6 +344,10 @@
       <span class="byb-eyebrow">📋 Before You Begin</span>
       <div class="byb-title">Read this first — then simulate</div>
       <p class="byb-sub">This page is a three-step scientific investigation. Complete each step in order.</p>
+      <div style="margin-top:1.2rem; background:rgba(232,112,112,0.07); border:1.5px solid rgba(232,112,112,0.35); border-radius:12px; padding:0.9rem 1.2rem; text-align:left; max-width:620px; margin-left:auto; margin-right:auto;">
+        <div style="font-family:'Fredoka One',cursive; font-size:0.95rem; color:var(--red); margin-bottom:0.35rem;">Common Misconception</div>
+        <p style="font-size:0.85rem; color:var(--muted); line-height:1.65; margin:0;">Beetles don't <em>choose</em> to change color. Individual beetles stay the same their whole lives. It's the <strong>population</strong> that changes — because survivors reproduce and pass on their traits.</p>
+      </div>
     </div>
 
     <!-- STEPS -->
@@ -423,7 +397,7 @@
 </div>
 
 <!-- MODE TOGGLE -->
-<div style="display:flex; justify-content:center; padding:1.2rem 1.5rem 0; gap:0.6rem; align-items:center;">
+<div id="modeToggle" style="display:flex; justify-content:center; padding:1.2rem 1.5rem 0; gap:0.6rem; align-items:center;">
   <button class="mode-tab sim active" id="tabSim" onclick="setMode('sim')">🪲 Simulation</button>
   <div class="mode-divider"></div>
   <div class="tab-tooltip-wrap" id="graphTabWrap">
@@ -585,7 +559,8 @@
     <button class="run-btn reset" onclick="resetSim()">↺ Reset</button>
     <div id="graphCallout" style="display:none; margin-top:0.8rem;">
       <button onclick="setMode('graph')" style="width:100%; padding:0.75rem 1rem; background:rgba(59,200,232,0.12); border:1.5px solid rgba(59,200,232,0.5); border-radius:10px; color:var(--teal); font-family:'Fredoka One',cursive; font-size:1rem; cursor:pointer; letter-spacing:0.02em; transition:background 0.2s;">
-        📊 Simulation Complete — Go to Graph Mode
+        📊 Simulation Complete
+        <br>Go to Graph Mode
       </button>
     </div>
   </div>
@@ -720,11 +695,11 @@ const SURVIVAL = {
   grass: [0.64, 0.68],
 };
 
-// Survival after predator ARRIVES (pressure intensifies)
+// Survival after predator ARRIVES (pressure intensifies sharply)
 const SURVIVAL_PREDATOR_ON = {
-  light: [0.78, 0.44],   // meaningful shift but floor prevents wipeout
-  dark:  [0.40, 0.80],
-  grass: [0.56, 0.72],
+  light: [0.86, 0.28],   // strong shift — camouflage now critical; minority crashes fast
+  dark:  [0.26, 0.88],
+  grass: [0.48, 0.82],
 };
 
 // Survival after predator LEAVES (pressure nearly gone — both survive equally)
@@ -1271,6 +1246,8 @@ function setMode(mode) {
       drawGraphCanvas();
       updateProgressBar();
       gCanvas.style.pointerEvents = gen === 0 ? 'none' : 'auto';
+      var gm = document.getElementById('modeToggle');
+      if (gm) gm.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 30);
   }
 }
@@ -1317,7 +1294,7 @@ function drawGraphCanvas() {
   for (var v = 0; v <= 100; v += 5) {
     var y = GRAPH_PAD.t + cH - (v/100)*cH;
     var isMajor = v % 25 === 0, isMid = v % 10 === 0;
-    gctx.strokeStyle = isMajor ? 'rgba(245,160,40,0.22)' : isMid ? 'rgba(245,160,40,0.12)' : 'rgba(245,160,40,0.06)';
+    gctx.strokeStyle = isMajor ? 'rgba(245,160,40,0.45)' : isMid ? 'rgba(245,160,40,0.28)' : 'rgba(245,160,40,0.15)';
     gctx.beginPath(); gctx.moveTo(GRAPH_PAD.l, y); gctx.lineTo(W-GRAPH_PAD.r, y); gctx.stroke();
     gctx.fillStyle = isMajor ? 'rgba(240,220,185,0.92)' : isMid ? 'rgba(240,220,185,0.65)' : 'rgba(240,220,185,0.40)';
     gctx.font = isMajor ? '800 12px Nunito' : isMid ? '700 11px Nunito' : '600 10px Nunito';
@@ -1328,7 +1305,7 @@ function drawGraphCanvas() {
   // X ticks — every 2 gens with target indicators
   ticks.forEach(function(g2) {
     var x = GRAPH_PAD.l + (g2/maxG)*cW;
-    gctx.strokeStyle = 'rgba(245,160,40,0.12)'; gctx.lineWidth = 1;
+    gctx.strokeStyle = 'rgba(245,160,40,0.25)'; gctx.lineWidth = 1;
     gctx.beginPath(); gctx.moveTo(x, GRAPH_PAD.t); gctx.lineTo(x, GRAPH_PAD.t+cH); gctx.stroke();
     gctx.strokeStyle = 'rgba(245,160,40,0.40)'; gctx.lineWidth = 2;
     gctx.beginPath(); gctx.moveTo(x, GRAPH_PAD.t+cH); gctx.lineTo(x, GRAPH_PAD.t+cH+6); gctx.stroke();
