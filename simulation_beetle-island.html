@@ -118,10 +118,8 @@
 
 
 
-  /* ── DATA TABLE ── */
-  /* ── CHART PANEL — fixed height, never grows with sibling ── */
+  /* ── CHART PANEL ── */
   .chart-panel { align-self: start; }
-
   .legend { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.8rem; }
   .legend-item { display:flex; align-items:center; gap:0.4rem; font-size:0.78rem; font-weight:700; color:var(--muted); }
   .legend-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
@@ -661,18 +659,18 @@ const SURVIVAL = {
   grass: [0.64, 0.68],
 };
 
-// Survival after predator ARRIVES (pressure intensifies sharply)
+// Survival after predator ARRIVES (pressure intensifies)
 const SURVIVAL_PREDATOR_ON = {
-  light: [0.86, 0.28],   // strong shift — camouflage now critical; minority crashes fast
-  dark:  [0.26, 0.88],
-  grass: [0.48, 0.82],
+  light: [0.78, 0.44],   // meaningful shift but floor prevents wipeout
+  dark:  [0.40, 0.80],
+  grass: [0.56, 0.72],
 };
 
 // Survival after predator LEAVES (pressure nearly gone — both survive equally)
 const SURVIVAL_PREDATOR_OFF = {
-  light: [0.72, 0.68],
-  dark:  [0.68, 0.72],
-  grass: [0.70, 0.70],
+  light: [0.82, 0.78],
+  dark:  [0.78, 0.82],
+  grass: [0.80, 0.80],
 };
 
 // ── STATE ──────────────────────────────────────────────────────────────────
@@ -960,7 +958,6 @@ function updateUI() {
   drawChart();
 }
 
-
 function unlockGraphMode() {
   var tab  = document.getElementById('tabGraph');
   var wrap = document.getElementById('graphTabWrap');
@@ -1003,8 +1000,16 @@ function endSim(reason) {
 
   if (reason === 'extinct') {
     outcome.className = 'outcome show extinct';
-    title.textContent = '💀 Population Extinct';
-    msg.textContent   = 'All beetles were eaten by predators. When a trait offers zero camouflage advantage, natural selection eliminates it rapidly. Try a different environment!';
+    title.textContent = '💀 Population Collapsed';
+    var extinctMsg;
+    if (!eventFired) {
+      extinctMsg = 'The beetle population could not survive the environmental pressure. When camouflage is too poor, predators eliminate beetles faster than they can reproduce. Try a different environment!';
+    } else if (eventType === 'arrive') {
+      extinctMsg = 'The new predator was too much for the population to withstand. Selection pressure became so intense that beetles were eaten faster than they could reproduce. Try a different environment!';
+    } else {
+      extinctMsg = 'Even after the predator population crashed, the beetles had already declined too far to recover. The population was too small to sustain itself. Try running again — outcomes can vary!';
+    }
+    msg.textContent = extinctMsg;
   } else {
     var total = lightCount + darkCount;
     var lp = total ? Math.round(lightCount/total*100) : 0;

@@ -107,9 +107,8 @@
   .gen-num { font-family:'Fredoka One',cursive; font-size:2.5rem; color:var(--green); line-height:1; text-shadow:0 0 20px rgba(118,224,179,0.35); }
   .gen-lbl { font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
 
-  /* ── CHART PANEL — fixed height, never grows with sibling ── */
+  /* ── CHART PANEL ── */
   .chart-panel { align-self: start; }
-
   .td-light { color:var(--lightfrog); }
   .td-mid { color:#68d67e; }
   .td-dark { color:#b4dec0; }
@@ -290,7 +289,6 @@
   <h1>Chernobyl Tree Frogs 🐸&#xFE0E;</h1>
   <p>How does a nuclear disaster change a frog population over time? Run the simulation and watch how melanin affects survival before and after the Chernobyl event.</p>
 </div>
-
 
 <div class="byb-wrap">
   <div class="byb-inner">
@@ -1029,7 +1027,6 @@ function updateUI() {
   drawChart();
 }
 
-
 function unlockGraphMode() {
   const tab = document.getElementById('tabGraph');
   const wrap = document.getElementById('graphTabWrap');
@@ -1221,7 +1218,6 @@ function setMode(mode) {
       drawGraphCanvas();
       updateProgressBar();
       gCanvas.style.pointerEvents = gen===0 ? 'none' : 'auto';
-      const gm = document.getElementById('graphMode');
       const gm = document.getElementById('modeToggle');
       if (gm) gm.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 30);
