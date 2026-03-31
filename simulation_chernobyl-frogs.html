@@ -960,6 +960,25 @@ function drawChart() {
   cctx.restore();
 }
 
+function fireChernobylEvent() {
+  const overlay = document.getElementById('eventOverlay');
+  const icon    = document.getElementById('eventIcon');
+  const title   = document.getElementById('eventTitle');
+  const desc    = document.getElementById('eventDesc');
+  if (!overlay) return;
+  icon.textContent  = '☢️';
+  title.textContent = 'Chernobyl Disaster!';
+  desc.textContent  = 'Radiation enters the wetland. Survival now depends on melanin protection.';
+  overlay.classList.remove('drop');
+  overlay.classList.add('spike', 'show');
+  setTimeout(function () {
+    overlay.classList.remove('show');
+    setTimeout(function () {
+      overlay.classList.remove('spike');
+    }, 300);
+  }, 2800);
+}
+
 function getCurrentSurvivalProfile() {
   return phase === 'pre' ? SURVIVAL_PRE : SURVIVAL_POST;
 }
