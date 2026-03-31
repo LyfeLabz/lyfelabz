@@ -140,20 +140,6 @@
   .mode-divider { width:1px; height:20px; background:var(--border); }
 
   .tab-tooltip-wrap { position:relative; display:inline-block; }
-  .tab-tooltip {
-    display:none; position:absolute; top:calc(100% + 8px); left:50%;
-    transform:translateX(-50%);
-    background:rgba(59,200,232,0.12); border:1px solid rgba(59,200,232,0.45);
-    color:var(--teal); font-size:0.72rem; font-weight:800;
-    padding:0.45rem 0.9rem; border-radius:10px; white-space:nowrap;
-    pointer-events:none; z-index:300;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-  }
-  .tab-tooltip::before {
-    content:''; position:absolute; bottom:100%; left:50%; transform:translateX(-50%);
-    border:5px solid transparent; border-bottom-color:rgba(59,200,232,0.45);
-  }
-  .tab-tooltip-wrap.show-tip .tab-tooltip { display:block; }
 
   @keyframes simGlow {
     0%, 100% { box-shadow: 0 0 6px rgba(118,224,179,0.3); }
@@ -397,7 +383,6 @@
   <div class="mode-divider"></div>
   <div class="tab-tooltip-wrap" id="graphTabWrap">
     <button class="mode-tab graph" id="tabGraph" onclick="setMode('graph')" disabled style="opacity:0.4; cursor:not-allowed;" title="Run the simulation first">📊 Graph Mode</button>
-    <div class="tab-tooltip">✅ Simulation done. Plot your data here.</div>
   </div>
 </div>
 
@@ -494,6 +479,12 @@
       <textarea class="reflect-input" id="reflectQ3" placeholder="I predict that… because…"></textarea>
     </div>
 
+    <div class="reflect-q">
+      <span class="reflect-label">Question 4</span>
+      <p class="reflect-prompt">Why was a line graph the correct type of graph to use for this data? What does a line graph show that a bar graph or pie chart could not?</p>
+      <textarea class="reflect-input" id="reflectQ4" placeholder="A line graph was correct because it shows… A bar graph or pie chart would not work because…"></textarea>
+    </div>
+
     <button class="reflect-submit-btn locked-plot" id="reflectSubmitBtn" onclick="submitReflection()">Plot all points to unlock</button>
     <div class="reflect-status" id="reflectStatus"></div>
   </div>
@@ -522,8 +513,10 @@
 
     <button class="run-btn start" id="runBtn" onclick="toggleRun()">▶ Run Simulation</button>
     <button class="run-btn reset" onclick="resetSim()">↺ Reset</button>
-    <div id="graphCallout" style="display:none; margin-top:0.8rem; background:rgba(59,200,232,0.08); border:1px solid rgba(59,200,232,0.35); border-radius:10px; padding:0.7rem 0.9rem; font-size:0.78rem; font-weight:700; color:var(--teal); line-height:1.5; text-align:center;">
-      📊 Simulation complete.<br>Switch to <strong>Graph Mode</strong> above to plot your data.
+    <div id="graphCallout" style="display:none; margin-top:0.8rem;">
+      <button onclick="setMode('graph')" style="width:100%; padding:0.75rem 1rem; background:rgba(59,200,232,0.12); border:1.5px solid rgba(59,200,232,0.5); border-radius:10px; color:var(--teal); font-family:'Fredoka One',cursive; font-size:1rem; cursor:pointer; letter-spacing:0.02em; transition:background 0.2s;">
+        📊 Simulation Complete — Go to Graph Mode
+      </button>
     </div>
   </div>
 
@@ -573,12 +566,6 @@
       </div>
     </div>
 
-    <div class="stat-row" style="margin-bottom:0;">
-      <div class="stat-box" style="min-width:100%;">
-        <div class="stat-num" id="statMelanin" style="color:var(--gold);">0.46</div>
-        <div class="stat-lbl">Average Melanin</div>
-      </div>
-    </div>
   </div>
 
   <div class="panel chart-panel">
@@ -657,7 +644,6 @@ const STABLE_RUNS = 3;
 
 const SURVIVAL_PRE = [0.81, 0.82, 0.83];
 const SURVIVAL_POST = [0.45, 0.62, 0.83];
-const MELANIN = { light: 0.20, medium: 0.55, dark: 0.90 };
 
 const ENV_COLORS = {
   pre:  { sky:'#8cc0bf', water:'#305c52', shore:'#2f463b', haze:'rgba(120,255,180,0.05)' },
@@ -1053,24 +1039,16 @@ function step() {
   if (gen >= totalGens) { endSim('evolved'); return; }
 }
 
-function calculateMelanin() {
-  const total = lightCount + midCount + darkCount;
-  if (!total) return 0;
-  return ((lightCount * MELANIN.light) + (midCount * MELANIN.medium) + (darkCount * MELANIN.dark)) / total;
-}
-
 function updateUI() {
   const total = lightCount + midCount + darkCount;
   const lp = total ? Math.round(lightCount / total * 100) : 0;
   const mp = total ? Math.round(midCount / total * 100) : 0;
   const dp = Math.max(0, 100 - lp - mp);
-  const avgMelanin = calculateMelanin().toFixed(2);
   document.getElementById('genNum').textContent = gen;
   document.getElementById('statLight').textContent = lightCount;
   document.getElementById('statMid').textContent = midCount;
   document.getElementById('statDark').textContent = darkCount;
   document.getElementById('statTotal').textContent = total;
-  document.getElementById('statMelanin').textContent = avgMelanin;
   document.getElementById('lightPct').textContent = lp + '% light';
   document.getElementById('midPct').textContent = mp + '% medium';
   document.getElementById('darkPct').textContent = dp + '% dark';
@@ -1121,7 +1099,6 @@ function unlockGraphMode() {
     tab.removeAttribute('title');
     tab.classList.add('glowing');
   }
-  if (wrap) wrap.classList.add('show-tip');
   const callout = document.getElementById('graphCallout');
   if (callout) callout.style.display = 'block';
   const panel = document.getElementById('reflectPanel');
@@ -1220,8 +1197,6 @@ function resetSim() {
     tab.title = 'Run the simulation first';
     tab.classList.remove('glowing');
   }
-  const wrap = document.getElementById('graphTabWrap');
-  if (wrap) wrap.classList.remove('show-tip');
   const callout = document.getElementById('graphCallout');
   if (callout) callout.style.display = 'none';
   if (currentMode === 'graph') setMode('sim');
@@ -1294,9 +1269,8 @@ function setMode(mode) {
   document.getElementById('tabSim').classList.toggle('active', mode==='sim');
   document.getElementById('tabGraph').classList.toggle('active', mode==='graph');
   if (mode === 'graph') {
-    const tab=document.getElementById('tabGraph'), wrap=document.getElementById('graphTabWrap');
+    const tab=document.getElementById('tabGraph');
     if (tab)  tab.classList.remove('glowing');
-    if (wrap) wrap.classList.remove('show-tip');
     setTimeout(() => {
       gCanvas = document.getElementById('graphCanvas');
       gCanvas.width = gCanvas.offsetWidth;
@@ -1535,6 +1509,7 @@ function saveState() {
       q1:(document.getElementById('reflectQ1')||{}).value||'',
       q2:(document.getElementById('reflectQ2')||{}).value||'',
       q3:(document.getElementById('reflectQ3')||{}).value||'',
+      q4:(document.getElementById('reflectQ4')||{}).value||'',
       teacher:(document.getElementById('reflectTeacher')||{}).value||'',
     }));
   } catch(e) {}
@@ -1555,7 +1530,7 @@ function restoreState() {
     showActual=s.showActual||false; graphChecked=s.graphChecked||false;
     graphAccuracy=s.graphAccuracy!==undefined?s.graphAccuracy:null;
     // Restore reflection fields + wire listeners
-    const flds={reflectQ1:'q1',reflectQ2:'q2',reflectQ3:'q3',reflectTeacher:'teacher'};
+    const flds={reflectQ1:'q1',reflectQ2:'q2',reflectQ3:'q3',reflectQ4:'q4',reflectTeacher:'teacher'};
     Object.keys(flds).forEach(id=>{
       const el=document.getElementById(id);
       if (el){ el.value=s[flds[id]]||''; el.addEventListener('input',saveState); }
@@ -1595,7 +1570,8 @@ function submitReflection() {
   const q1 = document.getElementById('reflectQ1').value.trim();
   const q2 = document.getElementById('reflectQ2').value.trim();
   const q3 = document.getElementById('reflectQ3').value.trim();
-  if (!q1 || !q2 || !q3) { alert('Please answer all three questions before submitting.'); return; }
+  const q4 = document.getElementById('reflectQ4').value.trim();
+  if (!q1 || !q2 || !q3 || !q4) { alert('Please answer all four questions before submitting.'); return; }
   const btn    = document.getElementById('reflectSubmitBtn');
   const status = document.getElementById('reflectStatus');
   btn.disabled = true;
@@ -1607,9 +1583,8 @@ function submitReflection() {
     environment:   'Before and After Disaster',
     eventType:     'Chernobyl Disaster (Gen ' + eventGen + ')',
     totalGens:     gen,
-    graphComplete: isGraphComplete() ? '✅' : '❌',
     accuracy:      graphAccuracy !== null ? graphAccuracy + '%' : '—',
-    q1, q2, q3,
+    q1, q2, q3, q4,
   };
   const params = new URLSearchParams();
   Object.keys(data).forEach(k => params.append(k, data[k]));
@@ -1635,7 +1610,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const restored = restoreState();
     if (!restored) {
       // Wire reflection save listeners for fresh session
-      ['reflectQ1','reflectQ2','reflectQ3','reflectTeacher'].forEach(id => {
+      ['reflectQ1','reflectQ2','reflectQ3','reflectQ4','reflectTeacher'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', saveState);
       });

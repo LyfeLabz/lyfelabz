@@ -156,20 +156,6 @@
 
   /* ── MODE TAB TOOLTIP ── */
   .tab-tooltip-wrap { position:relative; display:inline-block; }
-  .tab-tooltip {
-    display:none; position:absolute; top:calc(100% + 8px); left:50%;
-    transform:translateX(-50%);
-    background:rgba(59,200,232,0.12); border:1px solid rgba(59,200,232,0.45);
-    color:var(--teal); font-size:0.72rem; font-weight:800;
-    padding:0.45rem 0.9rem; border-radius:10px; white-space:nowrap;
-    pointer-events:none; z-index:300;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-  }
-  .tab-tooltip::before {
-    content:''; position:absolute; bottom:100%; left:50%; transform:translateX(-50%);
-    border:5px solid transparent; border-bottom-color:rgba(59,200,232,0.45);
-  }
-  .tab-tooltip-wrap.show-tip .tab-tooltip { display:block; }
 
   /* ── TAB GLOW ANIMATIONS ── */
   @keyframes simGlow {
@@ -442,7 +428,6 @@
   <div class="mode-divider"></div>
   <div class="tab-tooltip-wrap" id="graphTabWrap">
     <button class="mode-tab graph" id="tabGraph" onclick="setMode('graph')" disabled style="opacity:0.4; cursor:not-allowed;" title="Run the simulation first">📊 Graph Mode</button>
-    <div class="tab-tooltip">✅ Simulation done — plot your data here!</div>
   </div>
 </div>
 
@@ -544,6 +529,12 @@
       <textarea class="reflect-input" id="reflectQ3" placeholder="I predict that… because…"></textarea>
     </div>
 
+    <div class="reflect-q">
+      <span class="reflect-label">Question 4</span>
+      <p class="reflect-prompt">Why was a line graph the correct type of graph to use for this data? What does a line graph show that a bar graph or pie chart could not?</p>
+      <textarea class="reflect-input" id="reflectQ4" placeholder="A line graph was correct because it shows… A bar graph or pie chart would not work because…"></textarea>
+    </div>
+
     <button class="reflect-submit-btn locked-plot" id="reflectSubmitBtn" onclick="submitReflection()">Plot all points to unlock</button>
     <div class="reflect-status" id="reflectStatus"></div>
   </div>
@@ -587,8 +578,10 @@
 
     <button class="run-btn start" id="runBtn" onclick="toggleRun()">▶ Run Simulation</button>
     <button class="run-btn reset" onclick="resetSim()">↺ Reset</button>
-    <div id="graphCallout" style="display:none; margin-top:0.8rem; background:rgba(59,200,232,0.08); border:1px solid rgba(59,200,232,0.35); border-radius:10px; padding:0.7rem 0.9rem; font-size:0.78rem; font-weight:700; color:var(--teal); line-height:1.5; text-align:center;">
-      📊 Simulation complete!<br>Switch to <strong>Graph Mode</strong> above to plot your data.
+    <div id="graphCallout" style="display:none; margin-top:0.8rem;">
+      <button onclick="setMode('graph')" style="width:100%; padding:0.75rem 1rem; background:rgba(59,200,232,0.12); border:1.5px solid rgba(59,200,232,0.5); border-radius:10px; color:var(--teal); font-family:'Fredoka One',cursive; font-size:1rem; cursor:pointer; letter-spacing:0.02em; transition:background 0.2s;">
+        📊 Simulation Complete — Go to Graph Mode
+      </button>
     </div>
   </div>
 
@@ -1066,8 +1059,6 @@ function unlockGraphMode() {
     // Start graph tab glowing
     tab.classList.add('glowing');
   }
-  // Show tooltip — stays until user clicks graph mode
-  if (wrap) wrap.classList.add('show-tip');
 
   var callout = document.getElementById('graphCallout');
   if (callout) callout.style.display = 'block';
@@ -1169,8 +1160,6 @@ function resetSim() {
   // Re-lock graph tab
   var tab = document.getElementById('tabGraph');
   if (tab) { tab.disabled = true; tab.style.opacity = '0.4'; tab.style.cursor = 'not-allowed'; tab.title = 'Run the simulation first'; }
-  var wrap = document.getElementById('graphTabWrap');
-  if (wrap) wrap.classList.remove('show-tip');
   var callout = document.getElementById('graphCallout');
   if (callout) callout.style.display = 'none';
   // Clear saved state and graph
@@ -1266,9 +1255,7 @@ function setMode(mode) {
 
   if (mode === 'graph') {
     var tab  = document.getElementById('tabGraph');
-    var wrap = document.getElementById('graphTabWrap');
     if (tab)  tab.classList.remove('glowing');
-    if (wrap) wrap.classList.remove('show-tip');
 
     setTimeout(function() {
       gCanvas = document.getElementById('graphCanvas');
@@ -1514,6 +1501,7 @@ function saveState() {
       q1:(document.getElementById('reflectQ1')||{}).value||'',
       q2:(document.getElementById('reflectQ2')||{}).value||'',
       q3:(document.getElementById('reflectQ3')||{}).value||'',
+      q4:(document.getElementById('reflectQ4')||{}).value||'',
       teacher:(document.getElementById('reflectTeacher')||{}).value||'',
     }));
   } catch(e) {}
@@ -1537,7 +1525,7 @@ function restoreState() {
     document.querySelectorAll('.env-btn').forEach(function(b){ b.classList.remove('active'); });
     var ae=document.querySelector('.env-btn.'+env); if (ae) ae.classList.add('active');
     // Restore reflection fields + wire save listeners
-    var flds={reflectQ1:'q1',reflectQ2:'q2',reflectQ3:'q3',reflectTeacher:'teacher'};
+    var flds={reflectQ1:'q1',reflectQ2:'q2',reflectQ3:'q3',reflectQ4:'q4',reflectTeacher:'teacher'};
     Object.keys(flds).forEach(function(id){
       var el=document.getElementById(id);
       if (el){ el.value=s[flds[id]]||''; el.addEventListener('input',saveState); }
@@ -1605,8 +1593,9 @@ function submitReflection() {
   var q1 = document.getElementById('reflectQ1').value.trim();
   var q2 = document.getElementById('reflectQ2').value.trim();
   var q3 = document.getElementById('reflectQ3').value.trim();
-  if (!q1 || !q2 || !q3) {
-    alert('Please answer all three questions before submitting.');
+  var q4 = document.getElementById('reflectQ4').value.trim();
+  if (!q1 || !q2 || !q3 || !q4) {
+    alert('Please answer all four questions before submitting.');
     return;
   }
 
@@ -1625,11 +1614,11 @@ function submitReflection() {
     environment:   envNames[env] || env,
     eventType:     eventDesc,
     totalGens:     gen,
-    graphComplete: isGraphComplete() ? '✅' : '❌',
     accuracy:      graphAccuracy !== null ? graphAccuracy + '%' : '—',
     q1:            q1,
     q2:            q2,
     q3:            q3,
+    q4:            q4,
   };
 
   var params = new URLSearchParams();
@@ -1664,7 +1653,7 @@ window.addEventListener('load', function() {
     if (!restored) updateUI();
     // Wire reflection saveState listeners (fresh session, no restore)
     if (!restored) {
-      ['reflectQ1','reflectQ2','reflectQ3','reflectTeacher'].forEach(function(id) {
+      ['reflectQ1','reflectQ2','reflectQ3','reflectQ4','reflectTeacher'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.addEventListener('input', saveState);
       });
