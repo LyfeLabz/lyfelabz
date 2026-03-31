@@ -110,14 +110,6 @@
   /* ── CHART PANEL — fixed height, never grows with sibling ── */
   .chart-panel { align-self: start; }
 
-  .data-table-wrap { overflow-x:auto; margin-top:0.5rem; }
-  .data-table { width:100%; border-collapse:collapse; font-size:0.70rem; }
-  .data-table th { background:rgba(118,224,179,0.1); color:var(--green); font-size:0.60rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; padding:0.4rem 0.4rem; text-align:center; border-bottom:1px solid var(--border); }
-  .data-table th:first-child { text-align:left; }
-  .data-table td { padding:0.35rem 0.4rem; text-align:center; border-bottom:1px solid rgba(118,224,179,0.06); font-weight:700; color:var(--muted); transition:background 0.2s; }
-  .data-table td:first-child { text-align:left; color:var(--green); font-weight:900; }
-  .data-table tr:last-child td { border-bottom:none; }
-  .data-table tr.new-row td { background:rgba(118,224,179,0.08); }
   .td-light { color:var(--lightfrog); }
   .td-mid { color:#68d67e; }
   .td-dark { color:#b4dec0; }
@@ -227,11 +219,11 @@
   .reflect-status.error   { display:block; background:rgba(232,112,112,0.1); border:1px solid rgba(232,112,112,0.35); color:var(--red); }
   .reflect-status.sending { display:block; background:rgba(59,200,232,0.1); border:1px solid rgba(59,200,232,0.35); color:var(--teal); }
 
-  .outcome { display:none; text-align:center; padding:1.2rem; border-radius:14px; margin-top:1rem; grid-column:1/-1; }
+  .outcome { display:none; background:var(--card); border:1px solid var(--border); border-radius:18px; padding:1.5rem; text-align:center; align-self:start; }
   .outcome.show { display:block; }
-  .outcome.evolved { background:rgba(118,224,179,0.1); border:1px solid rgba(118,224,179,0.4); }
-  .outcome.extinct { background:rgba(232,112,112,0.1); border:1px solid rgba(232,112,112,0.35); }
-  .outcome h3 { font-family:'Fredoka One',cursive; font-size:1.4rem; margin-bottom:0.4rem; }
+  .outcome.evolved { border-color:rgba(118,224,179,0.5); background:rgba(118,224,179,0.07); }
+  .outcome.extinct { border-color:rgba(232,112,112,0.45); background:rgba(232,112,112,0.07); }
+  .outcome h3 { font-family:'Fredoka One',cursive; font-size:1.5rem; margin-bottom:0.5rem; }
   .outcome.evolved h3 { color:var(--green); }
   .outcome.extinct h3 { color:var(--red); }
   .outcome p { font-size:0.9rem; color:var(--muted); line-height:1.6; }
@@ -555,30 +547,7 @@
     <canvas id="chartCanvas" height="460"></canvas>
   </div>
 
-  <div class="panel">
-    <div class="panel-title"><span class="pticon">📋</span> Generation Data</div>
-    <p style="font-size:0.68rem; color:var(--muted); opacity:0.7; margin-bottom:0.5rem;">Scroll right to see all columns →</p>
-    <div class="data-table-wrap">
-      <table class="data-table" id="dataTable">
-        <thead>
-          <tr>
-            <th>Gen</th>
-            <th>Light #</th>
-            <th>Medium #</th>
-            <th>Dark #</th>
-            <th>Total</th>
-            <th>% Light</th>
-            <th>% Medium</th>
-            <th>% Dark</th>
-          </tr>
-        </thead>
-        <tbody id="dataTableBody">
-          <tr><td colspan="8" style="text-align:center; font-style:italic; opacity:0.5;">Data will appear as generations run…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
+  <!-- OUTCOME CARD -->
   <div class="outcome" id="outcome">
     <h3 id="outcomeTitle"></h3>
     <p id="outcomeMsg"></p>
@@ -1058,35 +1027,8 @@ function updateUI() {
   document.getElementById('darkBar').style.width = dp + '%';
   drawPond();
   drawChart();
-  updateDataTable();
 }
 
-function updateDataTable() {
-  const tbody = document.getElementById('dataTableBody');
-  if (!tbody) return;
-  if (gen === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; font-style:italic; opacity:0.5;">Data will appear as generations run…</td></tr>';
-    return;
-  }
-  const total = lightCount + midCount + darkCount;
-  const lp = total ? Math.round(lightCount / total * 100) : 0;
-  const mp = total ? Math.round(midCount / total * 100) : 0;
-  const dp = Math.max(0, 100 - lp - mp);
-  if (tbody.rows.length === 1 && tbody.rows[0].cells.length === 1) tbody.innerHTML = '';
-  const tr = document.createElement('tr');
-  tr.className = 'new-row';
-  tr.innerHTML = '<td>' + gen + '</td>' +
-    '<td class="td-light">' + lightCount + '</td>' +
-    '<td class="td-mid">' + midCount + '</td>' +
-    '<td class="td-dark">' + darkCount + '</td>' +
-    '<td class="td-total">' + total + '</td>' +
-    '<td class="td-light">' + lp + '%</td>' +
-    '<td class="td-mid">' + mp + '%</td>' +
-    '<td class="td-dark">' + dp + '%</td>';
-  tbody.insertBefore(tr, tbody.firstChild);
-  setTimeout(() => tr.classList.remove('new-row'), 600);
-  while (tbody.rows.length > 30) tbody.removeChild(tbody.lastChild);
-}
 
 function unlockGraphMode() {
   const tab = document.getElementById('tabGraph');
@@ -1201,7 +1143,6 @@ function resetSim() {
   const callout = document.getElementById('graphCallout');
   if (callout) callout.style.display = 'none';
   if (currentMode === 'graph') setMode('sim');
-  updateDataTable();
   updateUI();
   updateProgressBar();
 }
