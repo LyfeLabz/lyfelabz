@@ -503,6 +503,11 @@
     <p style="font-size:0.82rem; color:var(--muted); margin-bottom:1.2rem; line-height:1.6;">Answer after you've finished plotting your graph. Submit when complete.</p>
 
     <div class="teacher-select-wrap" style="margin-bottom:1.2rem;">
+      <span class="reflect-label">Your Name <span style="color:var(--red);">*</span></span>
+      <input type="text" class="teacher-select" id="reflectName" placeholder="First and last name…" autocomplete="name">
+    </div>
+
+    <div class="teacher-select-wrap" style="margin-bottom:1.2rem;">
       <span class="reflect-label">Your Teacher <span style="color:var(--red);">*</span></span>
       <select class="teacher-select" id="reflectTeacher">
         <option value="">Select your teacher…</option>
@@ -1504,6 +1509,7 @@ function saveState() {
       q3:(document.getElementById('reflectQ3')||{}).value||'',
       q4:(document.getElementById('reflectQ4')||{}).value||'',
       teacher:(document.getElementById('reflectTeacher')||{}).value||'',
+      studentName:(document.getElementById('reflectName')||{}).value||'',
     }));
   } catch(e) {}
 }
@@ -1526,7 +1532,7 @@ function restoreState() {
     document.querySelectorAll('.env-btn').forEach(function(b){ b.classList.remove('active'); });
     var ae=document.querySelector('.env-btn.'+env); if (ae) ae.classList.add('active');
     // Restore reflection fields + wire save listeners
-    var flds={reflectQ1:'q1',reflectQ2:'q2',reflectQ3:'q3',reflectQ4:'q4',reflectTeacher:'teacher'};
+    var flds={reflectQ1:'q1',reflectQ2:'q2',reflectQ3:'q3',reflectQ4:'q4',reflectTeacher:'teacher',reflectName:'studentName'};
     Object.keys(flds).forEach(function(id){
       var el=document.getElementById(id);
       if (el){ el.value=s[flds[id]]||''; el.addEventListener('input',saveState); }
@@ -1591,6 +1597,11 @@ function submitReflection() {
     alert('Please select your teacher before submitting.');
     return;
   }
+  var studentName = document.getElementById('reflectName').value.trim();
+  if (!studentName) {
+    alert('Please enter your name before submitting.');
+    return;
+  }
   var q1 = document.getElementById('reflectQ1').value.trim();
   var q2 = document.getElementById('reflectQ2').value.trim();
   var q3 = document.getElementById('reflectQ3').value.trim();
@@ -1612,6 +1623,7 @@ function submitReflection() {
   var data = {
     tab:           'Beetle Island',
     date:          new Date().toLocaleDateString(),
+    studentName:   studentName,
     environment:   envNames[env] || env,
     eventType:     eventDesc,
     totalGens:     gen,
@@ -1631,7 +1643,7 @@ function submitReflection() {
     status.className = 'reflect-status success';
     status.textContent = '✅ Submitted! Great work.';
     btn.textContent = '✅ Submitted';
-    document.querySelectorAll('.reflect-input, .teacher-select').forEach(function(el) { el.disabled = true; });
+    document.querySelectorAll('.reflect-input, .teacher-select, #reflectName').forEach(function(el) { el.disabled = true; });
     try { localStorage.removeItem(LS_KEY); } catch(e) {}
   })
   .catch(function() {
@@ -1654,7 +1666,7 @@ window.addEventListener('load', function() {
     if (!restored) updateUI();
     // Wire reflection saveState listeners (fresh session, no restore)
     if (!restored) {
-      ['reflectQ1','reflectQ2','reflectQ3','reflectQ4','reflectTeacher'].forEach(function(id) {
+      ['reflectQ1','reflectQ2','reflectQ3','reflectQ4','reflectTeacher','reflectName'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.addEventListener('input', saveState);
       });

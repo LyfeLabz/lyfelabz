@@ -453,6 +453,11 @@
     <p style="font-size:0.82rem; color:var(--muted); margin-bottom:1.2rem; line-height:1.6;">Answer after you've finished plotting your graph. Submit when complete.</p>
 
     <div class="teacher-select-wrap" style="margin-bottom:1.2rem;">
+      <span class="reflect-label">Your Name <span style="color:var(--red);">*</span></span>
+      <input type="text" class="teacher-select" id="reflectName" placeholder="First and last name…" autocomplete="name">
+    </div>
+
+    <div class="teacher-select-wrap" style="margin-bottom:1.2rem;">
       <span class="reflect-label">Your Teacher <span style="color:var(--red);">*</span></span>
       <select class="teacher-select" id="reflectTeacher">
         <option value="">Select your teacher…</option>
@@ -1530,6 +1535,7 @@ function saveState() {
       q3:(document.getElementById('reflectQ3')||{}).value||'',
       q4:(document.getElementById('reflectQ4')||{}).value||'',
       teacher:(document.getElementById('reflectTeacher')||{}).value||'',
+      studentName:(document.getElementById('reflectName')||{}).value||'',
     }));
   } catch(e) {}
 }
@@ -1549,7 +1555,7 @@ function restoreState() {
     showActual=s.showActual||false; graphChecked=s.graphChecked||false;
     graphAccuracy=s.graphAccuracy!==undefined?s.graphAccuracy:null;
     // Restore reflection fields + wire listeners
-    const flds={reflectQ1:'q1',reflectQ2:'q2',reflectQ3:'q3',reflectQ4:'q4',reflectTeacher:'teacher'};
+    const flds={reflectQ1:'q1',reflectQ2:'q2',reflectQ3:'q3',reflectQ4:'q4',reflectTeacher:'teacher',reflectName:'studentName'};
     Object.keys(flds).forEach(id=>{
       const el=document.getElementById(id);
       if (el){ el.value=s[flds[id]]||''; el.addEventListener('input',saveState); }
@@ -1584,6 +1590,8 @@ const SHEET_URLS = {
 function submitReflection() {
   const teacher = document.getElementById('reflectTeacher').value;
   if (!teacher) { alert('Please select your teacher before submitting.'); return; }
+  const studentName = document.getElementById('reflectName').value.trim();
+  if (!studentName) { alert('Please enter your name before submitting.'); return; }
   if (!isGraphComplete()) { alert('Please complete the graph before submitting.'); return; }
   if (!graphChecked) { alert('Please check your graph before submitting.'); return; }
   const q1 = document.getElementById('reflectQ1').value.trim();
@@ -1599,6 +1607,7 @@ function submitReflection() {
   const data = {
     tab:           'Chernobyl Frogs',
     date:          new Date().toLocaleDateString(),
+    studentName,
     environment:   'Before and After Disaster',
     eventType:     'Chernobyl Disaster (Gen ' + eventGen + ')',
     totalGens:     gen,
@@ -1613,7 +1622,7 @@ function submitReflection() {
       status.className = 'reflect-status success';
       status.textContent = '✅ Submitted! Great work.';
       btn.textContent = '✅ Submitted';
-      document.querySelectorAll('.reflect-input, .teacher-select').forEach(el => { el.disabled = true; });
+      document.querySelectorAll('.reflect-input, .teacher-select, #reflectName').forEach(el => { el.disabled = true; });
       try { localStorage.removeItem(LS_KEY); } catch(e) {}
     })
     .catch(() => {
@@ -1629,7 +1638,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const restored = restoreState();
     if (!restored) {
       // Wire reflection save listeners for fresh session
-      ['reflectQ1','reflectQ2','reflectQ3','reflectQ4','reflectTeacher'].forEach(id => {
+      ['reflectQ1','reflectQ2','reflectQ3','reflectQ4','reflectTeacher','reflectName'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', saveState);
       });
