@@ -786,6 +786,36 @@ body.stem-active .stem-detail {
 .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
 
   /* ── CONTINUE ── */
+  .quiz-option.selected  { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .student-info-box { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--green); }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .info-field input, .info-field select { width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600; transition: border-color 0.2s; appearance: none; -webkit-appearance: none; }
+  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(46,204,113,0.15); }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238aafca' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #1e2f42; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(46,204,113,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-submitted { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+  .score-error { font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+  .concept-tag { font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; cursor: pointer; transition: all 0.2s; display: inline-block; }
+  .concept-tag:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+  .ct-green  { color: #2ecc71; background: rgba(46,204,113,0.08);  border-color: rgba(46,204,113,0.3); }
+  .ct-teal   { color: #1abc9c; background: rgba(26,188,156,0.08);  border-color: rgba(26,188,156,0.3); }
+  .ct-blue   { color: #7cc8f8; background: rgba(41,140,212,0.1);   border-color: rgba(41,140,212,0.3); }
+  .ct-purple { color: #b47fff; background: rgba(180,127,255,0.08); border-color: rgba(180,127,255,0.3); }
+  .ct-amber  { color: #f5a028; background: rgba(245,160,40,0.08);  border-color: rgba(245,160,40,0.3); }
+  @keyframes orgPulse { 0% { background: rgba(46,204,113,0); box-shadow: none; border-radius: 12px; } 20% { background: rgba(46,204,113,0.22); box-shadow: 0 0 0 6px rgba(46,204,113,0.14); border-radius: 12px; } 60% { background: rgba(46,204,113,0.11); box-shadow: 0 0 0 9px rgba(46,204,113,0.07); border-radius: 12px; } 100% { background: rgba(46,204,113,0); box-shadow: none; border-radius: 12px; } }
+  .org-card.pulsing { animation: orgPulse 3s ease forwards; }
+
   #continue { background: var(--dark2); }
   .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
   .cont-card {
@@ -838,6 +868,7 @@ body.stem-active .stem-detail {
   <ul class="nav-links">
     <li><a href="#organelles">Organelles</a></li>
     <li><a href="#city">Cell City</a></li>
+    <li><a href="#concepts">Vocab</a></li>
     <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
@@ -874,9 +905,6 @@ body.stem-active .stem-detail {
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
   <span class="stem-badge" data-tip="Provide evidence that all organisms (unicellular and multicellular) are made of cells.">6.MS-LS1-1</span>
   <span class="stem-badge" data-tip="Develop and use a model to describe how parts of cells contribute to cellular functions: obtaining food, water, and nutrients, disposing of wastes, and providing energy for cellular processes.">6.MS-LS1-2</span></div>
-</div>
-
-
 
 <!-- ORGANELLES REFERENCE SECTION -->
 <section id="organelles">
@@ -885,7 +913,7 @@ body.stem-active .stem-detail {
     <h2 class="section-title">Cell Organelles 🧫&#xFE0E;</h2>
     <p class="section-desc">Organelles are structures inside a cell that each do a specialized job. Think of them as the departments of a tiny city.</p>
     <div class="org-grid">
-      <div class="org-card">
+      <div class="org-card" id="org-membrane">
         <span class="org-emoji">🚦</span>
         <div class="org-name">Cell Membrane</div>
         <div class="org-function">Surrounds the cell and controls what enters and exits. Like a <strong>toll bridge</strong>.</div>
@@ -894,7 +922,7 @@ body.stem-active .stem-detail {
           <span class="tag tag-animal">🐾 Animal ✓</span>
         </div>
       </div>
-      <div class="org-card">
+      <div class="org-card" id="org-wall">
         <span class="org-emoji">🏰</span>
         <div class="org-name">Cell Wall</div>
         <div class="org-function">Rigid outer layer that supports plant cells, letting them stand tall. Like a <strong>castle wall</strong>.</div>
@@ -903,7 +931,7 @@ body.stem-active .stem-detail {
           <span class="tag tag-no">🐾 Animal ✗</span>
         </div>
       </div>
-      <div class="org-card">
+      <div class="org-card" id="org-nucleus">
         <span class="org-emoji">🧠</span>
         <div class="org-name">Nucleus</div>
         <div class="org-function">Houses DNA with instructions for making proteins. The <strong>brain</strong> of the cell.</div>
@@ -912,7 +940,7 @@ body.stem-active .stem-detail {
           <span class="tag tag-animal">🐾 Animal ✓</span>
         </div>
       </div>
-      <div class="org-card">
+      <div class="org-card" id="org-cytoplasm">
         <span class="org-emoji">🍩</span>
         <div class="org-name">Cytoplasm</div>
         <div class="org-function">Gel-like substance filling the cell, allowing organelles and materials to move. Like <strong>jelly in a donut</strong>.</div>
@@ -921,7 +949,7 @@ body.stem-active .stem-detail {
           <span class="tag tag-animal">🐾 Animal ✓</span>
         </div>
       </div>
-      <div class="org-card">
+      <div class="org-card" id="org-mitochondria">
         <span class="org-emoji">⚡</span>
         <div class="org-name">Mitochondria</div>
         <div class="org-function">The powerhouse that produces energy (ATP) for the cell. Like a <strong>power plant</strong>.</div>
@@ -930,7 +958,7 @@ body.stem-active .stem-detail {
           <span class="tag tag-animal">🐾 Animal ✓</span>
         </div>
       </div>
-      <div class="org-card">
+      <div class="org-card" id="org-ribosomes">
         <span class="org-emoji">🏗️</span>
         <div class="org-name">Ribosomes</div>
         <div class="org-function">Take instructions from the nucleus and create proteins. Like a <strong>construction site</strong>.</div>
@@ -939,7 +967,7 @@ body.stem-active .stem-detail {
           <span class="tag tag-animal">🐾 Animal ✓</span>
         </div>
       </div>
-      <div class="org-card">
+      <div class="org-card" id="org-chloroplasts">
         <span class="org-emoji">☀️</span>
         <div class="org-name">Chloroplasts</div>
         <div class="org-function">Convert sunlight into energy through photosynthesis. Like a <strong>solar panel</strong>.</div>
@@ -948,7 +976,7 @@ body.stem-active .stem-detail {
           <span class="tag tag-no">🐾 Animal ✗</span>
         </div>
       </div>
-      <div class="org-card">
+      <div class="org-card" id="org-vacuoles">
         <span class="org-emoji">🪣</span>
         <div class="org-name">Vacuoles</div>
         <div class="org-function">Store water and nutrients. Plants have <strong>one large</strong> central vacuole; animals have <strong>many small</strong> ones. Like a <strong>water tank</strong>.</div>
@@ -957,7 +985,7 @@ body.stem-active .stem-detail {
           <span class="tag tag-animal">🐾 Animal — Many small</span>
         </div>
       </div>
-      <div class="org-card">
+      <div class="org-card" id="org-lysosomes">
         <span class="org-emoji">🚛</span>
         <div class="org-name">Lysosomes</div>
         <div class="org-function">Waste management system of the cell — breaks down waste and keeps the cell clean. Like a <strong>garbage truck</strong>.</div>
@@ -966,7 +994,7 @@ body.stem-active .stem-detail {
           <span class="tag tag-animal">🐾 Animal ✓</span>
         </div>
       </div>
-      <div class="org-card">
+      <div class="org-card" id="org-er">
         <span class="org-emoji">🚇</span>
         <div class="org-name">Rough Endoplasmic Reticulum</div>
         <div class="org-function">Makes and transports proteins through the cell. Like <strong>Boston's T</strong> (subway system).</div>
@@ -975,7 +1003,7 @@ body.stem-active .stem-detail {
           <span class="tag tag-animal">🐾 Animal ✓</span>
         </div>
       </div>
-      <div class="org-card">
+      <div class="org-card" id="org-golgi">
         <span class="org-emoji">📦</span>
         <div class="org-name">Golgi Bodies</div>
         <div class="org-function">Process and package proteins for shipment outside the cell. Like the <strong>post office</strong>.</div>
@@ -988,30 +1016,12 @@ body.stem-active .stem-detail {
   </div>
 </section>
 
-<!-- EXTENSION BANNER -->
-<div style="background:var(--dark2); padding: 0 2rem 4rem;">
-  <div class="container">
-    <div class="extension-banner">
-      <div class="extension-banner-icon">📦</div>
-      <div class="extension-banner-body">
-        <div class="extension-banner-tag-orange">⭐ Extension Activity</div>
-        <h3>How Does a Cell Ship a Protein?</h3>
-        <p>Ready to go deeper? Trace the full protein pathway step by step — from DNA to delivery — and see how it connects to insulin, antibodies, and real diseases.</p>
-      </div>
-      <a href="extension_organelles.html" class="btn btn-extension-orange">Explore Extension</a>
-    </div>
-  </div>
-</div>
-
 <!-- CELL CITY ANALOGY -->
 <section id="city">
   <div class="container">
     <span class="section-label">Cell City Analogy</span>
     <h2 class="section-title">The Cell is a City 🏙️</h2>
     <p class="section-desc">Every organelle has a city counterpart. Just like a city needs all its departments working together to thrive — so does your cell!</p>
-    <div class="city-intro">
-      <p>🌆 Imagine your cell is a <strong>bustling city</strong>. It has a government center, a power grid, factories, delivery trucks, waste management, and border control — all working in perfect harmony to keep the city alive and running. Remove any one piece, and the whole system suffers.</p>
-    </div>
     <div class="city-grid">
       <div class="city-card">
         <div class="city-icon-box">🏛️</div>
@@ -1106,6 +1116,28 @@ body.stem-active .stem-detail {
 </section>
 
 <!-- VIDEO: Cell Organelle Rap -->
+<section id="concepts" style="background: var(--dark); padding: 5rem 2rem;">
+  <div class="container">
+    <span class="section-label">🏷️ Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom:0.5rem;">Every term below appeared in this lesson. Click any pill to jump to its explanation.</p>
+    <p style="font-size:0.78rem; color:rgba(46,204,113,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">👆 Click any term to jump to its explanation in the lesson</p>
+    <div style="display:flex; flex-wrap:wrap; gap:0.65rem;">
+      <span class="concept-tag ct-green"  onclick="vocabJump('org-membrane')">Cell Membrane</span>
+      <span class="concept-tag ct-teal"   onclick="vocabJump('org-wall')">Cell Wall</span>
+      <span class="concept-tag ct-blue"   onclick="vocabJump('org-nucleus')">Nucleus</span>
+      <span class="concept-tag ct-blue"   onclick="vocabJump('org-cytoplasm')">Cytoplasm</span>
+      <span class="concept-tag ct-amber"  onclick="vocabJump('org-mitochondria')">Mitochondria</span>
+      <span class="concept-tag ct-green"  onclick="vocabJump('org-ribosomes')">Ribosomes</span>
+      <span class="concept-tag ct-teal"   onclick="vocabJump('org-chloroplasts')">Chloroplasts</span>
+      <span class="concept-tag ct-blue"   onclick="vocabJump('org-vacuoles')">Vacuoles</span>
+      <span class="concept-tag ct-purple" onclick="vocabJump('org-lysosomes')">Lysosomes</span>
+      <span class="concept-tag ct-green"  onclick="vocabJump('org-er')">Rough Endoplasmic Reticulum</span>
+      <span class="concept-tag ct-amber"  onclick="vocabJump('org-golgi')">Golgi Bodies</span>
+    </div>
+  </div>
+</section>
+
 <section id="watch" style="background:var(--dark2); padding:5rem 2rem;">
   <div class="container">
     <span class="section-label">Video — Cell Organelles</span>
@@ -1120,18 +1152,63 @@ body.stem-active .stem-detail {
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section" style="background:var(--dark); padding:5rem 2rem;">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">✅ Check Your Understanding</span>
     <h2 class="section-title">Cell Organelles Quiz 🧫</h2>
-    <p class="section-desc">Put your organelle knowledge to the test! Can you identify the right part for each job?</p>
-    <div class="quiz-progress">
-      <div class="progress-bar"><div class="progress-fill" id="q2-progress"></div></div>
-      <div class="progress-text" id="q2-progress-text">0 / 9</div>
+    <p class="section-desc">10 questions on cell organelles and their functions. Fill in your info below — your score will be sent to your teacher when you submit.</p>
+
+    <div class="student-info-box">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="student-name">Your Name</label>
+          <input type="text" id="student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="teacher-select">Teacher</label>
+          <select id="teacher-select">
+            <option value="">— Select —</option>
+            <option value="MrC">Mr. C</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="block-select">Block</label>
+          <select id="block-select">
+            <option value="">— Select —</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="err-block">Please select your block.</div>
+        </div>
+      </div>
     </div>
-    <div id="quiz2-questions"></div>
-    <div class="score-board" id="q2-score">
-      <div class="big-score" id="q2-score-num">0/9</div>
-      <p id="q2-score-msg"></p>
-      <button class="reset-btn" onclick="resetQuiz(2)">🔄 Try Again</button>
+
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
+        <div class="progress-text" id="q1-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <div id="quiz1-questions"></div>
+
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+    </div>
+
+    <div class="score-board" id="q1-score">
+      <div class="big-score" id="q1-score-num"></div>
+      <p id="q1-score-msg"></p>
+      <div id="submit-status"></div>
+      <button class="reset-btn" onclick="resetQuiz()">🔄 Try Again</button>
     </div>
   </div>
 </section>
@@ -1141,7 +1218,7 @@ body.stem-active .stem-detail {
 <!-- CONTINUE LEARNING -->
 <section id="continue">
   <div class="container">
-    <span class="section-label">🚀 Keep Going</span>
+    <span class="section-label">🚀 Go Further</span>
     <h2 class="section-title">More Learning</h2>
     <p class="section-desc" style="white-space:nowrap; max-width:none;">The lesson is just the beginning — go deeper, test your skills, or see how it all connects.</p>
     <div class="continue-grid" style="text-align:left;">
@@ -1176,154 +1253,145 @@ body.stem-active .stem-detail {
 </footer>
 
 <script>
-const quizData = {
-  2: {
-    total: 9,
-    questions: [
-      {
-        q: "Which organelle is described as 'the powerhouse of the cell' because it produces energy?",
-        options: ["Nucleus","Ribosome","Mitochondria","Chloroplast"],
-        correct: 2,
-        explanation: "The mitochondria produce ATP (energy) for the cell through cellular respiration — it's literally called the powerhouse!"
-      },
-      {
-        q: "The cell membrane is compared to a toll bridge because it:",
-        options: ["Gives the cell its rigid shape","Controls what enters and exits the cell","Stores water and nutrients","Produces proteins"],
-        correct: 1,
-        explanation: "Like a toll bridge, the cell membrane controls traffic — deciding what can pass into and out of the cell."
-      },
-      {
-        q: "Which organelle is found in plant cells but NOT in animal cells and is responsible for photosynthesis?",
-        options: ["Mitochondria","Vacuole","Ribosome","Chloroplast"],
-        correct: 3,
-        explanation: "Chloroplasts capture sunlight and convert it to glucose through photosynthesis. They're only found in plant (and algae) cells!"
-      },
-      {
-        q: "The Golgi bodies are compared to a post office because they:",
-        options: ["Generate energy for the cell","Break down waste materials","Process and package proteins for shipment","Control what enters the cell"],
-        correct: 2,
-        explanation: "Like a post office, Golgi bodies receive proteins from the ER, package them up, and ship them to where they're needed."
-      },
-      {
-        q: "How are vacuoles different in plant cells vs. animal cells?",
-        options: ["Plant cells have many small vacuoles; animal cells have one large one","Both have the same number","Plant cells have one large central vacuole; animal cells have many small ones","Neither type of cell has vacuoles"],
-        correct: 2,
-        explanation: "Plant cells have ONE large central vacuole (think of a big water storage tank). Animal cells have MANY small vacuoles."
-      },
-      {
-        q: "Which organelle is compared to 'jelly in a donut' and helps organelles move around inside the cell?",
-        options: ["Cell wall","Vacuole","Nucleus","Cytoplasm"],
-        correct: 3,
-        explanation: "The cytoplasm is the gel-like fluid that fills the cell. Just like jelly lets a donut's filling flow, cytoplasm lets materials move around."
-      },
-      {
-        q: "A student says: 'The ribosomes are like the construction crew.' Why is this a good analogy?",
-        options: ["Because ribosomes build the cell wall","Because ribosomes follow instructions (from DNA) to build proteins","Because ribosomes remove waste from the cell","Because ribosomes generate energy"],
-        correct: 1,
-        explanation: "Construction crews follow blueprints to build things. Ribosomes follow DNA's instructions (via mRNA) to build proteins for the cell."
-      },
-      {
-        q: "Which organelle acts as the 'brain' of the cell and houses the cell's DNA?",
-        options: ["Mitochondria","Ribosome","Nucleus","Golgi bodies"],
-        correct: 2,
-        explanation: "The nucleus is the control center — it contains DNA with all the instructions for the cell's functions. Found in both plant and animal cells."
-      },
-      {
-        q: "The lysosomes are described as the cell's waste management system. What do they actually do?",
-        options: ["Produce energy for the cell","Transport proteins through the cell","Package proteins for export","Break down waste materials and keep the cell clean"],
-        correct: 3,
-        explanation: "Lysosomes contain enzymes that break down worn-out cell parts, food particles, and invaders — keeping the cell clean and healthy."
-      }
-    ]
-  }
+const SCRIPT_URLS = {
+  MrC:   'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay: 'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
 
-const quizState = { 2: { answered: 0, correct: 0 } };
+const quizQuestions = [
+  { q: "Which organelle is described as 'the powerhouse of the cell' because it produces energy?", options: ["Nucleus","Ribosome","Mitochondria","Chloroplast"], correct: 2, explanation: "The mitochondria produce ATP (energy) for the cell through cellular respiration — it's literally called the powerhouse!" },
+  { q: "The cell membrane is compared to a toll bridge because it:", options: ["Gives the cell its rigid shape","Controls what enters and exits the cell","Stores water and nutrients","Produces proteins"], correct: 1, explanation: "Like a toll bridge, the cell membrane controls traffic — deciding what can pass into and out of the cell." },
+  { q: "Which organelle is found in plant cells but NOT in animal cells and is responsible for photosynthesis?", options: ["Mitochondria","Vacuole","Ribosome","Chloroplast"], correct: 3, explanation: "Chloroplasts capture sunlight and convert it to glucose through photosynthesis. They're only found in plant (and algae) cells!" },
+  { q: "The Golgi bodies are compared to a post office because they:", options: ["Generate energy for the cell","Break down waste materials","Process and package proteins for shipment","Control what enters the cell"], correct: 2, explanation: "Like a post office, Golgi bodies receive proteins from the ER, package them up, and ship them to where they're needed." },
+  { q: "How are vacuoles different in plant cells vs. animal cells?", options: ["Plant cells have many small vacuoles; animal cells have one large one","Both have the same number","Plant cells have one large central vacuole; animal cells have many small ones","Neither type of cell has vacuoles"], correct: 2, explanation: "Plant cells have ONE large central vacuole (think of a big water storage tank). Animal cells have MANY small vacuoles." },
+  { q: "Which organelle is compared to 'jelly in a donut' and helps organelles move around inside the cell?", options: ["Cell wall","Vacuole","Nucleus","Cytoplasm"], correct: 3, explanation: "The cytoplasm is the gel-like fluid that fills the cell. Just like jelly lets a donut's filling flow, cytoplasm lets materials move around." },
+  { q: "A student says: 'The ribosomes are like the construction crew.' Why is this a good analogy?", options: ["Because ribosomes build the cell wall","Because ribosomes follow instructions (from DNA) to build proteins","Because ribosomes remove waste from the cell","Because ribosomes generate energy"], correct: 1, explanation: "Construction crews follow blueprints to build things. Ribosomes follow DNA's instructions (via mRNA) to build proteins for the cell." },
+  { q: "Which organelle acts as the 'brain' of the cell and houses the cell's DNA?", options: ["Mitochondria","Ribosome","Nucleus","Golgi bodies"], correct: 2, explanation: "The nucleus is the control center — it contains DNA with all the instructions for the cell's functions. Found in both plant and animal cells." },
+  { q: "The lysosomes are described as the cell's waste management system. What do they actually do?", options: ["Produce energy for the cell","Transport proteins through the cell","Package proteins for export","Break down waste materials and keep the cell clean"], correct: 3, explanation: "Lysosomes contain enzymes that break down worn-out cell parts, food particles, and invaders — keeping the cell clean and healthy." },
+  { q: "Which of the following organelles is found in plant cells but NOT in animal cells?", options: ["Mitochondria","Ribosomes","Cell wall","Lysosomes"], correct: 2, explanation: "The cell wall is a rigid outer layer found only in plant cells — it provides structure and support. Animal cells have a cell membrane but no cell wall." }
+];
 
-function buildQuiz(num) {
-  const data = quizData[num];
-  const container = document.getElementById(`quiz${num}-questions`);
+const quizState = { selected: [], submitted: false };
+
+function buildQuiz() {
+  const container = document.getElementById('quiz1-questions');
   container.innerHTML = '';
-  quizState[num] = { answered: 0, correct: 0 };
-  updateProgress(num);
-
-  data.questions.forEach((q, qi) => {
+  quizState.selected  = new Array(quizQuestions.length).fill(null);
+  quizState.submitted = false;
+  document.getElementById('submit-btn').disabled = true;
+  updateProgress();
+  quizQuestions.forEach((q, qi) => {
     const letters = ['A','B','C','D'];
     const optionsHTML = q.options.map((opt, oi) => `
-      <button class="quiz-option" onclick="selectAnswer(${num}, ${qi}, ${oi})" id="q${num}-${qi}-${oi}">
-        <span class="option-letter">${letters[oi]}</span>
-        <span>${opt}</span>
-      </button>
-    `).join('');
-
+      <button class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q-${qi}-${oi}">
+        <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
+      </button>`).join('');
     const card = document.createElement('div');
     card.className = 'quiz-card';
-    card.id = `q${num}-card-${qi}`;
     card.innerHTML = `
       <div class="quiz-header">
         <div class="quiz-num">${qi + 1}</div>
         <div class="quiz-question-text">${q.q}</div>
       </div>
       <div class="quiz-options">${optionsHTML}</div>
-      <div class="option-feedback" id="q${num}-feedback-${qi}"></div>
-    `;
+      <div class="option-feedback" id="q-feedback-${qi}"></div>`;
     container.appendChild(card);
   });
 }
 
-function selectAnswer(quizNum, qi, chosenIndex) {
-  const q = quizData[quizNum].questions[qi];
-  const isCorrect = chosenIndex === q.correct;
-  q.options.forEach((_, oi) => {
-    const btn = document.getElementById(`q${quizNum}-${qi}-${oi}`);
-    btn.classList.add('disabled');
-    if (oi === q.correct) btn.classList.add('revealed-correct');
+function selectAnswer(qi, chosenIndex) {
+  if (quizState.submitted) return;
+  const prev = quizState.selected[qi];
+  if (prev !== null) document.getElementById(`q-${qi}-${prev}`).classList.remove('selected');
+  quizState.selected[qi] = chosenIndex;
+  document.getElementById(`q-${qi}-${chosenIndex}`).classList.add('selected');
+  updateProgress();
+  document.getElementById('submit-btn').disabled = !quizState.selected.every(s => s !== null);
+}
+
+function updateProgress() {
+  const total    = quizQuestions.length;
+  const answered = quizState.selected.filter(s => s !== null).length;
+  document.getElementById('q1-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('q1-progress-text').textContent = `${answered} / ${total} selected`;
+}
+
+function validateStudentInfo() {
+  const name    = document.getElementById('student-name').value.trim();
+  const teacher = document.getElementById('teacher-select').value;
+  const block   = document.getElementById('block-select').value;
+  document.getElementById('err-name').classList.toggle('show', !name);
+  document.getElementById('err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name, teacher, block };
+}
+
+function submitQuiz() {
+  if (quizState.submitted) return;
+  const { valid, name, teacher, block } = validateStudentInfo();
+  if (!valid) { document.querySelector('.student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+  quizState.submitted = true;
+  document.getElementById('submit-btn').disabled = true;
+  let correct = 0;
+  quizQuestions.forEach((q, qi) => {
+    const chosen = quizState.selected[qi];
+    const isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach((_, oi) => {
+      const btn = document.getElementById(`q-${qi}-${oi}`);
+      btn.classList.add('disabled'); btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById(`q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+    const fb = document.getElementById(`q-feedback-${qi}`);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
   });
-  const chosenBtn = document.getElementById(`q${quizNum}-${qi}-${chosenIndex}`);
-  chosenBtn.classList.add(isCorrect ? 'correct' : 'incorrect');
-  const feedback = document.getElementById(`q${quizNum}-feedback-${qi}`);
-  if (isCorrect) {
-    feedback.className = 'option-feedback correct-fb';
-    feedback.innerHTML = '✅ Correct! ' + q.explanation;
-    quizState[quizNum].correct++;
-  } else {
-    feedback.className = 'option-feedback incorrect-fb';
-    feedback.innerHTML = '❌ Not quite. ' + q.explanation;
-  }
-  quizState[quizNum].answered++;
-  updateProgress(quizNum);
-  if (quizState[quizNum].answered === quizData[quizNum].total) showScore(quizNum);
+  const total = quizQuestions.length;
+  const pct   = Math.round(correct / total * 100);
+  const score = `${correct}/${total}`;
+  const msg   = pct === 100 ? '🏆 Perfect score! You know every organelle and its job!'
+    : pct >= 80 ? '🌟 Great work! You really know your organelles. Review any you missed.'
+    : pct >= 60 ? '📚 Good effort! Go back over the notes and try again.'
+    : '💪 Keep going — review each organelle carefully. You\'ve got this!';
+  document.getElementById('q1-score-num').textContent = score;
+  document.getElementById('q1-score-msg').textContent = msg;
+  const sb = document.getElementById('q1-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const teacherLabel = teacher === 'MrC' ? 'Mr. C' : 'Ms. Gay';
+  const params = new URLSearchParams({ tab: 'Organelles', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%' });
+  fetch(SCRIPT_URLS[teacher] + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('submit-status').innerHTML = data.status === 'success'
+        ? '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>'
+        : '<div class="score-error">⚠️ Submission issue: ' + (data.message || 'Unknown error') + '</div>';
+    })
+    .catch(() => { document.getElementById('submit-status').innerHTML = '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>'; });
 }
 
-function updateProgress(num) {
-  const total = quizData[num].total;
-  const answered = quizState[num].answered;
-  const pct = (answered / total) * 100;
-  document.getElementById(`q${num}-progress`).style.width = pct + '%';
-  document.getElementById(`q${num}-progress-text`).textContent = `${answered} / ${total}`;
+function resetQuiz() {
+  document.getElementById('q1-score').classList.remove('show');
+  document.getElementById('submit-status').innerHTML = '';
+  buildQuiz();
 }
 
-function showScore(num) {
-  const { correct, answered } = quizState[num];
-  const pct = Math.round((correct / answered) * 100);
-  let msg = '';
-  if (pct === 100) msg = '🏆 Perfect score! You are a cell biology superstar!';
-  else if (pct >= 80) msg = '🌟 Great work! You really know your organelles. Review any you missed.';
-  else if (pct >= 60) msg = '📚 Good effort! Go back over your notes and try again.';
-  else msg = "💪 Keep studying — you'll get there! Review the notes above and try again.";
-  document.getElementById(`q${num}-score-num`).textContent = `${correct}/${answered}`;
-  document.getElementById(`q${num}-score-msg`).textContent = msg;
-  document.getElementById(`q${num}-score`).classList.add('show');
-  document.getElementById(`q${num}-score`).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+function vocabJump(targetId) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 120;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 600);
 }
 
-function resetQuiz(num) {
-  document.getElementById(`q${num}-score`).classList.remove('show');
-  buildQuiz(num);
-}
-
-buildQuiz(2);
+buildQuiz();
 </script>
-<script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
+<script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 </body>
 </html>

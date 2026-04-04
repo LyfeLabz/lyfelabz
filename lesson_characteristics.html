@@ -411,6 +411,7 @@
     border-color: rgba(52,152,219,0.5);
     background: rgba(52,152,219,0.06);
   }
+  .quiz-option.selected  { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
   .quiz-option.correct { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
   .quiz-option.incorrect { border-color: var(--red) !important; background: rgba(231,76,60,0.08) !important; }
   .quiz-option.disabled { pointer-events: none; }
@@ -439,11 +440,15 @@
     padding: 1.8rem;
     margin-bottom: 1.2rem;
   }
+  .quiz-progress-sticky {
+    position: sticky; top: 64px; z-index: 100;
+    background: var(--dark2); padding: 0.85rem 0 0.75rem;
+    margin-bottom: 2rem; border-bottom: 1px solid var(--border);
+  }
   .quiz-progress {
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 2rem;
   }
   .progress-bar {
     flex: 1;
@@ -492,6 +497,81 @@
     transition: all 0.25s;
   }
   .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+  /* ── STUDENT INFO BOX ── */
+  .student-info-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--green);
+  }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  .info-field label {
+    display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem;
+  }
+  .info-field input, .info-field select {
+    width: 100%; padding: 0.7rem 1rem;
+    background: rgba(255,255,255,0.04); border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem; font-weight: 600; transition: border-color 0.2s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .info-field input:focus, .info-field select:focus {
+    outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(46,204,113,0.15);
+  }
+  .info-field select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238aafca' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem;
+  }
+  .info-field select option { background: #1e2f42; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  /* ── SUBMIT BUTTON ── */
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn {
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px;
+    font-weight: 900; font-size: 1.05rem; cursor: pointer;
+    font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em;
+  }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(46,204,113,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  /* ── SCORE STATUS ── */
+  .score-submitted {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--green); background: rgba(46,204,113,0.1);
+    border: 1px solid rgba(46,204,113,0.3); padding: 0.4rem 1rem;
+    border-radius: 99px; margin-bottom: 1.5rem; display: block;
+  }
+  .score-error {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.8rem; font-weight: 800;
+    color: #e87070; background: rgba(231,76,60,0.1);
+    border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem;
+    border-radius: 99px; margin-bottom: 1.5rem; display: block;
+  }
+
+  /* ── VOCAB PILLS ── */
+  .concept-tag {
+    font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px;
+    border: 1px solid; cursor: pointer; transition: all 0.2s; display: inline-block;
+  }
+  .concept-tag:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+  .ct-green  { color: #2ecc71; background: rgba(46,204,113,0.08);  border-color: rgba(46,204,113,0.3); }
+  .ct-teal   { color: #1abc9c; background: rgba(26,188,156,0.08);  border-color: rgba(26,188,156,0.3); }
+  .ct-blue   { color: #7cc8f8; background: rgba(41,140,212,0.1);   border-color: rgba(41,140,212,0.3); }
+  .ct-purple { color: #b47fff; background: rgba(180,127,255,0.08); border-color: rgba(180,127,255,0.3); }
+  @keyframes termPulse {
+    0%   { background: rgba(46,204,113,0);    box-shadow: none; border-radius: 8px; }
+    20%  { background: rgba(46,204,113,0.22); box-shadow: 0 0 0 6px rgba(46,204,113,0.14); border-radius: 8px; }
+    60%  { background: rgba(46,204,113,0.11); box-shadow: 0 0 0 9px rgba(46,204,113,0.07); border-radius: 8px; }
+    100% { background: rgba(46,204,113,0);    box-shadow: none; border-radius: 8px; }
+  }
+  .char-card.pulsing { animation: termPulse 3s ease forwards; }
 
   /* ===== FOOTER ===== */
   footer {
@@ -826,6 +906,7 @@ body.stem-active .stem-detail {
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
     <li><a href="#characteristics">Life</a></li>
+    <li><a href="#concepts">Vocab</a></li>
     <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
@@ -869,43 +950,62 @@ body.stem-active .stem-detail {
     <h2 class="section-title">Characteristics of Life 🌱&#xFE0E;</h2>
     <p class="section-desc">All living things share six key characteristics. If something checks all six boxes — it's alive! Learn each one below.</p>
     <div class="char-grid">
-      <div class="char-card">
+      <div class="char-card" id="char-cells">
         <span class="char-number">01</span>
         <span class="char-icon">🦠</span>
         <div class="char-name">Made of Cells</div>
         <div class="char-desc">All living organisms consist of one or more cells. A single-celled organism is <strong>unicellular</strong>; many-celled is <strong>multicellular</strong>.</div>
       </div>
-      <div class="char-card">
+      <div class="char-card" id="char-energy">
         <span class="char-number">02</span>
         <span class="char-icon">⚡</span>
         <div class="char-name">Obtain &amp; Use Energy</div>
         <div class="char-desc">Living things need a source of energy for growth and development. Plants use sunlight; animals eat food.</div>
       </div>
-      <div class="char-card">
+      <div class="char-card" id="char-grow">
         <span class="char-number">03</span>
         <span class="char-icon">🌱</span>
         <div class="char-name">Grow &amp; Develop</div>
         <div class="char-desc">Organisms increase in size and go through developmental changes over their lifetime.</div>
       </div>
-      <div class="char-card">
+      <div class="char-card" id="char-reproduce">
         <span class="char-number">04</span>
         <span class="char-icon">👶</span>
         <div class="char-name">Reproduce</div>
         <div class="char-desc">Living organisms can produce offspring, either <strong>sexually</strong> (two parents) or <strong>asexually</strong> (one parent).</div>
       </div>
-      <div class="char-card">
+      <div class="char-card" id="char-stimuli">
         <span class="char-number">05</span>
         <span class="char-icon">👁️</span>
         <div class="char-name">Respond to Stimuli</div>
         <div class="char-desc">Organisms sense and react to changes in their environment — like a plant bending toward light.</div>
       </div>
-      <div class="char-card">
+      <div class="char-card" id="char-homeostasis">
         <span class="char-number">06</span>
         <span class="char-icon">⚖️</span>
         <div class="char-name">Maintain Homeostasis</div>
         <div class="char-desc">Living things regulate their internal environment to keep conditions stable — like your body keeping a steady temperature.</div>
       </div>
     </div>
+
+    <!-- KEY VOCABULARY -->
+    <section id="concepts" style="background:transparent; padding: 3rem 0 0;">
+      <span class="section-label">🏷️ Key Vocabulary</span>
+      <h2 class="section-title">Vocabulary to Know</h2>
+      <p class="section-desc" style="margin-bottom:0.5rem;">Every term below appeared in this lesson. Click any pill to jump to its explanation.</p>
+      <p style="font-size:0.78rem; color:rgba(46,204,113,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">👆 Click any term to jump to its explanation in the lesson</p>
+      <div style="display:flex; flex-wrap:wrap; gap:0.65rem;">
+        <span class="concept-tag ct-green"  onclick="vocabJump('char-cells')">Made of Cells</span>
+        <span class="concept-tag ct-teal"   onclick="vocabJump('char-energy')">Obtain &amp; Use Energy</span>
+        <span class="concept-tag ct-green"  onclick="vocabJump('char-grow')">Grow &amp; Develop</span>
+        <span class="concept-tag ct-teal"   onclick="vocabJump('char-reproduce')">Reproduce</span>
+        <span class="concept-tag ct-blue"   onclick="vocabJump('char-stimuli')">Respond to Stimuli</span>
+        <span class="concept-tag ct-blue"   onclick="vocabJump('char-stimuli')">Stimulus</span>
+        <span class="concept-tag ct-purple" onclick="vocabJump('char-homeostasis')">Maintain Homeostasis</span>
+        <span class="concept-tag ct-purple" onclick="vocabJump('char-homeostasis')">Homeostasis</span>
+        <span class="concept-tag ct-green"  onclick="vocabJump('char-cells')">Organism</span>
+      </div>
+    </section>
 
     <!-- VIDEO -->
     <div id="watch" style="margin-top:4rem;">
@@ -919,51 +1019,68 @@ body.stem-active .stem-detail {
   </div>
 </section>
 
-<!-- GAME BANNER -->
-<div style="background:var(--dark2); padding: 0 2rem 4rem;">
-  <div class="container">
-    <div class="extension-banner" style="background:linear-gradient(135deg,rgba(46,204,113,0.1) 0%,rgba(26,188,156,0.07) 100%);border-color:rgba(46,204,113,0.35);">
-      <div class="extension-banner-icon">🎮</div>
-      <div class="extension-banner-body">
-        <div class="extension-banner-tag" style="color:var(--green);background:rgba(46,204,113,0.12);border-color:rgba(46,204,113,0.3);">🎯 Game</div>
-        <h3>Is It Alive?</h3>
-        <p>Put the six characteristics to the test — decide if each scenario describes something living or nonliving and rack up your score.</p>
-      </div>
-      <a href="game_is-it-alive.html" class="btn btn-primary">Play Now 🚀</a>
-    </div>
-  </div>
-</div>
 
-<!-- EXTENSION BANNER: GRAY ZONE -->
-<div style="background:var(--dark); padding: 0 2rem 4rem;">
-  <div class="container">
-    <div class="extension-banner" style="background:linear-gradient(135deg,rgba(241,196,15,0.1) 0%,rgba(231,76,60,0.07) 100%);border-color:rgba(241,196,15,0.35);">
-      <div class="extension-banner-icon">⚠️</div>
-      <div class="extension-banner-body">
-        <div class="extension-banner-tag" style="color:var(--yellow);background:rgba(241,196,15,0.12);border-color:rgba(241,196,15,0.3);">⭐ Extension Activity</div>
-        <h3>The Gray Zone</h3>
-        <p>Fire grows and spreads. Crystals organize themselves. Mules can't reproduce. Robots respond to stimuli. Apply the six characteristics to five things that don't fit neatly into "living" or "nonliving."</p>
-      </div>
-      <a href="extension_gray-zone.html" class="btn btn-primary" style="background:linear-gradient(135deg,var(--yellow),var(--orange));color:#1a1a1a;box-shadow:0 4px 20px rgba(241,196,15,0.3);">Explore Extension 🔍</a>
-    </div>
-  </div>
-</div>
 
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">✅ Check Your Understanding</span>
     <h2 class="section-title">Characteristics of Life Quiz 📝</h2>
-    <p class="section-desc">Test your knowledge on all six characteristics of life! Click an answer to see instant feedback.</p>
-    <div class="quiz-progress">
-      <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
-      <div class="progress-text" id="q1-progress-text">0 / 10</div>
+    <p class="section-desc">10 questions on the characteristics of life. Fill in your info below — your score will be sent to your teacher when you submit.</p>
+
+    <div class="student-info-box">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="student-name">Your Name</label>
+          <input type="text" id="student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="teacher-select">Teacher</label>
+          <select id="teacher-select">
+            <option value="">— Select —</option>
+            <option value="MrC">Mr. C</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="block-select">Block</label>
+          <select id="block-select">
+            <option value="">— Select —</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="err-block">Please select your block.</div>
+        </div>
+      </div>
     </div>
+
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
+        <div class="progress-text" id="q1-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
     <div id="quiz1-questions"></div>
+
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+    </div>
+
     <div class="score-board" id="q1-score">
-      <div class="big-score" id="q1-score-num">0/10</div>
+      <div class="big-score" id="q1-score-num"></div>
       <p id="q1-score-msg"></p>
-      <button class="reset-btn" onclick="resetQuiz(1)">🔄 Try Again</button>
+      <div id="submit-status"></div>
+      <button class="reset-btn" onclick="resetQuiz()">🔄 Try Again</button>
     </div>
   </div>
 </section>
@@ -973,7 +1090,7 @@ body.stem-active .stem-detail {
 <!-- CONTINUE LEARNING -->
 <section id="continue">
   <div class="container">
-    <span class="section-label">🚀 Keep Going</span>
+    <span class="section-label">🚀 Go Further</span>
     <h2 class="section-title">More Learning</h2>
     <p class="section-desc" style="white-space:nowrap; max-width:none;">The lesson is just the beginning — go deeper, test your skills, or see how it all connects.</p>
     <div class="continue-grid" style="text-align:left;">
@@ -1001,161 +1118,211 @@ body.stem-active .stem-detail {
 </footer>
 
 <script>
-const quizData = {
-  1: {
-    total: 10,
-    questions: [
-      {
-        q: "Which of the following is NOT one of the six characteristics of life?",
-        options: ["Made of cells","Maintain homeostasis","Have a backbone","Reproduce"],
-        correct: 2,
-        explanation: "Having a backbone is NOT a characteristic of life — many living things like worms, insects, and plants have no backbone!"
-      },
-      {
-        q: "A sunflower turns its face to follow sunlight throughout the day. Which characteristic of life does this demonstrate?",
-        options: ["Reproduce","Respond to stimuli","Grow and develop","Obtain and use energy"],
-        correct: 1,
-        explanation: "Turning toward light (phototropism) is a response to a stimulus — the stimulus is light!"
-      },
-      {
-        q: "Your body shivers when you're cold and sweats when you're hot. This is an example of:",
-        options: ["Reproducing","Growing and developing","Maintaining homeostasis","Obtaining energy"],
-        correct: 2,
-        explanation: "Shivering and sweating are ways your body regulates its internal temperature — that's homeostasis in action!"
-      },
-      {
-        q: "A seed sprouts and grows into a tall tree over many years. Which TWO characteristics of life does this BEST show?",
-        options: ["Respond to stimuli & reproduce","Grow and develop & obtain and use energy","Maintain homeostasis & made of cells","Reproduce & respond to stimuli"],
-        correct: 1,
-        explanation: "Growing from a seed into a tree shows 'Grow and develop' and requires 'Obtain and use energy' (from sunlight and soil nutrients)."
-      },
-      {
-        q: "A dog has puppies. Which characteristic of life does this represent?",
-        options: ["Maintain homeostasis","Obtain and use energy","Reproduce","Grow and develop"],
-        correct: 2,
-        explanation: "Producing offspring (puppies) is reproduction — one of the six characteristics of life."
-      },
-      {
-        q: "A kitten grows into a full-grown cat over several years. Which single characteristic of life does this BEST illustrate?",
-        options: ["Reproduce","Obtain and use energy","Grow and develop","Maintain homeostasis"],
-        correct: 2,
-        explanation: "Increasing in size and changing form over time is the 'Grow and develop' characteristic."
-      },
-      {
-        q: "Which characteristic of life requires that ALL living things — from bacteria to blue whales — have at least one cell?",
-        options: ["Respond to stimuli","Obtain and use energy","Reproduce","Made of cells"],
-        correct: 3,
-        explanation: "The cell theory states that all living things are made of cells. This is characteristic #1 — no exceptions!"
-      },
-      {
-        q: "A cactus closes its pores during the hottest part of the day to conserve water. Which characteristic does this BEST represent?",
-        options: ["Grow and develop","Reproduce","Respond to stimuli","Maintain homeostasis"],
-        correct: 3,
-        explanation: "Wait — this is actually tricky! Closing pores is a response to the stimulus of heat/dry conditions. It's 'Respond to stimuli.' (Homeostasis is the result, but the mechanism is responding to a stimulus.)"
-      },
-      {
-        q: "A fire can grow, consume oxygen, and release energy. Is a fire alive? Why or why not?",
-        options: ["Yes — it uses energy and grows","No — it cannot reproduce or maintain homeostasis","Yes — it responds to oxygen as a stimulus","No — it is not made of cells, but otherwise qualifies"],
-        correct: 1,
-        explanation: "Fire fails multiple characteristics: it cannot reproduce, is not made of cells, and doesn't maintain homeostasis. ALL six must be met to be considered alive."
-      },
-      {
-        q: "Which characteristic explains why living things need to eat food, absorb sunlight, or break down other molecules to survive?",
-        options: ["Maintain homeostasis","Obtain and use energy","Grow and develop","Made of cells"],
-        correct: 1,
-        explanation: "All living things need a source of energy to power their life processes — this is the 'Obtain and use energy' characteristic."
-      }
-    ]
-  }
+const SCRIPT_URLS = {
+  MrC:   'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay: 'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
 
-const quizState = { 1: { answered: 0, correct: 0 } };
-</script>
+const quizQuestions = [
+  {
+    q: "Which of the following is NOT one of the six characteristics of life?",
+    options: ["Made of cells","Maintain homeostasis","Have a backbone","Reproduce"],
+    correct: 2,
+    explanation: "Having a backbone is NOT a characteristic of life — many living things like worms, insects, and plants have no backbone!"
+  },
+  {
+    q: "A sunflower turns its face to follow sunlight throughout the day. Which characteristic of life does this demonstrate?",
+    options: ["Reproduce","Respond to stimuli","Grow and develop","Obtain and use energy"],
+    correct: 1,
+    explanation: "Turning toward light (phototropism) is a response to a stimulus — the stimulus is light!"
+  },
+  {
+    q: "Your body shivers when you're cold and sweats when you're hot. This is an example of:",
+    options: ["Reproducing","Growing and developing","Maintaining homeostasis","Obtaining energy"],
+    correct: 2,
+    explanation: "Shivering and sweating are ways your body regulates its internal temperature — that's homeostasis in action!"
+  },
+  {
+    q: "A seed sprouts and grows into a tall tree over many years. Which TWO characteristics of life does this BEST show?",
+    options: ["Respond to stimuli & reproduce","Grow and develop & obtain and use energy","Maintain homeostasis & made of cells","Reproduce & respond to stimuli"],
+    correct: 1,
+    explanation: "Growing from a seed into a tree shows 'Grow and develop' and requires 'Obtain and use energy' (from sunlight and soil nutrients)."
+  },
+  {
+    q: "A dog has puppies. Which characteristic of life does this represent?",
+    options: ["Maintain homeostasis","Obtain and use energy","Reproduce","Grow and develop"],
+    correct: 2,
+    explanation: "Producing offspring (puppies) is reproduction — one of the six characteristics of life."
+  },
+  {
+    q: "A kitten grows into a full-grown cat over several years. Which single characteristic of life does this BEST illustrate?",
+    options: ["Reproduce","Obtain and use energy","Grow and develop","Maintain homeostasis"],
+    correct: 2,
+    explanation: "Increasing in size and changing form over time is the 'Grow and develop' characteristic."
+  },
+  {
+    q: "Which characteristic of life requires that ALL living things — from bacteria to blue whales — have at least one cell?",
+    options: ["Respond to stimuli","Obtain and use energy","Reproduce","Made of cells"],
+    correct: 3,
+    explanation: "The cell theory states that all living things are made of cells. This is characteristic #1 — no exceptions!"
+  },
+  {
+    q: "A cactus closes its pores during the hottest part of the day to conserve water. Which characteristic does this BEST represent?",
+    options: ["Grow and develop","Reproduce","Respond to stimuli","Maintain homeostasis"],
+    correct: 2,
+    explanation: "Closing pores is a response to the stimulus of heat and dry conditions — that's 'Respond to stimuli.' Homeostasis is the goal, but responding to a stimulus is the mechanism."
+  },
+  {
+    q: "A fire can grow, consume oxygen, and release energy. Is a fire alive? Why or why not?",
+    options: ["Yes — it uses energy and grows","No — it cannot reproduce or maintain homeostasis","Yes — it responds to oxygen as a stimulus","No — it is not made of cells, but otherwise qualifies"],
+    correct: 1,
+    explanation: "Fire fails multiple characteristics: it cannot reproduce, is not made of cells, and doesn't maintain homeostasis. ALL six must be met to be considered alive."
+  },
+  {
+    q: "Which characteristic explains why living things need to eat food, absorb sunlight, or break down other molecules to survive?",
+    options: ["Maintain homeostasis","Obtain and use energy","Grow and develop","Made of cells"],
+    correct: 1,
+    explanation: "All living things need a source of energy to power their life processes — this is the 'Obtain and use energy' characteristic."
+  }
+];
 
-<script>
-function buildQuiz(num) {
-  const data = quizData[num];
-  const container = document.getElementById(`quiz${num}-questions`);
+const quizState = { selected: [], submitted: false };
+
+function buildQuiz() {
+  const container = document.getElementById('quiz1-questions');
   container.innerHTML = '';
-  quizState[num] = { answered: 0, correct: 0 };
-  updateProgress(num);
+  quizState.selected  = new Array(quizQuestions.length).fill(null);
+  quizState.submitted = false;
+  document.getElementById('submit-btn').disabled = true;
+  updateProgress();
 
-  data.questions.forEach((q, qi) => {
+  quizQuestions.forEach((q, qi) => {
     const letters = ['A','B','C','D'];
     const optionsHTML = q.options.map((opt, oi) => `
-      <button class="quiz-option" onclick="selectAnswer(${num}, ${qi}, ${oi})" id="q${num}-${qi}-${oi}">
-        <span class="option-letter">${letters[oi]}</span>
-        <span>${opt}</span>
-      </button>
-    `).join('');
-
+      <button class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q-${qi}-${oi}">
+        <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
+      </button>`).join('');
     const card = document.createElement('div');
     card.className = 'quiz-card';
-    card.id = `q${num}-card-${qi}`;
     card.innerHTML = `
       <div class="quiz-header">
         <div class="quiz-num">${qi + 1}</div>
         <div class="quiz-question-text">${q.q}</div>
       </div>
       <div class="quiz-options">${optionsHTML}</div>
-      <div class="option-feedback" id="q${num}-feedback-${qi}"></div>
-    `;
+      <div class="option-feedback" id="q-feedback-${qi}"></div>`;
     container.appendChild(card);
   });
 }
 
-function selectAnswer(quizNum, qi, chosenIndex) {
-  const q = quizData[quizNum].questions[qi];
-  const isCorrect = chosenIndex === q.correct;
-  q.options.forEach((_, oi) => {
-    const btn = document.getElementById(`q${quizNum}-${qi}-${oi}`);
-    btn.classList.add('disabled');
-    if (oi === q.correct) btn.classList.add('revealed-correct');
-  });
-  const chosenBtn = document.getElementById(`q${quizNum}-${qi}-${chosenIndex}`);
-  chosenBtn.classList.add(isCorrect ? 'correct' : 'incorrect');
-  const feedback = document.getElementById(`q${quizNum}-feedback-${qi}`);
-  if (isCorrect) {
-    feedback.className = 'option-feedback correct-fb';
-    feedback.innerHTML = '✅ Correct! ' + q.explanation;
-    quizState[quizNum].correct++;
-  } else {
-    feedback.className = 'option-feedback incorrect-fb';
-    feedback.innerHTML = '❌ Not quite. ' + q.explanation;
+function selectAnswer(qi, chosenIndex) {
+  if (quizState.submitted) return;
+  const prev = quizState.selected[qi];
+  if (prev !== null) document.getElementById(`q-${qi}-${prev}`).classList.remove('selected');
+  quizState.selected[qi] = chosenIndex;
+  document.getElementById(`q-${qi}-${chosenIndex}`).classList.add('selected');
+  updateProgress();
+  document.getElementById('submit-btn').disabled = !quizState.selected.every(s => s !== null);
+}
+
+function updateProgress() {
+  const total    = quizQuestions.length;
+  const answered = quizState.selected.filter(s => s !== null).length;
+  document.getElementById('q1-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('q1-progress-text').textContent = `${answered} / ${total} selected`;
+}
+
+function validateStudentInfo() {
+  const name    = document.getElementById('student-name').value.trim();
+  const teacher = document.getElementById('teacher-select').value;
+  const block   = document.getElementById('block-select').value;
+  document.getElementById('err-name').classList.toggle('show', !name);
+  document.getElementById('err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name, teacher, block };
+}
+
+function submitQuiz() {
+  if (quizState.submitted) return;
+  const { valid, name, teacher, block } = validateStudentInfo();
+  if (!valid) {
+    document.querySelector('.student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
   }
-  quizState[quizNum].answered++;
-  updateProgress(quizNum);
-  if (quizState[quizNum].answered === quizData[quizNum].total) showScore(quizNum);
+  quizState.submitted = true;
+  document.getElementById('submit-btn').disabled = true;
+
+  let correct = 0;
+  quizQuestions.forEach((q, qi) => {
+    const chosen    = quizState.selected[qi];
+    const isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach((_, oi) => {
+      const btn = document.getElementById(`q-${qi}-${oi}`);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById(`q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+    const fb = document.getElementById(`q-feedback-${qi}`);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+
+  const total = quizQuestions.length;
+  const pct   = Math.round(correct / total * 100);
+  const score = `${correct}/${total}`;
+  const msg   = pct === 100 ? '🏆 Perfect score! You know every characteristic cold!'
+    : pct >= 80 ? '🌟 Great work! You really know your stuff. Review any you missed.'
+    : pct >= 60 ? '📚 Good effort! Go back over your notes and try again.'
+    : '💪 Keep studying — review the notes above and try again!';
+
+  document.getElementById('q1-score-num').textContent = score;
+  document.getElementById('q1-score-msg').textContent = msg;
+  const sb = document.getElementById('q1-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  const url = SCRIPT_URLS[teacher];
+  const teacherLabel = teacher === 'MrC' ? 'Mr. C' : 'Ms. Gay';
+  const params = new URLSearchParams({
+    tab: 'Characteristics', studentName: name, teacher: teacherLabel,
+    block, score, percent: pct + '%'
+  });
+  fetch(url + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('submit-status').innerHTML = data.status === 'success'
+        ? '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>'
+        : '<div class="score-error">⚠️ Submission issue: ' + (data.message || 'Unknown error') + '</div>';
+    })
+    .catch(() => {
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
 }
 
-function updateProgress(num) {
-  const total = quizData[num].total;
-  const answered = quizState[num].answered;
-  const pct = (answered / total) * 100;
-  document.getElementById(`q${num}-progress`).style.width = pct + '%';
-  document.getElementById(`q${num}-progress-text`).textContent = `${answered} / ${total}`;
+function resetQuiz() {
+  document.getElementById('q1-score').classList.remove('show');
+  document.getElementById('submit-status').innerHTML = '';
+  buildQuiz();
 }
 
-function showScore(num) {
-  const { correct, answered } = quizState[num];
-  const pct = Math.round((correct / answered) * 100);
-  let msg = '';
-  if (pct === 100) msg = '🏆 Perfect score! You are a biology superstar!';
-  else if (pct >= 80) msg = '🌟 Great work! You really know your stuff. Review any you missed.';
-  else if (pct >= 60) msg = '📚 Good effort! Go back over your notes and try again.';
-  else msg = "💪 Keep studying — you'll get there! Review the notes above and try again.";
-  document.getElementById(`q${num}-score-num`).textContent = `${correct}/${answered}`;
-  document.getElementById(`q${num}-score-msg`).textContent = msg;
-  document.getElementById(`q${num}-score`).classList.add('show');
-  document.getElementById(`q${num}-score`).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+buildQuiz();
+</script>
+<script>
+function vocabJump(targetId) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 120;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 600);
 }
-
-function resetQuiz(num) {
-  document.getElementById(`q${num}-score`).classList.remove('show');
-  buildQuiz(num);
-}
-
-buildQuiz(1);
 </script>
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 </body>

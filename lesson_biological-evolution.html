@@ -503,6 +503,32 @@
   .video-wrapper iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:none; }
 
   /* ── CONTINUE ── */
+  .quiz-option.selected  { border-color: var(--accent) !important; background: rgba(196,138,78,0.1) !important; }
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .student-info-box { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--accent); }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .info-field input, .info-field select { width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600; transition: border-color 0.2s; appearance: none; -webkit-appearance: none; }
+  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(196,138,78,0.15); }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23b0a07a' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #1e1a10; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(196,138,78,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-submitted { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: rgba(29,233,182,0.1); border: 1px solid rgba(29,233,182,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+  .score-error { font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+  @keyframes vocabPulse { 0% { background: rgba(196,138,78,0); box-shadow: none; border-radius: 4px; } 20% { background: rgba(196,138,78,0.28); box-shadow: 0 0 0 5px rgba(196,138,78,0.18); border-radius: 4px; } 60% { background: rgba(196,138,78,0.14); box-shadow: 0 0 0 7px rgba(196,138,78,0.08); border-radius: 4px; } 100% { background: rgba(196,138,78,0); box-shadow: none; border-radius: 4px; } }
+  @keyframes termPulse { 0% { background: rgba(196,138,78,0); box-shadow: none; border-radius: 6px; } 20% { background: rgba(196,138,78,0.22); box-shadow: 0 0 0 6px rgba(196,138,78,0.15); border-radius: 6px; } 60% { background: rgba(196,138,78,0.12); box-shadow: 0 0 0 9px rgba(196,138,78,0.07); border-radius: 6px; } 100% { background: rgba(196,138,78,0); box-shadow: none; border-radius: 6px; } }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .ev-title.pulsing { animation: termPulse 3s ease forwards; padding: 0 5px; margin: 0 -5px; }
+  .concept-tag { font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; cursor: pointer; transition: all 0.2s; display: inline-block; }
+  .concept-tag:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+
   #continue { background: var(--dark2); }
   .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
   .cont-card {
@@ -541,8 +567,8 @@
 /* ── KEY CONCEPTS ── */
   #concepts { background: var(--dark); }
   .concepts-grid { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1.5rem; }
-  .concept-tag { font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; cursor: default; transition: opacity 0.2s; }
-  .concept-tag:hover { opacity: 0.75; }
+  .concept-tag { font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; cursor: pointer; transition: all 0.2s; display: inline-block; }
+  .concept-tag:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
   .ct-amber  { color: var(--accent2); background: var(--accent-dim);       border-color: rgba(196,138,78,0.35); }
   .ct-teal   { color: #1de9b6;        background: rgba(29,233,182,0.08);   border-color: rgba(29,233,182,0.3); }
   .ct-green  { color: #3ddc84;        background: rgba(61,220,132,0.08);   border-color: rgba(61,220,132,0.3); }
@@ -598,6 +624,7 @@
     <li><a href="#lesson">Lesson</a></li>
     <li><a href="#evidence">Evidence</a></li>
     <li><a href="#structures">Structures</a></li>
+    <li><a href="#concepts">Vocab</a></li>
     <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
@@ -685,8 +712,8 @@
         <div class="card-title">Evolution Overview</div>
       </div>
       <div class="card-body">
-        <p><span class="vocab" title="Biological evolution: the change in populations of organisms over many generations due to environmental pressures">Biological evolution</span> means that populations of organisms change over time due to <span class="vocab" title="Environmental pressures: challenges from the environment — predators, food scarcity, climate change — that favor certain traits">environmental pressures</span>. It does not happen to a single organism during its lifetime. It happens to entire populations across many generations.</p>
-        <p>The engine of evolution is <span class="vocab" title="Natural selection: the process by which organisms with traits that help them survive are more likely to reproduce and pass those traits to offspring">natural selection</span>. It works as a continuous cycle — each generation feeds into the next.</p>
+        <p><span class="vocab" id="vocab-evolution" title="Biological evolution: the change in populations of organisms over many generations due to environmental pressures">Biological evolution</span> means that populations of organisms change over time due to <span class="vocab" id="vocab-env-pressure" title="Environmental pressures: challenges from the environment — predators, food scarcity, climate change — that favor certain traits">environmental pressures</span>. It does not happen to a single organism during its lifetime. It happens to entire populations across many generations.</p>
+        <p>The engine of evolution is <span class="vocab" id="vocab-natural-selection" title="Natural selection: the process by which organisms with traits that help them survive are more likely to reproduce and pass those traits to offspring">natural selection</span>. It works as a continuous cycle — each generation feeds into the next.</p>
 
         <!-- NATURAL SELECTION CYCLE DIAGRAM -->
         <div class="ns-cycle-instructions">
@@ -800,7 +827,7 @@
         <div class="card-title">Variation in Populations</div>
       </div>
       <div class="card-body">
-        <p>No two individuals in a population are exactly identical. These differences in traits — like color, size, speed, disease resistance, or behavior — are called <span class="vocab" title="Variation: differences in traits among individuals within the same population">variation</span>. Variation is the essential raw material that natural selection works with. Without differences between individuals, there is nothing for the environment to act on.</p>
+        <p>No two individuals in a population are exactly identical. These differences in traits — like color, size, speed, disease resistance, or behavior — are called <span class="vocab" id="vocab-variation" title="Variation: differences in traits among individuals within the same population">variation</span>. Variation is the essential raw material that natural selection works with. Without differences between individuals, there is nothing for the environment to act on.</p>
 
         <p><strong>Where does variation come from?</strong> Two main sources:</p>
         <div class="callout amber">
@@ -812,11 +839,11 @@
           <div class="callout-body"><strong>Sexual Reproduction:</strong> When two parents reproduce, their genes combine in new ways in each offspring. This shuffling means siblings — even from the same parents — can be surprisingly different from each other. Every new combination is a new roll of the dice.</div>
         </div>
 
-        <p><strong>Not all variation counts for evolution.</strong> Only <span class="vocab" title="Heritable variation: variation caused by genes that can be passed from parent to offspring. A scar, a tan, or a broken bone are not heritable — they can't be passed on.">heritable variation</span> — variation encoded in genes that can be passed to offspring — matters for natural selection. A giraffe that breaks its leg during its lifetime doesn't pass a "broken leg" trait to its young. But a giraffe born with naturally stronger bones can.</p>
+        <p><strong>Not all variation counts for evolution.</strong> Only <span class="vocab" id="vocab-heritable-variation" title="Heritable variation: variation caused by genes that can be passed from parent to offspring. A scar, a tan, or a broken bone are not heritable — they can't be passed on.">heritable variation</span> — variation encoded in genes that can be passed to offspring — matters for natural selection. A giraffe that breaks its leg during its lifetime doesn't pass a "broken leg" trait to its young. But a giraffe born with naturally stronger bones can.</p>
 
         <div class="callout teal">
           <span class="callout-icon">🐦</span>
-          <div class="callout-body"><strong>Darwin's Finches:</strong> On the Galápagos Islands, finches from the same ancestor evolved different beak shapes depending on the food available on each island — thick crushing beaks for seeds, narrow probing beaks for insects, hooked beaks for fruit. The variation in beak shape already existed in the ancestral population. The different islands simply selected for different versions of that variation. This is <span class="vocab" title="Adaptation: a heritable trait that increases an organism's ability to survive and reproduce in its specific environment">adaptation</span> in action.</div>
+          <div class="callout-body"><strong>Darwin's Finches:</strong> On the Galápagos Islands, finches from the same ancestor evolved different beak shapes depending on the food available on each island — thick crushing beaks for seeds, narrow probing beaks for insects, hooked beaks for fruit. The variation in beak shape already existed in the ancestral population. The different islands simply selected for different versions of that variation. This is <span class="vocab" id="vocab-adaptation" title="Adaptation: a heritable trait that increases an organism's ability to survive and reproduce in its specific environment">adaptation</span> in action.</div>
         </div>
       </div>
     </div>
@@ -826,7 +853,7 @@
         <div class="card-title">Traits Are Passed to Offspring</div>
       </div>
       <div class="card-body">
-        <p>For natural selection to drive evolution, helpful traits must be <span class="vocab" title="Heritable: capable of being passed from parent to offspring through genes">heritable</span> — encoded in genes that parents pass to their offspring. When a trait improves survival, the individuals who carry it reproduce more. Their offspring inherit the trait. Those offspring also reproduce more. Each generation, the proportion of individuals carrying the helpful trait grows — and after enough generations, the population itself has changed.</p>
+        <p>For natural selection to drive evolution, helpful traits must be <span class="vocab" id="vocab-heritable" title="Heritable: capable of being passed from parent to offspring through genes">heritable</span> — encoded in genes that parents pass to their offspring. When a trait improves survival, the individuals who carry it reproduce more. Their offspring inherit the trait. Those offspring also reproduce more. Each generation, the proportion of individuals carrying the helpful trait grows — and after enough generations, the population itself has changed.</p>
 
         <div class="callout amber">
           <span class="callout-icon">🦒</span>
@@ -869,8 +896,8 @@
         </div>
         <div class="ev-toggle-row"><span class="ev-pill">Explore</span></div>
         <div class="ev-body">
-          <p><span class="vocab" title="Fossil: the preserved remains or traces of organisms that lived in the past">Fossils</span> are preserved remains or traces of organisms. The fossil record creates a timeline of life on Earth — showing how organisms appeared, changed, and sometimes disappeared.</p>
-          <p style="margin-top:0.7rem;"><span class="vocab" title="Transitional fossil: a fossil showing traits from two different groups, revealing an evolutionary link between them">Transitional fossils</span> are especially powerful — they show characteristics from two different groups, bridging one type of organism to another.</p>
+          <p><span class="vocab" id="vocab-fossils" title="Fossil: the preserved remains or traces of organisms that lived in the past">Fossils</span> are preserved remains or traces of organisms. The fossil record creates a timeline of life on Earth — showing how organisms appeared, changed, and sometimes disappeared.</p>
+          <p style="margin-top:0.7rem;"><span class="vocab" id="vocab-transitional" title="Transitional fossil: a fossil showing traits from two different groups, revealing an evolutionary link between them">Transitional fossils</span> are especially powerful — they show characteristics from two different groups, bridging one type of organism to another.</p>
           <div class="ev-example">
             🐋 <strong>Whale Timeline:</strong> Pakicetus (52 mya) walked on land → Ambulocetus (48 mya) walked AND swam → Rodhocetus (47 mya) mostly aquatic → Basilosaurus (37 mya) fully aquatic → modern whales. Each step is preserved in the fossil record.
           </div>
@@ -888,7 +915,7 @@
         </div>
         <div class="ev-toggle-row"><span class="ev-pill">Explore</span></div>
         <div class="ev-body">
-          <p><span class="vocab" title="Homologous structures: body parts structurally similar across species because they evolved from a shared ancestor, even if used for different functions today">Homologous structures</span> are body parts that are structurally similar across different species — because they were inherited from the same ancestor. They may serve very different functions today, but their underlying structure reveals shared evolutionary history.</p>
+          <p><span class="vocab" id="vocab-homologous" title="Homologous structures: body parts structurally similar across species because they evolved from a shared ancestor, even if used for different functions today">Homologous structures</span> are body parts that are structurally similar across different species — because they were inherited from the same ancestor. They may serve very different functions today, but their underlying structure reveals shared evolutionary history.</p>
           <div class="ev-example">
             🦅 The human arm, whale flipper, bat wing, bird wing, and opossum foreleg all contain the same bones — humerus, radius, ulna. Reshaped for grasping, swimming, and flying — but the blueprint is identical.
           </div>
@@ -906,7 +933,7 @@
         </div>
         <div class="ev-toggle-row"><span class="ev-pill">Explore</span></div>
         <div class="ev-body">
-          <p><span class="vocab" title="Analogous structures: body parts that perform the same function in different species but evolved independently — no shared structural ancestry">Analogous structures</span> perform the same function but evolved independently in unrelated species. This is called <span class="vocab" title="Convergent evolution: when unrelated species independently evolve similar traits in response to similar environmental pressures">convergent evolution</span> — different starting points, similar solutions.</p>
+          <p><span class="vocab" id="vocab-analogous" title="Analogous structures: body parts that perform the same function in different species but evolved independently — no shared structural ancestry">Analogous structures</span> perform the same function but evolved independently in unrelated species. This is called <span class="vocab" id="vocab-convergent" title="Convergent evolution: when unrelated species independently evolve similar traits in response to similar environmental pressures">convergent evolution</span> — different starting points, similar solutions.</p>
           <div class="ev-example">
             🦇 A butterfly wing and a bat wing both allow flight — but a butterfly wing is made of chitin membrane while a bat wing stretches skin over elongated finger bones. Same job; completely different engineering.
           </div>
@@ -924,7 +951,7 @@
         </div>
         <div class="ev-toggle-row"><span class="ev-pill">Explore</span></div>
         <div class="ev-body">
-          <p><span class="vocab" title="Vestigial structures: body parts that were functional in ancestors but have reduced function in modern organisms due to evolution">Vestigial structures</span> are body parts that served an important purpose in an ancestor but are no longer needed today. They're powerful evidence that organisms descend from ancestors with very different lifestyles.</p>
+          <p><span class="vocab" id="vocab-vestigial" title="Vestigial structures: body parts that were functional in ancestors but have reduced function in modern organisms due to evolution">Vestigial structures</span> are body parts that served an important purpose in an ancestor but are no longer needed today. They're powerful evidence that organisms descend from ancestors with very different lifestyles.</p>
           <div class="ev-example">
             🫀 <strong>Human appendix:</strong> Helped digest tough plant material in plant-eating ancestors — no essential function today.<br><br>
             🐋 <strong>Whale hip bones:</strong> Tiny pelvis bones buried inside whale bodies — leftovers from when their ancestors walked on land.<br><br>
@@ -944,7 +971,7 @@
         </div>
         <div class="ev-toggle-row"><span class="ev-pill">Explore</span></div>
         <div class="ev-body">
-          <p>All living things share the same genetic code — <span class="vocab" title="DNA: the molecule that carries genetic instructions for the development and function of all living organisms">DNA</span>. The more DNA two species share, the more recently they diverged from a <span class="vocab" title="Common ancestor: an ancestral species from which two or more species evolved">common ancestor</span>.</p>
+          <p>All living things share the same genetic code — <span class="vocab" id="vocab-dna" title="DNA: the molecule that carries genetic instructions for the development and function of all living organisms">DNA</span>. The more DNA two species share, the more recently they diverged from a <span class="vocab" id="vocab-common-ancestor" title="Common ancestor: an ancestral species from which two or more species evolved">common ancestor</span>.</p>
           <div class="ev-example">
             🐒 Humans and chimpanzees share <strong>98–99% of their DNA.</strong> Humans and mice share ~85%. Even humans and bananas share roughly 60% — because all life on Earth traces back to the same ancient ancestors.
           </div>
@@ -994,6 +1021,33 @@
 </section>
 
 <!-- WATCH & LEARN -->
+<!-- KEY CONCEPTS -->
+<section id="concepts">
+  <div class="container">
+    <span class="section-label">🏷️ Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom:0.5rem;">Every term below appeared in this lesson. Click any pill to jump to its explanation.</p>
+    <p style="font-size:0.78rem; color:rgba(196,138,78,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">👆 Click any term to jump to its explanation in the lesson</p>
+    <div class="concepts-grid">
+      <span class="concept-tag ct-amber"  onclick="vocabJump('vocab-evolution')">Biological Evolution</span>
+      <span class="concept-tag ct-amber"  onclick="vocabJump('vocab-natural-selection')">Natural Selection</span>
+      <span class="concept-tag ct-amber"  onclick="vocabJump('vocab-env-pressure')">Environmental Pressure</span>
+      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-variation')">Variation</span>
+      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-heritable-variation')">Heritable Variation</span>
+      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-adaptation')">Adaptation</span>
+      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-heritable')">Heritable</span>
+      <span class="concept-tag ct-amber"  onclick="vocabJump('vocab-fossils')">Fossils</span>
+      <span class="concept-tag ct-amber"  onclick="vocabJump('vocab-transitional')">Transitional Fossils</span>
+      <span class="concept-tag ct-green"  onclick="vocabJump('vocab-homologous')">Homologous Structures</span>
+      <span class="concept-tag ct-purple" onclick="vocabJump('vocab-analogous')">Analogous Structures</span>
+      <span class="concept-tag ct-purple" onclick="vocabJump('vocab-convergent')">Convergent Evolution</span>
+      <span class="concept-tag ct-red"    onclick="vocabJump('vocab-vestigial')">Vestigial Structures</span>
+      <span class="concept-tag ct-blue"   onclick="vocabJump('vocab-dna')">DNA</span>
+      <span class="concept-tag ct-blue"   onclick="vocabJump('vocab-common-ancestor')">Common Ancestor</span>
+    </div>
+  </div>
+</section>
+
 <section id="watch" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">🎬 Watch &amp; Learn</span>
@@ -1008,43 +1062,63 @@
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">✅ Quiz</span>
+    <span class="section-label">✅ Check Your Understanding</span>
     <h2 class="section-title">Biological Evolution Quiz 🧬</h2>
-    <p class="section-desc">10 questions. Instant feedback on every answer — and real explanations, not just right or wrong.</p>
-    <div class="quiz-progress">
-      <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
-      <div class="progress-text" id="q1-progress-text">0 / 10</div>
+    <p class="section-desc">10 questions on biological evolution. Fill in your info below — your score will be sent to your teacher when you submit.</p>
+
+    <div class="student-info-box">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="student-name">Your Name</label>
+          <input type="text" id="student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="teacher-select">Teacher</label>
+          <select id="teacher-select">
+            <option value="">— Select —</option>
+            <option value="MrC">Mr. C</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="block-select">Block</label>
+          <select id="block-select">
+            <option value="">— Select —</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="err-block">Please select your block.</div>
+        </div>
+      </div>
     </div>
+
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
+        <div class="progress-text" id="q1-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
     <div id="quiz1-questions"></div>
+
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+    </div>
+
     <div class="score-board" id="q1-score">
       <div class="big-score" id="q1-score-num"></div>
       <p id="q1-score-msg"></p>
-      <button class="reset-btn" onclick="resetQuiz(1)">Try Again</button>
-    </div>
-  </div>
-</section>
-
-<!-- KEY CONCEPTS -->
-<section id="concepts">
-  <div class="container">
-    <span class="section-label">📚 Key Concepts</span>
-    <h2 class="section-title">Vocabulary to Know</h2>
-    <p class="section-desc">Every term below appeared in this lesson. Hover over any card to review its meaning.</p>
-    <div class="concepts-grid">
-      <span class="concept-tag ct-amber">Biological Evolution</span>
-      <span class="concept-tag ct-amber">Natural Selection</span>
-      <span class="concept-tag ct-amber">Environmental Pressure</span>
-      <span class="concept-tag ct-teal">Variation</span>
-      <span class="concept-tag ct-teal">Adaptation</span>
-      <span class="concept-tag ct-teal">Heredity</span>
-      <span class="concept-tag ct-amber">Fossil</span>
-      <span class="concept-tag ct-amber">Transitional Fossil</span>
-      <span class="concept-tag ct-blue">DNA Evidence</span>
-      <span class="concept-tag ct-blue">Common Ancestor</span>
-      <span class="concept-tag ct-green">Homologous Structures</span>
-      <span class="concept-tag ct-purple">Analogous Structures</span>
-      <span class="concept-tag ct-purple">Convergent Evolution</span>
-      <span class="concept-tag ct-red">Vestigial Structures</span>
+      <div id="submit-status"></div>
+      <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
     </div>
   </div>
 </section>
@@ -1053,7 +1127,7 @@
 <!-- WATCH & LEARN -->
 <section id="continue">
   <div class="container">
-    <span class="section-label">🚀 Keep Going</span>
+    <span class="section-label">🚀 Go Further</span>
     <h2 class="section-title">More Learning</h2>
     <p class="section-desc" style="white-space:nowrap; max-width:none;">The lesson is just the beginning — go deeper, test your skills, or see how it all connects.</p>
     <div class="continue-grid" style="text-align:left;">
@@ -1109,200 +1183,151 @@ function toggleStemDetail(id) {
 
 <!-- QUIZ ENGINE -->
 <script>
-const quizData = {
-  1: {
-    total: 10,
-    questions: [
-      {
-        q: "What is biological evolution?",
-        options: [
-          "A single organism changing its traits during its lifetime",
-          "A population changing over many generations due to environmental pressures",
-          "One species instantly turning into a completely different species",
-          "Only the strongest animals surviving in the wild"
-        ],
-        correct: 1,
-        explanation: "Biological evolution describes populations — not individuals — changing over many generations. A single organism cannot evolve; evolution is a shift in how often certain traits appear across an entire population over time."
-      },
-      {
-        q: "In natural selection, which organisms are MOST likely to reproduce and pass on their traits?",
-        options: [
-          "The largest organisms in a population",
-          "The oldest organisms in a population",
-          "Organisms with traits best suited to their environment",
-          "Organisms that migrate to new environments"
-        ],
-        correct: 2,
-        explanation: "Natural selection favors organisms whose traits help them survive in their specific environment — not necessarily the biggest or oldest. Better survival means more reproduction, which means those traits get passed on more often."
-      },
-      {
-        q: "Over many generations, a population of beetles on dark soil shifts toward darker coloring. What most likely caused this?",
-        options: [
-          "All light-colored beetles decided to change their color",
-          "Darker beetles were camouflaged, survived longer, and passed on the dark-color trait",
-          "Dark soil chemicals changed the coloring of all beetles",
-          "Light-colored beetles all moved to a different environment"
-        ],
-        correct: 1,
-        explanation: "This is natural selection. Dark beetles blended into the soil, were harder for predators to spot, survived longer, reproduced more, and passed the dark-color trait to offspring. Over generations, dark coloring became more common in the population."
-      },
-      {
-        q: "Why is variation in a population essential for natural selection to work?",
-        options: [
-          "Variation gives organisms a reason to migrate",
-          "Without differences between individuals, there is nothing for the environment to select",
-          "Variation guarantees all organisms will survive",
-          "Variation is only important in large populations"
-        ],
-        correct: 1,
-        explanation: "Variation — differences in traits — is the raw material natural selection acts on. If all individuals were identical, no trait would give a survival advantage over any other. Variation is what makes selection possible."
-      },
-      {
-        q: "Ambulocetus is considered a transitional fossil because it:",
-        options: [
-          "Is the oldest fossil ever found",
-          "Contains DNA scientists have been able to sequence",
-          "Shows traits from both land mammals and marine animals",
-          "Proves that whales evolved from sharks"
-        ],
-        correct: 2,
-        explanation: "Transitional fossils display characteristics of two different groups, revealing an evolutionary link. Ambulocetus had four limbs for walking AND swimming adaptations — showing a clear bridge between land-walking ancestors and modern whales."
-      },
-      {
-        q: "Humans and chimpanzees share 98–99% of their DNA. What does this most strongly suggest?",
-        options: [
-          "Humans evolved directly from chimpanzees",
-          "Humans and chimpanzees are classified as the same species",
-          "Humans and chimpanzees share a relatively recent common ancestor",
-          "DNA similarity is not a reliable indicator of evolutionary relationships"
-        ],
-        correct: 2,
-        explanation: "High DNA similarity means two species diverged from a common ancestor recently in evolutionary time — not that one came from the other. Humans and chimps share a common ancestor; neither evolved from the other."
-      },
-      {
-        q: "A human arm, whale flipper, and bat wing all contain the same underlying bones. These are examples of:",
-        options: [
-          "Analogous structures",
-          "Vestigial structures",
-          "Homologous structures",
-          "Transitional structures"
-        ],
-        correct: 2,
-        explanation: "Homologous structures are structurally similar body parts inherited from a shared ancestor. The same set of bones — humerus, radius, ulna — appears in human arms, whale flippers, and bat wings, reshaped by evolution for different functions but revealing shared ancestry."
-      },
-      {
-        q: "A dolphin fin and a shark fin both allow efficient swimming, but dolphins are mammals and sharks are fish that evolved separately. These fins are best described as:",
-        options: [
-          "Homologous — they evolved from the same ancestor",
-          "Vestigial — they were once used for walking on land",
-          "Analogous — they evolved independently for the same function",
-          "Transitional — they show traits from two different groups"
-        ],
-        correct: 2,
-        explanation: "Analogous structures perform the same function but evolved independently. Dolphin and shark fins both enable swimming but have very different internal structures. This is convergent evolution — similar solutions reached by unrelated species facing similar pressures."
-      },
-      {
-        q: "Whales have small, non-functional hip and leg bones buried inside their bodies. What type of structures are these, and what do they tell us?",
-        options: [
-          "Homologous; evidence that whales and fish share a common ancestor",
-          "Vestigial; evidence that whales descended from land-walking ancestors",
-          "Analogous; evidence that whales evolved the same traits as land animals",
-          "Transitional; evidence that whales are still evolving legs"
-        ],
-        correct: 1,
-        explanation: "Vestigial structures are body parts that were functional in ancestors but are no longer needed. Whale hip and leg bones are leftovers from land-walking ancestors that lived 50+ million years ago — powerful evidence of their evolutionary past."
-      },
-      {
-        q: "Which statement best explains why evolution is described as happening to populations, not individuals?",
-        options: [
-          "Individual organisms can change their DNA throughout their lifetime in response to the environment",
-          "Only the strongest individuals evolve while weaker ones remain unchanged",
-          "Evolution is a change in how often certain traits appear in a population across generations through reproduction",
-          "Populations only evolve when they move to a new environment"
-        ],
-        correct: 2,
-        explanation: "An individual's DNA doesn't change in response to the environment. Evolution works through reproduction: organisms with helpful traits have more offspring, those traits appear more often in the next generation, and gradually the trait becomes more common in the population. It's a change in the population — not the individual."
-      }
-    ]
-  }
+const SCRIPT_URLS = {
+  MrC:   'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay: 'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
 
-const quizState = { 1: { answered: 0, correct: 0 } };
+const quizQuestions = [
+  { q: "What is biological evolution?", options: ["A single organism changing its traits during its lifetime","A population changing over many generations due to environmental pressures","One species instantly turning into a completely different species","Only the strongest animals surviving in the wild"], correct: 1, explanation: "Biological evolution describes populations — not individuals — changing over many generations. A single organism cannot evolve; evolution is a shift in how often certain traits appear across an entire population over time." },
+  { q: "In natural selection, which organisms are MOST likely to reproduce and pass on their traits?", options: ["The largest organisms in a population","Those with traits that help them survive in their environment","Those that have been alive the longest","Those that look the most different from the rest of the population"], correct: 1, explanation: "Natural selection favors organisms whose traits best match the environment — they survive longer and reproduce more, passing those helpful traits to the next generation." },
+  { q: "A population of moths lives on trees. When pollution darkens the bark, dark moths survive better than light moths. Over many generations, the population becomes mostly dark. What happened?", options: ["Individual moths changed their color in response to the bark","The light moths chose to leave","Natural selection favored dark moths because they were harder to spot by predators","The moths evolved randomly with no environmental cause"], correct: 2, explanation: "This is natural selection in action. Dark moths already existed in the population (variation). Predators spotted and ate more light moths. Dark moths survived and reproduced more, so dark coloring became more common over generations." },
+  { q: "Which of the following is an example of heritable variation?", options: ["A dog losing fur because of mange (a skin disease)","A plant growing taller because it gets more sunlight","A bird being born with a slightly longer beak than others in its population","A scar a cat got from a fight"],  correct: 2, explanation: "Heritable variation means differences caused by genes that can be passed to offspring. A bird born with a longer beak inherited that trait and can pass it on. Scars, diseases, and environmental growth effects are NOT heritable." },
+  { q: "Ambulocetus was a whale ancestor that had four legs and could walk on land AND swim. What type of fossil is this?", options: ["An index fossil","A transitional fossil","A vestigial fossil","A homologous fossil"], correct: 1, explanation: "Ambulocetus is a transitional fossil — it shows characteristics from two different groups (land animals and ocean mammals), bridging an evolutionary gap and providing evidence that whales evolved from land-walking ancestors." },
+  { q: "The forelimbs of a human arm, a whale flipper, and a bat wing all share the same bone structure underneath. What does this suggest?", options: ["These animals must live in similar environments","These animals evolved from a common ancestor (homologous structures)","These structures perform the same function","These animals evolved at the same time period"], correct: 1, explanation: "Homologous structures — the same bone arrangement in very different limbs — suggest these species inherited their limb structure from a shared ancestor, even though the limbs now serve different purposes." },
+  { q: "A dolphin's fin and a shark's fin look similar and do the same job, but dolphins and sharks are not closely related. What does this represent?", options: ["Homologous structures — same ancestor, different function","Vestigial structures — leftover from ancestors","Analogous structures — convergent evolution producing similar solutions","Transitional structures — evidence of one evolving into the other"], correct: 2, explanation: "Analogous structures result from convergent evolution: unrelated species independently evolve similar traits because they face similar environmental pressures. Dolphins and sharks both need fins to swim, but they evolved separately." },
+  { q: "Humans have a tailbone (coccyx) that no longer serves its original function. What is this an example of?", options: ["A homologous structure","An analogous structure","A vestigial structure","A transitional fossil"], correct: 2, explanation: "The coccyx is a vestigial structure — a body part that was useful in an ancestor (for a tail) but has been reduced or lost its function in modern humans. It's evidence that we share ancestry with animals that had tails." },
+  { q: "Scientists compare the DNA of chimpanzees and humans and find they share about 98% of their genetic code. What is the most logical conclusion?", options: ["Chimpanzees and humans are the same species","Humans evolved directly from chimpanzees","Chimpanzees and humans share a relatively recent common ancestor","DNA comparisons are unreliable for studying evolution"], correct: 2, explanation: "The more DNA two species share, the more recently they diverged from a common ancestor. 98% similarity means humans and chimps branched from a shared ancestor relatively recently in evolutionary time — they didn't evolve from each other." },
+  { q: "Which of the following BEST describes why evolution is described as a change in a population — NOT a change in an individual?", options: ["Individual organisms can change their DNA throughout their lifetime in response to the environment","Only the strongest individuals evolve while weaker ones remain unchanged","Evolution is a change in how often certain traits appear in a population across generations through reproduction","Populations only evolve when they move to a new environment"], correct: 2, explanation: "An individual's DNA doesn't change in response to the environment. Evolution works through reproduction: organisms with helpful traits have more offspring, those traits appear more often in the next generation, and gradually the trait becomes more common in the population. It's a change in the population — not the individual." }
+];
 
-function buildQuiz(num) {
-  const data = quizData[num];
-  const container = document.getElementById(`quiz${num}-questions`);
+const quizState = { selected: [], submitted: false };
+
+function buildQuiz() {
+  const container = document.getElementById('quiz1-questions');
   container.innerHTML = '';
-  quizState[num] = { answered: 0, correct: 0 };
-  updateProgress(num);
-  data.questions.forEach((q, qi) => {
+  quizState.selected  = new Array(quizQuestions.length).fill(null);
+  quizState.submitted = false;
+  document.getElementById('submit-btn').disabled = true;
+  updateProgress();
+  quizQuestions.forEach((q, qi) => {
     const letters = ['A','B','C','D'];
     const optionsHTML = q.options.map((opt, oi) => `
-      <button class="quiz-option" onclick="selectAnswer(${num}, ${qi}, ${oi})" id="q${num}-${qi}-${oi}">
+      <button class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q-${qi}-${oi}">
         <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
       </button>`).join('');
     const card = document.createElement('div');
-    card.className = 'quiz-card'; card.id = `q${num}-card-${qi}`;
+    card.className = 'quiz-card';
     card.innerHTML = `
       <div class="quiz-header">
         <div class="quiz-num">${qi + 1}</div>
         <div class="quiz-question-text">${q.q}</div>
       </div>
       <div class="quiz-options">${optionsHTML}</div>
-      <div class="option-feedback" id="q${num}-feedback-${qi}"></div>`;
+      <div class="option-feedback" id="q-feedback-${qi}"></div>`;
     container.appendChild(card);
   });
 }
 
-function selectAnswer(quizNum, qi, chosenIndex) {
-  const q = quizData[quizNum].questions[qi];
-  const isCorrect = chosenIndex === q.correct;
-  q.options.forEach((_, oi) => {
-    const btn = document.getElementById(`q${quizNum}-${qi}-${oi}`);
-    btn.classList.add('disabled');
-    if (oi === q.correct) btn.classList.add('revealed-correct');
+function selectAnswer(qi, chosenIndex) {
+  if (quizState.submitted) return;
+  const prev = quizState.selected[qi];
+  if (prev !== null) document.getElementById(`q-${qi}-${prev}`).classList.remove('selected');
+  quizState.selected[qi] = chosenIndex;
+  document.getElementById(`q-${qi}-${chosenIndex}`).classList.add('selected');
+  updateProgress();
+  document.getElementById('submit-btn').disabled = !quizState.selected.every(s => s !== null);
+}
+
+function updateProgress() {
+  const total    = quizQuestions.length;
+  const answered = quizState.selected.filter(s => s !== null).length;
+  document.getElementById('q1-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('q1-progress-text').textContent = `${answered} / ${total} selected`;
+}
+
+function validateStudentInfo() {
+  const name    = document.getElementById('student-name').value.trim();
+  const teacher = document.getElementById('teacher-select').value;
+  const block   = document.getElementById('block-select').value;
+  document.getElementById('err-name').classList.toggle('show', !name);
+  document.getElementById('err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name, teacher, block };
+}
+
+function submitQuiz() {
+  if (quizState.submitted) return;
+  const { valid, name, teacher, block } = validateStudentInfo();
+  if (!valid) { document.querySelector('.student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+  quizState.submitted = true;
+  document.getElementById('submit-btn').disabled = true;
+  let correct = 0;
+  quizQuestions.forEach((q, qi) => {
+    const chosen = quizState.selected[qi];
+    const isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach((_, oi) => {
+      const btn = document.getElementById(`q-${qi}-${oi}`);
+      btn.classList.add('disabled'); btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById(`q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+    const fb = document.getElementById(`q-feedback-${qi}`);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
   });
-  document.getElementById(`q${quizNum}-${qi}-${chosenIndex}`).classList.add(isCorrect ? 'correct' : 'incorrect');
-  const feedback = document.getElementById(`q${quizNum}-feedback-${qi}`);
-  if (isCorrect) {
-    feedback.className = 'option-feedback correct-fb';
-    feedback.innerHTML = '✅ Correct! ' + q.explanation;
-    quizState[quizNum].correct++;
-  } else {
-    feedback.className = 'option-feedback incorrect-fb';
-    feedback.innerHTML = '❌ Not quite. ' + q.explanation;
-  }
-  quizState[quizNum].answered++;
-  updateProgress(quizNum);
-  if (quizState[quizNum].answered === quizData[quizNum].total) showScore(quizNum);
-}
-
-function updateProgress(num) {
-  const total = quizData[num].total, answered = quizState[num].answered;
-  document.getElementById(`q${num}-progress`).style.width = (answered / total * 100) + '%';
-  document.getElementById(`q${num}-progress-text`).textContent = `${answered} / ${total}`;
-}
-
-function showScore(num) {
-  const { correct, answered } = quizState[num];
-  const pct = Math.round(correct / answered * 100);
-  const msg = pct === 100 ? '🏆 Perfect score! You know your evolution inside and out!'
+  const total = quizQuestions.length;
+  const pct   = Math.round(correct / total * 100);
+  const score = `${correct}/${total}`;
+  const msg   = pct === 100 ? '🏆 Perfect score! You know your evolution inside and out!'
     : pct >= 80 ? '🌟 Great work! You clearly studied — review any you missed.'
     : pct >= 60 ? '📚 Good effort! Go back over the notes and try again.'
-    : "💪 Keep going — review each section carefully. You've got this!";
-  document.getElementById(`q${num}-score-num`).textContent = `${correct}/${answered}`;
-  document.getElementById(`q${num}-score-msg`).textContent = msg;
-  const sb = document.getElementById(`q${num}-score`);
+    : '💪 Keep going — review each section carefully. You\'ve got this!';
+  document.getElementById('q1-score-num').textContent = score;
+  document.getElementById('q1-score-msg').textContent = msg;
+  const sb = document.getElementById('q1-score');
   sb.classList.add('show');
   sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const teacherLabel = teacher === 'MrC' ? 'Mr. C' : 'Ms. Gay';
+  const params = new URLSearchParams({ tab: 'Bio Evolution', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%' });
+  fetch(SCRIPT_URLS[teacher] + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('submit-status').innerHTML = data.status === 'success'
+        ? '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>'
+        : '<div class="score-error">⚠️ Submission issue: ' + (data.message || 'Unknown error') + '</div>';
+    })
+    .catch(() => { document.getElementById('submit-status').innerHTML = '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>'; });
 }
 
-function resetQuiz(num) {
-  document.getElementById(`q${num}-score`).classList.remove('show');
-  buildQuiz(num);
+function resetQuiz() {
+  document.getElementById('q1-score').classList.remove('show');
+  document.getElementById('submit-status').innerHTML = '';
+  buildQuiz();
 }
 
-buildQuiz(1);
+function vocabJump(targetId) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  const evCard = el.closest('.ev-card');
+  if (evCard && !evCard.classList.contains('open')) {
+    evCard.classList.add('open');
+  }
+  requestAnimationFrame(() => {
+    const card = el.closest('.content-card, .ev-card, .callout, section') || el;
+    const top = card.getBoundingClientRect().top + window.scrollY - 120;
+    window.scrollTo({ top, behavior: 'smooth' });
+    setTimeout(() => {
+      el.classList.remove('pulsing');
+      void el.offsetWidth;
+      el.classList.add('pulsing');
+      el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+    }, 600);
+  });
+}
+
+buildQuiz();
 </script>
 
 

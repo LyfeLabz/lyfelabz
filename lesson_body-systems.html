@@ -1244,6 +1244,39 @@ body.stem-active .stem-detail {
   }
 
   /* ── CONTINUE ── */
+  .quiz-option.selected  { border-color: var(--accent) !important; background: rgba(59,200,232,0.1) !important; }
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .student-info-box { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--accent); }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .info-field input, .info-field select { width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600; transition: border-color 0.2s; appearance: none; -webkit-appearance: none; }
+  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,200,232,0.15); }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238aafca' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #161e28; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0a1f2e; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(59,200,232,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-submitted { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+  .score-error { font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+  .concept-tag { font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; cursor: pointer; transition: all 0.2s; display: inline-block; }
+  .concept-tag:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+  .vocab { color: var(--accent); font-weight: 800; border-bottom: 1.5px dotted rgba(59,200,232,0.6); cursor: help; }
+  @keyframes vocabPulse { 0% { background: rgba(59,200,232,0); box-shadow: none; border-radius: 4px; } 20% { background: rgba(59,200,232,0.22); box-shadow: 0 0 0 5px rgba(59,200,232,0.14); border-radius: 4px; } 60% { background: rgba(59,200,232,0.1); box-shadow: 0 0 0 7px rgba(59,200,232,0.07); border-radius: 4px; } 100% { background: rgba(59,200,232,0); box-shadow: none; border-radius: 4px; } }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .ct-red    { color: #e74c3c; background: rgba(231,76,60,0.08);   border-color: rgba(231,76,60,0.3); }
+  .ct-blue   { color: #29d4f5; background: rgba(41,212,245,0.08);  border-color: rgba(41,212,245,0.3); }
+  .ct-teal   { color: #1de9b6; background: rgba(29,233,182,0.08);  border-color: rgba(29,233,182,0.3); }
+  .ct-green  { color: #3ddc84; background: rgba(61,220,132,0.08);  border-color: rgba(61,220,132,0.3); }
+  .ct-purple { color: #b47fff; background: rgba(180,127,255,0.08); border-color: rgba(180,127,255,0.3); }
+  .ct-slate  { color: #9fb8cc; background: rgba(122,143,166,0.1);  border-color: rgba(122,143,166,0.35); }
+  @keyframes sysPulse { 0% { background: rgba(59,200,232,0); box-shadow: none; border-radius: 12px; } 20% { background: rgba(59,200,232,0.2); box-shadow: 0 0 0 6px rgba(59,200,232,0.12); border-radius: 12px; } 60% { background: rgba(59,200,232,0.1); box-shadow: 0 0 0 9px rgba(59,200,232,0.06); border-radius: 12px; } 100% { background: rgba(59,200,232,0); box-shadow: none; border-radius: 12px; } }
+  .system-card.pulsing, .hier-name.pulsing { animation: sysPulse 3s ease forwards; }
+
   #continue { background: var(--dark2); }
   .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
   .cont-card {
@@ -1298,6 +1331,7 @@ body.stem-active .stem-detail {
     <li><a href="#systems">Systems</a></li>
     <li><a href="#connections">Connections</a></li>
     <li><a href="#diseases">Diseases</a></li>
+    <li><a href="#concepts">Vocab</a></li>
     <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
@@ -1337,11 +1371,6 @@ body.stem-active .stem-detail {
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
   <span class="stem-badge" data-tip="Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.">6.MS-LS1-3</span>
 </div>
-</div>
-  </div>
-</div>
-
-
 
 <!-- HIERARCHY -->
 <section id="hierarchy">
@@ -1358,17 +1387,17 @@ body.stem-active .stem-detail {
       <div class="hier-arrow">→</div>
       <div class="hier-item">
         <span class="hier-icon">🟠</span>
-        <div class="hier-name">Cells</div>
+        <div class="hier-name" id="vocab-cell">Cells</div>
       </div>
       <div class="hier-arrow">→</div>
       <div class="hier-item">
         <span class="hier-icon">🧱</span>
-        <div class="hier-name">Tissues</div>
+        <div class="hier-name" id="vocab-tissue">Tissues</div>
       </div>
       <div class="hier-arrow">→</div>
       <div class="hier-item">
         <span class="hier-icon">🫁</span>
-        <div class="hier-name">Organs</div>
+        <div class="hier-name" id="vocab-organ">Organs</div>
       </div>
       <div class="hier-arrow">→</div>
       <div class="hier-item">
@@ -1378,7 +1407,7 @@ body.stem-active .stem-detail {
     </div>
 
     <div class="hierarchy-note">
-      🔑 <strong>Key Idea:</strong> If cells do not function properly, the tissues, organs, and body systems that depend on them cannot function properly either. Everything starts at the cellular level.
+      🔑 <strong>Key Idea:</strong> If <span class="vocab" title="Cell: the basic structural and functional unit of all living organisms">cells</span> do not function properly, the <span class="vocab" title="Tissue: a group of similar cells that work together to perform a specific function">tissues</span>, <span class="vocab" title="Organ: a structure made of different tissues that work together to do a specific job">organs</span>, and body systems that depend on them cannot function properly either. Everything starts at the cellular level.
     </div>
   </div>
 </section>
@@ -1418,7 +1447,7 @@ body.stem-active .stem-detail {
       <div class="system-card excretory" id="sc-excretory">
         <span class="system-icon">🚽</span>
         <div class="system-name">Excretory System</div>
-        <div class="system-desc">Removes solid, liquid, and gaseous wastes from the body through the <strong>large intestine</strong>, <strong>bladder</strong>, and <strong>lungs</strong>, helping maintain homeostasis.</div>
+        <div class="system-desc">Removes solid, liquid, and gaseous wastes from the body through the <strong>large intestine</strong>, <strong>bladder</strong>, and <strong>lungs</strong>, helping maintain <span class="vocab" title="Homeostasis: the process by which the body maintains a stable internal environment despite changes in the outside world">homeostasis</span>.</div>
         <a href="system_excretory.html" class="explore-btn">Interactive Map</a>
       </div>
 
@@ -1432,21 +1461,21 @@ body.stem-active .stem-detail {
       <div class="system-card muscular" id="sc-muscular">
         <span class="system-icon">💪</span>
         <div class="system-name">Muscular System</div>
-        <div class="system-desc">Allows movement of the body and materials through it using <strong>skeletal muscle</strong> to move bones, <strong>cardiac muscle</strong> to pump the heart, and <strong>smooth muscle</strong> to push materials through organs.</div>
+        <div class="system-desc">Allows movement of the body and materials through it using <span class="vocab" title="Skeletal muscle: voluntary muscle tissue attached to bones that enables body movement"><strong>skeletal muscle</strong></span> to move bones, <span class="vocab" title="Cardiac muscle: involuntary muscle found only in the heart that contracts continuously to pump blood"><strong>cardiac muscle</strong></span> to pump the heart, and <span class="vocab" title="Smooth muscle: involuntary muscle found in organs like the stomach and intestines that moves materials through the body"><strong>smooth muscle</strong></span> to push materials through organs.</div>
         <a href="system_muscular.html" class="explore-btn">Interactive Map</a>
       </div>
 
       <div class="system-card nervous" id="sc-nervous">
         <span class="system-icon">🧠</span>
         <div class="system-name">Nervous System</div>
-        <div class="system-desc">Detects, interprets, and responds to information as the <strong>brain</strong> acts as the control center, the <strong>spinal cord</strong> relays signals, and <strong>neurons</strong> carry electrical signals throughout the body.</div>
+        <div class="system-desc">Detects, interprets, and responds to information as the <strong>brain</strong> acts as the control center, the <strong>spinal cord</strong> relays signals, and <span class="vocab" title="Neurons: specialized cells that carry electrical signals throughout the body, forming the communication network of the nervous system"><strong>neurons</strong></span> carry electrical signals throughout the body.</div>
         <a href="system_nervous.html" class="explore-btn">Interactive Map</a>
       </div>
 
       <div class="system-card immune" id="sc-immune">
         <span class="system-icon">🛡️</span>
         <div class="system-name">Immune System</div>
-        <div class="system-desc">Defends the body against harmful bacteria, viruses, and parasites as <strong>white blood cells</strong> attack foreign invaders and <strong>lymph nodes</strong> filter germs from cells, tissues, and blood.</div>
+        <div class="system-desc">Defends the body against harmful bacteria, viruses, and parasites as <span class="vocab" title="White blood cells: immune cells that identify and destroy pathogens, foreign particles, and damaged cells"><strong>white blood cells</strong></span> attack foreign invaders and <strong>lymph nodes</strong> filter germs from cells, tissues, and blood.</div>
         <a href="system_immune.html" class="explore-btn">Interactive Map</a>
       </div>
 
@@ -1717,27 +1746,35 @@ body.stem-active .stem-detail {
         <a href="disease_immune.html" class="dis-link">Disease Map</a>
       </div>
 
-    </div>    </div>
+    </div>
   </div>
 </section>
 
 
-<!-- EXTENSION BANNER -->
-<div id="extension" style="background:var(--dark2); padding: 0 2rem 4rem; scroll-margin-top: 70px;">
+<!-- VIDEO -->
+<section id="concepts" style="background: var(--dark2); padding: 5rem 2rem;">
   <div class="container">
-    <div class="extension-banner">
-      <div class="extension-banner-icon">🩺</div>
-      <div class="extension-banner-body">
-        <div class="extension-banner-tag">⭐ Extension Activity</div>
-        <h3>Solving Medical Mysteries</h3>
-        <p>Seven real patient cases — read the vitals, spot the systems, and unlock the diagnosis. A deep-dive into how systems break down in the real world.</p>
-      </div>
-      <a href="extension_body-systems.html" class="btn-extension">Solving Medical Mysteries 🩺</a>
+    <span class="section-label">🏷️ Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom:0.5rem;">Every term below appeared in this lesson. Click any pill to jump to its explanation.</p>
+    <p style="font-size:0.78rem; color:rgba(59,200,232,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">👆 Click any term to jump to its explanation in the lesson</p>
+    <div style="display:flex; flex-wrap:wrap; gap:0.65rem;">
+      <span class="concept-tag ct-red"    onclick="vocabJump('sc-circulatory')">Circulatory System</span>
+      <span class="concept-tag ct-blue"   onclick="vocabJump('sc-digestive')">Digestive System</span>
+      <span class="concept-tag ct-teal"   onclick="vocabJump('sc-respiratory')">Respiratory System</span>
+      <span class="concept-tag ct-green"  onclick="vocabJump('sc-excretory')">Excretory System</span>
+      <span class="concept-tag ct-slate"  onclick="vocabJump('sc-skeletal')">Skeletal System</span>
+      <span class="concept-tag ct-purple" onclick="vocabJump('sc-muscular')">Muscular System</span>
+      <span class="concept-tag ct-purple" onclick="vocabJump('sc-nervous')">Nervous System</span>
+      <span class="concept-tag ct-blue"   onclick="vocabJump('sc-immune')">Immune System</span>
+      <span class="concept-tag ct-teal"   onclick="vocabJump('sc-excretory')">Homeostasis</span>
+      <span class="concept-tag ct-green"  onclick="vocabJump('vocab-tissue')">Tissue</span>
+      <span class="concept-tag ct-blue"   onclick="vocabJump('vocab-organ')">Organ</span>
+      <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-cell')">Cell</span>
     </div>
   </div>
-</div>
+</section>
 
-<!-- VIDEO -->
 <section id="watch" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Watch — Body Systems</span>
@@ -1752,18 +1789,63 @@ body.stem-active .stem-detail {
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">✅ Check Your Understanding</span>
     <h2 class="section-title">Body Systems Quiz 📝</h2>
-    <p class="section-desc">Test your knowledge on the major body systems, their functions, and how they work together. Click an answer to see instant feedback!</p>
-    <div class="quiz-progress">
-      <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
-      <div class="progress-text" id="q1-progress-text">0 / 15</div>
+    <p class="section-desc">15 questions on the major body systems, their functions, and how they work together. Fill in your info below — your score will be sent to your teacher when you submit.</p>
+
+    <div class="student-info-box">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="student-name">Your Name</label>
+          <input type="text" id="student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="teacher-select">Teacher</label>
+          <select id="teacher-select">
+            <option value="">— Select —</option>
+            <option value="MrC">Mr. C</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="block-select">Block</label>
+          <select id="block-select">
+            <option value="">— Select —</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="err-block">Please select your block.</div>
+        </div>
+      </div>
     </div>
+
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
+        <div class="progress-text" id="q1-progress-text">0 / 15 selected</div>
+      </div>
+    </div>
+
     <div id="quiz1-questions"></div>
+
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+    </div>
+
     <div class="score-board" id="q1-score">
-      <div class="big-score" id="q1-score-num">0/15</div>
+      <div class="big-score" id="q1-score-num"></div>
       <p id="q1-score-msg"></p>
-      <button class="reset-btn" onclick="resetQuiz(1)">🔄 Try Again</button>
+      <div id="submit-status"></div>
+      <button class="reset-btn" onclick="resetQuiz()">🔄 Try Again</button>
     </div>
   </div>
 </section>
@@ -1773,7 +1855,7 @@ body.stem-active .stem-detail {
 <!-- CONTINUE LEARNING -->
 <section id="continue">
   <div class="container">
-    <span class="section-label">🚀 Keep Going</span>
+    <span class="section-label">🚀 Go Further</span>
     <h2 class="section-title">More Learning</h2>
     <p class="section-desc" style="white-space:nowrap; max-width:none;">The lesson is just the beginning — go deeper, test your skills, or see how it all connects.</p>
     <div class="continue-grid" style="text-align:left;">
@@ -1808,189 +1890,154 @@ body.stem-active .stem-detail {
 </footer>
 
 <script>
-const quizData = {
-  1: {
-    total: 15,
-    questions: [
-      {
-        q: "Which body system is responsible for pumping blood throughout the body?",
-        options: ["Respiratory system","Circulatory system","Muscular system","Excretory system"],
-        correct: 1,
-        explanation: "The circulatory system — powered by the heart — pumps blood through veins and arteries to deliver oxygen, nutrients, and remove waste from every cell in the body."
-      },
-      {
-        q: "What is the correct order of biological organization from smallest to largest?",
-        options: ["Cells → Organelles → Tissues → Organs → Body Systems","Organelles → Cells → Tissues → Organs → Body Systems","Tissues → Cells → Organs → Organelles → Body Systems","Organs → Tissues → Cells → Organelles → Body Systems"],
-        correct: 1,
-        explanation: "Organelles work together to form cells → cells form tissues → tissues form organs → organs form body systems. This is the hierarchy of biological organization!"
-      },
-      {
-        q: "Which system detects, interprets, and responds to information from the environment?",
-        options: ["Immune system","Endocrine system","Nervous system","Circulatory system"],
-        correct: 2,
-        explanation: "The nervous system — brain, spinal cord, and neurons — detects stimuli, interprets signals, and coordinates responses. It helps control and coordinate all other body systems."
-      },
-      {
-        q: "Where are nutrients absorbed into the bloodstream during digestion?",
-        options: ["Stomach","Large intestine","Mouth","Small intestine"],
-        correct: 3,
-        explanation: "After food is broken down in the mouth and stomach, nutrients are absorbed into the bloodstream through the walls of the small intestine."
-      },
-      {
-        q: "The excretory system removes three types of waste. Which option correctly matches the type of waste to the organ?",
-        options: ["CO₂ = large intestine; liquid = lungs; solid = bladder","Solid = large intestine; liquid = bladder; CO₂ = lungs","Solid = bladder; CO₂ = large intestine; liquid = lungs","Liquid = stomach; solid = lungs; CO₂ = bladder"],
-        correct: 1,
-        explanation: "The large intestine removes solid waste, the bladder stores and removes liquid waste (urine), and the lungs exhale gaseous carbon dioxide (CO₂) waste."
-      },
-      {
-        q: "Ligaments and tendons are both part of the skeletal system. What is the difference between them?",
-        options: ["Ligaments connect bones to muscles; tendons connect bones to bones","Ligaments connect bones to bones; tendons connect bones to muscles","Both connect muscles to muscles","Both connect bones to bones"],
-        correct: 1,
-        explanation: "Ligaments connect bone to bone at joints. Tendons connect bone to muscle, allowing muscles to pull on bones and create movement."
-      },
-      {
-        q: "Which type of muscle is responsible for pumping blood throughout the body?",
-        options: ["Skeletal muscle","Smooth muscle","Cardiac muscle","Voluntary muscle"],
-        correct: 2,
-        explanation: "Cardiac muscle is found only in the heart. It contracts continuously and involuntarily to keep blood pumping through the circulatory system. The heart is the only organ made of cardiac muscle."
-      },
-      {
-        q: "How does the immune system rely on the circulatory system?",
-        options: ["It uses the lungs to filter germs from the air","It uses blood vessels to transport white blood cells throughout the body","It uses the stomach to break down bacteria","It uses bones to trap viruses"],
-        correct: 1,
-        explanation: "The circulatory system acts as the 'highway' for the immune system — blood vessels carry white blood cells to wherever an infection is occurring in the body."
-      },
-      {
-        q: "If a student's cells are not functioning properly, what else would be affected?",
-        options: ["Only their skin","Nothing — cells work independently","Their tissues, organs, AND body systems","Only their immune system"],
-        correct: 2,
-        explanation: "Cells are the foundation of all biological organization. If cells malfunction, the tissues they form can't work, which means organs fail, which causes body systems to break down."
-      },
-      {
-        q: "Bone marrow produces blood cells. This means the skeletal system directly supports which two other systems?",
-        options: ["Digestive and nervous systems","Excretory and respiratory systems","Circulatory and immune systems","Muscular and respiratory systems"],
-        correct: 2,
-        explanation: "Bone marrow produces red blood cells (for the circulatory system to carry oxygen) and white blood cells (for the immune system to fight infections)."
-      },
-      {
-        q: "Which body system works with BOTH the respiratory system AND the digestive system to deliver what cells need?",
-        options: ["Nervous system","Excretory system","Circulatory system","Immune system"],
-        correct: 2,
-        explanation: "The circulatory system is the great connector — it picks up oxygen from the respiratory system and nutrients from the digestive system, then delivers both to cells throughout the body."
-      },
-      {
-        q: "What role does smooth muscle play in the digestive system?",
-        options: ["It pumps blood to the stomach","It breaks down food with acid","It moves food through the digestive tract","It absorbs nutrients into the blood"],
-        correct: 2,
-        explanation: "Smooth muscle lines the walls of the digestive organs. It contracts in waves (peristalsis) to push food from the mouth through the stomach and intestines."
-      },
-      {
-        q: "Which statement about the nervous system is TRUE?",
-        options: ["It only controls voluntary movements","It only detects pain signals","It helps coordinate and control all other body systems","It only connects to the muscular system"],
-        correct: 2,
-        explanation: "The nervous system is the master controller — the brain sends and receives signals through the spinal cord and neurons to coordinate ALL body systems, not just muscles."
-      },
-      {
-        q: "Why is removing waste important for the body?",
-        options: ["It makes room for new organs to grow","It helps maintain homeostasis","It increases blood pressure","It produces more white blood cells"],
-        correct: 1,
-        explanation: "Waste products are toxic when they build up. Removing them through the excretory system helps the body maintain homeostasis — a stable internal environment that cells need to survive."
-      },
-      {
-        q: "A student runs a race. Which THREE systems are most immediately working together to power her muscles?",
-        options: ["Immune, digestive, and excretory systems","Muscular, circulatory, and respiratory systems","Nervous, skeletal, and excretory systems","Digestive, immune, and muscular systems"],
-        correct: 1,
-        explanation: "The muscular system moves her legs. The respiratory system brings in extra oxygen. The circulatory system delivers that oxygen (and removes CO₂) to the working muscles. These three are the core trio for physical activity!"
-      }
-    ]
-  }
+const SCRIPT_URLS = {
+  MrC:   'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay: 'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
 
-const quizState = { 1: { answered: 0, correct: 0 } };
+const quizQuestions = [
+  { q: "Which body system is responsible for pumping blood throughout the body?", options: ["Respiratory system","Circulatory system","Muscular system","Excretory system"], correct: 1, explanation: "The circulatory system — powered by the heart — pumps blood through veins and arteries to deliver oxygen, nutrients, and remove waste from every cell in the body." },
+  { q: "What is the correct order of biological organization from smallest to largest?", options: ["Cells → Organelles → Tissues → Organs → Body Systems","Organelles → Cells → Tissues → Organs → Body Systems","Tissues → Cells → Organs → Organelles → Body Systems","Organs → Tissues → Cells → Organelles → Body Systems"], correct: 1, explanation: "Organelles work together to form cells → cells form tissues → tissues form organs → organs form body systems. This is the hierarchy of biological organization!" },
+  { q: "Which system detects, interprets, and responds to information from the environment?", options: ["Immune system","Endocrine system","Nervous system","Circulatory system"], correct: 2, explanation: "The nervous system — brain, spinal cord, and neurons — detects stimuli, interprets signals, and coordinates responses. It helps control and coordinate all other body systems." },
+  { q: "Where are nutrients absorbed into the bloodstream during digestion?", options: ["Stomach","Large intestine","Mouth","Small intestine"], correct: 3, explanation: "After food is broken down in the mouth and stomach, nutrients are absorbed into the bloodstream through the walls of the small intestine." },
+  { q: "The excretory system removes three types of waste. Which option correctly matches the type of waste to the organ?", options: ["CO₂ = large intestine; liquid = lungs; solid = bladder","Solid = large intestine; liquid = bladder; CO₂ = lungs","Solid = bladder; CO₂ = large intestine; liquid = lungs","Liquid = stomach; solid = lungs; CO₂ = bladder"], correct: 1, explanation: "The large intestine removes solid waste, the bladder stores and removes liquid waste (urine), and the lungs exhale gaseous carbon dioxide (CO₂) waste." },
+  { q: "Ligaments and tendons are both part of the skeletal system. What is the difference between them?", options: ["Ligaments connect bones to muscles; tendons connect bones to bones","Ligaments connect bones to bones; tendons connect bones to muscles","Both connect muscles to muscles","Both connect bones to bones"], correct: 1, explanation: "Ligaments connect bone to bone at joints. Tendons connect bone to muscle, allowing muscles to pull on bones and create movement." },
+  { q: "Which type of muscle is responsible for pumping blood throughout the body?", options: ["Skeletal muscle","Smooth muscle","Cardiac muscle","Voluntary muscle"], correct: 2, explanation: "Cardiac muscle is found only in the heart. It contracts continuously and involuntarily to keep blood pumping through the circulatory system. The heart is the only organ made of cardiac muscle." },
+  { q: "How does the immune system rely on the circulatory system?", options: ["It uses the lungs to filter germs from the air","It uses blood vessels to transport white blood cells throughout the body","It uses the stomach to break down bacteria","It uses bones to trap viruses"], correct: 1, explanation: "The circulatory system acts as the 'highway' for the immune system — blood vessels carry white blood cells to wherever an infection is occurring in the body." },
+  { q: "If a student's cells are not functioning properly, what else would be affected?", options: ["Only their skin","Nothing — cells work independently","Their tissues, organs, AND body systems","Only their immune system"], correct: 2, explanation: "Cells are the foundation of all biological organization. If cells malfunction, the tissues they form can't work, which means organs fail, which causes body systems to break down." },
+  { q: "Bone marrow produces blood cells. This means the skeletal system directly supports which two other systems?", options: ["Digestive and nervous systems","Excretory and respiratory systems","Circulatory and immune systems","Muscular and respiratory systems"], correct: 2, explanation: "Bone marrow produces red blood cells (for the circulatory system to carry oxygen) and white blood cells (for the immune system to fight infections)." },
+  { q: "Which body system works with BOTH the respiratory system AND the digestive system to deliver what cells need?", options: ["Nervous system","Excretory system","Circulatory system","Immune system"], correct: 2, explanation: "The circulatory system is the great connector — it picks up oxygen from the respiratory system and nutrients from the digestive system, then delivers both to cells throughout the body." },
+  { q: "What role does smooth muscle play in the digestive system?", options: ["It pumps blood to the stomach","It breaks down food with acid","It moves food through the digestive tract","It absorbs nutrients into the blood"], correct: 2, explanation: "Smooth muscle lines the walls of the digestive organs. It contracts in waves (peristalsis) to push food from the mouth through the stomach and intestines." },
+  { q: "Which statement about the nervous system is TRUE?", options: ["It only controls voluntary movements","It only detects pain signals","It helps coordinate and control all other body systems","It only connects to the muscular system"], correct: 2, explanation: "The nervous system is the master controller — the brain sends and receives signals through the spinal cord and neurons to coordinate ALL body systems, not just muscles." },
+  { q: "Why is removing waste important for the body?", options: ["It makes room for new organs to grow","It helps maintain homeostasis","It increases blood pressure","It produces more white blood cells"], correct: 1, explanation: "Waste products are toxic when they build up. Removing them through the excretory system helps the body maintain homeostasis — a stable internal environment that cells need to survive." },
+  { q: "A student runs a race. Which THREE systems are most immediately working together to power her muscles?", options: ["Immune, digestive, and excretory systems","Muscular, circulatory, and respiratory systems","Nervous, skeletal, and excretory systems","Digestive, immune, and muscular systems"], correct: 1, explanation: "The muscular system moves her legs. The respiratory system brings in extra oxygen. The circulatory system delivers that oxygen (and removes CO₂) to the working muscles. These three are the core trio for physical activity!" }
+];
 
-function buildQuiz(num) {
-  const data = quizData[num];
-  const container = document.getElementById(`quiz${num}-questions`);
+const quizState = { selected: [], submitted: false };
+
+function buildQuiz() {
+  const container = document.getElementById('quiz1-questions');
   container.innerHTML = '';
-  quizState[num] = { answered: 0, correct: 0 };
-  updateProgress(num);
-
-  data.questions.forEach((q, qi) => {
+  quizState.selected  = new Array(quizQuestions.length).fill(null);
+  quizState.submitted = false;
+  document.getElementById('submit-btn').disabled = true;
+  updateProgress();
+  quizQuestions.forEach((q, qi) => {
     const letters = ['A','B','C','D'];
     const optionsHTML = q.options.map((opt, oi) => `
-      <button class="quiz-option" onclick="selectAnswer(${num}, ${qi}, ${oi})" id="q${num}-${qi}-${oi}">
-        <span class="option-letter">${letters[oi]}</span>
-        <span>${opt}</span>
-      </button>
-    `).join('');
-
+      <button class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q-${qi}-${oi}">
+        <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
+      </button>`).join('');
     const card = document.createElement('div');
     card.className = 'quiz-card';
-    card.id = `q${num}-card-${qi}`;
     card.innerHTML = `
       <div class="quiz-header">
         <div class="quiz-num">${qi + 1}</div>
         <div class="quiz-question-text">${q.q}</div>
       </div>
       <div class="quiz-options">${optionsHTML}</div>
-      <div class="option-feedback" id="q${num}-feedback-${qi}"></div>
-    `;
+      <div class="option-feedback" id="q-feedback-${qi}"></div>`;
     container.appendChild(card);
   });
 }
 
-function selectAnswer(quizNum, qi, chosenIndex) {
-  const q = quizData[quizNum].questions[qi];
-  const isCorrect = chosenIndex === q.correct;
-  q.options.forEach((_, oi) => {
-    const btn = document.getElementById(`q${quizNum}-${qi}-${oi}`);
-    btn.classList.add('disabled');
-    if (oi === q.correct) btn.classList.add('revealed-correct');
+function selectAnswer(qi, chosenIndex) {
+  if (quizState.submitted) return;
+  const prev = quizState.selected[qi];
+  if (prev !== null) document.getElementById(`q-${qi}-${prev}`).classList.remove('selected');
+  quizState.selected[qi] = chosenIndex;
+  document.getElementById(`q-${qi}-${chosenIndex}`).classList.add('selected');
+  updateProgress();
+  document.getElementById('submit-btn').disabled = !quizState.selected.every(s => s !== null);
+}
+
+function updateProgress() {
+  const total    = quizQuestions.length;
+  const answered = quizState.selected.filter(s => s !== null).length;
+  document.getElementById('q1-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('q1-progress-text').textContent = `${answered} / ${total} selected`;
+}
+
+function validateStudentInfo() {
+  const name    = document.getElementById('student-name').value.trim();
+  const teacher = document.getElementById('teacher-select').value;
+  const block   = document.getElementById('block-select').value;
+  document.getElementById('err-name').classList.toggle('show', !name);
+  document.getElementById('err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name, teacher, block };
+}
+
+function submitQuiz() {
+  if (quizState.submitted) return;
+  const { valid, name, teacher, block } = validateStudentInfo();
+  if (!valid) { document.querySelector('.student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+  quizState.submitted = true;
+  document.getElementById('submit-btn').disabled = true;
+  let correct = 0;
+  quizQuestions.forEach((q, qi) => {
+    const chosen = quizState.selected[qi];
+    const isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach((_, oi) => {
+      const btn = document.getElementById(`q-${qi}-${oi}`);
+      btn.classList.add('disabled'); btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById(`q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+    const fb = document.getElementById(`q-feedback-${qi}`);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
   });
-  const chosenBtn = document.getElementById(`q${quizNum}-${qi}-${chosenIndex}`);
-  chosenBtn.classList.add(isCorrect ? 'correct' : 'incorrect');
-  const feedback = document.getElementById(`q${quizNum}-feedback-${qi}`);
-  if (isCorrect) {
-    feedback.className = 'option-feedback correct-fb';
-    feedback.innerHTML = '✅ Correct! ' + q.explanation;
-    quizState[quizNum].correct++;
-  } else {
-    feedback.className = 'option-feedback incorrect-fb';
-    feedback.innerHTML = '❌ Not quite. ' + q.explanation;
-  }
-  quizState[quizNum].answered++;
-  updateProgress(quizNum);
-  if (quizState[quizNum].answered === quizData[quizNum].total) showScore(quizNum);
+  const total = quizQuestions.length;
+  const pct   = Math.round(correct / total * 100);
+  const score = `${correct}/${total}`;
+  const msg   = pct === 100 ? '🏆 Perfect score! You know your body systems inside and out!'
+    : pct >= 80 ? '🌟 Great work! You clearly studied — review any you missed.'
+    : pct >= 60 ? '📚 Good effort! Go back over the notes and try again.'
+    : '💪 Keep going — review each system carefully. You\'ve got this!';
+  document.getElementById('q1-score-num').textContent = score;
+  document.getElementById('q1-score-msg').textContent = msg;
+  const sb = document.getElementById('q1-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const teacherLabel = teacher === 'MrC' ? 'Mr. C' : 'Ms. Gay';
+  const params = new URLSearchParams({ tab: 'Body Systems', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%' });
+  fetch(SCRIPT_URLS[teacher] + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('submit-status').innerHTML = data.status === 'success'
+        ? '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>'
+        : '<div class="score-error">⚠️ Submission issue: ' + (data.message || 'Unknown error') + '</div>';
+    })
+    .catch(() => { document.getElementById('submit-status').innerHTML = '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>'; });
 }
 
-function updateProgress(num) {
-  const total = quizData[num].total;
-  const answered = quizState[num].answered;
-  const pct = (answered / total) * 100;
-  document.getElementById(`q${num}-progress`).style.width = pct + '%';
-  document.getElementById(`q${num}-progress-text`).textContent = `${answered} / ${total}`;
+function resetQuiz() {
+  document.getElementById('q1-score').classList.remove('show');
+  document.getElementById('submit-status').innerHTML = '';
+  buildQuiz();
 }
 
-function showScore(num) {
-  const { correct, answered } = quizState[num];
-  const pct = Math.round((correct / answered) * 100);
-  let msg = '';
-  if (pct === 100) msg = '🏆 Perfect score! You know your body systems inside and out!';
-  else if (pct >= 80) msg = '🌟 Great work! You clearly studied — review any you missed.';
-  else if (pct >= 60) msg = '📚 Good effort! Go back over the notes above and try again.';
-  else msg = "💪 Keep going — review each system carefully and try again. You've got this!";
-  document.getElementById(`q${num}-score-num`).textContent = `${correct}/${answered}`;
-  document.getElementById(`q${num}-score-msg`).textContent = msg;
-  document.getElementById(`q${num}-score`).classList.add('show');
-  document.getElementById(`q${num}-score`).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+function vocabJump(targetId) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  const card = el.closest('.system-card, .hier-item, section') || el;
+  const top = card.getBoundingClientRect().top + window.scrollY - 120;
+  window.scrollTo({ top, behavior: 'smooth' });
+  // For inline .vocab spans pulse them directly; for cards pulse the card/name
+  const pulse = el.classList.contains('vocab') ? el
+    : el.classList.contains('system-card') || el.classList.contains('hier-name') ? el
+    : (el.querySelector('.system-name, .hier-name') || el);
+  setTimeout(() => {
+    pulse.classList.remove('pulsing');
+    void pulse.offsetWidth;
+    pulse.classList.add('pulsing');
+    pulse.addEventListener('animationend', () => pulse.classList.remove('pulsing'), { once: true });
+  }, 600);
 }
 
-function resetQuiz(num) {
-  document.getElementById(`q${num}-score`).classList.remove('show');
-  buildQuiz(num);
-}
-
-buildQuiz(1);
+buildQuiz();
 </script>
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 <script>

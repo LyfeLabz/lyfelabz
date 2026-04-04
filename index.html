@@ -488,46 +488,47 @@
   }
   .ulink.live:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,200,66,0.4); color: #111 !important; }
   .ulink.activity {
-    background: transparent;
+    background: rgba(245,200,66,0.28);
     color: var(--gold);
-    border-color: rgba(245,200,66,0.5);
+    border-color: rgba(245,200,66,0.65);
     font-weight: 700;
   }
-  .ulink.activity:hover { background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.8); }
+  .ulink.activity:hover { background: rgba(245,200,66,0.4); border-color: rgba(245,200,66,0.9); }
   .ulink.ext {
-    background: rgba(180,127,255,0.12);
+    background: rgba(180,127,255,0.32);
     color: var(--astro);
-    border-color: rgba(180,127,255,0.3);
+    border-color: rgba(180,127,255,0.6);
     font-weight: 700;
   }
-  .ulink.ext:hover { background: rgba(180,127,255,0.2); border-color: rgba(180,127,255,0.55); color: var(--astro); }
+  .ulink.ext:hover { background: rgba(180,127,255,0.45); border-color: rgba(180,127,255,0.85); color: var(--astro); }
   .ulink.game {
-    background: rgba(61,220,132,0.1);
+    background: rgba(61,220,132,0.3);
     color: var(--bio);
-    border-color: rgba(61,220,132,0.3);
+    border-color: rgba(61,220,132,0.6);
     font-weight: 700;
   }
-  .ulink.game:hover { background: rgba(61,220,132,0.2); border-color: rgba(61,220,132,0.55); color: var(--bio); }
+  .ulink.game:hover { background: rgba(61,220,132,0.44); border-color: rgba(61,220,132,0.85); color: var(--bio); }
   .ulink.sim {
-    background: rgba(245,130,50,0.08);
+    background: rgba(245,130,50,0.28);
     color: #f5a028;
-    border-color: rgba(245,130,50,0.35);
+    border-color: rgba(245,130,50,0.65);
     font-weight: 700;
   }
-  .ulink.sim:hover { background: rgba(245,130,50,0.2); border-color: rgba(245,130,50,0.6); color: #f5a028; }
+  .ulink.sim:hover { background: rgba(245,130,50,0.42); border-color: rgba(245,130,50,0.9); color: #f5a028; }
   .ulink.map {
-    background: rgba(59,200,232,0.12);
-    border-color: rgba(59,200,232,0.45);
+    background: rgba(59,200,232,0.32);
+    border-color: rgba(59,200,232,0.65);
     color: var(--teal);
-  }
-  .ulink.map:hover { background: rgba(59,200,232,0.2); border-color: rgba(59,200,232,0.6); color: var(--teal); }
-  .ulink.dis {
-    background: rgba(180,127,255,0.12);
-    color: var(--astro);
-    border-color: rgba(180,127,255,0.3);
     font-weight: 700;
   }
-  .ulink.dis:hover { background: rgba(180,127,255,0.2); border-color: rgba(180,127,255,0.55); color: var(--astro); }
+  .ulink.map:hover { background: rgba(59,200,232,0.46); border-color: rgba(59,200,232,0.88); color: var(--teal); }
+  .ulink.dis {
+    background: rgba(180,127,255,0.32);
+    color: var(--astro);
+    border-color: rgba(180,127,255,0.6);
+    font-weight: 700;
+  }
+  .ulink.dis:hover { background: rgba(180,127,255,0.45); border-color: rgba(180,127,255,0.85); color: var(--astro); }
 
   /* ===== PILL LEGEND ===== */
   .pill-legend {
@@ -824,35 +825,6 @@
         <span class="topic-group-name">Earth &amp; Space</span>
       </div>
 
-      <!-- Astronomy — Grades 6–8 -->
-      <span id="astro" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
-      <div class="subject-block" data-topic="earth-space" data-grades="6">
-        <div class="unit-row">
-          <div class="unit-card">
-            <div class="unit-top">
-              <div class="unit-name">The Solar System</div>
-              <div class="unit-desc">Planets, moons, dwarf planets, asteroids, and what holds the solar system together.</div>
-            </div>
-            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-          </div>
-          <div class="unit-card">
-            <div class="unit-top">
-              <div class="unit-name">Stars &amp; the Life Cycle of Stars</div>
-              <div class="unit-desc">Nebulae, main sequence, red giants, supernovae, black holes — how stars are born and die.</div>
-            </div>
-            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-          </div>
-          <div class="unit-card">
-            <div class="unit-top">
-              <div class="unit-name">Earth, Moon &amp; Sun System</div>
-              <div class="unit-desc">Moon phases, tides, eclipses, seasons, and Earth's rotation and revolution.</div>
-            </div>
-            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Earth Science — Grades 6–7 -->
       <span id="geo" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
       <div class="subject-block" data-topic="earth-space" data-grades="6">
         <div class="unit-row">
@@ -861,7 +833,9 @@
               <div class="unit-name">Layers of Time</div>
               <div class="unit-desc">Igneous, sedimentary, and metamorphic rocks — how each type forms and what the layers reveal about Earth's history.</div>
             </div>
-            <div class="unit-links"><span class="coming-label">🚧 Coming Soon</span></div>
+            <div class="unit-links">
+              <a href="lesson_layers-of-time.html" class="ulink live">Lesson</a>
+            </div>
           </div>
           <div class="unit-card">
             <div class="unit-top">
