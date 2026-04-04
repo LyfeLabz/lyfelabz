@@ -225,14 +225,16 @@
   }
 
   /* ===== HIERARCHY SECTION ===== */
-  #hierarchy { background: var(--dark2); }
+  #hierarchy { background: var(--dark2); padding-top: 2.5rem; padding-bottom: 2.5rem; }
   .hierarchy-flow {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     gap: 0;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     margin: 2.5rem 0;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
   }
   .hier-item {
     display: flex;
@@ -242,12 +244,72 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 1.2rem 1.6rem;
-    min-width: 110px;
+    padding: 1.2rem 1.4rem;
+    width: 180px;
+    flex-shrink: 0;
     text-align: center;
     transition: all 0.3s;
+    cursor: pointer;
+    user-select: none;
+  }
+  .hier-name {
+    font-weight: 900;
+    font-size: 0.9rem;
+    color: var(--accent);
+    min-height: 2.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .hier-item:hover { border-color: rgba(59,200,232,0.5); box-shadow: 0 0 20px rgba(59,200,232,0.18); }
+  .hier-item.open { border-color: rgba(59,200,232,0.6); box-shadow: 0 0 24px rgba(59,200,232,0.2); }
+  .hier-chevron {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    transition: transform 0.3s;
+    line-height: 1;
+  }
+  .hier-item.open .hier-chevron { transform: rotate(180deg); color: var(--accent); }
+  .hier-dropdown {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.3s ease;
+    opacity: 0;
+    width: 100%;
+  }
+  .hier-item.open .hier-dropdown {
+    max-height: 400px;
+    opacity: 1;
+  }
+  .hier-dropdown-inner {
+    margin-top: 0.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--border);
+    text-align: left;
+  }
+  .hier-drop-def {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* conn-card highlight */
+  @keyframes connPulse {
+    0%   { box-shadow: none; border-color: var(--border); }
+    20%  { box-shadow: 0 0 0 6px rgba(59,200,232,0.18), 0 0 32px rgba(59,200,232,0.22); border-color: rgba(59,200,232,0.7); }
+    60%  { box-shadow: 0 0 0 4px rgba(59,200,232,0.1),  0 0 20px rgba(59,200,232,0.12); border-color: rgba(59,200,232,0.5); }
+    100% { box-shadow: none; border-color: var(--border); }
+  }
+  .conn-card.pulsing { animation: connPulse 3s ease forwards; }
+
+  /* hier-item highlight (for vocab pill jumps) */
+  @keyframes hierPulse {
+    0%   { box-shadow: none; border-color: var(--border); }
+    20%  { box-shadow: 0 0 0 6px rgba(59,200,232,0.18), 0 0 28px rgba(59,200,232,0.25); border-color: rgba(59,200,232,0.8); background: rgba(59,200,232,0.1); }
+    60%  { box-shadow: 0 0 0 4px rgba(59,200,232,0.08), 0 0 16px rgba(59,200,232,0.12); border-color: rgba(59,200,232,0.5); background: rgba(59,200,232,0.04); }
+    100% { box-shadow: none; border-color: var(--border); background: var(--card); }
+  }
+  .hier-item.pulsing { animation: hierPulse 3s ease forwards; }
   .hier-icon { font-size: 2rem; }
   .hier-name {
     font-weight: 900;
@@ -259,6 +321,7 @@
     color: var(--text-muted);
     padding: 0 0.3rem;
     flex-shrink: 0;
+    margin-top: 1.5rem;
   }
   .hierarchy-note {
     background: rgba(59,200,232,0.06);
@@ -654,6 +717,7 @@
     .option-feedback { padding-left: 1rem; }
     .hierarchy-flow { gap: 0.5rem; }
     .hier-arrow { display: none; }
+    .gateway-grid { grid-template-columns: 1fr !important; }
   }
 
   .explore-btn {
@@ -1328,9 +1392,8 @@ body.stem-active .stem-detail {
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
     <li><a href="#hierarchy">Hierarchy</a></li>
-    <li><a href="#systems">Systems</a></li>
     <li><a href="#connections">Connections</a></li>
-    <li><a href="#diseases">Diseases</a></li>
+    <li><a href="#systems">Systems</a></li>
     <li><a href="#concepts">Vocab</a></li>
     <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
@@ -1380,105 +1443,74 @@ body.stem-active .stem-detail {
     <p class="section-desc">Life is organized in levels. Each level is built from the one below — and if any level fails, everything above it is affected.</p>
 
     <div class="hierarchy-flow">
-      <div class="hier-item">
+
+      <div class="hier-item" id="vocab-organelle" onclick="toggleHier(this)">
         <span class="hier-icon">⚙️</span>
         <div class="hier-name">Organelles</div>
+        <span class="hier-chevron">▼</span>
+        <div class="hier-dropdown">
+          <div class="hier-dropdown-inner">
+            <div class="hier-drop-def">Tiny structures inside a cell that each have a specific job — like the organelles of a cell are to the cell what organs are to your body.</div>
+          </div>
+        </div>
       </div>
+
       <div class="hier-arrow">→</div>
-      <div class="hier-item">
+
+      <div class="hier-item" id="vocab-cell" onclick="toggleHier(this)">
         <span class="hier-icon">🟠</span>
-        <div class="hier-name" id="vocab-cell">Cells</div>
+        <div class="hier-name">Cells</div>
+        <span class="hier-chevron">▼</span>
+        <div class="hier-dropdown">
+          <div class="hier-dropdown-inner">
+            <div class="hier-drop-def">The basic structural and functional unit of all living things. Every living organism is made of one or more cells.</div>
+          </div>
+        </div>
       </div>
+
       <div class="hier-arrow">→</div>
-      <div class="hier-item">
+
+      <div class="hier-item" id="vocab-tissue" onclick="toggleHier(this)">
         <span class="hier-icon">🧱</span>
-        <div class="hier-name" id="vocab-tissue">Tissues</div>
+        <div class="hier-name">Tissues</div>
+        <span class="hier-chevron">▼</span>
+        <div class="hier-dropdown">
+          <div class="hier-dropdown-inner">
+            <div class="hier-drop-def">A group of similar cells working together to perform a specific function. Tissues are one level above cells.</div>
+          </div>
+        </div>
       </div>
+
       <div class="hier-arrow">→</div>
-      <div class="hier-item">
+
+      <div class="hier-item" id="vocab-organ" onclick="toggleHier(this)">
         <span class="hier-icon">🫁</span>
-        <div class="hier-name" id="vocab-organ">Organs</div>
+        <div class="hier-name">Organs</div>
+        <span class="hier-chevron">▼</span>
+        <div class="hier-dropdown">
+          <div class="hier-dropdown-inner">
+            <div class="hier-drop-def">A structure made of two or more types of tissue working together to carry out a specific job in the body.</div>
+          </div>
+        </div>
       </div>
+
       <div class="hier-arrow">→</div>
-      <div class="hier-item">
+
+      <div class="hier-item" id="vocab-body-systems" onclick="toggleHier(this)">
         <span class="hier-icon">🏂🏽</span>
         <div class="hier-name">Body Systems</div>
+        <span class="hier-chevron">▼</span>
+        <div class="hier-dropdown">
+          <div class="hier-dropdown-inner">
+            <div class="hier-drop-def">A group of organs that work together to perform a major function for the whole organism. Multiple systems interact constantly to keep the body alive.</div>
+          </div>
+        </div>
       </div>
+
     </div>
 
     <div class="hierarchy-note">
       🔑 <strong>Key Idea:</strong> If <span class="vocab" title="Cell: the basic structural and functional unit of all living organisms">cells</span> do not function properly, the <span class="vocab" title="Tissue: a group of similar cells that work together to perform a specific function">tissues</span>, <span class="vocab" title="Organ: a structure made of different tissues that work together to do a specific job">organs</span>, and body systems that depend on them cannot function properly either. Everything starts at the cellular level.
-    </div>
-  </div>
-</section>
-
-<!-- SYSTEMS -->
-<section id="systems">
-  <div class="container">
-    <span class="section-label">The Body Systems</span>
-    <h2 class="section-title">Eight Major Body Systems 🩺</h2>
-    <p class="section-desc">Each system has a specialized role — and none of them work alone. Explore each one below to see what it does and how it connects to the others.</p>
-
-
-
-        <div class="systems-grid">
-
-      <div class="system-card circulatory" id="sc-circulatory">
-        <span class="system-icon">🫀</span>
-        <div class="system-name">Circulatory System</div>
-        <div class="system-desc">The <strong>heart</strong> pumps blood through <strong>arteries</strong> and <strong>veins</strong>, transporting oxygen, nutrients, and waste to and from cells throughout the body.</div>
-        <a href="system_circulatory.html" class="explore-btn">Interactive Map</a>
-      </div>
-
-      <div class="system-card digestive" id="sc-digestive">
-        <span class="system-icon">🫄</span>
-        <div class="system-name">Digestive System</div>
-        <div class="system-desc">Breaks down food as it moves from the <strong>mouth</strong> → <strong>stomach</strong> → <strong>small intestine</strong>, absorbing nutrients into the bloodstream while the <strong>large intestine</strong> removes solid waste.</div>
-        <a href="system_digestive.html" class="explore-btn">Interactive Map</a>
-      </div>
-
-      <div class="system-card respiratory" id="sc-respiratory">
-        <span class="system-icon">🫁</span>
-        <div class="system-name">Respiratory System</div>
-        <div class="system-desc">Moves air in and out of the body as oxygen enters the <strong>lungs</strong> and passes into the blood, while carbon dioxide waste is exhaled.</div>
-        <a href="system_respiratory.html" class="explore-btn">Interactive Map</a>
-      </div>
-
-      <div class="system-card excretory" id="sc-excretory">
-        <span class="system-icon">🚽</span>
-        <div class="system-name">Excretory System</div>
-        <div class="system-desc">Removes solid, liquid, and gaseous wastes from the body through the <strong>large intestine</strong>, <strong>bladder</strong>, and <strong>lungs</strong>, helping maintain <span class="vocab" title="Homeostasis: the process by which the body maintains a stable internal environment despite changes in the outside world">homeostasis</span>.</div>
-        <a href="system_excretory.html" class="explore-btn">Interactive Map</a>
-      </div>
-
-      <div class="system-card skeletal" id="sc-skeletal">
-        <span class="system-icon">🦴</span>
-        <div class="system-name">Skeletal System</div>
-        <div class="system-desc">Provides structure, protects organs, and supports movement as <strong>bones</strong> give the body its shape and <strong>bone marrow</strong> inside them produces blood cells.</div>
-        <a href="system_skeletal.html" class="explore-btn">Interactive Map</a>
-      </div>
-
-      <div class="system-card muscular" id="sc-muscular">
-        <span class="system-icon">💪</span>
-        <div class="system-name">Muscular System</div>
-        <div class="system-desc">Allows movement of the body and materials through it using <span class="vocab" title="Skeletal muscle: voluntary muscle tissue attached to bones that enables body movement"><strong>skeletal muscle</strong></span> to move bones, <span class="vocab" title="Cardiac muscle: involuntary muscle found only in the heart that contracts continuously to pump blood"><strong>cardiac muscle</strong></span> to pump the heart, and <span class="vocab" title="Smooth muscle: involuntary muscle found in organs like the stomach and intestines that moves materials through the body"><strong>smooth muscle</strong></span> to push materials through organs.</div>
-        <a href="system_muscular.html" class="explore-btn">Interactive Map</a>
-      </div>
-
-      <div class="system-card nervous" id="sc-nervous">
-        <span class="system-icon">🧠</span>
-        <div class="system-name">Nervous System</div>
-        <div class="system-desc">Detects, interprets, and responds to information as the <strong>brain</strong> acts as the control center, the <strong>spinal cord</strong> relays signals, and <span class="vocab" title="Neurons: specialized cells that carry electrical signals throughout the body, forming the communication network of the nervous system"><strong>neurons</strong></span> carry electrical signals throughout the body.</div>
-        <a href="system_nervous.html" class="explore-btn">Interactive Map</a>
-      </div>
-
-      <div class="system-card immune" id="sc-immune">
-        <span class="system-icon">🛡️</span>
-        <div class="system-name">Immune System</div>
-        <div class="system-desc">Defends the body against harmful bacteria, viruses, and parasites as <span class="vocab" title="White blood cells: immune cells that identify and destroy pathogens, foreign particles, and damaged cells"><strong>white blood cells</strong></span> attack foreign invaders and <strong>lymph nodes</strong> filter germs from cells, tissues, and blood.</div>
-        <a href="system_immune.html" class="explore-btn">Interactive Map</a>
-      </div>
-
     </div>
   </div>
 </section>
@@ -1492,7 +1524,7 @@ body.stem-active .stem-detail {
     <div class="connections-grid">
 
       <!-- NERVOUS — spans full width, first ─────────────────────────────── -->
-      <div class="conn-card nervous-featured">
+      <div class="conn-card nervous-featured" id="sc-nervous">
         <div class="conn-header nervous">
           <div class="conn-header-group"><span class="conn-header-icon">🧠</span><span class="conn-header-name">Nervous — The Master Controller</span></div>
         </div>
@@ -1530,7 +1562,7 @@ body.stem-active .stem-detail {
       </div>
 
       <!-- CIRCULATORY -->
-      <div class="conn-card">
+      <div class="conn-card" id="sc-circulatory">
         <div class="conn-header circulatory">
           <div class="conn-header-group"><span class="conn-header-icon">🫀</span><span class="conn-header-name">Circulatory</span></div>
         </div>
@@ -1555,7 +1587,7 @@ body.stem-active .stem-detail {
       </div>
 
       <!-- MUSCULAR -->
-      <div class="conn-card">
+      <div class="conn-card" id="sc-muscular">
         <div class="conn-header muscular">
           <div class="conn-header-group"><span class="conn-header-icon">💪</span><span class="conn-header-name">Muscular</span></div>
         </div>
@@ -1576,7 +1608,7 @@ body.stem-active .stem-detail {
       </div>
 
       <!-- SKELETAL -->
-      <div class="conn-card">
+      <div class="conn-card" id="sc-skeletal">
         <div class="conn-header skeletal">
           <div class="conn-header-group"><span class="conn-header-icon">🦴</span><span class="conn-header-name">Skeletal</span></div>
         </div>
@@ -1593,7 +1625,7 @@ body.stem-active .stem-detail {
       </div>
 
       <!-- RESPIRATORY -->
-      <div class="conn-card">
+      <div class="conn-card" id="sc-respiratory">
         <div class="conn-header respiratory">
           <div class="conn-header-group"><span class="conn-header-icon">🫁</span><span class="conn-header-name">Respiratory</span></div>
         </div>
@@ -1610,7 +1642,7 @@ body.stem-active .stem-detail {
       </div>
 
       <!-- DIGESTIVE -->
-      <div class="conn-card">
+      <div class="conn-card" id="sc-digestive">
         <div class="conn-header digestive">
           <div class="conn-header-group"><span class="conn-header-icon">🫄</span><span class="conn-header-name">Digestive</span></div>
         </div>
@@ -1627,7 +1659,7 @@ body.stem-active .stem-detail {
       </div>
 
       <!-- EXCRETORY -->
-      <div class="conn-card">
+      <div class="conn-card" id="sc-excretory">
         <div class="conn-header excretory">
           <div class="conn-header-group"><span class="conn-header-icon">🚽</span><span class="conn-header-name">Excretory</span></div>
         </div>
@@ -1644,7 +1676,7 @@ body.stem-active .stem-detail {
       </div>
 
       <!-- IMMUNE -->
-      <div class="conn-card">
+      <div class="conn-card" id="sc-immune">
         <div class="conn-header immune">
           <div class="conn-header-group"><span class="conn-header-icon">🛡️</span><span class="conn-header-name">Immune</span></div>
         </div>
@@ -1664,91 +1696,42 @@ body.stem-active .stem-detail {
   </div>
 </section>
 
-<!-- EXTENSION BANNER -->
-<!-- DISEASES & DISORDERS -->
-<section id="diseases">
+<!-- SYSTEMS GATEWAY -->
+<section id="systems" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label" style="background:rgba(192,57,43,0.12);border-color:rgba(192,57,43,0.35);color:#e8837a;">Diseases &amp; Disorders</span>
-    <h2 class="section-title">When Things Go Wrong 🩺</h2>
-    <p class="section-desc">Body systems are remarkable — but they can break down. Explore each system to see what diseases can affect it, how dysfunction spreads, and how it ultimately affects a person.</p>
+    <span class="section-label">Explore Further</span>
+    <h2 class="section-title">Dive Deeper 🔍</h2>
+    <p class="section-desc">Now that you've seen how the systems connect, go deeper — explore interactive maps or see what happens when things go wrong.</p>
 
-    <div class="diseases-intro-banner">
-      <div class="dib-icon">🔬</div>
-      <div class="dib-body">
-        <div class="dib-tag">How to Read These Maps</div>
-        <h3>Three Levels of Impact</h3>
-        <p>Each disease is explained at three levels: <strong>🔬 What Goes Wrong</strong> in that part → <strong>📡 How It Spreads</strong> through the system → <strong>🧍 How You Feel It</strong> as a whole person. Start with any node that interests you.</p>
-      </div>
-    </div>
+    <div class="gateway-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem;margin-top:1rem;max-width:none;">
 
-    <div class="diseases-grid">
+      <!-- Gateway: Interactions -->
+      <a href="body-system-interactions.html" style="text-decoration:none;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem 2rem 1.8rem;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:0.9rem;transition:all 0.3s;height:100%;" onmouseover="this.style.transform='translateY(-5px)';this.style.borderColor='rgba(59,200,232,0.45)';this.style.boxShadow='0 18px 40px rgba(0,0,0,0.35)'" onmouseout="this.style.transform='';this.style.borderColor='var(--border)';this.style.boxShadow=''">
+          <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#3bc8e8,#1de9b6);"></div>
+          <div style="font-size:2.4rem;margin-bottom:0.2rem;">🗺️</div>
+          <div style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--text);">Body System Interactions</div>
+          <div style="color:var(--text-muted);font-size:0.9rem;line-height:1.65;flex:1;">Click through all eight interactive system maps — see the organs, functions, and connections that make each system work.</div>
+          <div style="display:inline-flex;align-items:center;gap:0.5rem;align-self:flex-start;margin-top:0.5rem;padding:0.5rem 1.3rem;border-radius:99px;font-size:0.82rem;font-weight:800;letter-spacing:0.05em;background:rgba(59,200,232,0.18);border:1.5px solid rgba(59,200,232,0.7);color:#7ee8f8;">Explore Maps →</div>
+        </div>
+      </a>
 
-      <div class="dis-card active-dis dis-circulatory">
-        <span class="dis-icon">🫀</span>
-        <div class="dis-name">Circulatory System</div>
-        <div class="dis-desc">From heart attacks and arrhythmias to anemia and blood clots — explore what happens when the body's delivery network breaks down.</div>
-        <a href="disease_circulatory.html" class="dis-link">Disease Map</a>
-      </div>
-
-      <!-- DIGESTIVE -->
-      <div class="dis-card active-dis dis-digestive">
-        <span class="dis-icon">🫄</span>
-        <div class="dis-name">Digestive System</div>
-        <div class="dis-desc">Crohn's disease, ulcers, liver failure, and more — when the body can't absorb what it needs.</div>
-        <a href="disease_digestive.html" class="dis-link">Disease Map</a>
-      </div>
-
-      <!-- RESPIRATORY -->
-      <div class="dis-card active-dis dis-respiratory">
-        <span class="dis-icon">🫁</span>
-        <div class="dis-name">Respiratory System</div>
-        <div class="dis-desc">Asthma, pneumonia, COPD, and more — how breathing disorders affect oxygen delivery to every cell.</div>
-        <a href="disease_respiratory.html" class="dis-link">Disease Map</a>
-      </div>
-
-      <!-- EXCRETORY -->
-      <div class="dis-card active-dis dis-excretory">
-        <span class="dis-icon">🚽</span>
-        <div class="dis-name">Excretory System</div>
-        <div class="dis-desc">Kidney disease, kidney stones, and what happens when the body can't remove its own waste.</div>
-        <a href="disease_excretory.html" class="dis-link">Disease Map</a>
-      </div>
-
-      <!-- SKELETAL -->
-      <div class="dis-card active-dis dis-skeletal">
-        <span class="dis-icon">🦴</span>
-        <div class="dis-name">Skeletal System</div>
-        <div class="dis-desc">Osteoporosis, arthritis, fractures, and bone marrow disorders — when the body's framework weakens.</div>
-        <a href="disease_skeletal.html" class="dis-link">Disease Map</a>
-      </div>
-
-      <!-- MUSCULAR -->
-      <div class="dis-card active-dis dis-muscular">
-        <span class="dis-icon">💪</span>
-        <div class="dis-name">Muscular System</div>
-        <div class="dis-desc">Muscular dystrophy, myasthenia gravis, and what happens when muscle tissue stops working properly.</div>
-        <a href="disease_muscular.html" class="dis-link">Disease Map</a>
-      </div>
-
-      <!-- NERVOUS -->
-      <div class="dis-card active-dis dis-nervous">
-        <span class="dis-icon">🧠</span>
-        <div class="dis-name">Nervous System</div>
-        <div class="dis-desc">Multiple sclerosis, epilepsy, stroke, and Parkinson's — disorders of the body's master controller.</div>
-        <a href="disease_nervous.html" class="dis-link">Disease Map</a>
-      </div>
-
-      <!-- IMMUNE -->
-      <div class="dis-card active-dis dis-immune">
-        <span class="dis-icon">🛡️</span>
-        <div class="dis-name">Immune System</div>
-        <div class="dis-desc">Allergies, autoimmune diseases, and immunodeficiencies — when the body attacks itself or can't defend at all.</div>
-        <a href="disease_immune.html" class="dis-link">Disease Map</a>
-      </div>
+      <!-- Gateway: Diseases -->
+      <a href="body-system-diseases.html" style="text-decoration:none;">
+        <div style="background:var(--card);border:1px solid rgba(192,57,43,0.25);border-radius:20px;padding:2rem 2rem 1.8rem;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:0.9rem;transition:all 0.3s;height:100%;" onmouseover="this.style.transform='translateY(-5px)';this.style.borderColor='rgba(231,76,60,0.5)';this.style.boxShadow='0 18px 40px rgba(0,0,0,0.35)'" onmouseout="this.style.transform='';this.style.borderColor='rgba(192,57,43,0.25)';this.style.boxShadow=''">
+          <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#e74c3c,#e91e63);"></div>
+          <div style="font-size:2.4rem;margin-bottom:0.2rem;">🩺</div>
+          <div style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--text);">Body System Diseases</div>
+          <div style="color:var(--text-muted);font-size:0.9rem;line-height:1.65;flex:1;">Explore what happens when each system breaks down — from heart attacks and asthma to nerve disorders and autoimmune disease.</div>
+          <div style="display:inline-flex;align-items:center;gap:0.5rem;align-self:flex-start;margin-top:0.5rem;padding:0.5rem 1.3rem;border-radius:99px;font-size:0.82rem;font-weight:800;letter-spacing:0.05em;background:rgba(192,57,43,0.12);border:1.5px solid rgba(192,57,43,0.55);color:#e8837a;">Explore Diseases →</div>
+        </div>
+      </a>
 
     </div>
   </div>
 </section>
+
+
 
 
 <!-- VIDEO -->
@@ -1767,10 +1750,11 @@ body.stem-active .stem-detail {
       <span class="concept-tag ct-purple" onclick="vocabJump('sc-muscular')">Muscular System</span>
       <span class="concept-tag ct-purple" onclick="vocabJump('sc-nervous')">Nervous System</span>
       <span class="concept-tag ct-blue"   onclick="vocabJump('sc-immune')">Immune System</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('sc-excretory')">Homeostasis</span>
-      <span class="concept-tag ct-green"  onclick="vocabJump('vocab-tissue')">Tissue</span>
-      <span class="concept-tag ct-blue"   onclick="vocabJump('vocab-organ')">Organ</span>
-      <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-cell')">Cell</span>
+      <span class="concept-tag ct-slate"  onclick="hierJump('vocab-organelle')">Organelles</span>
+      <span class="concept-tag ct-slate"  onclick="hierJump('vocab-cell')">Cells</span>
+      <span class="concept-tag ct-slate"  onclick="hierJump('vocab-tissue')">Tissues</span>
+      <span class="concept-tag ct-slate"  onclick="hierJump('vocab-organ')">Organs</span>
+      <span class="concept-tag ct-slate"  onclick="hierJump('vocab-body-systems')">Body Systems</span>
     </div>
   </div>
 </section>
@@ -2022,10 +2006,22 @@ function resetQuiz() {
 function vocabJump(targetId) {
   const el = document.getElementById(targetId);
   if (!el) return;
+  // For conn-cards, scroll to card and pulse the whole card
+  if (el.classList.contains('conn-card')) {
+    const top = el.getBoundingClientRect().top + window.scrollY - 120;
+    window.scrollTo({ top, behavior: 'smooth' });
+    setTimeout(() => {
+      el.classList.remove('pulsing');
+      void el.offsetWidth;
+      el.classList.add('pulsing');
+      el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+    }, 600);
+    return;
+  }
+  // Legacy fallback for inline vocab spans
   const card = el.closest('.system-card, .hier-item, section') || el;
   const top = card.getBoundingClientRect().top + window.scrollY - 120;
   window.scrollTo({ top, behavior: 'smooth' });
-  // For inline .vocab spans pulse them directly; for cards pulse the card/name
   const pulse = el.classList.contains('vocab') ? el
     : el.classList.contains('system-card') || el.classList.contains('hier-name') ? el
     : (el.querySelector('.system-name, .hier-name') || el);
@@ -2035,6 +2031,23 @@ function vocabJump(targetId) {
     pulse.classList.add('pulsing');
     pulse.addEventListener('animationend', () => pulse.classList.remove('pulsing'), { once: true });
   }, 600);
+}
+
+function hierJump(targetId) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 120;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 600);
+}
+
+function toggleHier(card) {
+  card.classList.toggle('open');
 }
 
 buildQuiz();
