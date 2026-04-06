@@ -27,8 +27,10 @@
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Nunito',sans-serif; background:var(--dark); color:var(--text); line-height:1.6; overflow-x:hidden; }
-  nav { position:sticky; top:0; z-index:200; background:rgba(10,18,28,0.97); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0.8rem 2.5rem; }
-  .nav-logo { font-family:'Orbitron',sans-serif; font-size:1.2rem; font-weight:900; color:var(--gold); text-decoration:none; letter-spacing:0.06em; text-shadow:0 0 18px var(--gold-glow); }
+  nav { position:sticky; top:0; z-index: 1000; background:rgba(10,18,28,0.97); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding: 0.85rem 2.5rem; }
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+
+  .nav-logo { font-family:'Orbitron',sans-serif; font-size: 1.35rem; font-weight:900; color:var(--gold); text-decoration:none; letter-spacing:0.06em; text-shadow:0 0 18px var(--gold-glow); }
   .nav-center { display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:var(--muted); font-weight:700; }
   .nav-center .sep { opacity:0.3; } .nav-center .cur { color:var(--accent); }
   .nav-back { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-dim); border:1px solid var(--accent-border); padding:0.32rem 0.9rem; border-radius:99px; text-decoration:none; }
@@ -108,7 +110,10 @@
   .dyk-label { font-size:0.64rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:0.15rem; }
   .dyk-text  { font-size:0.79rem; color:rgba(232,244,251,0.7); line-height:1.6; }
   footer { background:#070f17; border-top:1px solid var(--border); padding:2.2rem 2rem; text-align:center; margin-top:0.5rem; }
-  footer .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--accent); margin-bottom:0.35rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--accent); margin-bottom:0.35rem; }
+  footer .footer-links { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.3rem 0.9rem; border-radius:99px; transition:border-color 0.2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
   footer p { color:var(--muted); font-size:0.83rem; } footer a { color:var(--teal); text-decoration:none; } footer a:hover { text-decoration:underline; }
   @media(max-width:960px){ .panels{grid-template-columns:1fr} .info-panel{position:static} }
   @media(max-width:600px){ nav{padding:0.8rem 1.2rem} .nav-center{display:none} .page-header{padding:1.6rem 1.2rem 1.3rem} .explorer-wrap{padding:1.2rem 1rem 2rem} .header-hint{display:none} }
@@ -237,9 +242,10 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
 </style>
 </head>
 <body>
+<canvas id="stars"></canvas>
 <nav>
   <a class="nav-logo" href="index.html">LYFELABZ</a>
-  <a class="nav-back" href="body_systems.html#diseases">← Body Systems</a>
+  <a class="nav-back" href="body-system-diseases.html">← Body Systems</a>
 </nav>
 <div class="page-header">
   <div class="header-inner">
@@ -309,14 +315,13 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
   </div>
 </div>
 <footer>
-  <div class="logo">🦴 LyfeLabz · Skeletal System — Diseases &amp; Disorders</div>
-  <p style="margin-bottom:0.6rem;">
-    <a href="body_systems.html#diseases">← Diseases &amp; Disorders</a>
-    &nbsp;·&nbsp;
-    <a href="system_skeletal.html">Skeletal Map</a>
-    &nbsp;·&nbsp;
-    <a href="index.html">Learning Hub</a>
-  </p>
+  <div class="footer-logo">LYFELABZ</div>
+  <p class="footer-context">Skeletal System — Diseases &amp; Disorders</p>
+    <div class="footer-links">
+    <a href="about_lyfelabz.html">About</a>
+    <a href="about_privacy.html">Privacy</a>
+    <a href="about_learning-science.html">Why It Works</a>
+  </div>
   <p>© 2026 LyfeLabz · Educational Use</p>
 </footer>
 <script>
@@ -956,6 +961,36 @@ function setPanel(organ, dIdx) {
   });
 })();
 
+</script>
+<script>
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = document.body.scrollHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / 5000);
+  for (let i = 0; i < count; i++) {
+    stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2, a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2 });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`; ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize(); requestAnimationFrame(draw);
 </script>
 </body>
 </html>

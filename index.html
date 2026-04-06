@@ -13,15 +13,13 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LyfeLabz | Science Learning Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   html { font-size: 18px; }
   :root {
-    --ink:      #0b0e1a;
-    --ink2:     #111527;
-    --ink3:     #181d35;
-    --card:     #141828;
-    --card2:    #1c2240;
+    --dark:     #1a2535;
+    --card:     #1e2f42;
+    --card2:    #243447;
     --border:   rgba(180,160,255,0.12);
     --text:     #e8e6f4;
     --muted:    #7b789e;
@@ -49,8 +47,8 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: 'Space Grotesk', sans-serif;
-    background: var(--ink);
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
     color: var(--text);
     line-height: 1.6;
     overflow-x: hidden;
@@ -70,7 +68,7 @@
   nav {
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
     background: rgba(11,14,26,0.93);
     backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border);
@@ -203,7 +201,7 @@
     flex-wrap: wrap;
   }
   .filter-pill {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Nunito', sans-serif;
     font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -244,7 +242,7 @@
     background: rgba(59,200,232,0.06);
   }
   .fp-topic.active {
-    color: #0b0e1a;
+    color: #1a2535;
     background: var(--teal);
     border-color: var(--teal);
     box-shadow: 0 2px 14px rgba(59,200,232,0.4);
@@ -268,7 +266,7 @@
 
   /* ===== STATS BAR ===== */
   .stats-bar {
-    background: var(--ink2);
+    background: var(--dark);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     padding: 1.8rem 2rem;
@@ -315,7 +313,7 @@
     margin-bottom: 1rem;
   }
   h2.section-title {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Fredoka One', sans-serif;
     font-size: clamp(1.8rem, 4vw, 2.8rem);
     font-weight: 800;
     margin-bottom: 0.8rem;
@@ -357,7 +355,7 @@
 
   .topic-group-icon { font-size: 1.6rem; line-height: 1; }
   .topic-group-name {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Fredoka One', sans-serif;
     font-size: 1.35rem;
     font-weight: 800;
   }
@@ -384,7 +382,7 @@
   .tg-psych   .topic-group-tag { color: var(--psych);         background: rgba(244,114,182,0.08); border-color: rgba(244,114,182,0.28); }
 
   /* ===== SUBJECT BLOCKS ===== */
-  #subjects { background: var(--ink2); }
+  #subjects { background: var(--dark); }
   .subject-block { margin-bottom: 1.2rem; }
   .subject-block:last-child { margin-bottom: 0; }
   .topic-group:last-child .subject-block:last-child { margin-bottom: 0; }
@@ -398,7 +396,7 @@
     border-bottom: 1px solid var(--border);
   }
   .subject-icon { font-size: 1.6rem; line-height: 1; }
-  .subject-title { font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--muted); }
+  .subject-title { font-family: 'Fredoka One', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--muted); }
   .subject-badge {
     font-size: 0.7rem;
     font-weight: 700;
@@ -449,7 +447,7 @@
 
   .unit-top { padding: 1.4rem 1.6rem 0.8rem; flex: 1; }
   .unit-name {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Fredoka One', sans-serif;
     font-size: 1.02rem;
     font-weight: 700;
     margin-bottom: 0.45rem;
@@ -560,7 +558,7 @@
   }
 
   /* ===== HOW IT WORKS ===== */
-  #how { background: var(--ink); }
+  #how { background: var(--dark); }
   .how-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -584,17 +582,17 @@
     text-transform: uppercase;
     margin-bottom: 0.45rem;
   }
-  .how-card h3 { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 0.55rem; }
+  .how-card h3 { font-family: 'Fredoka One', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 0.55rem; }
   .how-card p { font-size: 0.87rem; color: var(--muted); line-height: 1.65; }
 
   /* ===== FOOTER ===== */
   footer {
-    background: var(--ink2);
+    background: var(--dark);
     border-top: 1px solid var(--border);
     padding: 2.5rem 2rem;
     text-align: center;
   }
-  .footer-name {
+  .footer-logo {
     font-family: 'Orbitron', sans-serif;
     font-size: 1.1rem;
     font-weight: 900;
@@ -606,7 +604,7 @@
   footer p { font-size: 0.83rem; color: var(--muted); }
 
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--ink); }
+  ::-webkit-scrollbar-track { background: var(--dark); }
   ::-webkit-scrollbar-thumb { background: var(--card2); border-radius: 3px; }
 
   /* ===== HIDDEN ROOM: BEHAVIORAL SCIENCE ===== */
@@ -633,7 +631,7 @@
     background: rgba(244,114,182,0.15);
     border: 1px solid rgba(244,114,182,0.5);
     color: var(--psych);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Nunito', sans-serif;
     font-size: 0.82rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -1034,7 +1032,7 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-name">LYFELABZ</div>
+  <div class="footer-logo">LYFELABZ</div>
   <p>Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
   <p style="margin-top:0.6rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
     <a href="about_lyfelabz.html" style="color:var(--gold); text-decoration:none; font-size:0.83rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.3); padding:0.3rem 0.9rem; border-radius:99px; transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(245,200,66,0.6)'" onmouseout="this.style.borderColor='rgba(245,200,66,0.3)'">About LyfeLabz</a>
@@ -1056,7 +1054,7 @@
     <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
       <button id="edu-toggle-btn" onclick="toggleEduMode()" style="
         display: inline-flex; align-items: center; gap: 0.6rem;
-        font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; font-weight: 800;
+        font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 800;
         letter-spacing: 0.06em; text-transform: uppercase; border-radius: 99px;
         padding: 0.5rem 1.3rem; cursor: pointer; transition: all 0.22s ease;
         border: 1px solid rgba(59,200,232,0.8); background: rgba(59,200,232,0.18); color: #3bc8e8;
@@ -1066,7 +1064,7 @@
       </button>
       <button id="stem-toggle-btn" onclick="toggleStemMode()" style="
         display: inline-flex; align-items: center; gap: 0.6rem;
-        font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; font-weight: 800;
+        font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 800;
         letter-spacing: 0.06em; text-transform: uppercase; border-radius: 99px;
         padding: 0.5rem 1.3rem; cursor: pointer; transition: all 0.22s ease;
         border: 1px solid rgba(46,204,113,0.7); background: rgba(46,204,113,0.12); color: #2ecc71;

@@ -13,14 +13,13 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LyfeLabz | About</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   html { font-size: 18px; }
   :root {
-    --ink:       #0b0e1a;
-    --ink2:      #111527;
-    --card:      #141828;
-    --card2:     #1c2240;
+    --dark:      #1a2535;
+    --card:      #1e2f42;
+    --card2:     #243447;
     --border:    rgba(180,160,255,0.12);
     --text:      #e8e6f4;
     --muted:     #7b789e;
@@ -34,8 +33,8 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: 'Space Grotesk', sans-serif;
-    background: var(--ink);
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
     color: var(--text);
     line-height: 1.6;
     overflow-x: hidden;
@@ -55,7 +54,7 @@
   nav {
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
     background: rgba(11,14,26,0.93);
     backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border);
@@ -134,7 +133,7 @@
     background-clip: text;
   }
   .hero-tagline {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Fredoka One', sans-serif;
     font-size: 1.05rem;
     font-weight: 600;
     color: var(--muted);
@@ -197,7 +196,7 @@
     margin-bottom: 1rem;
   }
   h2.section-title {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Fredoka One', sans-serif;
     font-size: clamp(1.5rem, 3vw, 2rem);
     font-weight: 800;
     margin-bottom: 1.8rem;
@@ -227,7 +226,7 @@
   .audience-card:nth-child(3):hover { border-color: rgba(244,114,182,0.4); }
   .audience-icon { font-size: 2.2rem; margin-bottom: 0.9rem; display: block; }
   .audience-title {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Fredoka One', sans-serif;
     font-size: 1rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
@@ -297,7 +296,7 @@
     gap: 0.6rem;
   }
   .philosophy-line {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Fredoka One', sans-serif;
     font-size: clamp(1.05rem, 2.5vw, 1.3rem);
     font-weight: 700;
     color: var(--text);
@@ -307,14 +306,14 @@
 
   /* ===== FOOTER ===== */
   footer {
-    background: var(--ink2);
+    background: var(--dark);
     border-top: 1px solid var(--border);
     padding: 2.5rem 2rem;
     text-align: center;
     position: relative;
     z-index: 1;
   }
-  .footer-name {
+  .footer-logo {
     font-family: 'Orbitron', sans-serif;
     font-size: 1.1rem;
     font-weight: 900;
@@ -323,12 +322,15 @@
     margin-bottom: 0.6rem;
     text-shadow: 0 0 12px var(--gold-glow);
   }
+  footer .footer-links { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.3rem 0.9rem; border-radius:99px; transition:border-color 0.2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
   footer p { font-size: 0.83rem; color: var(--muted); }
   footer a { color: var(--gold); text-decoration: none; }
   footer a:hover { text-decoration: underline; }
 
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--ink); }
+  ::-webkit-scrollbar-track { background: var(--dark); }
   ::-webkit-scrollbar-thumb { background: var(--card2); border-radius: 3px; }
 
   @media (max-width: 600px) {
@@ -423,8 +425,8 @@
     <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:1.8rem 2rem;text-align:center;">
       <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.1rem;letter-spacing:0.04em;">Toggle both modes on for this session from here or from the <a href="index.html" style="color:var(--gold);font-weight:700;">Learning Hub</a> footer.</p>
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;">
-        <button onclick="document.getElementById('edu-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.55rem;font-family:'Space Grotesk',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(59,200,232,0.6);background:rgba(59,200,232,0.1);color:#3bc8e8;">🔬 Learning Science Badges</button>
-        <button onclick="document.getElementById('stem-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.55rem;font-family:'Space Grotesk',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(46,204,113,0.6);background:rgba(46,204,113,0.1);color:#2ecc71;">📋 MA STE Standards</button>
+        <button onclick="document.getElementById('edu-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.55rem;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(59,200,232,0.6);background:rgba(59,200,232,0.1);color:#3bc8e8;">🔬 Learning Science Badges</button>
+        <button onclick="document.getElementById('stem-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.55rem;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(46,204,113,0.6);background:rgba(46,204,113,0.1);color:#2ecc71;">📋 MA STE Standards</button>
       </div>
       <p style="font-size:0.72rem;color:rgba(255,255,255,0.25);margin-top:0.85rem;">Session resets when tab is closed</p>
     </div>
@@ -463,22 +465,24 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-name">LYFELABZ</div>
+  <div class="footer-logo">LYFELABZ</div>
   <p style="margin-bottom:0.4rem;">Your middle school science hub · lyfelabz.com</p>
-  <p style="margin-bottom:1.2rem;">
-    <a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a>
-  </p>
+    <div class="footer-links">
+    <a href="index.html">← Learning Hub</a>
+    <a href="about_privacy.html">Privacy</a>
+    <a href="about_learning-science.html">Why It Works</a>
+  </div>
   <p style="margin-top:0.3rem;margin-bottom:1.2rem;font-size:0.82rem;color:var(--muted);">© 2026 LyfeLabz · Educational Use</p>
 
   <!-- ── Educator Mode Toggles ──────────────────────────────────────── -->
   <div style="padding-top:1.4rem;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;gap:0.6rem;">
     <div style="font-size:0.62rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.45);">For Educators</div>
     <div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;">
-      <button id="edu-toggle-btn" onclick="toggleEduMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Space Grotesk',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(59,200,232,0.8);background:rgba(59,200,232,0.18);color:#3bc8e8;">
+      <button id="edu-toggle-btn" onclick="toggleEduMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(59,200,232,0.8);background:rgba(59,200,232,0.18);color:#3bc8e8;">
         <span id="edu-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3bc8e8;transition:background 0.22s,box-shadow 0.22s;"></span>
         <span id="edu-toggle-label">Show Learning Science Badges</span>
       </button>
-      <button id="stem-toggle-btn" onclick="toggleStemMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Space Grotesk',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(46,204,113,0.7);background:rgba(46,204,113,0.12);color:#2ecc71;">
+      <button id="stem-toggle-btn" onclick="toggleStemMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(46,204,113,0.7);background:rgba(46,204,113,0.12);color:#2ecc71;">
         <span id="stem-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2ecc71;transition:background 0.22s,box-shadow 0.22s;"></span>
         <span id="stem-toggle-label">Show MA STE Standards</span>
       </button>
