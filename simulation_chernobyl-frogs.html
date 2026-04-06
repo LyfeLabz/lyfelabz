@@ -202,6 +202,38 @@
   .event-title { font-family:'Fredoka One',cursive; font-size: 1.6rem; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,0.4); margin-bottom:0.3rem; }
   .event-desc  { font-size: 0.82rem; font-weight: 800; color: rgba(255,255,255,0.9); text-align:center; padding: 0 1rem; line-height:1.5; }
 
+  /* ── REFLECTION MODE TOGGLE ── */
+  .reflect-mode-toggle-wrap {
+    display:flex; flex-direction:column; align-items:center; gap:0.55rem;
+    padding:1.4rem 1.5rem 0.2rem;
+  }
+  .reflect-mode-toggle {
+    display:flex; align-items:center; justify-content:center;
+    gap:0; background:rgba(118,224,179,0.07); border:1.5px solid rgba(118,224,179,0.28);
+    border-radius:14px; padding:0.35rem; width:fit-content;
+    box-shadow:0 0 0 4px rgba(118,224,179,0.04);
+  }
+  .reflect-mode-btn {
+    padding:0.65rem 1.8rem; border-radius:10px; border:none; cursor:pointer;
+    font-family:'Nunito',sans-serif; font-size:0.92rem; font-weight:800;
+    letter-spacing:0.04em; transition:all 0.22s; color:rgba(118,224,179,0.4);
+    background:transparent;
+  }
+  .reflect-mode-btn:hover:not(.active) { color:rgba(118,224,179,0.75); }
+  .reflect-mode-btn.active {
+    background:linear-gradient(135deg,rgba(118,224,179,0.22) 0%,rgba(80,200,150,0.14) 100%);
+    color:#d4f5e9;
+    border:1px solid rgba(118,224,179,0.55);
+    box-shadow:0 0 16px rgba(118,224,179,0.2),0 2px 10px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.07);
+    text-shadow:0 0 14px rgba(118,224,179,0.5);
+  }
+  .reflect-mode-hint {
+    text-align:center; font-size:0.82rem; font-weight:700;
+    color:var(--muted); letter-spacing:0.01em;
+  }
+  .reflect-mode-hint span { display:none; }
+  .reflect-mode-hint span.visible { display:inline; }
+
   .reflect-panel { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:1.5rem; margin:1.2rem auto 0; max-width:1200px; }
   .reflect-panel::before { content:''; display:block; height:3px; background:linear-gradient(90deg,var(--green),var(--teal)); border-radius:99px; margin-bottom:1.2rem; }
   .reflect-q { margin-bottom:1.2rem; }
@@ -275,47 +307,6 @@
   .ls-badge   { background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.3); color: var(--teal); }
   .stem-badge { background: rgba(118,224,179,0.1); border: 1px solid rgba(118,224,179,0.3); color: var(--green); }
   .ls-badge:hover, .stem-badge:hover { opacity: 0.75; }
-  .ls-badge[data-tip], .stem-badge[data-tip] { position: relative; }
-  .ls-badge[data-tip]::after, .stem-badge[data-tip]::after {
-    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
-    left: 50%; transform: translateX(-50%); width: 230px; padding: 0.5rem 0.75rem;
-    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
-    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
-    border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
-    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
-  }
-  .ls-badge[data-tip]:hover::after, .stem-badge[data-tip]:hover::after { opacity: 1; }
-  .ls-badge[data-tip]::before, .stem-badge[data-tip]::before {
-    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
-    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.1);
-    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
-  }
-  .ls-badge[data-tip]:hover::before, .stem-badge[data-tip]:hover::before { opacity: 1; }
-  .stem-detail { display: none; }
-  body.stem-active .stem-detail {
-    width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
-    text-align: center; animation: stemFadeIn 0.35s ease both;
-  }
-  @keyframes stemFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
-  .stem-show-btn {
-    background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
-    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-    color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
-  }
-  .stem-show-btn:hover { color: rgba(46,204,113,0.85); }
-  .stem-detail-body {
-    display: none; margin-top: 0.5rem;
-    background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
-    border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
-  }
-  .stem-detail.stem-open .stem-detail-body { display: block; }
-  .stem-std-row {
-    display: flex; gap: 0.8rem; align-items: flex-start;
-    padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-  }
-  .stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
-  .stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
 </style>
 </head>
 <body>
@@ -394,6 +385,19 @@
 </div>
 
 <div id="graphMode">
+
+  <!-- PRACTICE / CLASSROOM TOGGLE -->
+  <div class="reflect-mode-toggle-wrap">
+    <div class="reflect-mode-toggle">
+      <button class="reflect-mode-btn active" id="btn-reflect-practice" onclick="setReflectionMode('practice')">Practice Mode</button>
+      <button class="reflect-mode-btn"        id="btn-reflect-classroom" onclick="setReflectionMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="reflect-mode-hint">
+      <span id="reflect-hint-practice" class="visible">Run the simulation and complete the graph</span>
+      <span id="reflect-hint-classroom">Complete the graph and written reflection for your teacher</span>
+    </div>
+  </div>
+
   <div style="max-width:1240px; margin:0 auto; padding:1.5rem; display:grid; grid-template-columns:1fr 240px 280px; gap:1.2rem; align-items:start;">
     <div class="graph-panel">
       <div class="panel-title"><span class="pticon">✏️</span> Plot Your Data</div>
@@ -459,12 +463,12 @@
     <div class="panel-title" style="margin-bottom:0.2rem;"><span class="pticon">💬</span> Reflection Questions</div>
     <p style="font-size:0.82rem; color:var(--muted); margin-bottom:1.2rem; line-height:1.6;">Answer after you've finished plotting your graph. Submit when complete.</p>
 
-    <div class="teacher-select-wrap" style="margin-bottom:1.2rem;">
+    <div class="teacher-select-wrap" id="reflectNameWrap" style="margin-bottom:1.2rem;">
       <span class="reflect-label">Your Name <span style="color:var(--red);">*</span></span>
       <input type="text" class="teacher-select" id="reflectName" placeholder="First and last name…" autocomplete="name">
     </div>
 
-    <div class="teacher-select-wrap" style="margin-bottom:1.2rem;">
+    <div class="teacher-select-wrap" id="reflectTeacherWrap" style="margin-bottom:1.2rem;">
       <span class="reflect-label">Your Teacher <span style="color:var(--red);">*</span></span>
       <select class="teacher-select" id="reflectTeacher">
         <option value="">Select your teacher…</option>
@@ -593,48 +597,23 @@
   </div>
 </div>
 
-<!-- SESSION CHECK -->
 <script>
   if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
   if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
-  function toggleStemDetail(id) {
-    var el = document.getElementById(id);
-    el.classList.toggle('stem-open');
-    var btn = el.querySelector('.stem-show-btn');
-    btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
-  }
 </script>
 
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Simulations help students test how changing one variable affects a whole population over time — a core science and engineering practice. — NGSS SEP 2">🔬 Simulation &amp; Modelling</span>
-  <span class="ls-badge" data-tip="Students identify patterns in trait frequencies and connect those patterns to survival pressure — building inductive reasoning from data. — Kirschner et al., 2006">🔍 Pattern Recognition</span>
-  <span class="ls-badge" data-tip="Radiation is invisible, making this context ideal for breaking the misconception that selection pressure must be a visible predator. — NGSS Crosscutting Concept 2">☢️ Invisible Selection Pressure</span>
-  <span class="ls-badge" data-tip="Graph Mode requires students to predict population trends before seeing results — a form of desirable difficulty that strengthens understanding. — Bjork &amp; Bjork, 2011">📈 Productive Struggle</span>
+  <span class="ls-badge" data-tip="Simulations help students test how changing one variable affects a whole population over time.">🔬 Simulation & Modelling</span>
+  <span class="ls-badge" data-tip="Students identify patterns in trait frequencies and connect those patterns to survival pressure.">🔍 Pattern Recognition</span>
+  <span class="ls-badge" data-tip="This model helps students understand that environmental pressure can be invisible, not just visual.">☢️ Invisible Selection Pressure</span>
 </div>
 
 <div class="stem-focus">
-  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
-  <span class="stem-badge" data-tip="LS4.B: Natural Selection — how genetic variations increase an individual's probability of surviving and reproducing in a specific environment.">6.MS-LS4-4</span>
-  <span class="stem-badge" data-tip="LS4.B: Natural Selection — organisms with advantageous heritable traits tend to increase in proportion to organisms lacking those traits.">6.MS-LS4-2</span>
-  <span class="stem-badge" data-tip="Science and Engineering Practice 2: Developing and using models — using a simulation as a model for natural selection in a radiation-affected population.">SP2: Modelling</span>
-</div>
-<div class="stem-detail" id="stem-detail-sim">
-  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-sim')">▸ Show standard descriptions</button>
-  <div class="stem-detail-body">
-    <div class="stem-std-row">
-      <span class="stem-std-code">6.MS-LS4-4</span>
-      <span class="stem-std-text">Construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals' probability of surviving and reproducing in a specific environment.</span>
-    </div>
-    <div class="stem-std-row">
-      <span class="stem-std-code">6.MS-LS4-2</span>
-      <span class="stem-std-text">Apply concepts of statistics and probability to support explanations that organisms with an advantageous heritable trait tend to increase in proportion to organisms lacking this trait.</span>
-    </div>
-    <div class="stem-std-row">
-      <span class="stem-std-code">SP2</span>
-      <span class="stem-std-text">Develop and use models: students use this simulation as a population model, adjusting pre/post-event conditions and interpreting graphical outputs to explain how radiation pressure drives evolutionary change.</span>
-    </div>
-  </div>
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 7–8</span>
+  <span class="stem-badge" data-tip="Natural selection leads to adaptation of populations over generations.">MS-LS4-4</span>
+  <span class="stem-badge" data-tip="Use mathematical representations to support explanations of how traits shift in populations over time.">MS-LS4-6</span>
+  <span class="stem-badge" data-tip="Students use the simulation as a model to explain biological change.">SP2: Modelling</span>
 </div>
 
 <footer>
@@ -1107,8 +1086,12 @@ function unlockGraphMode() {
   }
   const callout = document.getElementById('graphCallout');
   if (callout) callout.style.display = 'block';
-  const panel = document.getElementById('reflectPanel');
-  if (panel) panel.style.display = 'block';
+  // Unlock reflect panel only in classroom mode
+  graphModeUnlocked = true;
+  if (reflectionMode === 'classroom') {
+    const panel = document.getElementById('reflectPanel');
+    if (panel) panel.style.display = 'block';
+  }
   const q2prompt = document.getElementById('reflectQ2Prompt');
   if (q2prompt) {
     q2prompt.textContent = 'At generation ' + eventGen + ', the Chernobyl disaster introduced radiation into the environment. What effect did this have on the frog population trend?';
@@ -1191,6 +1174,7 @@ function resetSim() {
   document.getElementById('runBtn').textContent = '▶ Run Simulation';
   document.getElementById('runBtn').className = 'run-btn start';
   document.getElementById('outcome').className = 'outcome';
+  graphModeUnlocked = false;
   const panel = document.getElementById('reflectPanel');
   if (panel) panel.style.display = 'none';
   const simTab = document.getElementById('tabSim');
@@ -1564,6 +1548,33 @@ window.addEventListener('resize', () => {
   if (currentMode==='graph' && gCanvas) { gCanvas.width=gCanvas.offsetWidth; drawGraphCanvas(); }
 });
 
+// ── REFLECTION MODE ─────────────────────────────────────────────────────────
+let reflectionMode    = 'practice';
+let graphModeUnlocked = false;
+
+function setReflectionMode(mode) {
+  reflectionMode = mode;
+  const btnPractice   = document.getElementById('btn-reflect-practice');
+  const btnClassroom  = document.getElementById('btn-reflect-classroom');
+  const hintPractice  = document.getElementById('reflect-hint-practice');
+  const hintClassroom = document.getElementById('reflect-hint-classroom');
+  const panel         = document.getElementById('reflectPanel');
+
+  if (mode === 'practice') {
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+    if (panel) panel.style.display = 'none';
+  } else {
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+    if (panel) panel.style.display = graphModeUnlocked ? 'block' : 'none';
+  }
+}
+
 // ── SHEET SUBMISSION ────────────────────────────────────────────────────────
 const SHEET_URLS = {
   brown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
@@ -1571,10 +1582,6 @@ const SHEET_URLS = {
 };
 
 function submitReflection() {
-  const teacher = document.getElementById('reflectTeacher').value;
-  if (!teacher) { alert('Please select your teacher before submitting.'); return; }
-  const studentName = document.getElementById('reflectName').value.trim();
-  if (!studentName) { alert('Please enter your name before submitting.'); return; }
   if (!isGraphComplete()) { alert('Please complete the graph before submitting.'); return; }
   if (!graphChecked) { alert('Please check your graph before submitting.'); return; }
   const q1 = document.getElementById('reflectQ1').value.trim();
@@ -1582,6 +1589,15 @@ function submitReflection() {
   const q3 = document.getElementById('reflectQ3').value.trim();
   const q4 = document.getElementById('reflectQ4').value.trim();
   if (!q1 || !q2 || !q3 || !q4) { alert('Please answer all four questions before submitting.'); return; }
+
+  // ── PRACTICE MODE: panel hidden, submission blocked ──
+  if (reflectionMode === 'practice') { return; }
+
+  // ── CLASSROOM MODE ──
+  const teacher = document.getElementById('reflectTeacher').value;
+  if (!teacher) { alert('Please select your teacher before submitting.'); return; }
+  const studentName = document.getElementById('reflectName').value.trim();
+  if (!studentName) { alert('Please enter your name before submitting.'); return; }
   const btn    = document.getElementById('reflectSubmitBtn');
   const status = document.getElementById('reflectStatus');
   btn.disabled = true;
@@ -1615,6 +1631,17 @@ function submitReflection() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  // ── URL PARAM: set reflection mode on load ──
+  (function() {
+    const params    = new URLSearchParams(window.location.search);
+    const modeParam = params.get('mode');
+    if (modeParam === 'classroom') {
+      setReflectionMode('classroom');
+    } else {
+      setReflectionMode('practice');
+    }
+  })();
+
   setTimeout(() => {
     initCanvases();
     const restored = restoreState();
