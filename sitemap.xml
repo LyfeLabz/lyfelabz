@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Home -->
+  <url>
+    <loc>https://www.lyfelabz.com/</loc>
+    <lastmod>2026-04-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Lessons -->
+  <url>
+    <loc>https://www.lyfelabz.com/lesson_biological-evolution.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/lesson_body-systems.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/lesson_cell-types.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/lesson_characteristics.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/lesson_layers-of-time.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/lesson_organelles.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/lesson_ragebaiting.html</loc>
+  </url>
+
+  <!-- Simulations -->
+  <url>
+    <loc>https://www.lyfelabz.com/simulation_beetle-island.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/simulation_chernobyl-frogs.html</loc>
+  </url>
+
+  <!-- Activities -->
+  <url>
+    <loc>https://www.lyfelabz.com/activity_biological-evolution.html</loc>
+  </url>
+
+  <!-- Games -->
+  <url>
+    <loc>https://www.lyfelabz.com/game_cell-explorer.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/game_cell-type-showdown.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/game_exercise.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/game_is-it-alive.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/game_relay.html</loc>
+  </url>
+
+  <!-- Extensions -->
+  <url>
+    <loc>https://www.lyfelabz.com/extension_biological-evolution.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/extension_body-systems.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/extension_gray-zone.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/extension_neuron-explorer.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/extension_organelles.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/extension_virus.html</loc>
+  </url>
+
+  <!-- Body Systems -->
+  <url>
+    <loc>https://www.lyfelabz.com/system_circulatory.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/system_digestive.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/system_excretory.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/system_immune.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/system_muscular.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/system_nervous.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/system_respiratory.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/system_skeletal.html</loc>
+  </url>
+
+  <!-- Disease Pages -->
+  <url>
+    <loc>https://www.lyfelabz.com/disease_circulatory.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/disease_digestive.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/disease_excretory.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/disease_immune.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/disease_muscular.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/disease_nervous.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/disease_respiratory.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/disease_skeletal.html</loc>
+  </url>
+
+  <!-- Hub Pages -->
+  <url>
+    <loc>https://www.lyfelabz.com/body-system-diseases.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/body-system-interactions.html</loc>
+  </url>
+
+  <!-- About -->
+  <url>
+    <loc>https://www.lyfelabz.com/about_lyfelabz.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/about_learning-science.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/about_privacy.html</loc>
+  </url>
+  <url>
+    <loc>https://www.lyfelabz.com/about_works-cited.html</loc>
+  </url>
+
+</urlset>
