@@ -307,6 +307,47 @@
   .ls-badge   { background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.3); color: var(--teal); }
   .stem-badge { background: rgba(245,160,40,0.1); border: 1px solid rgba(245,160,40,0.3); color: var(--green); }
   .ls-badge:hover, .stem-badge:hover { opacity: 0.75; }
+  .ls-badge[data-tip], .stem-badge[data-tip] { position: relative; }
+  .ls-badge[data-tip]::after, .stem-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 230px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after, .stem-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before, .stem-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.1);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before, .stem-badge[data-tip]:hover::before { opacity: 1; }
+  .stem-detail { display: none; }
+  body.stem-active .stem-detail {
+    width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
+    text-align: center; animation: stemFadeIn 0.35s ease both;
+  }
+  @keyframes stemFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .stem-show-btn {
+    background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
+  }
+  .stem-show-btn:hover { color: rgba(46,204,113,0.85); }
+  .stem-detail-body {
+    display: none; margin-top: 0.5rem;
+    background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
+    border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
+  }
+  .stem-detail.stem-open .stem-detail-body { display: block; }
+  .stem-std-row {
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
+  .stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
 
 </style>
 </head>
@@ -620,20 +661,44 @@
 <script>
   if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
   if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
+  function toggleStemDetail(id) {
+    var el = document.getElementById(id);
+    el.classList.toggle('stem-open');
+    var btn = el.querySelector('.stem-show-btn');
+    btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
+  }
 </script>
 
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Simulations allow students to manipulate variables and observe outcomes — a key science practice that builds causal reasoning. — NGSS Science and Engineering Practices">🔬 Simulation & Modelling</span>
+  <span class="ls-badge" data-tip="Simulations allow students to manipulate variables and observe outcomes — a key science practice that builds causal reasoning. — NGSS Science and Engineering Practices">🔬 Simulation &amp; Modelling</span>
   <span class="ls-badge" data-tip="Observing patterns across multiple runs builds inductive reasoning — students construct the rule from evidence rather than being told it. — Kirschner et al., 2006">🔍 Pattern Recognition</span>
   <span class="ls-badge" data-tip="Low-stakes exploration reduces anxiety and increases engagement — students are more willing to take risks and test hypotheses. — Dweck, 2006">🎮 Low-Stakes Exploration</span>
+  <span class="ls-badge" data-tip="Graph Mode requires students to predict data trends before seeing results — a form of desirable difficulty that deepens understanding. — Bjork &amp; Bjork, 2011">📈 Productive Struggle</span>
 </div>
 
 <div class="stem-focus">
-  <span class="stem-focus-label">📋 MA STE Standards · Grade 7–8</span>
-  <span class="stem-badge" data-tip="LS4.B: Natural Selection — how natural selection leads to adaptation of populations over generations.">MS-LS4-4</span>
-  <span class="stem-badge" data-tip="LS4.B: Natural Selection — mathematical representations of proportional changes in traits over time.">MS-LS4-6</span>
-  <span class="stem-badge" data-tip="Science Practice 2: Developing and using models — using a simulation as a model for natural selection in a population.">SP2: Modelling</span>
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
+  <span class="stem-badge" data-tip="LS4.B: Natural Selection — how genetic variations increase an individual's probability of surviving and reproducing in a specific environment.">6.MS-LS4-4</span>
+  <span class="stem-badge" data-tip="LS4.B: Natural Selection — organisms with advantageous heritable traits tend to increase in proportion to organisms lacking those traits.">6.MS-LS4-2</span>
+  <span class="stem-badge" data-tip="Science and Engineering Practice 2: Developing and using models — using a simulation as a model for natural selection in a population.">SP2: Modelling</span>
+</div>
+<div class="stem-detail" id="stem-detail-sim">
+  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-sim')">▸ Show standard descriptions</button>
+  <div class="stem-detail-body">
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-LS4-4</span>
+      <span class="stem-std-text">Construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals' probability of surviving and reproducing in a specific environment.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-LS4-2</span>
+      <span class="stem-std-text">Apply concepts of statistics and probability to support explanations that organisms with an advantageous heritable trait tend to increase in proportion to organisms lacking this trait.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">SP2</span>
+      <span class="stem-std-text">Develop and use models: students use this simulation as a population model, adjusting environmental variables and interpreting graphical outputs to explain natural selection.</span>
+    </div>
+  </div>
 </div>
 
 <footer>

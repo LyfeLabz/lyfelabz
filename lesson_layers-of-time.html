@@ -628,6 +628,12 @@
   </div>
 </header>
 
+<!-- SESSION STATE → body class (matches site-wide pattern) -->
+<script>
+  if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
+  if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
+</script>
+
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
@@ -987,17 +993,11 @@
 <!-- Educator Mode / STEM Toggle (matches site-wide pattern) -->
 <script>
 function toggleStemDetail(id) {
-  const el = document.getElementById(id);
+  var el = document.getElementById(id);
   el.classList.toggle('stem-open');
-  const btn = el.querySelector('.stem-show-btn');
+  var btn = el.querySelector('.stem-show-btn');
   btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
 }
-// Listen for educator-mode class on body from parent site toggle
-const lsObserver = new MutationObserver(() => {
-  document.body.classList.toggle('ls-active', document.body.classList.contains('educator-mode'));
-  document.body.classList.toggle('stem-active', document.body.classList.contains('educator-mode'));
-});
-lsObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 </script>
 
 <!-- Strata interactive diagram -->
