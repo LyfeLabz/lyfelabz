@@ -1796,7 +1796,7 @@ body.stem-active .stem-detail {
           <label for="teacher-select">Teacher</label>
           <select id="teacher-select">
             <option value="">— Select —</option>
-            <option value="MrC">Mr. C</option>
+            <option value="MrBrown">Mr. Brown</option>
             <option value="MsGay">Ms. Gay</option>
           </select>
           <div class="info-error" id="err-teacher">Please select your teacher.</div>
@@ -1885,7 +1885,7 @@ body.stem-active .stem-detail {
 
 <script>
 const SCRIPT_URLS = {
-  MrC:   'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
   MsGay: 'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
 
@@ -1995,7 +1995,7 @@ function submitQuiz() {
   const sb = document.getElementById('q1-score');
   sb.classList.add('show');
   sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  const teacherLabel = teacher === 'MrC' ? 'Mr. C' : 'Ms. Gay';
+  const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
   const params = new URLSearchParams({ tab: 'Body Systems', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%' });
   fetch(SCRIPT_URLS[teacher] + '?' + params.toString())
     .then(r => r.json())
