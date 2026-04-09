@@ -147,9 +147,6 @@
   .cycle-step p { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); }
 
   /* VIDEO */
-  .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 8px 40px rgba(0,0,0,0.5); margin-bottom: 0.75rem; }
-  .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-  .video-caption { text-align: center; font-size: 0.82rem; color: var(--text-muted); font-style: italic; margin-bottom: 3rem; }
 
   /* QUIZ */
   .quiz-box { background: rgba(168,85,247,0.07); border: 1px solid rgba(168,85,247,0.2); border-radius: 24px; padding: 2.5rem; }
@@ -577,7 +574,6 @@ body.ls-active .ls-focus {
   <ul class="nav-links">
     <li><a href="#learn">Learn</a></li>
     <li><a href="#science">The Science</a></li>
-    <li><a href="#watch">Watch</a></li>
     <li><a href="#real-life">Real Life</a></li>
     <li><a href="#spot">Spot the Bait</a></li>
     <li><a href="#tools">Tools</a></li>
@@ -722,31 +718,24 @@ body.ls-active .ls-focus {
   </div>
 </section>
 
-<!-- VIDEO + QUIZ -->
 <section id="watch" class="section section-alt">
   <div class="container-md">
     <div class="section-header">
-      <div class="section-label">BBC Learning English</div>
-      <h2 class="section-title">Watch: How Online Anger Makes Money</h2>
-      <p class="section-sub" style="margin:0 auto">Watch this 6-minute BBC video, then put your knowledge to the test!</p>
+      <div class="section-label">Knowledge Check</div>
+      <h2 class="section-title">Check Your Understanding</h2>
+      <p class="section-sub" style="margin:0 auto">Five questions to test what you've learned about rage bait and online manipulation. Click an answer to see instant feedback!</p>
     </div>
-    <div class="video-wrapper">
-      <iframe src="https://www.youtube.com/embed/JaGXfJBx0BM"
-        title="Rage bait: How online anger makes money – BBC Learning English"
-        frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-    </div>
-    <p class="video-caption">"Rage bait: How online anger makes money" &mdash; BBC Learning English &middot; 6 Minute English</p>
 
     <div class="quiz-box">
       <div class="quiz-box-header">
         <div class="quiz-box-icon">📋</div>
-        <h3>Video Comprehension Quiz</h3>
+        <h3>Rage Bait Quiz</h3>
       </div>
-      <p>Answer all 5 questions based on what you just watched. Click an answer to see instant feedback!</p>
+      <p>Answer all 5 questions based on what you learned on this page. Click an answer to see instant feedback!</p>
       <div id="quiz-container">
 
         <div class="quiz-question" data-question="1">
-          <p class="quiz-q-text"><span class="q-num">1</span>According to the BBC video, what is the best definition of "rage bait"?</p>
+          <p class="quiz-q-text"><span class="q-num">1</span>What is the best definition of "rage bait"?</p>
           <div class="quiz-options">
             <div class="quiz-option" data-correct="false" onclick="selectAnswer(this,1)">A) Breaking news stories shared to keep people informed</div>
             <div class="quiz-option" data-correct="true"  onclick="selectAnswer(this,1)">B) Content deliberately designed to provoke anger and boost online engagement</div>
@@ -779,7 +768,7 @@ body.ls-active .ls-focus {
         </div>
 
         <div class="quiz-question" data-question="4">
-          <p class="quiz-q-text"><span class="q-num">4</span>What is one negative effect of regularly consuming rage bait, as discussed in the video?</p>
+          <p class="quiz-q-text"><span class="q-num">4</span>What is one negative effect of regularly consuming rage bait?</p>
           <div class="quiz-options">
             <div class="quiz-option" data-correct="false" onclick="selectAnswer(this,4)">A) It improves your critical thinking skills over time</div>
             <div class="quiz-option" data-correct="false" onclick="selectAnswer(this,4)">B) It slows down your device's internet speed</div>
@@ -790,7 +779,7 @@ body.ls-active .ls-focus {
         </div>
 
         <div class="quiz-question" data-question="5">
-          <p class="quiz-q-text"><span class="q-num">5</span>According to the video, what is the most effective way to fight back against rage bait?</p>
+          <p class="quiz-q-text"><span class="q-num">5</span>What is the most effective personal strategy for reducing the spread of rage bait?</p>
           <div class="quiz-options">
             <div class="quiz-option" data-correct="false" onclick="selectAnswer(this,5)">A) Report every piece of rage bait you see immediately</div>
             <div class="quiz-option" data-correct="false" onclick="selectAnswer(this,5)">B) Share it with a comment explaining why it's rage bait</div>
@@ -1263,8 +1252,8 @@ body.ls-active .ls-focus {
     badge.textContent = `${s}/5`;
     badge.className   = 'score-badge ' + (s===5 ? 'badge-green' : s>=3 ? 'badge-purple' : 'badge-orange');
     section.classList.remove('hidden');
-    document.getElementById('quiz-score-title').textContent   = s===5 ? "🏆 Perfect Score! You're a Rage Bait Expert!" : s>=3 ? "👍 Nice Work, Detective!" : "📺 Try Rewatching the Video!";
-    document.getElementById('quiz-score-message').textContent = s===5 ? "Outstanding! You understood every concept. You're ready to help others spot rage bait too!" : s>=3 ? "Solid effort! Review the questions you missed, then try again — you've got this." : "No worries — this stuff takes practice. Watch the BBC clip again and give the quiz another shot!";
+    document.getElementById('quiz-score-title').textContent   = s===5 ? "🏆 Perfect Score! You're a Rage Bait Expert!" : s>=3 ? "👍 Nice Work, Detective!" : "📖 Review the Page and Try Again!";
+    document.getElementById('quiz-score-message').textContent = s===5 ? "Outstanding! You understood every concept. You're ready to help others spot rage bait too!" : s>=3 ? "Solid effort! Review the questions you missed, then try again — you've got this." : "No worries — this stuff takes practice. Review the page content and give the quiz another shot!";
     section.scrollIntoView({ behavior:'smooth', block:'center' });
   }
 

@@ -546,25 +546,6 @@
   .nervous-conn-item .conn-partner { flex-shrink: 0; width: 114px; text-align: center; margin-top: 0.1rem; }
   .nervous-conn-item .conn-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.55; }
 
-  /* ===== VIDEO ===== */
-  .video-wrapper {
-    position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 2px solid var(--border);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    max-width: 860px;
-    margin: 0 auto;
-  }
-  .video-wrapper iframe {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    border: none;
-  }
-
   /* ===== QUIZ ===== */
   .quiz-section { background: var(--dark2); }
   .quiz-header {
@@ -1432,7 +1413,6 @@ body.stem-active .stem-detail {
     <li><a href="#connections">Connections</a></li>
     <li><a href="#systems">Systems</a></li>
     <li><a href="#concepts">Vocab</a></li>
-    <li><a href="#watch">Watch</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -1771,7 +1751,6 @@ body.stem-active .stem-detail {
 
 
 
-<!-- VIDEO -->
 <section id="concepts" style="background: var(--dark2); padding: 5rem 2rem;">
   <div class="container">
     <span class="section-label">🏷️ Key Vocabulary</span>
@@ -1796,16 +1775,6 @@ body.stem-active .stem-detail {
   </div>
 </section>
 
-<section id="watch" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Watch — Body Systems</span>
-    <h2 class="section-title">Watch &amp; Learn 🎬</h2>
-    <p class="section-desc" style="margin-bottom:2rem;">Watch this video to reinforce the major body systems and how they interact to keep the body alive and in homeostasis.</p>
-    <div class="video-wrapper">
-      <iframe src="https://www.youtube.com/embed/Ae4MadKPJC0" allowfullscreen></iframe>
-    </div>
-  </div>
-</section>
 
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
