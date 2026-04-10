@@ -1172,10 +1172,12 @@
     refs.comboArea.style.opacity = comboCount > 1 ? "1" : "0.35";
   }
 
-  /* ── LOAD / SAVE ── */
+  /* ── LOAD / SAVE ──
+     Game progress uses sessionStorage — clears automatically when the tab is closed.
+     Leaderboard fallback uses localStorage (separate key, untouched below). */
   function loadState(){
     try{
-      const raw = localStorage.getItem("evolution-clicker-v6");
+      const raw = sessionStorage.getItem("evolution-clicker-v6");
       if(!raw) return;
       const parsed = JSON.parse(raw);
       Object.assign(state, parsed);
@@ -1183,7 +1185,6 @@
       if(!Array.isArray(state.unlockedSkins))      state.unlockedSkins = ["default"];
       if(!Array.isArray(state.purchasedUpgrades))  state.purchasedUpgrades = [];
       if(typeof state.transcended !== "boolean")   state.transcended = state.bestScore >= 2000000;
-      // ── Migration: auto-pass gates for existing saves that pre-date the gate system ──
       if(!Array.isArray(state.passedGates)){
         state.passedGates = evolutionForms
           .filter(f => f.gate !== null && state.bestScore >= f.unlock)
@@ -1194,7 +1195,14 @@
       }
     }catch(err){}
   }
-  function saveState(){ localStorage.setItem("evolution-clicker-v6", JSON.stringify(state)); }
+  function saveState(){ sessionStorage.setItem("evolution-clicker-v6", JSON.stringify(state)); }
+
+  /* Safety cleanup — belt-and-suspenders: clear game state when the tab unloads.
+     sessionStorage already resets on tab close, but this ensures any edge-case
+     mid-session browser crash or hard refresh from another tab doesn't carry forward. */
+  window.addEventListener("pagehide", () => {
+    sessionStorage.removeItem("evolution-clicker-v6");
+  });
 
   /* ── UTILS ── */
   function formatNumber(v){
