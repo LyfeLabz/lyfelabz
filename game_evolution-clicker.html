@@ -16,6 +16,7 @@
   gtag('config', 'G-9QHB5G2B5B');
 </script>
 <style>
+  html { font-size: 18px; }
   :root{
     --bg1:#040814;
     --bg2:#09162e;
@@ -29,6 +30,8 @@
     --text:#eef4ff;
     --muted:#91a3c9;
     --danger:#ff5d7d;
+    --gold:#f5c842;
+    --border:rgba(36,232,255,0.12);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -53,42 +56,55 @@
   }
 
   /* ── NAV ── */
-  .lfl-nav{
+  nav {
+    position:sticky; top:0; z-index:1000;
+    background:rgba(20,30,45,0.97); backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border);
     display:flex; align-items:center; justify-content:space-between;
-    padding:11px 22px; border-bottom:1px solid rgba(36,232,255,.1);
-    background:rgba(4,8,20,.88); backdrop-filter:blur(14px);
-    position:sticky; top:0; z-index:50;
+    padding:0.85rem 2.5rem;
   }
-  .lfl-logo{
-    font-family:'Orbitron', sans-serif; font-size:1.05rem; font-weight:900;
-    background:linear-gradient(90deg, var(--cyan), var(--green));
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-    text-decoration:none; letter-spacing:1px;
+  .nav-logo {
+    font-family:'Orbitron', sans-serif;
+    font-size:1.35rem; font-weight:900;
+    color:var(--gold);
+    text-decoration:none; letter-spacing:0.06em;
+    text-shadow:0 0 18px rgba(245,200,66,0.35);
   }
-  .nav-back{
-    display:flex; align-items:center; gap:6px; color:var(--muted); text-decoration:none;
-    font-size:0.78rem; font-weight:800; letter-spacing:.5px; text-transform:uppercase;
-    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
-    border-radius:999px; padding:7px 14px; transition:all .15s ease;
+  .nav-back {
+    display:inline-flex; align-items:center; gap:0.4rem;
+    font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--green);
+    background:rgba(67,240,125,0.1);
+    border:1px solid rgba(67,240,125,0.4);
+    padding:0.35rem 0.9rem; border-radius:99px;
+    text-decoration:none; transition:all 0.18s ease;
   }
-  .nav-back:hover{ color:var(--cyan); border-color:rgba(36,232,255,.3); background:rgba(36,232,255,.06); }
+  .nav-back:hover{ background:rgba(67,240,125,0.18); border-color:rgba(67,240,125,0.65); }
 
   /* ── APP SHELL ── */
   .app{ max-width:1240px; margin:0 auto; padding:16px 18px 40px; position:relative; }
-  .topbar{ display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:6px; }
-  .toplink{ display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; padding:8px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.07); color:var(--muted); font-size:14px; transition:background .15s ease, color .15s ease; }
-  .toplink:hover{ background:rgba(255,255,255,.06); color:var(--text); }
+  /* topbar / toplink moved to profile section block */
 
   /* ── HERO ── */
-  .hero{ text-align:center; margin-top:2px; margin-bottom:14px; }
+  .hero{ text-align:center; margin-top:24px; margin-bottom:20px; }
+  .page-eyebrow{
+    display:inline-flex; align-items:center; gap:0.5rem;
+    background:rgba(67,240,125,0.1); border:1px solid rgba(67,240,125,0.3);
+    color:var(--green); padding:0.35rem 1.1rem; border-radius:99px;
+    font-size:0.75rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase;
+    margin-bottom:1.2rem; animation:fadeUp 0.5s ease both;
+  }
   .hero h1{
     margin:0; font-family:'Orbitron', sans-serif;
     font-size:clamp(28px, 5.5vw, 62px); line-height:.95; letter-spacing:3px; font-weight:900; text-transform:uppercase;
     background:linear-gradient(135deg, var(--cyan) 0%, var(--green) 55%, var(--purple) 100%);
     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
   }
-  .hero p{ margin:10px 0 4px; font-size:clamp(14px, 1.8vw, 20px); color:var(--muted); }
-  .hero .byline{ margin:0; font-size:clamp(12px, 1.4vw, 16px); color:#6070a0; }
+  .hero p{ margin:12px 0 6px; font-size:clamp(14px, 1.8vw, 18px); color:var(--muted); }
+  .hero .byline{
+    display:inline-block; margin:4px 0 0; font-size:0.72rem; letter-spacing:.1em; text-transform:uppercase;
+    font-weight:800; color:rgba(145,163,201,.5);
+  }
 
   /* ── SETUP ── */
   .setup-row{ margin:12px auto 10px; display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; max-width:860px; }
@@ -183,7 +199,7 @@
   /* ── STATUS STRIP ── */
   .status-strip{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-top:10px; width:100%; }
   .status-pill{ background:#0a1327; border:1px solid rgba(70,95,151,.24); border-radius:13px; padding:9px 8px; text-align:center; color:#d8e5ff; font-size:15px; font-weight:800; }
-  .status-pill small{ display:block; color:var(--muted); margin-top:2px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+  .status-pill small{ display:block; color:var(--muted); margin-top:2px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
 
   /* ── EVENT BANNER ── */
   .event-banner{ margin-top:12px; background:linear-gradient(90deg, rgba(246,203,67,.13), rgba(255,93,125,.1)); border:1px solid rgba(246,203,67,.32); border-radius:14px; padding:11px 15px; display:none; }
@@ -192,10 +208,10 @@
   .event-desc{ color:#e6d9b0; font-size:13px; }
 
   /* ── MODE BUTTONS ── */
-  .mode-stack{ width:100%; display:grid; gap:9px; margin-top:14px; }
+  .mode-stack{ width:100%; display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:14px; }
   .mode-btn{
     width:100%; border-radius:16px; border:2px solid; background:linear-gradient(180deg, rgba(13,19,38,.96), rgba(10,16,32,.9));
-    padding:14px 18px; font-size:17px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--text);
+    padding:11px 14px; font-size:13px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--text);
     display:flex; justify-content:center; align-items:center; gap:10px; cursor:pointer;
     transition:transform .12s ease, filter .15s ease; font-family:'Nunito',sans-serif;
   }
@@ -267,8 +283,8 @@
   }
   @keyframes gate-pulse{ 0%{ border-color:rgba(255,93,125,.4); } 100%{ border-color:rgba(255,93,125,.85); } }
   .path-emoji{ font-size:22px; }
-  .path-name{ font-weight:800; font-size:10px; text-align:center; }
-  .path-req{ color:var(--muted); font-size:9px; text-align:center; }
+  .path-name{ font-weight:800; font-size:11px; text-align:center; }
+  .path-req{ color:var(--muted); font-size:10px; text-align:center; }
 
   /* ── DISCOVERIES ── */
   .discovery-top{ display:flex; justify-content:space-between; gap:10px; align-items:center; font-size:14px; }
@@ -284,6 +300,7 @@
   .toast-wrap{ position:fixed; right:16px; bottom:16px; z-index:40; display:grid; gap:9px; max-width:360px; }
   .toast{ min-width:220px; background:linear-gradient(180deg, rgba(14,21,42,.98), rgba(10,16,32,.94)); border:1px solid rgba(89,112,170,.35); border-left:4px solid var(--cyan); padding:11px 14px; border-radius:15px; box-shadow:0 12px 36px rgba(0,0,0,.3); animation:toastIn .2s ease-out; font-family:'Nunito',sans-serif; font-weight:700; font-size:14px; }
   @keyframes toastIn{ from{ opacity:0; transform:translateY(9px) } to{ opacity:1; transform:translateY(0) } }
+  @keyframes fadeUp{ from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
   /* ── MODALS ── */
   .modal-backdrop{ position:fixed; inset:0; background:rgba(3,8,20,.76); display:none; align-items:center; justify-content:center; z-index:60; padding:18px; }
@@ -291,7 +308,7 @@
   .modal{ width:min(700px, 100%); max-height:90vh; overflow:auto; background:linear-gradient(180deg, rgba(15,22,45,.98), rgba(8,14,28,.98)); border:1px solid rgba(89,112,170,.38); border-radius:24px; padding:22px; box-shadow:0 28px 75px rgba(0,0,0,.42); }
   .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
   .modal-title{ font-size:22px; font-weight:900; text-transform:uppercase; letter-spacing:.8px; font-family:'Fredoka One',sans-serif; }
-  .close-btn{ border:1px solid rgba(89,112,170,.38); background:#0c1327; color:var(--text); border-radius:11px; padding:8px 12px; cursor:pointer; font-weight:800; font-family:'Nunito',sans-serif; }
+  .close-btn{ border:1px solid rgba(89,112,170,.38); background:#0c1327; color:var(--text); border-radius:999px; padding:8px 12px; cursor:pointer; font-weight:800; font-family:'Nunito',sans-serif; }
 
   /* Evolution Gate modal accent */
   #evoGateModal .modal{ border-color:rgba(255,93,125,.4); box-shadow:0 28px 75px rgba(0,0,0,.48), 0 0 60px rgba(255,93,125,.08); }
@@ -335,30 +352,174 @@
   .pill-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
   .pill{ border:1px solid rgba(89,112,170,.25); background:#0c1327; border-radius:999px; padding:6px 12px; font-size:12px; color:#d2dffc; font-family:'Nunito',sans-serif; }
 
+
+  /* ── PROFILE SECTION ── */
+  .profile-section{
+    max-width:860px; margin:0 auto 20px;
+    background:linear-gradient(180deg, rgba(17,25,46,.65), rgba(12,19,38,.5));
+    border:1px solid rgba(89,112,170,.2); border-radius:18px; padding:14px 16px 16px;
+  }
+  .profile-label{
+    font-size:0.68rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+    color:rgba(145,163,201,.55); margin-bottom:10px;
+  }
+  .setup-row{ display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:end; }
+  .field-wrap{ display:flex; flex-direction:column; gap:4px; }
+  .field-label{ font-size:0.65rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:rgba(145,163,201,.5); padding-left:2px; }
+  .input, .select{
+    background:rgba(9,18,38,.9); border:1px solid rgba(72,93,144,.3); color:var(--text);
+    border-radius:12px; padding:10px 13px; font-size:14px; width:100%; outline:none; font-family:'Nunito',sans-serif;
+    transition:border-color .15s ease;
+  }
+  .input:focus, .select:focus{ border-color:rgba(36,232,255,.4); outline:none; }
+  .small-btn{
+    background:linear-gradient(180deg, rgba(36,232,255,.14), rgba(36,232,255,.07));
+    border:1px solid rgba(36,232,255,.38); color:var(--cyan);
+    border-radius:12px; padding:10px 14px; font-size:14px; width:100%; outline:none; font-family:'Nunito',sans-serif;
+    cursor:pointer; font-weight:800; white-space:nowrap;
+    transition:transform .12s ease, box-shadow .2s ease, border-color .2s ease, background .15s ease;
+  }
+  .small-btn:hover{ transform:translateY(-1px); border-color:rgba(36,232,255,.6); box-shadow:0 0 0 1px rgba(36,232,255,.12), 0 6px 18px rgba(0,0,0,.2); }
+
+  /* ── TOPBAR ── */
+  .topbar{ display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-bottom:4px; }
+  .toplink{
+    display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none;
+    padding:6px 14px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.1); color:var(--muted); font-size:13px; font-weight:700;
+    background:rgba(255,255,255,.03); letter-spacing:.03em;
+    transition:background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .toplink:hover{ background:rgba(36,232,255,.07); color:var(--cyan); border-color:rgba(36,232,255,.3); }
+
+  /* ── GAME FOOTER ── */
+  .game-footer{
+    max-width:1240px; margin:32px auto 0; padding:20px 18px;
+    border-top:1px solid rgba(89,112,170,.15); text-align:center;
+  }
+  .game-footer-logo{
+    font-family:'Orbitron', sans-serif; font-size:0.9rem; font-weight:900;
+    color:rgba(245,200,66,.55); letter-spacing:.08em; margin-bottom:6px;
+  }
+  .game-footer p{
+    font-size:0.75rem; color:rgba(145,163,201,.35); margin:0;
+    font-family:'Nunito', sans-serif;
+  }
+  .game-footer a{ color:rgba(59,200,232,.4); text-decoration:none; transition:color .15s ease; }
+  .game-footer a:hover{ color:rgba(59,200,232,.8); }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 940px){
     .setup-row{ grid-template-columns:1fr 1fr; }
+    .profile-section{ padding:12px 14px 14px; }
     .stats{ grid-template-columns:repeat(3,1fr); }
     .main{ grid-template-columns:1fr; }
   }
   @media (max-width: 640px){
     .app{ padding:12px 12px 28px }
+    .mode-stack{ grid-template-columns:1fr; }
     .setup-row{ grid-template-columns:1fr; }
     .stats{ grid-template-columns:repeat(2,1fr); }
     .status-strip{ grid-template-columns:repeat(2,1fr); }
     .upgrade-item{ grid-template-columns:1fr; }
     .upgrade-buy{ width:100%; }
     .path-grid{ grid-template-columns:repeat(2, 1fr); }
-    .mode-btn{ font-size:15px; padding:12px 14px; }
+    .mode-btn{ font-size:13px; padding:10px 12px; }
   }
+
+  /* ── TRANSCENDENCE / COSMIC ── */
+  body.transcended{
+    background:
+      radial-gradient(circle at 50% 35%, rgba(154,92,255,.18), transparent 28%),
+      radial-gradient(circle at 20% 20%, rgba(246,203,67,.1), transparent 18%),
+      radial-gradient(circle at 80% 10%, rgba(36,232,255,.05), transparent 14%),
+      linear-gradient(180deg, #0d0916, #06020e 45%, #02050d);
+  }
+
+  /* Cosmic flash overlay */
+  #cosmicFlash{
+    position:fixed; inset:0; z-index:990;
+    background:radial-gradient(circle at 50% 50%, rgba(246,203,67,.95), rgba(154,92,255,.9) 60%);
+    opacity:0; pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  #cosmicFlash.show{ opacity:1; pointer-events:none; }
+
+  /* Cosmic ring around click zone */
+  .cosmic-ring-wrap{
+    position:relative; display:inline-flex;
+    align-items:center; justify-content:center;
+  }
+  .cosmic-ring{
+    position:absolute;
+    width:calc(min(65vw, 360px) + 28px); height:calc(min(65vw, 360px) + 28px);
+    max-width:388px; max-height:388px;
+    border-radius:50%;
+    border:2px solid rgba(154,92,255,.7);
+    box-shadow:0 0 40px rgba(154,92,255,.4),0 0 70px rgba(246,203,67,.2),inset 0 0 20px rgba(154,92,255,.08);
+    pointer-events:none; display:none;
+    animation:cosmic-ring-pulse 1.8s ease-in-out infinite alternate;
+  }
+  body.transcended .cosmic-ring{ display:block; }
+  @keyframes cosmic-ring-pulse{
+    0%{ border-color:rgba(154,92,255,.5); box-shadow:0 0 30px rgba(154,92,255,.3),0 0 60px rgba(246,203,67,.12); }
+    100%{ border-color:rgba(246,203,67,.65); box-shadow:0 0 55px rgba(154,92,255,.5),0 0 100px rgba(246,203,67,.28); }
+  }
+
+  /* Transcendence modal accent */
+  #transcendenceModal .modal{
+    border-color:rgba(154,92,255,.55);
+    box-shadow:0 28px 75px rgba(0,0,0,.55),0 0 80px rgba(154,92,255,.12);
+  }
+  .transcendence-reward{
+    margin:16px 0; padding:14px 16px;
+    background:rgba(154,92,255,.08); border:1px solid rgba(154,92,255,.28); border-radius:14px;
+    color:#cdaeff; font-size:14px; line-height:1.65; text-align:center;
+  }
+  .transcendence-reward strong{ color:var(--yellow); }
+  .cosmic-title{
+    font-family:'Orbitron',sans-serif; font-size:clamp(16px,3vw,24px); font-weight:900;
+    background:linear-gradient(90deg,var(--purple),var(--yellow),var(--cyan));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    text-transform:uppercase; letter-spacing:2px;
+  }
+
+  /* Cosmic path section */
+  .cosmic-path-section{ display:none; }
+  body.transcended .cosmic-path-section{ display:block; }
+  .cosmic-section-title{
+    display:flex; align-items:center; gap:8px; font-size:18px; text-transform:uppercase;
+    letter-spacing:1px; margin:4px 0 10px; font-weight:900; font-family:'Fredoka One',sans-serif;
+    background:linear-gradient(90deg,var(--purple),var(--yellow));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .path-node.cosmic{
+    background:linear-gradient(180deg,rgba(24,12,48,.9),rgba(12,6,28,.85));
+    border-color:rgba(154,92,255,.3);
+  }
+  .path-node.cosmic.active{
+    border-color:var(--purple);
+    box-shadow:0 0 0 1px rgba(154,92,255,.25),0 0 22px rgba(154,92,255,.18);
+  }
+  .path-node.cosmic.unlocked-cosmic{
+    border-color:rgba(154,92,255,.5);
+    box-shadow:0 0 12px rgba(154,92,255,.15);
+  }
+
+  /* Cosmic progress bar */
+  .cosmic-fill{ height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg,var(--purple),var(--yellow)); transition:width .3s ease; }
+  .cosmic-evo-val{ font-size:13px; font-weight:900; color:var(--purple); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+
+  /* Next evo bar — cosmic mode */
+  .next-evo-area.cosmic-mode .bar-label{ color:var(--purple); }
 </style>
 </head>
 <body>
 
 <!-- LyfeLabz Nav -->
-<nav class="lfl-nav">
-  <a href="index.html" class="lfl-logo">LyfeLabz</a>
-  <a href="index.html" class="nav-back">← Back to Home</a>
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <a href="index.html" class="nav-back">← Home</a>
 </nav>
 
 <div class="app">
@@ -369,20 +530,37 @@
   </div>
 
   <div class="hero">
+    <div class="page-eyebrow">Game</div>
     <h1>Evolution Clicker</h1>
-    <p>Evolve. Adapt. Dominate the environment.</p>
-    <div class="byline">LyfeLabz Science Edition</div>
+    <p>Evolve your organism. Unlock new forms. Prove your science knowledge.</p>
+    <div class="byline">LyfeLabz &middot; Science Edition</div>
   </div>
 
-  <div class="setup-row">
-    <input id="playerName" class="input" type="text" maxlength="24" placeholder="Student name">
-    <input id="teacherName" class="input" type="text" maxlength="30" placeholder="Teacher or class name">
-    <select id="blockName" class="select">
-      <option value="">Select block</option>
-      <option>A Block</option><option>B Block</option><option>C Block</option><option>D Block</option>
-      <option>E Block</option><option>F Block</option><option>G Block</option><option>Other</option>
-    </select>
-    <button class="small-btn" id="saveProfileBtn">Save Profile</button>
+  <div class="profile-section">
+    <div class="profile-label">Player Profile &mdash; Save your progress to the leaderboard</div>
+    <div class="setup-row">
+      <div class="field-wrap">
+        <div class="field-label">Your Name</div>
+        <input id="playerName" class="input" type="text" maxlength="24" placeholder="First name + last initial">
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Teacher</div>
+        <select id="teacherName" class="select">
+          <option value="">Select teacher</option>
+          <option value="Mr. Brown">Mr. Brown</option>
+          <option value="Ms. Gay">Ms. Gay</option>
+        </select>
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Block</div>
+        <select id="blockName" class="select">
+          <option value="">Select block</option>
+          <option>A Block</option><option>B Block</option><option>C Block</option><option>D Block</option>
+          <option>E Block</option><option>F Block</option><option>G Block</option><option>Other</option>
+        </select>
+      </div>
+      <button class="small-btn" id="saveProfileBtn">Save Profile</button>
+    </div>
   </div>
 
   <div class="stats">
@@ -390,7 +568,7 @@
     <div class="stat-card"><div class="icon-purple">⚡</div><div class="label">Per Click</div><div class="value" id="perClickDisplay">1</div></div>
     <div class="stat-card"><div class="icon-green">📈</div><div class="label">Per Second</div><div class="value" id="perSecondDisplay">0</div></div>
     <div class="stat-card"><div class="icon-yellow">🎯</div><div class="label">Knowledge</div><div class="value" id="knowledgeDisplay">1.0x</div></div>
-    <div class="stat-card"><div class="icon-cyan">🧬</div><div class="label">Current Form</div><div class="value" id="formDisplay" style="font-size:19px;">Microbe</div></div>
+    <div class="stat-card"><div class="icon-cyan">🧬</div><div class="label" style="font-size:10px;">Current Form</div><div class="value" id="formDisplay" style="font-size:19px;">Microbe</div></div>
   </div>
 
   <div class="main">
@@ -399,9 +577,12 @@
     <section class="center-panel">
       <div class="click-zone-wrap">
 
-        <div class="click-zone cl-1" id="clickZone" aria-label="Click to evolve" role="button" tabindex="0">
-          <div class="evo-emoji" id="evoEmoji">🦠</div>
-          <div class="click-label">Evolve</div>
+        <div class="cosmic-ring-wrap">
+          <div class="cosmic-ring" id="cosmicRing"></div>
+          <div class="click-zone cl-1" id="clickZone" aria-label="Click to evolve" role="button" tabindex="0">
+            <div class="evo-emoji" id="evoEmoji">🦠</div>
+            <div class="click-label">Evolve</div>
+          </div>
         </div>
 
         <div class="click-bonus"><strong id="clickBonusDisplay">+1</strong> per click</div>
@@ -440,10 +621,10 @@
 
         <!-- Mode buttons -->
         <div class="mode-stack">
-          <button class="mode-btn mode-purple" id="trialBtn">🧠 Mutation Trials</button>
-          <button class="mode-btn mode-gold" id="eventBtn">🌍 Environment Shift</button>
-          <button class="mode-btn mode-green" id="prestigeBtn">🔄 Evolution Reset</button>
-          <button class="mode-btn mode-cyan" id="leaderBtn">🏆 Leaderboard</button>
+          <button class="mode-btn mode-purple" id="trialBtn"><span>🧠</span><span>Mutation Trials</span></button>
+          <button class="mode-btn mode-gold" id="eventBtn"><span>🌍</span><span>Environment Shift</span></button>
+          <button class="mode-btn mode-green" id="prestigeBtn"><span>🔄</span><span>Evolution Reset</span></button>
+          <button class="mode-btn mode-cyan" id="leaderBtn"><span>🏆</span><span>Leaderboard</span></button>
         </div>
 
       </div>
@@ -461,18 +642,33 @@
         <div class="upgrade-list" id="upgradeList"></div>
       </div>
 
-      <div class="section-title">🧬 Evolution Path</div>
+      <div class="section-title">🌿 Evolution Path</div>
       <div class="card">
         <div class="path-grid" id="pathGrid"></div>
       </div>
 
-      <div class="section-title">🏆 Discoveries</div>
+      <div class="section-title">📊 Discoveries</div>
       <div class="card">
         <div class="discovery-top">
-          <div>Next: <strong id="nextDiscoveryName">First Hypothesis</strong></div>
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);">Up next &rarr; <strong id="nextDiscoveryName" style="color:var(--text);font-size:14px;text-transform:none;letter-spacing:0;">First Hypothesis</strong></div>
           <div style="color:var(--muted); font-size:13px;"><span id="discoveryProgressText">0 / 100</span></div>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="discoveryProgressFill"></div></div>
+      </div>
+
+      <!-- Cosmic Path — visible only after Transcendence -->
+      <div class="cosmic-path-section" id="cosmicPathSection">
+        <div class="cosmic-section-title">✨ Cosmic Path</div>
+        <div class="card" style="border-color:rgba(154,92,255,.25);background:linear-gradient(180deg,rgba(14,8,32,.9),rgba(8,4,20,.85));">
+          <div class="path-grid" id="cosmicPathGrid" style="grid-template-columns:repeat(5,1fr);"></div>
+          <div class="next-evo-area" id="cosmicEvoArea" style="margin-top:14px;">
+            <div class="bar-header">
+              <span class="bar-label" style="color:var(--purple);">Cosmic Progress</span>
+              <span class="cosmic-evo-val" id="cosmicEvoVal">Signal Intelligence</span>
+            </div>
+            <div class="bar-track"><div class="cosmic-fill" id="cosmicProgressFill"></div></div>
+          </div>
+        </div>
       </div>
 
     </aside>
@@ -483,6 +679,25 @@
 <!-- Hidden skins grid -->
 <div id="skinsGrid" style="display:none"></div>
 <div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ── COSMIC FLASH OVERLAY ── -->
+<div id="cosmicFlash"></div>
+
+<!-- ── TRANSCENDENCE MODAL ── -->
+<div class="modal-backdrop" id="transcendenceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="cosmic-title">You Have Evolved Beyond Earth…</div>
+    </div>
+    <div style="text-align:center;font-size:72px;margin:12px 0;filter:drop-shadow(0 0 24px rgba(154,92,255,.5));">🛸✨</div>
+    <div class="question-stem" style="text-align:center;font-size:17px;">Your intelligence has transcended biological limits. The cosmos is now your environment.</div>
+    <div class="transcendence-reward">
+      Cosmic minds see patterns others cannot.<br><strong>Knowledge Power +2.0x permanently unlocked.</strong><br>
+      <span style="font-size:12px;color:rgba(205,174,255,.6);margin-top:6px;display:block;">New cosmic forms await beyond UFO — score-only, no gates needed.</span>
+    </div>
+    <button class="trial-continue show" id="transcendenceOkBtn" style="border-color:rgba(154,92,255,.5);background:rgba(154,92,255,.08);color:var(--purple);">Continue Evolving — The Cosmos Awaits →</button>
+  </div>
+</div>
 
 <!-- ── EVOLUTION GATE MODAL ── (no close button — must answer to proceed) -->
 <div class="modal-backdrop" id="evoGateModal">
@@ -572,24 +787,33 @@
   // ── IMPORTANT: Fill this in after deploying your Apps Script ────────
   // Paste your deployment URL between the quotes below.
   // Leave empty ("") to run in local-only mode.
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrNQfjFK8ubCupDvrIkgqzFF-MuFxtKxYqTT7NVNRDlc3PS1IoI8-H12uNbUev6nuO/exec";
+  const APPS_SCRIPT_URL = "";
   // ────────────────────────────────────────────────────────────────────
 
   const $ = id => document.getElementById(id);
 
   /* ── GAME DATA ── */
   const evolutionForms = [
-    { id:"microbe",  name:"Microbe",      emoji:"🦠", unlock:0,       gate:null },
-    { id:"cell",     name:"Cell Cluster", emoji:"🧫", unlock:500,     gate:0    },
-    { id:"fish",     name:"Fish",         emoji:"🐟", unlock:2000,    gate:1    },
-    { id:"frog",     name:"Frog",         emoji:"🐸", unlock:5500,    gate:2    },
-    { id:"reptile",  name:"Reptile",      emoji:"🦎", unlock:16000,   gate:3    },
-    { id:"mammal",   name:"Mammal",       emoji:"🐺", unlock:42000,   gate:4    },
-    { id:"primate",  name:"Primate",      emoji:"🐒", unlock:110000,  gate:5    },
-    { id:"human",    name:"Human",        emoji:"🧑", unlock:280000,  gate:6    },
-    { id:"alien",    name:"Alien",        emoji:"👽", unlock:750000,  gate:7    },
-    { id:"ufo",      name:"UFO",          emoji:"🛸", unlock:2000000, gate:8    }
+    { id:"microbe",     name:"Microbe",              emoji:"🦠", unlock:0,          gate:null },
+    { id:"cell",        name:"Cell Cluster",         emoji:"🧫", unlock:500,        gate:0    },
+    { id:"fish",        name:"Fish",                 emoji:"🐟", unlock:2000,       gate:1    },
+    { id:"frog",        name:"Frog",                 emoji:"🐸", unlock:5500,       gate:2    },
+    { id:"reptile",     name:"Reptile",              emoji:"🦎", unlock:16000,      gate:3    },
+    { id:"mammal",      name:"Mammal",               emoji:"🐺", unlock:42000,      gate:4    },
+    { id:"primate",     name:"Primate",              emoji:"🐒", unlock:110000,     gate:5    },
+    { id:"human",       name:"Human",                emoji:"🧑", unlock:280000,     gate:6    },
+    { id:"alien",       name:"Alien",                emoji:"👽", unlock:750000,     gate:7    },
+    { id:"ufo",         name:"UFO",                  emoji:"🛸", unlock:2000000,    gate:8    },
+    // ── Cosmic forms (score-only, no gates) ──
+    { id:"signal",      name:"Signal Intelligence",  emoji:"📡", unlock:5000000,    gate:null },
+    { id:"stellar",     name:"Stellar Consciousness",emoji:"🌌", unlock:20000000,   gate:null },
+    { id:"singularity", name:"Singularity Core",     emoji:"⚫", unlock:100000000,  gate:null },
+    { id:"dimensional", name:"Dimensional Mind",     emoji:"🔮", unlock:500000000,  gate:null },
+    { id:"infinite",    name:"Infinite Intelligence",emoji:"♾️", unlock:1000000000, gate:null }
   ];
+
+  // Cosmic forms start at index 10
+  const COSMIC_START_IDX = 10;
 
   // ── EVOLUTION GATE QUESTIONS (from Biological Evolution lesson) ──────
   // One per form transition. Students must answer correctly to evolve.
@@ -598,53 +822,53 @@
     {
       stem:"What is biological evolution?",
       answers:[
-        "A single organism changing its traits during its lifetime",
-        "A population changing over many generations due to environmental pressures",
-        "One species instantly turning into a completely different species",
-        "Only the strongest animals surviving in the wild"
+        "One species instantly turning into another",
+        "A single organism changing during its lifetime",
+        "A population changing over generations",
+        "Only the strongest animals surviving"
       ],
-      correct:1,
+      correct:2,
       explanation:"Biological evolution describes populations — not individuals — changing over many generations. A single organism cannot evolve; evolution is a shift in how often certain traits appear across an entire population over time."
     },
     // Gate 1 → Fish
     {
       stem:"In natural selection, which organisms are MOST likely to reproduce and pass on their traits?",
       answers:[
-        "The largest organisms in a population",
-        "Those with traits that help them survive in their environment",
-        "Those that have been alive the longest",
-        "Those that look the most different from the rest of the population"
+        "Those alive the longest",
+        "Those with helpful survival traits",
+        "The largest in the population",
+        "Those that look most different"
       ],
       correct:1,
       explanation:"Natural selection favors organisms whose traits best match the environment — they survive longer and reproduce more, passing those helpful traits to the next generation."
     },
     // Gate 2 → Frog
     {
-      stem:"A population of moths lives on trees. When pollution darkens the bark, dark moths survive better than light moths. Over many generations, the population becomes mostly dark. What happened?",
+      stem:"Dark moths survive better on dark bark and become more common over generations. What is this?",
       answers:[
-        "Individual moths changed their color in response to the bark",
-        "The light moths chose to leave",
-        "Natural selection favored dark moths because they were harder to spot by predators",
-        "The moths evolved randomly with no environmental cause"
+        "Organisms all changed color at once",
+        "Moths randomly changed with no cause",
+        "Light moths chose to leave on purpose",
+        "Natural selection favoring better-hidden moths"
       ],
-      correct:2,
+      correct:3,
       explanation:"This is natural selection in action. Dark moths already existed in the population. Predators spotted and ate more light moths. Dark moths survived and reproduced more, so dark coloring became more common over generations."
     },
     // Gate 3 → Reptile
     {
       stem:"Which of the following is an example of heritable variation?",
       answers:[
-        "A dog losing fur because of mange (a skin disease)",
-        "A plant growing taller because it gets more sunlight",
-        "A bird being born with a slightly longer beak than others in its population",
-        "A scar a cat got from a fight"
+        "A scar from a cat fight",
+        "A plant growing tall in good sunlight",
+        "A dog losing fur due to mange",
+        "A bird born with a slightly longer beak"
       ],
-      correct:2,
+      correct:3,
       explanation:"Heritable variation means differences caused by genes that can be passed to offspring. A bird born with a longer beak inherited that trait and can pass it on. Scars, diseases, and environmental growth effects are NOT heritable."
     },
     // Gate 4 → Mammal
     {
-      stem:"Ambulocetus was a whale ancestor that had four legs and could walk on land AND swim. What type of fossil is this?",
+      stem:"Ambulocetus was a whale ancestor with four legs that could walk AND swim. What type of fossil is this?",
       answers:[
         "An index fossil",
         "A transitional fossil",
@@ -656,54 +880,53 @@
     },
     // Gate 5 → Primate
     {
-      stem:"The forelimbs of a human arm, a whale flipper, and a bat wing all share the same bone structure underneath. What does this suggest?",
+      stem:"A human arm, whale flipper, and bat wing all share the same underlying bone structure. What does this suggest?",
       answers:[
-        "These animals must live in similar environments",
-        "These animals evolved from a common ancestor (homologous structures)",
-        "These structures perform the same function",
-        "These animals evolved at the same time period"
+        "They evolved at the same time",
+        "They share a common ancestor",
+        "These animals live in similar environments",
+        "These limbs perform the same function"
       ],
       correct:1,
       explanation:"Homologous structures — the same bone arrangement in very different limbs — suggest these species inherited their limb structure from a shared ancestor, even though the limbs now serve different purposes."
     },
     // Gate 6 → Human
     {
-      stem:"A dolphin's fin and a shark's fin look similar and do the same job, but dolphins and sharks are not closely related. What does this represent?",
+      stem:"A dolphin fin and shark fin look similar and do the same job, but dolphins and sharks are NOT closely related. What is this?",
       answers:[
-        "Homologous structures — same ancestor, different function",
-        "Vestigial structures — leftover from ancestors",
-        "Analogous structures — convergent evolution producing similar solutions",
-        "Transitional structures — evidence of one evolving into the other"
+        "Vestigial structures from a common ancestor",
+        "Homologous structures from the same lineage",
+        "Analogous structures from convergent evolution",
+        "Transitional structures between two forms"
       ],
       correct:2,
       explanation:"Analogous structures result from convergent evolution: unrelated species independently evolve similar traits because they face similar environmental pressures. Dolphins and sharks both need fins to swim, but they evolved separately."
     },
     // Gate 7 → Alien
     {
-      stem:"Humans have a tailbone (coccyx) that no longer serves its original function. What is this an example of?",
+      stem:"Humans have a tailbone (coccyx) that no longer serves its original function. What is this called?",
       answers:[
         "A homologous structure",
-        "An analogous structure",
+        "A transitional fossil",
         "A vestigial structure",
-        "A transitional fossil"
+        "An analogous structure"
       ],
       correct:2,
       explanation:"The coccyx is a vestigial structure — a body part that was useful in an ancestor (for a tail) but has been reduced or lost its function in modern humans. It is evidence that we share ancestry with animals that had tails."
     },
     // Gate 8 → UFO
     {
-      stem:"Scientists compare the DNA of chimpanzees and humans and find they share about 98% of their genetic code. What is the most logical conclusion?",
+      stem:"Chimpanzees and humans share about 98% of their DNA. What is the best conclusion?",
       answers:[
-        "Chimpanzees and humans are the same species",
-        "Humans evolved directly from chimpanzees",
-        "Chimpanzees and humans share a relatively recent common ancestor",
-        "DNA comparisons are unreliable for studying evolution"
+        "DNA comparisons are unreliable",
+        "Humans evolved directly from chimps",
+        "Chimps and humans are the same species",
+        "Chimps and humans share a recent common ancestor"
       ],
-      correct:2,
+      correct:3,
       explanation:"The more DNA two species share, the more recently they diverged from a common ancestor. 98% similarity means humans and chimps branched from a shared ancestor relatively recently in evolutionary time — they did not evolve from each other."
     }
   ];
-
   const discoveries = [
     { name:"First Hypothesis",    target:100    },
     { name:"Data Collector",      target:1200   },
@@ -721,20 +944,20 @@
   ];
 
   const upgrades = [
-    { id:"micro-mutation",    icon:"🧬", name:"Micro Mutation",    desc:"Tiny change, quick gain.",              cost:25,    type:"click",      amount:1    },
-    { id:"gene-boost",        icon:"🧪", name:"Gene Boost",        desc:"Improves every manual click.",          cost:70,    type:"click",      amount:2    },
-    { id:"camouflage",        icon:"🌑", name:"Camouflage I",      desc:"Traits fit darker habitats.",           cost:160,   type:"click",      amount:4    },
-    { id:"rapid-reproduction",icon:"🐣", name:"Rapid Reproduction",desc:"Passive growth begins.",                cost:380,   type:"passive",    amount:4    },
-    { id:"predator-awareness",icon:"👁️", name:"Predator Awareness",desc:"Smarter survival choices.",            cost:750,   type:"click",      amount:10   },
-    { id:"lab-tech",          icon:"🤖", name:"Lab Tech",          desc:"Automates basic collection.",           cost:1500,  type:"passive",    amount:12   },
-    { id:"thermal-resistance",icon:"🔥", name:"Thermal Resistance",desc:"Handles shifting conditions.",          cost:3200,  type:"click",      amount:24   },
-    { id:"trait-cluster",     icon:"🧠", name:"Trait Cluster",     desc:"Traits start stacking fast.",           cost:6000,  type:"click",      amount:42   },
-    { id:"field-station",     icon:"🏕️", name:"Field Station",     desc:"More research every second.",           cost:10000, type:"passive",    amount:36   },
-    { id:"adaptive-wave",     icon:"🌊", name:"Adaptive Wave",     desc:"Successful traits spread quickly.",     cost:18000, type:"click",      amount:75   },
-    { id:"genome-map",        icon:"🗺️", name:"Genome Map",        desc:"Correct answers matter more now.",      cost:30000, type:"multiplier", amount:0.25 },
-    { id:"survival-engine",   icon:"⚙️", name:"Survival Engine",   desc:"A major passive jump.",                 cost:48000, type:"passive",    amount:90   },
-    { id:"elite-adaptation",  icon:"🚀", name:"Elite Adaptation",  desc:"Manual clicks become explosive.",       cost:80000, type:"click",      amount:160  },
-    { id:"biosphere-network", icon:"🌐", name:"Biosphere Network", desc:"Everything scales upward.",             cost:130000,type:"multiplier", amount:0.4  }
+    { id:"micro-mutation",    icon:"🧬", name:"Micro Mutation",    desc:"Tiny change, quick gain.",              cost:30,     type:"click",      amount:1    },
+    { id:"gene-boost",        icon:"🧪", name:"Gene Boost",        desc:"Improves every manual click.",          cost:95,     type:"click",      amount:2    },
+    { id:"camouflage",        icon:"🌑", name:"Camouflage I",      desc:"Traits fit darker habitats.",           cost:250,    type:"click",      amount:4    },
+    { id:"rapid-reproduction",icon:"🐣", name:"Rapid Reproduction",desc:"Passive growth begins.",                cost:650,    type:"passive",    amount:4    },
+    { id:"predator-awareness",icon:"👁️", name:"Predator Awareness",desc:"Smarter survival choices.",            cost:1600,   type:"click",      amount:10   },
+    { id:"lab-tech",          icon:"🤖", name:"Lab Tech",          desc:"Automates basic collection.",           cost:3800,   type:"passive",    amount:12   },
+    { id:"thermal-resistance",icon:"🔥", name:"Thermal Resistance",desc:"Handles shifting conditions.",          cost:9000,   type:"click",      amount:24   },
+    { id:"trait-cluster",     icon:"🧠", name:"Trait Cluster",     desc:"Traits start stacking fast.",           cost:18000,  type:"click",      amount:42   },
+    { id:"field-station",     icon:"🏕️", name:"Field Station",     desc:"More research every second.",           cost:40000,  type:"passive",    amount:36   },
+    { id:"adaptive-wave",     icon:"🌊", name:"Adaptive Wave",     desc:"Successful traits spread quickly.",     cost:80000,  type:"click",      amount:75   },
+    { id:"genome-map",        icon:"🗺️", name:"Genome Map",        desc:"Correct answers matter more now.",      cost:150000, type:"multiplier", amount:0.25 },
+    { id:"survival-engine",   icon:"⚙️", name:"Survival Engine",   desc:"A major passive jump.",                 cost:280000, type:"passive",    amount:90   },
+    { id:"elite-adaptation",  icon:"🚀", name:"Elite Adaptation",  desc:"Manual clicks become explosive.",       cost:500000, type:"click",      amount:160  },
+    { id:"biosphere-network", icon:"🌐", name:"Biosphere Network", desc:"Everything scales upward.",             cost:900000, type:"multiplier", amount:0.4  }
   ];
 
   const events = [
@@ -743,61 +966,126 @@
     { title:"Predator Surge",    desc:"Only the best survival traits succeed. Knowledge power rises.",     clickBoost:1.15, passiveBoost:1.12, knowledgeBoost:0.15 }
   ];
 
-  // ── MUTATION TRIAL QUESTIONS (optional bonus, 7 questions) ───────────
+  // ── MUTATION TRIAL QUESTIONS (17 questions) ─────────────────────────────
   const trialQuestions = [
     {
       stem:"Scientists use fossils mainly to learn about which of the following?",
-      answers:["Organisms and environments from the past","Only the weather from one day","How fast a modern animal can run","Only what color an organism was"],
-      correct:0,
+      answers:["How fast modern animals run","Organisms and environments from the past","Only what color an organism was","Exact daily temperatures long ago"],
+      correct:1,
       explanation:"Fossils provide evidence about organisms, environments, extinctions, and change over time.",
       reward:{ type:"multiplier", amount:0.15, unlock:"Knowledge Power +0.15x" }
     },
     {
-      stem:"Which observation would best support the idea that two organisms are related?",
-      answers:["They live in the same state today","They have similar anatomical structures","They are the same color","They move at the same speed"],
-      correct:1,
-      explanation:"Similar body structures can be evidence of evolutionary relationships.",
+      stem:"Which observation would best support the idea that two organisms share a common ancestor?",
+      answers:["They move at the same speed","They live in the same region","They have similar bone structures","They are the same size"],
+      correct:2,
+      explanation:"Similar anatomical structures can be evidence of evolutionary relationships between organisms.",
       reward:{ type:"click", amount:25, unlock:"Per Click +25" }
     },
     {
-      stem:"Which statement best describes evolution over long periods of time?",
-      answers:["Organisms never change once they exist","Only extinct organisms change","Populations can change as traits appear and persist over time","Every organism changes in the exact same way"],
-      correct:2,
+      stem:"Which statement best describes how evolution works over time?",
+      answers:["Only extinct organisms change","Every organism changes identically","Organisms never change once they exist","Populations change as helpful traits spread through reproduction"],
+      correct:3,
       explanation:"Evolution describes change in populations over time — not instant change in one individual.",
       reward:{ type:"passive", amount:18, unlock:"Per Second +18" }
     },
     {
       stem:"A fossil layer contains many marine shells. What is the best conclusion?",
-      answers:["The area was likely underwater long ago","The shells blew there yesterday","The land has always been dry","The shells were planted by people"],
+      answers:["The area was likely underwater long ago","The shells were planted by people","The land has always been dry","The shells blew there recently"],
       correct:0,
       explanation:"Marine fossils in rock layers suggest that the environment was once underwater.",
       reward:{ type:"click", amount:35, unlock:"Per Click +35" }
     },
     {
       stem:"Why do scientists compare structures in fossils and living organisms?",
-      answers:["To decide which one is prettier","To estimate how much rainfall there was","To look for evidence of relatedness and change over time","To prove all organisms are exactly the same"],
+      answers:["To decide which is prettier","To count how many exist","To look for evidence of relatedness and change over time","To prove all organisms are identical"],
       correct:2,
-      explanation:"Comparing structures helps scientists infer relationships and evolutionary change.",
+      explanation:"Comparing structures helps scientists infer evolutionary relationships and track change over time.",
       reward:{ type:"multiplier", amount:0.2, unlock:"Knowledge Power +0.20x" }
     },
     {
-      stem:"Which piece of evidence would best support that an environment changed over Earth's history?",
-      answers:["A student guessed it changed","Fossils of swamp plants found in a now-dry area","One photo taken this week","A drawing with no labels"],
-      correct:1,
+      stem:"Which evidence would best support that an environment changed over Earth's history?",
+      answers:["Fossils of swamp plants found in a now-dry desert","A photo taken this week","A student's guess","A drawing without labels"],
+      correct:0,
       explanation:"Fossils can show that a place had a very different environment in the past.",
       reward:{ type:"passive", amount:25, unlock:"Per Second +25" }
     },
     {
-      stem:"Which of the following BEST describes why evolution is described as a change in a population — NOT a change in an individual?",
-      answers:[
-        "Individual organisms can change their DNA throughout their lifetime in response to the environment",
-        "Only the strongest individuals evolve while weaker ones remain unchanged",
-        "Evolution is a change in how often certain traits appear in a population across generations through reproduction",
-        "Populations only evolve when they move to a new environment"
-      ],
-      correct:2,
-      explanation:"An individual's DNA does not change in response to the environment. Evolution works through reproduction: organisms with helpful traits have more offspring, and those traits become more common across generations.",
+      stem:"Why is evolution described as a change in a POPULATION — not a change in an individual?",
+      answers:["Only the strongest individuals evolve","Individuals change their DNA based on needs","Populations only evolve when they move","Evolution works through reproduction across generations, not individual change"],
+      correct:3,
+      explanation:"An individual's DNA does not change in response to the environment. Evolution works through reproduction: helpful traits become more common over generations.",
       reward:{ type:"multiplier", amount:0.2, unlock:"Knowledge Power +0.20x" }
+    },
+    {
+      stem:"What does 'natural selection' mean?",
+      answers:["Humans choosing which animals survive","Random mutations happening without cause","Organisms with helpful traits surviving and reproducing more","All organisms changing at the same rate"],
+      correct:2,
+      explanation:"Natural selection is the process by which organisms with traits that fit their environment survive and reproduce more than others, passing those traits to offspring.",
+      reward:{ type:"click", amount:40, unlock:"Per Click +40" }
+    },
+    {
+      stem:"Darwin observed that finches on different Galapagos islands had differently shaped beaks. What best explains this?",
+      answers:["The birds chose to change their beaks","Beaks changed randomly without selection pressure","Different food sources on each island selected for different beak shapes","All island birds share exactly the same beak"],
+      correct:2,
+      explanation:"Different food sources (seeds vs. insects vs. fruit) on each island favored birds with beak shapes best suited to that food — a classic example of natural selection driving adaptation.",
+      reward:{ type:"multiplier", amount:0.25, unlock:"Knowledge Power +0.25x" }
+    },
+    {
+      stem:"Bacteria that survive antibiotic treatment reproduce and pass on their resistance. Over time, the drug stops working. What is this an example of?",
+      answers:["Bacteria choosing to become stronger","Evolution by natural selection in a short timeframe","A random accident with no evolutionary cause","Bacteria learning from past experience"],
+      correct:1,
+      explanation:"Antibiotic resistance is evolution by natural selection happening in real time. Resistant bacteria have a survival advantage and pass that resistance to offspring.",
+      reward:{ type:"passive", amount:40, unlock:"Per Second +40" }
+    },
+    {
+      stem:"A stick insect looks almost exactly like a twig. This camouflage helps it hide from predators. What type of adaptation is this?",
+      answers:["A learned behavior","A structural adaptation shaped by natural selection","A vestigial trait no longer used","A homologous structure from an ancestor"],
+      correct:1,
+      explanation:"Camouflage that mimics the environment is a structural adaptation — a physical feature that evolved because it improved survival and reproduction.",
+      reward:{ type:"click", amount:50, unlock:"Per Click +50" }
+    },
+    {
+      stem:"What is an adaptation?",
+      answers:["Any change an organism makes during its life","A trait that hurts an organism's survival","A heritable trait that improves survival and reproduction in a given environment","A structure that was useful in an ancestor but not today"],
+      correct:2,
+      explanation:"An adaptation is a heritable (genetic) trait that increases an organism's ability to survive and reproduce in its environment — the result of natural selection acting over many generations.",
+      reward:{ type:"multiplier", amount:0.15, unlock:"Knowledge Power +0.15x" }
+    },
+    {
+      stem:"Which provides the BEST direct evidence that evolution has occurred over time?",
+      answers:["Two animals living in the same habitat","The fossil record showing change in species over time","Animals that are the same color","Scientists making predictions about the future"],
+      correct:1,
+      explanation:"The fossil record documents how life forms have changed over billions of years, providing direct physical evidence of evolution.",
+      reward:{ type:"passive", amount:30, unlock:"Per Second +30" }
+    },
+    {
+      stem:"A whale has tiny leg bones buried inside its body that serve no function. What are these called?",
+      answers:["Transitional fossils","Analogous structures","Vestigial structures","Homologous limbs"],
+      correct:2,
+      explanation:"Vestigial structures are body parts reduced in size or function compared to an ancestor's version. Whale hind-leg bones are evidence that whales evolved from four-legged land ancestors.",
+      reward:{ type:"click", amount:60, unlock:"Per Click +60" }
+    },
+    {
+      stem:"Selective breeding is when humans choose which animals reproduce based on desired traits. How is this similar to natural selection?",
+      answers:["Both involve random mutation with no selection","Both result in traits spreading through a population over generations","Both happen at the same speed","Neither changes an organism's genetics"],
+      correct:1,
+      explanation:"Both selective breeding and natural selection result in certain traits becoming more common over generations. The difference is that natural selection is driven by the environment, while selective breeding is driven by human choice.",
+      reward:{ type:"multiplier", amount:0.2, unlock:"Knowledge Power +0.20x" }
+    },
+    {
+      stem:"Two unrelated species both evolved eyes. This is an example of:",
+      answers:["Convergent evolution — similar traits from different origins","Divergent evolution — same ancestor, different traits","Homologous structures — same origin, same function","Vestigial evolution — loss of an unused trait"],
+      correct:0,
+      explanation:"Convergent evolution occurs when unrelated species independently evolve similar traits because they face similar environmental pressures. Eyes have evolved separately many times.",
+      reward:{ type:"passive", amount:50, unlock:"Per Second +50" }
+    },
+    {
+      stem:"A scientist discovers a new fossil with features of both a dinosaur and a bird. What type of fossil is this most likely?",
+      answers:["An index fossil","A vestigial fossil","A transitional fossil","An analogous fossil"],
+      correct:2,
+      explanation:"A transitional fossil shows characteristics of two different groups, bridging an evolutionary gap. Archaeopteryx — with feathers and dinosaur-like claws — is a famous example of a dinosaur-to-bird transitional fossil.",
+      reward:{ type:"multiplier", amount:0.25, unlock:"Knowledge Power +0.25x" }
     }
   ];
 
@@ -823,7 +1111,11 @@
     // Evolution gate refs
     evoGateModal:$("evoGateModal"), gateTitle:$("gateTitle"), gatePill:$("gatePill"),
     gateIntro:$("gateIntro"), gateStem:$("gateStem"), gateAnswerGrid:$("gateAnswerGrid"),
-    gateFeedback:$("gateFeedback"), gateRetryBtn:$("gateRetryBtn"), gateEvolveBtn:$("gateEvolveBtn")
+    gateFeedback:$("gateFeedback"), gateRetryBtn:$("gateRetryBtn"), gateEvolveBtn:$("gateEvolveBtn"),
+    // Cosmic / Transcendence refs
+    cosmicFlash:$("cosmicFlash"), transcendenceModal:$("transcendenceModal"), transcendenceOkBtn:$("transcendenceOkBtn"),
+    cosmicPathSection:$("cosmicPathSection"), cosmicPathGrid:$("cosmicPathGrid"),
+    cosmicEvoVal:$("cosmicEvoVal"), cosmicProgressFill:$("cosmicProgressFill")
   };
 
   /* ── STATE ── */
@@ -833,6 +1125,7 @@
     purchasedUpgrades:[], currentEventIndex:-1, lastSavedAt:0, currentForm:"microbe",
     passedGates:[],      // array of form IDs whose gate question has been answered correctly
     questionsCorrect:0,  // total gate questions answered correctly (lifetime, resets on prestige)
+    transcended:false,   // true once Transcendence fires this run; resets on prestige
     profile:{ playerName:"", teacherName:"", blockName:"" }
   };
 
@@ -886,6 +1179,7 @@
       if(!state.profile) state.profile = { playerName:"", teacherName:"", blockName:"" };
       if(!Array.isArray(state.unlockedSkins))      state.unlockedSkins = ["default"];
       if(!Array.isArray(state.purchasedUpgrades))  state.purchasedUpgrades = [];
+      if(typeof state.transcended !== "boolean")   state.transcended = state.bestScore >= 2000000;
       // ── Migration: auto-pass gates for existing saves that pre-date the gate system ──
       if(!Array.isArray(state.passedGates)){
         state.passedGates = evolutionForms
@@ -984,11 +1278,13 @@
   function renderPath(){
     refs.pathGrid.innerHTML = "";
     const cur = getCurrentForm();
-    evolutionForms.forEach(f => {
+    // Only render the base 10 evolution forms (index 0–9)
+    const baseForms = evolutionForms.slice(0, COSMIC_START_IDX);
+    baseForms.forEach(f => {
       const thresholdMet = state.bestScore >= f.unlock;
       const gatePassed   = f.gate === null || state.passedGates.includes(f.id);
       const unlocked     = thresholdMet && gatePassed;
-      const gatePending  = thresholdMet && !gatePassed; // score met, question not answered yet
+      const gatePending  = thresholdMet && !gatePassed;
 
       let cls = "path-node";
       if(!unlocked && !gatePending) cls += " locked";
@@ -1009,9 +1305,68 @@
     });
   }
 
+  /* ── COSMIC PATH RENDERING ── */
+  function renderCosmicPath(){
+    if(!refs.cosmicPathGrid) return;
+    refs.cosmicPathGrid.innerHTML = "";
+
+    // Show cosmic section if transcended OR if bestScore >= UFO threshold
+    const showCosmic = state.transcended || state.bestScore >= 2000000;
+    if(refs.cosmicPathSection){
+      refs.cosmicPathSection.style.display = showCosmic ? "block" : "none";
+    }
+    if(!showCosmic) return;
+
+    const cur = getCurrentForm();
+    const cosmicForms = evolutionForms.slice(COSMIC_START_IDX);
+
+    cosmicForms.forEach(f => {
+      const unlocked = state.bestScore >= f.unlock;
+      let cls = "path-node cosmic";
+      if(!unlocked) cls += " locked";
+      if(cur.id === f.id) cls += " active";
+      if(unlocked && cur.id !== f.id) cls += " unlocked-cosmic";
+
+      const div = document.createElement("div");
+      div.className = cls;
+      if(unlocked){
+        div.innerHTML = `<div class="path-emoji">${f.emoji}</div><div class="path-name">${f.name}</div><div class="path-req">${formatNumber(f.unlock)}</div>`;
+      } else {
+        div.innerHTML = `<div class="path-emoji">❔</div><div class="path-name">Cosmic</div><div class="path-req">${formatNumber(f.unlock)}</div>`;
+      }
+      refs.cosmicPathGrid.appendChild(div);
+    });
+
+    // Update cosmic progress bar
+    const ufoForm = evolutionForms.find(f => f.id === "ufo");
+    const cosmicForms2 = evolutionForms.slice(COSMIC_START_IDX);
+    const curCosmicIdx = cosmicForms2.findLastIndex ? cosmicForms2.findLastIndex(f => state.bestScore >= f.unlock) : -1;
+
+    if(curCosmicIdx >= cosmicForms2.length - 1 && state.bestScore >= cosmicForms2[cosmicForms2.length-1].unlock){
+      if(refs.cosmicEvoVal) refs.cosmicEvoVal.textContent = "MAX — Infinite Intelligence!";
+      if(refs.cosmicProgressFill) refs.cosmicProgressFill.style.width = "100%";
+    } else {
+      const nextCosmicIdx = curCosmicIdx + 1;
+      if(nextCosmicIdx < cosmicForms2.length){
+        const nextCosmic = cosmicForms2[nextCosmicIdx];
+        const prevThreshold = nextCosmicIdx > 0 ? cosmicForms2[nextCosmicIdx-1].unlock : ufoForm.unlock;
+        const pct = Math.min(100, Math.max(0, ((state.bestScore - prevThreshold) / (nextCosmic.unlock - prevThreshold)) * 100));
+        const need = Math.max(0, nextCosmic.unlock - state.bestScore);
+        if(refs.cosmicProgressFill) refs.cosmicProgressFill.style.width = pct + "%";
+        if(refs.cosmicEvoVal) refs.cosmicEvoVal.textContent = nextCosmic.emoji + " " + nextCosmic.name + " — " + formatNumber(need) + " away";
+      }
+    }
+  }
+
   // Check for gate triggers before showing evolution celebration
   function maybeUnlockForms(){
     if(activeGate) return; // A gate modal is already open — don't interrupt
+
+    // ── TRANSCENDENCE CHECK ── fires once per run when bestScore hits UFO threshold
+    if(!state.transcended && state.bestScore >= 2000000){
+      triggerTranscendence();
+      // Don't return — still process gate/form checks below
+    }
 
     // Check every form: if threshold crossed and gate not yet passed, show gate
     for(const f of evolutionForms){
@@ -1033,6 +1388,33 @@
       playTone(820, .1, "triangle", .05);
       setTimeout(() => playTone(980, .08, "triangle", .04), 115);
     }
+  }
+
+  /* ── TRANSCENDENCE ── */
+  function triggerTranscendence(){
+    state.transcended = true;
+    state.knowledgeMultiplier += 2.0;
+
+    // Apply persistent visual state
+    document.body.classList.add("transcended");
+
+    // Flash effect — brief cosmic burst (1.2 seconds total)
+    refs.cosmicFlash.classList.add("show");
+    setTimeout(() => {
+      refs.cosmicFlash.style.transition = "opacity .55s ease";
+      refs.cosmicFlash.classList.remove("show");
+    }, 650);
+
+    // Open modal slightly after flash peaks
+    setTimeout(() => {
+      openModal("transcendenceModal");
+      playTone(440, .15, "sine", .04);
+      setTimeout(() => playTone(550, .12, "sine", .035), 180);
+      setTimeout(() => playTone(660, .1, "sine", .03), 360);
+      setTimeout(() => playTone(880, .12, "triangle", .045), 540);
+    }, 700);
+
+    saveState();
   }
 
   function currentDisplayEmoji(){
@@ -1125,19 +1507,47 @@
         refs.nextEvoVal.style.color = "var(--danger)";
         refs.evoProgressFill.style.width = "100%";
         refs.evoProgressFill.style.background = "linear-gradient(90deg,var(--danger),var(--orange))";
+        refs.nextEvoVal.parentElement.parentElement.classList.remove("cosmic-mode");
         return;
       }
     }
 
-    // Reset bar color (in case it was danger previously)
+    // ── Cosmic tier: player is in a cosmic form ──
+    if(idx >= COSMIC_START_IDX){
+      refs.nextEvoVal.parentElement.parentElement.classList.add("cosmic-mode");
+      refs.nextEvoVal.style.color = "var(--purple)";
+      refs.evoProgressFill.style.background = "linear-gradient(90deg,var(--purple),var(--yellow))";
+
+      if(idx >= evolutionForms.length - 1){
+        refs.nextEvoVal.textContent = "MAX — Infinite Intelligence reached!";
+        refs.evoProgressFill.style.width = "100%";
+        return;
+      }
+      const next = evolutionForms[idx + 1];
+      const pct  = Math.min(100, Math.max(0, ((state.total - cur.unlock) / (next.unlock - cur.unlock)) * 100));
+      const need = Math.max(0, next.unlock - state.total);
+      refs.evoProgressFill.style.width = pct + "%";
+      refs.nextEvoVal.textContent = next.emoji + " " + next.name + " — " + formatNumber(need) + " away";
+      return;
+    }
+
+    // ── Standard tier ──
+    refs.nextEvoVal.parentElement.parentElement.classList.remove("cosmic-mode");
     refs.nextEvoVal.style.color = "var(--yellow)";
     refs.evoProgressFill.style.background = "linear-gradient(90deg, var(--yellow), var(--orange))";
 
-    if(idx >= evolutionForms.length - 1){
-      refs.nextEvoVal.textContent = "MAX — UFO reached!";
+    if(idx >= COSMIC_START_IDX - 1 && state.passedGates.includes("ufo")){
+      refs.nextEvoVal.textContent = "UFO reached — Transcendence awaits!";
       refs.evoProgressFill.style.width = "100%";
       return;
     }
+
+    if(idx >= evolutionForms.length - 1){
+      refs.nextEvoVal.textContent = "MAX — Infinite Intelligence reached!";
+      refs.evoProgressFill.style.width = "100%";
+      return;
+    }
+
     const next = evolutionForms[idx + 1];
     const pct  = Math.min(100, Math.max(0, ((state.total - cur.unlock) / (next.unlock - cur.unlock)) * 100));
     const need = Math.max(0, next.unlock - state.total);
@@ -1173,10 +1583,10 @@
     refs.bestScoreDisplay.textContent    = formatNumber(state.bestScore);
     refs.prestigeDisplay.textContent     = formatNumber(state.prestige);
     refs.evoEmoji.textContent            = currentDisplayEmoji();
-    refs.playerName.value  = state.profile.playerName || "";
-    refs.teacherName.value = state.profile.teacherName || "";
-    refs.blockName.value   = state.profile.blockName || "";
+    // NOTE: Profile input values are NOT restored here — only on loadState/init
+    // to prevent overwriting mid-type (name input bug fix)
     renderPath();
+    renderCosmicPath();
     renderSkins();
     renderUpgradeList();
     updateDiscoveries();
@@ -1434,6 +1844,8 @@
     state.purchasedUpgrades = []; state.currentEventIndex = -1;
     state.passedGates = [];     // Re-gate on prestige (by design)
     state.questionsCorrect = 0; // Reset knowledge score for new run
+    state.transcended = false;  // Reset transcendence for new run
+    document.body.classList.remove("transcended"); // Remove cosmic visuals
     currentEventMultiplier = { click:1, passive:1 };
     refs.eventBanner.classList.remove("show");
     comboCount = 1; updateComboUI();
@@ -1565,6 +1977,11 @@
     // Gate buttons
     refs.gateRetryBtn.addEventListener("click", retryGate);
     refs.gateEvolveBtn.addEventListener("click", resolveGate);
+    // Transcendence OK
+    refs.transcendenceOkBtn.addEventListener("click", () => {
+      closeModal("transcendenceModal");
+      showToast("Transcendence complete! Knowledge Power +" + (2.0).toFixed(1) + "x — Cosmic forms unlocked.", "var(--purple)");
+    });
     // Close buttons (evoGateModal intentionally has none)
     document.querySelectorAll("[data-close]").forEach(btn => btn.addEventListener("click", () => closeModal(btn.dataset.close)));
     refs.upgradeHeader.addEventListener("click", () => {
@@ -1583,6 +2000,12 @@
   /* ── INIT ── */
   function init(){
     loadState();
+    // Restore profile inputs ONCE on load only (prevents mid-type overwrite)
+    refs.playerName.value  = state.profile.playerName  || "";
+    refs.teacherName.value = state.profile.teacherName || "";
+    refs.blockName.value   = state.profile.blockName   || "";
+    // Restore cosmic visual state if saved from previous session
+    if(state.transcended) document.body.classList.add("transcended");
     bindEvents();
     updateComboUI();
     updateDisplays();
@@ -1595,5 +2018,15 @@
   init();
 })();
 </script>
+<!-- ── GAME FOOTER ── -->
+<div class="game-footer">
+  <div class="game-footer-logo">LYFELABZ</div>
+  <p>Grade 6 Life Science &middot; Biological Evolution &middot;
+    <a href="index.html">Back to Home</a> &middot;
+    <a href="about_privacy.html">Privacy</a> &middot;
+    <a href="about_learning-science.html">Why It Works</a>
+  </p>
+</div>
+
 </body>
 </html>
