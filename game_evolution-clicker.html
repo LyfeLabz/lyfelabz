@@ -1136,6 +1136,9 @@
 
   /* ── COMBO SYSTEM ── */
   let comboCount = 1;
+  let lastPushedScore   = -1;          // tracks last score we successfully pushed — skip if unchanged
+  let leaderboardPollId = null;        // interval ID for live leaderboard refresh
+  let bestPushTimeout   = null;        // debounce handle for immediate best-score push
   let comboTimer = null;
   const COMBO_MAX = 5;
   const COMBO_DECAY_MS = 1100;
@@ -1629,7 +1632,9 @@
     const gain = Math.round(calcPerClick() * mult);
     state.total += gain;
     state.totalClicks += 1;
+    const prevBest = state.bestScore;
     state.bestScore = Math.max(state.bestScore, state.total);
+    if(state.bestScore > prevBest) scheduleBestPush();
     maybePromptTrial();
     createRipple(e);
     const isBig = comboCount >= 4;
@@ -1645,7 +1650,9 @@
     const gain = calcPerSecond();
     if(gain > 0){
       state.total += gain;
+      const prevBest = state.bestScore;
       state.bestScore = Math.max(state.bestScore, state.total);
+      if(state.bestScore > prevBest) scheduleBestPush();
       updateDisplays();
     }
   }
@@ -1670,9 +1677,22 @@
   }
 
   /* ── MODALS ── */
-  function openModal(id){ $(id).classList.add("open"); }
+  function openModal(id){
+    $(id).classList.add("open");
+    if(id === "leaderboardModal"){
+      // Start live refresh; first render already happened before openModal was called
+      leaderboardPollId = setInterval(async () => {
+        const scores = await fetchCloudScores();
+        renderLeaderboardRows(scores);
+      }, 4000);
+    }
+  }
   function closeModal(id){
     $(id).classList.remove("open");
+    if(id === "leaderboardModal"){
+      clearInterval(leaderboardPollId);
+      leaderboardPollId = null;
+    }
     if(id === "trialModal"){
       refs.feedbackText.className = "trial-fb";
       refs.feedbackText.textContent = "";
@@ -1943,9 +1963,8 @@
     return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
   }
 
-  async function renderLeaderboard(){
-    await pushScore();
-    const scores = await fetchCloudScores();
+  /* Render rows from an already-fetched scores array — used by both initial render and live polling */
+  function renderLeaderboardRows(scores){
     const sorted = scores.slice().sort((a,b) => (b.score || 0) - (a.score || 0)).slice(0, 20);
     refs.leaderboardBody.innerHTML = "";
     if(!sorted.length){
@@ -1967,6 +1986,27 @@
       `;
       refs.leaderboardBody.appendChild(tr);
     });
+  }
+
+  async function renderLeaderboard(){
+    await pushScore();
+    const scores = await fetchCloudScores();
+    renderLeaderboardRows(scores);
+  }
+
+  /* Debounced immediate push when a new best score is hit — 800ms grace period
+     so rapid clicks only fire one network request, not one per click */
+  function scheduleBestPush(){
+    if(bestPushTimeout) return;           // already scheduled
+    bestPushTimeout = setTimeout(() => {
+      bestPushTimeout = null;
+      const cur = Math.floor(state.bestScore);
+      if(cur > lastPushedScore){
+        lastPushedScore = cur;
+        pushScore();
+        saveState();
+      }
+    }, 800);
   }
 
   /* ── SOUND TOGGLE ── */
@@ -2017,10 +2057,14 @@
     });
   }
 
-  /* ── AUTOSAVE LOOP ── */
+  /* ── AUTOSAVE LOOP ── runs every 4 s; skips the network push if score hasn't changed */
   function autosaveLoop(){
-    const now = Date.now();
-    if(now - state.lastSavedAt > 20000){ state.lastSavedAt = now; pushScore(); saveState(); }
+    saveState(); // always persist locally
+    const cur = Math.floor(state.bestScore);
+    if(cur > lastPushedScore){
+      lastPushedScore = cur;
+      pushScore();
+    }
   }
 
   /* ── INIT ── */
@@ -2038,7 +2082,7 @@
     toggleSound(); toggleSound(); // restore saved sound state
     refs.saveStatusPill.textContent = APPS_SCRIPT_URL ? "Storage: cloud ready" : "Storage: local only";
     setInterval(passiveTick, 1000);
-    setInterval(autosaveLoop, 5000);
+    setInterval(autosaveLoop, 4000);  // 4 s — push only when score improved
   }
 
   init();
