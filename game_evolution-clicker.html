@@ -1233,7 +1233,11 @@
   }
 
   /* ── CLICK RIPPLE ── */
+  let _lastRippleTime = 0;
   function createRipple(e){
+    const now = Date.now();
+    if(now - _lastRippleTime < 100) return; // max ~10 ripples/sec
+    _lastRippleTime = now;
     const rect = refs.clickZone.getBoundingClientRect();
     const x = e ? (e.clientX - rect.left) : rect.width / 2;
     const y = e ? (e.clientY - rect.top)  : rect.height / 2;
@@ -1247,7 +1251,12 @@
   }
 
   /* ── FLOATING NUMBERS ── */
+  let _lastFloatTime = 0;
   function spawnFloat(text, big=false){
+    const now = Date.now();
+    // Throttle small floats to ~8/sec; always allow big combo floats
+    if(!big && now - _lastFloatTime < 120) return;
+    if(!big) _lastFloatTime = now;
     const rect = refs.clickZone.getBoundingClientRect();
     const el = document.createElement("div");
     el.className = "floating" + (big ? " combo-hi" : "");
@@ -1605,6 +1614,14 @@
     }
   }
 
+  /* ── RENDER SCHEDULER — batches rapid clicks into one rAF render ── */
+  let _renderScheduled = false;
+  function scheduleRender(){
+    if(_renderScheduled) return;
+    _renderScheduled = true;
+    requestAnimationFrame(() => { _renderScheduled = false; updateDisplays(); });
+  }
+
   /* ── CLICK ── */
   function clickEvolution(e){
     buildCombo();
@@ -1620,7 +1637,7 @@
     if(comboCount >= 3) spawnFloat("x" + mult.toFixed(2));
     const freq = 420 + comboCount * 45 + Math.random() * 50;
     playTone(freq, .04, "triangle", .025);
-    updateDisplays();
+    scheduleRender(); // batches rapid-click renders into one rAF per frame
   }
 
   /* ── PASSIVE TICK ── */
@@ -1962,9 +1979,18 @@
   /* ── EVENT BINDING ── */
   function bindEvents(){
     refs.clickZone.addEventListener("click", clickEvolution);
+    let holdInterval = null;
     refs.clickZone.addEventListener("keydown", e => {
-      if(e.key==="Enter"||e.key===" "){ e.preventDefault(); clickEvolution(); }
+      if((e.key==="Enter"||e.key===" ") && !holdInterval){
+        e.preventDefault();
+        clickEvolution();
+        holdInterval = setInterval(clickEvolution, 100);
+      }
     });
+    refs.clickZone.addEventListener("keyup", e => {
+      if(e.key==="Enter"||e.key===" "){ clearInterval(holdInterval); holdInterval = null; }
+    });
+    window.addEventListener("blur", () => { clearInterval(holdInterval); holdInterval = null; });
     refs.trialBtn.addEventListener("click", openTrial);
     refs.eventBtn.addEventListener("click", () => triggerEvent(false));
     refs.prestigeBtn.addEventListener("click", () => openModal("prestigeModal"));
