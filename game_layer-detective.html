@@ -98,6 +98,36 @@
     }
     .hero p{ margin:12px auto 6px; font-size:clamp(14px,1.8vw,18px); color:var(--muted); max-width:820px; }
 
+    /* ── Mode Toggle ─────────────────────────────────────────────── */
+    .mode-toggle-bar{
+      display:flex; align-items:center; justify-content:center;
+      gap:0; margin:0 auto 6px;
+      background:rgba(122,143,166,.1); border:1.5px solid rgba(122,143,166,.35);
+      border-radius:14px; padding:.35rem;
+      width:fit-content;
+      box-shadow:0 0 0 4px rgba(122,143,166,.06);
+    }
+    .mode-btn{
+      padding:.65rem 1.8rem; border-radius:10px; border:none; cursor:pointer;
+      font-family:'Nunito',sans-serif; font-size:.92rem; font-weight:800;
+      letter-spacing:.04em; transition:all .22s;
+      color:rgba(122,143,166,.55); background:transparent;
+    }
+    .mode-btn:hover:not(.active){ color:rgba(159,184,204,.8); }
+    .mode-btn.active{
+      background:linear-gradient(135deg, rgba(159,184,204,.22) 0%, rgba(122,143,166,.14) 100%);
+      color:#ddeaf5;
+      border:1px solid rgba(159,184,204,.55);
+      box-shadow:0 0 14px rgba(159,184,204,.2), 0 2px 10px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08);
+      text-shadow:0 0 12px rgba(159,184,204,.6);
+    }
+    .mode-hint{
+      text-align:center; font-size:.82rem; font-weight:700;
+      color:var(--muted); margin-bottom:14px; letter-spacing:.01em;
+    }
+    .mode-hint span{ display:none; }
+    .mode-hint span.visible{ display:inline; }
+
     .glass{
       background:linear-gradient(180deg, rgba(17,25,46,.95), rgba(12,19,38,.9));
       border:1px solid var(--cardBorder);
@@ -115,8 +145,8 @@
     .stat-card .value{ margin-top:6px; font-size:24px; font-weight:900; }
     .icon-cyan{color:var(--cyan)} .icon-purple{color:var(--purple)} .icon-green{color:var(--green)} .icon-yellow{color:var(--yellow)} .icon-orange{color:var(--orange)}
     .stat-icon{
-      display:inline-block; font-family:'Orbitron',sans-serif; font-size:.6rem; font-weight:900;
-      letter-spacing:.08em; padding:.2rem .5rem; border-radius:6px; margin-bottom:2px;
+      display:inline-block; font-size:1.35rem; line-height:1;
+      padding:.2rem .4rem; border-radius:6px; margin-bottom:2px;
       background:rgba(255,255,255,.06);
     }
     .main{ display:grid; grid-template-columns:1.08fr .92fr; gap:18px; align-items:start; }
@@ -221,7 +251,7 @@
       pointer-events: none !important;
       cursor: default !important;
     }
-    /* Event badge: draggable handle overlaid on features (dike, fault, unconformity, etc.) */
+    /* Event badge: draggable handle overlaid on features (intrusion, fault, lava flow, fold, etc.) */
     .event-badge{
       position:absolute;
       display:inline-flex; align-items:center; justify-content:center;
@@ -253,7 +283,7 @@
       background:rgba(15,23,42,.8); color:#dbeafe; border:1px solid rgba(255,255,255,.12);
       pointer-events:none;
     }
-    .fault-line,.dike,.lava-flow,.surface-tilt,.fold-arch,.fold-trough,.metamorph-zone{
+    .fault-line,.dike,.lava-flow,.surface-tilt,.metamorph-zone{
       position:absolute; pointer-events:none;
     }
     .fault-line{
@@ -271,13 +301,6 @@
       box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
       z-index:7;
     }
-    .unconformity{
-      position:absolute; left:8%; width:84%; height:18px; border-top:3px dashed rgba(255,255,255,.95); border-radius:50%; opacity:.95; z-index:7;
-    }
-    .fold-arch,.fold-trough{
-      left:8%; width:84%; border:2px solid rgba(255,255,255,.22); border-bottom:none; border-radius:50% 50% 0 0; opacity:.38; z-index:2;
-    }
-    .fold-trough{ border-top:none; border-bottom:2px solid rgba(255,255,255,.22); border-radius:0 0 50% 50%; }
     .metamorph-zone{
       border:2px dotted rgba(255,255,255,.28); border-radius:999px; opacity:.8; z-index:7;
     }
@@ -298,7 +321,7 @@
       display:flex; align-items:flex-start; justify-content:space-between; gap:0;
     }
     .level-path-connector{
-      flex:1; height:2px; margin-top:21px; /* align with node center (node = 42px) */
+      flex:1; height:2px; margin-top:21px;
       background:rgba(89,112,170,.2);
       transition:background .3s ease;
       border-radius:1px;
@@ -371,17 +394,6 @@
       letter-spacing:.04em; margin-top:1px;
     }
     .pn-locked-label .pn-name{ opacity:.35; }
-    /* Turn connector between row 1 and row 2 */
-    .level-path-turn{
-      display:flex; justify-content:flex-end;
-      padding-right:21px; /* align with rightmost node center */
-      margin:3px 0;
-    }
-    .turn-v-line{
-      width:2px; height:18px;
-      background:rgba(89,112,170,.25);
-      border-radius:1px;
-    }
 
     .pill-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
     .pill{
@@ -504,6 +516,156 @@
     .stem-badge { background: rgba(46,204,113,.1); border: 1px solid rgba(46,204,113,.3); color: var(--green); }
     .ls-badge:hover, .stem-badge:hover { opacity: .75; }
     .badge-section { max-width: 1280px; margin: 0 auto; padding: 0 18px; }
+
+    /* ── Classroom Panel ─────────────────────────────────────────── */
+    .classroom-panel{
+      margin-top:24px;
+      background:linear-gradient(180deg, rgba(7,12,26,.85), rgba(7,12,26,.72));
+      border:1px solid rgba(36,232,255,.22); border-radius:28px; padding:24px;
+    }
+    .classroom-panel-header{
+      display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap;
+    }
+    .classroom-section{
+      background:rgba(9,14,30,.85); border:1px solid rgba(89,112,170,.28);
+      border-radius:20px; padding:18px; margin-bottom:14px;
+    }
+    .classroom-section-title{
+      font-family:'Fredoka One',sans-serif; font-size:1rem; font-weight:900;
+      text-transform:uppercase; letter-spacing:.06em; margin-bottom:12px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .puzzle-grid{
+      display:grid; grid-template-columns:repeat(5,1fr); gap:8px;
+    }
+    .puzzle-node{
+      border-radius:12px; padding:10px 6px; text-align:center;
+      border:1px solid rgba(89,112,170,.25); background:rgba(9,14,30,.7);
+    }
+    .puzzle-node.done{
+      background:rgba(67,240,125,.08); border-color:rgba(67,240,125,.5);
+    }
+    .puzzle-node-num{
+      font-family:'Orbitron',sans-serif; font-size:.7rem; font-weight:900;
+      color:var(--muted); display:block; margin-bottom:3px;
+    }
+    .puzzle-node.done .puzzle-node-num{ color:var(--green); }
+    .puzzle-node-icon{ font-size:.9rem; }
+    .classroom-progress-bar{
+      height:8px; border-radius:99px;
+      background:rgba(89,112,170,.18);
+      margin:10px 0 4px; overflow:hidden;
+    }
+    .classroom-progress-fill{
+      height:100%; border-radius:99px;
+      background:linear-gradient(90deg, var(--cyan), var(--green));
+      transition:width .4s ease;
+    }
+    .classroom-status-row{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:8px;
+    }
+    .status-pill{
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:.07em;
+      padding:.28rem .75rem; border-radius:99px;
+    }
+    .status-pill.locked{ background:rgba(255,111,142,.08); border:1px solid rgba(255,111,142,.25); color:var(--danger); }
+    .status-pill.unlocked{ background:rgba(67,240,125,.08); border:1px solid rgba(67,240,125,.35); color:var(--green); }
+    .status-pill.complete{ background:rgba(36,232,255,.1); border:1px solid rgba(36,232,255,.4); color:var(--cyan); }
+
+    /* Quiz styles */
+    .quiz-question{
+      background:rgba(9,14,30,.7); border:1px solid rgba(89,112,170,.22);
+      border-radius:16px; padding:16px; margin-bottom:12px;
+    }
+    .quiz-question-text{
+      font-size:.92rem; font-weight:700; color:var(--text); margin-bottom:12px; line-height:1.5;
+    }
+    .quiz-question-num{
+      font-family:'Orbitron',sans-serif; font-size:.6rem; font-weight:900;
+      color:var(--cyan); text-transform:uppercase; letter-spacing:.1em; display:block; margin-bottom:6px;
+    }
+    .quiz-options{ display:grid; gap:7px; }
+    .quiz-option{
+      display:flex; align-items:center; gap:10px;
+      background:rgba(255,255,255,.03); border:1px solid rgba(89,112,170,.22);
+      border-radius:12px; padding:10px 14px; cursor:pointer;
+      transition:all .15s ease; font-size:.88rem; font-weight:600; color:var(--muted);
+    }
+    .quiz-option:hover{ background:rgba(36,232,255,.07); border-color:rgba(36,232,255,.35); color:var(--text); }
+    .quiz-option.selected{ background:rgba(36,232,255,.1); border-color:rgba(36,232,255,.55); color:var(--cyan); font-weight:800; }
+    .quiz-option-letter{
+      width:26px; height:26px; border-radius:50%; flex-shrink:0;
+      background:rgba(89,112,170,.18); display:flex; align-items:center; justify-content:center;
+      font-family:'Orbitron',sans-serif; font-size:.6rem; font-weight:900; color:var(--muted);
+    }
+    .quiz-option.selected .quiz-option-letter{ background:rgba(36,232,255,.2); color:var(--cyan); }
+    .quiz-locked-overlay{
+      text-align:center; padding:28px 16px;
+    }
+    .quiz-locked-icon{ font-size:2rem; margin-bottom:8px; }
+    .quiz-locked-text{ color:var(--muted); font-size:.9rem; line-height:1.6; }
+
+    /* Submit section */
+    .submit-section{ text-align:center; }
+    .submit-btn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:.85rem 2.4rem; border-radius:14px; border:2px solid transparent;
+      font-family:'Nunito',sans-serif; font-size:1rem; font-weight:800; letter-spacing:.03em;
+      cursor:pointer; transition:all .2s ease;
+    }
+    .submit-btn.locked{
+      background:rgba(89,112,170,.08); border-color:rgba(89,112,170,.2); color:rgba(145,163,201,.4); cursor:not-allowed;
+    }
+    .submit-btn.ready{
+      background:linear-gradient(180deg, rgba(67,240,125,.18), rgba(67,240,125,.08));
+      border-color:rgba(67,240,125,.6); color:var(--green);
+      box-shadow:0 0 24px rgba(67,240,125,.18);
+      animation:nextGlowPulse 2s ease-in-out infinite;
+    }
+    .submit-btn.ready:hover{ filter:brightness(1.1); transform:translateY(-1px); }
+    .submit-helper{
+      font-size:.78rem; color:var(--muted); margin-top:8px; line-height:1.5;
+    }
+    .submit-success{
+      display:none; padding:16px; border-radius:16px;
+      background:rgba(67,240,125,.08); border:1px solid rgba(67,240,125,.4);
+      color:var(--green); font-weight:800; font-size:.95rem;
+    }
+    .quiz-score-badge{
+      display:inline-flex; align-items:center; gap:6px;
+      background:rgba(36,232,255,.1); border:1px solid rgba(36,232,255,.35);
+      color:var(--cyan); font-size:.8rem; font-weight:900;
+      padding:.3rem .85rem; border-radius:99px; margin-top:8px;
+    }
+    /* ── Student Submission Fields ───────────────────────────────── */
+    .student-fields{
+      display:grid; grid-template-columns:1fr 1fr; gap:12px;
+      margin-bottom:16px;
+    }
+    .student-fields .field-full{ grid-column:1 / -1; }
+    .field-label{
+      display:block; font-size:.72rem; font-weight:900; text-transform:uppercase;
+      letter-spacing:.08em; color:var(--muted); margin-bottom:6px;
+    }
+    .field-input, .field-select{
+      width:100%; padding:.65rem .9rem; border-radius:12px;
+      background:rgba(9,14,30,.85); border:1px solid rgba(89,112,170,.35);
+      color:var(--text); font-family:'Nunito',sans-serif; font-size:.9rem; font-weight:600;
+      outline:none; transition:border-color .15s ease, box-shadow .15s ease;
+      appearance:none; -webkit-appearance:none;
+    }
+    .field-input::placeholder{ color:rgba(145,163,201,.4); }
+    .field-input:focus, .field-select:focus{
+      border-color:rgba(36,232,255,.55);
+      box-shadow:0 0 0 3px rgba(36,232,255,.1);
+    }
+    .field-select option{ background:#0d1629; color:var(--text); }
+    .submit-error{
+      display:none; padding:14px 16px; border-radius:14px; margin-top:10px;
+      background:rgba(255,111,142,.07); border:1px solid rgba(255,111,142,.35);
+      color:var(--danger); font-weight:700; font-size:.88rem; line-height:1.5;
+    }
   </style>
 </head>
 <body>
@@ -525,20 +687,19 @@
     <div class="hero">
       <div class="page-eyebrow">Game</div>
       <h1>Layer Detective</h1>
-      <p>Work through 10 rock strata puzzles that build from simple stacking to full relative dating challenges with faults, intrusions, folds, lava flows, and unconformities.</p>
-
+      <p>Work through 5 rock strata puzzles that build from simple stacking to full relative dating challenges with magma intrusions, lava flows, and faults.</p>
     </div>
 
     <div class="stats">
-      <div class="stat-card"><div class="stat-icon icon-cyan">LVL</div><div class="label">Current Level</div><div class="value" id="levelDisplay">1</div></div>
-      <div class="stat-card"><div class="stat-icon icon-green">CLR</div><div class="label">Levels Cleared</div><div class="value" id="clearedDisplay">0 / 10</div></div>
-      <div class="stat-card"><div class="stat-icon icon-purple">BST</div><div class="label">Best Run</div><div class="value" id="bestDisplay">0</div></div>
-      <div class="stat-card"><div class="stat-icon icon-yellow">HNT</div><div class="label">Hints Used</div><div class="value" id="hintDisplay">0</div></div>
-      <div class="stat-card"><div class="stat-icon icon-orange">FCS</div><div class="label">Rule Focus</div><div class="value" id="ruleDisplay" style="font-size:18px;">Superposition</div></div>
+      <div class="stat-card"><div class="stat-icon icon-cyan">🎯</div><div class="label">Current Level</div><div class="value" id="levelDisplay">1</div></div>
+      <div class="stat-card"><div class="stat-icon icon-green">✅</div><div class="label">Levels Cleared</div><div class="value" id="clearedDisplay">0 / 5</div></div>
+      <div class="stat-card"><div class="stat-icon icon-purple">🏆</div><div class="label">Best Run</div><div class="value" id="bestDisplay">0</div></div>
+      <div class="stat-card"><div class="stat-icon icon-yellow">💡</div><div class="label">Hints Used</div><div class="value" id="hintDisplay">0</div></div>
+      <div class="stat-card"><div class="stat-icon icon-orange">🧠</div><div class="label">Rule Focus</div><div class="value" id="ruleDisplay" style="font-size:18px;">Superposition</div></div>
     </div>
 
     <div class="main">
-      <section class="left-panel">
+      <section class="left-panel" id="crossSectionView">
         <div class="section-title">Cross-Section View</div>
         <p class="subtext" id="levelPrompt">Read the rock relationships carefully. Build the timeline from oldest to youngest.</p>
         <p class="subtext" style="margin-top:5px;color:rgba(36,232,255,.75);font-size:.84rem;font-weight:700;">
@@ -552,20 +713,11 @@
           <button class="btn-ghost" id="nextBtn" disabled>Next Level</button>
         </div>
 
-        <div class="cross-card">
+        <div class="cross-card" id="crossCard">
           <div class="cross-wrap" id="crossWrap"></div>
         </div>
 
-        <div class="legend">
-          <div class="legend-card">
-            <strong>What to look for</strong>
-            <p class="subtext" id="lookForText">Start with the lowest layer. In simple stacked rocks, the bottom is oldest and the top is youngest.</p>
-          </div>
-          <div class="legend-card">
-            <strong>Level goal</strong>
-            <p class="subtext" id="goalText">Place every rock layer in the timeline from oldest to youngest.</p>
-          </div>
-        </div>
+
       </section>
 
       <aside class="right-panel">
@@ -597,7 +749,109 @@
         </div>
       </aside>
     </div>
-  </div>
+
+    <!-- Mode Toggle -->
+    <div class="mode-toggle-bar" style="margin-top:18px;">
+      <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
+      <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="modeHintPractice" class="visible">Game progress is not submitted</span>
+      <span id="modeHintClassroom">Class progress panel will be visible</span>
+    </div>
+
+    <!-- Classroom Panel (hidden in Practice Mode) -->
+    <div class="classroom-panel hidden" id="classroomPanel">
+      <div class="classroom-panel-header">
+        <div class="section-title" style="margin:0;">Classroom Progress</div>
+        <span class="mode-badge classroom">Classroom Mode</span>
+      </div>
+
+      <!-- Puzzle completion status -->
+      <div class="classroom-section">
+        <div class="classroom-section-title" style="color:var(--cyan);">
+          Step 1 — Complete All 5 Puzzles
+        </div>
+        <div class="puzzle-grid" id="puzzleGrid"></div>
+        <div class="classroom-progress-bar">
+          <div class="classroom-progress-fill" id="puzzleProgressFill" style="width:0%"></div>
+        </div>
+        <div class="classroom-status-row">
+          <span id="puzzleCountLabel" class="subtext" style="font-size:.82rem;">0 of 5 puzzles complete</span>
+          <span class="status-pill locked" id="puzzleStatusPill">In Progress</span>
+        </div>
+      </div>
+
+      <!-- Quiz section -->
+      <div class="classroom-section" id="classroomQuizSection">
+        <div class="classroom-section-title" style="color:var(--yellow);">
+          Step 2 — Answer the Quiz
+        </div>
+        <div id="quizContent">
+          <!-- Locked overlay shown until all 5 puzzles done -->
+          <div class="quiz-locked-overlay" id="quizLockedOverlay">
+            <div class="quiz-locked-icon">&#x1F512;</div>
+            <p class="quiz-locked-text">Complete all 5 puzzles to unlock the quiz.</p>
+          </div>
+          <!-- Questions rendered here -->
+          <div id="quizQuestions" class="hidden"></div>
+          <div id="quizScoreArea" class="hidden" style="margin-top:12px;">
+            <div class="quiz-score-badge" id="quizScoreBadge">0 / 5 answered</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit section -->
+      <div class="classroom-section">
+        <div class="classroom-section-title" style="color:var(--green);">
+          Step 3 — Submit Your Work
+        </div>
+
+        <!-- Student info fields (Classroom Mode only) -->
+        <div class="student-fields">
+          <div class="field-full">
+            <label class="field-label" for="studentNameInput">Student Name</label>
+            <input type="text" id="studentNameInput" class="field-input" placeholder="First and last name" autocomplete="off" />
+          </div>
+          <div>
+            <label class="field-label" for="teacherSelect">Teacher</label>
+            <select id="teacherSelect" class="field-select">
+              <option value="">Select teacher…</option>
+              <option value="Mr. Brown">Mr. Brown</option>
+              <option value="Ms. Gay">Ms. Gay</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="blockInput">Block</label>
+            <select id="blockInput" class="field-select">
+              <option value="">Select block…</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="D">D</option>
+              <option value="E">E</option>
+              <option value="F">F</option>
+              <option value="G">G</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="submit-section">
+          <button class="submit-btn locked" id="classroomSubmitBtn" disabled>
+            Submit to Teacher
+          </button>
+          <p class="submit-helper" id="submitHelperText">Complete all 5 puzzles and all 5 quiz questions first.</p>
+          <div class="submit-success" id="submitSuccess">
+            Your work has been submitted! Great job, geologic detective.
+          </div>
+          <div class="submit-error" id="submitError">
+            Submission failed. Please check your connection and try again.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.app -->
 
   <!-- Learning Science / STE Standards panels (toggled from index) -->
   <div class="badge-section">
@@ -612,7 +866,7 @@
       <span class="stem-focus-label">MA STE Standards · Grade 6–8</span>
       <span class="stem-badge" data-tip="ESS1.C: The History of Planet Earth — rock strata and other geologic evidence support scientific explanations of Earth's history.">MS-ESS1-4</span>
       <span class="stem-badge" data-tip="Science Practice 4: Analyzing and Interpreting Data — students analyze visual rock section evidence to construct a relative-age sequence.">SP4: Data Analysis</span>
-      <span class="stem-badge" data-tip="Science Practice 6: Constructing Explanations — students use cross-cutting relationships, superposition, and unconformities as evidence for ordered explanations.">SP6: Explanation</span>
+      <span class="stem-badge" data-tip="Science Practice 6: Constructing Explanations — students use cross-cutting relationships as evidence for ordered geologic explanations.">SP6: Explanation</span>
       <span class="stem-badge" data-tip="Crosscutting Concept 1: Patterns — students identify patterns in rock strata position and feature relationships to determine geologic sequence.">CCC1: Patterns</span>
     </div>
   </div>
@@ -627,8 +881,17 @@
     if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
     if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
 
-    /* ─── LEVEL DATA ─────────────────────────────────────────────── */
+    /* ─── APPS SCRIPT SUBMISSION URLS ───────────────────────────── */
+    // Paste your deployed Apps Script web app URL(s) here.
+    // Each teacher routes to their own Google Sheet.
+    const SCRIPT_URLS = {
+      'Mr. Brown': 'https://script.google.com/macros/s/AKfycbyBvcn7G6-tqM9mxGSr24C2hPjn8EXRX796QC2reswS5xny4To0Z-EhNuGmhD7Q4keY5A/exec',
+      'Ms. Gay':   'https://script.google.com/macros/s/AKfycbzSWCQfGJ2xdt5znuspy0r6WlVzfl0wnmwhDPL7jLxaXwim-KA1nVPRxJR8i2l5YuR0/exec'
+    };
+
+    /* ─── LEVEL DATA (5 levels) ──────────────────────────────────── */
     const levels = [
+      /* ── Level 1: Simple horizontal layers ──────────────────────── */
       {
         id:1, name:'Simple Stack', focus:'Superposition',
         prompt:'Level 1 introduces simple horizontal strata. Use only the law of superposition.',
@@ -647,10 +910,10 @@
           'The top layer must be the youngest.'
         ],
         story:[
-          'Layer A was deposited first.',
+          'Layer A was deposited first at the bottom.',
           'Layer B was deposited on top of A.',
           'Layer C was deposited next.',
-          'Layer D is the youngest because it is on top.'
+          'Layer D is the youngest because it sits highest in the stack.'
         ],
         renderCrossSection(el){
           makeBase(el);
@@ -660,6 +923,8 @@
           addLayer(el, 'pattern-shale',        39, 14, 'D');
         }
       },
+
+      /* ── Level 2: More horizontal layers ─────────────────────────── */
       {
         id:2, name:'More Layers', focus:'Superposition',
         prompt:'Level 2 adds more layers and uneven thickness, but the rule is still the same.',
@@ -687,331 +952,208 @@
         renderCrossSection(el){
           makeBase(el);
           addLayer(el, 'pattern-shale',        82, 8,  'A');
-          addLayer(el, 'pattern-sandstone',    71, 9,  'B');
-          addLayer(el, 'pattern-limestone',    60, 8,  'C');
-          addLayer(el, 'pattern-siltstone',    50, 9,  'D');
-          addLayer(el, 'pattern-conglomerate', 39, 10, 'E');
-          addLayer(el, 'pattern-shale',        26, 11, 'F');
+          addLayer(el, 'pattern-sandstone',    73, 9,  'B');
+          addLayer(el, 'pattern-limestone',    65, 8,  'C');
+          addLayer(el, 'pattern-siltstone',    56, 9,  'D');
+          addLayer(el, 'pattern-conglomerate', 46, 10, 'E');
+          addLayer(el, 'pattern-shale',        35, 11, 'F');
         }
       },
+
+      /* ── Level 3: Magma intrusion ─────────────────────────────────── */
       {
-        id:3, name:'Dike Cuts Up', focus:'Cross-Cutting',
-        prompt:'Level 3 introduces an igneous dike. It cuts through older layers.',
-        lookFor:'The dike is younger than the layers it cuts through.',
-        goal:'Order the layers and the dike event from oldest to youngest.',
+        id:3, name:'Magma Intrusion', focus:'Cross-Cutting',
+        prompt:'Level 3 introduces a magma intrusion. Magma that forces its way through older rock layers is younger than those layers.',
+        lookFor:'The magma intrusion is younger than every layer it cuts through. Look for where it stops to determine what formed afterward.',
+        goal:'Order the layers and the magma intrusion event from oldest to youngest.',
         parts:[
           { id:'A', title:'A', subtitle:'Lower shale' },
           { id:'B', title:'B', subtitle:'Sandstone' },
           { id:'C', title:'C', subtitle:'Limestone' },
           { id:'D', title:'D', subtitle:'Upper shale' },
           { id:'E', title:'E', subtitle:'Siltstone cap' },
-          { id:'I', title:'I', subtitle:'Igneous dike intrusion' }
+          { id:'I', title:'I', subtitle:'Magma intrusion' }
         ],
         correct:['A','B','C','D','I','E'],
         hints:[
-          'The dike cuts older layers, so it must be younger than them.',
-          'Look at where the dike stops.',
-          'If a younger layer lies above the dike without being cut, it formed later.'
+          'The magma intrusion cuts through older layers, so it must be younger than them.',
+          'Look at where the intrusion stops — it did not reach the top layer.',
+          'If a younger layer lies above the intrusion without being cut, it formed after the magma cooled.'
         ],
         story:[
           'Layers A through D were deposited in order.',
-          'Igneous dike I intruded upward through those older layers.',
-          'Layer E formed afterward because it is not cut by the dike.'
+          'Magma intrusion I forced upward through those older layers.',
+          'Layer E formed afterward because it is not cut by the intrusion.'
         ],
         renderCrossSection(el){
           makeBase(el);
           addLayer(el, 'pattern-shale',     80, 10, 'A');
-          addLayer(el, 'pattern-sandstone', 68, 10, 'B');
-          addLayer(el, 'pattern-limestone', 56, 10, 'C');
-          addLayer(el, 'pattern-shale',     44, 10, 'D');
-          addLayer(el, 'pattern-siltstone', 30, 10, 'E');
-          addDike(el, 47, 39, 24, 52, 9);
-          addEventBadge(el, 'I', 54, 53);
-          addFeatureLabel(el, 'dike', 57, 44);
+          addLayer(el, 'pattern-sandstone', 70, 10, 'B');
+          addLayer(el, 'pattern-limestone', 60, 10, 'C');
+          addLayer(el, 'pattern-shale',     50, 10, 'D');
+          addLayer(el, 'pattern-siltstone', 40, 10, 'E');
+          addDike(el, 63, 50, 20, 42, 5);
+          addEventBadge(el, 'I', 69, 62);
+          addFeatureLabel(el, 'intrusion', 70, 56);
         }
       },
+
+      /* ── Level 4: Full Intrusion ─────────────────────────────────── */
       {
-        id:4, name:'Lava on Top', focus:'Surface Flow',
-        prompt:'Level 4 adds a lava flow that spreads across the top after older rocks already formed.',
-        lookFor:'A lava flow resting on top is younger than the rock surface below it.',
-        goal:'Order the layers, the dike, and the lava flow from oldest to youngest.',
+        id:4, name:'Full Intrusion', focus:'Cross-Cutting',
+        prompt:'In Level 4, a magma intrusion cuts through every single rock layer — all the way to the top. When an intrusion slices through everything, it must be younger than everything.',
+        lookFor:'The magma intrusion cuts through layers A, B, C, D, and E. There is no layer above it that escaped being cut. That means the intrusion is the youngest event — nothing formed after it.',
+        goal:'Order all five sedimentary layers and the magma intrusion from oldest to youngest. The intrusion cuts everything, so it goes last.',
         parts:[
           { id:'A', title:'A', subtitle:'Lower shale' },
           { id:'B', title:'B', subtitle:'Sandstone' },
           { id:'C', title:'C', subtitle:'Limestone' },
           { id:'D', title:'D', subtitle:'Upper shale' },
-          { id:'I', title:'I', subtitle:'Igneous dike intrusion' },
-          { id:'L', title:'L', subtitle:'Lava flow' },
-          { id:'E', title:'E', subtitle:'Top sedimentary layer' }
+          { id:'E', title:'E', subtitle:'Top sedimentary layer' },
+          { id:'I', title:'I', subtitle:'Magma intrusion' }
         ],
-        correct:['A','B','C','D','I','L','E'],
+        correct:['A','B','C','D','E','I'],
         hints:[
-          'The dike cuts the older stack.',
-          'The lava flow spreads on top of the old surface.',
-          'A layer above the lava flow must be youngest.'
+          'Start with the sedimentary layers. Which is at the bottom? That one is oldest.',
+          'Now look at the intrusion — trace it from bottom to top. Does it cut through every layer, including E?',
+          'An intrusion is always younger than every layer it cuts. If it cuts all five layers, where does it belong in the timeline?'
         ],
         story:[
-          'A through D were deposited first.',
-          'Dike I intruded through those older layers.',
-          'Lava flow L spread over the surface later.',
-          'E was deposited after the lava flow and is youngest.'
+          'A through E were deposited in order, one on top of the other, from oldest at the bottom to youngest at the top.',
+          'After all five layers existed, magma forced its way upward through every single one of them — A, B, C, D, and E.',
+          'Because intrusion I cuts all five layers, it must have happened after all of them formed. That makes I the youngest event in this rock section.'
         ],
         renderCrossSection(el){
           makeBase(el);
           addLayer(el, 'pattern-shale',     80, 10, 'A');
-          addLayer(el, 'pattern-sandstone', 68, 10, 'B');
-          addLayer(el, 'pattern-limestone', 56, 10, 'C');
-          addLayer(el, 'pattern-shale',     44, 10, 'D');
-          addDike(el, 34, 36, 18, 58, -8);
-          addLava(el, 26, 17, 60);
-          addLayer(el, 'pattern-siltstone', 18, 8, 'E');
-          addEventBadge(el, 'I', 39, 51);
-          addEventBadge(el, 'L', 62, 22);
-          addFeatureLabel(el, 'lava flow', 68, 15);
+          addLayer(el, 'pattern-sandstone', 70, 10, 'B');
+          addLayer(el, 'pattern-limestone', 60, 10, 'C');
+          addLayer(el, 'pattern-shale',     50, 10, 'D');
+          addLayer(el, 'pattern-siltstone', 40, 10, 'E');
+          addDike(el, 16, 40, 20, 50, -8);
+          addEventBadge(el, 'I', 20, 38);
+          addFeatureLabel(el, 'intrusion', 18, 32);
         }
       },
+
+      /* ── Level 5: Fault + Post-fault sediment ────────────────────── */
       {
         id:5, name:'Fault Line', focus:'Faulting',
-        prompt:'Level 5 introduces a fault that slices through older rock layers.',
-        lookFor:'A fault is younger than every layer it cuts.',
-        goal:'Order the layers and the fault event from oldest to youngest.',
+        prompt:'Level 5 introduces a fault that slices through older rock layers — and reveals a clue about what happened next.',
+        lookFor:'The fault cuts through layers A–E on both sides, so it must be younger than all of them. But look at the right side only: layer G sits above the fault zone and is not cut by it. That means G formed after the faulting was already done.',
+        goal:'Order all layers and the fault event from oldest to youngest, including the post-fault sediment layer G.',
         parts:[
           { id:'A', title:'A', subtitle:'Lower shale' },
           { id:'B', title:'B', subtitle:'Sandstone' },
           { id:'C', title:'C', subtitle:'Limestone' },
           { id:'D', title:'D', subtitle:'Upper sandstone' },
           { id:'E', title:'E', subtitle:'Cap rock' },
-          { id:'F', title:'F', subtitle:'Fault event' }
+          { id:'F', title:'F', subtitle:'Fault event' },
+          { id:'G', title:'G', subtitle:'Post-fault sediment layer' }
         ],
-        correct:['A','B','C','D','E','F'],
+        correct:['A','B','C','D','E','F','G'],
         hints:[
-          'The fault must come after the layers it cuts.',
-          'Do not place the fault in the middle just because it sits there visually.',
-          'Look for the diagonal break.'
+          'The fault cuts through layers A–E, so F must come after all five of those layers.',
+          'Layer G only appears on the right side and is not cut by the fault — what does that tell you about when it formed?',
+          'G was deposited on top of the already-faulted terrain. Because the fault never cut G, G must be the very youngest event.'
         ],
         story:[
-          'A through E were deposited in sequence.',
-          'Fault F cut through the already existing rock layers, making it the youngest event.'
+          'A through E were deposited in sequence from oldest at the bottom to youngest at the top.',
+          'Fault F then cut through all five existing layers, displacing the right block upward. The fault is younger than every layer it crosses.',
+          'G was deposited on top of the faulted terrain on the right side only. Because G is not cut by the fault, it must have formed after the faulting — making G the youngest event of all.'
         ],
         renderCrossSection(el){
           makeBase(el);
-          addLayer(el, 'pattern-shale',     80, 10, 'A');
-          addLayer(el, 'pattern-sandstone', 68, 10, 'B');
-          addLayer(el, 'pattern-limestone', 56, 10, 'C');
-          addLayer(el, 'pattern-sandstone', 43, 11, 'D');
-          addLayer(el, 'pattern-siltstone', 29, 11, 'E');
-          addFault(el, 69, 24, 10, 62, 18);
-          addEventBadge(el, 'F', 76, 50);
-          addFeatureLabel(el, 'fault', 79, 41);
+          const OFF = 10;
+          // Left stack (A–E)
+          addLayerHalf(el, 'pattern-shale',     77, 9, '8%',  '49%');
+          addLayerHalf(el, 'pattern-sandstone', 68, 9, '8%',  '49%');
+          addLayerHalf(el, 'pattern-limestone', 59, 9, '8%',  '49%');
+          addLayerHalf(el, 'pattern-sandstone', 50, 9, '8%',  '49%');
+          addLayerHalf(el, 'pattern-siltstone', 41, 9, '8%',  '49%');
+          // Right stack (A–E, offset upward by fault displacement)
+          addLayerHalf(el, 'pattern-shale',     77+OFF, 9, '59%', '33%');
+          addLayerHalf(el, 'pattern-sandstone', 68+OFF, 9, '59%', '33%');
+          addLayerHalf(el, 'pattern-limestone', 59+OFF, 9, '59%', '33%');
+          addLayerHalf(el, 'pattern-sandstone', 50+OFF, 9, '59%', '33%');
+          addLayerHalf(el, 'pattern-siltstone', 41+OFF, 9, '59%', '33%');
+          // Post-fault layer G — right side only, above the right stack, not cut by the fault
+          addLayerHalf(el, 'pattern-conglomerate', 43, 8, '59%', '33%');
+          addFault(el, 56, 20, 10, 72, 11);
+          addEventBadge(el, 'A', 12, 79);
+          addEventBadge(el, 'B', 12, 70);
+          addEventBadge(el, 'C', 12, 61);
+          addEventBadge(el, 'D', 12, 52);
+          addEventBadge(el, 'E', 12, 43);
+          addEventBadge(el, 'F', 64, 30);
+          addEventBadge(el, 'G', 79, 44);
+          addFeatureLabel(el, 'fault', 48, 30);
         }
+      }
+
+    ];
+
+    /* ─── QUIZ DATA ──────────────────────────────────────────────── */
+    const quizData = [
+      {
+        id: 1,
+        topic: "Superposition",
+        text: "In undisturbed sedimentary rock layers, which layer is the oldest?",
+        options: [
+          "The top layer",
+          "The bottom layer",
+          "The thickest layer",
+          "They are all the same age"
+        ],
+        correct: 1
       },
       {
-        id:6, name:'Folded Layers', focus:'Folding',
-        prompt:'Level 6 introduces folding. Layers formed first, then they were bent later.',
-        lookFor:'Deposition happens before folding. In a syncline, the youngest folded layer is in the center.',
-        goal:'Order the original layers and the fold event.',
-        parts:[
-          { id:'A', title:'A', subtitle:'Oldest folded layer' },
-          { id:'B', title:'B', subtitle:'Folded layer' },
-          { id:'C', title:'C', subtitle:'Folded layer' },
-          { id:'D', title:'D', subtitle:'Youngest folded layer' },
-          { id:'G', title:'G', subtitle:'Folding event' },
-          { id:'E', title:'E', subtitle:'Upper horizontal layer' },
-          { id:'F', title:'F', subtitle:'Top horizontal layer' }
+        id: 2,
+        topic: "Magma Intrusion",
+        text: "A magma intrusion cuts through rock layers A, B, and C, but does NOT cut layer D above it. What does this mean?",
+        options: [
+          "The intrusion is older than layers A, B, and C",
+          "The intrusion is younger than A, B, and C, but older than layer D",
+          "The intrusion is the oldest event in the rock section",
+          "Layer D is older than the intrusion"
         ],
-        correct:['A','B','C','D','G','E','F'],
-        hints:[
-          'The folded stack formed before it was bent.',
-          'Layers E and F lie on top after folding happened.',
-          'Folding is an event, not a rock layer.'
-        ],
-        story:[
-          'Layers A, B, C, and D were deposited in order.',
-          'Event G folded those rocks into a trough.',
-          'Layer E was deposited horizontally after folding.',
-          'Layer F is the youngest top layer.'
-        ],
-        renderCrossSection(el){
-          makeBase(el);
-          addFoldedLevel(el);
-          addLayer(el, 'pattern-siltstone', 31, 10, 'E');
-          addLayer(el, 'pattern-shale',     18, 10, 'F');
-          /* Fold layer badges — draggable handles at visible fold edges */
-          addEventBadge(el, 'A', 11, 82);
-          addEventBadge(el, 'B', 20, 73);
-          addEventBadge(el, 'C', 33, 66);
-          addEventBadge(el, 'D', 47, 62);
-          addEventBadge(el, 'G', 76, 64);
-          addFeatureLabel(el, 'fold', 79, 56);
-        }
+        correct: 1
       },
       {
-        id:7, name:'Missing Time', focus:'Unconformity',
-        prompt:'Level 7 introduces an unconformity, showing erosion and missing geologic time.',
-        lookFor:'Rocks below the unconformity are older than rocks above it.',
-        goal:'Order the older sequence, the erosion surface, and the younger layers above it.',
-        parts:[
-          { id:'A', title:'A', subtitle:'Lower shale' },
-          { id:'B', title:'B', subtitle:'Sandstone' },
-          { id:'C', title:'C', subtitle:'Limestone' },
-          { id:'U', title:'U', subtitle:'Unconformity erosion event' },
-          { id:'D', title:'D', subtitle:'Younger sandstone' },
-          { id:'E', title:'E', subtitle:'Youngest cap rock' }
+        id: 3,
+        topic: "Lava Flow",
+        text: "A lava flow rests on top of several rock layers. Compared to those rock layers below it, the lava flow is:",
+        options: [
+          "Older than all of them",
+          "The same age as the top layer",
+          "Younger than all of the rock layers below it",
+          "There is no way to tell"
         ],
-        correct:['A','B','C','U','D','E'],
-        hints:[
-          'The erosion surface comes after the rocks below it formed.',
-          'Rocks deposited above the unconformity are younger than the break.',
-          'The dashed line marks missing time.'
-        ],
-        story:[
-          'A, B, and C formed first.',
-          'An erosion event created unconformity U.',
-          'D and then E were deposited above that older eroded surface.'
-        ],
-        renderCrossSection(el){
-          makeBase(el);
-          addLayer(el, 'pattern-shale',     80, 10, 'A');
-          addLayer(el, 'pattern-sandstone', 67, 11, 'B');
-          addLayer(el, 'pattern-limestone', 54, 11, 'C');
-          addUnconformity(el, 49);
-          addLayer(el, 'pattern-sandstone', 40, 9,  'D');
-          addLayer(el, 'pattern-siltstone', 28, 10, 'E');
-          addEventBadge(el, 'U', 74, 44);
-          addFeatureLabel(el, 'unconformity', 70, 36);
-        }
+        correct: 2
       },
       {
-        id:8, name:'Triple Evidence', focus:'Event Sequencing',
-        prompt:'Level 8 combines an unconformity, a dike, and a fault in one section.',
-        lookFor:'Decide which event happened first by checking what each feature cuts or does not cut.',
-        goal:'Order the rock layers and all geologic events from oldest to youngest.',
-        parts:[
-          { id:'A', title:'A', subtitle:'Lower shale' },
-          { id:'B', title:'B', subtitle:'Sandstone' },
-          { id:'C', title:'C', subtitle:'Limestone' },
-          { id:'I', title:'I', subtitle:'Dike intrusion' },
-          { id:'U', title:'U', subtitle:'Unconformity' },
-          { id:'D', title:'D', subtitle:'Younger sandstone' },
-          { id:'E', title:'E', subtitle:'Upper limestone' },
-          { id:'F', title:'F', subtitle:'Fault event' }
+        id: 4,
+        topic: "Fault Relative Age",
+        text: "A fault cuts through rock layers A, B, C, and D. Which statement correctly describes the order these events happened?",
+        options: [
+          "The fault formed first, then the rock layers were deposited around it",
+          "The rock layers formed first, then the fault cut through them afterward",
+          "The fault and the rock layers all formed at the same time",
+          "The youngest rock layer always forms after the fault"
         ],
-        correct:['A','B','C','I','U','D','E','F'],
-        hints:[
-          'The dike cuts the lower sequence but not the younger upper sequence.',
-          'The unconformity happened after the old lower package formed.',
-          'The fault cuts across everything else and is last.'
-        ],
-        story:[
-          'A, B, and C formed as the older sequence.',
-          'Dike I intruded through those older rocks.',
-          'Erosion created unconformity U.',
-          'D and E were deposited above the older surface.',
-          'Fault F cut across the entire section last.'
-        ],
-        renderCrossSection(el){
-          makeBase(el);
-          addLayer(el, 'pattern-shale',     82, 9,  'A');
-          addLayer(el, 'pattern-sandstone', 70, 10, 'B');
-          addLayer(el, 'pattern-limestone', 58, 10, 'C');
-          addDike(el, 43, 43, 18, 48, 5);
-          addUnconformity(el, 52);
-          addLayer(el, 'pattern-sandstone', 41, 9,  'D');
-          addLayer(el, 'pattern-limestone', 29, 10, 'E');
-          addFault(el, 72, 24, 10, 64, 18);
-          addEventBadge(el, 'I', 47, 58);
-          addEventBadge(el, 'U', 70, 46);
-          addEventBadge(el, 'F', 79, 52);
-          addFeatureLabel(el, 'dike', 51, 49);
-          addFeatureLabel(el, 'fault', 77, 42);
-        }
+        correct: 1
       },
       {
-        id:9, name:'Across the Fault', focus:'Correlation',
-        prompt:'Level 9 uses repeated layers on both sides of a fault. Match the same rocks across displacement.',
-        lookFor:'A layer can appear on both sides of a fault. The fault moved it after deposition.',
-        goal:'Correlate repeated layers correctly and place the fault after all rocks it cuts.',
-        parts:[
-          { id:'A', title:'A', subtitle:'Conglomerate base' },
-          { id:'B', title:'B', subtitle:'Shale layer' },
-          { id:'C', title:'C', subtitle:'Limestone layer' },
-          { id:'D', title:'D', subtitle:'Sandstone layer' },
-          { id:'E', title:'E', subtitle:'Young cap rock' },
-          { id:'F', title:'F', subtitle:'Fault event' }
+        id: 5,
+        topic: "Post-Fault Sequencing",
+        text: "In Level 5, sediment layer G sits on the right side only and is NOT cut by the fault. What does this tell you about when G formed?",
+        options: [
+          "G formed before the fault, which is why the fault did not reach it",
+          "G formed at the same time as the fault",
+          "G formed after the fault — it was deposited on top of the already-faulted terrain",
+          "G is older than layers A through E"
         ],
-        correct:['A','B','C','D','E','F'],
-        hints:[
-          'The same rock unit can be broken and shifted.',
-          'The fault comes after the repeated layers existed.',
-          'Do not treat the right side as a separate timeline.'
-        ],
-        story:[
-          'A through E were deposited as one sequence.',
-          'Fault F later offset those same layers, creating the repeated appearance on both sides.'
-        ],
-        renderCrossSection(el){
-          makeBase(el);
-          addCorrelatedFaultLevel(el);
-          /* All parts are event badges — no labeled rock layers in this level */
-          addEventBadge(el, 'A', 12, 82);
-          addEventBadge(el, 'B', 16, 70);
-          addEventBadge(el, 'C', 19, 58);
-          addEventBadge(el, 'D', 22, 45);
-          addEventBadge(el, 'E', 25, 32);
-          addEventBadge(el, 'F', 78, 54);
-          addFeatureLabel(el, 'fault', 80, 45);
-        }
-      },
-      {
-        id:10, name:'Full Challenge', focus:'Synthesis',
-        prompt:'Level 10 is the full Layers of Time challenge with 10 total puzzle pieces and multiple rules working together.',
-        lookFor:'Use superposition, cross-cutting relationships, and the unconformity together. Prove each step with evidence.',
-        goal:'Order all 10 pieces from oldest to youngest.',
-        parts:[
-          { id:'A', title:'A', subtitle:'Metamorphic basement' },
-          { id:'B', title:'B', subtitle:'Lower shale' },
-          { id:'C', title:'C', subtitle:'Sandstone layer' },
-          { id:'D', title:'D', subtitle:'Limestone layer' },
-          { id:'E', title:'E', subtitle:'Conglomerate bed' },
-          { id:'F', title:'F', subtitle:'Upper shale' },
-          { id:'I', title:'I', subtitle:'Igneous dike intrusion' },
-          { id:'G', title:'G', subtitle:'Younger sandstone' },
-          { id:'H', title:'H', subtitle:'Younger limestone' },
-          { id:'K', title:'K', subtitle:'Fault event' }
-        ],
-        correct:['A','B','C','D','E','F','I','G','H','K'],
-        hints:[
-          'Start with the metamorphic basement at the bottom.',
-          'The dike is younger than the lower layers it cuts.',
-          'G and H sit above the unconformity and are younger than the lower package.',
-          'The fault cuts across the section last.'
-        ],
-        story:[
-          'A formed as the oldest basement rock.',
-          'B, C, D, E, and F were deposited in order.',
-          'Igneous dike I intruded upward through the older stack.',
-          'Younger layers G and H formed above the erosional break.',
-          'Fault K cut the section after those earlier events were already in place.'
-        ],
-        renderCrossSection(el){
-          makeBase(el);
-          addLayer(el, 'pattern-basement',    88, 12, 'A', true);
-          addLayer(el, 'pattern-shale',       80, 8,  'B');
-          addLayer(el, 'pattern-sandstone',   72, 8,  'C');
-          addLayer(el, 'pattern-limestone',   64, 8,  'D');
-          addLayer(el, 'pattern-conglomerate',56, 8,  'E');
-          addLayer(el, 'pattern-shale',       48, 8,  'F');
-          addUnconformity(el, 45);
-          addDike(el, 49, 57, 22, 38, 11);
-          addLayer(el, 'pattern-sandstone',   37, 8,  'G');
-          addLayer(el, 'pattern-limestone',   28, 8,  'H');
-          addFault(el, 71, 24, 11, 66, 22);
-          addEventBadge(el, 'I', 55, 66);
-          addEventBadge(el, 'K', 79, 52);
-          addFeatureLabel(el, 'dike', 58, 54);
-          addFeatureLabel(el, 'fault', 81, 43);
-          addFeatureLabel(el, 'unconformity', 67, 38);
-        }
+        correct: 2
       }
     ];
 
@@ -1022,37 +1164,61 @@
       levelsCleared: [],
       hintsUsed: 0,
       bestRun: 0,
-      placements: [],   // partId or null per slot
+      placements: [],
       draggedId: null,
-      dragSource: null,     // 'cross' | 'slot'
+      dragSource: null,
       dragSourceSlot: null,
       selectedId: null,
-      hintIndex: 0
+      hintIndex: 0,
+      // Classroom mode state
+      classroomMode: false,
+      quizAnswers: {}    // { questionId: selectedOptionIndex }
     };
 
     /* ─── REFS ───────────────────────────────────────────────────── */
     const refs = {
-      crossWrap:       document.getElementById('crossWrap'),
-      timeline:        document.getElementById('timeline'),
-      feedbackText:    document.getElementById('feedbackText'),
-      levelGrid:       document.getElementById('levelGrid'),
-      levelDisplay:    document.getElementById('levelDisplay'),
-      clearedDisplay:  document.getElementById('clearedDisplay'),
-      bestDisplay:     document.getElementById('bestDisplay'),
-      hintDisplay:     document.getElementById('hintDisplay'),
-      ruleDisplay:     document.getElementById('ruleDisplay'),
-      levelPrompt:     document.getElementById('levelPrompt'),
-      lookForText:     document.getElementById('lookForText'),
-      goalText:        document.getElementById('goalText'),
-      storyBox:        document.getElementById('storyBox'),
-      storyList:       document.getElementById('storyList'),
-      checkBtn:        document.getElementById('checkBtn'),
-      hintBtn:         document.getElementById('hintBtn'),
-      resetBtn:        document.getElementById('resetBtn'),
-      resetGameBtn:    document.getElementById('resetGameBtn'),
-      nextBtn:         document.getElementById('nextBtn'),
-      victoryOverlay:  document.getElementById('victoryOverlay'),
-      victoryClose:    document.getElementById('victoryClose')
+      crossWrap:            document.getElementById('crossWrap'),
+      crossCard:            document.getElementById('crossCard'),
+      crossSectionView:     document.getElementById('crossSectionView'),
+      timeline:             document.getElementById('timeline'),
+      feedbackText:         document.getElementById('feedbackText'),
+      levelGrid:            document.getElementById('levelGrid'),
+      levelDisplay:         document.getElementById('levelDisplay'),
+      clearedDisplay:       document.getElementById('clearedDisplay'),
+      bestDisplay:          document.getElementById('bestDisplay'),
+      hintDisplay:          document.getElementById('hintDisplay'),
+      ruleDisplay:          document.getElementById('ruleDisplay'),
+      levelPrompt:          document.getElementById('levelPrompt'),
+      storyBox:             document.getElementById('storyBox'),
+      storyList:            document.getElementById('storyList'),
+      checkBtn:             document.getElementById('checkBtn'),
+      hintBtn:              document.getElementById('hintBtn'),
+      resetBtn:             document.getElementById('resetBtn'),
+      resetGameBtn:         document.getElementById('resetGameBtn'),
+      nextBtn:              document.getElementById('nextBtn'),
+      victoryOverlay:       document.getElementById('victoryOverlay'),
+      victoryClose:         document.getElementById('victoryClose'),
+      // Mode toggle
+      practiceModeBtn:      document.getElementById('practiceModeBtn'),
+      classroomModeBtn:     document.getElementById('classroomModeBtn'),
+      classroomPanel:       document.getElementById('classroomPanel'),
+      // Classroom panel
+      puzzleGrid:           document.getElementById('puzzleGrid'),
+      puzzleProgressFill:   document.getElementById('puzzleProgressFill'),
+      puzzleCountLabel:     document.getElementById('puzzleCountLabel'),
+      puzzleStatusPill:     document.getElementById('puzzleStatusPill'),
+      quizLockedOverlay:    document.getElementById('quizLockedOverlay'),
+      quizQuestions:        document.getElementById('quizQuestions'),
+      quizScoreArea:        document.getElementById('quizScoreArea'),
+      quizScoreBadge:       document.getElementById('quizScoreBadge'),
+      classroomSubmitBtn:   document.getElementById('classroomSubmitBtn'),
+      submitHelperText:     document.getElementById('submitHelperText'),
+      submitSuccess:        document.getElementById('submitSuccess'),
+      submitError:          document.getElementById('submitError'),
+      // Student submission fields
+      studentNameInput:     document.getElementById('studentNameInput'),
+      teacherSelect:        document.getElementById('teacherSelect'),
+      blockInput:           document.getElementById('blockInput')
     };
 
     /* ─── PERSISTENCE ────────────────────────────────────────────── */
@@ -1073,7 +1239,8 @@
         const p = JSON.parse(raw);
         state.currentLevel  = Math.max(0, Math.min(levels.length - 1, p.currentLevel  || 0));
         state.bestUnlocked  = Math.max(0, Math.min(levels.length - 1, p.bestUnlocked  || 0));
-        state.levelsCleared = Array.isArray(p.levelsCleared) ? p.levelsCleared : [];
+        const validIds = new Set(levels.map(l => l.id));
+        state.levelsCleared = (Array.isArray(p.levelsCleared) ? p.levelsCleared : []).filter(id => validIds.has(id));
         state.hintsUsed     = p.hintsUsed  || 0;
         state.bestRun       = p.bestRun    || 0;
       }catch(e){}
@@ -1089,6 +1256,167 @@
       state.hintIndex  = 0;
       state.selectedId = null;
       refs.storyBox.classList.add('hidden');
+    }
+
+    /* ─── MODE TOGGLE ────────────────────────────────────────────── */
+    function setMode(classroom){
+      state.classroomMode = classroom;
+      refs.practiceModeBtn.classList.toggle('active', !classroom);
+      refs.classroomModeBtn.classList.toggle('active', classroom);
+      const hintP = document.getElementById('modeHintPractice');
+      const hintC = document.getElementById('modeHintClassroom');
+      if(hintP) hintP.classList.toggle('visible', !classroom);
+      if(hintC) hintC.classList.toggle('visible', classroom);
+      if(classroom){
+        refs.classroomPanel.classList.remove('hidden');
+        renderClassroomPanel();
+      } else {
+        refs.classroomPanel.classList.add('hidden');
+      }
+    }
+
+    refs.practiceModeBtn.addEventListener('click', () => setMode(false));
+    refs.classroomModeBtn.addEventListener('click', () => setMode(true));
+
+    // Re-evaluate submit gating when student fields change
+    ['input','change'].forEach(evt => {
+      refs.studentNameInput.addEventListener(evt, renderSubmitState);
+      refs.teacherSelect.addEventListener(evt, renderSubmitState);
+      refs.blockInput.addEventListener(evt, renderSubmitState);
+    });
+
+    /* ─── CLASSROOM PANEL ────────────────────────────────────────── */
+    function renderClassroomPanel(){
+      if(!state.classroomMode) return;
+      renderPuzzleGrid();
+      const allDone = state.levelsCleared.length === levels.length;
+      renderQuiz(allDone);
+      renderSubmitState();
+    }
+
+    function renderPuzzleGrid(){
+      refs.puzzleGrid.innerHTML = '';
+      levels.forEach(lvl => {
+        const done = state.levelsCleared.includes(lvl.id);
+        const node = document.createElement('div');
+        node.className = 'puzzle-node' + (done ? ' done' : '');
+        node.innerHTML = `<span class="puzzle-node-num">${lvl.id}</span><span class="puzzle-node-icon">${done ? '&#x2713;' : '&#x25CB;'}</span>`;
+        refs.puzzleGrid.appendChild(node);
+      });
+      const count = state.levelsCleared.length;
+      const pct   = Math.round((count / levels.length) * 100);
+      refs.puzzleProgressFill.style.width = pct + '%';
+      refs.puzzleCountLabel.textContent   = `${count} of ${levels.length} puzzles complete`;
+      const allDone = count === levels.length;
+      refs.puzzleStatusPill.textContent   = allDone ? 'Complete' : 'In Progress';
+      refs.puzzleStatusPill.className     = 'status-pill ' + (allDone ? 'complete' : 'locked');
+    }
+
+    function renderQuiz(unlocked){
+      if(!unlocked){
+        refs.quizLockedOverlay.classList.remove('hidden');
+        refs.quizQuestions.classList.add('hidden');
+        refs.quizScoreArea.classList.add('hidden');
+        return;
+      }
+      refs.quizLockedOverlay.classList.add('hidden');
+      refs.quizQuestions.classList.remove('hidden');
+
+      // Only build DOM once
+      if(!refs.quizQuestions.dataset.built){
+        refs.quizQuestions.dataset.built = '1';
+        refs.quizQuestions.innerHTML = '';
+        quizData.forEach(q => {
+          const qDiv = document.createElement('div');
+          qDiv.className  = 'quiz-question';
+          qDiv.dataset.qid = q.id;
+          const selected   = state.quizAnswers[q.id];
+          qDiv.innerHTML   = `
+            <span class="quiz-question-num">Question ${q.id} — ${q.topic}</span>
+            <div class="quiz-question-text">${q.text}</div>
+            <div class="quiz-options">
+              ${q.options.map((opt, i) => `
+                <div class="quiz-option${selected === i ? ' selected' : ''}" data-qid="${q.id}" data-idx="${i}">
+                  <div class="quiz-option-letter">${String.fromCharCode(65+i)}</div>
+                  <span>${opt}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+          refs.quizQuestions.appendChild(qDiv);
+        });
+
+        // Event delegation for quiz option clicks
+        refs.quizQuestions.addEventListener('click', e => {
+          const opt = e.target.closest('.quiz-option');
+          if(!opt) return;
+          const qid = Number(opt.dataset.qid);
+          const idx = Number(opt.dataset.idx);
+          state.quizAnswers[qid] = idx;
+          // Update selection UI for this question
+          const qDiv = refs.quizQuestions.querySelector('[data-qid="' + qid + '"].quiz-question');
+          if(qDiv){
+            qDiv.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+          }
+          updateQuizScore();
+          renderSubmitState();
+        });
+      } else {
+        // Re-sync selection state if panel was re-opened
+        quizData.forEach(q => {
+          const qDiv = refs.quizQuestions.querySelector('.quiz-question[data-qid="' + q.id + '"]');
+          if(!qDiv) return;
+          const selected = state.quizAnswers[q.id];
+          qDiv.querySelectorAll('.quiz-option').forEach((opt, i) => {
+            opt.classList.toggle('selected', selected === i);
+          });
+        });
+        updateQuizScore();
+      }
+
+      updateQuizScore();
+    }
+
+    function updateQuizScore(){
+      const answered = Object.keys(state.quizAnswers).length;
+      refs.quizScoreArea.classList.remove('hidden');
+      refs.quizScoreBadge.textContent = `${answered} / ${quizData.length} answered`;
+    }
+
+    function allQuizAnswered(){
+      return Object.keys(state.quizAnswers).length === quizData.length;
+    }
+
+    function renderSubmitState(){
+      const allPuzzles   = state.levelsCleared.length === levels.length;
+      const allQuiz      = allQuizAnswered();
+      const nameOk       = refs.studentNameInput.value.trim().length > 0;
+      const teacherOk    = refs.teacherSelect.value !== '';
+      const blockOk      = refs.blockInput.value.trim().length > 0;
+      const fieldsOk     = nameOk && teacherOk && blockOk;
+      const ready        = allPuzzles && allQuiz && fieldsOk;
+
+      refs.classroomSubmitBtn.disabled    = !ready;
+      refs.classroomSubmitBtn.className   = 'submit-btn ' + (ready ? 'ready' : 'locked');
+      refs.classroomSubmitBtn.textContent = 'Submit to Teacher';
+
+      if(ready){
+        refs.submitHelperText.textContent = 'Everything looks good. Ready to submit!';
+      } else if(!allPuzzles && !allQuiz){
+        refs.submitHelperText.textContent = 'Complete all 5 puzzles and all 5 quiz questions first.';
+      } else if(!allPuzzles){
+        refs.submitHelperText.textContent = `${state.levelsCleared.length} of 5 puzzles done. Finish the remaining puzzles first.`;
+      } else if(!allQuiz){
+        const answered = Object.keys(state.quizAnswers).length;
+        refs.submitHelperText.textContent = `${answered} of 5 quiz questions answered. Answer all 5 to submit.`;
+      } else if(!nameOk){
+        refs.submitHelperText.textContent = 'Enter your student name to submit.';
+      } else if(!teacherOk){
+        refs.submitHelperText.textContent = 'Select your teacher to submit.';
+      } else if(!blockOk){
+        refs.submitHelperText.textContent = 'Enter your block to submit.';
+      }
     }
 
     /* ─── GHOST MANAGEMENT ───────────────────────────────────────── */
@@ -1107,13 +1435,10 @@
 
     /* ─── PLACEMENT ACTIONS ──────────────────────────────────────── */
     function placeInSlot(partId, slotIndex){
-      // If this part is already in another slot, clear that slot
       const existingIdx = state.placements.indexOf(partId);
       if(existingIdx !== -1 && existingIdx !== slotIndex){
         state.placements[existingIdx] = null;
-        // Part stays ghosted — we'll re-ghost below, no unghost needed
       }
-      // If target slot already has a different part, return that part to strata
       const displaced = state.placements[slotIndex];
       if(displaced && displaced !== partId){
         ungHostPart(displaced);
@@ -1134,10 +1459,8 @@
     function moveSlotToSlot(partId, fromSlot, toSlot){
       if(fromSlot === toSlot) return;
       const displaced = state.placements[toSlot];
-      // Swap: if target has content, put it in the source slot; otherwise clear source
       state.placements[fromSlot] = displaced || null;
       state.placements[toSlot]   = partId;
-      // displaced stays ghost (it's still in timeline)
       renderPlacements();
     }
 
@@ -1152,7 +1475,6 @@
         state.dragSource      = 'cross';
         state.dragSourceSlot  = null;
         e.dataTransfer.effectAllowed = 'move';
-        // Subtle visual feedback during drag
         setTimeout(() => { if(!el.classList.contains('ghost')) el.style.opacity = '0.45'; }, 0);
       });
 
@@ -1176,7 +1498,6 @@
         }
       });
 
-      // Hover polish: subtly dim unrelated pieces for rock-reading clarity
       el.addEventListener('mouseover', () => {
         if(el.classList.contains('ghost')) return;
         refs.crossWrap.querySelectorAll('[data-part-id]').forEach(other => {
@@ -1216,7 +1537,6 @@
         state.dragSourceSlot = null;
       }
     });
-    // Clicking empty area of cross-section clears selection
     refs.crossWrap.addEventListener('click', e => {
       if(!e.target.closest('[data-part-id]')){
         clearCrossSelection();
@@ -1257,9 +1577,8 @@
           state.dragSourceSlot = null;
         });
 
-        // Click slot with a selected cross-section item → place it
         slot.addEventListener('click', e => {
-          if(e.target.closest('.placed-token')) return; // handled by token
+          if(e.target.closest('.placed-token')) return;
           if(state.selectedId){
             placeInSlot(state.selectedId, Number(slot.dataset.index));
           }
@@ -1292,7 +1611,6 @@
         token.dataset.id = id;
         token.innerHTML  = `<strong>${piece.title}</strong><small>${piece.subtitle}</small><span class="ret-hint">click to return</span>`;
 
-        // Drag from slot
         token.addEventListener('dragstart', e => {
           state.draggedId      = id;
           state.dragSource     = 'slot';
@@ -1309,7 +1627,6 @@
           refs.crossWrap.classList.remove('accept-return');
         });
 
-        // Click placed token → return to strata
         token.addEventListener('click', e => {
           e.stopPropagation();
           returnToStrata(id, index);
@@ -1327,87 +1644,68 @@
       refs.hintDisplay.textContent    = String(state.hintsUsed);
       refs.ruleDisplay.textContent    = level().focus;
       refs.levelPrompt.textContent    = level().prompt;
-      refs.lookForText.textContent    = level().lookFor;
-      refs.goalText.textContent       = level().goal;
     }
 
+    /* ─── LEVEL JOURNEY — single row of 6 ───────────────────────── */
     function renderLevelGrid(){
       const container = refs.levelGrid;
       container.innerHTML = '';
       container.className = 'level-path-wrap';
 
-      // Split 10 levels into two rows of 5
-      const rows = [levels.slice(0, 5), levels.slice(5, 10)];
+      const row = document.createElement('div');
+      row.className = 'level-path-row';
 
-      rows.forEach((rowLevels, rowIdx) => {
-        const row = document.createElement('div');
-        row.className = 'level-path-row';
+      levels.forEach((lvl, i) => {
+        const locked   = i > state.bestUnlocked;
+        const complete = state.levelsCleared.includes(lvl.id);
+        const active   = i === state.currentLevel;
 
-        rowLevels.forEach((lvl, i) => {
-          const globalIdx = rowIdx * 5 + i;
-          const locked    = globalIdx > state.bestUnlocked;
-          const complete  = state.levelsCleared.includes(lvl.id);
-          const active    = globalIdx === state.currentLevel;
+        const wrap = document.createElement('div');
+        wrap.className = 'level-path-node-wrap';
 
-          // Node wrapper
-          const wrap = document.createElement('div');
-          wrap.className = 'level-path-node-wrap';
+        const node = document.createElement('button');
+        node.className = 'level-path-node';
+        node.style.cssText = 'font-family:inherit;font-size:inherit;';
 
-          // Circle node
-          const node = document.createElement('button');
-          node.className = 'level-path-node';
-          node.style.cssText = 'font-family:inherit;font-size:inherit;';
+        if(locked){
+          node.classList.add('pn-locked');
+          node.innerHTML = `<span class="pn-lock">&#x1F512;</span>`;
+          node.disabled = true;
+        } else if(complete && !active){
+          node.classList.add('pn-complete');
+          node.innerHTML = `<span class="pn-check">&#x2713;</span>`;
+        } else {
+          node.classList.add('pn-available');
+          node.innerHTML = `<span class="pn-num">${lvl.id}</span>`;
+          if(active) node.classList.add('pn-active');
+        }
 
-          if(locked){
-            node.classList.add('pn-locked');
-            node.innerHTML = `<span class="pn-lock">&#x1F512;</span>`;
-            node.disabled = true;
-          } else if(complete && !active){
-            node.classList.add('pn-complete');
-            node.innerHTML = `<span class="pn-check">&#x2713;</span>`;
-          } else {
-            node.classList.add('pn-available');
-            node.innerHTML = `<span class="pn-num">${lvl.id}</span>`;
-            if(active) node.classList.add('pn-active');
-          }
+        if(!locked){
+          node.addEventListener('click', () => {
+            state.currentLevel = i;
+            startLevel();
+          });
+        }
 
-          if(!locked){
-            node.addEventListener('click', () => {
-              state.currentLevel = globalIdx;
-              startLevel();
-            });
-          }
+        const label = document.createElement('div');
+        label.className = 'level-path-label' + (locked ? ' pn-locked-label' : '');
+        label.innerHTML = `<div class="pn-name">${lvl.name}</div><div class="pn-focus">${lvl.focus}</div>`;
 
-          // Label below node
-          const label = document.createElement('div');
-          label.className = 'level-path-label' + (locked ? ' pn-locked-label' : '');
-          label.innerHTML = `<div class="pn-name">${lvl.name}</div><div class="pn-focus">${lvl.focus}</div>`;
+        wrap.appendChild(node);
+        wrap.appendChild(label);
+        row.appendChild(wrap);
 
-          wrap.appendChild(node);
-          wrap.appendChild(label);
-          row.appendChild(wrap);
-
-          // Connector between nodes (not after last in row)
-          if(i < rowLevels.length - 1){
-            const conn = document.createElement('div');
-            conn.className = 'level-path-connector';
-            const nextIdx = globalIdx + 1;
-            if(nextIdx <= state.bestUnlocked) conn.classList.add('conn-unlocked');
-            if(state.levelsCleared.includes(levels[nextIdx].id)) conn.classList.add('conn-complete');
-            row.appendChild(conn);
-          }
-        });
-
-        container.appendChild(row);
-
-        // Vertical turn connector between row 1 and row 2
-        if(rowIdx === 0){
-          const turn = document.createElement('div');
-          turn.className = 'level-path-turn';
-          turn.innerHTML = `<div class="turn-v-line"></div>`;
-          container.appendChild(turn);
+        if(i < levels.length - 1){
+          const conn = document.createElement('div');
+          conn.className = 'level-path-connector';
+          const nextIdx = i + 1;
+          if(nextIdx <= state.bestUnlocked) conn.classList.add('conn-unlocked');
+          if(state.levelsCleared.includes(levels[nextIdx].id)) conn.classList.add('conn-complete');
+          row.appendChild(conn);
         }
       });
+
+      container.appendChild(row);
     }
 
     /* ─── GAME LOGIC ─────────────────────────────────────────────── */
@@ -1436,6 +1734,10 @@
       refs.victoryOverlay.classList.add('show');
     }
 
+    function scrollToCrossSection(){
+      refs.crossSectionView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function markLevelComplete(){
       if(!state.levelsCleared.includes(level().id)) state.levelsCleared.push(level().id);
       state.bestRun = Math.max(state.bestRun, state.levelsCleared.length);
@@ -1444,9 +1746,15 @@
       }
       refs.nextBtn.disabled = false;
       refs.nextBtn.classList.add('btn-next-active');
-      // Victory: completed all 10
+      // Scroll to Cross-Section View
+      setTimeout(scrollToCrossSection, 120);
+      // Victory: completed all 5 levels
       if(state.levelsCleared.length === levels.length){
         setTimeout(showVictoryOverlay, 1600);
+      }
+      // Update classroom panel if open
+      if(state.classroomMode){
+        renderClassroomPanel();
       }
       saveState();
     }
@@ -1469,7 +1777,6 @@
       state.placements.forEach((id, idx) => { if(id === level().correct[idx]) score++; });
       if(score === level().correct.length){
         refs.feedbackText.innerHTML = `<span class="ok">Correct.</span> You solved Level ${level().id} — every piece is in the right relative-age order.`;
-        // Visual success lock on timeline slots
         refs.timeline.querySelectorAll('.timeline-slot').forEach(slot => {
           slot.classList.add('slot-solved');
         });
@@ -1488,28 +1795,23 @@
       if(ids.includes('I')){
         const iPos = ids.indexOf('I'), aPos = ids.indexOf('A');
         if(aPos !== -1 && iPos !== -1 && iPos < aPos)
-          bits.push('The dike cuts through older rock layers, so it must come after them — not before.');
+          bits.push('The magma intrusion cuts through older rock layers, so it must come after them — not before.');
       }
       if(ids.includes('F') && level().parts.some(p => p.id === 'F' && p.subtitle.toLowerCase().includes('fault'))){
         const fPos = ids.indexOf('F'), cf = level().correct.indexOf('F');
-        if(fPos !== cf) bits.push('The fault cuts existing rocks, making it younger than everything it crosses. Check where it belongs.');
+        if(fPos !== cf) bits.push('The fault cuts through the existing rock layers, so it must come after all the layers it crosses. Check where F belongs.');
       }
-      if(ids.includes('K')){
-        const kPos = ids.indexOf('K'), ck = level().correct.indexOf('K');
-        if(kPos !== ck) bits.push('The fault event cuts across the entire section — it is the youngest event in this puzzle.');
-      }
-      if(ids.includes('U')){
-        const uPos = ids.indexOf('U'), dPos = ids.indexOf('D');
-        if(dPos !== -1 && uPos !== -1 && uPos > dPos)
-          bits.push('The unconformity is an erosion surface that must appear before the younger layers deposited above it.');
-      }
-      if(level().focus === 'Folding' && ids.includes('G')){
-        const gPos = ids.indexOf('G'), ePos = ids.indexOf('E');
-        if(ePos !== -1 && gPos !== -1 && gPos > ePos)
-          bits.push('Folding event G happened after the folded layers formed, but before E and F were laid down horizontally on top.');
+      if(ids.includes('G') && level().parts.some(p => p.id === 'G')){
+        const gPos = ids.indexOf('G'), fPos = ids.indexOf('F');
+        const gCorrect = level().correct.indexOf('G');
+        if(fPos !== -1 && gPos !== -1 && gPos < fPos){
+          bits.push('Layer G is not cut by the fault — that means G formed after the fault already existed, not before. Move G to come after F.');
+        } else if(gPos !== gCorrect){
+          bits.push('Layer G sits on top of the faulted terrain and is not cut by the fault. It must be the very last event in the sequence.');
+        }
       }
       if(bits.length === 0)
-        bits.push('A few positions are still off. Recheck what lies below what, what cuts through what, and what sits above the unconformity or fold.');
+        bits.push('A few positions are still off. Recheck what lies below what, what cuts through what, and what sits on top of everything else.');
       refs.feedbackText.innerHTML = `<span class="notyet">Not quite.</span> ${bits.join(' ')}`;
       refs.storyBox.classList.add('hidden');
     }
@@ -1531,7 +1833,6 @@
       refs.nextBtn.textContent = state.currentLevel < levels.length - 1 ? 'Next Level' : 'Finish';
       if(cleared){
         refs.nextBtn.classList.add('btn-next-active');
-        // Restore solved visual if level was previously cleared and all slots are filled
         const allFilled = state.placements.every(Boolean) && state.placements.length === level().correct.length;
         if(allFilled){
           refs.timeline.querySelectorAll('.timeline-slot').forEach(slot => slot.classList.add('slot-solved'));
@@ -1547,7 +1848,6 @@
         state.currentLevel += 1;
         startLevel();
       } else {
-        // On last level Finish → go home
         window.location.href = 'index.html';
       }
     }
@@ -1556,20 +1856,87 @@
       const confirmed = window.confirm('Reset all game progress and return to Level 1?');
       if(!confirmed) return;
       localStorage.removeItem('lyfelabz-strata-shift-v2');
-      state.currentLevel  = 0;
-      state.bestUnlocked  = 0;
-      state.levelsCleared = [];
-      state.hintsUsed     = 0;
-      state.bestRun       = 0;
-      state.placements    = [];
-      state.selectedId    = null;
-      state.hintIndex     = 0;
-      state.draggedId     = null;
-      state.dragSource    = null;
+      state.currentLevel   = 0;
+      state.bestUnlocked   = 0;
+      state.levelsCleared  = [];
+      state.hintsUsed      = 0;
+      state.bestRun        = 0;
+      state.placements     = [];
+      state.selectedId     = null;
+      state.hintIndex      = 0;
+      state.draggedId      = null;
+      state.dragSource     = null;
       state.dragSourceSlot = null;
+      state.quizAnswers    = {};
+      // Reset quiz DOM so it rebuilds
+      delete refs.quizQuestions.dataset.built;
+      refs.quizQuestions.innerHTML = '';
       refs.victoryOverlay.classList.remove('show');
+      refs.submitSuccess.style.display = 'none';
+      refs.submitError.style.display   = 'none';
+      refs.submitHelperText.style.display = '';
+      // Clear student fields
+      refs.studentNameInput.value = '';
+      refs.teacherSelect.value    = '';
+      refs.blockInput.value       = '';
       startLevel();
+      if(state.classroomMode) renderClassroomPanel();
     }
+
+    /* ─── QUIZ SCORE CALCULATOR ──────────────────────────────────── */
+    function computeQuizScore(){
+      let correct = 0;
+      quizData.forEach(q => {
+        if(state.quizAnswers[q.id] === q.correct) correct++;
+      });
+      return `${correct}/${quizData.length}`;
+    }
+
+    /* ─── CLASSROOM SUBMIT ───────────────────────────────────────── */
+    refs.classroomSubmitBtn.addEventListener('click', async () => {
+      if(refs.classroomSubmitBtn.disabled) return;
+
+      const teacher     = refs.teacherSelect.value;
+      const scriptUrl   = SCRIPT_URLS[teacher];
+      if(!scriptUrl){
+        refs.submitError.textContent = 'Unknown teacher selection. Please choose a valid teacher.';
+        refs.submitError.style.display = 'block';
+        return;
+      }
+
+      // Lock button during request
+      refs.classroomSubmitBtn.disabled    = true;
+      refs.classroomSubmitBtn.className   = 'submit-btn locked';
+      refs.classroomSubmitBtn.textContent = 'Submitting…';
+      refs.submitError.style.display      = 'none';
+
+      const params = new URLSearchParams({
+        tab:         'Layer Detective',
+        studentName: refs.studentNameInput.value.trim(),
+        teacher:     teacher,
+        block:       refs.blockInput.value.trim(),
+        hintsUsed:   String(state.hintsUsed),
+        quizScore:   computeQuizScore()
+      });
+
+      try {
+        await fetch(scriptUrl + '?' + params.toString(), {
+          method: 'GET',
+          mode:   'no-cors'
+        });
+        // no-cors means we can't read the response body — treat reaching here as success
+        refs.classroomSubmitBtn.textContent  = 'Submitted';
+        refs.submitHelperText.style.display  = 'none';
+        refs.submitSuccess.style.display     = 'block';
+      } catch(err) {
+        // Network-level failure
+        refs.classroomSubmitBtn.disabled    = false;
+        refs.classroomSubmitBtn.className   = 'submit-btn ready';
+        refs.classroomSubmitBtn.textContent = 'Submit to Teacher';
+        refs.submitError.textContent        = 'Submission failed. Check your connection and try again.';
+        refs.submitError.style.display      = 'block';
+      }
+    });
 
     /* ─── EVENT LISTENERS ────────────────────────────────────────── */
     refs.checkBtn.addEventListener('click', checkTimeline);
@@ -1581,16 +1948,40 @@
       refs.victoryOverlay.classList.remove('show');
     });
 
+    /* ─── TEACHER / TESTING HOTKEYS ──────────────────────────────── */
+    /* Ctrl + Cmd + 1–5 (macOS) — not shown anywhere in the UI        */
+    document.addEventListener('keydown', e => {
+      if(!e.ctrlKey || !e.metaKey) return;
+      const n = parseInt(e.key, 10);
+      if(isNaN(n) || n < 1 || n > 5) return;
+      const targetIdx = n - 1;
+      if(targetIdx >= levels.length) return;
+      e.preventDefault();
+
+      state.levelsCleared = [];
+      for(let i = 0; i < targetIdx; i++){
+        state.levelsCleared.push(levels[i].id);
+      }
+      state.currentLevel = targetIdx;
+      state.bestUnlocked = Math.max(targetIdx, state.bestUnlocked);
+      state.placements   = [];
+      state.selectedId   = null;
+      state.hintIndex    = 0;
+      state.draggedId    = null;
+      state.dragSource   = null;
+      state.dragSourceSlot = null;
+      refs.victoryOverlay.classList.remove('show');
+      saveState();
+      startLevel();
+      if(state.classroomMode) renderClassroomPanel();
+    });
+
     /* ─── CROSS-SECTION BUILDER HELPERS ──────────────────────────── */
     function makeBase(el){
       const sky    = document.createElement('div'); sky.className = 'sky-haze';    el.appendChild(sky);
       const ground = document.createElement('div'); ground.className = 'ground-top'; el.appendChild(ground);
     }
 
-    /**
-     * addLayer — creates a draggable rock layer inside the cross-section.
-     * If label is non-empty, the layer becomes a draggable puzzle piece.
-     */
     function addLayer(el, patternClass, top, height, label, lightText = false){
       const layer = document.createElement('div');
       layer.className = `rock-layer ${patternClass}`;
@@ -1603,10 +1994,6 @@
       return layer;
     }
 
-    /**
-     * addEventBadge — creates a draggable badge overlay for non-layer parts
-     * (dike, fault, unconformity, lava flow, fold event, or fold layer in complex levels).
-     */
     function addEventBadge(el, partId, left, top){
       const badge = document.createElement('div');
       badge.className    = 'event-badge';
@@ -1649,6 +2036,17 @@
       el.appendChild(f);
     }
 
+    function addLayerHalf(el, patternClass, top, height, left, width){
+      const layer = document.createElement('div');
+      layer.className = `rock-layer ${patternClass}`;
+      layer.style.left   = left;
+      layer.style.width  = width;
+      layer.style.top    = `${top}%`;
+      layer.style.height = `${height}%`;
+      el.appendChild(layer);
+      return layer;
+    }
+
     function addLava(el, top, left, width){
       const lava = document.createElement('div');
       lava.className   = 'lava-flow';
@@ -1656,68 +2054,6 @@
       lava.style.left  = `${left}%`;
       lava.style.width = `${width}%`;
       el.appendChild(lava);
-    }
-
-    function addUnconformity(el, top){
-      const u = document.createElement('div');
-      u.className   = 'unconformity';
-      u.style.top   = `${top}%`;
-      el.appendChild(u);
-    }
-
-    function addFoldedLevel(el){
-      // Visual-only decorative fold — not individually draggable
-      // Draggable handles added via addEventBadge in renderCrossSection
-      const a = document.createElement('div');
-      a.className = 'rock-layer pattern-conglomerate';
-      a.style.left='12%'; a.style.width='76%'; a.style.top='63%'; a.style.height='23%';
-      a.style.borderRadius='0 0 42% 42%'; a.style.clipPath='ellipse(50% 65% at 50% 0%)';
-      el.appendChild(a);
-      const b = document.createElement('div');
-      b.className = 'rock-layer pattern-limestone';
-      b.style.left='18%'; b.style.width='64%'; b.style.top='58%'; b.style.height='19%';
-      b.style.borderRadius='0 0 40% 40%'; b.style.clipPath='ellipse(50% 65% at 50% 0%)';
-      el.appendChild(b);
-      const c = document.createElement('div');
-      c.className = 'rock-layer pattern-sandstone';
-      c.style.left='24%'; c.style.width='52%'; c.style.top='54%'; c.style.height='15%';
-      c.style.borderRadius='0 0 38% 38%'; c.style.clipPath='ellipse(50% 65% at 50% 0%)';
-      el.appendChild(c);
-      const d = document.createElement('div');
-      d.className = 'rock-layer pattern-shale';
-      d.style.left='31%'; d.style.width='38%'; d.style.top='51%'; d.style.height='11%';
-      d.style.borderRadius='0 0 36% 36%'; d.style.clipPath='ellipse(50% 65% at 50% 0%)';
-      el.appendChild(d);
-      const fg = document.createElement('div');
-      fg.className='fold-trough'; fg.style.top='49%'; fg.style.height='25%';
-      el.appendChild(fg);
-    }
-
-    function addCorrelatedFaultLevel(el){
-      // Left block — unlabeled decorative layers
-      addLayer(el, 'pattern-conglomerate', 80, 10, '');
-      addLayer(el, 'pattern-shale',        68, 10, '');
-      addLayer(el, 'pattern-limestone',    56, 10, '');
-      addLayer(el, 'pattern-sandstone',    43, 11, '');
-      addLayer(el, 'pattern-siltstone',    29, 11, '');
-      const mask = document.createElement('div');
-      mask.style.cssText = 'position:absolute;left:63%;top:28%;width:23%;height:56%;background:rgba(88,70,59,.88);transform:skewX(-18deg);z-index:6;';
-      el.appendChild(mask);
-      // Right block — also unlabeled
-      const rightLayers = [
-        addLayer(el, 'pattern-conglomerate', 84, 7, ''),
-        addLayer(el, 'pattern-shale',        73, 7, ''),
-        addLayer(el, 'pattern-limestone',    61, 7, ''),
-        addLayer(el, 'pattern-sandstone',    48, 8, ''),
-        addLayer(el, 'pattern-siltstone',    35, 8, '')
-      ];
-      rightLayers.forEach(node => {
-        node.style.left  = '66%';
-        node.style.width = '20%';
-        node.style.zIndex = '7';
-      });
-      addFault(el, 60, 24, 12, 67, 18);
-      addFeatureLabel(el, 'same layers shifted', 54, 20);
     }
 
     /* ─── BOOT ───────────────────────────────────────────────────── */
