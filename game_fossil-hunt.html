@@ -1,0 +1,2240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fossil Hunt | LyfeLabz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-9QHB5G2B5B');
+  </script>
+  <style>
+    html { font-size: 18px; }
+    :root {
+      --bg1: #040814; --bg2: #09162e; --panel: #11192e; --line: #24345f;
+      --cyan: #24e8ff; --green: #43f07d; --purple: #9a5cff;
+      --yellow: #f6cb43; --orange: #ff8c42; --gold: #f5c842;
+      --text: #eef4ff; --muted: #91a3c9; --danger: #ff6f8e;
+      --border: rgba(36,232,255,0.12); --cardBorder: rgba(89,112,170,.35);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0; font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 35%, rgba(36,232,255,.08), transparent 28%),
+        radial-gradient(circle at 20% 20%, rgba(154,92,255,.08), transparent 18%),
+        radial-gradient(circle at 80% 10%, rgba(67,240,125,.06), transparent 14%),
+        linear-gradient(180deg, var(--bg2), var(--bg1) 45%, #02050d);
+      overflow-x: hidden;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(36,232,255,.18) 1px, transparent 1.2px);
+      background-size: 40px 40px; opacity: .14;
+    }
+
+    /* ── Nav ──────────────────────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 1000;
+      background: rgba(20,30,45,0.97); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 2.5rem;
+    }
+    .nav-logo {
+      font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+      color: var(--gold); text-decoration: none; letter-spacing: .06em;
+      text-shadow: 0 0 18px rgba(245,200,66,.35);
+    }
+    .nav-back {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--green); background: rgba(67,240,125,.1);
+      border: 1px solid rgba(67,240,125,.4);
+      padding: .35rem .9rem; border-radius: 99px; text-decoration: none;
+      transition: all .18s ease;
+    }
+    .nav-back:hover { background: rgba(67,240,125,.18); border-color: rgba(67,240,125,.65); }
+
+    /* ── App Shell ────────────────────────────────────────────────────── */
+    .app { max-width: 1300px; margin: 0 auto; padding: 16px 18px 48px; position: relative; }
+
+    /* ── Hero ─────────────────────────────────────────────────────────── */
+    .hero { text-align: center; margin-top: 24px; margin-bottom: 18px; }
+    .page-eyebrow {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: rgba(67,240,125,.1); border: 1px solid rgba(67,240,125,.3);
+      color: var(--green); padding: .35rem 1.1rem; border-radius: 99px;
+      font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+      margin-bottom: 1.1rem;
+    }
+    .hero h1 {
+      margin: 0 0 0.7rem; font-family: 'Fredoka One', cursive;
+      font-size: clamp(2.2rem,5.5vw,3.5rem); line-height: 1.1; font-weight: 900;
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--green) 55%, var(--purple) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p { margin: 10px auto 6px; font-size: clamp(14px,1.8vw,18px); color: var(--muted); max-width: 780px; }
+    .hook-box {
+      background: linear-gradient(135deg, rgba(36,232,255,.05), rgba(154,92,255,.05));
+      border: 1px solid rgba(36,232,255,.18); border-radius: 18px;
+      padding: 16px 22px; margin: 0 auto 20px; max-width: 820px;
+      font-size: .97rem; color: var(--text); line-height: 1.65; text-align: center;
+    }
+
+    /* ── Learn Section ────────────────────────────────────────────────── */
+    .learn-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; padding: 12px 18px;
+      background: linear-gradient(180deg, rgba(17,25,46,.9), rgba(12,19,38,.8));
+      border: 1px solid rgba(89,112,170,.3); border-radius: 16px;
+      margin-bottom: 6px; user-select: none;
+      transition: border-color .2s ease;
+    }
+    .learn-toggle:hover { border-color: rgba(89,112,170,.55); }
+    .learn-toggle-label { font-family: 'Fredoka One', sans-serif; font-size: .95rem; color: var(--cyan); letter-spacing: .04em; }
+    .learn-toggle-arrow { color: var(--muted); font-size: .8rem; transition: transform .2s ease; }
+    .learn-toggle.open .learn-toggle-arrow { transform: rotate(180deg); }
+    .learn-body {
+      display: none; padding: 18px;
+      background: linear-gradient(180deg, rgba(17,25,46,.85), rgba(12,19,38,.75));
+      border: 1px solid rgba(89,112,170,.25); border-top: none;
+      border-radius: 0 0 16px 16px; margin-bottom: 18px;
+    }
+    .learn-body.open { display: block; }
+    .learn-intro { font-size: .9rem; color: var(--muted); line-height: 1.65; margin-bottom: 14px; }
+    .criteria-list { display: flex; flex-direction: column; gap: 8px; }
+    .criteria-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: rgba(9,14,30,.7); border: 1px solid rgba(89,112,170,.2);
+      border-radius: 12px; padding: 10px 14px;
+    }
+    .criteria-num {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(36,232,255,.12); border: 1px solid rgba(36,232,255,.38);
+      color: var(--cyan); display: flex; align-items: center; justify-content: center;
+      font-size: .68rem; font-weight: 900; font-family: 'Orbitron', sans-serif;
+    }
+    .criteria-text { font-size: .88rem; font-weight: 700; color: var(--text); line-height: 1.45; }
+
+    /* ── Stats ────────────────────────────────────────────────────────── */
+    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin: 0 0 16px; }
+    .stat-card {
+      background: linear-gradient(180deg, rgba(17,25,46,.95), rgba(12,19,38,.9));
+      border: 1px solid rgba(89,112,170,.35); border-radius: 20px; padding: 14px 12px; text-align: center;
+      transition: border-color .2s ease, transform .2s ease;
+    }
+    .stat-card:hover { transform: translateY(-2px); border-color: rgba(89,112,170,.6); }
+    .stat-label { color: var(--muted); font-size: 11px; margin-top: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; }
+    .stat-value { margin-top: 6px; font-size: 24px; font-weight: 900; }
+    .stat-icon { display: inline-block; font-size: 1.2rem; padding: .2rem .4rem; border-radius: 6px; background: rgba(255,255,255,.06); }
+    .icon-cyan { color: var(--cyan); } .icon-green { color: var(--green); }
+    .icon-yellow { color: var(--yellow); } .icon-orange { color: var(--orange); }
+
+    /* ── Main Grid ────────────────────────────────────────────────────── */
+    .main { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 18px; align-items: start; }
+    .left-panel, .right-panel {
+      background: linear-gradient(180deg, rgba(7,12,26,.78), rgba(7,12,26,.62));
+      border: 1px solid rgba(81,102,158,.32); border-radius: 28px; padding: 20px;
+      position: relative; overflow: hidden;
+    }
+    .section-title {
+      display: flex; align-items: center; gap: 8px; font-size: 18px;
+      text-transform: uppercase; letter-spacing: 1px; margin: 4px 0 12px;
+      font-weight: 900; font-family: 'Fredoka One', sans-serif;
+    }
+    .subtext { color: var(--muted); font-size: .9rem; line-height: 1.58; }
+
+    /* ── Buttons ──────────────────────────────────────────────────────── */
+    .btn-alt, .btn-subtle, .btn-ghost, .btn-danger {
+      border-radius: 12px; padding: .7rem 1rem; font-weight: 800;
+      font-family: 'Nunito', sans-serif; cursor: pointer; border: 1px solid transparent;
+      transition: transform .12s ease, filter .15s ease, border-color .15s ease;
+      font-size: .86rem; letter-spacing: .02em;
+    }
+    .btn-alt { background: linear-gradient(180deg,rgba(67,240,125,.14),rgba(67,240,125,.07)); border-color: rgba(67,240,125,.38); color: var(--green); }
+    .btn-subtle { background: linear-gradient(180deg,rgba(246,203,67,.14),rgba(246,203,67,.07)); border-color: rgba(246,203,67,.38); color: var(--yellow); }
+    .btn-ghost { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.12); color: var(--text); }
+    .btn-danger { background: linear-gradient(180deg,rgba(255,80,55,.16),rgba(255,80,55,.08)); border-color: rgba(255,90,65,.42); color: #ff6b5a; }
+    .btn-alt:hover, .btn-subtle:hover, .btn-ghost:hover, .btn-danger:hover { transform: translateY(-1px); filter: brightness(1.08); }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+
+    /* ── Difficulty Toggle ────────────────────────────────────────────── */
+    .difficulty-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .diff-btn {
+      padding: .45rem 1.1rem; border-radius: 10px; border: 1px solid rgba(89,112,170,.28);
+      background: rgba(9,14,30,.7); color: var(--muted);
+      font-family: 'Nunito', sans-serif; font-size: .8rem; font-weight: 800;
+      cursor: pointer; transition: all .18s ease; letter-spacing: .05em;
+    }
+    .diff-btn.active { background: rgba(36,232,255,.1); border-color: rgba(36,232,255,.45); color: var(--cyan); }
+    .diff-btn:hover:not(.active) { border-color: rgba(89,112,170,.5); color: var(--text); }
+
+    /* ── Field Notes ────────────────────────────────────────────────────── */
+    .field-notes {
+      background: rgba(246,203,67,.05); border: 1px solid rgba(246,203,67,.22);
+      border-radius: 14px; padding: 11px 16px; margin-bottom: 14px;
+    }
+    .field-notes-label {
+      font-family: 'Orbitron', sans-serif; font-size: .55rem; font-weight: 900;
+      color: var(--yellow); text-transform: uppercase; letter-spacing: .12em;
+      display: block; margin-bottom: 4px;
+    }
+    .field-notes p { margin: 0; font-size: .8rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── Columns Layout ───────────────────────────────────────────────── */
+    .columns-wrapper { position: relative; }
+    .columns-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .location-column { display: flex; flex-direction: column; }
+    .location-header {
+      text-align: center; padding: 6px 4px 10px;
+    }
+    .location-label {
+      display: inline-block; font-family: 'Orbitron', sans-serif;
+      font-size: .68rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase;
+      background: rgba(36,232,255,.08); border: 1px solid rgba(36,232,255,.25);
+      color: var(--cyan); padding: .22rem .75rem; border-radius: 99px;
+    }
+    .age-marker {
+      text-align: center; font-size: .6rem; font-weight: 900;
+      text-transform: uppercase; letter-spacing: .08em; padding: 3px 0;
+    }
+    .age-marker.youngest { color: rgba(36,232,255,.55); margin-bottom: 4px; }
+    .age-marker.oldest { color: rgba(154,92,255,.5); margin-top: 4px; }
+    .layer-stack { display: flex; flex-direction: column; gap: 5px; }
+
+    /* ── Fossil Layers ────────────────────────────────────────────────── */
+    .fossil-layer {
+      border-radius: 10px; padding: 9px 6px; min-height: 58px;
+      border: 2px solid rgba(89,112,170,.2);
+      cursor: pointer; user-select: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; position: relative;
+      transition: border-color .15s ease, box-shadow .15s ease, transform .12s ease;
+    }
+    .fossil-layer:hover {
+      border-color: rgba(245,200,66,.45);
+      box-shadow: 0 0 12px rgba(245,200,66,.12);
+      transform: translateY(-1px); z-index: 2;
+    }
+    .fossil-layer.selected {
+      border-color: var(--gold) !important;
+      box-shadow: 0 0 0 3px rgba(245,200,66,.25), 0 4px 16px rgba(0,0,0,.3) !important;
+      z-index: 10; transform: translateY(-1px);
+    }
+    .fossil-layer.matched-G1 { border-color: rgba(36,232,255,.75) !important; box-shadow: 0 0 14px rgba(36,232,255,.22) !important; }
+    .fossil-layer.matched-G2 { border-color: rgba(246,203,67,.75) !important; box-shadow: 0 0 14px rgba(246,203,67,.22) !important; }
+    .fossil-layer.matched-G3 { border-color: rgba(154,92,255,.75) !important; box-shadow: 0 0 14px rgba(154,92,255,.22) !important; }
+    .fossil-layer.matched-G4 { border-color: rgba(255,140,66,.75) !important; box-shadow: 0 0 14px rgba(255,140,66,.22) !important; }
+    .fossil-layer.error-flash { animation: errFlash .55s ease; }
+    @keyframes errFlash {
+      0%,100% { border-color: rgba(255,111,142,.25); box-shadow: none; }
+      40% { border-color: rgba(255,111,142,.9); box-shadow: 0 0 18px rgba(255,111,142,.35); }
+    }
+    @keyframes discoveryPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(67,240,125,.75); }
+      55%  { box-shadow: 0 0 0 14px rgba(67,240,125,.08); }
+      100% { box-shadow: 0 0 0 0 rgba(67,240,125,0); }
+    }
+    .fossil-layer.discovery-pulse { animation: discoveryPulse .7s ease forwards; }
+    .fossil-symbol { font-size: 1.05rem; margin-bottom: 2px; line-height: 1; }
+    .fossil-name { font-size: .68rem; font-weight: 800; color: var(--text); line-height: 1.25; }
+    .fossil-rock { font-size: .56rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 1px; }
+    .index-badge {
+      position: absolute; top: -5px; right: -5px;
+      background: var(--gold); color: #040814;
+      font-size: .48rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase;
+      padding: 2px 5px; border-radius: 99px;
+    }
+    .match-dot {
+      position: absolute; bottom: -5px; right: -5px;
+      width: 16px; height: 16px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .5rem; font-weight: 900; color: #040814;
+    }
+    .match-dot.G1 { background: var(--cyan); }
+    .match-dot.G2 { background: var(--yellow); }
+    .match-dot.G3 { background: var(--purple); color: #fff; }
+    .match-dot.G4 { background: var(--orange); }
+
+    /* ── SVG Correlation Lines ────────────────────────────────────────── */
+    .correlation-svg {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 5;
+    }
+
+    /* ── Feedback Box ─────────────────────────────────────────────────── */
+    .feedback-box {
+      background: rgba(9,14,30,.7); border: 1px solid rgba(89,112,170,.22);
+      border-radius: 18px; padding: 16px; margin-bottom: 14px;
+      transition: border-color .25s ease, background .25s ease;
+    }
+    .feedback-box.fb-success { border-color: rgba(67,240,125,.45); background: rgba(67,240,125,.06); }
+    .feedback-box.fb-error   { border-color: rgba(255,111,142,.38); background: rgba(255,111,142,.05); }
+    .feedback-title { font-family: 'Fredoka One', sans-serif; font-size: .95rem; margin: 0 0 6px; text-transform: uppercase; letter-spacing: .04em; }
+    .feedback-text { font-size: .86rem; color: var(--muted); line-height: 1.58; margin: 0; }
+    .feedback-box.fb-success .feedback-title { color: var(--green); }
+    .feedback-box.fb-error   .feedback-title { color: var(--danger); }
+
+    /* ── Fossil Info Panel ────────────────────────────────────────────── */
+    .fossil-info-panel {
+      background: rgba(9,14,30,.7); border: 1px solid rgba(89,112,170,.22);
+      border-radius: 18px; padding: 14px 16px; margin-bottom: 14px;
+      transition: border-color .25s ease, background .25s ease;
+    }
+    .fossil-info-panel.active {
+      border-color: rgba(245,200,66,.35); background: rgba(245,200,66,.04);
+    }
+    @keyframes fossilPanelReveal {
+      0%   { box-shadow: 0 0 0 0 rgba(245,200,66,.0); border-color: rgba(245,200,66,.35); }
+      30%  { box-shadow: 0 0 0 6px rgba(245,200,66,.22); border-color: rgba(245,200,66,.75); }
+      70%  { box-shadow: 0 0 0 10px rgba(245,200,66,.08); border-color: rgba(245,200,66,.55); }
+      100% { box-shadow: 0 0 0 0 rgba(245,200,66,.0); border-color: rgba(245,200,66,.35); }
+    }
+    .fossil-info-panel.panel-flash {
+      animation: fossilPanelReveal .65s ease forwards;
+    }
+    .fossil-info-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    }
+    .fossil-info-icon {
+      font-size: 1.3rem; line-height: 1; flex-shrink: 0;
+    }
+    .fossil-info-name {
+      font-family: 'Fredoka One', sans-serif; font-size: 1rem;
+      color: var(--gold); letter-spacing: .03em; line-height: 1.2;
+    }
+    .fossil-info-range {
+      font-size: .72rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted); margin-bottom: 6px;
+    }
+    .fossil-info-desc {
+      font-size: .82rem; color: var(--text); line-height: 1.6; margin-bottom: 7px;
+    }
+    .fossil-info-index-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: .68rem; font-weight: 900; text-transform: uppercase;
+      letter-spacing: .08em; padding: .22rem .75rem; border-radius: 99px;
+    }
+    .fossil-info-index-pill.strong {
+      background: rgba(67,240,125,.1); border: 1px solid rgba(67,240,125,.38); color: var(--green);
+    }
+    .fossil-info-index-pill.weak {
+      background: rgba(255,111,142,.08); border: 1px solid rgba(255,111,142,.3); color: var(--danger);
+    }
+    .fossil-info-default {
+      font-size: .84rem; color: var(--muted); line-height: 1.6; font-style: italic;
+    }
+
+    /* ── Groups Legend ────────────────────────────────────────────────── */
+    .group-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 12px;
+      background: rgba(9,14,30,.7); border: 1px solid rgba(89,112,170,.2);
+      margin-bottom: 8px; transition: border-color .2s;
+    }
+    .group-item.done { border-color: rgba(67,240,125,.35); background: rgba(67,240,125,.05); }
+    .group-swatch { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+    .group-fossil { font-size: .85rem; font-weight: 800; color: var(--text); }
+    .group-status { font-size: .72rem; color: var(--muted); margin-left: auto; font-weight: 700; }
+    .group-status.complete { color: var(--green); }
+
+    /* ── Ordering Panel ─────────────────────────────────────────────────── */
+    .ordering-panel {
+      margin-top: 18px; padding: 18px;
+      background: rgba(36,232,255,.04); border: 1px solid rgba(36,232,255,.25);
+      border-radius: 18px;
+    }
+    .ordering-panel.hidden { display: none; }
+    .ordering-title {
+      font-family: 'Fredoka One', sans-serif; font-size: 1rem; color: var(--cyan);
+      text-transform: uppercase; letter-spacing: .04em; margin: 0 0 4px;
+    }
+    .ordering-sub { font-size: .84rem; color: var(--muted); line-height: 1.55; margin: 0 0 14px; }
+    .ordering-slots { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .ordering-slot {
+      flex: 1; min-width: 60px; padding: 8px 6px; border-radius: 12px; text-align: center;
+      border: 1px dashed rgba(89,112,170,.35); background: rgba(9,14,30,.5);
+    }
+    .ordering-slot.filled { border-style: solid; background: rgba(9,14,30,.8); }
+    .ordering-slot-num {
+      font-family: 'Orbitron', sans-serif; font-size: .48rem; font-weight: 900;
+      color: var(--muted); display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .08em;
+    }
+    .ordering-slot-fossil { font-size: .76rem; font-weight: 800; color: var(--muted); }
+    .ordering-slot.filled .ordering-slot-fossil { color: var(--text); }
+    .ordering-choices { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .ordering-choice-btn {
+      padding: .4rem .9rem; border-radius: 10px; border: 1px solid rgba(89,112,170,.35);
+      background: rgba(9,14,30,.7); color: var(--muted); font-family: 'Nunito', sans-serif;
+      font-size: .8rem; font-weight: 800; cursor: pointer; transition: all .18s ease;
+    }
+    .ordering-choice-btn:hover:not(:disabled) { border-color: rgba(36,232,255,.45); color: var(--cyan); transform: translateY(-1px); }
+    .ordering-choice-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .ordering-msg { font-size: .84rem; font-weight: 800; padding: 10px 14px; border-radius: 12px; margin-top: 6px; }
+    .ordering-msg.success { background: rgba(67,240,125,.08); border: 1px solid rgba(67,240,125,.35); color: var(--green); }
+    .ordering-msg.error   { background: rgba(255,111,142,.07); border: 1px solid rgba(255,111,142,.3); color: var(--danger); }
+    .ordering-msg.hidden  { display: none; }
+
+    /* ── Hint Box ─────────────────────────────────────────────────────── */
+    .hint-box {
+      display: none; background: rgba(246,203,67,.06); border: 1px solid rgba(246,203,67,.3);
+      border-radius: 14px; padding: 12px 14px; margin-top: 10px;
+    }
+    .hint-box.show { display: block; }
+    .hint-text { font-size: .85rem; color: var(--yellow); line-height: 1.55; margin: 0; }
+
+    /* ── Reflection Section ───────────────────────────────────────────── */
+    .reflection-section { margin-top: 16px; display: none; }
+    .reflection-section.show { display: block; }
+    .reflection-q { background: rgba(9,14,30,.7); border: 1px solid rgba(89,112,170,.2); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+    .reflection-num { font-family: 'Orbitron', sans-serif; font-size: .58rem; font-weight: 900; color: var(--cyan); text-transform: uppercase; letter-spacing: .1em; display: block; margin-bottom: 5px; }
+    .reflection-q-text { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.5; display: block; }
+    .reflection-input {
+      width: 100%; padding: .6rem .85rem; border-radius: 10px;
+      background: rgba(9,14,30,.85); border: 1px solid rgba(89,112,170,.3);
+      color: var(--text); font-family: 'Nunito', sans-serif; font-size: .85rem;
+      outline: none; resize: vertical; min-height: 64px;
+      transition: border-color .15s ease;
+    }
+    .reflection-input::placeholder { color: rgba(145,163,201,.4); }
+    .reflection-input:focus { border-color: rgba(36,232,255,.48); box-shadow: 0 0 0 3px rgba(36,232,255,.08); }
+
+    /* ── Mode Toggle ──────────────────────────────────────────────────── */
+    .mode-toggle-bar {
+      display: flex; align-items: center; justify-content: center; gap: 0;
+      margin: 20px auto 6px;
+      background: rgba(122,143,166,.1); border: 1.5px solid rgba(122,143,166,.35);
+      border-radius: 14px; padding: .35rem; width: fit-content;
+    }
+    .mode-btn {
+      padding: .65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+      font-family: 'Nunito', sans-serif; font-size: .92rem; font-weight: 800;
+      letter-spacing: .04em; transition: all .22s;
+      color: rgba(122,143,166,.55); background: transparent;
+    }
+    .mode-btn:hover:not(.active) { color: rgba(159,184,204,.8); }
+    .mode-btn.active {
+      background: linear-gradient(135deg, rgba(159,184,204,.22), rgba(122,143,166,.14));
+      color: #ddeaf5; border: 1px solid rgba(159,184,204,.55);
+      box-shadow: 0 0 14px rgba(159,184,204,.2), 0 2px 10px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08);
+      text-shadow: 0 0 12px rgba(159,184,204,.6);
+    }
+    .mode-hint { text-align: center; font-size: .82rem; font-weight: 700; color: var(--muted); margin-bottom: 14px; }
+    .mode-hint span { display: none; }
+    .mode-hint span.visible { display: inline; }
+
+    /* ── Classroom Panel ──────────────────────────────────────────────── */
+    .classroom-panel {
+      background: linear-gradient(180deg, rgba(17,25,46,.88), rgba(12,19,38,.82));
+      border: 1px solid rgba(89,112,170,.35); border-radius: 24px; padding: 24px; margin-top: 4px;
+    }
+    .classroom-panel.hidden { display: none; }
+    .classroom-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .mode-badge {
+      font-size: .68rem; font-weight: 900; text-transform: uppercase; letter-spacing: .08em;
+      padding: .28rem .8rem; border-radius: 99px;
+      background: rgba(67,240,125,.1); border: 1px solid rgba(67,240,125,.35); color: var(--green);
+    }
+    .classroom-section { padding: 18px 0; border-top: 1px solid rgba(89,112,170,.15); }
+    .classroom-section:first-child { padding-top: 0; border-top: none; }
+    .classroom-section-title {
+      font-family: 'Fredoka One', sans-serif; font-size: 1rem; font-weight: 900;
+      letter-spacing: .04em; margin-bottom: 14px; text-transform: uppercase;
+    }
+
+    /* ── Progress grid ────────────────────────────────────────────────── */
+    .match-progress-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+    .match-node {
+      border-radius: 12px; padding: 10px 16px; text-align: center;
+      border: 1px solid rgba(89,112,170,.25); background: rgba(9,14,30,.7);
+      min-width: 80px;
+    }
+    .match-node.done { background: rgba(67,240,125,.08); border-color: rgba(67,240,125,.5); }
+    .match-node-label { font-family: 'Orbitron', sans-serif; font-size: .62rem; font-weight: 900; color: var(--muted); display: block; margin-bottom: 3px; }
+    .match-node.done .match-node-label { color: var(--green); }
+    .match-node-fossil { font-size: .78rem; font-weight: 700; }
+    .classroom-progress-bar { height: 8px; border-radius: 99px; background: rgba(89,112,170,.18); margin: 10px 0 4px; overflow: hidden; }
+    .classroom-progress-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--cyan), var(--green)); transition: width .4s ease; }
+
+    /* ── Quiz ─────────────────────────────────────────────────────────── */
+    .quiz-question { background: rgba(9,14,30,.7); border: 1px solid rgba(89,112,170,.22); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+    .quiz-question-text { font-size: .9rem; font-weight: 700; color: var(--text); margin-bottom: 12px; line-height: 1.5; }
+    .quiz-question-num { font-family: 'Orbitron', sans-serif; font-size: .58rem; font-weight: 900; color: var(--cyan); text-transform: uppercase; letter-spacing: .1em; display: block; margin-bottom: 6px; }
+    .quiz-options { display: grid; gap: 7px; }
+    .quiz-option {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(89,112,170,.22);
+      border-radius: 12px; padding: 10px 14px; cursor: pointer;
+      transition: all .15s ease; font-size: .86rem; font-weight: 600; color: var(--muted);
+    }
+    .quiz-option:hover { background: rgba(36,232,255,.07); border-color: rgba(36,232,255,.35); color: var(--text); }
+    .quiz-option.selected { background: rgba(36,232,255,.1); border-color: rgba(36,232,255,.55); color: var(--cyan); font-weight: 800; }
+    .quiz-option-letter {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(89,112,170,.18); display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', sans-serif; font-size: .58rem; font-weight: 900; color: var(--muted);
+    }
+    .quiz-option.selected .quiz-option-letter { background: rgba(36,232,255,.2); color: var(--cyan); }
+    .quiz-locked-overlay { text-align: center; padding: 24px 16px; }
+    .quiz-locked-text { color: var(--muted); font-size: .9rem; line-height: 1.6; }
+    .quiz-score-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(36,232,255,.1); border: 1px solid rgba(36,232,255,.35);
+      color: var(--cyan); font-size: .8rem; font-weight: 900;
+      padding: .3rem .85rem; border-radius: 99px; margin-top: 8px;
+    }
+
+    /* ── Student Fields ───────────────────────────────────────────────── */
+    .student-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .student-fields .field-full { grid-column: 1 / -1; }
+    .field-label { display: block; font-size: .72rem; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 6px; }
+    .field-input, .field-select {
+      width: 100%; padding: .65rem .9rem; border-radius: 12px;
+      background: rgba(9,14,30,.85); border: 1px solid rgba(89,112,170,.35);
+      color: var(--text); font-family: 'Nunito', sans-serif; font-size: .9rem; font-weight: 600;
+      outline: none; transition: border-color .15s ease, box-shadow .15s ease;
+      appearance: none; -webkit-appearance: none;
+    }
+    .field-input::placeholder { color: rgba(145,163,201,.4); }
+    .field-input:focus, .field-select:focus { border-color: rgba(36,232,255,.55); box-shadow: 0 0 0 3px rgba(36,232,255,.1); }
+    .field-select option { background: #0d1629; color: var(--text); }
+
+    /* ── Submit ───────────────────────────────────────────────────────── */
+    .submit-section { text-align: center; }
+    .submit-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: .85rem 2.4rem; border-radius: 14px; border: 2px solid transparent;
+      font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: .03em;
+      cursor: pointer; transition: all .2s ease;
+    }
+    .submit-btn.locked { background: rgba(89,112,170,.08); border-color: rgba(89,112,170,.2); color: rgba(145,163,201,.4); cursor: not-allowed; }
+    .submit-btn.ready { background: linear-gradient(180deg,rgba(67,240,125,.18),rgba(67,240,125,.08)); border-color: rgba(67,240,125,.6); color: var(--green); box-shadow: 0 0 24px rgba(67,240,125,.16); }
+    .submit-btn.ready:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .submit-helper { font-size: .78rem; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+    .submit-success { display: none; padding: 16px; border-radius: 16px; background: rgba(67,240,125,.08); border: 1px solid rgba(67,240,125,.4); color: var(--green); font-weight: 800; font-size: .95rem; }
+    .submit-error { display: none; padding: 14px 16px; border-radius: 14px; margin-top: 10px; background: rgba(255,111,142,.07); border: 1px solid rgba(255,111,142,.35); color: var(--danger); font-weight: 700; font-size: .88rem; line-height: 1.5; }
+
+    /* ── Victory Overlay ──────────────────────────────────────────────── */
+    .victory-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(4,8,20,.93); backdrop-filter: blur(12px);
+      flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 40px;
+    }
+    .victory-overlay.show { display: flex; }
+    .victory-stars { font-size: 2.4rem; margin-bottom: 16px; letter-spacing: .2em; color: var(--gold); }
+    .victory-title { font-family: 'Orbitron', sans-serif; font-size: clamp(1.5rem,4vw,2.2rem); font-weight: 900; color: var(--cyan); letter-spacing: .12em; margin-bottom: 14px; }
+    .victory-sub { font-size: 1.02rem; color: var(--text); max-width: 540px; margin: 0 auto 8px; line-height: 1.65; }
+    .victory-sub-2 { font-size: .9rem; color: var(--muted); max-width: 520px; margin: 0 auto 18px; line-height: 1.65; font-style: italic; }
+    .victory-age { font-size: .92rem; color: var(--text); margin-bottom: 24px; line-height: 1.75; max-width: 500px; background: rgba(36,232,255,.05); border: 1px solid rgba(36,232,255,.18); border-radius: 14px; padding: 12px 18px; }
+    .victory-close {
+      padding: .85rem 2.2rem; border-radius: 14px; border: 2px solid rgba(36,232,255,.55);
+      background: rgba(36,232,255,.12); color: var(--cyan);
+      font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800; cursor: pointer;
+      transition: all .2s ease;
+    }
+    .victory-close:hover { background: rgba(36,232,255,.22); transform: translateY(-1px); }
+
+    /* ── Age Check Overlay ────────────────────────────────────────────── */
+    .age-check-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9998;
+      background: rgba(4,8,20,.95); backdrop-filter: blur(14px);
+      flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 40px;
+    }
+    .age-check-overlay.show { display: flex; }
+    .age-check-card {
+      background: linear-gradient(180deg, rgba(17,25,46,.98), rgba(12,19,38,.98));
+      border: 1px solid rgba(246,203,67,.35); border-radius: 28px;
+      padding: 36px 40px; max-width: 580px; width: 100%;
+      box-shadow: 0 0 60px rgba(246,203,67,.12);
+    }
+    .age-check-eyebrow {
+      font-family: 'Orbitron', sans-serif; font-size: .58rem; font-weight: 900;
+      color: var(--yellow); text-transform: uppercase; letter-spacing: .14em;
+      margin-bottom: 14px; display: block;
+    }
+    .age-check-question {
+      font-family: 'Fredoka One', sans-serif; font-size: 1.18rem;
+      color: var(--text); line-height: 1.45; margin-bottom: 22px;
+    }
+    .age-check-options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+    .age-check-option {
+      display: flex; align-items: center; gap: 12px; text-align: left;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(89,112,170,.28);
+      border-radius: 14px; padding: 12px 16px; cursor: pointer;
+      transition: all .15s ease; font-size: .9rem; font-weight: 600; color: var(--muted);
+    }
+    .age-check-option:hover { background: rgba(246,203,67,.07); border-color: rgba(246,203,67,.35); color: var(--text); }
+    .age-check-option.correct-answer { background: rgba(67,240,125,.1); border-color: rgba(67,240,125,.6); color: var(--green); font-weight: 800; pointer-events: none; }
+    .age-check-option.wrong-answer { background: rgba(255,111,142,.08); border-color: rgba(255,111,142,.45); color: var(--danger); font-weight: 800; pointer-events: none; }
+    .age-check-option.disabled { pointer-events: none; opacity: .55; }
+    .age-check-option-letter {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(89,112,170,.18); display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', sans-serif; font-size: .6rem; font-weight: 900; color: var(--muted);
+    }
+    .age-check-option.correct-answer .age-check-option-letter { background: rgba(67,240,125,.2); color: var(--green); }
+    .age-check-option.wrong-answer   .age-check-option-letter { background: rgba(255,111,142,.18); color: var(--danger); }
+    .age-check-feedback {
+      display: none; border-radius: 14px; padding: 13px 16px;
+      font-size: .88rem; font-weight: 700; line-height: 1.55; margin-bottom: 14px;
+    }
+    .age-check-feedback.show { display: block; }
+    .age-check-feedback.fb-ok  { background: rgba(67,240,125,.08); border: 1px solid rgba(67,240,125,.4); color: var(--green); }
+    .age-check-feedback.fb-err { background: rgba(255,111,142,.07); border: 1px solid rgba(255,111,142,.35); color: var(--danger); }
+    .age-check-retry {
+      display: none; padding: .7rem 1.8rem; border-radius: 12px;
+      border: 1px solid rgba(36,232,255,.45); background: rgba(36,232,255,.1); color: var(--cyan);
+      font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 800; cursor: pointer;
+      transition: all .18s ease;
+    }
+    .age-check-retry.show { display: inline-flex; }
+    .age-check-retry:hover { background: rgba(36,232,255,.2); }
+
+    /* ── Badges ───────────────────────────────────────────────────────── */
+    .badge-section { margin-top: 36px; }
+    .ls-focus, .stem-focus {
+      display: none; flex-wrap: wrap; gap: 10px;
+      padding: 16px 0 0; border-top: 1px solid rgba(89,112,170,.15); margin-top: 12px;
+    }
+    body.ls-active   .ls-focus   { display: flex; }
+    body.stem-active .stem-focus { display: flex; }
+    .ls-focus-label, .stem-focus-label {
+      width: 100%; font-size: .68rem; font-weight: 900; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--muted); margin-bottom: 4px;
+    }
+    .ls-badge, .stem-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: .38rem 1rem; border-radius: 99px;
+      font-size: .72rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase;
+      position: relative; cursor: default;
+    }
+    .ls-badge   { background: rgba(59,200,232,.1); border: 1px solid rgba(59,200,232,.4); color: #3bc8e8; }
+    .stem-badge { background: rgba(46,204,113,.1); border: 1px solid rgba(46,204,113,.4); color: #2ecc71; }
+
+    /* ── Footer ───────────────────────────────────────────────────────── */
+    .game-footer {
+      text-align: center; padding: 28px 0 0; margin-top: 28px;
+      border-top: 1px solid rgba(89,112,170,.12);
+    }
+    .game-footer-logo {
+      font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 900;
+      color: var(--gold); letter-spacing: .12em; margin-bottom: 8px;
+    }
+    .game-footer p { font-size: .8rem; color: var(--muted); }
+    .game-footer a { color: var(--cyan); text-decoration: none; }
+    .game-footer a:hover { text-decoration: underline; }
+
+    /* ── Restore Banner ───────────────────────────────────────────────── */
+    .restore-banner {
+      display: none; text-align: center; padding: 10px 18px; margin-bottom: 14px;
+      background: rgba(36,232,255,.06); border: 1px solid rgba(36,232,255,.25);
+      border-radius: 14px; font-size: .82rem; color: var(--cyan); font-weight: 700;
+    }
+    .restore-banner.show { display: block; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Age Check Overlay (appears after ordering is correct, before victory) -->
+  <div class="age-check-overlay" id="ageCheckOverlay">
+    <div class="age-check-card">
+      <span class="age-check-eyebrow">Final Thinking Check</span>
+      <p class="age-check-question" id="ageCheckQuestion"></p>
+      <div class="age-check-options" id="ageCheckOptions"></div>
+      <div class="age-check-feedback" id="ageCheckFeedback"></div>
+      <button class="age-check-retry" id="ageCheckRetry">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Victory Overlay -->
+  <div class="victory-overlay" id="victoryOverlay">
+    <div class="victory-stars">&#9733; &#9733; &#9733;</div>
+    <div class="victory-title">FOSSIL HUNT COMPLETE</div>
+    <p class="victory-sub">You successfully correlated rock layers across multiple locations using index fossils.</p>
+    <p class="victory-sub-2">This is exactly how geologists determine the relative ages of rock layers.</p>
+    <p class="victory-age" id="victoryAgeText"></p>
+    <button class="victory-close" id="victoryClose">Keep Exploring</button>
+  </div>
+
+  <nav>
+    <a href="index.html" class="nav-logo">LYFELABZ</a>
+    <a href="lesson_layers-of-time.html" class="nav-back">&#8592; Layers of Time</a>
+  </nav>
+
+  <div class="app">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="page-eyebrow">Game</div>
+      <h1>Fossil Hunt</h1>
+      <p>Use index fossils to match rock layers and determine their relative ages.</p>
+    </div>
+
+    <div class="hook-box">
+      You are on a fossil hunt. Scientists have uncovered rock layers at three separate locations, and your job is to use fossil evidence to figure out which layers are the same age — and which came first.
+    </div>
+
+    <!-- Restore Banner -->
+    <div class="restore-banner" id="restoreBanner">Your progress has been restored.</div>
+
+    <!-- Learn Section (collapsible) -->
+    <div class="learn-toggle" id="learnToggle">
+      <span class="learn-toggle-label">What Are Index Fossils?</span>
+      <span class="learn-toggle-arrow">&#9660;</span>
+    </div>
+    <div class="learn-body" id="learnBody">
+      <p class="learn-intro">
+        Fossils are the remains or traces of organisms from the past. Some fossils are especially useful for helping scientists determine the age of rock layers — these are called <strong style="color:var(--gold)">index fossils</strong>.
+      </p>
+      <p class="learn-intro" style="margin-top:-6px;">A fossil makes a good index fossil only if it meets all three of these criteria:</p>
+      <div class="criteria-list">
+        <div class="criteria-item">
+          <div class="criteria-num">1</div>
+          <div class="criteria-text">Lived for a <strong>short period of time</strong> — so its fossils only appear in a narrow band of rock layers.</div>
+        </div>
+        <div class="criteria-item">
+          <div class="criteria-num">2</div>
+          <div class="criteria-text">Found in <strong>many locations</strong> — so scientists can use it to compare rock layers across different sites.</div>
+        </div>
+        <div class="criteria-item">
+          <div class="criteria-num">3</div>
+          <div class="criteria-text">Easy to <strong>recognize</strong> — so it can be reliably identified in rock samples from the field.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-icon icon-cyan">&#9733;</div>
+        <div class="stat-label">Horizons Found</div>
+        <div class="stat-value" id="matchDisplay">0 / 3</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-orange">&#10005;</div>
+        <div class="stat-label">Errors</div>
+        <div class="stat-value" id="errorDisplay">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-yellow">&#128161;</div>
+        <div class="stat-label">Hints Used</div>
+        <div class="stat-value" id="hintDisplay">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon icon-green">&#9670;</div>
+        <div class="stat-label">Difficulty</div>
+        <div class="stat-value" id="diffDisplay" style="font-size:15px;">Practice</div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main">
+
+      <!-- Left Panel: Game -->
+      <section class="left-panel">
+        <div class="section-title">Field Investigation</div>
+        <p class="subtext" style="margin-top:-8px;margin-bottom:14px;">
+          Investigate a layer, then search for a matching fossil in a different location to link them.
+        </p>
+
+        <!-- Difficulty -->
+        <div class="difficulty-row">
+          <button class="diff-btn active" id="practiceBtn">Practice</button>
+          <button class="diff-btn" id="challengeBtn">Challenge</button>
+        </div>
+        <p class="subtext" id="diffDescriptor" style="font-size:.76rem;margin-top:-8px;margin-bottom:10px;color:var(--muted);">
+          <span id="diffDescPractice">Includes highlighted index fossils and fewer horizons.</span>
+          <span id="diffDescChallenge" style="display:none;">Includes more horizons and misleading fossils.</span>
+        </p>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <button class="btn-alt" id="hintBtn">Show Hint</button>
+          <button class="btn-subtle" id="resetBtn">Reset Puzzle</button>
+        </div>
+
+        <!-- Hint Box -->
+        <div class="hint-box" id="hintBox">
+          <p class="hint-text" id="hintText"></p>
+        </div>
+
+        <!-- Field Notes -->
+        <div class="field-notes">
+          <span class="field-notes-label">Field Notes</span>
+          <p>Index fossils appear in exactly one layer per location. Your mission: find matching fossil horizons across all three dig sites, then determine which layers are oldest.</p>
+        </div>
+
+        <!-- Columns with SVG overlay -->
+        <div class="columns-wrapper" id="columnsWrapper" style="margin-top:14px;">
+          <svg class="correlation-svg" id="correlationSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div class="columns-container" id="columnsContainer"></div>
+        </div>
+
+        <!-- Ordering Panel (appears after all groups matched) -->
+        <div class="ordering-panel hidden" id="orderingPanel">
+          <div class="ordering-title">Determine the Age Order</div>
+          <p class="ordering-sub">All fossil horizons identified! Click them below in order from <strong style="color:var(--purple)">OLDEST</strong> to <strong style="color:var(--cyan)">YOUNGEST</strong>. Use both layer position and fossil age clues.</p>
+          <div class="ordering-slots" id="orderingSlots"></div>
+          <div class="ordering-choices" id="orderingChoices"></div>
+          <div class="ordering-msg hidden" id="orderingMsg"></div>
+        </div>
+
+      </section>
+
+      <!-- Right Panel: Feedback + Legend + Reflection -->
+      <aside class="right-panel">
+
+        <!-- Feedback -->
+        <div class="feedback-box" id="feedbackBox">
+          <p class="feedback-title" style="color:var(--cyan);">Begin Hunt</p>
+          <p class="feedback-text" id="feedbackText">Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!</p>
+        </div>
+
+        <!-- Group Progress Legend -->
+        <div class="section-title" style="margin-top:4px;">Fossils Discovered</div>
+        <p class="subtext" id="discoveryProgress" style="font-size:.82rem;margin-top:-8px;margin-bottom:10px;">You have identified 0 of 3 fossil horizons.</p>
+        <div id="groupsLegend"></div>
+
+        <!-- Fossil Info Panel -->
+        <div class="fossil-info-panel" id="fossilInfoPanel">
+          <p class="fossil-info-default" id="fossilInfoDefault">Click a layer to uncover fossil clues.</p>
+          <div id="fossilInfoContent" style="display:none;">
+            <div class="fossil-info-header">
+              <span class="fossil-info-icon" id="fossilInfoIcon"></span>
+              <span class="fossil-info-name" id="fossilInfoName"></span>
+            </div>
+            <div class="fossil-info-range" id="fossilInfoRange"></div>
+            <p class="fossil-info-desc" id="fossilInfoDesc"></p>
+            <span class="fossil-info-index-pill" id="fossilInfoPill"></span>
+          </div>
+        </div>
+
+        <!-- Reflection Questions (shown after victory) -->
+        <div class="reflection-section" id="reflectionSection">
+          <div class="section-title" style="margin-top:16px;">Reflect</div>
+          <div class="reflection-q">
+            <span class="reflection-num">Question 1</span>
+            <span class="reflection-q-text">How did index fossils help you match layers across the three locations?</span>
+            <textarea class="reflection-input" id="ref1" placeholder="Type your answer here..."></textarea>
+          </div>
+          <div class="reflection-q">
+            <span class="reflection-num">Question 2</span>
+            <span class="reflection-q-text">Why are some fossils better than others for dating rock layers?</span>
+            <textarea class="reflection-input" id="ref2" placeholder="Type your answer here..."></textarea>
+          </div>
+          <div class="reflection-q">
+            <span class="reflection-num">Question 3</span>
+            <span class="reflection-q-text">What evidence did you use to determine which fossil horizon was oldest?</span>
+            <textarea class="reflection-input" id="ref3" placeholder="Type your answer here..."></textarea>
+          </div>
+          <div class="reflection-q">
+            <span class="reflection-num">Question 4</span>
+            <span class="reflection-q-text">If scientists discovered a fourth location with the same index fossils, what could they conclude about those rock layers?</span>
+            <textarea class="reflection-input" id="ref4" placeholder="Type your answer here..."></textarea>
+          </div>
+        </div>
+
+      </aside>
+    </div><!-- /.main -->
+
+    <!-- Mode Toggle -->
+    <div class="mode-toggle-bar" style="margin-top:22px;">
+      <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
+      <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="modeHintPractice" class="visible">Game progress is not submitted</span>
+      <span id="modeHintClassroom">Complete the puzzle and quiz, then submit to your teacher</span>
+    </div>
+
+    <!-- Classroom Panel -->
+    <div class="classroom-panel hidden" id="classroomPanel">
+      <div class="classroom-header">
+        <div class="section-title" style="margin:0;">Classroom Progress</div>
+        <span class="mode-badge">Classroom Mode</span>
+      </div>
+
+      <!-- Step 1: Match Progress -->
+      <div class="classroom-section">
+        <div class="classroom-section-title" style="color:var(--cyan);">Step 1 — Identify All Fossil Horizons</div>
+        <div class="match-progress-grid" id="matchProgressGrid"></div>
+        <div class="classroom-progress-bar">
+          <div class="classroom-progress-fill" id="matchProgressFill" style="width:0%"></div>
+        </div>
+        <p class="subtext" style="font-size:.82rem;margin-top:6px;" id="matchProgressLabel">0 of 3 groups matched</p>
+      </div>
+
+      <!-- Step 2: Age Order -->
+      <div class="classroom-section">
+        <div class="classroom-section-title" style="color:var(--orange);">Step 2 — Determine Age Order</div>
+        <p class="subtext" style="font-size:.85rem;margin:6px 0 10px;">Place the fossil horizons in order from oldest to youngest using their position in the rock layers.</p>
+        <div id="ageOrderProgress" style="font-size:.82rem;font-weight:700;color:var(--muted);margin-top:4px;" id="ageOrderProgress">
+          <span id="ageOrderStatus">Complete Step 1 to unlock age ordering.</span>
+        </div>
+      </div>
+
+      <!-- Step 3: Quiz -->
+      <div class="classroom-section">
+        <div class="classroom-section-title" style="color:var(--yellow);">Step 3 — Answer the Quiz</div>
+        <div id="quizContent">
+          <div class="quiz-locked-overlay" id="quizLockedOverlay">
+            <p class="quiz-locked-text" style="font-size:.95rem;">&#128274; Complete all fossil matches and age ordering to unlock the quiz.</p>
+          </div>
+          <div id="quizQuestions" class="hidden"></div>
+          <div id="quizScoreArea" class="hidden" style="margin-top:10px;">
+            <div class="quiz-score-badge" id="quizScoreBadge">0 / 4 answered</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Submit -->
+      <div class="classroom-section">
+        <div class="classroom-section-title" style="color:var(--green);">Step 4 — Submit Your Work</div>
+        <div class="student-fields">
+          <div class="field-full">
+            <label class="field-label" for="studentNameInput">Student Name</label>
+            <input type="text" id="studentNameInput" class="field-input" placeholder="First and last name" autocomplete="off" />
+          </div>
+          <div>
+            <label class="field-label" for="teacherSelect">Teacher</label>
+            <select id="teacherSelect" class="field-select">
+              <option value="">Select teacher…</option>
+              <option value="Mr. Brown">Mr. Brown</option>
+              <option value="Ms. Gay">Ms. Gay</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="blockInput">Block</label>
+            <select id="blockInput" class="field-select">
+              <option value="">Select block…</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="D">D</option>
+              <option value="E">E</option>
+              <option value="F">F</option>
+              <option value="G">G</option>
+            </select>
+          </div>
+        </div>
+        <div class="submit-section">
+          <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit to Teacher</button>
+          <p class="submit-helper" id="submitHelperText">Complete all fossil matches, age ordering, and all 4 quiz questions first.</p>
+          <div class="submit-success" id="submitSuccess">Your work has been submitted! Great fossil detective work.</div>
+          <div class="submit-error" id="submitError"></div>
+        </div>
+      </div>
+    </div><!-- /.classroom-panel -->
+
+  </div><!-- /.app -->
+
+  <!-- Learning Science / STE Standards badges -->
+  <div class="badge-section" style="max-width:1300px;margin:0 auto;padding:0 18px;">
+    <div class="ls-focus">
+      <span class="ls-focus-label">Learning Science Focus</span>
+      <span class="ls-badge" data-tip="Students must actively construct connections between fossil evidence and layer age — building conceptual knowledge through doing rather than passive reading. — Chi &amp; Wylie, 2014">Active Sense-Making</span>
+      <span class="ls-badge" data-tip="Immediate corrective feedback on incorrect fossil matches provides formative assessment in the moment, allowing students to revise their reasoning. — Black &amp; Wiliam, 1998">Immediate Feedback</span>
+      <span class="ls-badge" data-tip="The multi-location correlation task requires students to identify patterns across spatial representations — a core scientific and mathematical reasoning skill. — Newcombe, 2010">Spatial Pattern Recognition</span>
+      <span class="ls-badge" data-tip="Practice Mode scaffolds the task by exposing index fossil labels; Challenge Mode removes the scaffold, requiring transfer of learned criteria. — Wood et al., 1976">Scaffolded Transfer</span>
+    </div>
+    <div class="stem-focus">
+      <span class="stem-focus-label">MA STE Standards &middot; Grade 6&ndash;8</span>
+      <span class="stem-badge" data-tip="6.MS-ESS1-4: Construct a scientific explanation based on evidence from rock strata for how the geologic time scale is used to organize Earth's 4.6-billion-year-old history.">6.MS-ESS1-4</span>
+      <span class="stem-badge" data-tip="Science Practice 6: Constructing Explanations — students use index fossil evidence to construct explanations for layer correlation and relative age.">SP6: Explanation</span>
+      <span class="stem-badge" data-tip="Science Practice 4: Analyzing and Interpreting Data — students analyze fossil distribution across multiple locations to identify patterns of age correlation.">SP4: Data Analysis</span>
+      <span class="stem-badge" data-tip="Crosscutting Concept 1: Patterns — students identify repeating fossil patterns across locations as evidence of geological contemporaneity.">CCC1: Patterns</span>
+    </div>
+  </div>
+
+  <div class="game-footer" style="max-width:1300px;margin:0 auto;padding:28px 18px 0;">
+    <div class="game-footer-logo">LYFELABZ</div>
+    <p>Fossil Hunt &middot; Index Fossils &middot; Geologic Correlation &middot;
+      <a href="index.html">Back to Home</a> &middot;
+      <a href="about_learning-science.html">Why It Works</a>
+    </p>
+  </div>
+
+  <script>
+    /* ─── SITE TOGGLES ──────────────────────────────────────────────── */
+    if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
+    if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
+
+    /* ─── SAVE KEY & SCRIPT URLS ────────────────────────────────────── */
+    const SAVE_KEY = 'lyfelabz-fossil-hunt';
+    const SCRIPT_URLS = {
+      'Mr. Brown': 'https://script.google.com/macros/s/AKfycbyBvcn7G6-tqM9mxGSr24C2hPjn8EXRX796QC2reswS5xny4To0Z-EhNuGmhD7Q4keY5A/exec',
+      'Ms. Gay':   'https://script.google.com/macros/s/AKfycbzSWCQfGJ2xdt5znuspy0r6WlVzfl0wnmwhDPL7jLxaXwim-KA1nVPRxJR8i2l5YuR0/exec'
+    };
+
+    /* ─── LEVEL DATA ────────────────────────────────────────────────── */
+    const LEVELS = {
+
+      practice: {
+        name: 'Rocky Creek',
+        ageOrderOldestFirst: ['G3', 'G2', 'G1'],
+        locations: [
+          {
+            name: 'A', label: 'Location A',
+            layers: [
+              { id:'A0', fossil:'Shell Fragment',   rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
+              { id:'A1', fossil:'Ammonite',         rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
+              { id:'A2', fossil:'Fern Impression',  rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
+              { id:'A3', fossil:'Trilobite',        rock:'Mudstone',     color:'#7a9878', isIndex:true,  group:'G2' },
+              { id:'A4', fossil:'Ancient Coral',    rock:'Conglomerate', color:'#8c7045', isIndex:false, group:null },
+              { id:'A5', fossil:'Crinoid',          rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' }
+            ]
+          },
+          {
+            name: 'B', label: 'Location B',
+            layers: [
+              { id:'B0', fossil:'Leaf Impression',  rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
+              { id:'B1', fossil:'Ammonite',         rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
+              { id:'B2', fossil:'Trilobite',        rock:'Mudstone',     color:'#7a9878', isIndex:true,  group:'G2' },
+              { id:'B3', fossil:'Coral Fragment',   rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
+              { id:'B4', fossil:'Crinoid',          rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' }
+            ]
+          },
+          {
+            name: 'C', label: 'Location C',
+            layers: [
+              { id:'C0', fossil:'Fern Impression',  rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
+              { id:'C1', fossil:'Ammonite',         rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
+              { id:'C2', fossil:'Ancient Coral',    rock:'Conglomerate', color:'#8c7045', isIndex:false, group:null },
+              { id:'C3', fossil:'Trilobite',        rock:'Mudstone',     color:'#7a9878', isIndex:true,  group:'G2' },
+              { id:'C4', fossil:'Shell Fragment',   rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
+              { id:'C5', fossil:'Crinoid',          rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' }
+            ]
+          }
+        ],
+        groups: {
+          G1: { fossil:'Ammonite',  ids:['A1','B1','C1'], color:'rgba(36,232,255,0.85)',  cssClass:'matched-G1', dotClass:'G1', label:'1', displayColor:'#24e8ff' },
+          G2: { fossil:'Trilobite', ids:['A3','B2','C3'], color:'rgba(246,203,67,0.85)', cssClass:'matched-G2', dotClass:'G2', label:'2', displayColor:'#f6cb43' },
+          G3: { fossil:'Crinoid',   ids:['A5','B4','C5'], color:'rgba(154,92,255,0.85)', cssClass:'matched-G3', dotClass:'G3', label:'3', displayColor:'#9a5cff' }
+        },
+        hints: [
+          'Look for fossils that appear exactly once at each location — those meet the first criteria for an index fossil.',
+          'The Ammonite appears once in Location A, once in Location B, and once in Location C. Investigate those three layers and link them.',
+          'The Trilobite also appears exactly once per location. After that, look deep — the Crinoid appears once at the bottom of each site and completes the third fossil horizon.'
+        ],
+        victoryAge: 'From oldest to youngest: Crinoid horizon (deepest) &#8594; Trilobite horizon &#8594; Ammonite horizon &#8594; Top layers (shallowest)',
+        ageCheck: {
+          question: 'Look at the age ranges of the fossils you found. Which fossil existed for the LONGEST stretch of time?',
+          options: [
+            'Ammonite — about 240 to 66 million years ago',
+            'Trilobite — about 520 to 250 million years ago',
+            'Crinoid — about 480 million years ago to today'
+          ],
+          correct: 2,
+          correctFeedback: 'Correct! The Crinoid has existed for roughly 480 million years — far longer than the Ammonite or Trilobite. A long time range is actually a disadvantage for an index fossil, because it cannot help pinpoint a narrow window of geologic time.',
+          wrongFeedback: 'Not quite. Compare the time ranges carefully. The Crinoid has existed from about 480 million years ago to today — a span of nearly half a billion years. The Ammonite and Trilobite both went extinct, giving them shorter and more precise ranges.'
+        }
+      },
+
+      challenge: {
+        name: 'Cliffside Cut',
+        ageOrderOldestFirst: ['G4', 'G3', 'G2', 'G1'],
+        locations: [
+          {
+            name: 'A', label: 'Location A',
+            layers: [
+              { id:'A0', fossil:'Shell Fragment',  rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
+              { id:'A1', fossil:'Graptolite',      rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
+              { id:'A2', fossil:'Ammonite',        rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
+              { id:'A3', fossil:'Brachiopod',      rock:'Siltstone',    color:'#9878a8', isIndex:true,  group:'G2' },
+              { id:'A4', fossil:'Graptolite',      rock:'Mudstone',     color:'#7a9878', isIndex:false, group:null },
+              { id:'A5', fossil:'Crinoid',         rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' },
+              { id:'A6', fossil:'Rugose Coral',    rock:'Deep Lime',    color:'#704888', isIndex:true,  group:'G4' }
+            ]
+          },
+          {
+            name: 'B', label: 'Location B',
+            layers: [
+              { id:'B0', fossil:'Fern Impression', rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
+              { id:'B1', fossil:'Ammonite',        rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
+              { id:'B2', fossil:'Graptolite',      rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
+              { id:'B3', fossil:'Brachiopod',      rock:'Siltstone',    color:'#9878a8', isIndex:true,  group:'G2' },
+              { id:'B4', fossil:'Crinoid',         rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' },
+              { id:'B5', fossil:'Rugose Coral',    rock:'Deep Lime',    color:'#704888', isIndex:true,  group:'G4' }
+            ]
+          },
+          {
+            name: 'C', label: 'Location C',
+            layers: [
+              { id:'C0', fossil:'Coral Fragment',  rock:'Sandstone',    color:'#c2a87a', isIndex:false, group:null },
+              { id:'C1', fossil:'Ammonite',        rock:'Limestone',    color:'#a8b8c8', isIndex:true,  group:'G1' },
+              { id:'C2', fossil:'Graptolite',      rock:'Shale',        color:'#7a6858', isIndex:false, group:null },
+              { id:'C3', fossil:'Brachiopod',      rock:'Siltstone',    color:'#9878a8', isIndex:true,  group:'G2' },
+              { id:'C4', fossil:'Shell Fragment',  rock:'Conglomerate', color:'#8c7045', isIndex:false, group:null },
+              { id:'C5', fossil:'Crinoid',         rock:'Dark Shale',   color:'#5868a0', isIndex:true,  group:'G3' },
+              { id:'C6', fossil:'Rugose Coral',    rock:'Deep Lime',    color:'#704888', isIndex:true,  group:'G4' }
+            ]
+          }
+        ],
+        groups: {
+          G1: { fossil:'Ammonite',    ids:['A2','B1','C1'], color:'rgba(36,232,255,0.85)',  cssClass:'matched-G1', dotClass:'G1', label:'1', displayColor:'#24e8ff' },
+          G2: { fossil:'Brachiopod',  ids:['A3','B3','C3'], color:'rgba(246,203,67,0.85)', cssClass:'matched-G2', dotClass:'G2', label:'2', displayColor:'#f6cb43' },
+          G3: { fossil:'Crinoid',     ids:['A5','B4','C5'], color:'rgba(154,92,255,0.85)', cssClass:'matched-G3', dotClass:'G3', label:'3', displayColor:'#9a5cff' },
+          G4: { fossil:'Rugose Coral',ids:['A6','B5','C6'], color:'rgba(255,140,66,0.85)', cssClass:'matched-G4', dotClass:'G4', label:'4', displayColor:'#ff8c42' }
+        },
+        hints: [
+          'A true index fossil appears in exactly ONE layer per location. The Graptolite appears in TWO layers at Location A — that makes it unreliable as an index fossil.',
+          'The Ammonite and Brachiopod each appear once per location. These are your first two fossil horizons to correlate. Investigate them carefully.',
+          'The Crinoid and Rugose Coral each appear once per location, at the deepest layers. Find them to complete all four fossil horizons.'
+        ],
+        victoryAge: 'From oldest to youngest: Rugose Coral horizon (deepest) &#8594; Crinoid horizon &#8594; Brachiopod horizon &#8594; Ammonite horizon &#8594; Top layers (shallowest)',
+        ageCheck: {
+          question: 'Based on their time ranges, which fossil in this puzzle confirms that the YOUNGEST horizon formed most recently in geologic time?',
+          options: [
+            'Rugose Coral — 488 to 252 million years ago',
+            'Crinoid — about 480 million years ago to today',
+            'Ammonite — about 240 to 66 million years ago',
+            'Brachiopod — about 540 million years ago to today'
+          ],
+          correct: 2,
+          correctFeedback: 'Correct! The Ammonite existed from about 240 to 66 million years ago — the most recent window of any fossil in this puzzle. This confirms that the Ammonite horizon is the youngest layer. Both the layer position AND the age range agree.',
+          wrongFeedback: 'Look at which fossil has the most recent time range. The Ammonite existed from about 240 to 66 million years ago. Compare that to the Rugose Coral (488–252 Ma), Crinoid (480 Ma–today), and Brachiopod (540 Ma–today). The Ammonite lived most recently, which confirms the youngest horizon.'
+        }
+      }
+
+    };
+
+    /* ─── QUIZ DATA ─────────────────────────────────────────────────── */
+    const QUIZ_DATA = [
+      {
+        id: 1,
+        text: "What is the most important feature that makes a fossil a good index fossil?",
+        options: [
+          "It is very large, making it easy to find in rock layers",
+          "It existed for only a short period of time",
+          "It is found in only one specific location on Earth",
+          "It is made of very hard material that preserves well"
+        ],
+        correct: 1
+      },
+      {
+        id: 2,
+        text: "In the Fossil Hunt game, you matched layers across three locations using index fossils. What does a successful match tell you about those layers?",
+        options: [
+          "The two locations must be right next to each other geographically",
+          "Both locations have the same type of rock material",
+          "The two rock layers formed at approximately the same time in Earth's history",
+          "The fossils at both locations came from the same individual organism"
+        ],
+        correct: 2
+      },
+      {
+        id: 3,
+        text: "In the Challenge puzzle, the Graptolite appeared in two different rock layers within Location A. Why does this make it a poor index fossil?",
+        options: [
+          "The Graptolite is too difficult to identify in the field",
+          "If it appears in multiple layers, the organism lived for too long a time period to date a single layer",
+          "The Graptolite has not been found in enough locations",
+          "Scientists have not yet agreed on its scientific name"
+        ],
+        correct: 1
+      },
+      {
+        id: 4,
+        text: "In this game, the deepest layers at each location are the oldest. Which law of geology explains this?",
+        options: [
+          "The Law of Lateral Continuity — layers extend outward in all directions",
+          "The Law of Cross-Cutting Relationships — younger features cut through older ones",
+          "The Law of Superposition — in undisturbed rock, older layers are deposited below younger layers",
+          "The Law of Original Horizontality — all rock layers were once flat"
+        ],
+        correct: 2
+      }
+    ];
+
+    /* ─── STATE ─────────────────────────────────────────────────────── */
+    let state = {
+      difficulty:     'practice',
+      selected:       null,
+      matched:        {},
+      completedGroups:[],
+      errors:         0,
+      hintsUsed:      0,
+      hintIndex:      0,
+      classroomMode:  false,
+      quizAnswers:    {},
+      victoryShown:   false,
+      reflections:    {},
+      orderingPhase:  false,
+      orderSelected:  [],
+      orderCorrect:   false,
+      ageCheckAnswered: false,
+      ageCheckCorrect:  false
+    };
+
+    /* ─── HELPERS ───────────────────────────────────────────────────── */
+    function currentLevel() { return LEVELS[state.difficulty]; }
+
+    function getLayerById(id) {
+      const lv = currentLevel();
+      for (const loc of lv.locations) {
+        const found = loc.layers.find(l => l.id === id);
+        if (found) return { ...found, locName: loc.name };
+      }
+      return null;
+    }
+
+    function getLocName(id) { return id.charAt(0); }
+
+    /* ─── SAVE / LOAD ───────────────────────────────────────────────── */
+    function saveState() {
+      const data = {
+        difficulty:       state.difficulty,
+        matched:          state.matched,
+        completedGroups:  state.completedGroups,
+        errors:           state.errors,
+        hintsUsed:        state.hintsUsed,
+        hintIndex:        state.hintIndex,
+        classroomMode:    state.classroomMode,
+        quizAnswers:      state.quizAnswers,
+        victoryShown:     state.victoryShown,
+        reflections:      state.reflections,
+        orderingPhase:    state.orderingPhase,
+        orderSelected:    state.orderSelected,
+        orderCorrect:     state.orderCorrect,
+        ageCheckAnswered: state.ageCheckAnswered,
+        ageCheckCorrect:  state.ageCheckCorrect,
+        studentName:      document.getElementById('studentNameInput').value,
+        teacher:          document.getElementById('teacherSelect').value,
+        block:            document.getElementById('blockInput').value
+      };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        Object.assign(state, {
+          difficulty:      data.difficulty      || 'practice',
+          matched:         data.matched         || {},
+          completedGroups: data.completedGroups || [],
+          errors:          data.errors          || 0,
+          hintsUsed:       data.hintsUsed       || 0,
+          hintIndex:       data.hintIndex       || 0,
+          classroomMode:   data.classroomMode   || false,
+          quizAnswers:     data.quizAnswers      || {},
+          victoryShown:    data.victoryShown     || false,
+          reflections:     data.reflections      || {},
+          orderingPhase:   data.orderingPhase   || false,
+          orderSelected:   data.orderSelected   || [],
+          orderCorrect:    data.orderCorrect    || false,
+          ageCheckAnswered: data.ageCheckAnswered || false,
+          ageCheckCorrect:  data.ageCheckCorrect  || false
+        });
+        if (data.studentName) document.getElementById('studentNameInput').value = data.studentName;
+        if (data.teacher)     document.getElementById('teacherSelect').value     = data.teacher;
+        if (data.block)       document.getElementById('blockInput').value         = data.block;
+        return true;
+      } catch(e) { return false; }
+    }
+
+    /* ─── STATS UPDATE ───────────────────────────────────────────────── */
+    function updateStats() {
+      const lv = currentLevel();
+      const total = Object.keys(lv.groups).length;
+      const done  = state.completedGroups.length;
+      document.getElementById('matchDisplay').textContent = done + ' / ' + total;
+      document.getElementById('errorDisplay').textContent = state.errors;
+      document.getElementById('hintDisplay').textContent  = state.hintsUsed;
+      document.getElementById('diffDisplay').textContent  =
+        state.difficulty === 'practice' ? 'Practice' : 'Challenge';
+    }
+
+    /* ─── FEEDBACK ───────────────────────────────────────────────────── */
+    function setFeedback(type, title, body) {
+      const box  = document.getElementById('feedbackBox');
+      const tEl  = box.querySelector('.feedback-title');
+      const bEl  = document.getElementById('feedbackText');
+      box.className = 'feedback-box' + (type === 'success' ? ' fb-success' : type === 'error' ? ' fb-error' : '');
+      tEl.textContent = title;
+      bEl.textContent = body || '';
+    }
+
+    /* ─── FOSSIL INFO DATA ───────────────────────────────────────────── */
+    const FOSSIL_INFO = {
+      'Ammonite': {
+        range: 'About 240 to 66 million years ago',
+        desc: 'Ammonites were ocean animals related to modern squid and octopus. They had coiled shells and went extinct at the same time as the dinosaurs. Because they changed rapidly over time and spread across many seas, they are excellent index fossils.',
+        isStrongIndex: true
+      },
+      'Trilobite': {
+        range: 'About 520 to 250 million years ago',
+        desc: 'Trilobites were ancient ocean arthropods — distantly related to crabs and insects. They had segmented bodies and a hard outer shell. Different species lived during very specific time periods, making many trilobites reliable index fossils.',
+        isStrongIndex: true
+      },
+      'Crinoid': {
+        range: 'About 480 million years ago to today',
+        desc: 'Crinoids, sometimes called sea lilies, are animals that attach to the seafloor and filter food from the water. Some ancient species are useful index fossils because they lived during specific eras and are easy to identify in rock.',
+        isStrongIndex: true
+      },
+      'Brachiopod': {
+        range: 'About 540 million years ago to today',
+        desc: 'Brachiopods are small shelled animals that live on the ocean floor. They look a little like clams but are very different inside. Certain ancient species make good index fossils because they were widespread and only existed for a limited time.',
+        isStrongIndex: true
+      },
+      'Rugose Coral': {
+        range: 'About 488 to 252 million years ago',
+        desc: 'Rugose corals were ancient reef-building animals that went completely extinct around 252 million years ago. Because they are easy to recognize and lived during a specific window of geologic time, they work well as index fossils.',
+        isStrongIndex: true
+      },
+      'Graptolite': {
+        range: 'About 485 to 320 million years ago',
+        desc: 'Graptolites were colonial ocean animals that floated in ancient seas. While some species are useful index fossils, in this puzzle the graptolite appears in more than one layer at the same location — meaning it cannot pinpoint a single time period.',
+        isStrongIndex: false
+      },
+      'Shell Fragment': {
+        range: 'Difficult to date — many shell types exist',
+        desc: 'This is a broken piece of shell. Without knowing what animal it came from, scientists cannot use it to date rock layers. Fragments lack the distinct features needed to identify them reliably.',
+        isStrongIndex: false
+      },
+      'Coral Fragment': {
+        range: 'Difficult to date — many coral types exist',
+        desc: 'This is a piece of coral, but it is too incomplete to identify the species. Scientists need to recognize the full fossil clearly to use it as an index fossil — a fragment does not provide enough information.',
+        isStrongIndex: false
+      },
+      'Ancient Coral': {
+        range: 'Broadly present across hundreds of millions of years',
+        desc: 'Corals have existed for an extremely long time, and many types look similar across different eras. Without identifying a specific species, ancient coral cannot tell you the age of a rock layer.',
+        isStrongIndex: false
+      },
+      'Fern Impression': {
+        range: 'Ferns have existed for about 360 million years',
+        desc: 'Fern impressions show the shape of a fern leaf pressed into rock. Ferns have been around for hundreds of millions of years and are still alive today. Because they lived across such a long time span, they are not useful for dating rock layers.',
+        isStrongIndex: false
+      },
+      'Leaf Impression': {
+        range: 'Varies widely depending on plant species',
+        desc: 'A leaf impression is the shape of a leaf preserved in rock. Without knowing the plant species, it is nearly impossible to determine when this layer was formed. Leaf impressions are interesting but not reliable for dating.',
+        isStrongIndex: false
+      }
+    };
+
+    function updateFossilInfoPanel(fossilName) {
+      const panel      = document.getElementById('fossilInfoPanel');
+      const defaultEl  = document.getElementById('fossilInfoDefault');
+      const contentEl  = document.getElementById('fossilInfoContent');
+      const iconEl     = document.getElementById('fossilInfoIcon');
+      const nameEl     = document.getElementById('fossilInfoName');
+      const rangeEl    = document.getElementById('fossilInfoRange');
+      const descEl     = document.getElementById('fossilInfoDesc');
+      const pillEl     = document.getElementById('fossilInfoPill');
+
+      const info = FOSSIL_INFO[fossilName];
+      if (!info) {
+        defaultEl.style.display  = '';
+        contentEl.style.display  = 'none';
+        panel.classList.remove('active');
+        return;
+      }
+
+      defaultEl.style.display  = 'none';
+      contentEl.style.display  = '';
+      panel.classList.add('active');
+
+      iconEl.textContent  = getFossilChar(fossilName);
+      nameEl.textContent  = fossilName;
+      rangeEl.textContent = info.range;
+      descEl.textContent  = info.desc;
+
+      if (info.isStrongIndex) {
+        pillEl.className   = 'fossil-info-index-pill strong';
+        pillEl.textContent = 'Strong Index Fossil';
+      } else {
+        pillEl.className   = 'fossil-info-index-pill weak';
+        pillEl.textContent = 'Not an Index Fossil';
+      }
+
+      // Pulse animation on update
+      panel.classList.remove('panel-flash');
+      void panel.offsetWidth;
+      panel.classList.add('panel-flash');
+      panel.addEventListener('animationend', () => panel.classList.remove('panel-flash'), { once: true });
+
+      // Scroll into view only if the panel is not already visible
+      const rect = panel.getBoundingClientRect();
+      const inView = rect.top >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
+      if (!inView) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    /* ─── ERROR FLASH ────────────────────────────────────────────────── */
+    function flashError(layerId) {
+      const el = document.getElementById('layer-' + layerId);
+      if (!el) return;
+      el.classList.remove('error-flash');
+      void el.offsetWidth;
+      el.classList.add('error-flash');
+      el.addEventListener('animationend', () => el.classList.remove('error-flash'), { once: true });
+    }
+
+    /* ─── DISCOVERY PULSE ────────────────────────────────────────────── */
+    function pulseLayer(layerId) {
+      const el = document.getElementById('layer-' + layerId);
+      if (!el) return;
+      el.classList.remove('discovery-pulse');
+      void el.offsetWidth;
+      el.classList.add('discovery-pulse');
+      el.addEventListener('animationend', () => el.classList.remove('discovery-pulse'), { once: true });
+    }
+
+    /* ─── NON-INDEX REASON ───────────────────────────────────────────── */
+    function getNonIndexReason(fossil) {
+      const lv = currentLevel();
+      for (const loc of lv.locations) {
+        const count = loc.layers.filter(l => l.fossil === fossil).length;
+        if (count > 1) {
+          return `The ${fossil} appears in more than one layer at Location ${loc.name} — this means it lived across multiple time periods and cannot pinpoint a single age. Index fossils must appear in only one layer per location.`;
+        }
+      }
+      return `The ${fossil} is not a reliable index fossil. To be useful for dating, a fossil must have lived during a very short time period and appear in only one rock layer per location.`;
+    }
+
+    /* ─── MATCH LOGIC ────────────────────────────────────────────────── */
+    function handleLayerClick(layerId) {
+      const layer = getLayerById(layerId);
+      if (!layer) return;
+
+      // First click — select and prompt
+      if (!state.selected) {
+        state.selected = layerId;
+        renderLayers();
+        updateFossilInfoPanel(layer.fossil);
+        setFeedback('neutral', 'Layer Selected',
+          `Investigating ${layer.fossil} in ${layer.rock}. Now search for a matching fossil in a different location.`);
+        saveState();
+        return;
+      }
+
+      // Same layer — deselect
+      if (state.selected === layerId) {
+        state.selected = null;
+        renderLayers();
+        setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
+        saveState();
+        return;
+      }
+
+      const selLayer = getLayerById(state.selected);
+
+      // Same location — reselect
+      if (getLocName(layerId) === getLocName(state.selected)) {
+        state.selected = layerId;
+        renderLayers();
+        updateFossilInfoPanel(layer.fossil);
+        setFeedback('neutral', 'Layer Selected',
+          `Investigating ${layer.fossil} in ${layer.rock}. Now search for a matching fossil in a different location.`);
+        saveState();
+        return;
+      }
+
+      // Different location — attempt correlation
+      const fossil1 = selLayer.fossil;
+      const fossil2 = layer.fossil;
+
+      // Different fossils
+      if (fossil1 !== fossil2) {
+        setFeedback('error', 'No Match Found',
+          `"${fossil1}" and "${fossil2}" are different fossils. Only layers with the same fossil can be correlated. Search for a layer that contains ${fossil1}.`);
+        flashError(state.selected);
+        flashError(layerId);
+        state.errors++;
+        state.selected = null;
+        updateStats(); renderLayers(); saveState();
+        return;
+      }
+
+      // Same fossil — check if it is an index fossil
+      if (!selLayer.isIndex) {
+        const reason = getNonIndexReason(selLayer.fossil);
+        setFeedback('error', fossil1 + ' Is Not an Index Fossil', reason);
+        flashError(state.selected);
+        flashError(layerId);
+        state.errors++;
+        state.selected = null;
+        updateStats(); renderLayers(); saveState();
+        return;
+      }
+
+      // Valid index fossil match — record the pair
+      const groupId = selLayer.group;
+      const alreadyMatched1 = state.matched[state.selected];
+      const alreadyMatched2 = state.matched[layerId];
+
+      // Both already in this group
+      if (alreadyMatched1 === groupId && alreadyMatched2 === groupId) {
+        setFeedback('neutral', 'Already Matched',
+          `These layers are already linked in Horizon ${currentLevel().groups[groupId].label}. Look for the remaining unmatched horizons!`);
+        state.selected = null;
+        renderLayers(); saveState();
+        return;
+      }
+
+      // Add to group
+      const layer1Id = state.selected;
+      const layer2Id = layerId;
+      state.matched[layer1Id] = groupId;
+      state.matched[layer2Id] = groupId;
+
+      // Check if group is complete
+      const grp = currentLevel().groups[groupId];
+      const allDone = grp.ids.every(id => state.matched[id] === groupId);
+
+      if (allDone && !state.completedGroups.includes(groupId)) {
+        state.completedGroups.push(groupId);
+        const remaining = Object.keys(currentLevel().groups).filter(g => !state.completedGroups.includes(g));
+        if (remaining.length === 0) {
+          setFeedback('success', 'All Fossil Horizons Found!',
+            `The ${grp.fossil} layers are linked — you have now identified all correlation groups. Determine their age order below.`);
+          checkVictory();
+        } else {
+          setFeedback('success', 'Fossil Horizon Identified!',
+            `All three "${grp.fossil}" layers are now matched. These rock layers formed at the same time. ${remaining.length} horizon${remaining.length>1?'s':''} left to find!`);
+        }
+      } else {
+        const remaining = grp.ids.filter(id => !state.matched[id]);
+        const ageInfo = FOSSIL_INFO[grp.fossil];
+        const ageNote = ageInfo ? ' This fossil existed ' + ageInfo.range.toLowerCase() + ', helping geologists narrow down when this layer formed.' : '';
+        setFeedback('success', 'Match Found!',
+          `Both layers contain "${grp.fossil}" — meaning these layers formed during the same time period.${remaining.length > 0 ? ' Find the matching layer at the third location to complete this horizon.' : ''}${ageNote}`);
+      }
+
+      state.selected = null;
+      updateStats(); renderLayers(); renderGroups(); renderClassroomPanel(); saveState();
+
+      // Draw lines with a slight delay for earned feel
+      setTimeout(drawLines, 380);
+
+      // Discovery pulse on matched layers
+      setTimeout(() => {
+        pulseLayer(layer1Id);
+        pulseLayer(layer2Id);
+      }, 80);
+    }
+
+    /* ─── VICTORY CHECK ──────────────────────────────────────────────── */
+    function checkVictory() {
+      const lv = currentLevel();
+      const allDone = Object.keys(lv.groups).every(g => state.completedGroups.includes(g));
+      if (!allDone) return;
+
+      // Enter ordering phase
+      if (!state.orderingPhase) {
+        state.orderingPhase = true;
+        saveState();
+      }
+      renderOrderingPanel();
+    }
+
+    /* ─── RENDER ORDERING PANEL ─────────────────────────────────────── */
+    function renderOrderingPanel() {
+      const lv = currentLevel();
+      const panel = document.getElementById('orderingPanel');
+      panel.classList.remove('hidden');
+
+      const groups = lv.groups;
+      const groupIds = Object.keys(groups);
+      const n = groupIds.length;
+
+      // Build slots
+      const slotsEl = document.getElementById('orderingSlots');
+      slotsEl.innerHTML = '';
+      for (let i = 0; i < n; i++) {
+        const filledGroupId = state.orderSelected[i] || null;
+        const slot = document.createElement('div');
+        slot.className = 'ordering-slot' + (filledGroupId ? ' filled' : '');
+        const slotLabel = i === 0 ? 'Oldest' : i === n - 1 ? 'Youngest' : (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th');
+        const fossil = filledGroupId ? groups[filledGroupId].fossil : '\u2014';
+        slot.innerHTML =
+          '<span class="ordering-slot-num">' + slotLabel + '</span>' +
+          '<span class="ordering-slot-fossil">' + fossil + '</span>';
+        if (filledGroupId) {
+          slot.style.borderColor = groups[filledGroupId].displayColor + '99';
+          slot.querySelector('.ordering-slot-fossil').style.color = groups[filledGroupId].displayColor;
+        }
+        slotsEl.appendChild(slot);
+      }
+
+      // Build choice buttons
+      const choicesEl = document.getElementById('orderingChoices');
+      choicesEl.innerHTML = '';
+      groupIds.forEach(groupId => {
+        const grp = groups[groupId];
+        const alreadyPicked = state.orderSelected.includes(groupId);
+        const btn = document.createElement('button');
+        btn.className = 'ordering-choice-btn';
+        btn.textContent = grp.fossil;
+        btn.disabled = alreadyPicked || state.orderCorrect;
+        if (!alreadyPicked) {
+          btn.style.borderColor = grp.displayColor + '77';
+          btn.style.color = grp.displayColor;
+        }
+        btn.addEventListener('click', () => handleOrderClick(groupId));
+        choicesEl.appendChild(btn);
+      });
+
+      // Message
+      const msgEl = document.getElementById('orderingMsg');
+      if (state.orderCorrect) {
+        msgEl.className = 'ordering-msg success';
+        msgEl.textContent = 'Correct age order confirmed! Outstanding field work.';
+      } else {
+        msgEl.className = 'ordering-msg hidden';
+        msgEl.textContent = '';
+      }
+    }
+
+    /* ─── HANDLE ORDER CLICK ─────────────────────────────────────────── */
+    function handleOrderClick(groupId) {
+      if (state.orderSelected.includes(groupId) || state.orderCorrect) return;
+      state.orderSelected.push(groupId);
+
+      const lv = currentLevel();
+      const n = Object.keys(lv.groups).length;
+
+      renderOrderingPanel();
+
+      if (state.orderSelected.length === n) {
+        // Check against correct order
+        const correct = lv.ageOrderOldestFirst.every((g, i) => g === state.orderSelected[i]);
+        if (correct) {
+          state.orderCorrect = true;
+          setFeedback('success', 'Age Order Confirmed!',
+            'You correctly placed the fossil horizons from oldest to youngest. This is how geologists read time in rock.');
+          document.getElementById('reflectionSection').classList.add('show');
+          renderOrderingPanel();
+          if (!state.ageCheckAnswered) {
+            setTimeout(() => showAgeCheck(), 900);
+          } else if (!state.victoryShown) {
+            state.victoryShown = true;
+            document.getElementById('victoryAgeText').innerHTML = lv.victoryAge;
+            setTimeout(() => document.getElementById('victoryOverlay').classList.add('show'), 900);
+          }
+        } else {
+          // Wrong order — show error, then reset after delay
+          const msgEl = document.getElementById('orderingMsg');
+          msgEl.className = 'ordering-msg error';
+          msgEl.textContent = 'That order is not quite right. Remember: deeper layers are older. Think about where each fossil appeared in the columns and try again.';
+          setFeedback('error', 'Incorrect Order',
+            'Think about which fossil horizon appeared deepest at each location. Deeper means older!');
+          state.errors++;
+          updateStats();
+          setTimeout(() => {
+            state.orderSelected = [];
+            renderOrderingPanel();
+          }, 2400);
+        }
+        saveState();
+      }
+    }
+
+    /* ─── AGE CHECK OVERLAY ──────────────────────────────────────────── */
+    function showAgeCheck() {
+      const lv  = currentLevel();
+      const ac  = lv.ageCheck;
+      const overlay = document.getElementById('ageCheckOverlay');
+
+      document.getElementById('ageCheckQuestion').textContent = ac.question;
+      document.getElementById('ageCheckFeedback').className = 'age-check-feedback';
+      document.getElementById('ageCheckFeedback').textContent = '';
+      document.getElementById('ageCheckRetry').classList.remove('show');
+
+      const optContainer = document.getElementById('ageCheckOptions');
+      optContainer.innerHTML = '';
+      const letters = ['A','B','C','D'];
+      ac.options.forEach((opt, i) => {
+        const btn = document.createElement('div');
+        btn.className = 'age-check-option';
+        btn.innerHTML = '<div class="age-check-option-letter">' + letters[i] + '</div><span>' + opt + '</span>';
+        btn.addEventListener('click', () => handleAgeCheckAnswer(i));
+        optContainer.appendChild(btn);
+      });
+
+      overlay.classList.add('show');
+    }
+
+    function handleAgeCheckAnswer(idx) {
+      const lv  = currentLevel();
+      const ac  = lv.ageCheck;
+      const optEls  = Array.from(document.getElementById('ageCheckOptions').querySelectorAll('.age-check-option'));
+      const fbEl    = document.getElementById('ageCheckFeedback');
+      const retryEl = document.getElementById('ageCheckRetry');
+
+      // Disable all options while showing feedback
+      optEls.forEach(el => el.classList.add('disabled'));
+      optEls[idx].classList.remove('disabled');
+
+      if (idx === ac.correct) {
+        optEls[idx].classList.add('correct-answer');
+        fbEl.className = 'age-check-feedback fb-ok show';
+        fbEl.textContent = ac.correctFeedback;
+        state.ageCheckAnswered = true;
+        state.ageCheckCorrect  = true;
+        saveState();
+        // Show victory after a moment
+        setTimeout(() => {
+          document.getElementById('ageCheckOverlay').classList.remove('show');
+          if (!state.victoryShown) {
+            state.victoryShown = true;
+            document.getElementById('victoryAgeText').innerHTML = lv.victoryAge;
+            setTimeout(() => document.getElementById('victoryOverlay').classList.add('show'), 300);
+          }
+        }, 2200);
+      } else {
+        optEls[idx].classList.add('wrong-answer');
+        fbEl.className = 'age-check-feedback fb-err show';
+        fbEl.textContent = ac.wrongFeedback;
+        state.ageCheckAnswered = true;
+        state.ageCheckCorrect  = false;
+        saveState();
+        retryEl.classList.add('show');
+      }
+    }
+
+    document.getElementById('ageCheckRetry').addEventListener('click', () => {
+      showAgeCheck();
+    });
+
+    /* ─── RENDER LAYERS ──────────────────────────────────────────────── */
+    function renderLayers() {
+      const lv    = currentLevel();
+      const isPractice = state.difficulty === 'practice';
+      const container  = document.getElementById('columnsContainer');
+      container.innerHTML = '';
+
+      lv.locations.forEach(loc => {
+        const col = document.createElement('div');
+        col.className = 'location-column';
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'location-header';
+        header.innerHTML = '<span class="location-label">' + loc.label + '</span>';
+        col.appendChild(header);
+
+        // Youngest label
+        const ageTop = document.createElement('div');
+        ageTop.className = 'age-marker youngest';
+        ageTop.textContent = 'Youngest';
+        col.appendChild(ageTop);
+
+        // Layer stack
+        const stack = document.createElement('div');
+        stack.className = 'layer-stack';
+
+        loc.layers.forEach(layer => {
+          const div = document.createElement('div');
+          div.className = 'fossil-layer';
+          div.id = 'layer-' + layer.id;
+          div.style.background = layer.color + '22';
+          div.style.borderColor = layer.color + '50';
+
+          // Selected
+          if (state.selected === layer.id) {
+            div.classList.add('selected');
+          }
+
+          // Matched styling
+          const matchedGroup = state.matched[layer.id];
+          if (matchedGroup) {
+            div.classList.add(currentLevel().groups[matchedGroup].cssClass);
+          }
+
+          // Index badge (practice only)
+          if (isPractice && layer.isIndex) {
+            const badge = document.createElement('div');
+            badge.className = 'index-badge';
+            badge.textContent = 'INDEX';
+            div.appendChild(badge);
+          }
+
+          // Match dot
+          if (matchedGroup) {
+            const dot = document.createElement('div');
+            dot.className = 'match-dot ' + currentLevel().groups[matchedGroup].dotClass;
+            dot.textContent = currentLevel().groups[matchedGroup].label;
+            div.appendChild(dot);
+          }
+
+          // Fossil icon
+          const symbol = document.createElement('div');
+          symbol.className = 'fossil-symbol';
+          symbol.textContent = getFossilChar(layer.fossil);
+          div.appendChild(symbol);
+
+          const name = document.createElement('div');
+          name.className = 'fossil-name';
+          name.textContent = layer.fossil;
+          div.appendChild(name);
+
+          const rock = document.createElement('div');
+          rock.className = 'fossil-rock';
+          rock.textContent = layer.rock;
+          div.appendChild(rock);
+
+          div.addEventListener('click', () => handleLayerClick(layer.id));
+          stack.appendChild(div);
+        });
+
+        col.appendChild(stack);
+
+        // Oldest label
+        const ageBottom = document.createElement('div');
+        ageBottom.className = 'age-marker oldest';
+        ageBottom.textContent = 'Oldest';
+        col.appendChild(ageBottom);
+
+        container.appendChild(col);
+      });
+
+      requestAnimationFrame(drawLines);
+    }
+
+    function getFossilChar(fossilName) {
+      const map = {
+        'Ammonite':         '\u25CE',  // bullseye (spiral)
+        'Trilobite':        '\u2B22',  // hexagon (segmented)
+        'Brachiopod':       '\u25C6',  // diamond
+        'Graptolite':       '\u2605',  // star
+        'Crinoid':          '\u273A',  // sixteen-pointed asterisk
+        'Rugose Coral':     '\u2733',  // eight-spoked asterisk
+        'Shell Fragment':   '\u25D4',  // partial circle
+        'Coral Fragment':   '\u2736',  // star-6
+        'Ancient Coral':    '\u2736',
+        'Fern Impression':  '\u2767',  // floral
+        'Leaf Impression':  '\u2740',  // leaf
+        'Sea Snail':        '\u25D5'
+      };
+      return map[fossilName] || '\u25A1';
+    }
+
+    /* ─── DRAW CORRELATION LINES ─────────────────────────────────────── */
+    function drawLines() {
+      const svg     = document.getElementById('correlationSvg');
+      const wrapper = document.getElementById('columnsWrapper');
+      if (!svg || !wrapper) return;
+
+      const wRect = wrapper.getBoundingClientRect();
+      if (!wRect.width || !wRect.height) return;
+
+      svg.innerHTML = '';
+      svg.style.width  = wRect.width  + 'px';
+      svg.style.height = wRect.height + 'px';
+
+      const byGroup = {};
+      Object.entries(state.matched).forEach(([layerId, groupId]) => {
+        if (!byGroup[groupId]) byGroup[groupId] = [];
+        byGroup[groupId].push(layerId);
+      });
+
+      const lv = currentLevel();
+
+      Object.entries(byGroup).forEach(([groupId, layerIds]) => {
+        if (layerIds.length < 2) return;
+        const grp   = lv.groups[groupId];
+        const color = grp.color;
+
+        const sorted = layerIds.slice().sort((a, b) => a.localeCompare(b));
+
+        for (let i = 0; i < sorted.length - 1; i++) {
+          const el1 = document.getElementById('layer-' + sorted[i]);
+          const el2 = document.getElementById('layer-' + sorted[i+1]);
+          if (!el1 || !el2) continue;
+
+          const r1 = el1.getBoundingClientRect();
+          const r2 = el2.getBoundingClientRect();
+
+          const x1 = r1.right  - wRect.left;
+          const y1 = r1.top    + r1.height / 2 - wRect.top;
+          const x2 = r2.left   - wRect.left;
+          const y2 = r2.top    + r2.height / 2 - wRect.top;
+
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+          line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+          line.setAttribute('stroke', color);
+          line.setAttribute('stroke-width', '2.5');
+          line.setAttribute('stroke-dasharray', '9,5');
+          line.setAttribute('opacity', '0.8');
+          svg.appendChild(line);
+
+          [[x1,y1],[x2,y2]].forEach(([cx,cy]) => {
+            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', '5');
+            c.setAttribute('fill', color); c.setAttribute('opacity', '0.9');
+            svg.appendChild(c);
+          });
+        }
+      });
+    }
+
+    /* ─── RENDER GROUPS LEGEND ───────────────────────────────────────── */
+    function renderGroups() {
+      const lv   = currentLevel();
+      const el   = document.getElementById('groupsLegend');
+      el.innerHTML = '';
+
+      const total = Object.keys(lv.groups).length;
+      const done  = state.completedGroups.length;
+
+      // Update discovery progress
+      const progressEl = document.getElementById('discoveryProgress');
+      if (progressEl) {
+        progressEl.textContent = 'You have identified ' + done + ' of ' + total + ' fossil horizon' + (total !== 1 ? 's' : '') + '.';
+      }
+
+      Object.entries(lv.groups).forEach(([groupId, grp]) => {
+        const isDone   = state.completedGroups.includes(groupId);
+        const matched  = grp.ids.filter(id => state.matched[id] === groupId).length;
+
+        const item = document.createElement('div');
+        item.className = 'group-item' + (isDone ? ' done' : '');
+
+        const swatch = document.createElement('div');
+        swatch.className = 'group-swatch';
+        swatch.style.background = grp.displayColor;
+
+        const fossil = document.createElement('div');
+        fossil.className = 'group-fossil';
+        fossil.textContent = grp.fossil;
+
+        const status = document.createElement('div');
+        status.className = 'group-status' + (isDone ? ' complete' : '');
+        status.textContent = isDone
+          ? 'Fossil horizon discovered'
+          : matched + ' / ' + grp.ids.length + ' linked';
+
+        item.appendChild(swatch);
+        item.appendChild(fossil);
+        item.appendChild(status);
+        el.appendChild(item);
+      });
+    }
+
+    /* ─── HINT SYSTEM ────────────────────────────────────────────────── */
+    document.getElementById('hintBtn').addEventListener('click', () => {
+      const hints = currentLevel().hints;
+      const box   = document.getElementById('hintBox');
+      const text  = document.getElementById('hintText');
+
+      state.hintsUsed++;
+      const hint = hints[state.hintIndex % hints.length];
+      state.hintIndex++;
+      text.textContent = hint;
+      box.classList.add('show');
+
+      updateStats();
+      saveState();
+    });
+
+    /* ─── RESET PUZZLE ───────────────────────────────────────────────── */
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      state.selected        = null;
+      state.matched         = {};
+      state.completedGroups = [];
+      state.errors          = 0;
+      state.hintIndex       = 0;
+      state.victoryShown    = false;
+      state.orderingPhase   = false;
+      state.orderSelected   = [];
+      state.orderCorrect    = false;
+
+      document.getElementById('hintBox').classList.remove('show');
+      document.getElementById('victoryOverlay').classList.remove('show');
+      document.getElementById('reflectionSection').classList.remove('show');
+      document.getElementById('orderingPanel').classList.add('hidden');
+      setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
+
+      updateStats(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); saveState();
+    });
+
+    /* ─── DIFFICULTY TOGGLE ──────────────────────────────────────────── */
+    document.getElementById('practiceBtn').addEventListener('click', () => switchDifficulty('practice'));
+    document.getElementById('challengeBtn').addEventListener('click', () => switchDifficulty('challenge'));
+
+    function switchDifficulty(diff) {
+      if (state.difficulty === diff) return;
+      state.difficulty      = diff;
+      state.selected        = null;
+      state.matched         = {};
+      state.completedGroups = [];
+      state.errors          = 0;
+      state.hintIndex       = 0;
+      state.victoryShown    = false;
+      state.quizAnswers     = {};
+      state.orderingPhase   = false;
+      state.orderSelected   = [];
+      state.orderCorrect    = false;
+
+      document.getElementById('practiceBtn').classList.toggle('active', diff === 'practice');
+      document.getElementById('challengeBtn').classList.toggle('active', diff === 'challenge');
+      document.getElementById('diffDescPractice').style.display = diff === 'practice' ? '' : 'none';
+      document.getElementById('diffDescChallenge').style.display = diff === 'challenge' ? '' : 'none';
+      document.getElementById('hintBox').classList.remove('show');
+      document.getElementById('victoryOverlay').classList.remove('show');
+      document.getElementById('reflectionSection').classList.remove('show');
+      document.getElementById('orderingPanel').classList.add('hidden');
+      document.getElementById('quizQuestions').dataset.built = '';
+
+      setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
+      updateStats(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); saveState();
+    }
+
+    /* ─── MODE TOGGLE (Practice / Classroom) ─────────────────────────── */
+    document.getElementById('practiceModeBtn').addEventListener('click', () => setMode(false));
+    document.getElementById('classroomModeBtn').addEventListener('click', () => setMode(true));
+
+    function setMode(classroom) {
+      state.classroomMode = classroom;
+      document.getElementById('practiceModeBtn').classList.toggle('active', !classroom);
+      document.getElementById('classroomModeBtn').classList.toggle('active', classroom);
+      document.getElementById('modeHintPractice').classList.toggle('visible', !classroom);
+      document.getElementById('modeHintClassroom').classList.toggle('visible', classroom);
+      document.getElementById('classroomPanel').classList.toggle('hidden', !classroom);
+      if (classroom) renderClassroomPanel();
+      saveState();
+    }
+
+    /* ─── CLASSROOM PANEL ────────────────────────────────────────────── */
+    function renderClassroomPanel() {
+      if (!state.classroomMode) return;
+      const lv      = currentLevel();
+      const total   = Object.keys(lv.groups).length;
+      const done    = state.completedGroups.length;
+      const pct     = total > 0 ? Math.round((done / total) * 100) : 0;
+
+      // Match progress grid
+      const grid = document.getElementById('matchProgressGrid');
+      grid.innerHTML = '';
+      Object.entries(lv.groups).forEach(([groupId, grp]) => {
+        const isDone = state.completedGroups.includes(groupId);
+        const node   = document.createElement('div');
+        node.className = 'match-node' + (isDone ? ' done' : '');
+        node.innerHTML = `<span class="match-node-label">${isDone ? 'DISCOVERED' : 'SEARCHING'}</span>
+          <span class="match-node-fossil">${grp.fossil}</span>`;
+        grid.appendChild(node);
+      });
+      document.getElementById('matchProgressFill').style.width = pct + '%';
+      document.getElementById('matchProgressLabel').textContent = done + ' of ' + total + ' horizons identified';
+
+      // Age order status
+      const allMatched = done === total;
+      const ageStatusEl = document.getElementById('ageOrderStatus');
+      if (!allMatched) {
+        ageStatusEl.textContent = 'Complete Step 1 to unlock age ordering.';
+        ageStatusEl.style.color = 'var(--muted)';
+      } else if (state.orderCorrect) {
+        ageStatusEl.textContent = 'Age order confirmed — outstanding field work!';
+        ageStatusEl.style.color = 'var(--green)';
+      } else {
+        ageStatusEl.textContent = 'All horizons found — place them in order from oldest to youngest in the game above.';
+        ageStatusEl.style.color = 'var(--orange)';
+      }
+
+      // Quiz unlock — requires all matched AND age order correct
+      const quizUnlocked = allMatched && state.orderCorrect;
+      document.getElementById('quizLockedOverlay').classList.toggle('hidden', quizUnlocked);
+      if (quizUnlocked) buildQuiz();
+
+      // Submit button — requires all matched, age order correct, and all quiz answered
+      const answered = Object.keys(state.quizAnswers).length;
+      const ready    = quizUnlocked && answered === QUIZ_DATA.length;
+      const submitBtn = document.getElementById('classroomSubmitBtn');
+      submitBtn.disabled  = !ready;
+      submitBtn.className = 'submit-btn ' + (ready ? 'ready' : 'locked');
+      document.getElementById('submitHelperText').style.display = ready ? 'none' : '';
+    }
+
+    /* ─── BUILD QUIZ ─────────────────────────────────────────────────── */
+    function buildQuiz() {
+      const container = document.getElementById('quizQuestions');
+      if (container.dataset.built) return;
+      container.dataset.built = '1';
+      container.innerHTML = '';
+      container.classList.remove('hidden');
+      document.getElementById('quizScoreArea').classList.remove('hidden');
+
+      QUIZ_DATA.forEach(q => {
+        const qDiv = document.createElement('div');
+        qDiv.className = 'quiz-question';
+        qDiv.innerHTML = '<span class="quiz-question-num">Question ' + q.id + '</span><p class="quiz-question-text">' + q.text + '</p>';
+        const opts = document.createElement('div');
+        opts.className = 'quiz-options';
+        const letters = ['A','B','C','D'];
+        q.options.forEach((opt, i) => {
+          const btn = document.createElement('div');
+          btn.className = 'quiz-option' + (state.quizAnswers[q.id] === i ? ' selected' : '');
+          btn.innerHTML = '<div class="quiz-option-letter">' + letters[i] + '</div><span>' + opt + '</span>';
+          btn.addEventListener('click', () => {
+            state.quizAnswers[q.id] = i;
+            Array.from(opts.querySelectorAll('.quiz-option')).forEach((o,j) => {
+              o.classList.toggle('selected', j === i);
+            });
+            updateQuizScore();
+            renderClassroomPanel();
+            saveState();
+          });
+          opts.appendChild(btn);
+        });
+        qDiv.appendChild(opts);
+        container.appendChild(qDiv);
+      });
+      updateQuizScore();
+    }
+
+    function updateQuizScore() {
+      const answered = Object.keys(state.quizAnswers).length;
+      document.getElementById('quizScoreBadge').textContent = answered + ' / ' + QUIZ_DATA.length + ' answered';
+    }
+
+    function computeQuizScore() {
+      let correct = 0;
+      QUIZ_DATA.forEach(q => { if (state.quizAnswers[q.id] === q.correct) correct++; });
+      return correct + '/' + QUIZ_DATA.length;
+    }
+
+    /* ─── CLASSROOM SUBMIT ───────────────────────────────────────────── */
+    document.getElementById('classroomSubmitBtn').addEventListener('click', async () => {
+      const btn     = document.getElementById('classroomSubmitBtn');
+      if (btn.disabled) return;
+      const teacher = document.getElementById('teacherSelect').value;
+      const url     = SCRIPT_URLS[teacher];
+      if (!url) {
+        document.getElementById('submitError').textContent = 'Please select a valid teacher.';
+        document.getElementById('submitError').style.display = 'block';
+        return;
+      }
+
+      btn.disabled    = true;
+      btn.className   = 'submit-btn locked';
+      btn.textContent = 'Submitting\u2026';
+      document.getElementById('submitError').style.display = 'none';
+
+      const params = new URLSearchParams({
+        tab:           'Fossil Hunt',
+        studentName:   document.getElementById('studentNameInput').value.trim(),
+        teacher:       teacher,
+        block:         document.getElementById('blockInput').value.trim(),
+        difficulty:    state.difficulty,
+        groupsMatched: state.completedGroups.length + '/' + Object.keys(currentLevel().groups).length,
+        errors:        String(state.errors),
+        hintsUsed:     String(state.hintsUsed),
+        quizScore:     computeQuizScore(),
+        reflection1:   document.getElementById('ref1').value.trim(),
+        reflection2:   document.getElementById('ref2').value.trim(),
+        reflection3:   document.getElementById('ref3').value.trim(),
+        reflection4:   document.getElementById('ref4').value.trim()
+      });
+
+      try {
+        await fetch(url + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
+        btn.textContent = 'Submitted';
+        document.getElementById('submitHelperText').style.display = 'none';
+        document.getElementById('submitSuccess').style.display    = 'block';
+        localStorage.removeItem(SAVE_KEY);
+      } catch(err) {
+        btn.disabled    = false;
+        btn.className   = 'submit-btn ready';
+        btn.textContent = 'Submit to Teacher';
+        document.getElementById('submitError').textContent = 'Submission failed. Check your connection and try again.';
+        document.getElementById('submitError').style.display = 'block';
+      }
+    });
+
+    /* ─── VICTORY CLOSE ──────────────────────────────────────────────── */
+    document.getElementById('victoryClose').addEventListener('click', () => {
+      document.getElementById('victoryOverlay').classList.remove('show');
+    });
+
+    /* ─── LEARN SECTION TOGGLE ───────────────────────────────────────── */
+    document.getElementById('learnToggle').addEventListener('click', () => {
+      const toggle = document.getElementById('learnToggle');
+      const body   = document.getElementById('learnBody');
+      toggle.classList.toggle('open');
+      body.classList.toggle('open');
+    });
+
+    /* ─── REFLECTION AUTO-SAVE ───────────────────────────────────────── */
+    ['ref1','ref2','ref3','ref4'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function() {
+        state.reflections[id] = this.value;
+        saveState();
+      });
+    });
+
+    /* Auto-save student fields */
+    ['studentNameInput','teacherSelect','blockInput'].forEach(id => {
+      document.getElementById(id).addEventListener('change', saveState);
+    });
+
+    /* ─── WINDOW RESIZE — REDRAW LINES ───────────────────────────────── */
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(drawLines, 120);
+    });
+
+    /* ─── BOOT ───────────────────────────────────────────────────────── */
+    (function boot() {
+      const restored = loadState();
+
+      // Apply saved mode
+      if (state.classroomMode) setMode(true);
+      if (state.difficulty !== 'practice') {
+        document.getElementById('practiceBtn').classList.remove('active');
+        document.getElementById('challengeBtn').classList.add('active');
+      }
+
+      // Restore reflection answers
+      ['ref1','ref2','ref3','ref4'].forEach(id => {
+        if (state.reflections[id]) document.getElementById(id).value = state.reflections[id];
+      });
+
+      // Show restore banner
+      if (restored && (Object.keys(state.matched).length > 0 || state.errors > 0)) {
+        const banner = document.getElementById('restoreBanner');
+        banner.classList.add('show');
+        setTimeout(() => banner.classList.remove('show'), 3200);
+      }
+
+      // Restore reflection section if ordering was completed
+      if (state.orderCorrect) {
+        document.getElementById('reflectionSection').classList.add('show');
+      }
+
+      // If age check was answered correctly and victory not yet shown, show age check again
+      // (If ageCheckCorrect already true, we skip re-showing victory so they can revisit)
+
+      // Restore ordering panel if in ordering phase
+      if (state.orderingPhase) {
+        renderOrderingPanel();
+      }
+
+      // Initial render
+      updateStats();
+      renderLayers();
+      renderGroups();
+      requestAnimationFrame(drawLines);
+    })();
+  </script>
+</body>
+</html>
