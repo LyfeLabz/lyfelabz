@@ -1574,7 +1574,7 @@
         const filledGroupId = state.orderSelected[i] || null;
         const slot = document.createElement('div');
         slot.className = 'ordering-slot' + (filledGroupId ? ' filled' : '');
-        const midLabels = n === 4 ? ['Older', 'Younger'] : ['Older'];
+        const midLabels = n === 4 ? ['Older', 'Younger'] : ['Middle'];
         const slotLabel = i === 0 ? 'Oldest' : i === n - 1 ? 'Youngest' : midLabels[i - 1];
         const fossil = filledGroupId ? groups[filledGroupId].fossil : '\u2014';
         slot.innerHTML =
