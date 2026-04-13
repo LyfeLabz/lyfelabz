@@ -549,7 +549,7 @@
   .cont-card.game .cont-icon { background: rgba(61,220,132,0.18); }
   .cont-card.ext  .cont-icon { background: rgba(180,127,255,0.2); }
   .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
-  .cont-desc { font-size: 0.86rem; color: rgba(232,237,242,0.82); line-height: 1.6; }
+  .cont-desc { font-size: 0.86rem; color: rgba(232,237,242,0.82); line-height: 1.6; flex: 1; }
   .coming-soon-tag {
     display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em;
     text-transform: uppercase; padding: 0.2rem 0.7rem; border-radius: 99px;
@@ -557,12 +557,14 @@
     background: rgba(122,143,166,0.06); margin-top: 0.2rem;
   }
   .cont-link {
-    display: inline-block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.09em;
-    text-transform: uppercase; padding: 0.25rem 0.8rem; border-radius: 99px;
-    border: 1px solid; margin-top: 0.4rem; transition: all 0.18s ease;
+    display: inline-flex; align-items: center;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+    text-decoration: none; padding: 0.4rem 1rem;
+    border-radius: 99px; border: 1px solid; transition: all 0.2s;
+    white-space: nowrap; align-self: flex-start; margin-top: auto;
   }
-  .cont-card.game .cont-link { background: rgba(61,220,132,0.1); border-color: rgba(61,220,132,0.35); color: #3ddc84; }
-  .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.22); border-color: rgba(61,220,132,0.65); }
+  .cont-card.game .cont-link { background: rgba(61,220,132,0.1); border-color: rgba(61,220,132,0.3); color: #3ddc84; }
+  .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2); border-color: rgba(61,220,132,0.55); }
   a.cont-card { text-decoration: none; cursor: pointer; }
 
   /* ── KEY CONCEPTS ── */
@@ -974,17 +976,11 @@
     <h2 class="section-title">More Learning</h2>
     <p class="section-desc">The lesson is just the beginning — go deeper, test your skills, or see how it all connects.</p>
     <div class="continue-grid">
-      <div class="cont-card sim">
-        <div class="cont-icon">🌋</div>
-        <div class="cont-name">Rock Cycle Simulation</div>
-        <div class="cont-desc">Follow a piece of rock through the full rock cycle — from magma to sediment and back again.</div>
-        <span class="coming-soon-tag">🚧 Coming Soon</span>
-      </div>
       <a href="game_layer-detective.html" class="cont-card game">
         <div class="cont-icon">🔍</div>
         <div class="cont-name">Layer Detective</div>
         <div class="cont-desc">Work through 10 rock strata puzzles — from simple superposition to faults, intrusions, folds, and unconformities.</div>
-        <span class="cont-link">Play Game</span>
+        <span class="cont-link">Play</span>
       </a>
       <a href="game_fossil-hunt.html" class="cont-card game">
         <div class="cont-icon">🦴</div>
@@ -992,18 +988,7 @@
         <div class="cont-desc">Apply what you learned about index fossils to match rock layers and determine their relative ages across multiple locations.</div>
         <span class="cont-link">Play</span>
       </a>
-      <div class="cont-card game">
-        <div class="cont-icon">🏺</div>
-        <div class="cont-name">Fossil Dig Game</div>
-        <div class="cont-desc">Excavate a virtual site, identify index fossils, and use superposition to date your discoveries.</div>
-        <span class="coming-soon-tag">🚧 Coming Soon</span>
-      </div>
-      <div class="cont-card ext">
-        <div class="cont-icon">🗺️</div>
-        <div class="cont-name">Virtual Grand Canyon Tour</div>
-        <div class="cont-desc">Explore the layers of the Grand Canyon and match each stratum to its time period in Earth's history.</div>
-        <span class="coming-soon-tag">🚧 Coming Soon</span>
-      </div>
+
     </div>
   </div>
 </section>
