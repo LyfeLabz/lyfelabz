@@ -687,6 +687,10 @@
       You are on a fossil hunt. Scientists have uncovered rock layers at three separate locations, and your job is to use fossil evidence to figure out which layers are the same age — and which came first.
     </div>
 
+    <p style="text-align:center;font-size:.9rem;color:var(--muted);margin:-8px auto 16px;max-width:720px;line-height:1.6;">
+      Scientists use index fossils to estimate the age of rock layers and reconstruct Earth's history.
+    </p>
+
     <!-- Restore Banner -->
     <div class="restore-banner" id="restoreBanner">Your progress has been restored.</div>
 
@@ -713,6 +717,10 @@
           <div class="criteria-num">3</div>
           <div class="criteria-text">Easy to <strong>recognize</strong> — so it can be reliably identified in rock samples from the field.</div>
         </div>
+      </div>
+      <div style="margin-top:14px;background:rgba(67,240,125,.05);border:1px solid rgba(67,240,125,.22);border-radius:12px;padding:11px 16px;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:.52rem;font-weight:900;color:var(--green);text-transform:uppercase;letter-spacing:.12em;display:block;margin-bottom:6px;">Why This Matters</span>
+        <p style="margin:0;font-size:.82rem;color:var(--muted);line-height:1.65;">Fossils help scientists date rock layers without using a clock. They help compare layers found in completely different parts of the world. And together, they let geologists reconstruct billions of years of Earth history — one layer at a time.</p>
       </div>
     </div>
 
@@ -1403,10 +1411,14 @@
       for (const loc of lv.locations) {
         const count = loc.layers.filter(l => l.fossil === fossil).length;
         if (count > 1) {
-          return `The ${fossil} appears in more than one layer at Location ${loc.name} — this means it lived across multiple time periods and cannot pinpoint a single age. Index fossils must appear in only one layer per location.`;
+          return `This fossil existed for too long to pinpoint one layer — the ${fossil} shows up in more than one layer at Location ${loc.name}. A good index fossil must appear in only one layer per site.`;
         }
       }
-      return `The ${fossil} is not a reliable index fossil. To be useful for dating, a fossil must have lived during a very short time period and appear in only one rock layer per location.`;
+      const info = FOSSIL_INFO[fossil];
+      if (info && !info.isStrongIndex) {
+        return `This fossil appears in too many different layers or time periods to be a precise clue. Index fossils must have lived during a short, specific window of geologic time.`;
+      }
+      return `The ${fossil} is not a reliable index fossil here. A strong index fossil must be short-lived and appear in only one rock layer per location.`;
     }
 
     /* ─── MATCH LOGIC ────────────────────────────────────────────────── */
@@ -1620,7 +1632,9 @@
           state.orderCorrect = true;
           setFeedback('success', 'Age Order Confirmed!',
             'You correctly placed the fossil horizons from oldest to youngest. This is how geologists read time in rock.');
-          document.getElementById('reflectionSection').classList.add('show');
+          if (state.classroomMode || state.difficulty !== 'practice') {
+            document.getElementById('reflectionSection').classList.add('show');
+          }
           renderOrderingPanel();
           if (!state.ageCheckAnswered) {
             setTimeout(() => showAgeCheck(), 900);
@@ -1994,6 +2008,8 @@
       document.getElementById('reflectionSection').classList.remove('show');
       document.getElementById('orderingPanel').classList.add('hidden');
       document.getElementById('quizQuestions').dataset.built = '';
+      state.ageCheckAnswered = false;
+      state.ageCheckCorrect  = false;
 
       setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
       updateStats(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); saveState();
@@ -2010,6 +2026,11 @@
       document.getElementById('modeHintPractice').classList.toggle('visible', !classroom);
       document.getElementById('modeHintClassroom').classList.toggle('visible', classroom);
       document.getElementById('classroomPanel').classList.toggle('hidden', !classroom);
+      // Show reflection if classroom mode is on and ordering is complete; hide if practice+non-classroom
+      if (state.orderCorrect) {
+        const showRef = classroom || state.difficulty !== 'practice';
+        document.getElementById('reflectionSection').classList.toggle('show', showRef);
+      }
       if (classroom) renderClassroomPanel();
       saveState();
     }
@@ -2217,7 +2238,7 @@
       }
 
       // Restore reflection section if ordering was completed
-      if (state.orderCorrect) {
+      if (state.orderCorrect && (state.classroomMode || state.difficulty !== 'practice')) {
         document.getElementById('reflectionSection').classList.add('show');
       }
 
