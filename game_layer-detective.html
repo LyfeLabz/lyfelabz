@@ -1079,7 +1079,7 @@
           addLayerHalf(el, 'pattern-siltstone', 41+OFF, 9, '59%', '33%');
           // Post-fault layer G — right side only, above the right stack, not cut by the fault
           addLayerHalf(el, 'pattern-conglomerate', 43, 8, '59%', '33%');
-          addFault(el, 56, 20, 10, 72, 11);
+          addFault(el, 56, 41, 10, 51, 11);
           addEventBadge(el, 'A', 12, 79);
           addEventBadge(el, 'B', 12, 70);
           addEventBadge(el, 'C', 12, 61);
@@ -1121,15 +1121,15 @@
       },
       {
         id: 3,
-        topic: "Lava Flow",
-        text: "A lava flow rests on top of several rock layers. Compared to those rock layers below it, the lava flow is:",
+        topic: "Cross-Cutting Relationships",
+        text: "If a magma intrusion cuts through layers A, B, C, D, and E, what does that tell you?",
         options: [
-          "Older than all of them",
-          "The same age as the top layer",
-          "Younger than all of the rock layers below it",
-          "There is no way to tell"
+          "The intrusion is older than all the layers",
+          "The intrusion is younger than all the layers it cuts through",
+          "The intrusion and the layers are the same age",
+          "The top layer must always be younger than the intrusion"
         ],
-        correct: 2
+        correct: 1
       },
       {
         id: 4,
@@ -1744,8 +1744,9 @@
       if(state.currentLevel < levels.length - 1){
         state.bestUnlocked = Math.max(state.bestUnlocked, state.currentLevel + 1);
       }
-      refs.nextBtn.disabled = false;
-      refs.nextBtn.classList.add('btn-next-active');
+      const isLastLevel = state.currentLevel >= levels.length - 1;
+      refs.nextBtn.disabled = isLastLevel;
+      if(!isLastLevel) refs.nextBtn.classList.add('btn-next-active');
       // Scroll to Cross-Section View
       setTimeout(scrollToCrossSection, 120);
       // Victory: completed all 5 levels
@@ -1830,7 +1831,7 @@
       // Next button state
       const cleared = isLevelCleared();
       refs.nextBtn.disabled = !cleared;
-      refs.nextBtn.textContent = state.currentLevel < levels.length - 1 ? 'Next Level' : 'Finish';
+      refs.nextBtn.textContent = 'Next Level';
       if(cleared){
         refs.nextBtn.classList.add('btn-next-active');
         const allFilled = state.placements.every(Boolean) && state.placements.length === level().correct.length;
@@ -1847,9 +1848,9 @@
       if(state.currentLevel < levels.length - 1){
         state.currentLevel += 1;
         startLevel();
-      } else {
-        window.location.href = 'index.html';
       }
+      // On last level: button is disabled — this function should not be reachable,
+      // but guard here so no redirect ever occurs.
     }
 
     function resetGame(){
@@ -1920,16 +1921,18 @@
       });
 
       try {
-        await fetch(scriptUrl + '?' + params.toString(), {
-          method: 'GET',
-          mode:   'no-cors'
+        const response = await fetch(scriptUrl + '?' + params.toString(), {
+          method: 'GET'
         });
-        // no-cors means we can't read the response body — treat reaching here as success
+        if(!response.ok){
+          throw new Error('Server returned ' + response.status);
+        }
+        // Only reach here when the server confirmed a real 2xx response
         refs.classroomSubmitBtn.textContent  = 'Submitted';
         refs.submitHelperText.style.display  = 'none';
         refs.submitSuccess.style.display     = 'block';
       } catch(err) {
-        // Network-level failure
+        // Network failure or non-2xx response — restore button so student can retry
         refs.classroomSubmitBtn.disabled    = false;
         refs.classroomSubmitBtn.className   = 'submit-btn ready';
         refs.classroomSubmitBtn.textContent = 'Submit to Teacher';
@@ -2059,6 +2062,15 @@
     /* ─── BOOT ───────────────────────────────────────────────────── */
     loadState();
     startLevel();
+
+    /* ─── URL CLASSROOM MODE ─────────────────────────────────────── */
+    // If ?mode=classroom is in the URL, activate classroom mode automatically
+    (function(){
+      const params = new URLSearchParams(window.location.search);
+      if(params.get('mode') === 'classroom'){
+        setMode(true);
+      }
+    })();
   </script>
 </body>
 </html>
