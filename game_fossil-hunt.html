@@ -360,18 +360,37 @@
       text-transform: uppercase; letter-spacing: .04em; margin: 0 0 4px;
     }
     .ordering-sub { font-size: .84rem; color: var(--muted); line-height: 1.55; margin: 0 0 14px; }
-    .ordering-slots { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .ordering-slots { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
     .ordering-slot {
-      flex: 1; min-width: 60px; padding: 8px 6px; border-radius: 12px; text-align: center;
-      border: 1px dashed rgba(89,112,170,.35); background: rgba(9,14,30,.5);
+      flex: 1; min-width: 70px; padding: 10px 8px 12px; border-radius: 14px; text-align: center;
+      border: 2px dashed rgba(89,112,170,.28); background: rgba(9,14,30,.42);
+      transition: border-color .2s ease, background .2s ease;
     }
-    .ordering-slot.filled { border-style: solid; background: rgba(9,14,30,.8); }
+    .ordering-slot.filled { border-style: solid; border-width: 2px; background: rgba(9,14,30,.82); }
+    /* Middle slot(s) — slightly stronger presence so the position reads as deliberate */
+    .ordering-slot:not(:first-child):not(:last-child) {
+      border-color: rgba(89,112,170,.44); background: rgba(9,14,30,.52);
+    }
+    /* Position label — pill badge, clearly secondary to the fossil name */
     .ordering-slot-num {
-      font-family: 'Orbitron', sans-serif; font-size: .48rem; font-weight: 900;
-      color: var(--muted); display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .08em;
+      display: inline-block;
+      font-family: 'Orbitron', sans-serif; font-size: .52rem; font-weight: 900;
+      color: rgba(145,163,201,.6); text-transform: uppercase; letter-spacing: .1em;
+      background: rgba(89,112,170,.1); border: 1px solid rgba(89,112,170,.2);
+      padding: .16rem .6rem; border-radius: 99px;
+      margin-bottom: 9px;
     }
-    .ordering-slot-fossil { font-size: .76rem; font-weight: 800; color: var(--muted); }
-    .ordering-slot.filled .ordering-slot-fossil { color: var(--text); }
+    .ordering-slot:not(:first-child):not(:last-child) .ordering-slot-num {
+      color: rgba(145,163,201,.82); background: rgba(89,112,170,.18); border-color: rgba(89,112,170,.32);
+    }
+    /* Fossil content — de-emphasized when empty, clearly primary when filled */
+    .ordering-slot-fossil {
+      display: block; font-size: .76rem; font-weight: 700;
+      color: rgba(145,163,201,.25); letter-spacing: .02em;
+    }
+    .ordering-slot.filled .ordering-slot-fossil {
+      font-size: .82rem; font-weight: 800; color: var(--text);
+    }
     .ordering-choices { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
     .ordering-choice-btn {
       padding: .4rem .9rem; border-radius: 10px; border: 1px solid rgba(89,112,170,.35);
