@@ -687,7 +687,7 @@
     <div class="hero">
       <div class="page-eyebrow">Game</div>
       <h1>Layer Detective</h1>
-      <p>Work through 5 rock strata puzzles that build from simple stacking to full relative dating challenges with magma intrusions, lava flows, and faults.</p>
+      <p>Work through 5 rock strata puzzles that build from simple stacking to full relative dating challenges with magma intrusions, faults, and post-fault sediment reasoning.</p>
     </div>
 
     <div class="stats">
@@ -1818,7 +1818,7 @@
     }
 
     function startLevel(){
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToCrossSection();
       resetPlacements();
       updateHeaderStats();
       renderLevelGrid();
@@ -1930,6 +1930,7 @@
         // Only reach here when the server confirmed a real 2xx response
         refs.classroomSubmitBtn.textContent  = 'Submitted';
         refs.submitHelperText.style.display  = 'none';
+        refs.submitSuccess.innerHTML = `Your work has been submitted! Great job, geologic detective.<br><span class="quiz-score-badge" style="margin-top:10px;">Your quiz score: ${computeQuizScore()}</span>`;
         refs.submitSuccess.style.display     = 'block';
       } catch(err) {
         // Network failure or non-2xx response — restore button so student can retry
@@ -1949,6 +1950,11 @@
     refs.nextBtn.addEventListener('click', nextLevel);
     refs.victoryClose.addEventListener('click', () => {
       refs.victoryOverlay.classList.remove('show');
+      if(state.classroomMode){
+        setTimeout(() => {
+          document.getElementById('classroomQuizSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
+      }
     });
 
     /* ─── TEACHER / TESTING HOTKEYS ──────────────────────────────── */
