@@ -889,7 +889,7 @@
       <div class="classroom-section">
         <div class="classroom-section-title" style="color:var(--orange);">Step 2 — Determine Age Order</div>
         <p class="subtext" style="font-size:.85rem;margin:6px 0 10px;">Place the fossil horizons in order from oldest to youngest using their position in the rock layers.</p>
-        <div id="ageOrderProgress" style="font-size:.82rem;font-weight:700;color:var(--muted);margin-top:4px;" id="ageOrderProgress">
+        <div id="ageOrderProgress" style="font-size:.82rem;font-weight:700;color:var(--muted);margin-top:4px;">
           <span id="ageOrderStatus">Complete Step 1 to unlock age ordering.</span>
         </div>
       </div>
@@ -1574,7 +1574,8 @@
         const filledGroupId = state.orderSelected[i] || null;
         const slot = document.createElement('div');
         slot.className = 'ordering-slot' + (filledGroupId ? ' filled' : '');
-        const slotLabel = i === 0 ? 'Oldest' : i === n - 1 ? 'Youngest' : (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th');
+        const midLabels = n === 4 ? ['Older', 'Younger'] : ['Older'];
+        const slotLabel = i === 0 ? 'Oldest' : i === n - 1 ? 'Youngest' : midLabels[i - 1];
         const fossil = filledGroupId ? groups[filledGroupId].fossil : '\u2014';
         slot.innerHTML =
           '<span class="ordering-slot-num">' + slotLabel + '</span>' +
