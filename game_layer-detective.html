@@ -166,30 +166,38 @@
     .toolbar{ display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 8px; }
     .btn-main,.btn-alt,.btn-subtle,.btn-ghost{
       border-radius:14px; padding:.82rem 1rem; font-weight:800; font-family:'Nunito',sans-serif; cursor:pointer; border:1px solid transparent;
-      transition:transform .12s ease, filter .15s ease, border-color .15s ease, background .15s ease;
+      transition:transform .14s ease, filter .15s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
     }
     .btn-main{
-      background:linear-gradient(180deg, rgba(36,232,255,.14), rgba(36,232,255,.07));
-      border-color:rgba(36,232,255,.38); color:var(--cyan);
+      background:linear-gradient(180deg, rgba(36,232,255,.18), rgba(36,232,255,.08));
+      border-color:rgba(36,232,255,.42); color:var(--cyan);
+      box-shadow:0 2px 8px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
     }
     .btn-alt{
-      background:linear-gradient(180deg, rgba(67,240,125,.14), rgba(67,240,125,.07));
-      border-color:rgba(67,240,125,.38); color:var(--green);
+      background:linear-gradient(180deg, rgba(67,240,125,.18), rgba(67,240,125,.08));
+      border-color:rgba(67,240,125,.42); color:var(--green);
+      box-shadow:0 2px 8px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
     }
     .btn-subtle{
-      background:linear-gradient(180deg, rgba(246,203,67,.14), rgba(246,203,67,.07));
-      border-color:rgba(246,203,67,.38); color:var(--yellow);
+      background:linear-gradient(180deg, rgba(246,203,67,.18), rgba(246,203,67,.08));
+      border-color:rgba(246,203,67,.42); color:var(--yellow);
+      box-shadow:0 2px 8px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
     }
     .btn-ghost{
-      background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.12); color:var(--text);
+      background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.14); color:var(--text);
+      box-shadow:0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.06);
     }
-    .btn-main:hover,.btn-alt:hover,.btn-subtle:hover,.btn-ghost:hover:not(:disabled){ transform:translateY(-1px); filter:brightness(1.08); }
+    .btn-main:hover{ transform:translateY(-2px); filter:brightness(1.12); box-shadow:0 4px 16px rgba(36,232,255,.22), 0 2px 8px rgba(0,0,0,.3); }
+    .btn-alt:hover{ transform:translateY(-2px); filter:brightness(1.12); box-shadow:0 4px 16px rgba(67,240,125,.22), 0 2px 8px rgba(0,0,0,.3); }
+    .btn-subtle:hover{ transform:translateY(-2px); filter:brightness(1.12); box-shadow:0 4px 16px rgba(246,203,67,.2), 0 2px 8px rgba(0,0,0,.3); }
+    .btn-ghost:hover:not(:disabled){ transform:translateY(-2px); filter:brightness(1.1); box-shadow:0 4px 14px rgba(0,0,0,.3), 0 0 8px rgba(255,255,255,.06); }
     .btn-ghost:disabled{ opacity:.32; cursor:not-allowed; }
     .btn-danger{
-      background:linear-gradient(180deg, rgba(255,80,55,.16), rgba(255,80,55,.08));
-      border-color:rgba(255,90,65,.42); color:#ff6b5a;
+      background:linear-gradient(180deg, rgba(255,80,55,.18), rgba(255,80,55,.09));
+      border-color:rgba(255,90,65,.46); color:#ff6b5a;
+      box-shadow:0 2px 8px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.06);
     }
-    .btn-danger:hover{ transform:translateY(-1px); filter:brightness(1.1); }
+    .btn-danger:hover{ transform:translateY(-2px); filter:brightness(1.12); box-shadow:0 4px 16px rgba(255,80,55,.2), 0 2px 8px rgba(0,0,0,.3); }
 
     /* ── Next Level active glow ───────────────────────────────────── */
     @keyframes nextGlowPulse{
@@ -209,31 +217,82 @@
     .cross-card{ padding:16px; border-radius:24px; border:1px solid rgba(89,112,170,.28); background:linear-gradient(180deg, rgba(17,25,46,.75), rgba(11,16,32,.9)); }
     .cross-wrap{
       position:relative; width:100%; min-height:580px; border-radius:24px; overflow:hidden;
-      background:linear-gradient(180deg, #7ec7f2 0%, #9bdaf7 17%, #6c5b4f 17.15%, #58463b 100%);
+      /* Sky → horizon → earth color */
+      background:
+        linear-gradient(180deg,
+          #4a90c8 0%,
+          #7ec7f2 8%,
+          #9bdaf7 15.5%,
+          #b8c9a0 16%,
+          #7a6248 17%,
+          #5c4a3a 22%,
+          #4a3829 100%
+        );
+      /* Subtle scene lighting — overhead light source */
       border:1px solid rgba(255,255,255,.08);
+      box-shadow:
+        inset 0 0 90px rgba(0,0,0,.32),          /* vignette */
+        inset 120px 0 80px rgba(0,0,0,.18),       /* left edge shadow */
+        inset -120px 0 80px rgba(0,0,0,.18),      /* right edge shadow */
+        0 4px 20px rgba(0,0,0,.4);                /* outer depth */
       transition: outline .15s ease;
+    }
+    /* Lighting overlay — soft overhead illumination */
+    .cross-wrap::before{
+      content:"";
+      position:absolute; inset:0; pointer-events:none; z-index:1; border-radius:24px;
+      background:
+        radial-gradient(ellipse 70% 25% at 50% 0%, rgba(255,255,240,.13) 0%, transparent 100%),
+        linear-gradient(180deg, transparent 14%, rgba(0,0,0,.08) 40%, rgba(0,0,0,.22) 100%);
     }
     .cross-wrap.accept-return{
       outline: 2px dashed rgba(36,232,255,0.4);
       outline-offset: 3px;
     }
-    .sky-haze{ position:absolute; inset:0 0 auto 0; height:17%; background:linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0)); }
-    .ground-top{ position:absolute; top:17%; left:0; right:0; height:3%; background:linear-gradient(180deg, #7b6657, #5f4d40); }
+    /* Sky atmosphere */
+    .sky-haze{
+      position:absolute; inset:0 0 auto 0; height:17%; z-index:2;
+      background:
+        linear-gradient(180deg,
+          rgba(180,220,255,.22) 0%,
+          rgba(180,220,255,.08) 60%,
+          transparent 100%
+        );
+    }
+    /* Ground surface strip — more defined dirt/rock interface */
+    .ground-top{
+      position:absolute; top:17%; left:0; right:0; height:3%; z-index:2;
+      background:linear-gradient(180deg, #9a8060 0%, #6e5540 40%, #4a3829 100%);
+      box-shadow:inset 0 -3px 8px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);
+    }
     .rock-layer{
       position:absolute; left:8%; width:84%;
-      border:1px solid rgba(15,23,42,.5);
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+      /* Depth: outer border + crisp top-edge highlight + subtle bottom shadow */
+      border:1px solid rgba(0,0,0,.55);
+      border-top-color: rgba(255,255,255,.18);
+      /* Inner depth — top highlight strip, bottom shadow strip */
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.22),
+        inset 0 -2px 4px rgba(0,0,0,.28),
+        0 2px 6px rgba(0,0,0,.35);
       display:flex; align-items:center; justify-content:center;
-      color:rgba(15,23,42,.85); font-weight:900; letter-spacing:.06em; font-size:1.05rem;
+      color:rgba(15,23,42,.92); font-weight:900; letter-spacing:.06em; font-size:1.05rem;
       transition:transform .16s ease, box-shadow .16s ease, outline .12s ease;
       user-select: none;
+      /* Texture-ready: background-image will overlay color/pattern when assets are added */
+      background-size: cover;
+      background-position: center;
     }
     /* Draggable layers */
     .rock-layer[data-part-id]:not(.ghost){ cursor:grab; }
     .rock-layer[data-part-id]:not(.ghost):hover{
-      transform:translateY(-2px);
-      box-shadow:0 8px 22px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.14);
-      outline: 2px solid rgba(36,232,255,.4);
+      transform:translateY(-3px) scale(1.012);
+      box-shadow:
+        0 14px 34px rgba(0,0,0,.45),
+        0 0 20px rgba(36,232,255,.16),
+        inset 0 1px 0 rgba(255,255,255,.32),
+        inset 0 -2px 4px rgba(0,0,0,.2);
+      outline: 2px solid rgba(36,232,255,.65);
       outline-offset: -2px;
       z-index: 5;
     }
@@ -241,8 +300,13 @@
     .rock-layer.cross-selected{
       outline: 2.5px solid var(--cyan) !important;
       outline-offset: -2px;
-      box-shadow: 0 0 0 5px rgba(36,232,255,.22), 0 8px 22px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.14) !important;
+      box-shadow:
+        0 0 0 6px rgba(36,232,255,.28),
+        0 0 24px rgba(36,232,255,.2),
+        0 8px 22px rgba(0,0,0,.32),
+        inset 0 1px 0 rgba(255,255,255,.28) !important;
       z-index: 6;
+      filter: brightness(1.1);
     }
     /* Ghost: layer stays visible in strata but faded */
     .ghost{
@@ -255,28 +319,43 @@
     .event-badge{
       position:absolute;
       display:inline-flex; align-items:center; justify-content:center;
-      min-width:40px; height:40px; padding:0 10px;
-      border-radius:10px;
-      background:rgba(9,18,38,0.93);
+      min-width:44px; height:44px; padding:0 12px;
+      border-radius:12px;
+      background:
+        linear-gradient(145deg, rgba(12,24,52,0.97) 0%, rgba(7,14,32,0.98) 100%);
       color:var(--cyan);
-      border:2px solid rgba(36,232,255,.65);
-      box-shadow:0 4px 16px rgba(0,0,0,.38);
+      border:2px solid rgba(36,232,255,.75);
+      box-shadow:
+        0 0 0 3px rgba(36,232,255,.1),
+        0 6px 20px rgba(0,0,0,.55),
+        0 0 14px rgba(36,232,255,.18),
+        inset 0 1px 0 rgba(255,255,255,.1);
       font-weight:900; font-size:1rem; letter-spacing:.05em;
       cursor:grab;
       z-index:10;
       user-select:none;
-      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      transition:transform .14s ease, box-shadow .14s ease, border-color .14s ease, filter .14s ease;
     }
     .event-badge:not(.ghost):hover{
-      transform:scale(1.1) translateY(-1px);
+      transform:scale(1.13) translateY(-2px);
       border-color:var(--cyan);
-      box-shadow:0 6px 20px rgba(36,232,255,.25);
+      box-shadow:
+        0 0 0 4px rgba(36,232,255,.18),
+        0 10px 28px rgba(0,0,0,.55),
+        0 0 24px rgba(36,232,255,.35),
+        inset 0 1px 0 rgba(255,255,255,.14);
+      filter: brightness(1.1);
     }
     .event-badge:not(.ghost):active{ cursor:grabbing; }
     .event-badge.cross-selected{
       border-color:var(--gold);
-      box-shadow:0 0 0 4px rgba(245,200,66,.3), 0 6px 20px rgba(0,0,0,.35);
-      transform:scale(1.1);
+      box-shadow:
+        0 0 0 5px rgba(245,200,66,.3),
+        0 0 28px rgba(245,200,66,.28),
+        0 8px 24px rgba(0,0,0,.5),
+        inset 0 1px 0 rgba(255,255,255,.14);
+      transform:scale(1.16);
+      filter: brightness(1.12);
     }
     .feature-label{
       position:absolute; padding:.32rem .65rem; border-radius:999px; font-size:.68rem; font-weight:900; letter-spacing:.06em; text-transform:uppercase;
@@ -286,31 +365,118 @@
     .fault-line,.dike,.lava-flow,.surface-tilt,.metamorph-zone{
       position:absolute; pointer-events:none;
     }
-    .fault-line{
-      background:repeating-linear-gradient(180deg, rgba(31,41,55,.95), rgba(31,41,55,.95) 10px, rgba(82,91,109,.95) 10px, rgba(82,91,109,.95) 20px);
-      border-radius:999px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 10px 30px rgba(0,0,0,.18);
-      z-index:8;
-    }
+
+    /* Dike — igneous intrusion with a warmer mineralic tone */
     .dike{
-      background:linear-gradient(180deg, #3f3f46 0%, #6b7280 100%);
-      border-radius:999px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 10px 30px rgba(0,0,0,.18);
+      background:
+        linear-gradient(
+          90deg,
+          rgba(0,0,0,.25) 0%,
+          transparent 15%,
+          transparent 85%,
+          rgba(0,0,0,.25) 100%
+        ),
+        linear-gradient(180deg, #4a4550 0%, #6e6472 30%, #5c545f 65%, #3f3844 100%);
+      border-radius:2px;
+      border-left:1px solid rgba(255,255,255,.1);
+      border-right:1px solid rgba(255,255,255,.07);
+      box-shadow:
+        0 0 14px rgba(0,0,0,.55),
+        inset 1px 0 0 rgba(255,255,255,.12),
+        inset -1px 0 0 rgba(0,0,0,.3);
       z-index:8;
     }
+    /* Lava flow — glowing orange-grey cooled lava band */
     .lava-flow{
-      height:22px; background:linear-gradient(180deg, #555 0%, #71717a 100%); border-radius:999px;
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+      height:22px;
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255,140,50,.18) 0%,
+          rgba(120,90,60,.9)   18%,
+          rgba(90,70,50,.95)   55%,
+          rgba(70,55,40,.98)   100%
+        );
+      border-top:1px solid rgba(255,160,80,.35);
+      border-bottom:1px solid rgba(0,0,0,.4);
+      border-radius:2px;
+      box-shadow:
+        0 -2px 10px rgba(255,120,40,.15),
+        0 4px 12px rgba(0,0,0,.45),
+        inset 0 1px 0 rgba(255,200,100,.12);
       z-index:7;
     }
     .metamorph-zone{
       border:2px dotted rgba(255,255,255,.28); border-radius:999px; opacity:.8; z-index:7;
     }
-    .pattern-basement{ background-color:#6f5a7d; background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.14) 4px, transparent 4px, transparent 12px); }
-    .pattern-shale{ background-color:#8a6f55; background-image:repeating-linear-gradient(0deg, rgba(0,0,0,.12), rgba(0,0,0,.12) 2px, transparent 2px, transparent 7px); }
-    .pattern-sandstone{ background-color:#d6b07a; background-image:radial-gradient(rgba(255,255,255,.25) 1px, transparent 1px); background-size:9px 9px; }
-    .pattern-limestone{ background-color:#d8d0c4; background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.38), rgba(255,255,255,.38) 14px, transparent 14px, transparent 30px); }
-    .pattern-conglomerate{ background-color:#9f7b55; background-image:radial-gradient(rgba(255,255,255,.35) 2px, transparent 2px), radial-gradient(rgba(0,0,0,.15) 1.5px, transparent 1.5px); background-size:20px 20px, 13px 13px; background-position:0 0, 7px 8px; }
-    .pattern-siltstone{ background-color:#c9a16d; background-image:repeating-linear-gradient(45deg, rgba(255,255,255,.16), rgba(255,255,255,.16) 3px, transparent 3px, transparent 10px); }
-    .pattern-granite{ background-color:#5f6673; background-image:radial-gradient(rgba(255,255,255,.2) 1px, transparent 1px); background-size:8px 8px; }
+    /* ── Rock pattern classes — texture-ready ─────────────────────────
+       Each class sets a base background-color + a CSS pattern overlay.
+       background-size and background-position are inherited from .rock-layer
+       so dropping in a background-image later will work automatically.
+       The ::after pseudo-element adds a subtle vertical gradient for depth.
+    ────────────────────────────────────────────────────────────────── */
+    .pattern-basement{
+      background-color:#6f5a7d;
+      background-image:
+        linear-gradient(180deg, rgba(255,255,255,.07) 0%, transparent 40%, rgba(0,0,0,.18) 100%),
+        repeating-linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.14) 4px, transparent 4px, transparent 12px);
+      background-size: cover, 16px 16px;
+      background-position: center, 0 0;
+      color: rgba(255,255,255,.92);
+    }
+    .pattern-shale{
+      background-color:#8a6f55;
+      background-image:
+        linear-gradient(180deg, rgba(255,255,255,.09) 0%, transparent 35%, rgba(0,0,0,.16) 100%),
+        repeating-linear-gradient(0deg, rgba(0,0,0,.15), rgba(0,0,0,.15) 2px, transparent 2px, transparent 7px);
+      background-size: cover, auto;
+      background-position: center, 0 0;
+    }
+    .pattern-sandstone{
+      background-color:#d6b07a;
+      background-image:
+        linear-gradient(180deg, rgba(255,255,255,.14) 0%, transparent 40%, rgba(0,0,0,.12) 100%),
+        radial-gradient(rgba(255,255,255,.28) 1px, transparent 1px);
+      background-size: cover, 9px 9px;
+      background-position: center, 0 0;
+      color: rgba(15,23,42,.88);
+    }
+    .pattern-limestone{
+      background-color:#d8d0c4;
+      background-image:
+        linear-gradient(180deg, rgba(255,255,255,.15) 0%, transparent 38%, rgba(0,0,0,.1) 100%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.35), rgba(255,255,255,.35) 14px, transparent 14px, transparent 30px);
+      background-size: cover, auto;
+      background-position: center, 0 0;
+      color: rgba(15,23,42,.88);
+    }
+    .pattern-conglomerate{
+      background-color:#9f7b55;
+      background-image:
+        linear-gradient(180deg, rgba(255,255,255,.1) 0%, transparent 40%, rgba(0,0,0,.15) 100%),
+        radial-gradient(rgba(255,255,255,.32) 2px, transparent 2px),
+        radial-gradient(rgba(0,0,0,.18) 1.5px, transparent 1.5px);
+      background-size: cover, 20px 20px, 13px 13px;
+      background-position: center, 0 0, 7px 8px;
+    }
+    .pattern-siltstone{
+      background-color:#c9a16d;
+      background-image:
+        linear-gradient(180deg, rgba(255,255,255,.1) 0%, transparent 38%, rgba(0,0,0,.14) 100%),
+        repeating-linear-gradient(45deg, rgba(255,255,255,.16), rgba(255,255,255,.16) 3px, transparent 3px, transparent 10px);
+      background-size: cover, auto;
+      background-position: center, 0 0;
+      color: rgba(15,23,42,.88);
+    }
+    .pattern-granite{
+      background-color:#5f6673;
+      background-image:
+        linear-gradient(180deg, rgba(255,255,255,.1) 0%, transparent 38%, rgba(0,0,0,.2) 100%),
+        radial-gradient(rgba(255,255,255,.22) 1px, transparent 1px);
+      background-size: cover, 8px 8px;
+      background-position: center, 0 0;
+      color: rgba(255,255,255,.92);
+    }
     .legend{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:12px; }
     .legend-card{ padding:12px; border-radius:18px; background:rgba(9,18,38,.78); border:1px solid rgba(72,93,144,.24); }
     .legend-card strong{ display:block; margin-bottom:4px; }
@@ -407,14 +573,14 @@
     }
     .timeline-slot.drag-over{ border-color:rgba(103,232,249,.9); background:rgba(103,232,249,.08); transform:scale(1.01); }
     @keyframes solvedSlotPulse{
-      0%,100%{ box-shadow:0 0 0 1px rgba(67,240,125,.15); }
-      50%{ box-shadow:0 0 0 3px rgba(67,240,125,.22), 0 0 10px rgba(67,240,125,.12); }
+      0%,100%{ box-shadow:0 0 0 1px rgba(67,240,125,.2), 0 0 4px rgba(67,240,125,.08); filter:brightness(1); }
+      50%{ box-shadow:0 0 0 5px rgba(67,240,125,.3), 0 0 22px rgba(67,240,125,.22), inset 0 0 12px rgba(67,240,125,.06); filter:brightness(1.07); }
     }
     .timeline-slot.slot-solved{
-      border-color:rgba(67,240,125,.55) !important;
+      border-color:rgba(67,240,125,.6) !important;
       border-style:solid !important;
-      background:rgba(67,240,125,.04) !important;
-      animation: solvedSlotPulse 2.4s ease-in-out 3;
+      background:rgba(67,240,125,.05) !important;
+      animation: solvedSlotPulse 2.2s ease-in-out 4;
     }
     .slot-rank{
       width:34px; height:34px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center;
@@ -665,6 +831,47 @@
       display:none; padding:14px 16px; border-radius:14px; margin-top:10px;
       background:rgba(255,111,142,.07); border:1px solid rgba(255,111,142,.35);
       color:var(--danger); font-weight:700; font-size:.88rem; line-height:1.5;
+    }
+
+    /* ── POLISH: Drag lift effect ─────────────────────────────────── */
+    .dragging-lift {
+      transform: scale(1.04) !important;
+      box-shadow: 0 10px 28px rgba(0,0,0,.45), 0 0 0 1.5px rgba(36,232,255,.38), 0 0 12px rgba(36,232,255,.12) !important;
+      filter: brightness(1.07) !important;
+      z-index: 99 !important;
+      cursor: grabbing !important;
+    }
+
+    /* ── POLISH: Snap-in animation on drop ───────────────────────── */
+    @keyframes snapBounce {
+      0%   { transform: scale(1); }
+      42%  { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    .slot-snap-anim {
+      animation: snapBounce 170ms cubic-bezier(.22,.68,0,1.35) forwards;
+    }
+
+    /* ── POLISH: Shake on incorrect check ────────────────────────── */
+    @keyframes shakeSlot {
+      0%,100% { transform: translateX(0); }
+      16%     { transform: translateX(-7px); }
+      33%     { transform: translateX(6px); }
+      50%     { transform: translateX(-5px); }
+      67%     { transform: translateX(4px); }
+      84%     { transform: translateX(-2px); }
+    }
+    .slot-shake {
+      animation: shakeSlot 350ms ease-in-out;
+    }
+
+    /* ── POLISH: Layer entrance animation ────────────────────────── */
+    @keyframes layerFadeIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .layer-entering {
+      animation: layerFadeIn 340ms ease-out both;
     }
   </style>
 </head>
@@ -1064,30 +1271,132 @@
         ],
         renderCrossSection(el){
           makeBase(el);
-          const OFF = 10;
-          // Left stack (A–E)
-          addLayerHalf(el, 'pattern-shale',     77, 9, '8%',  '49%');
-          addLayerHalf(el, 'pattern-sandstone', 68, 9, '8%',  '49%');
-          addLayerHalf(el, 'pattern-limestone', 59, 9, '8%',  '49%');
-          addLayerHalf(el, 'pattern-sandstone', 50, 9, '8%',  '49%');
-          addLayerHalf(el, 'pattern-siltstone', 41, 9, '8%',  '49%');
-          // Right stack (A–E, offset upward by fault displacement)
-          addLayerHalf(el, 'pattern-shale',     77+OFF, 9, '59%', '33%');
-          addLayerHalf(el, 'pattern-sandstone', 68+OFF, 9, '59%', '33%');
-          addLayerHalf(el, 'pattern-limestone', 59+OFF, 9, '59%', '33%');
-          addLayerHalf(el, 'pattern-sandstone', 50+OFF, 9, '59%', '33%');
-          addLayerHalf(el, 'pattern-siltstone', 41+OFF, 9, '59%', '33%');
-          // Post-fault layer G — right side only, above the right stack, not cut by the fault
-          addLayerHalf(el, 'pattern-conglomerate', 43, 8, '59%', '33%');
-          addFault(el, 56, 41, 10, 51, 11);
-          addEventBadge(el, 'A', 12, 79);
-          addEventBadge(el, 'B', 12, 70);
-          addEventBadge(el, 'C', 12, 61);
-          addEventBadge(el, 'D', 12, 52);
-          addEventBadge(el, 'E', 12, 43);
-          addEventBadge(el, 'F', 64, 30);
-          addEventBadge(el, 'G', 79, 44);
-          addFeatureLabel(el, 'fault', 48, 30);
+
+          /* ── FAULT PLANE GEOMETRY ───────────────────────────────────
+             The fault runs diagonally from the ground surface down to
+             the base of the section, dipping slightly to the right —
+             a standard normal-fault cross-section orientation.
+             All coordinates are percentages of the container.
+
+             FTX/FTY = fault top  (where fault meets the surface)
+             FBX/FBY = fault bottom (where fault exits the section)
+             DISP    = how far the hanging-wall (right block) is
+                       displaced downward relative to the footwall,
+                       in percent of container height.                */
+          const FTX = 52, FTY = 19;   // fault top
+          const FBX = 61, FBY = 92;   // fault bottom
+          const DISP = 11;            // vertical displacement (right block drops)
+
+          /* ── LEFT BLOCK — footwall ──────────────────────────────────
+             Full-size transparent overlay. clip-path trims it to
+             everything left of the fault plane, so each layer visually
+             terminates cleanly against the fault.
+             No rotation — the strata remain geologically stable.      */
+          const leftWrap = document.createElement('div');
+          leftWrap.style.cssText =
+            'position:absolute;inset:0;pointer-events:none;' +
+            `clip-path:polygon(0% 0%, ${FTX}% ${FTY}%, ${FBX}% ${FBY}%, 0% ${FBY}%);`;
+          el.appendChild(leftWrap);
+
+          [
+            ['pattern-shale',     78],
+            ['pattern-sandstone', 68],
+            ['pattern-limestone', 59],
+            ['pattern-sandstone', 50],
+            ['pattern-siltstone', 41]
+          ].forEach(([pat, top]) => {
+            const lyr = document.createElement('div');
+            lyr.className = `rock-layer ${pat}`;
+            lyr.style.left   = '8%';
+            lyr.style.width  = '84%';
+            lyr.style.top    = top + '%';
+            lyr.style.height = '9%';
+            leftWrap.appendChild(lyr);
+          });
+
+          /* ── RIGHT BLOCK — hanging wall (displaced DOWN by DISP) ────
+             Same clip-path approach: everything to the right of the
+             fault plane. Layers share the same rock types as the left
+             block but are shifted downward by DISP to show the offset.
+             No rotation — both blocks appear as solid, horizontal
+             geologic sections separated by the fault.                 */
+          const rightWrap = document.createElement('div');
+          rightWrap.style.cssText =
+            'position:absolute;inset:0;pointer-events:none;' +
+            `clip-path:polygon(${FTX}% ${FTY}%, 100% 0%, 100% ${FBY}%, ${FBX}% ${FBY}%);`;
+          el.appendChild(rightWrap);
+
+          [
+            ['pattern-shale',     78],
+            ['pattern-sandstone', 68],
+            ['pattern-limestone', 59],
+            ['pattern-sandstone', 50],
+            ['pattern-siltstone', 41]
+          ].forEach(([pat, top]) => {
+            const lyr = document.createElement('div');
+            lyr.className = `rock-layer ${pat}`;
+            lyr.style.left   = '8%';
+            lyr.style.width  = '84%';
+            lyr.style.top    = (top + DISP) + '%';
+            lyr.style.height = '9%';
+            rightWrap.appendChild(lyr);
+          });
+
+          /* Post-fault sediment G: deposited on top of the already-
+             faulted terrain, right side only. G is not cut by the fault
+             so it sits above the displaced right-block strata.
+             Top layer of right block (siltstone) is at 41+DISP=52%;
+             G at 40% sits clearly above it on the exposed surface.    */
+          const gLyr = document.createElement('div');
+          gLyr.className = 'rock-layer pattern-conglomerate';
+          gLyr.style.left   = '8%';
+          gLyr.style.width  = '84%';
+          gLyr.style.top    = '40%';
+          gLyr.style.height = '12%';
+          rightWrap.appendChild(gLyr);
+
+          /* ── FAULT PLANE SHADOW ─────────────────────────────────────
+             No drawn line — the fault plane is represented by the
+             natural separation between the two clip-path blocks.
+             A soft SVG shadow traces the boundary to make it readable
+             as a fault plane without adding stripes or bold graphics.  */
+          const faultShadowStartY = 40;
+          const faultShadowStartX = FTX + ((faultShadowStartY - FTY) / (FBY - FTY)) * (FBX - FTX);
+          const faultPlane = document.createElement('div');
+          faultPlane.style.cssText =
+            'position:absolute;inset:0;pointer-events:none;z-index:9;overflow:hidden;border-radius:24px;';
+          faultPlane.innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;" preserveAspectRatio="none">' +
+              '<defs>' +
+                '<filter id="fpsf" x="-200%" y="20%" width="500%" height="90%">' +
+                  '<feGaussianBlur stdDeviation="4.5"/>' +
+                '</filter>' +
+              '</defs>' +
+              `<line x1="${faultShadowStartX}%" y1="${faultShadowStartY}%" x2="${FBX}%" y2="${FBY}%" stroke="rgba(0,0,0,0.52)" stroke-width="9" filter="url(#fpsf)"/>` +
+              `<line x1="${faultShadowStartX}%" y1="${faultShadowStartY}%" x2="${FBX}%" y2="${FBY}%" stroke="rgba(0,0,0,0.28)" stroke-width="3" filter="url(#fpsf)"/>` +
+            '</svg>';
+          el.appendChild(faultPlane);
+
+          const pillAnchorY = 27;
+          const pillAnchorX = FTX + ((pillAnchorY - FTY) / (FBY - FTY)) * (FBX - FTX);
+
+          /* ── BADGES & LABELS (directly on el — unclipped) ──────────
+             All interactive drag/click elements live on el so their
+             event handling is never affected by the clip-path wrappers. */
+          addEventBadge(el, 'A', 10, 79);
+          addEventBadge(el, 'B', 10, 69);
+          addEventBadge(el, 'C', 10, 60);
+          addEventBadge(el, 'D', 10, 51);
+          addEventBadge(el, 'E', 10, 42);
+          const fBadge = addEventBadge(el, 'F', pillAnchorX + 3.5, pillAnchorY - 1.2);
+          const gBadge = addEventBadge(el, 'G', 76, 40);
+          const faultLbl = document.createElement('div');
+          faultLbl.className = 'feature-label';
+          faultLbl.textContent = 'fault';
+          faultLbl.style.left = `${pillAnchorX - 2.5}%`;
+          faultLbl.style.top = `${pillAnchorY}%`;
+          faultLbl.style.transform = 'translateX(-100%)';
+          el.appendChild(faultLbl);
         }
       }
 
@@ -1220,6 +1529,35 @@
       teacherSelect:        document.getElementById('teacherSelect'),
       blockInput:           document.getElementById('blockInput')
     };
+
+    /* ─── AUDIO SYSTEM ───────────────────────────────────────────── */
+    const SFX = {
+      click:     new Audio('/assets/sounds/click.mp3'),
+      correct:   new Audio('/assets/sounds/correct.mp3'),
+      incorrect: new Audio('/assets/sounds/incorrect.mp3')
+    };
+    SFX.click.volume     = 0.5;
+    SFX.correct.volume   = 0.5;
+    SFX.incorrect.volume = 0.45;
+
+    function playSound(type){
+      try{
+        const sfx = SFX[type];
+        if(!sfx) return;
+        sfx.currentTime = 0;
+        sfx.play().catch(() => {});
+      } catch(e){}
+    }
+
+    /* ─── SNAP ANIMATION HELPER ──────────────────────────────────── */
+    function animateSlotSnap(slotIndex){
+      const slot = refs.timeline.querySelector('.timeline-slot[data-index="' + slotIndex + '"]');
+      if(!slot) return;
+      slot.classList.remove('slot-snap-anim');
+      void slot.offsetWidth; // force reflow
+      slot.classList.add('slot-snap-anim');
+      slot.addEventListener('animationend', () => slot.classList.remove('slot-snap-anim'), { once: true });
+    }
 
     /* ─── PERSISTENCE ────────────────────────────────────────────── */
     function saveState(){
@@ -1447,6 +1785,8 @@
       ghostPart(partId);
       clearCrossSelection();
       renderPlacements();
+      animateSlotSnap(slotIndex);
+      playSound('click');
     }
 
     function returnToStrata(partId, slotIndex){
@@ -1462,6 +1802,8 @@
       state.placements[fromSlot] = displaced || null;
       state.placements[toSlot]   = partId;
       renderPlacements();
+      animateSlotSnap(toSlot);
+      playSound('click');
     }
 
     /* ─── DRAG/CLICK SETUP FOR CROSS-SECTION ELEMENTS ───────────── */
@@ -1475,11 +1817,17 @@
         state.dragSource      = 'cross';
         state.dragSourceSlot  = null;
         e.dataTransfer.effectAllowed = 'move';
-        setTimeout(() => { if(!el.classList.contains('ghost')) el.style.opacity = '0.45'; }, 0);
+        setTimeout(() => {
+          if(!el.classList.contains('ghost')){
+            el.style.opacity = '0.45';
+            el.classList.add('dragging-lift');
+          }
+        }, 0);
       });
 
       el.addEventListener('dragend', () => {
         el.style.opacity = '';
+        el.classList.remove('dragging-lift');
         state.draggedId      = null;
         state.dragSource     = null;
         state.dragSourceSlot = null;
@@ -1781,6 +2129,7 @@
         refs.timeline.querySelectorAll('.timeline-slot').forEach(slot => {
           slot.classList.add('slot-solved');
         });
+        playSound('correct');
         markLevelComplete();
         revealStory();
         renderLevelGrid();
@@ -1814,6 +2163,17 @@
       if(bits.length === 0)
         bits.push('A few positions are still off. Recheck what lies below what, what cuts through what, and what sits on top of everything else.');
       refs.feedbackText.innerHTML = `<span class="notyet">Not quite.</span> ${bits.join(' ')}`;
+      // Shake incorrectly placed slots and play sound
+      playSound('incorrect');
+      const allSlots = Array.from(refs.timeline.querySelectorAll('.timeline-slot'));
+      allSlots.forEach((slot, i) => {
+        if(state.placements[i] && state.placements[i] !== level().correct[i]){
+          slot.classList.remove('slot-shake');
+          void slot.offsetWidth;
+          slot.classList.add('slot-shake');
+          slot.addEventListener('animationend', () => slot.classList.remove('slot-shake'), { once: true });
+        }
+      });
       refs.storyBox.classList.add('hidden');
     }
 
@@ -1826,6 +2186,16 @@
       renderPlacements();
       refs.crossWrap.innerHTML = '';
       level().renderCrossSection(refs.crossWrap);
+      // Stagger-animate layers into view
+      const _animEls = Array.from(refs.crossWrap.querySelectorAll('.rock-layer, .event-badge'));
+      _animEls.forEach((el, i) => {
+        el.classList.add('layer-entering');
+        el.style.animationDelay = (i * 68) + 'ms';
+        el.addEventListener('animationend', () => {
+          el.classList.remove('layer-entering');
+          el.style.animationDelay = '';
+        }, { once: true });
+      });
       refs.feedbackText.textContent = 'Study the rock section first. Find the oldest thing you can prove, then build upward from there.';
       refs.storyBox.classList.add('hidden');
       // Next button state
