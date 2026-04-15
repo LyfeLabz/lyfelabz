@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LyfeLabz | Continental Drift</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #7a8fa6;
+    --accent-dim:  rgba(122,143,166,0.15);
+    --accent-glow: rgba(122,143,166,0.3);
+    --accent-dark: #5a6e82;
+    --accent2:     #9fb8cc;
+    --teal:        #1de9b6;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #0d1117;
+    --dark2:       #111820;
+    --card:        #161e28;
+    --text:        #e8edf2;
+    --text-muted:  #7a8fa6;
+    --border:      rgba(122,143,166,0.18);
+    --red:         #e74c3c;
+    --green:       #2ecc71;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 18px; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(10,14,20,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent2); background: var(--accent-dim);
+    border: 1px solid rgba(122,143,166,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(122,143,166,0.25); border-color: rgba(122,143,166,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e14 0%, #111820 50%, #0d1117 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(100,120,150,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(122,143,166,0.05) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+
+  .hero-badge {
+    display: inline-block; background: var(--accent-dim);
+    border: 1px solid rgba(122,143,166,0.4); color: var(--accent2);
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,237,242,0.75); max-width: 600px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(122,143,166,0.07); border: 1px solid rgba(122,143,166,0.3);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(159,184,204,0.8); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+  /* ── MA STE STANDARDS ── */
+  .stem-focus { display: none; }
+  body.stem-active .stem-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 0.5rem auto 1.6rem; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(46,204,113,0.05); border: 1px solid rgba(46,204,113,0.2);
+    border-radius: 16px; animation: stemFadeIn 0.35s ease both;
+  }
+  @keyframes stemFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .stem-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(46,204,113,0.75); width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .stem-badge {
+    position: relative; cursor: default; display: inline-flex; align-items: center;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px; padding: 0.35rem 0.9rem; white-space: nowrap;
+  }
+  .stem-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 220px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(46,204,113,0.2); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .stem-badge[data-tip]:hover::after { opacity: 1; }
+  .stem-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(46,204,113,0.2);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .stem-badge[data-tip]:hover::before { opacity: 1; }
+  .stem-detail { display: none; }
+  body.stem-active .stem-detail {
+    width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
+    text-align: center; animation: stemFadeIn 0.35s ease both;
+  }
+  .stem-show-btn {
+    background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
+  }
+  .stem-show-btn:hover { color: rgba(46,204,113,0.85); }
+  .stem-detail-body {
+    display: none; margin-top: 0.5rem;
+    background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
+    border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
+  }
+  .stem-detail.stem-open .stem-detail-body { display: block; }
+  .stem-std-row {
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
+  .stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(232,237,242,0.75); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(122,143,166,0.08) 0%, rgba(122,143,166,0.03) 100%);
+    border: 1.5px solid rgba(122,143,166,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 1.2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 2.6rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .phenomenon-body { flex: 1; min-width: 280px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 0.4rem; color: var(--text); line-height: 1.25; }
+  .phenomenon-body p { color: rgba(232,237,242,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-icon { font-size: 1.6rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; }
+  .card-body { color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(159,184,204,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.slate  { background: rgba(122,143,166,0.07); border-left: 3px solid var(--accent2); color: rgba(232,237,242,0.85); }
+  .callout.teal   { background: rgba(29,233,182,0.06);  border-left: 3px solid var(--teal);    color: rgba(232,237,242,0.85); }
+  .callout.gold   { background: rgba(245,200,66,0.07);  border-left: 3px solid var(--gold);    color: rgba(232,237,242,0.85); }
+
+  /* ── EVIDENCE GRID (same pattern as rock-grid) ── */
+  .evidence-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem; margin: 1.5rem 0;
+  }
+  @media (max-width: 700px) { .evidence-grid { grid-template-columns: 1fr; } }
+  .evidence-card {
+    border-radius: 16px; padding: 1.5rem; border: 1px solid; position: relative; overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .evidence-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
+  .evidence-card.ec1 { background: rgba(122,143,166,0.08); border-color: rgba(122,143,166,0.3); }
+  .evidence-card.ec2 { background: rgba(180,140,90,0.08);  border-color: rgba(180,140,90,0.3); }
+  .evidence-card.ec3 { background: rgba(200,80,60,0.08);   border-color: rgba(200,80,60,0.3); }
+  .evidence-card.ec4 { background: rgba(29,180,130,0.08);  border-color: rgba(29,180,130,0.3); }
+  .evidence-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .evidence-card.ec1::before { background: linear-gradient(90deg, #7a8fa6, #9fb8cc); }
+  .evidence-card.ec2::before { background: linear-gradient(90deg, #b48c5a, #d4a96a); }
+  .evidence-card.ec3::before { background: linear-gradient(90deg, #c84c3c, #e8704e); }
+  .evidence-card.ec4::before { background: linear-gradient(90deg, #1db48a, #1de9b6); }
+  .ev-num { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.2rem 0.7rem; border-radius: 99px; display: inline-block; margin-bottom: 0.6rem; }
+  .evidence-card.ec1 .ev-num { background: rgba(122,143,166,0.15); color: #9fb8cc; border: 1px solid rgba(122,143,166,0.35); }
+  .evidence-card.ec2 .ev-num { background: rgba(180,140,90,0.15);  color: #d4a96a; border: 1px solid rgba(180,140,90,0.35); }
+  .evidence-card.ec3 .ev-num { background: rgba(200,80,60,0.12);   color: #e8a090; border: 1px solid rgba(200,80,60,0.35); }
+  .evidence-card.ec4 .ev-num { background: rgba(29,180,130,0.12);  color: #1de9b6; border: 1px solid rgba(29,180,130,0.35); }
+  .ev-icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+  .ev-name { font-family: 'Fredoka One', cursive; font-size: 1.15rem; margin-bottom: 0.5rem; }
+  .evidence-card.ec1 .ev-name { color: #9fb8cc; }
+  .evidence-card.ec2 .ev-name { color: #d4a96a; }
+  .evidence-card.ec3 .ev-name { color: #e8a090; }
+  .evidence-card.ec4 .ev-name { color: #1de9b6; }
+  .ev-desc { font-size: 0.88rem; color: rgba(232,237,242,0.8); line-height: 1.65; }
+  .ev-example { font-size: 0.8rem; color: rgba(232,237,242,0.55); margin-top: 0.6rem; font-style: italic; }
+
+  /* ── PRINCIPLES GRID ── */
+  .principles-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem; margin-top: 1.5rem;
+  }
+  @media (max-width: 700px) { .principles-grid { grid-template-columns: 1fr; } }
+  .principle-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 1.4rem 1.6rem; border-left: 4px solid;
+    transition: transform 0.2s;
+  }
+  .principle-card:hover { transform: translateY(-3px); }
+  .principle-card.p1 { border-left-color: #9fb8cc; }
+  .principle-card.p2 { border-left-color: #d4a96a; }
+  .principle-card.p3 { border-left-color: #e8704e; }
+  .principle-card.p4 { border-left-color: #1de9b6; }
+  .principle-term { font-family: 'Fredoka One', cursive; font-size: 1.1rem; margin-bottom: 0.4rem; }
+  .p1 .principle-term { color: #9fb8cc; }
+  .p2 .principle-term { color: #d4a96a; }
+  .p3 .principle-term { color: #e8704e; }
+  .p4 .principle-term { color: #1de9b6; }
+  .principle-def { font-size: 0.88rem; color: rgba(232,237,242,0.82); line-height: 1.65; }
+  .principle-key { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.5rem; opacity: 0.6; }
+
+  /* ── INTERACTIVE EVIDENCE PANEL ── */
+  .ev-wrap {
+    display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0;
+  }
+  .ev-selector { flex: 0 0 auto; width: 240px; display: flex; flex-direction: column; gap: 6px; }
+  .ev-btn {
+    width: 100%; padding: 0.75rem 1.1rem;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.82rem; font-weight: 700; border-radius: 8px; cursor: pointer;
+    transition: filter 0.2s, outline 0.15s; position: relative;
+    border: none; text-align: left; font-family: 'Nunito', sans-serif;
+  }
+  .ev-btn:hover { filter: brightness(1.15); }
+  .ev-btn .ev-btn-num { opacity: 0.65; font-size: 0.7rem; }
+  .ev-btn.eb1 { background: rgba(122,143,166,0.18); color: #9fb8cc; }
+  .ev-btn.eb2 { background: rgba(180,140,90,0.22);  color: #d4a96a; }
+  .ev-btn.eb3 { background: rgba(200,80,60,0.20);   color: #e8a090; }
+  .ev-btn.eb4 { background: rgba(29,180,130,0.18);  color: #1de9b6; }
+  .ev-detail-panel {
+    flex: 1; min-width: 220px;
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
+    min-height: 160px; display: flex; align-items: center;
+  }
+  .evd-inner { width: 100%; }
+  .evd-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(159,184,204,0.8); margin-bottom: 0.4rem; }
+  .evd-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .evd-body  { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
+
+  /* ── VOCAB HIGHLIGHT PULSE ── */
+  @keyframes vocabPulse {
+    0%   { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+    15%  { background: rgba(159,184,204,0.32); box-shadow: 0 0 0 5px rgba(159,184,204,0.2); border-radius: 4px; }
+    55%  { background: rgba(159,184,204,0.2);  box-shadow: 0 0 0 7px rgba(159,184,204,0.1); border-radius: 4px; }
+    100% { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+  }
+  @keyframes termPulse {
+    0%   { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 6px; }
+    15%  { background: rgba(159,184,204,0.26); box-shadow: 0 0 0 6px rgba(159,184,204,0.18); border-radius: 6px; }
+    55%  { background: rgba(159,184,204,0.16); box-shadow: 0 0 0 9px rgba(159,184,204,0.08); border-radius: 6px; }
+    100% { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 6px; }
+  }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .principle-term.pulsing,
+  .ev-name.pulsing { animation: termPulse 3s ease forwards; padding: 0 5px; margin: 0 -5px; }
+
+  /* ── KEY CONCEPTS ── */
+  #vocab { background: var(--dark); }
+  .concepts-hint {
+    font-size: 0.78rem; color: rgba(122,143,166,0.7);
+    display: flex; align-items: center; gap: 0.35rem;
+    margin-top: 1rem; margin-bottom: 0.6rem;
+  }
+  .concepts-grid { display: flex; flex-wrap: wrap; gap: 0.65rem; }
+  .concept-tag {
+    font-size: 0.82rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 99px;
+    border: 1px solid; cursor: pointer; transition: all 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .concept-tag:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+  .ct-slate  { color: #9fb8cc; background: rgba(122,143,166,0.1);  border-color: rgba(122,143,166,0.35); }
+  .ct-brown  { color: #d4a96a; background: rgba(180,140,90,0.1);   border-color: rgba(180,140,90,0.35);  }
+  .ct-red    { color: #e8a090; background: rgba(200,80,60,0.1);    border-color: rgba(200,80,60,0.35);   }
+  .ct-green  { color: #3ddc84; background: rgba(61,220,132,0.08);  border-color: rgba(61,220,132,0.3);   }
+  .ct-teal   { color: #1de9b6; background: rgba(29,233,182,0.08);  border-color: rgba(29,233,182,0.3);   }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+  .student-info-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 2rem 2.2rem; margin-bottom: 2.5rem;
+    border-top: 3px solid var(--accent2); display: none;
+  }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub   { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  .info-field label {
+    display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem;
+  }
+  .info-field input,
+  .info-field select {
+    width: 100%; padding: 0.7rem 1rem;
+    background: rgba(255,255,255,0.04); border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem; font-weight: 600; transition: border-color 0.2s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .info-field input:focus,
+  .info-field select:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(122,143,166,0.15); }
+  .info-field select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8fa6' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem;
+  }
+  .info-field select option { background: #161e28; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+
+  .quiz-mode-toggle {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin-bottom: 2rem;
+    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
+    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
+    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+  }
+  .mode-btn {
+    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(122,143,166,0.55);
+    background: transparent;
+  }
+  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+    color: #ddeaf5;
+    border: 1px solid rgba(159,184,204,0.55);
+    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+    text-shadow: 0 0 12px rgba(159,184,204,0.6);
+  }
+  .mode-hint { text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem; letter-spacing: 0.01em; }
+  .mode-hint span { display: none; }
+  .mode-hint span.visible { display: inline; }
+
+  .quiz-progress-sticky {
+    position: sticky; top: 64px; z-index: 100;
+    background: var(--dark2); padding: 0.85rem 0 0.75rem;
+    margin-bottom: 2rem; border-bottom: 1px solid var(--border);
+  }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num {
+    font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted);
+    width: 2rem; height: 2rem; border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border);
+    cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02);
+    font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif;
+    text-align: left; color: rgba(232,237,242,0.9); width: 100%;
+  }
+  .quiz-option:hover:not(.disabled):not(.selected) { border-color: rgba(122,143,166,0.5); background: rgba(122,143,166,0.06); }
+  .quiz-option.selected  { border-color: var(--accent2) !important; background: rgba(159,184,204,0.1) !important; }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(29,233,182,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(29,233,182,0.4) !important; background: rgba(29,233,182,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback {
+    display: none; font-size: 0.85rem; margin-top: 0.8rem;
+    padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700;
+  }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(29,233,182,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px;
+    font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif;
+    transition: all 0.25s; letter-spacing: 0.04em;
+  }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(122,143,166,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .score-board {
+    display: none; background: var(--card); border: 2px solid var(--accent2);
+    border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem;
+    box-shadow: 0 0 40px rgba(122,143,166,0.15);
+  }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
+  .score-submitted {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--teal); background: rgba(29,233,182,0.1);
+    border: 1px solid rgba(29,233,182,0.3); padding: 0.4rem 1rem;
+    border-radius: 99px; margin-bottom: 1.5rem;
+  }
+  .score-error {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.8rem; font-weight: 800;
+    color: #e87070; background: rgba(231,76,60,0.1);
+    border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem;
+    border-radius: 99px; margin-bottom: 1.5rem;
+  }
+  .reset-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px;
+    font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s;
+  }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,143,166,0.4); }
+
+  /* ── CONTINUE ── */
+  #continue { background: var(--dark2); }
+  .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
+  .cont-card {
+    border-radius: 18px; padding: 1.6rem 1.5rem;
+    transition: transform 0.25s, box-shadow 0.25s;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    position: relative; overflow: hidden;
+  }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .cont-card.sim  { background: rgba(245,160,40,0.08); border: 1px solid rgba(245,160,40,0.35); }
+  .cont-card.game { background: rgba(61,220,132,0.1);  border: 1px solid rgba(61,220,132,0.35); }
+  .cont-card.ext  { background: rgba(180,127,255,0.1); border: 1px solid rgba(180,127,255,0.35); }
+  .cont-card.lesson { background: rgba(122,143,166,0.08); border: 1px solid rgba(122,143,166,0.35); }
+  .cont-card.sim::before    { background: linear-gradient(90deg, #f5a028, #f5c842); }
+  .cont-card.game::before   { background: linear-gradient(90deg, #3ddc84, #1de9b6); }
+  .cont-card.ext::before    { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #7a8fa6, #9fb8cc); }
+  .cont-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
+  .cont-card.sim:hover    { border-color: rgba(245,160,40,0.6);  box-shadow: 0 14px 40px rgba(245,160,40,0.12); }
+  .cont-card.game:hover   { border-color: rgba(61,220,132,0.6);  box-shadow: 0 14px 40px rgba(61,220,132,0.12); }
+  .cont-card.ext:hover    { border-color: rgba(180,127,255,0.6); box-shadow: 0 14px 40px rgba(180,127,255,0.12); }
+  .cont-card.lesson:hover { border-color: rgba(122,143,166,0.6); }
+  .cont-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .cont-card.sim    .cont-icon { background: rgba(245,160,40,0.18); }
+  .cont-card.game   .cont-icon { background: rgba(61,220,132,0.18); }
+  .cont-card.ext    .cont-icon { background: rgba(180,127,255,0.2); }
+  .cont-card.lesson .cont-icon { background: rgba(122,143,166,0.18); }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
+  .cont-desc { font-size: 0.86rem; color: rgba(232,237,242,0.82); line-height: 1.6; flex: 1; }
+  .coming-soon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 0.2rem 0.7rem; border-radius: 99px;
+    border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted);
+    background: rgba(122,143,166,0.06); margin-top: 0.2rem;
+  }
+  .cont-link {
+    display: inline-flex; align-items: center;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+    text-decoration: none; padding: 0.4rem 1rem;
+    border-radius: 99px; border: 1px solid; transition: all 0.2s;
+    white-space: nowrap; align-self: flex-start; margin-top: auto;
+  }
+  .cont-card.sim   .cont-link { background: rgba(245,160,40,0.1);  border-color: rgba(245,160,40,0.3);  color: #f5a028; }
+  .cont-card.game  .cont-link { background: rgba(61,220,132,0.1);  border-color: rgba(61,220,132,0.3);  color: #3ddc84; }
+  .cont-card.ext   .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+  .cont-card.lesson .cont-link { background: rgba(122,143,166,0.1); border-color: rgba(122,143,166,0.3); color: #9fb8cc; }
+  a.cont-card { text-decoration: none; cursor: pointer; }
+
+  /* ── FOOTER ── */
+  footer { background: #080a0f; border-top: 1px solid var(--border); padding: 3rem 2rem; text-align: center; }
+  .footer-logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--accent2); margin-bottom: 0.5rem; }
+  footer p { color: rgba(122,143,166,0.8); font-size: 0.9rem; }
+  footer a {
+    color: var(--gold); text-decoration: none; font-size: 0.83rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.3); padding: 0.3rem 0.9rem; border-radius: 99px; transition: border-color 0.2s;
+  }
+  footer a:hover { border-color: rgba(245,200,66,0.6); }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+  }
+
+.ev-detail-panel.ec1 { background: rgba(122,143,166,0.08); border-color: rgba(122,143,166,0.3); border-left-color: #9fb8cc; }
+.ev-detail-panel.ec2 { background: rgba(180,140,90,0.12); border-color: rgba(180,140,90,0.35); border-left-color: #d4a96a; }
+.ev-detail-panel.ec3 { background: rgba(200,80,60,0.10); border-color: rgba(200,80,60,0.35); border-left-color: #e8704e; }
+.ev-detail-panel.ec4 { background: rgba(29,180,130,0.10); border-color: rgba(29,180,130,0.35); border-left-color: #1de9b6; }
+</style>
+
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="#lesson">Lesson</a></li>
+    <li><a href="#evidence">Evidence</a></li>
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+  </ul>
+  <a href="index.html#geo" class="nav-back">&#8592; Earth &amp; Space</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">&#127758;</span>
+  <span class="hero-float">&#129432;</span>
+  <span class="hero-float">&#9968;&#65039;</span>
+  <span class="hero-float">&#129516;</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Continental Drift</h1>
+  <p>Two hundred and fifty million years ago, all of Earth's land was one giant supercontinent. Here is how scientists figured that out.</p>
+  <div class="driving-question">
+    <div class="dq-icon">&#128269;</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">If you can't travel back 250 million years, how do scientists know the continents were once one giant landmass?</div>
+    </div>
+  </div>
+</header>
+
+<div class="container" style="margin-top:1.5rem;">
+  <div class="callout teal" style="max-width:700px;margin:0 auto 0;">
+    <span class="callout-icon">&#129327;</span>
+    <div class="callout-body">
+      South America and Africa were once connected. Scientists proved it without ever seeing it happen.
+    </div>
+  </div>
+</div>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Phenomenon-first learning activates curiosity before instruction begins — students are more likely to retain content they felt motivated to learn.">Phenomenon-First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking content into digestible sections prevents working memory overload. — Sweller et al., 2019">Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing vocabulary with interactive diagrams builds multiple memory pathways for better retrieval. — Noetel et al., 2022">Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes quiz questions improve long-term retention more than re-reading alone. — Roediger &amp; Karpicke, 2006">Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Evidence-based reasoning: presenting multiple independent lines of evidence mirrors authentic scientific practice and develops scientific thinking. — NRC, 2012">Evidence Reasoning</span>
+</div>
+
+<!-- MA STE STANDARDS -->
+<div class="stem-focus">
+  <span class="stem-focus-label">MA STE Standards &middot; Grade 6</span>
+  <span class="stem-badge" data-tip="ESS2.B: Plate Tectonics and Large-Scale System Interactions — analyzing distribution of fossils and rocks to support plate motion.">6.ESS2-3</span>
+  <span class="stem-badge" data-tip="ESS2.A: Earth Materials and Systems — geoscience processes that have changed Earth's surface over varying time scales.">6.ESS2-2</span>
+  <span class="stem-badge" data-tip="Science and Engineering Practice 4: Analyzing and Interpreting Data — using maps, fossil distributions, and climate data as evidence.">SEP-4</span>
+</div>
+<div class="stem-detail" id="stem-detail-1">
+  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-1')">&#9656; Show standard descriptions</button>
+  <div class="stem-detail-body">
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.ESS2-3</span>
+      <span class="stem-std-text">Analyze and interpret data on the distribution of fossils and rocks, continental shapes, and seafloor structures to provide evidence of the past plate motions.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.ESS2-2</span>
+      <span class="stem-std-text">Construct an explanation based on evidence for how geoscience processes have changed Earth's surface at varying time and spatial scales.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">SEP-4</span>
+      <span class="stem-std-text">Analyze and interpret data to provide evidence for phenomena, including the use of maps, fossil records, and climate indicators across multiple continents.</span>
+    </div>
+  </div>
+</div>
+
+<!-- LESSON NOTES -->
+<section id="lesson">
+  <div class="container">
+    <span class="section-label">Lesson Notes</span>
+    <h2 class="section-title">Continental Drift</h2>
+    <p class="section-desc">The ground beneath your feet has been moving for hundreds of millions of years. Science didn't always know that — here's the story of how the evidence built up, piece by piece.</p>
+
+    <!-- Phenomenon card -->
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">&#127757;</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Real World Phenomenon</div>
+        <h3>The World's Largest Puzzle</h3>
+        <p>Look at a world map and trace the eastern coast of South America. Now look at the western coast of Africa. They fit together almost perfectly — like two pieces of a torn photograph. This isn't a coincidence. For millions of years, those two coastlines were the same piece of land. Alfred Wegener noticed this in 1912 and asked a question that changed Earth science forever: what if the continents used to be connected?</p>
+      </div>
+    </div>
+
+    <!-- What is a Theory + Wegener -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128218;</span>
+        <div class="card-title">What Is a Theory? What Is Continental Drift?</div>
+      </div>
+      <div class="card-body">
+        <p>In everyday language, people say "theory" to mean a guess. In science, it means something much stronger. A <span class="vocab" id="vocab-theory" title="Scientific theory: a well-supported explanation of some aspect of the natural world, built on a large body of testable evidence">scientific theory</span> is a well-supported explanation of the natural world, based on a large body of testable evidence. A theory isn't a hunch — it's the most reliable explanation scientists have built from decades of data.</p>
+        <p>The <span class="vocab" id="vocab-continentaldrift" title="Continental drift: the theory that Earth's continents were once joined and have slowly moved apart over hundreds of millions of years">theory of continental drift</span> proposes that Earth's continents were once joined in a single, enormous landmass and have since slowly moved apart over hundreds of millions of years. The name for that ancient supercontinent is <span class="vocab" id="vocab-pangaea" title="Pangaea: the name for the single supercontinent that existed about 250 million years ago before the continents separated">Pangaea</span>, which means "all land" in Greek.</p>
+        <div class="callout slate">
+          <span class="callout-icon">&#129488;</span>
+          <div class="callout-body"><strong id="vocab-wegener">Alfred Wegener</strong> was a German meteorologist and scientist who first proposed the continental drift theory in 1912. His original clue was simple: the coastlines of South America and Africa looked like they fit together like puzzle pieces. He then spent years gathering other evidence to support the idea. Most scientists rejected his theory at the time — not because the evidence was bad, but because nobody could explain <em>how</em> continents could possibly move.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fossil Evidence -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129432;</span>
+        <div class="card-title">Evidence 1: Fossils on Separated Continents</div>
+      </div>
+      <div class="card-body">
+        <p>One of the strongest lines of evidence for continental drift comes from <span class="vocab" id="vocab-fossils" title="Fossils: preserved remains or traces of ancient organisms found in rock — used as evidence of past environments and events">fossils</span>. Scientists discovered fossils of the same plant and animal species on continents that are today separated by thousands of miles of ocean. This is a puzzle that only makes sense if those continents were once connected.</p>
+
+        <div class="evidence-grid">
+          <div class="evidence-card ec2">
+            <span class="ev-icon">&#129422;</span>
+            <div class="ev-num">Fossil 1</div>
+            <div class="ev-name" id="vocab-mesosaurus">Mesosaurus</div>
+            <p class="ev-desc">A small freshwater reptile whose fossils are found in both South America and Africa. Here's the problem: Mesosaurus lived in freshwater — it physically could not have swum across a vast saltwater ocean to reach both continents. The only explanation is that South America and Africa were once connected.</p>
+            <p class="ev-example">★ Found in: Brazil (South America) and South Africa</p>
+          </div>
+          <div class="evidence-card ec3">
+            <span class="ev-icon">&#127807;</span>
+            <div class="ev-num">Fossil 2</div>
+            <div class="ev-name" id="vocab-glossopteris">Glossopteris</div>
+            <p class="ev-desc">A seed fern plant whose fossils appear across South America, Africa, Antarctica, India, and Australia. Its heavy seeds could not float or be carried by wind across an ocean. Finding the same plant on five separate continents points strongly to those continents once being one connected landmass.</p>
+            <p class="ev-example">★ Found on: 5 continents, all once part of the southern half of Pangaea</p>
+          </div>
+          <div class="evidence-card ec1">
+            <span class="ev-icon">&#129419;</span>
+            <div class="ev-num">Fossil 3</div>
+            <div class="ev-name">Cynognathus</div>
+            <p class="ev-desc">A land-dwelling Triassic reptile about the size of a large dog. Its fossils are found in South America and Africa. As a land animal, it definitely could not have crossed an ocean. Its distribution matches perfectly with Wegener's reconstruction of Pangaea.</p>
+            <p class="ev-example">★ Found in: South America and Africa</p>
+          </div>
+          <div class="evidence-card ec4">
+            <span class="ev-icon">&#129418;</span>
+            <div class="ev-num">Fossil 4</div>
+            <div class="ev-name">Lystrosaurus</div>
+            <p class="ev-desc">Another land reptile found across Africa, India, and Antarctica. Its presence in Antarctica is especially striking — today Antarctica is buried under ice and frozen, but this reptile's fossils prove it once had a very different environment, connected to warmer landmasses.</p>
+            <p class="ev-example">★ Found in: Africa, India, and Antarctica</p>
+          </div>
+        </div>
+
+        <div class="callout teal">
+          <span class="callout-icon">&#128161;</span>
+          <div class="callout-body"><strong>Why this matters:</strong> Each of these organisms could not have crossed a major ocean on their own. Finding the same species on continents now separated by thousands of miles of ocean is powerful evidence that those continents were once connected.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rock Evidence -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9968;&#65039;</span>
+        <div class="card-title">Evidence 2: Matching Rocks and Mountain Ranges</div>
+      </div>
+      <div class="card-body">
+        <p>If two continents were once connected, you would expect to find matching rock formations on both sides — as if you tore a book in half and found the same sentence on each piece. That is exactly what geologists found.</p>
+        <p>The <span class="vocab" id="vocab-appalachians" title="The Appalachian Mountains: a mountain range along the eastern United States that matches in rock type and age with mountains in Africa, Greenland, and Scandinavia">Appalachian Mountains</span> run along the eastern edge of North America. When geologists analyzed rocks across the Atlantic Ocean in Africa, Greenland, and Scandinavia, they found mountain ranges with the same rock types and the same ages. These mountain chains line up perfectly when you put the continents back together — they are the same mountain range, torn apart when the continents split.</p>
+        <div class="callout gold">
+          <span class="callout-icon">&#128270;</span>
+          <div class="callout-body"><strong>The key detail:</strong> It is not just that mountains exist in similar places. The rock <em>type</em> and rock <em>age</em> match. You cannot get rocks of the same specific composition and the same age to appear on both sides of an ocean unless they were formed at the same time as part of the same geological event.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Climate Evidence -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127784;&#65039;</span>
+        <div class="card-title">Evidence 3: Climate Clues in the Wrong Places</div>
+      </div>
+      <div class="card-body">
+        <p>Some of the most striking evidence for continental drift comes from climate indicators found in places where they simply should not exist — if the continents had always been where they are today.</p>
+
+        <div class="principles-grid">
+          <div class="principle-card p2">
+            <div class="principle-term" id="vocab-coal">Coal Deposits</div>
+            <div class="principle-def">Coal forms in warm, swampy tropical environments from the compressed remains of ancient plants. Huge coal deposits have been found in Antarctica — one of the coldest places on Earth. The only explanation: Antarctica was once located near the tropics, where lush forests existed. When Pangaea broke apart, Antarctica drifted to its current polar location.</div>
+            <div class="principle-key">Warm-environment rock found in cold location</div>
+          </div>
+          <div class="principle-card p4">
+            <div class="principle-term" id="vocab-glacialstriations">Glacial Striations</div>
+            <div class="principle-def">Glacial striations are scratches and grooves carved into solid bedrock by the weight and movement of glaciers. Scientists found these scratches in South America, Africa, India, and Australia — regions that are far too warm today to have glaciers. This means glaciers once covered these areas, which makes sense only if these continents were once grouped near a polar region as part of the southern half of Pangaea.</div>
+            <div class="principle-key">Cold-environment scratches found in warm locations</div>
+          </div>
+        </div>
+
+        <div class="callout slate">
+          <span class="callout-icon">&#128205;</span>
+          <div class="callout-body"><strong>Put it together:</strong> Coal requires warmth. Glacial striations require ice. Finding both types of evidence in mismatched locations makes no sense unless the continents moved. When you put the continents back into Pangaea's shape, the coal and the glacier evidence each end up exactly where they should be for that climate zone.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Challenges and Plate Tectonics -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129668;</span>
+        <div class="card-title">Why Wegener Was Rejected — and Then Proven Right</div>
+      </div>
+      <div class="card-body">
+        <p>When Wegener published his theory in 1912, most scientists dismissed it. The evidence he collected was actually quite good — the problem was something else entirely. He had no way to explain the <em>mechanism</em>: the physical force or process that could actually move something as enormous and heavy as a continent through solid rock. Without that explanation, most geologists refused to accept the idea.</p>
+        <p>Wegener died in 1930 without seeing his theory accepted. It was not until the 1950s and 1960s that oceanographers discovered the answer while mapping the seafloor. They found that Earth's crust is not one solid shell. It is broken into large sections called <span class="vocab" id="vocab-platetectonics" title="Plate tectonics: the theory that Earth's outer crust is broken into large moving plates that carry the continents and ocean floor">tectonic plates</span> — like cracked pieces of an eggshell — that float and move slowly on the hot, semi-molten rock below. This discovery became the theory of <strong>plate tectonics</strong>, and it provided exactly the mechanism that Wegener was missing.</p>
+        <div class="callout teal">
+          <span class="callout-icon">&#127775;</span>
+          <div class="callout-body"><strong>Science in action:</strong> Wegener's story is a great example of how science works. Good evidence was gathered, a theory was proposed, it was rejected because one piece was missing — and then new discoveries eventually filled that gap. Continental drift did not fail; it grew into a better, more complete theory.</div>
+        </div>
+        <p><strong>The problem wasn't the evidence. The problem was the missing mechanism.</strong></p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- EVIDENCE INTERACTIVE -->
+<section id="evidence" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Evidence Review</span>
+    <h2 class="section-title">The Four Lines of Evidence</h2>
+    <p class="section-desc">Wegener did not rely on one observation. He built his case from four independent categories of evidence. Click each one to review what it showed.</p>
+    <p style="margin-top:-1.5rem;margin-bottom:2rem;"><strong>Each piece of evidence tells the same story from a different angle.</strong></p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128269;</span>
+        <div class="card-title">Explore the Evidence</div>
+      </div>
+      <div class="card-body">
+        <p>Each line of evidence below is independent — they come from completely different sources (biology, geology, and climatology). The fact that they all point to the same conclusion makes the case for continental drift very strong.</p>
+
+        <div class="ev-wrap">
+          <div class="ev-selector">
+            <button class="ev-btn eb1" onclick="evClick(1)">
+              <span>Coastline Fit</span>
+              <span class="ev-btn-num">Evidence 1</span>
+            </button>
+            <button class="ev-btn eb2" onclick="evClick(2)">
+              <span>Fossil Evidence</span>
+              <span class="ev-btn-num">Evidence 2</span>
+            </button>
+            <button class="ev-btn eb3" onclick="evClick(3)">
+              <span>Rock Evidence</span>
+              <span class="ev-btn-num">Evidence 3</span>
+            </button>
+            <button class="ev-btn eb4" onclick="evClick(4)">
+              <span>Climate Evidence</span>
+              <span class="ev-btn-num">Evidence 4</span>
+            </button>
+          </div>
+          <div class="ev-detail-panel">
+            <div class="evd-inner">
+              <div class="evd-label" id="evd-label">Select an evidence type</div>
+              <div class="evd-title" id="evd-title">Click any button to review</div>
+              <div class="evd-body"  id="evd-body">Wegener built his case from four different, independent categories of evidence. Each one alone is interesting. Together, they are powerful. Click each evidence type to see what it showed and why it matters.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Vocab -->
+    <div style="margin-top: 2rem;">
+      <div id="vocab" class="section-label" style="margin-bottom: 0; scroll-margin-top: 80px;">Key Vocabulary</div>
+      <div class="concepts-hint">Click any term to jump to its explanation in the lesson</div>
+      <div class="concepts-grid">
+        <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-theory')">Scientific Theory</span>
+        <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-continentaldrift')">Continental Drift</span>
+        <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-pangaea')">Pangaea</span>
+        <span class="concept-tag ct-brown"  onclick="vocabJump('vocab-wegener')">Alfred Wegener</span>
+        <span class="concept-tag ct-brown"  onclick="vocabJump('vocab-fossils')">Fossils</span>
+        <span class="concept-tag ct-brown"  onclick="vocabJump('vocab-mesosaurus')">Mesosaurus</span>
+        <span class="concept-tag ct-red"    onclick="vocabJump('vocab-glossopteris')">Glossopteris</span>
+        <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-appalachians')">Appalachian Mountains</span>
+        <span class="concept-tag ct-green"  onclick="vocabJump('vocab-coal')">Coal Deposits</span>
+        <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-glacialstriations')">Glacial Striations</span>
+        <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-platetectonics')">Plate Tectonics</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Check Your Understanding</span>
+    <h2 class="section-title">Continental Drift Quiz</h2>
+    <p class="section-desc">10 questions covering Pangaea, Wegener, the four lines of evidence, and plate tectonics. Select your teacher and block below before you begin in Classroom Mode.</p>
+
+    <!-- Quiz Mode Toggle -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="setQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="setQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice" class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+
+    <!-- Student Info Box -->
+    <div class="student-info-box" id="student-info-box">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="student-name">Your Name</label>
+          <input type="text" id="student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="teacher-select">Teacher</label>
+          <select id="teacher-select">
+            <option value="">&#8212; Select &#8212;</option>
+            <option value="MrBrown">Mr. Brown</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="block-select">Block</label>
+          <select id="block-select">
+            <option value="">&#8212; Select &#8212;</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress (sticky) -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
+        <div class="progress-text" id="q1-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions -->
+    <div id="quiz1-questions"></div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+    </div>
+
+    <!-- Score -->
+    <div class="score-board" id="q1-score">
+      <div class="big-score" id="q1-score-num"></div>
+      <p id="q1-score-msg"></p>
+      <div id="submit-status"></div>
+      <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
+    </div>
+  </div>
+</section>
+
+<!-- CONTINUE / EXTENSIONS -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">&#128640; Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="section-desc">The lesson is just the beginning. Go deeper into Earth history, explore fossils, or see how continental drift connects to biological evolution.</p>
+    <div class="continue-grid">
+      <div class="cont-card sim">
+        <div class="cont-icon">&#127758;</div>
+        <div class="cont-name">Pangaea Reconstruction</div>
+        <div class="cont-desc">Drag and rotate continent pieces to reconstruct Pangaea, then test your reconstruction against the fossil and rock evidence.</div>
+        <span class="coming-soon-tag">Coming Soon</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ</div>
+  <p style="margin-bottom:0.5rem;">Part of the Earth &amp; Space unit</p>
+  <p style="margin-top:0.6rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">&#8592; Learning Hub</a></p>
+  <p>&#169; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<!-- ─── SCRIPTS ─────────────────────────────────────────────────────── -->
+
+<!-- Educator Mode / STEM Toggle -->
+<script>
+function toggleStemDetail(id) {
+  var el = document.getElementById(id);
+  el.classList.toggle('stem-open');
+  var btn = el.querySelector('.stem-show-btn');
+  btn.textContent = el.classList.contains('stem-open') ? '\u25be Hide standard descriptions' : '\u25b8 Show standard descriptions';
+}
+var lsObserver = new MutationObserver(function() {
+  document.body.classList.toggle('ls-active',   document.body.classList.contains('educator-mode'));
+  document.body.classList.toggle('stem-active', document.body.classList.contains('educator-mode'));
+});
+lsObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+</script>
+
+<!-- Evidence interactive panel -->
+<script>
+var evData = {
+  1: {
+    label: 'Evidence 1 — Coastline Fit',
+    title: 'The Puzzle Piece Observation',
+    body: "Wegener's very first clue was the observation that the coastlines of South America and Africa look like they fit together like torn puzzle pieces. This was not just a visual guess — when geologists measured the actual shapes of the continental shelves (the submerged edges of continents), the fit is even more precise. While coastline fit alone is not enough evidence on its own, it was the original observation that launched the search for further proof."
+  },
+  2: {
+    label: 'Evidence 2 — Fossil Evidence',
+    title: 'Same Species, Different Continents',
+    body: "Identical fossils of organisms that could not have crossed an ocean were found on continents now separated by thousands of miles. Mesosaurus was a freshwater reptile — it could not swim through saltwater. Glossopteris had heavy seeds that could not float or be carried by wind. Cynognathus and Lystrosaurus were land animals. Finding the same species on multiple continents is only explainable if those continents were once connected."
+  },
+  3: {
+    label: 'Evidence 3 — Rock and Mountain Evidence',
+    title: 'Matching Geology Across Oceans',
+    body: "The Appalachian Mountains in eastern North America have the same rock type and the same age as mountain ranges in Africa, Greenland, and Scandinavia. When you slide the continents back together on a map, these mountain chains line up perfectly into one continuous range. Rocks of identical composition and age formed at the same time, in the same location — and were later separated when the continents pulled apart."
+  },
+  4: {
+    label: 'Evidence 4 — Climate Evidence',
+    title: 'Coal and Ice in the Wrong Places',
+    body: "Coal forms only in warm, tropical swamps. Yet coal deposits are found in Antarctica, one of the coldest places on Earth. Glacial striations — scratches left by moving glaciers — are found on rocks in South America, Africa, and India, regions far too warm for glaciers today. Both observations only make sense if those continents once occupied very different climate zones, which is exactly what happens when you reconstruct Pangaea and track where the continents were positioned millions of years ago."
+  }
+};
+
+function evClick(n) {
+  var panel = document.querySelector('.ev-detail-panel');
+  panel.classList.remove('ec1','ec2','ec3','ec4');
+  panel.classList.add('ec' + n);
+
+  var d = evData[n];
+  document.getElementById('evd-label').textContent = d.label;
+  document.getElementById('evd-title').textContent = d.title;
+  document.getElementById('evd-body').textContent  = d.body;
+  Array.from(document.querySelectorAll('.ev-btn')).forEach(function(el, i) {
+    el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.7)' : 'none';
+  });
+}
+</script>
+
+<!-- Vocab pill jump + pulse -->
+<script>
+function vocabJump(targetId) {
+  var el = document.getElementById(targetId);
+  if (!el) return;
+  var card = el.closest('.content-card, .evidence-card, .principle-card, .callout, .ev-detail-panel, section') || el;
+  var offsetAbove = 148;
+  var top = card.getBoundingClientRect().top + window.scrollY - offsetAbove;
+  window.scrollTo({ top: top, behavior: 'smooth' });
+  setTimeout(function() {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', function() { el.classList.remove('pulsing'); }, { once: true });
+  }, 600);
+}
+</script>
+
+<!-- Google Apps Script URLs -->
+<script>
+var SCRIPT_URLS = {
+  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+</script>
+
+<!-- Quiz Logic -->
+<script>
+var quizData = {
+  questions: [
+    {
+      q: "What does the theory of continental drift propose?",
+      options: [
+        "That continents slowly changed shape as oceans became smaller over time",
+        "That continents were once joined as Pangaea and later drifted apart",
+        "That mountains formed as ocean plates collided and pushed land upward",
+        "That continents stayed fixed while oceans and land changed around them"
+      ],
+      correct: 1,
+      explanation: "Continental drift proposes that Earth's continents were once joined in one supercontinent called Pangaea and have since slowly moved apart over hundreds of millions of years. This theory was first proposed by Alfred Wegener in 1912."
+    },
+    {
+      q: "Who proposed the theory of continental drift, and in what year?",
+      options: [
+        "Charles Darwin, in the year 1859",
+        "Albert Einstein, in the year 1905",
+        "Alfred Wegener, in the year 1912",
+        "Isaac Newton, in the year 1687"
+      ],
+      correct: 2,
+      explanation: "Alfred Wegener, a German scientist and meteorologist, proposed the theory of continental drift in 1912. His first clue was that the coastlines of South America and Africa appeared to fit together like puzzle pieces."
+    },
+    {
+      q: "What was the very first observation that led Wegener to propose continental drift?",
+      options: [
+        "He discovered coal deposits on the continent of Antarctica",
+        "He found matching fossils on continents far apart from each other",
+        "He noticed coastlines that looked like puzzle pieces fitting together",
+        "He measured mountain ranges that matched across the Atlantic Ocean"
+      ],
+      correct: 2,
+      explanation: "Wegener's original observation was simple: the eastern coastline of South America and the western coastline of Africa looked like matching pieces of a torn photograph. This observation motivated him to search for additional supporting evidence."
+    },
+    {
+      q: "Mesosaurus fossils are found in both South America and Africa. Why does this support continental drift?",
+      options: [
+        "Mesosaurus was a strong swimmer that crossed oceans between continents",
+        "Mesosaurus was a flying reptile that traveled over very long distances",
+        "Mesosaurus was a freshwater reptile that could not cross saltwater",
+        "Mesosaurus fossils appeared worldwide so these locations were not unusual"
+      ],
+      correct: 2,
+      explanation: "Mesosaurus was a freshwater reptile — it lived in rivers and lakes, not the ocean. It physically could not have swum across thousands of miles of saltwater. The only way to explain identical Mesosaurus fossils on both continents is that South America and Africa were once connected."
+    },
+    {
+      q: "Glossopteris plant fossils are found across South America, Africa, Antarctica, India, and Australia. What does this best support?",
+      options: [
+        "These continents had similar climates so the same plant evolved separately",
+        "Glossopteris seeds were light enough to travel across oceans by wind",
+        "These continents were once connected so the plant spread across them",
+        "Scientists made an error when identifying these fossils as one species"
+      ],
+      correct: 2,
+      explanation: "Glossopteris had heavy seeds that could not float or be carried by wind across thousands of miles of ocean. Finding it on five separate continents is only explainable if those continents were once joined, allowing the plant to spread across them as a continuous landmass."
+    },
+    {
+      q: "The Appalachian Mountains in North America match mountain ranges in Africa, Greenland, and Scandinavia in both rock type and age. What does this best suggest?",
+      options: [
+        "Mountain ranges formed in matching pairs on opposite sides of oceans",
+        "These continents were connected and the mountains formed one long range",
+        "Wind and ocean currents moved rocks between North America and Africa",
+        "One volcanic event formed identical mountains on several continents"
+      ],
+      correct: 1,
+      explanation: "Finding mountains of the same rock type and age on continents separated by an ocean is strong evidence of past connection. When you reconstruct Pangaea, these mountain chains line up into one continuous range — they were formed as one, and were split when the continents drifted apart."
+    },
+    {
+      q: "Large coal deposits have been found in Antarctica. Coal forms only in warm, tropical environments. What does this suggest?",
+      options: [
+        "Coal can form in both cold climates and warm climates on Earth",
+        "Antarctica stayed cold while tropical plants somehow lived there anyway",
+        "Antarctica was near the tropics and later drifted toward the pole",
+        "Scientists made a mistake when identifying the material as real coal"
+      ],
+      correct: 2,
+      explanation: "Coal forms from plant material that built up in warm, swampy environments. Finding coal in Antarctica means Antarctica once had the warm, tropical conditions needed for lush forests. This makes sense only if Antarctica has moved from a warmer location to its current polar position over millions of years."
+    },
+    {
+      q: "What are glacial striations?",
+      options: [
+        "Rock deposits created by warm tropical rain and repeated flooding",
+        "Scratches and grooves carved into bedrock by slowly moving glaciers",
+        "Patterns in rock layers caused by earthquakes and volcanic eruptions",
+        "Fossil impressions left by ancient sea creatures on ocean floors"
+      ],
+      correct: 1,
+      explanation: "Glacial striations are parallel scratches and grooves carved into bedrock by the enormous weight and slow movement of glaciers dragging across the rock. Finding glacial striations on rocks in warm regions like South America, Africa, and India is evidence that glaciers once covered those areas."
+    },
+    {
+      q: "Why was Wegener's theory of continental drift initially rejected by most scientists when he proposed it in 1912?",
+      options: [
+        "The fossil evidence he presented was later shown to be incorrect",
+        "His map of Pangaea showed continent shapes that were clearly wrong",
+        "There was no mechanism explaining how continents could move through rock",
+        "Other scientists had proved continents were permanently fixed in place"
+      ],
+      correct: 2,
+      explanation: "Wegener's evidence was actually solid, but scientists could not accept the theory because he had no mechanism — no physical explanation for how something as massive as a continent could move through Earth's crust. Without that explanation, most geologists rejected the idea, even though the evidence was compelling."
+    },
+    {
+      q: "Which later discovery finally provided the missing explanation for how continents can move?",
+      options: [
+        "The discovery of index fossils used for dating layers of rock",
+        "The discovery that Earth's crust is made of slowly moving plates",
+        "The discovery of coal deposits in Antarctica showing climate change",
+        "The invention of radiometric dating for measuring ages of rocks"
+      ],
+      correct: 1,
+      explanation: "In the 1950s and 1960s, scientists mapping the ocean floor discovered that Earth's crust is broken into large sections called tectonic plates. These plates float on semi-molten rock and move slowly over time. This discovery — plate tectonics — provided exactly the physical mechanism that Wegener's theory had been missing."
+    }
+  ]
+};
+
+var quizState = { selected: [], submitted: false };
+var quizMode = 'practice';
+
+function setQuizMode(mode) {
+  quizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+
+// URL param — auto-set mode on load
+window.addEventListener('DOMContentLoaded', function() {
+  var params = new URLSearchParams(window.location.search);
+  var modeParam = params.get('mode');
+  if (modeParam === 'classroom') {
+    setQuizMode('classroom');
+  } else {
+    setQuizMode('practice');
+  }
+});
+
+function buildQuiz() {
+  var container = document.getElementById('quiz1-questions');
+  container.innerHTML = '';
+  quizState.selected  = new Array(quizData.questions.length).fill(null);
+  quizState.submitted = false;
+  document.getElementById('submit-btn').disabled = true;
+  updateProgress();
+
+  quizData.questions.forEach(function(q, qi) {
+    var letters = ['A','B','C','D'];
+    var optionsHTML = q.options.map(function(opt, oi) {
+      return '<button class="quiz-option" onclick="selectAnswer(' + qi + ', ' + oi + ')" id="q-' + qi + '-' + oi + '"><span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.id = 'q-card-' + qi;
+    card.innerHTML = '<div class="quiz-header"><div class="quiz-num">' + (qi + 1) + '</div><div class="quiz-question-text">' + q.q + '</div></div><div class="quiz-options">' + optionsHTML + '</div><div class="option-feedback" id="q-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+function selectAnswer(qi, chosenIndex) {
+  if (quizState.submitted) return;
+  var prev = quizState.selected[qi];
+  if (prev !== null) {
+    document.getElementById('q-' + qi + '-' + prev).classList.remove('selected');
+  }
+  quizState.selected[qi] = chosenIndex;
+  document.getElementById('q-' + qi + '-' + chosenIndex).classList.add('selected');
+  updateProgress();
+  var allSelected = quizState.selected.every(function(s) { return s !== null; });
+  document.getElementById('submit-btn').disabled = !allSelected;
+}
+
+function updateProgress() {
+  var total    = quizData.questions.length;
+  var answered = quizState.selected.filter(function(s) { return s !== null; }).length;
+  document.getElementById('q1-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('q1-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+function validateStudentInfo() {
+  var name    = document.getElementById('student-name').value.trim();
+  var teacher = document.getElementById('teacher-select').value;
+  var block   = document.getElementById('block-select').value;
+  document.getElementById('err-name').classList.toggle('show', !name);
+  document.getElementById('err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+
+function submitQuiz() {
+  if (quizState.submitted) return;
+
+  if (quizMode === 'classroom') {
+    var check = validateStudentInfo();
+    if (!check.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+
+  quizState.submitted = true;
+  document.getElementById('submit-btn').disabled = true;
+
+  var correct = 0;
+
+  quizData.questions.forEach(function(q, qi) {
+    var chosen    = quizState.selected[qi];
+    var isCorrect = (chosen === q.correct);
+    if (isCorrect) correct++;
+
+    q.options.forEach(function(_, oi) {
+      var btn = document.getElementById('q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+
+    document.getElementById('q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+
+    var fb = document.getElementById('q-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '&#10003; Correct! ' : '&#10007; Not quite. ') + q.explanation;
+  });
+
+  var total = quizData.questions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100
+    ? 'Perfect score! You have mastered the evidence for continental drift!'
+    : pct >= 80
+    ? 'Great work! You clearly understand the theory and its evidence — review any you missed.'
+    : pct >= 60
+    ? 'Good effort! Go back over the evidence sections and try again.'
+    : 'Keep going — review each section carefully. You have got this!';
+
+  document.getElementById('q1-score-num').textContent = score;
+  document.getElementById('q1-score-msg').textContent = msg;
+  var sb = document.getElementById('q1-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  if (quizMode === 'practice') {
+    document.getElementById('submit-status').innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode — score not submitted</div>';
+    return;
+  }
+
+  var info       = validateStudentInfo();
+  var url        = SCRIPT_URLS[info.teacher];
+  if (!url || url.indexOf('YOUR_') !== -1) {
+    document.getElementById('submit-status').innerHTML = '<div class="score-error">Script URL not configured — ask your teacher.</div>';
+    return;
+  }
+  var teacherLabel = (info.teacher === 'MrBrown') ? 'Mr. Brown' : 'Ms. Gay';
+  var params = new URLSearchParams({
+    tab: 'ContinentalDrift',
+    studentName: info.name,
+    teacher: teacherLabel,
+    block: info.block,
+    score: score,
+    percent: pct + '%'
+  });
+  fetch(url + '?' + params.toString())
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById('submit-status').innerHTML = data.status === 'success'
+        ? '<div class="score-submitted">Score submitted to ' + teacherLabel + '</div>'
+        : '<div class="score-error">Submission issue: ' + (data.message || 'Unknown error') + '</div>';
+    })
+    .catch(function() {
+      document.getElementById('submit-status').innerHTML = '<div class="score-error">Could not reach the server. Check your connection.</div>';
+    });
+}
+
+function resetQuiz() {
+  document.getElementById('q1-score').classList.remove('show');
+  document.getElementById('submit-status').innerHTML = '';
+  buildQuiz();
+}
+
+buildQuiz();
+</script>
+
+<!-- Starfield -->
+<script>
+var canvas = document.getElementById('stars');
+var ctx = canvas.getContext('2d');
+var stars = [];
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = document.body.scrollHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  var count = Math.floor((canvas.width * canvas.height) / 4200);
+  for (var i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,
+      a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(function(s) {
+    var alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(180,200,220,' + alpha + ')';
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', function() {
+  clearTimeout(window._rt);
+  window._rt = setTimeout(resize, 200);
+});
+resize();
+requestAnimationFrame(draw);
+</script>
+
+</body>
+</html>
