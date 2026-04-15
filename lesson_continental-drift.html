@@ -607,15 +607,54 @@
   a.cont-card { text-decoration: none; cursor: pointer; }
 
   /* ── FOOTER ── */
-  footer { background: #080a0f; border-top: 1px solid var(--border); padding: 3rem 2rem; text-align: center; }
-  .footer-logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--accent2); margin-bottom: 0.5rem; }
-  footer p { color: rgba(122,143,166,0.8); font-size: 0.9rem; }
-  footer a {
-    color: var(--gold); text-decoration: none; font-size: 0.83rem; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    border: 1px solid rgba(245,200,66,0.3); padding: 0.3rem 0.9rem; border-radius: 99px; transition: border-color 0.2s;
-  }
-  footer a:hover { border-color: rgba(245,200,66,0.6); }
+footer { background:#080a0f; border-top:1px solid var(--border); padding:2rem 2rem; text-align:center; }
+.footer-logo {
+  font-family:'Fredoka One',cursive;
+  font-size:1.1rem;
+  letter-spacing:0.08em;
+  color:var(--gold);
+  margin-bottom:0.35rem;
+}
+.footer-tagline {
+  font-size:0.83rem;
+  color:rgba(240,228,200,0.6);
+  margin-bottom:0.6rem;
+}
+.footer-links {
+  display:flex;
+  gap:0.5rem;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-bottom:0.6rem;
+}
+.footer-links a {
+  color:var(--gold);
+  text-decoration:none;
+  font-size:0.72rem;
+  font-weight:800;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  border:1px solid rgba(245,200,66,0.4);
+  background:rgba(245,200,66,0.08);
+  padding:0.25rem 0.75rem;
+  border-radius:99px;
+  transition:border-color 0.2s, background 0.2s, color 0.2s;
+}
+.footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+.footer-links a.nav-why {
+  color:#3bc8e8;
+  border:1px solid rgba(59,200,232,0.7);
+  background:rgba(59,200,232,0.12);
+}
+.footer-links a.nav-why:hover {
+  color:#3bc8e8;
+  border-color:rgba(59,200,232,0.95);
+  background:rgba(59,200,232,0.22);
+}
+footer .footer-copy {
+  color:var(--text-muted);
+  font-size:0.78rem;
+}
 
   @media (max-width: 600px) {
     .nav-links { display: none; }
@@ -1020,9 +1059,13 @@
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
-  <p style="margin-bottom:0.5rem;">Part of the Earth &amp; Space unit</p>
-  <p style="margin-top:0.6rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">&#8592; Learning Hub</a></p>
-  <p>&#169; 2026 LyfeLabz &middot; Educational Use</p>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p class="footer-copy">© 2026 LyfeLabz · Educational Use</p>
 </footer>
 
 <!-- ─── SCRIPTS ─────────────────────────────────────────────────────── -->
