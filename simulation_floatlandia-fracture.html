@@ -368,6 +368,50 @@ nav {
   font-size: 0.88rem;
   font-weight: 700;
 }
+.quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+.quiz-submit-btn {
+  background: var(--teal);
+  color: #000;
+  border: none;
+  padding: 0.9rem 2.8rem;
+  border-radius: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  letter-spacing: 0.04em;
+}
+.quiz-submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(59,200,232,0.4); }
+.quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.score-board {
+  display: none;
+  background: var(--bg-card);
+  border: 2px solid var(--teal);
+  border-radius: 20px;
+  padding: 2.5rem;
+  text-align: center;
+  margin-top: 2rem;
+  box-shadow: 0 0 40px rgba(59,200,232,0.12);
+}
+.score-board.show { display: block; animation: fadeIn 0.5s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.big-score { font-family: 'Fredoka One', cursive; font-size: 3.5rem; color: var(--teal); margin-bottom: 0.5rem; }
+.score-board p { color: var(--text-secondary); font-size: 1rem; margin-bottom: 1rem; line-height: 1.6; }
+.score-submitted {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--green); background: var(--green-dim);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1rem;
+}
+.score-error {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-size: 0.8rem; font-weight: 800;
+  color: var(--red); background: var(--red-dim);
+  border: 1px solid rgba(232,112,112,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1rem;
+}
 
 @media (max-width: 600px) {
   .mode-btn { padding: 0.5rem 1.2rem; font-size: 0.84rem; }
@@ -2197,25 +2241,13 @@ footer p {
 <div class="section-desc">
     You've examined the evidence, rebuilt ancient Floatlandia, and watched the plates move through deep time. Answer these five questions to see how well you understood the investigation.
   </div>
-<div id="quizContainer"></div>
-<div id="quizScoreArea" style="display:none; margin-top:1rem; text-align:center;">
-  <div class="quiz-score-badge" id="quizScoreBadge">0 / 5 answered</div>
-</div>
-<div id="quizSubmitArea" style="display:none !important; text-align:center; margin-top:1rem;">
-  <button class="btn btn-teal" id="quizSubmitBtn" disabled></button>
-</div>
-<div id="quizResultBanner" style="display:none;"></div>
-
+<!-- Student Info (Classroom Mode only) -->
 <div class="classroom-panel hidden" id="classroomPanel">
   <div class="classroom-panel-header">
-    <div class="section-title" style="margin:0; font-size:1.2rem;">Submit Your Work</div>
+    <div class="section-title" style="margin:0; font-size:1.2rem;">Before You Submit</div>
     <span class="mode-badge">Classroom Mode</span>
   </div>
-
   <div class="classroom-section">
-    <div class="classroom-section-title" style="color:var(--teal);">
-      Student Information
-    </div>
     <div class="student-fields">
       <div class="field-full">
         <label class="field-label" for="studentNameInput">Student Name</label>
@@ -2225,8 +2257,8 @@ footer p {
         <label class="field-label" for="teacherSelect">Teacher</label>
         <select id="teacherSelect" class="field-select">
           <option value="">Select teacher...</option>
-          <option value="Mr. Brown">Mr. Brown</option>
-          <option value="Ms. Gay">Ms. Gay</option>
+          <option value="MrBrown">Mr. Brown</option>
+          <option value="MsGay">Ms. Gay</option>
         </select>
       </div>
       <div>
@@ -2244,21 +2276,26 @@ footer p {
       </div>
     </div>
   </div>
+</div>
 
-  <div class="classroom-section">
-    <div class="submit-section">
-      <button class="submit-btn locked" id="classroomSubmitBtn" disabled>
-        Submit Quiz
-      </button>
-      <p class="submit-helper" id="submitHelperText">Complete and submit the quiz first.</p>
-      <div class="submit-success" id="submitSuccess">
-        Your work has been submitted! Great job, scientist.
-      </div>
-      <div class="submit-error" id="submitError">
-        Submission failed. Please check your connection and try again.
-      </div>
-    </div>
-  </div>
+<!-- Quiz Questions -->
+<div id="quizContainer"></div>
+
+<!-- Progress -->
+<div id="quizScoreArea" style="display:none; margin-top:1rem; text-align:center;">
+  <div class="quiz-score-badge" id="quizScoreBadge">0 / 5 answered</div>
+</div>
+
+<!-- Submit Button -->
+<div class="quiz-submit-wrap">
+  <button class="quiz-submit-btn" id="quizSubmitBtn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+</div>
+
+<!-- Score Board -->
+<div class="score-board" id="quizScoreBoard">
+  <div class="big-score" id="quizScoreNum"></div>
+  <p id="quizScoreMsg"></p>
+  <div id="submitStatus"></div>
 </div>
 
 </section>
@@ -2394,8 +2431,8 @@ const QUIZ_DATA = [
    GOOGLE SHEETS SUBMISSION URLS
    ===================================================================== */
 const SCRIPT_URLS = {
-  'Mr. Brown': 'https://script.google.com/macros/s/AKfycbyBvcn7G6-tqM9mxGSr24C2hPjn8EXRX796QC2reswS5xny4To0Z-EhNuGmhD7Q4keY5A/exec',
-  'Ms. Gay':   'https://script.google.com/macros/s/AKfycbzSWCQfGJ2xdt5znuspy0r6WlVzfl0wnmwhDPL7jLxaXwim-KA1nVPRxJR8i2l5YuR0/exec'
+  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
 
 /* =====================================================================
@@ -2432,7 +2469,6 @@ document.addEventListener('DOMContentLoaded', () => {
   updateAlignMeter();
   initModeToggle();
   initQuiz();
-  initClassroomSubmit();
   initHotkeys();
 
   document.addEventListener('keydown', (e) => {
@@ -2451,9 +2487,9 @@ function initModeToggle() {
 
   // Re-evaluate submit gating when student fields change
   ['input','change'].forEach(evt => {
-    document.getElementById('studentNameInput').addEventListener(evt, renderSubmitState);
-    document.getElementById('teacherSelect').addEventListener(evt, renderSubmitState);
-    document.getElementById('blockInput').addEventListener(evt, renderSubmitState);
+    document.getElementById('studentNameInput').addEventListener(evt, () => {});
+    document.getElementById('teacherSelect').addEventListener(evt, () => {});
+    document.getElementById('blockInput').addEventListener(evt, () => {});
   });
 }
 
@@ -2470,7 +2506,6 @@ function setMode(isClassroom) {
 
   if (isClassroom) {
     panel.classList.remove('hidden');
-    renderSubmitState();
     if (simCompleted) {
       quizSection.style.display = 'block';
       setPhase(4);
@@ -3153,7 +3188,6 @@ function initQuiz() {
     container.appendChild(qDiv);
   });
 
-  // Event delegation for quiz option clicks
   container.addEventListener('click', e => {
     if (quizSubmitted) return;
     const opt = e.target.closest('.quiz-option');
@@ -3161,37 +3195,40 @@ function initQuiz() {
     const qid = Number(opt.dataset.qid);
     const idx = Number(opt.dataset.idx);
     quizAnswers[qid] = idx;
-    // Update selection UI for this question
     const qDiv = container.querySelector('.quiz-question[data-qid="' + qid + '"]');
     if (qDiv) {
       qDiv.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
       opt.classList.add('selected');
     }
     updateQuizScore();
-    renderSubmitState();
   });
 
-  // Quiz submit button
-  document.getElementById('quizSubmitBtn').addEventListener('click', submitQuiz);
-
-  // Show score area only (legacy standalone submit button stays hidden)
   document.getElementById('quizScoreArea').style.display = 'block';
-  document.getElementById('quizSubmitArea').style.display = 'none';
 }
 
 function updateQuizScore() {
   const answered = Object.keys(quizAnswers).length;
-  const badge = document.getElementById('quizScoreBadge');
-  badge.textContent = answered + ' / ' + QUIZ_DATA.length + ' answered';
+  document.getElementById('quizScoreBadge').textContent = answered + ' / ' + QUIZ_DATA.length + ' answered';
   const allAnswered = answered === QUIZ_DATA.length;
-  if (allAnswered && !quizSubmitted) {
-    submitQuiz();
-  }
+  document.getElementById('quizSubmitBtn').disabled = !allAnswered;
 }
 
 function submitQuiz() {
   if (quizSubmitted) return;
+
+  if (classroomMode) {
+    const name    = document.getElementById('studentNameInput').value.trim();
+    const teacher = document.getElementById('teacherSelect').value;
+    const block   = document.getElementById('blockInput').value;
+    if (!name || !teacher || !block) {
+      document.getElementById('classroomPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast('⚠️ Fill in your name, teacher, and block before submitting.', 'info');
+      return;
+    }
+  }
+
   quizSubmitted = true;
+  document.getElementById('quizSubmitBtn').disabled = true;
 
   let correct = 0;
   const container = document.getElementById('quizContainer');
@@ -3203,42 +3240,63 @@ function submitQuiz() {
     opts.forEach((opt, i) => {
       opt.style.cursor = 'default';
       opt.classList.remove('selected');
-      if (i === q.correct) {
-        opt.classList.add('correct-reveal');
-      } else if (quizAnswers[q.id] === i) {
-        opt.classList.add('wrong-reveal');
-      }
+      if (i === q.correct) opt.classList.add('correct-reveal');
+      else if (quizAnswers[q.id] === i) opt.classList.add('wrong-reveal');
     });
     if (quizAnswers[q.id] === q.correct) correct++;
   });
 
-  // Update score badge
-  const badge = document.getElementById('quizScoreBadge');
-  badge.textContent = correct + ' / ' + QUIZ_DATA.length + ' correct';
+  const total = QUIZ_DATA.length;
+  const pct   = Math.round(correct / total * 100);
+  const score = correct + '/' + total;
+  const msg   = pct === 100
+    ? 'Perfect score! You mastered the evidence for continental drift!'
+    : pct >= 80
+    ? 'Great work! Review any questions you missed.'
+    : pct >= 60
+    ? 'Good effort! Go back over the evidence and try again.'
+    : 'Keep going — review each phase carefully. You\'ve got this!';
 
-  // Hide submit button
-  document.getElementById('quizSubmitBtn').style.display = 'none';
+  document.getElementById('quizScoreNum').textContent = score;
+  document.getElementById('quizScoreMsg').textContent = msg;
+  const sb = document.getElementById('quizScoreBoard');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-  // Show result banner
-  const banner = document.getElementById('quizResultBanner');
-  banner.style.display = 'block';
-  if (correct >= 4) {
-    banner.className = 'quiz-result-banner pass';
-    banner.textContent = '🎉 Great work! You scored ' + correct + '/' + QUIZ_DATA.length + '. You showed strong understanding of continental drift evidence.';
-  } else if (correct >= 2) {
-    banner.className = 'quiz-result-banner try-again';
-    banner.textContent = '📚 You scored ' + correct + '/' + QUIZ_DATA.length + '. Review the correct answers above — the green highlights show the right choice for each question.';
-  } else {
-    banner.className = 'quiz-result-banner try-again';
-    banner.textContent = '📚 You scored ' + correct + '/' + QUIZ_DATA.length + '. Take another look at the evidence from earlier phases and review the correct answers highlighted above.';
-  }
-
-  // Mark quiz step done
   document.getElementById('step4').classList.add('done');
   document.getElementById('step4').classList.remove('active');
 
-  toast('📝 Quiz complete! ' + correct + '/' + QUIZ_DATA.length + ' correct.', correct >= 4 ? 'success' : 'info');
-  renderSubmitState();
+  toast('📝 Quiz complete! ' + correct + '/' + total + ' correct.', correct >= 4 ? 'success' : 'info');
+
+  if (!classroomMode) {
+    document.getElementById('submitStatus').innerHTML = '<div class="score-submitted" style="background:rgba(59,200,232,0.08);color:var(--teal);border-color:rgba(59,200,232,0.3);">Practice mode — score not submitted</div>';
+    return;
+  }
+
+  const name         = document.getElementById('studentNameInput').value.trim();
+  const teacher      = document.getElementById('teacherSelect').value;
+  const block        = document.getElementById('blockInput').value;
+  const url          = SCRIPT_URLS[teacher];
+  const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+
+  const params = new URLSearchParams({
+    tab:         'Floatlandia Fracture',
+    studentName: name,
+    teacher:     teacherLabel,
+    block:       block,
+    quizScore:   score
+  });
+
+  fetch(url + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('submitStatus').innerHTML = data.status === 'success'
+        ? '<div class="score-submitted">Score submitted to ' + teacherLabel + '! ✓</div>'
+        : '<div class="score-error">Submission issue: ' + (data.message || 'Unknown error') + '</div>';
+    })
+    .catch(() => {
+      document.getElementById('submitStatus').innerHTML = '<div class="score-error">Could not reach the server. Check your connection.</div>';
+    });
 }
 
 function computeQuizScore() {
@@ -3256,74 +3314,7 @@ function allQuizAnswered() {
 /* =====================================================================
    CLASSROOM SUBMIT
    ===================================================================== */
-function renderSubmitState() {
-  if (!classroomMode) return;
-  const nameOk    = document.getElementById('studentNameInput').value.trim().length > 0;
-  const teacherOk = document.getElementById('teacherSelect').value !== '';
-  const blockOk   = document.getElementById('blockInput').value.trim().length > 0;
-  const fieldsOk  = nameOk && teacherOk && blockOk;
-  const ready     = quizSubmitted && fieldsOk;
-
-  const btn = document.getElementById('classroomSubmitBtn');
-  const helper = document.getElementById('submitHelperText');
-  btn.disabled  = !ready;
-  btn.className = 'submit-btn ' + (ready ? 'ready' : 'locked');
-  btn.textContent = 'Submit Quiz';
-
-  if (ready) {
-    helper.textContent = 'Everything looks good. Ready to submit!';
-  } else if (!quizSubmitted) {
-    helper.textContent = 'Complete and submit the quiz first.';
-  } else if (!nameOk) {
-    helper.textContent = 'Enter your student name to submit.';
-  } else if (!teacherOk) {
-    helper.textContent = 'Select your teacher to submit.';
-  } else if (!blockOk) {
-    helper.textContent = 'Select your block to submit.';
-  }
-}
-
-function initClassroomSubmit() {
-  document.getElementById('classroomSubmitBtn').addEventListener('click', async () => {
-    const btn = document.getElementById('classroomSubmitBtn');
-    if (btn.disabled) return;
-
-    const teacher   = document.getElementById('teacherSelect').value;
-    const scriptUrl = SCRIPT_URLS[teacher];
-    if (!scriptUrl) {
-      document.getElementById('submitError').textContent = 'Unknown teacher selection.';
-      document.getElementById('submitError').style.display = 'block';
-      return;
-    }
-
-    btn.disabled  = true;
-    btn.className = 'submit-btn locked';
-    btn.textContent = 'Submitting...';
-    document.getElementById('submitError').style.display = 'none';
-
-    const params = new URLSearchParams({
-      tab:         'Floatlandia Fracture',
-      studentName: document.getElementById('studentNameInput').value.trim(),
-      teacher:     teacher,
-      block:       document.getElementById('blockInput').value.trim(),
-      quizScore:   computeQuizScore()
-    });
-
-    try {
-      await fetch(scriptUrl + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
-      btn.textContent = 'Submitted';
-      document.getElementById('submitHelperText').style.display = 'none';
-      document.getElementById('submitSuccess').innerHTML = 'Your work has been submitted! Great job, scientist.<br><span class="quiz-score-badge" style="margin-top:10px;">Your quiz score: ' + computeQuizScore() + '</span>';
-      document.getElementById('submitSuccess').style.display = 'block';
-    } catch(err) {
-      btn.disabled  = false;
-      btn.className = 'submit-btn ready';
-      btn.textContent = 'Submit Quiz';
-      document.getElementById('submitError').textContent = 'Submission failed. Check your connection and try again.';
-      document.getElementById('submitError').style.display = 'block';
-    }
-  });
-}
+/* Submit handled directly inside submitQuiz() following continental drift pattern */
 
 /* =====================================================================
    TOAST
