@@ -2201,7 +2201,7 @@ footer p {
 <div id="quizScoreArea" style="display:none; margin-top:1rem; text-align:center;">
   <div class="quiz-score-badge" id="quizScoreBadge">0 / 5 answered</div>
 </div>
-<div id="quizSubmitArea" style="display:none; text-align:center; margin-top:1rem;">
+<div id="quizSubmitArea" style="display:none !important; text-align:center; margin-top:1rem;">
   <button class="btn btn-teal" id="quizSubmitBtn" disabled></button>
 </div>
 <div id="quizResultBanner" style="display:none;"></div>
@@ -3183,11 +3183,10 @@ function updateQuizScore() {
   const answered = Object.keys(quizAnswers).length;
   const badge = document.getElementById('quizScoreBadge');
   badge.textContent = answered + ' / ' + QUIZ_DATA.length + ' answered';
-  const submitBtn = document.getElementById('quizSubmitBtn');
   const allAnswered = answered === QUIZ_DATA.length;
-  submitBtn.disabled = !allAnswered;
-  submitBtn.style.opacity = allAnswered ? '1' : '0.45';
-  document.getElementById('quizSubmitArea').style.display = allAnswered ? 'block' : 'none';
+  if (allAnswered && !quizSubmitted) {
+    submitQuiz();
+  }
 }
 
 function submitQuiz() {
