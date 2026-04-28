@@ -602,6 +602,19 @@
     text-shadow: 0 0 12px var(--gold-glow);
   }
   footer p { font-size: 0.83rem; color: var(--muted); }
+  footer a {
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.83rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    transition: all 0.2s;
+  }
+  footer a:hover { border-color: rgba(245,200,66,0.6); }
 
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--dark); }
@@ -1019,10 +1032,10 @@
 <footer>
   <div class="footer-logo">LYFELABZ</div>
   <p>Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
-  <p style="margin-top:0.6rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
-    <a href="about_lyfelabz.html" style="color:var(--gold); text-decoration:none; font-size:0.83rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.3); padding:0.3rem 0.9rem; border-radius:99px; transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(245,200,66,0.6)'" onmouseout="this.style.borderColor='rgba(245,200,66,0.3)'">About LyfeLabz</a>
-    <a href="about_privacy.html" style="color:var(--gold); text-decoration:none; font-size:0.83rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.3); padding:0.3rem 0.9rem; border-radius:99px; transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(245,200,66,0.6)'" onmouseout="this.style.borderColor='rgba(245,200,66,0.3)'">Privacy Policy</a>
-    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  <p style="margin-top:0.8rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" style="color:#3bc8e8; border-color:rgba(59,200,232,0.4);">Why It Works</a>
   </p>
 
   <!-- ── Educator Mode Toggles ── -->
