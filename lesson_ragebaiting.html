@@ -325,23 +325,6 @@
   .discussion-num { width: 32px; height: 32px; background: rgba(168,85,247,0.18); border: 1px solid rgba(168,85,247,0.35); color: var(--purple-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.88rem; flex-shrink: 0; margin-top: 0.1rem; }
   .discussion-q p { font-size: 0.93rem; color: var(--text-muted); line-height: 1.6; }
 
-  /* FOOTER */
-  footer { background: var(--darker); border-top: 1px solid var(--border); padding: 2rem; text-align: center; }
-  footer .footer-logo { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--gold); margin-bottom: 0.3rem; }
-  footer .footer-links { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
-  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.3rem 0.9rem; border-radius:99px; transition:border-color 0.2s; }
-  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
-  footer p { color: var(--text-muted); font-size: 0.82rem; }
-  footer a { color: var(--gold); text-decoration: none; }
-  .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-bottom: 2.5rem; }
-  @media (max-width: 640px) { .footer-inner { grid-template-columns: 1fr; } }
-  footer p  { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
-  footer h4 { font-weight: 900; font-size: 0.95rem; margin-bottom: 0.75rem; }
-  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
-  .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
-  .footer-links a:hover { color: var(--text); }
-  .footer-bottom { max-width: 1200px; margin: 0 auto; border-top: 1px solid var(--border); padding-top: 1.5rem; text-align: center; font-size: 0.82rem; color: rgba(255,255,255,0.25); }
-
   /* RESEARCH CARDS */
   .research-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 1.5rem; margin-top: 2.5rem; }
   .research-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; position: relative; }
@@ -418,7 +401,65 @@
   /* FADE-IN for new sections */
   @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 
-
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
+  }
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
@@ -1162,12 +1203,13 @@ body.ls-active .ls-focus {
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
-    <div class="footer-links">
-    <a href="about_lyfelabz.html">About</a>
-    <a href="about_privacy.html">Privacy</a>
-    <a href="about_learning-science.html">Why It Works</a>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
   </div>
-  <p style="margin-top:0.3rem">© 2026 LyfeLabz · Educational Use</p>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
 <script>

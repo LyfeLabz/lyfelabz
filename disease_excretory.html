@@ -48,28 +48,10 @@
   .stat-pill .sv { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--accent); margin-right:0.15rem; }
   .panels { display:grid; grid-template-columns:1fr 430px; gap:1.4rem; align-items:start; }
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
    }
    }
-  
-  
-  
-  
-  
-  
-  
   
    70%{opacity:0;transform:scale(1.4)} 100%{opacity:0} }
-  
-  
   
   .info-panel { position:sticky; top:80px; display:flex; flex-direction:column; gap:1rem; }
   .i-idle { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2.5rem 2rem; text-align:center; }
@@ -109,14 +91,68 @@
   .dyk-icon { font-size:1.1rem; flex-shrink:0; margin-top:0.05rem; }
   .dyk-label { font-size:0.64rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:0.15rem; }
   .dyk-text  { font-size:0.79rem; color:rgba(232,244,251,0.7); line-height:1.6; }
-  footer { background:#070f17; border-top:1px solid var(--border); padding:2.2rem 2rem; text-align:center; margin-top:0.5rem; }
-  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:var(--accent); margin-bottom:0.35rem; }
-  footer .footer-links { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
-  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.3rem 0.9rem; border-radius:99px; transition:border-color 0.2s; }
-  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
-  footer p { color:var(--muted); font-size:0.83rem; } footer a { color:var(--teal); text-decoration:none; } footer a:hover { text-decoration:underline; }
   @media(max-width:960px){ .panels{grid-template-columns:1fr} .info-panel{position:static} }
   @media(max-width:600px){ nav{padding:0.8rem 1.2rem} .nav-center{display:none} .page-header{padding:1.6rem 1.2rem 1.3rem} .explorer-wrap{padding:1.2rem 1rem 2rem} .header-hint{display:none} }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
+  }
 </style>
 <style>
 .ls-focus { display:none; }
@@ -140,32 +176,6 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
 .stem-badge[data-tip]::before { content:''; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(46,204,113,0.2); pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:999; }
 .stem-badge[data-tip]:hover::before { opacity:1; }
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-
   .map-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:relative;}
   .map-panel::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 25%,rgba(139,195,74,0.06) 0%,transparent 65%);pointer-events:none;z-index:0;}
   .map-panel-hd{padding:0.85rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;position:relative;z-index:1;}
@@ -173,12 +183,6 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
   .map-body{padding:1rem 1.2rem 1.2rem;position:relative;z-index:1;}
   #map-canvas{width:100%;display:block;cursor:default;border-radius:8px;}
   
-  
-  
-  
-  
-
-
   /* ── READ ALOUD ── */
   .i-card-hd { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
   .read-aloud-btn {
@@ -314,15 +318,16 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
     </div>
   </div>
 </div>
+<!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
-  <p class="footer-context">Excretory System — Diseases &amp; Disorders</p>
-    <div class="footer-links">
-    <a href="about_lyfelabz.html">About</a>
-    <a href="about_privacy.html">Privacy</a>
-    <a href="about_learning-science.html">Why It Works</a>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
   </div>
-  <p>© 2026 LyfeLabz · Educational Use</p>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 <script>
 const DATA = {

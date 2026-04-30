@@ -119,107 +119,6 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 .case-result .cr-score{font-family:'Fredoka One',cursive;font-size:1.8rem;color:var(--purple);}
 .case-result .cr-msg{font-size:0.88rem;color:var(--muted);margin-top:0.2rem;}
 
-footer{background:#070f17;border-top:1px solid var(--border);padding:2rem;text-align:center;}
-footer .footer-logo{font-family:'Fredoka One',cursive;font-size:1.2rem;color:var(--accent);margin-bottom:0.3rem;}
-  footer .footer-links { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
-  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.3rem 0.9rem; border-radius:99px; transition:border-color 0.2s; }
-  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
-footer p{color:var(--muted);font-size:0.82rem;}footer a{color:var(--teal);text-decoration:none;}
-
-/* ── Turn-In Bar ──────────────────────────────────────────────── */
-.turnin-bar {
-  background: var(--card);
-  border: 1px solid rgba(59,200,232,0.28);
-  border-radius: 16px;
-  padding: 0.9rem 1.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  box-shadow: 0 0 0 1px rgba(59,200,232,0.08), 0 4px 24px rgba(59,200,232,0.06);
-}
-.turnin-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-  min-width: 220px;
-}
-.turnin-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-.turnin-label {
-  font-size: 0.88rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 0.22rem;
-}
-.turnin-hint {
-  font-size: 1rem;
-  color: var(--muted);
-  font-weight: 700;
-}
-.turnin-input-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-.turnin-name-input {
-  background: rgba(255,255,255,0.04);
-  border: 1.5px solid rgba(59,200,232,0.28);
-  border-radius: 10px;
-  padding: 0.55rem 1rem;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: var(--text);
-  outline: none;
-  width: 200px;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-}
-.turnin-name-input::placeholder {
-  color: var(--muted);
-  font-weight: 600;
-}
-.turnin-name-input:focus {
-  border-color: var(--accent);
-  background: rgba(59,200,232,0.06);
-  box-shadow: 0 0 0 3px rgba(59,200,232,0.14);
-}
-.btn-turnin {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.62rem 1.5rem;
-  border-radius: 99px;
-  border: none;
-  background: linear-gradient(135deg, var(--accent), var(--teal));
-  color: #1a2535;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: all 0.22s;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-.btn-turnin:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(59,200,232,0.45);
-}
-.btn-turnin:active {
-  transform: translateY(0);
-}
-.btn-turnin .ti-ico {
-  font-size: 1rem;
-}
 @media(max-width:600px){
   .turnin-bar{flex-direction:column;align-items:flex-start;}
   .turnin-input-wrap{width:100%;flex-direction:column;align-items:stretch;}
@@ -228,6 +127,66 @@ footer p{color:var(--muted);font-size:0.82rem;}footer a{color:var(--teal);text-d
 }
 
 @media(max-width:600px){nav{padding:0.8rem 1.2rem;}.nav-center{display:none;}.main{padding:2rem 1rem 3rem;}.case-header,.case-body{padding:1.2rem;}.vitals{grid-template-columns:1fr 1fr;}}
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
+  }
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
@@ -568,15 +527,16 @@ body.stem-active .stem-detail {
 
 </div>
 
+<!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
-
-    <div class="footer-links">
-    <a href="about_lyfelabz.html">About</a>
-    <a href="about_privacy.html">Privacy</a>
-    <a href="about_learning-science.html">Why It Works</a>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
   </div>
-  <p style="margin-top:0.3rem">© 2026 LyfeLabz · Educational Use</p>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
 <script>

@@ -318,23 +318,70 @@
     transform: translateX(3px);
   }
 
-  /* ===== FOOTER ===== */
-  footer {
-    background: #070f17;
-    border-top: 1px solid var(--border);
-    padding: 3rem 2rem;
-    text-align: center;
-  }
-  footer .footer-logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--accent); margin-bottom: 0.5rem; }
-  footer .footer-links { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
-  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.3rem 0.9rem; border-radius:99px; transition:border-color 0.2s; }
-  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
-  footer p { color: var(--text-muted); font-size: 0.9rem; }
-
   @media (max-width: 600px) {
     .nav-links { display: none; }
     nav { padding: 0.85rem 1.2rem; }
     .back-row { padding: 1rem 1.2rem; }
+  }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
   }
 </style>
 </head>
@@ -442,14 +489,13 @@
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
-  <p style="margin-bottom:0.5rem;">Part of the Life Science unit</p>
-    <div class="footer-links">
-    <a href="index.html">← Learning Hub</a>
-    <a href="about_lyfelabz.html">About</a>
-    <a href="about_privacy.html">Privacy</a>
-    <a href="about_learning-science.html">Why It Works</a>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
   </div>
-  <p>© 2026 LyfeLabz · Educational Use</p>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>

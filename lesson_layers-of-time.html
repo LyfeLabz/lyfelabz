@@ -605,21 +605,70 @@
   .rock-name.pulsing,
   .sd-title.pulsing     { animation: termPulse 3s ease forwards; padding: 0 5px; margin: 0 -5px; }
 
-  /* ── FOOTER ── */
-  footer { background: #080a0f; border-top: 1px solid var(--border); padding: 3rem 2rem; text-align: center; }
-  footer .logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--accent2); margin-bottom: 0.5rem; }
-  footer p { color: rgba(122,143,166,0.8); font-size: 0.9rem; }
-  footer a {
-    color: var(--gold); text-decoration: none; font-size: 0.83rem; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    border: 1px solid rgba(245,200,66,0.3); padding: 0.3rem 0.9rem; border-radius: 99px; transition: border-color 0.2s;
-  }
-  footer a:hover { border-color: rgba(245,200,66,0.6); }
-
   @media (max-width: 600px) {
     .nav-links { display: none; }
     .quiz-options { padding-left: 0; }
     .option-feedback { padding-left: 1rem; }
+  }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
   }
 </style>
 </head>
@@ -988,7 +1037,18 @@
         <div class="cont-desc">Apply what you learned about index fossils to match rock layers and determine their relative ages across multiple locations.</div>
         <span class="cont-link">Play</span>
       </a>
-
+      <div class="cont-card game">
+        <div class="cont-icon">🏺</div>
+        <div class="cont-name">Fossil Dig Game</div>
+        <div class="cont-desc">Excavate a virtual site, identify index fossils, and use superposition to date your discoveries.</div>
+        <span class="coming-soon-tag">🚧 Coming Soon</span>
+      </div>
+      <div class="cont-card ext">
+        <div class="cont-icon">🗺️</div>
+        <div class="cont-name">Virtual Grand Canyon Tour</div>
+        <div class="cont-desc">Explore the layers of the Grand Canyon and match each stratum to its time period in Earth's history.</div>
+        <span class="coming-soon-tag">🚧 Coming Soon</span>
+      </div>
     </div>
   </div>
 </section>
@@ -996,9 +1056,13 @@
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
-  <p style="margin-bottom:0.5rem;">Part of the Earth &amp; Space unit</p>
-  <p style="margin-top:0.6rem;margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a></p>
-  <p>© 2026 LyfeLabz · Educational Use</p>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
 <!-- ─── SCRIPTS ─────────────────────────────────────────────────────── -->

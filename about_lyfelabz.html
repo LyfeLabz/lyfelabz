@@ -304,31 +304,6 @@
   }
   .philosophy-line .accent { color: var(--gold); }
 
-  /* ===== FOOTER ===== */
-  footer {
-    background: var(--dark);
-    border-top: 1px solid var(--border);
-    padding: 2.5rem 2rem;
-    text-align: center;
-    position: relative;
-    z-index: 1;
-  }
-  .footer-logo {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 900;
-    color: var(--gold);
-    letter-spacing: 0.08em;
-    margin-bottom: 0.6rem;
-    text-shadow: 0 0 12px var(--gold-glow);
-  }
-  footer .footer-links { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
-  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.3rem 0.9rem; border-radius:99px; transition:border-color 0.2s; }
-  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
-  footer p { font-size: 0.83rem; color: var(--muted); }
-  footer a { color: var(--gold); text-decoration: none; }
-  footer a:hover { text-decoration: underline; }
-
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--dark); }
   ::-webkit-scrollbar-thumb { background: var(--card2); border-radius: 3px; }
@@ -337,6 +312,66 @@
     .intro-block { padding: 2rem 1.5rem; }
     .standards-block { padding: 1.8rem 1.6rem; }
     .philosophy-callout { padding: 2rem 1.5rem; }
+  }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
   }
 </style>
 </head>
@@ -466,31 +501,13 @@
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
-  <p style="margin-bottom:0.4rem;">Your middle school science hub · lyfelabz.com</p>
-    <div class="footer-links">
-    <a href="index.html">← Learning Hub</a>
-    <a href="about_privacy.html">Privacy</a>
-    <a href="about_learning-science.html">Why It Works</a>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
   </div>
-  <p style="margin-top:0.3rem;margin-bottom:1.2rem;font-size:0.82rem;color:var(--muted);">© 2026 LyfeLabz · Educational Use</p>
-
-  <!-- ── Educator Mode Toggles ──────────────────────────────────────── -->
-  <div style="padding-top:1.4rem;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;gap:0.6rem;">
-    <div style="font-size:0.62rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.45);">For Educators</div>
-    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;">
-      <button id="edu-toggle-btn" onclick="toggleEduMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(59,200,232,0.8);background:rgba(59,200,232,0.18);color:#3bc8e8;">
-        <span id="edu-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3bc8e8;transition:background 0.22s,box-shadow 0.22s;"></span>
-        <span id="edu-toggle-label">Show Learning Science Badges</span>
-      </button>
-      <button id="stem-toggle-btn" onclick="toggleStemMode()" style="display:inline-flex;align-items:center;gap:0.6rem;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s ease;border:1px solid rgba(46,204,113,0.7);background:rgba(46,204,113,0.12);color:#2ecc71;">
-        <span id="stem-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2ecc71;transition:background 0.22s,box-shadow 0.22s;"></span>
-        <span id="stem-toggle-label">Show MA STE Standards</span>
-      </button>
-    </div>
-    <div style="font-size:0.67rem;color:rgba(255,255,255,0.38);max-width:340px;text-align:center;line-height:1.5;">
-      Badges &amp; standards appear on every lesson, extension &amp; game — this session only.
-    </div>
-  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
 <script>

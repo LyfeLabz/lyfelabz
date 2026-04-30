@@ -221,6 +221,60 @@
   .verdict-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--yellow); margin-bottom: 0.25rem; }
   .verdict-text { color: var(--text-muted); font-size: 0.92rem; }
 
+
+  /* ===== COLLAPSIBLE ANALYSIS CARDS ===== */
+  details.analysis-block {
+    padding: 0;
+    overflow: hidden;
+  }
+  details.analysis-block summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.5rem 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid transparent;
+  }
+  details.analysis-block summary::-webkit-details-marker {
+    display: none;
+  }
+  details.analysis-block[open] summary {
+    border-bottom-color: var(--border);
+  }
+  .analysis-summary-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .analysis-toggle {
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    background: rgba(241,196,15,0.08);
+    border: 1px solid rgba(241,196,15,0.25);
+    border-radius: 99px;
+    padding: 0.25rem 0.75rem;
+    flex-shrink: 0;
+  }
+  details.analysis-block[open] .analysis-toggle {
+    color: var(--green);
+    background: rgba(46,204,113,0.08);
+    border-color: rgba(46,204,113,0.25);
+  }
+  details.analysis-block:not([open]) .analysis-toggle::before {
+    content: "Open ";
+  }
+  details.analysis-block[open] .analysis-toggle::before {
+    content: "Close ";
+  }
+  .analysis-content {
+    padding: 1.5rem 2.2rem 2.2rem;
+  }
+
   /* ===== CER BUILDER ===== */
   .cer-case {
     background: var(--card); border: 1px solid var(--border);
@@ -332,18 +386,70 @@
   }
   .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
 
-  /* ===== FOOTER ===== */
-  footer { background: #0d1720; border-top: 1px solid var(--border); padding: 3rem 2rem; text-align: center; }
-  footer .footer-logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--yellow); margin-bottom: 0.5rem; }
-  footer .footer-links { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
-  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.3rem 0.9rem; border-radius:99px; transition:border-color 0.2s; }
-  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
-  footer p { color: var(--text-muted); font-size: 0.9rem; }
-
   @media (max-width: 600px) {
     .nav-links { display: none; }
     .quiz-options { padding-left: 0; }
     .option-feedback { padding-left: 1rem; }
+  }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
   }
 </style>
 <style>
@@ -449,10 +555,7 @@ body.stem-active .stem-focus {
   <div class="hero-badge">Extension</div>
   <h1>The Gray Zone ⚠&#xFE0E;</h1>
   <p>You know the six characteristics of life. Now apply them to things that don't fit neatly into <em>living</em> or <em>nonliving</em>. Use evidence — not instinct — to make your case.</p>
-  <div class="hero-btns">
-    <a href="#cases" class="btn btn-primary">Meet the Cases 🔍</a>
-    <a href="#cer" class="btn btn-outline">Jump to CER Builder ✍️</a>
-  </div>
+  
 </header>
 
 <div class="ls-focus">
@@ -527,14 +630,18 @@ body.stem-active .stem-focus {
     <p class="section-desc">For each case, review all six characteristics. Decide how well — or how poorly — each one is met. The verdict is yours.</p>
 
     <!-- FIRE -->
-    <div class="analysis-block">
-      <div class="analysis-header">
-        <div class="analysis-icon">🔥</div>
-        <div>
-          <div class="analysis-title">Fire</div>
-          <div class="analysis-subtitle">Looks alive. Grows, spreads, consumes fuel. But is it?</div>
+    <details class="analysis-block">
+      <summary>
+        <div class="analysis-summary-left">
+          <div class="analysis-icon">🔥</div>
+          <div>
+            <div class="analysis-title">Fire</div>
+            <div class="analysis-subtitle">Looks alive. Grows, spreads, consumes fuel. But is it?</div>
+          </div>
         </div>
-      </div>
+        <span class="analysis-toggle">Case</span>
+      </summary>
+      <div class="analysis-content">
       <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Fire is a chemical reaction — the rapid oxidation of fuel. It has no cells, no membrane, no genetic material.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
       <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Fire releases energy through combustion. But "using" energy for life processes is different from burning fuel — fire just converts it to heat and light with no purpose.</div><div class="pill-row"><span class="pill pill-partial">Technically, but Differently</span></div></div></div>
       <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Fire grows larger when more fuel is present. But this is not true biological growth — it's just expansion of a reaction.</div><div class="pill-row"><span class="pill pill-partial">Sort Of — Not Biological</span></div></div></div>
@@ -545,17 +652,22 @@ body.stem-active .stem-focus {
         <div style="font-size:2rem;">🔥</div>
         <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">Fire fails the most critical tests: no cells, no reproduction with genetic transfer, no homeostasis. Its "growth" and "response" are physical reactions, not biological processes. Most scientists agree — fire is <strong style="color:var(--text);">not alive</strong>.</div></div>
       </div>
-    </div>
+      </div>
+    </details>
 
     <!-- CRYSTALS -->
-    <div class="analysis-block">
-      <div class="analysis-header">
-        <div class="analysis-icon">🔮</div>
-        <div>
-          <div class="analysis-title">Crystals</div>
-          <div class="analysis-subtitle">They grow in organized patterns and respond to their environment — but that's about it.</div>
+    <details class="analysis-block">
+      <summary>
+        <div class="analysis-summary-left">
+          <div class="analysis-icon">🔮</div>
+          <div>
+            <div class="analysis-title">Crystals</div>
+            <div class="analysis-subtitle">They grow in organized patterns and respond to their environment — but that's about it.</div>
+          </div>
         </div>
-      </div>
+        <span class="analysis-toggle">Case</span>
+      </summary>
+      <div class="analysis-content">
       <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Crystals are made of repeating atomic or molecular patterns — not cells. There is no membrane, cytoplasm, or genetic material.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
       <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Crystals do not consume or process energy. They form through thermodynamic processes, not metabolism.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
       <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Crystals do grow — by adding layers of atoms to their surface. But this growth requires no cellular machinery or energy processing. A crystal growing in a solution is closer to construction than biology.</div><div class="pill-row"><span class="pill pill-partial">Grows, but Not Biologically</span></div></div></div>
@@ -566,17 +678,22 @@ body.stem-active .stem-focus {
         <div style="font-size:2rem;">🔮</div>
         <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">Crystals' "growth" is the most life-like feature they have — but they fail five of six characteristics entirely. They are a good reminder that growth alone is not enough to qualify as life.</div></div>
       </div>
-    </div>
+      </div>
+    </details>
 
     <!-- DORMANT SEED -->
-    <div class="analysis-block">
-      <div class="analysis-header">
-        <div class="analysis-icon">🌱</div>
-        <div>
-          <div class="analysis-title">A Dormant Seed</div>
-          <div class="analysis-subtitle">Scientifically alive — but currently doing absolutely nothing.</div>
+    <details class="analysis-block">
+      <summary>
+        <div class="analysis-summary-left">
+          <div class="analysis-icon">🌱</div>
+          <div>
+            <div class="analysis-title">A Dormant Seed</div>
+            <div class="analysis-subtitle">Scientifically alive — but currently doing absolutely nothing.</div>
+          </div>
         </div>
-      </div>
+        <span class="analysis-toggle">Case</span>
+      </summary>
+      <div class="analysis-content">
       <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Yes — a seed contains a tiny embryonic plant made of living cells, even when dormant. The cells are there, just inactive.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
       <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">A dormant seed uses almost no energy — its metabolism is near zero. But the cells are still technically alive and capable of activating when conditions are right.</div><div class="pill-row"><span class="pill pill-partial">Meets — At Extremely Low Level</span></div></div></div>
       <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Not right now. A dormant seed has paused its growth. It has the potential to grow when it germinates.</div><div class="pill-row"><span class="pill pill-partial">Paused — Potential Is There</span></div></div></div>
@@ -587,17 +704,22 @@ body.stem-active .stem-focus {
         <div style="font-size:2rem;">🌱</div>
         <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">This case reveals something important: being alive doesn't require constantly <em>doing</em> all six things. A dormant seed is <strong style="color:var(--text);">alive</strong> — it has the full biological machinery, just temporarily paused. Life is a capacity, not just a behavior.</div></div>
       </div>
-    </div>
+      </div>
+    </details>
 
     <!-- MULE -->
-    <div class="analysis-block">
-      <div class="analysis-header">
-        <div class="analysis-icon">🐴</div>
-        <div>
-          <div class="analysis-title">A Mule</div>
-          <div class="analysis-subtitle">Meets five of six characteristics — but reproduction is where things get complicated.</div>
+    <details class="analysis-block">
+      <summary>
+        <div class="analysis-summary-left">
+          <div class="analysis-icon">🐴</div>
+          <div>
+            <div class="analysis-title">A Mule</div>
+            <div class="analysis-subtitle">Meets five of six characteristics — but reproduction is where things get complicated.</div>
+          </div>
         </div>
-      </div>
+        <span class="analysis-toggle">Case</span>
+      </summary>
+      <div class="analysis-content">
       <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Absolutely — mules are complex multicellular organisms with trillions of specialized cells.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
       <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Mules eat, digest food, and use the energy to power all life processes.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
       <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Mules are born small and grow into large, strong adult animals over time.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
@@ -608,17 +730,22 @@ body.stem-active .stem-focus {
         <div style="font-size:2rem;">🐴</div>
         <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">This is the hardest case. A mule is clearly alive by any common-sense definition — it thinks, feels, works, and thrives. But if we apply the six characteristics strictly, it fails reproduction. This raises a real scientific question: <em>should a sterile individual be considered nonliving?</em> Most biologists say mules are absolutely <strong style="color:var(--text);">alive</strong>, which suggests the six characteristics describe life as a system, not a checklist every individual must fully satisfy.</div></div>
       </div>
-    </div>
+      </div>
+    </details>
 
     <!-- ROBOT -->
-    <div class="analysis-block">
-      <div class="analysis-header">
-        <div class="analysis-icon">🤖</div>
-        <div>
-          <div class="analysis-title">A Robot (or AI)</div>
-          <div class="analysis-subtitle">Gets surprisingly far — but stumbles on the most important ones.</div>
+    <details class="analysis-block">
+      <summary>
+        <div class="analysis-summary-left">
+          <div class="analysis-icon">🤖</div>
+          <div>
+            <div class="analysis-title">A Robot (or AI)</div>
+            <div class="analysis-subtitle">Gets surprisingly far — but stumbles on the most important ones.</div>
+          </div>
         </div>
-      </div>
+        <span class="analysis-toggle">Case</span>
+      </summary>
+      <div class="analysis-content">
       <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Robots are made of metal, plastic, silicon, and code. Not a single cell in sight.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
       <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Robots and AIs use electricity to power all of their functions. That's energy input and use — but not through metabolism.</div><div class="pill-row"><span class="pill pill-partial">Uses Energy — Not Through Metabolism</span></div></div></div>
       <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Robots don't grow. Some AI systems can "learn" and improve over time — but that's software updating, not biological development.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
@@ -629,7 +756,8 @@ body.stem-active .stem-focus {
         <div style="font-size:2rem;">🤖</div>
         <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">Robots are the most thought-provoking case because they get <em>closer</em> than crystals or fire — especially on energy and responding to stimuli. But they have no cells, no biological reproduction, and no metabolism. As AI continues to develop, this case will become even harder to dismiss. For now, robots are <strong style="color:var(--text);">not alive</strong> — but the conversation is worth having.</div></div>
       </div>
-    </div>
+      </div>
+    </details>
 
   </div>
 </section>
@@ -668,13 +796,13 @@ body.stem-active .stem-focus {
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
-  <p style="margin-bottom:0.5rem;">Extension for Characteristics of Life</p>
-    <div class="footer-links">
-    <a href="about_lyfelabz.html">About</a>
-    <a href="about_privacy.html">Privacy</a>
-    <a href="about_learning-science.html">Why It Works</a>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
   </div>
-  <p>© 2026 LyfeLabz · Educational Use</p>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
 <script>

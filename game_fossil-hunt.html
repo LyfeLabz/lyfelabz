@@ -272,24 +272,6 @@
       pointer-events: none; z-index: 5;
     }
 
-
-    .objective-box {
-      background: rgba(36,232,255,.05); border: 1px solid rgba(36,232,255,.22);
-      border-radius: 14px; padding: 12px 14px; margin-bottom: 14px;
-    }
-    .objective-label {
-      display: block; font-family: 'Orbitron', sans-serif; font-size: .55rem; font-weight: 900;
-      color: var(--cyan); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 4px;
-    }
-    .objective-text { margin: 0; font-size: .82rem; color: var(--text); line-height: 1.55; }
-    .objective-text strong { color: var(--cyan); }
-    @keyframes groupRevealPulse {
-      0% { box-shadow: 0 0 0 0 rgba(67,240,125,.0); border-color: rgba(67,240,125,.35); }
-      30% { box-shadow: 0 0 0 8px rgba(67,240,125,.18); border-color: rgba(67,240,125,.7); }
-      100% { box-shadow: 0 0 0 0 rgba(67,240,125,0); border-color: rgba(67,240,125,.35); }
-    }
-    .group-item.just-completed { animation: groupRevealPulse .75s ease; }
-
     /* ── Feedback Box ─────────────────────────────────────────────────── */
     .feedback-box {
       background: rgba(9,14,30,.7); border: 1px solid rgba(89,112,170,.22);
@@ -659,19 +641,6 @@
     .ls-badge   { background: rgba(59,200,232,.1); border: 1px solid rgba(59,200,232,.4); color: #3bc8e8; }
     .stem-badge { background: rgba(46,204,113,.1); border: 1px solid rgba(46,204,113,.4); color: #2ecc71; }
 
-    /* ── Footer ───────────────────────────────────────────────────────── */
-    .game-footer {
-      text-align: center; padding: 28px 0 0; margin-top: 28px;
-      border-top: 1px solid rgba(89,112,170,.12);
-    }
-    .game-footer-logo {
-      font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 900;
-      color: var(--gold); letter-spacing: .12em; margin-bottom: 8px;
-    }
-    .game-footer p { font-size: .8rem; color: var(--muted); }
-    .game-footer a { color: var(--cyan); text-decoration: none; }
-    .game-footer a:hover { text-decoration: underline; }
-
     /* ── Restore Banner ───────────────────────────────────────────────── */
     .restore-banner {
       display: none; text-align: center; padding: 10px 18px; margin-bottom: 14px;
@@ -681,7 +650,67 @@
     .restore-banner.show { display: block; }
 
     .hidden { display: none !important; }
-  </style>
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
+  }
+</style>
 </head>
 <body>
 
@@ -819,12 +848,7 @@
         <!-- Field Notes -->
         <div class="field-notes">
           <span class="field-notes-label">Field Notes</span>
-          <p id="fieldNotesText">Look for fossil horizons that can help you match layers across all three dig sites. Some fossils are strong clues, and some may be misleading.</p>
-        </div>
-
-        <div class="objective-box" id="objectiveBox">
-          <span class="objective-label">Current Objective</span>
-          <p class="objective-text" id="objectiveText">Match the fossil horizons across all three locations.</p>
+          <p>Index fossils appear in exactly one layer per location. Your mission: find matching fossil horizons across all three dig sites, then determine which layers are oldest.</p>
         </div>
 
         <!-- Columns with SVG overlay -->
@@ -877,23 +901,23 @@
           <div class="section-title" style="margin-top:16px;">Reflect</div>
           <div class="reflection-q">
             <span class="reflection-num">Question 1</span>
-            <span class="reflection-q-text">What clues helped you match layers across the three locations?</span>
-            <textarea class="reflection-input" id="ref1" placeholder="Use evidence from the game in your answer..."></textarea>
+            <span class="reflection-q-text">How did index fossils help you match layers across the three locations?</span>
+            <textarea class="reflection-input" id="ref1" placeholder="Type your answer here..."></textarea>
           </div>
           <div class="reflection-q">
             <span class="reflection-num">Question 2</span>
-            <span class="reflection-q-text">Why is a fossil that appears in more than one layer a weak clue?</span>
-            <textarea class="reflection-input" id="ref2" placeholder="Use evidence from the game in your answer..."></textarea>
+            <span class="reflection-q-text">Why are some fossils better than others for dating rock layers?</span>
+            <textarea class="reflection-input" id="ref2" placeholder="Type your answer here..."></textarea>
           </div>
           <div class="reflection-q">
             <span class="reflection-num">Question 3</span>
-            <span class="reflection-q-text">How did you decide which fossil horizon was oldest?</span>
-            <textarea class="reflection-input" id="ref3" placeholder="Use evidence from the game in your answer..."></textarea>
+            <span class="reflection-q-text">What evidence did you use to determine which fossil horizon was oldest?</span>
+            <textarea class="reflection-input" id="ref3" placeholder="Type your answer here..."></textarea>
           </div>
           <div class="reflection-q">
             <span class="reflection-num">Question 4</span>
-            <span class="reflection-q-text">If scientists found the same index fossil at a fourth location, what could they conclude about that rock layer?</span>
-            <textarea class="reflection-input" id="ref4" placeholder="Use evidence from the game in your answer..."></textarea>
+            <span class="reflection-q-text">If scientists discovered a fourth location with the same index fossils, what could they conclude about those rock layers?</span>
+            <textarea class="reflection-input" id="ref4" placeholder="Type your answer here..."></textarea>
           </div>
         </div>
 
@@ -907,7 +931,7 @@
     </div>
     <div class="mode-hint">
       <span id="modeHintPractice" class="visible">Game progress is not submitted</span>
-      <span id="modeHintClassroom">Complete the puzzle, finish the quiz, and submit your work</span>
+      <span id="modeHintClassroom">Complete the puzzle and quiz, then submit to your teacher</span>
     </div>
 
     <!-- Classroom Panel -->
@@ -982,8 +1006,8 @@
         </div>
         <div class="submit-section">
           <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit to Teacher</button>
-          <p class="submit-helper" id="submitHelperText">Complete all fossil matches, finish the age order, answer all 4 quiz questions, and then submit your work.</p>
-          <div class="submit-success" id="submitSuccess">Your work has been submitted. Nice job using fossil evidence to solve the puzzle.</div>
+          <p class="submit-helper" id="submitHelperText">Complete all fossil matches, age ordering, and all 4 quiz questions first.</p>
+          <div class="submit-success" id="submitSuccess">Your work has been submitted! Great fossil detective work.</div>
           <div class="submit-error" id="submitError"></div>
         </div>
       </div>
@@ -1009,8 +1033,17 @@
     </div>
   </div>
 
-  <div class="game-footer" style="max-width:1300px;margin:0 auto;padding:28px 18px 0;">
-    <div class="game-footer-logo">LYFELABZ</div>
+  <!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
     <p>Fossil Hunt &middot; Index Fossils &middot; Geologic Correlation &middot;
       <a href="index.html">Back to Home</a> &middot;
       <a href="about_learning-science.html">Why It Works</a>
@@ -1161,158 +1194,51 @@
 
     };
 
-
-    /* ─── CHALLENGE DECOY VARIANTS ─────────────────────────────────── */
-    const CHALLENGE_DECOY_VARIANTS = {
-      graptolite: {
-        key: 'graptolite',
-        decoyFossil: 'Graptolite',
-        duplicateLocation: 'A',
-        layers: {
-          A0: { fossil:'Shell Fragment',  rock:'Sandstone',    color:'#c2a87a' },
-          A1: { fossil:'Graptolite',      rock:'Shale',        color:'#7a6858' },
-          A4: { fossil:'Graptolite',      rock:'Mudstone',     color:'#7a9878' },
-          B0: { fossil:'Fern Impression', rock:'Shale',        color:'#7a6858' },
-          B2: { fossil:'Graptolite',      rock:'Sandstone',    color:'#c2a87a' },
-          C0: { fossil:'Coral Fragment',  rock:'Sandstone',    color:'#c2a87a' },
-          C2: { fossil:'Graptolite',      rock:'Shale',        color:'#7a6858' },
-          C4: { fossil:'Shell Fragment',  rock:'Conglomerate', color:'#8c7045' }
-        }
-      },
-      shell_fragment: {
-        key: 'shell_fragment',
-        decoyFossil: 'Shell Fragment',
-        duplicateLocation: 'B',
-        layers: {
-          A0: { fossil:'Fern Impression', rock:'Shale',        color:'#7a6858' },
-          A1: { fossil:'Coral Fragment',  rock:'Sandstone',    color:'#c2a87a' },
-          A4: { fossil:'Leaf Impression', rock:'Mudstone',     color:'#7a9878' },
-          B0: { fossil:'Shell Fragment',  rock:'Sandstone',    color:'#c2a87a' },
-          B2: { fossil:'Shell Fragment',  rock:'Sandstone',    color:'#c2a87a' },
-          C0: { fossil:'Ancient Coral',   rock:'Conglomerate', color:'#8c7045' },
-          C2: { fossil:'Graptolite',      rock:'Shale',        color:'#7a6858' },
-          C4: { fossil:'Coral Fragment',  rock:'Conglomerate', color:'#8c7045' }
-        }
-      },
-      fern_impression: {
-        key: 'fern_impression',
-        decoyFossil: 'Fern Impression',
-        duplicateLocation: 'C',
-        layers: {
-          A0: { fossil:'Shell Fragment',  rock:'Sandstone',    color:'#c2a87a' },
-          A1: { fossil:'Ancient Coral',   rock:'Shale',        color:'#7a6858' },
-          A4: { fossil:'Leaf Impression', rock:'Mudstone',     color:'#7a9878' },
-          B0: { fossil:'Coral Fragment',  rock:'Shale',        color:'#7a6858' },
-          B2: { fossil:'Shell Fragment',  rock:'Sandstone',    color:'#c2a87a' },
-          C0: { fossil:'Fern Impression', rock:'Shale',        color:'#7a6858' },
-          C2: { fossil:'Fern Impression', rock:'Shale',        color:'#7a6858' },
-          C4: { fossil:'Coral Fragment',  rock:'Conglomerate', color:'#8c7045' }
-        }
-      }
-    };
-
-    function getChallengeDecoyVariant() {
-      const key = state.challengeVariant || 'graptolite';
-      return CHALLENGE_DECOY_VARIANTS[key] || CHALLENGE_DECOY_VARIANTS.graptolite;
-    }
-
-    function getChallengeHints() {
-      const variant = getChallengeDecoyVariant();
-      const challengeGroups = LEVELS.challenge.groups;
-      const shallowGroups = [challengeGroups.G1, challengeGroups.G2].filter(Boolean).map(g => g.fossil);
-      const deepGroups = [challengeGroups.G3, challengeGroups.G4].filter(Boolean).map(g => g.fossil);
-
-      const secondHint = shallowGroups.length >= 2
-        ? `The ${shallowGroups[0]} and ${shallowGroups[1]} each appear once per location. These are strong fossil horizons to correlate first.`
-        : shallowGroups.length === 1
-          ? `The ${shallowGroups[0]} appears once per location. Try correlating that fossil horizon first.`
-          : 'Look for fossils that appear once per location. Those are your strongest fossil horizons to correlate first.';
-
-      const thirdHint = deepGroups.length >= 2
-        ? `After that, look deeper in the columns. The ${deepGroups[0]} and ${deepGroups[1]} complete the older fossil horizons.`
-        : deepGroups.length === 1
-          ? `After that, look deeper in the columns for ${deepGroups[0]} to complete the oldest fossil horizon.`
-          : 'After that, compare the deeper layers to finish the older fossil horizons.';
-
-      return [
-        `A true index fossil appears in exactly ONE layer per location. In this round, the ${variant.decoyFossil} appears in TWO layers at Location ${variant.duplicateLocation} — that makes it unreliable as an index fossil.`,
-        secondHint,
-        thirdHint
-      ];
-    }
-
-    function applyChallengeVariant() {
-      applyDynamicFossilSet('challenge');
-      const variant = getChallengeDecoyVariant();
-      const challenge = LEVELS.challenge;
-      challenge.locations.forEach(loc => {
-        loc.layers.forEach(layer => {
-          const override = variant.layers[layer.id];
-          if (!override) return;
-          layer.fossil = override.fossil;
-          layer.rock   = override.rock;
-          layer.color  = override.color;
-          layer.isIndex = false;
-          layer.group = null;
-        });
-      });
-      challenge.hints = getChallengeHints();
-    }
-
-    function chooseNewChallengeVariant() {
-      const keys = Object.keys(CHALLENGE_DECOY_VARIANTS);
-      const options = keys.filter(key => key !== state.challengeVariant);
-      const pool = options.length ? options : keys;
-      state.challengeVariant = pool[Math.floor(Math.random() * pool.length)];
-      applyChallengeVariant();
-    }
-
-
     /* ─── QUIZ DATA ─────────────────────────────────────────────────── */
     const QUIZ_DATA = [
       {
         id: 1,
-        text: "Which fossil would usually make the BEST index fossil?",
+        text: "What is the most important feature that makes a fossil a good index fossil?",
         options: [
-          "A fossil found in many places that lived for a short time",
-          "A fossil found in only one place that lived for a long time",
-          "A fossil that appears in many different layers at one site",
-          "A fossil that is broken, incomplete, and hard to identify"
+          "It is very large, making it easy to find in rock layers",
+          "It existed for only a short period of time",
+          "It is found in only one specific location on Earth",
+          "It is made of very hard material that preserves well"
         ],
-        correct: 0
+        correct: 1
       },
       {
         id: 2,
-        text: "When you match the same index fossil across different locations, what does that tell you?",
+        text: "In the Fossil Hunt game, you matched layers across three locations using index fossils. What does a successful match tell you about those layers?",
         options: [
-          "The layers formed at about the same time",
-          "The rock at each location is made of exactly the same material",
-          "The locations are close together on Earth's surface",
-          "The fossils came from the same individual organism"
+          "The two locations must be right next to each other geographically",
+          "Both locations have the same type of rock material",
+          "The two rock layers formed at approximately the same time in Earth's history",
+          "The fossils at both locations came from the same individual organism"
         ],
-        correct: 0
+        correct: 2
       },
       {
         id: 3,
-        text: "Why is a fossil that appears in more than one layer at the same location a weak clue for dating?",
+        text: "In the Challenge puzzle, the Graptolite appeared in two different rock layers within Location A. Why does this make it a poor index fossil?",
         options: [
-          "It is too rare to compare across locations",
-          "It cannot narrow the layer to one clear time period",
-          "It proves the rock layers are identical",
-          "It means the fossil is not real"
+          "The Graptolite is too difficult to identify in the field",
+          "If it appears in multiple layers, the organism lived for too long a time period to date a single layer",
+          "The Graptolite has not been found in enough locations",
+          "Scientists have not yet agreed on its scientific name"
         ],
         correct: 1
       },
       {
         id: 4,
-        text: "In Fossil Hunt, what is the BEST evidence for deciding which fossil horizon is oldest?",
+        text: "In this game, the deepest layers at each location are the oldest. Which law of geology explains this?",
         options: [
-          "Choose the horizon with the brightest color",
-          "Look for the horizon that is deepest in the rock layers and check the fossil age clues",
-          "Choose the horizon with the largest fossil symbol",
-          "Pick the horizon that appears first from left to right"
+          "The Law of Lateral Continuity — layers extend outward in all directions",
+          "The Law of Cross-Cutting Relationships — younger features cut through older ones",
+          "The Law of Superposition — in undisturbed rock, older layers are deposited below younger layers",
+          "The Law of Original Horizontality — all rock layers were once flat"
         ],
-        correct: 1
+        correct: 2
       }
     ];
 
@@ -1333,153 +1259,11 @@
       orderSelected:  [],
       orderCorrect:   false,
       ageCheckAnswered: false,
-      ageCheckCorrect:  false,
-      challengeVariant: 'graptolite',
-      fossilSets:     {},
-      layerLayouts: {}
+      ageCheckCorrect:  false
     };
 
     /* ─── HELPERS ───────────────────────────────────────────────────── */
     function currentLevel() { return LEVELS[state.difficulty]; }
-
-    const INDEX_FOSSIL_POOL = ['Ammonite', 'Trilobite', 'Crinoid', 'Brachiopod', 'Rugose Coral'];
-    const FOSSIL_COLORS = {
-      'Ammonite': '#24e8ff',
-      'Trilobite': '#f6cb43',
-      'Crinoid': '#9a5cff',
-      'Brachiopod': '#ff8c42',
-      'Rugose Coral': '#43f07d'
-    };
-    const GROUP_COLOR_STYLES = {
-      G1: { color:'rgba(36,232,255,0.85)', cssClass:'matched-G1', dotClass:'G1', label:'1', displayColor:'#24e8ff' },
-      G2: { color:'rgba(246,203,67,0.85)', cssClass:'matched-G2', dotClass:'G2', label:'2', displayColor:'#f6cb43' },
-      G3: { color:'rgba(154,92,255,0.85)', cssClass:'matched-G3', dotClass:'G3', label:'3', displayColor:'#9a5cff' },
-      G4: { color:'rgba(255,140,66,0.85)', cssClass:'matched-G4', dotClass:'G4', label:'4', displayColor:'#ff8c42' }
-    };
-    const FOSSIL_RANGE_STATS = {
-      'Ammonite':   { startMa: 240, endMa: 66, label: 'about 240 to 66 million years ago' },
-      'Trilobite':  { startMa: 520, endMa: 250, label: 'about 520 to 250 million years ago' },
-      'Crinoid':    { startMa: 480, endMa: 0, label: 'about 480 million years ago to today' },
-      'Brachiopod': { startMa: 540, endMa: 0, label: 'about 540 million years ago to today' },
-      'Rugose Coral': { startMa: 488, endMa: 252, label: 'about 488 to 252 million years ago' }
-    };
-
-    function syncChallengeVariantForCurrentDifficulty() {
-      if (state.difficulty === 'challenge') applyChallengeVariant();
-    }
-
-    function pickRandomSubset(pool, count) {
-      return shuffleArray(pool).slice(0, count);
-    }
-
-    function chooseFossilSet(diff) {
-      const count = diff === 'practice' ? 3 : 4;
-      state.fossilSets[diff] = pickRandomSubset(INDEX_FOSSIL_POOL, count);
-    }
-
-    function ensureFossilSet(diff = state.difficulty) {
-      if (!state.fossilSets) state.fossilSets = {};
-      const needed = diff === 'practice' ? 3 : 4;
-      const set = state.fossilSets[diff];
-      if (!Array.isArray(set) || set.length !== needed) {
-        chooseFossilSet(diff);
-      }
-    }
-
-    function buildDynamicGroups(diff) {
-      ensureFossilSet(diff);
-      const fossils = state.fossilSets[diff];
-      const idsByDifficulty = diff === 'practice'
-        ? { G1:['A1','B1','C1'], G2:['A3','B2','C3'], G3:['A5','B4','C5'] }
-        : { G1:['A2','B1','C1'], G2:['A3','B3','C3'], G3:['A5','B4','C5'], G4:['A6','B5','C6'] };
-      const groups = {};
-      fossils.forEach((fossil, idx) => {
-        const groupId = 'G' + (idx + 1);
-        groups[groupId] = {
-          fossil,
-          ids: idsByDifficulty[groupId],
-          ...GROUP_COLOR_STYLES[groupId]
-        };
-      });
-      return groups;
-    }
-
-    function applyDynamicFossilSet(diff) {
-      ensureFossilSet(diff);
-      const fossils = state.fossilSets[diff];
-      const level = LEVELS[diff];
-      level.groups = buildDynamicGroups(diff);
-      level.ageOrderOldestFirst = fossils.map((_, idx) => 'G' + (fossils.length - idx));
-
-      const indexSlots = diff === 'practice'
-        ? [
-            { groupId:'G1', ids:['A1','B1','C1'], rock:'Limestone' },
-            { groupId:'G2', ids:['A3','B2','C3'], rock:'Mudstone' },
-            { groupId:'G3', ids:['A5','B4','C5'], rock:'Dark Shale' }
-          ]
-        : [
-            { groupId:'G1', ids:['A2','B1','C1'], rock:'Limestone' },
-            { groupId:'G2', ids:['A3','B3','C3'], rock:'Siltstone' },
-            { groupId:'G3', ids:['A5','B4','C5'], rock:'Dark Shale' },
-            { groupId:'G4', ids:['A6','B5','C6'], rock:'Deep Lime' }
-          ];
-
-      indexSlots.forEach(slot => {
-        const fossil = level.groups[slot.groupId].fossil;
-        slot.ids.forEach(id => {
-          for (const loc of level.locations) {
-            const layer = loc.layers.find(l => l.id === id);
-            if (layer) {
-              layer.fossil = fossil;
-              layer.rock = slot.rock;
-              layer.color = FOSSIL_COLORS[fossil] || layer.color;
-              layer.isIndex = true;
-              layer.group = slot.groupId;
-            }
-          }
-        });
-      });
-
-      if (diff === 'practice') {
-        const [youngest, middle, oldest] = fossils;
-        level.hints = [
-          'Look for fossils that appear exactly once at each location — those meet the first criteria for an index fossil.',
-          `The ${youngest} appears once in Location A, once in Location B, and once in Location C. Investigate those three layers and link them.`,
-          `The ${middle} also appears exactly once per location. After that, look deep — the ${oldest} appears once at the bottom of each site and completes the third fossil horizon.`
-        ];
-      }
-
-      level.victoryAge = 'From oldest to youngest: ' +
-        fossils.slice().reverse().map((fossil, idx) => {
-          if (idx === 0) return `${fossil} horizon (deepest)`;
-          return `${fossil} horizon`;
-        }).join(' &#8594; ') +
-        ' &#8594; Top layers (shallowest)';
-
-      level.ageCheck = buildDynamicAgeCheck(diff, fossils);
-    }
-
-    function buildDynamicAgeCheck(diff, fossils) {
-      const stats = fossils.map(fossil => ({ fossil, ...FOSSIL_RANGE_STATS[fossil] }));
-      if (diff === 'practice') {
-        const longest = stats.reduce((best, item) => ((item.startMa - item.endMa) > (best.startMa - best.endMa) ? item : best));
-        return {
-          question: 'Look at the age ranges of the fossils you found. Which fossil existed for the LONGEST stretch of time?',
-          options: stats.map(item => `${item.fossil} — ${item.label}`),
-          correct: stats.findIndex(item => item.fossil === longest.fossil),
-          correctFeedback: `Correct! The ${longest.fossil} has the longest time range in this round. A long time range is actually a disadvantage for an index fossil, because it cannot help pinpoint a narrow window of geologic time.`,
-          wrongFeedback: `Not quite. Compare the time ranges carefully. In this round, the ${longest.fossil} spans the longest stretch of geologic time, making it less precise for dating a single rock layer.`
-        };
-      }
-      const youngest = stats.reduce((best, item) => (item.endMa < best.endMa ? item : best));
-      return {
-        question: 'Based on their time ranges, which fossil in this puzzle confirms that the YOUNGEST horizon formed most recently in geologic time?',
-        options: stats.map(item => `${item.fossil} — ${item.label}`),
-        correct: stats.findIndex(item => item.fossil === youngest.fossil),
-        correctFeedback: `Correct! The ${youngest.fossil} has the most recent time range in this round, confirming that its fossil horizon is the youngest layer. Both the layer position and the fossil age range agree.`,
-        wrongFeedback: `Look at which fossil has the most recent time range. In this round, the ${youngest.fossil} lived most recently, which confirms the youngest fossil horizon.`
-      };
-    }
 
     function getLayerById(id) {
       const lv = currentLevel();
@@ -1491,129 +1275,6 @@
     }
 
     function getLocName(id) { return id.charAt(0); }
-
-    function shuffleArray(arr) {
-      const copy = arr.slice();
-      for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-      }
-      return copy;
-    }
-
-    function buildShuffledLayoutForDifficulty(diff) {
-      const lv = LEVELS[diff];
-      const layout = {};
-      lv.locations.forEach(loc => {
-        const originalIds = loc.layers.map(layer => layer.id);
-        const nonIndexIds = shuffleArray(loc.layers.filter(layer => !layer.isIndex).map(layer => layer.id));
-        let nonIndexPtr = 0;
-        layout[loc.name] = loc.layers.map(layer => {
-          if (layer.isIndex) return layer.id;
-          const shuffledId = nonIndexIds[nonIndexPtr];
-          nonIndexPtr += 1;
-          return shuffledId;
-        });
-      });
-      return layout;
-    }
-
-    function regenerateLayout(diff = state.difficulty) {
-      state.layerLayouts[diff] = buildShuffledLayoutForDifficulty(diff);
-    }
-
-    function ensureLayout(diff = state.difficulty) {
-      if (!state.layerLayouts) state.layerLayouts = {};
-      const current = state.layerLayouts[diff];
-      if (!current || Object.keys(current).length === 0) {
-        regenerateLayout(diff);
-      }
-    }
-
-    function getRenderedLocationLayers(loc) {
-      ensureLayout(state.difficulty);
-      const locationLayout = state.layerLayouts[state.difficulty]?.[loc.name];
-      if (!locationLayout) return loc.layers;
-      return locationLayout
-        .map(id => loc.layers.find(layer => layer.id === id))
-        .filter(Boolean);
-    }
-
-    function updateStaticCopy() {
-      const lv = currentLevel();
-      const total = Object.keys(lv.groups).length;
-      const practiceDesc = document.getElementById('diffDescPractice');
-      const challengeDesc = document.getElementById('diffDescChallenge');
-      const fieldNotesText = document.getElementById('fieldNotesText');
-
-      if (practiceDesc) {
-        practiceDesc.textContent = `Includes highlighted index fossils and ${total === 3 ? '3 fossil horizons' : total + ' fossil horizons'}.`;
-      }
-      if (challengeDesc) {
-        challengeDesc.textContent = `Includes ${total} fossil horizons and misleading fossils.`;
-      }
-      if (fieldNotesText) {
-        fieldNotesText.textContent = state.difficulty === 'challenge'
-          ? 'Look for fossil horizons that can help you match layers across all three dig sites. Some fossils are strong clues, and some may be misleading.'
-          : 'Look for fossils that appear once across the three locations, then use those horizons to determine which layers are oldest.';
-      }
-    }
-
-
-    function updateObjectiveText() {
-      const lv = currentLevel();
-      const total = Object.keys(lv.groups).length;
-      const done = state.completedGroups.length;
-      const objectiveEl = document.getElementById('objectiveText');
-      if (!objectiveEl) return;
-
-      if (!state.orderingPhase) {
-        const remaining = Math.max(total - done, 0);
-        const noun = remaining === 1 ? 'horizon' : 'horizons';
-
-        if (state.selected) {
-          const selectedLayer = getLayerById(state.selected);
-          if (selectedLayer) {
-            if (selectedLayer.isIndex) {
-              objectiveEl.innerHTML = `You selected <strong>${selectedLayer.fossil}</strong>. Find the matching layer in a different location.`;
-            } else {
-              objectiveEl.innerHTML = `You selected <strong>${selectedLayer.fossil}</strong>. Decide whether it is a strong clue before you try to match it.`;
-            }
-            return;
-          }
-        }
-
-        objectiveEl.innerHTML = done === 0
-          ? `Find and link <strong>${total}</strong> fossil ${total === 1 ? 'horizon' : 'horizons'} across the three locations.`
-          : `You have completed <strong>${done} of ${total}</strong>. Find the remaining ${remaining} fossil ${noun}.`;
-        return;
-      }
-
-      if (!state.orderCorrect) {
-        objectiveEl.innerHTML = 'All horizons found. Place them from <strong>oldest</strong> to <strong>youngest</strong>.';
-        return;
-      }
-
-      if (!state.ageCheckCorrect) {
-        objectiveEl.innerHTML = 'Age order confirmed. Complete the <strong>final thinking check</strong> to finish the puzzle.';
-        return;
-      }
-
-      objectiveEl.innerHTML = state.classroomMode
-        ? 'Puzzle complete. Finish the <strong>quiz and submission</strong> steps below.'
-        : 'Puzzle complete. Review your fossil evidence or switch to <strong>Classroom Mode</strong>.';
-    }
-
-    function pulseCompletedLegendItems() {
-      document.querySelectorAll('#groupsLegend .group-item.done').forEach(el => {
-        if (el.dataset.pulseSeen === '1') return;
-        el.dataset.pulseSeen = '1';
-        el.classList.remove('just-completed');
-        void el.offsetWidth;
-        el.classList.add('just-completed');
-        el.addEventListener('animationend', () => el.classList.remove('just-completed'), { once: true });
-      });
-    }
 
     /* ─── SAVE / LOAD ───────────────────────────────────────────────── */
     function saveState() {
@@ -1633,9 +1294,6 @@
         orderCorrect:     state.orderCorrect,
         ageCheckAnswered: state.ageCheckAnswered,
         ageCheckCorrect:  state.ageCheckCorrect,
-        challengeVariant: state.challengeVariant,
-        fossilSets:       state.fossilSets,
-        layerLayouts:     state.layerLayouts,
         studentName:      document.getElementById('studentNameInput').value,
         teacher:          document.getElementById('teacherSelect').value,
         block:            document.getElementById('blockInput').value
@@ -1663,10 +1321,7 @@
           orderSelected:   data.orderSelected   || [],
           orderCorrect:    data.orderCorrect    || false,
           ageCheckAnswered: data.ageCheckAnswered || false,
-          ageCheckCorrect:  data.ageCheckCorrect  || false,
-          challengeVariant: data.challengeVariant || 'graptolite',
-          fossilSets:       data.fossilSets       || {},
-          layerLayouts:     data.layerLayouts     || {}
+          ageCheckCorrect:  data.ageCheckCorrect  || false
         });
         if (data.studentName) document.getElementById('studentNameInput').value = data.studentName;
         if (data.teacher)     document.getElementById('teacherSelect').value     = data.teacher;
@@ -1726,7 +1381,7 @@
       },
       'Graptolite': {
         range: 'About 485 to 320 million years ago',
-        desc: 'Graptolites were colonial ocean animals that floated in ancient seas. Some species can be good index fossils, but in this game the graptolite may not meet the criteria for a precise clue if it appears across too broad a span or in repeated layers.',
+        desc: 'Graptolites were colonial ocean animals that floated in ancient seas. While some species are useful index fossils, in this puzzle the graptolite appears in more than one layer at the same location — meaning it cannot pinpoint a single time period.',
         isStrongIndex: false
       },
       'Shell Fragment': {
@@ -1841,81 +1496,7 @@
       return `The ${fossil} is not a reliable index fossil here. A strong index fossil must be short-lived and appear in only one rock layer per location.`;
     }
 
-    
-    function getGroupLocationNames(groupId) {
-      const grp = currentLevel().groups[groupId];
-      if (!grp) return [];
-      return grp.ids.map(id => getLocName(id));
-    }
-
-    function getMissingGroupLocations(groupId) {
-      const grp = currentLevel().groups[groupId];
-      if (!grp) return [];
-      return grp.ids.filter(id => state.matched[id] !== groupId).map(id => getLocName(id));
-    }
-
-    function buildOrderingHint() {
-      const lv = currentLevel();
-      const remaining = lv.ageOrderOldestFirst.filter(groupId => !state.orderSelected.includes(groupId));
-      if (!remaining.length) return 'Your fossil horizons are in place. Check the age clue carefully and finish the final thinking check.';
-      if (state.orderSelected.length === 0) {
-        const oldestGroup = lv.groups[lv.ageOrderOldestFirst[0]];
-        return `Start with the oldest horizon. Look for the fossil group that appears deepest across the rock columns: ${oldestGroup.fossil}.`;
-      }
-      const nextGroup = lv.groups[remaining[0]];
-      return `Good start. Now choose the next OLDEST fossil horizon that has not been placed yet. Compare the depth of the remaining groups and look for ${nextGroup.fossil}.`;
-    }
-
-    function buildSelectionHint(selectedLayer) {
-      if (!selectedLayer) return '';
-      if (!selectedLayer.isIndex) {
-        return getNonIndexReason(selectedLayer.fossil);
-      }
-      const groupId = selectedLayer.group;
-      const remainingLocs = getMissingGroupLocations(groupId).filter(loc => loc !== selectedLayer.locName);
-      if (state.completedGroups.includes(groupId)) {
-        return `You already completed the ${selectedLayer.fossil} horizon. Focus on one of the fossil groups you have not finished yet.`;
-      }
-      if (remainingLocs.length === 2) {
-        return `You selected ${selectedLayer.fossil}. Search the other two locations for the same fossil to begin linking this horizon: Locations ${remainingLocs.join(' and ')}.`;
-      }
-      if (remainingLocs.length === 1) {
-        return `You already found part of the ${selectedLayer.fossil} horizon. Only one location is still missing: Location ${remainingLocs[0]}.`;
-      }
-      return `This ${selectedLayer.fossil} layer is a strong clue. Look for the same fossil in a different location to complete the horizon.`;
-    }
-
-    function buildDiscoveryHint() {
-      const lv = currentLevel();
-      const incompleteGroupId = lv.ageOrderOldestFirst.find(groupId => !state.completedGroups.includes(groupId)) || Object.keys(lv.groups).find(groupId => !state.completedGroups.includes(groupId));
-      if (!incompleteGroupId) {
-        return state.orderCorrect
-          ? 'All fossil horizons are complete. Finish the final thinking check or switch modes to review your work.'
-          : buildOrderingHint();
-      }
-      const grp = lv.groups[incompleteGroupId];
-      const missingLocs = getMissingGroupLocations(incompleteGroupId);
-      if (missingLocs.length === grp.ids.length) {
-        return `Look for a fossil that appears exactly once in every location. A strong clue to investigate next is ${grp.fossil}.`;
-      }
-      if (missingLocs.length === 1) {
-        return `You are one layer away from finishing the ${grp.fossil} horizon. Search Location ${missingLocs[0]}.`;
-      }
-      return `Keep building the ${grp.fossil} horizon. You still need matching layers in Locations ${missingLocs.join(' and ')}.`;
-    }
-
-    function buildSmartHint() {
-      if (state.orderingPhase && !state.orderCorrect) {
-        return buildOrderingHint();
-      }
-      if (state.selected) {
-        const selectedLayer = getLayerById(state.selected);
-        return buildSelectionHint(selectedLayer);
-      }
-      return buildDiscoveryHint();
-    }
-
-/* ─── MATCH LOGIC ────────────────────────────────────────────────── */
+    /* ─── MATCH LOGIC ────────────────────────────────────────────────── */
     function handleLayerClick(layerId) {
       const layer = getLayerById(layerId);
       if (!layer) return;
@@ -1927,7 +1508,6 @@
         updateFossilInfoPanel(layer.fossil);
         setFeedback('neutral', 'Layer Selected',
           `Investigating ${layer.fossil} in ${layer.rock}. Now search for a matching fossil in a different location.`);
-        updateObjectiveText();
         saveState();
         return;
       }
@@ -1937,7 +1517,6 @@
         state.selected = null;
         renderLayers();
         setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
-        updateObjectiveText();
         saveState();
         return;
       }
@@ -1951,7 +1530,6 @@
         updateFossilInfoPanel(layer.fossil);
         setFeedback('neutral', 'Layer Selected',
           `Investigating ${layer.fossil} in ${layer.rock}. Now search for a matching fossil in a different location.`);
-        updateObjectiveText();
         saveState();
         return;
       }
@@ -1968,7 +1546,7 @@
         flashError(layerId);
         state.errors++;
         state.selected = null;
-        updateStats(); renderLayers(); updateObjectiveText(); saveState();
+        updateStats(); renderLayers(); saveState();
         return;
       }
 
@@ -1980,7 +1558,7 @@
         flashError(layerId);
         state.errors++;
         state.selected = null;
-        updateStats(); renderLayers(); updateObjectiveText(); saveState();
+        updateStats(); renderLayers(); saveState();
         return;
       }
 
@@ -2028,7 +1606,7 @@
       }
 
       state.selected = null;
-      updateStats(); renderLayers(); renderGroups(); renderClassroomPanel(); updateObjectiveText(); saveState();
+      updateStats(); renderLayers(); renderGroups(); renderClassroomPanel(); saveState();
 
       // Draw lines with a slight delay for earned feel
       setTimeout(drawLines, 380);
@@ -2134,7 +1712,6 @@
             document.getElementById('reflectionSection').classList.add('show');
           }
           renderOrderingPanel();
-          updateObjectiveText();
           if (!state.ageCheckAnswered) {
             setTimeout(() => showAgeCheck(), 900);
           } else if (!state.victoryShown) {
@@ -2151,11 +1728,9 @@
             'Think about which fossil horizon appeared deepest at each location. Deeper means older!');
           state.errors++;
           updateStats();
-          updateObjectiveText();
           setTimeout(() => {
             state.orderSelected = [];
             renderOrderingPanel();
-            updateObjectiveText();
           }, 2400);
         }
         saveState();
@@ -2204,7 +1779,6 @@
         fbEl.textContent = ac.correctFeedback;
         state.ageCheckAnswered = true;
         state.ageCheckCorrect  = true;
-        updateObjectiveText();
         saveState();
         // Show victory after a moment
         setTimeout(() => {
@@ -2221,7 +1795,6 @@
         fbEl.textContent = ac.wrongFeedback;
         state.ageCheckAnswered = true;
         state.ageCheckCorrect  = false;
-        updateObjectiveText();
         saveState();
         retryEl.classList.add('show');
       }
@@ -2258,7 +1831,7 @@
         const stack = document.createElement('div');
         stack.className = 'layer-stack';
 
-        getRenderedLocationLayers(loc).forEach(layer => {
+        loc.layers.forEach(layer => {
           const div = document.createElement('div');
           div.className = 'fossil-layer';
           div.id = 'layer-' + layer.id;
@@ -2425,7 +1998,6 @@
 
         const item = document.createElement('div');
         item.className = 'group-item' + (isDone ? ' done' : '');
-        item.dataset.groupId = groupId;
 
         const swatch = document.createElement('div');
         swatch.className = 'group-swatch';
@@ -2446,17 +2018,18 @@
         item.appendChild(status);
         el.appendChild(item);
       });
-      pulseCompletedLegendItems();
     }
 
     /* ─── HINT SYSTEM ────────────────────────────────────────────────── */
     document.getElementById('hintBtn').addEventListener('click', () => {
+      const hints = currentLevel().hints;
       const box   = document.getElementById('hintBox');
       const text  = document.getElementById('hintText');
 
       state.hintsUsed++;
+      const hint = hints[state.hintIndex % hints.length];
       state.hintIndex++;
-      text.textContent = buildSmartHint();
+      text.textContent = hint;
       box.classList.add('show');
 
       updateStats();
@@ -2471,36 +2044,17 @@
       state.errors          = 0;
       state.hintIndex       = 0;
       state.victoryShown    = false;
-      state.quizAnswers     = {};
       state.orderingPhase   = false;
       state.orderSelected   = [];
       state.orderCorrect    = false;
-      state.ageCheckAnswered = false;
-      state.ageCheckCorrect  = false;
-      if (state.difficulty === 'challenge') {
-        chooseNewChallengeVariant();
-      } else {
-        chooseFossilSet('practice');
-        applyDynamicFossilSet('practice');
-      }
-      regenerateLayout(state.difficulty);
 
       document.getElementById('hintBox').classList.remove('show');
-      document.getElementById('ageCheckOverlay').classList.remove('show');
       document.getElementById('victoryOverlay').classList.remove('show');
-      document.getElementById('ageCheckOverlay').classList.remove('show');
       document.getElementById('reflectionSection').classList.remove('show');
       document.getElementById('orderingPanel').classList.add('hidden');
-      document.getElementById('quizQuestions').dataset.built = '';
-      document.getElementById('quizQuestions').innerHTML = '';
-      document.getElementById('quizQuestions').classList.add('hidden');
-      document.getElementById('quizScoreArea').classList.add('hidden');
-      document.getElementById('submitSuccess').style.display = 'none';
-      document.getElementById('submitError').style.display = 'none';
       setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
-      updateStaticCopy();
 
-      updateStats(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); updateObjectiveText(); saveState();
+      updateStats(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); saveState();
     });
 
     /* ─── DIFFICULTY TOGGLE ──────────────────────────────────────────── */
@@ -2520,16 +2074,6 @@
       state.orderingPhase   = false;
       state.orderSelected   = [];
       state.orderCorrect    = false;
-      state.ageCheckAnswered = false;
-      state.ageCheckCorrect  = false;
-      if (diff === 'challenge') {
-        chooseFossilSet('challenge');
-        chooseNewChallengeVariant();
-      } else {
-        chooseFossilSet('practice');
-        applyDynamicFossilSet('practice');
-      }
-      regenerateLayout(diff);
 
       document.getElementById('practiceBtn').classList.toggle('active', diff === 'practice');
       document.getElementById('challengeBtn').classList.toggle('active', diff === 'challenge');
@@ -2540,11 +2084,11 @@
       document.getElementById('reflectionSection').classList.remove('show');
       document.getElementById('orderingPanel').classList.add('hidden');
       document.getElementById('quizQuestions').dataset.built = '';
+      state.ageCheckAnswered = false;
+      state.ageCheckCorrect  = false;
 
       setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
-      updateStaticCopy();
-      updateStats();
-      updateObjectiveText(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); updateObjectiveText(); saveState();
+      updateStats(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); saveState();
     }
 
     /* ─── MODE TOGGLE (Practice / Classroom) ─────────────────────────── */
@@ -2564,7 +2108,6 @@
         document.getElementById('reflectionSection').classList.toggle('show', showRef);
       }
       if (classroom) renderClassroomPanel();
-      updateObjectiveText();
       saveState();
     }
 
@@ -2783,24 +2326,11 @@
         renderOrderingPanel();
       }
 
-      ensureFossilSet('practice');
-      applyDynamicFossilSet('practice');
-      ensureFossilSet('challenge');
-      if (state.difficulty === 'challenge') {
-        applyChallengeVariant();
-      } else {
-        applyDynamicFossilSet('practice');
-      }
-      ensureLayout(state.difficulty);
-
       // Initial render
-      updateStaticCopy();
       updateStats();
-      updateObjectiveText();
       renderLayers();
       renderGroups();
       requestAnimationFrame(drawLines);
-      saveState();
     })();
   </script>
 </body>

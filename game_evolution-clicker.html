@@ -102,7 +102,6 @@
   }
   .hero p{ margin:12px 0 6px; font-size:clamp(14px, 1.8vw, 18px); color:var(--muted); }
 
-
   /* ── SETUP ── */
   .setup-row{ margin:12px auto 10px; display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; max-width:860px; }
   .input, .select, .small-btn{
@@ -151,13 +150,6 @@
   }
   .click-zone:active{ transform:scale(.962)!important; transition:transform .05s ease; }
   .click-zone::after{ content:""; position:absolute; inset:10px; border-radius:50%; border:1px solid rgba(255,255,255,.05); pointer-events:none; }
-  body.transcended .click-zone.cosmic-hit{
-    box-shadow:
-      0 0 42px rgba(154,92,255,.55),
-      0 0 95px rgba(246,203,67,.26),
-      inset 0 0 36px rgba(154,92,255,.18);
-    border-color:rgba(246,203,67,.88);
-  }
 
   /* Combo-level glow states */
   .click-zone.cl-1{ border-color:rgba(36,232,255,.65); box-shadow:0 0 30px rgba(36,232,255,.36), 0 0 80px rgba(36,232,255,.14), inset 0 0 30px rgba(36,232,255,.1); }
@@ -278,16 +270,6 @@
   }
   .path-node.locked{ opacity:.26; filter:grayscale(1); }
   .path-node.active{ border-color:var(--cyan); box-shadow:0 0 0 1px rgba(36,232,255,.18), 0 0 22px rgba(36,232,255,.13); }
-  .path-node.path-reveal{
-    animation:pathNodeReveal .62s ease-out;
-    border-color:rgba(67,240,125,.78);
-    box-shadow:0 0 0 1px rgba(67,240,125,.2), 0 0 22px rgba(36,232,255,.18), 0 0 28px rgba(67,240,125,.16);
-  }
-  @keyframes pathNodeReveal{
-    0%{ transform:scale(.9); opacity:.62; filter:brightness(1.25); }
-    45%{ transform:scale(1.07); opacity:1; filter:brightness(1.15); }
-    100%{ transform:scale(1); opacity:1; filter:brightness(1); }
-  }
   /* Gate pending: threshold crossed but question not answered yet */
   .path-node.gate-pending{
     opacity:.8; filter:none;
@@ -343,8 +325,7 @@
 
   .trial-meta{ display:flex; gap:9px; margin-bottom:14px; flex-wrap:wrap; }
   .trial-fb{ margin-top:14px; padding:13px 16px; border-radius:13px; font-size:14px; line-height:1.65; font-family:'Nunito',sans-serif; display:none; }
-  .trial-fb.fb-correct{ background:rgba(67,240,125,.07); border:1px solid rgba(67,240,125,.22); color:#b5f5d0; display:block; animation:rewardPulse .42s ease-out; }
-  @keyframes rewardPulse{ 0%{ transform:scale(.985); box-shadow:0 0 0 rgba(67,240,125,0); } 55%{ transform:scale(1.012); box-shadow:0 0 22px rgba(67,240,125,.14); } 100%{ transform:scale(1); box-shadow:0 0 0 rgba(67,240,125,0); } }
+  .trial-fb.fb-correct{ background:rgba(67,240,125,.07); border:1px solid rgba(67,240,125,.22); color:#b5f5d0; display:block; }
   .trial-fb.fb-wrong{ background:rgba(255,93,125,.06); border:1px solid rgba(255,93,125,.2); color:#ffc0cc; display:block; }
   .trial-continue{ display:none; margin-top:13px; width:100%; padding:13px; border-radius:13px; font-size:16px; font-weight:900; border:2px solid rgba(36,232,255,.5); background:rgba(36,232,255,.07); color:var(--cyan); cursor:pointer; font-family:'Nunito',sans-serif; transition:all .15s ease; }
   .trial-continue.show{ display:block; }
@@ -366,7 +347,6 @@
   .mini-note{ color:var(--muted); font-size:14px; line-height:1.5; font-family:'Nunito',sans-serif; }
   .pill-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
   .pill{ border:1px solid rgba(89,112,170,.25); background:#0c1327; border-radius:999px; padding:6px 12px; font-size:12px; color:#d2dffc; font-family:'Nunito',sans-serif; }
-
 
   /* ── PROFILE SECTION ── */
   .profile-section{
@@ -406,22 +386,6 @@
     transition:background .15s ease, color .15s ease, border-color .15s ease;
   }
   .toplink:hover{ background:rgba(36,232,255,.07); color:var(--cyan); border-color:rgba(36,232,255,.3); }
-
-  /* ── GAME FOOTER ── */
-  .game-footer{
-    max-width:1240px; margin:32px auto 0; padding:20px 18px;
-    border-top:1px solid rgba(89,112,170,.15); text-align:center;
-  }
-  .game-footer-logo{
-    font-family:'Orbitron', sans-serif; font-size:0.9rem; font-weight:900;
-    color:rgba(245,200,66,.55); letter-spacing:.08em; margin-bottom:6px;
-  }
-  .game-footer p{
-    font-size:0.75rem; color:rgba(145,163,201,.35); margin:0;
-    font-family:'Nunito', sans-serif;
-  }
-  .game-footer a{ color:rgba(59,200,232,.4); text-decoration:none; transition:color .15s ease; }
-  .game-footer a:hover{ color:rgba(59,200,232,.8); }
 
   /* ── RESPONSIVE ── */
   @media (max-width: 940px){
@@ -520,36 +484,73 @@
     border-color:rgba(154,92,255,.5);
     box-shadow:0 0 12px rgba(154,92,255,.15);
   }
-  .path-node.cosmic.cosmic-reveal{
-    animation:cosmicNodeReveal .72s ease-out;
-    border-color:rgba(246,203,67,.78);
-    box-shadow:0 0 0 1px rgba(246,203,67,.22), 0 0 24px rgba(154,92,255,.24), 0 0 34px rgba(246,203,67,.16);
-  }
-  @keyframes cosmicNodeReveal{
-    0%{ transform:scale(.88); opacity:.55; filter:brightness(1.35); }
-    45%{ transform:scale(1.08); opacity:1; filter:brightness(1.22); }
-    100%{ transform:scale(1); opacity:1; filter:brightness(1); }
-  }
 
   /* Cosmic progress bar */
   .cosmic-fill{ height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg,var(--purple),var(--yellow)); transition:width .3s ease; }
   .cosmic-evo-val{ font-size:13px; font-weight:900; color:var(--purple); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
-  #cosmicEvoArea.cosmic-tier-hit .cosmic-fill{
-    box-shadow:0 0 18px rgba(154,92,255,.45), 0 0 28px rgba(246,203,67,.22);
-    filter:brightness(1.18);
-  }
-  #cosmicEvoArea.cosmic-tier-hit{
-    border-radius:16px;
-    animation:cosmicTierPulse .6s ease-out;
-  }
-  @keyframes cosmicTierPulse{
-    0%{ transform:scale(.985); box-shadow:0 0 0 rgba(154,92,255,0); }
-    55%{ transform:scale(1.015); box-shadow:0 0 26px rgba(154,92,255,.16); }
-    100%{ transform:scale(1); box-shadow:0 0 0 rgba(154,92,255,0); }
-  }
 
   /* Next evo bar — cosmic mode */
   .next-evo-area.cosmic-mode .bar-label{ color:var(--purple); }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
+  }
 </style>
 </head>
 <body>
@@ -594,7 +595,7 @@
         <select id="blockName" class="select">
           <option value="">Select block</option>
           <option>A Block</option><option>B Block</option><option>C Block</option><option>D Block</option>
-          <option>E Block</option><option>F Block</option><option>G Block</option>
+          <option>E Block</option><option>F Block</option><option>G Block</option><option>Other</option>
         </select>
       </div>
       <button class="small-btn" id="saveProfileBtn">Save Profile</button>
@@ -786,7 +787,7 @@
     </div>
     <div class="pill-row">
       <div class="pill" id="saveStatusPill">Storage: local</div>
-      <div class="pill">Top score auto-syncs every 4s</div>
+      <div class="pill">Top score auto-syncs every 20s</div>
     </div>
     <div style="margin-top:14px; overflow:auto;">
       <table class="leaderboard-table">
@@ -856,104 +857,113 @@
   // ── EVOLUTION GATE QUESTIONS (from Biological Evolution lesson) ──────
   // One per form transition. Students must answer correctly to evolve.
   const gateQuestions = [
+    // Gate 0 → Cell Cluster
     {
       stem:"What is biological evolution?",
       answers:[
+        "One species instantly turning into another",
+        "A single organism changing during its lifetime",
         "A population changing over generations",
-        "One organism changing during life",
-        "Any trait shift from conditions",
-        "The strongest organism always wins"
+        "Only the strongest animals surviving"
       ],
-      correct:0,
-      explanation:"Biological evolution describes populations changing over many generations. One individual does not evolve during its own lifetime."
+      correct:2,
+      explanation:"Biological evolution describes populations — not individuals — changing over many generations. A single organism cannot evolve; evolution is a shift in how often certain traits appear across an entire population over time."
     },
+    // Gate 1 → Fish
     {
-      stem:"In natural selection, which organisms are most likely to leave offspring?",
+      stem:"In natural selection, which organisms are MOST likely to reproduce and pass on their traits?",
       answers:[
-        "Those alive for the longest time",
-        "Those with traits that fit well",
-        "Those that grow larger than all",
+        "Those alive the longest",
+        "Those with helpful survival traits",
+        "The largest in the population",
         "Those that look most different"
       ],
       correct:1,
-      explanation:"Natural selection favors traits that improve survival and reproduction in a particular environment."
+      explanation:"Natural selection favors organisms whose traits best match the environment — they survive longer and reproduce more, passing those helpful traits to the next generation."
     },
+    // Gate 2 → Frog
     {
-      stem:"Dark moths become more common on dark tree bark over time. What best explains this?",
+      stem:"Dark moths survive better on dark bark and become more common over generations. What is this?",
       answers:[
-        "All moths changed color together",
-        "Predators saw light moths more",
-        "Light moths decided to move",
-        "Dark bark turned moths darker"
-      ],
-      correct:1,
-      explanation:"Predators more easily spotted light moths, so dark moths survived and reproduced more often."
-    },
-    {
-      stem:"Which choice shows heritable variation within a population?",
-      answers:[
-        "A plant growing taller in sun",
-        "A cat keeping a fight scar",
-        "A bird born with longer beak",
-        "A dog losing fur to disease"
-      ],
-      correct:2,
-      explanation:"Heritable variation comes from genes and can be passed from parents to offspring."
-    },
-    {
-      stem:"Ambulocetus had traits of both land mammals and whales. What type of fossil is it?",
-      answers:[
-        "An index fossil for dating",
-        "A transitional fossil between groups",
-        "A vestigial fossil without use",
-        "A homologous fossil from one species"
-      ],
-      correct:1,
-      explanation:"A transitional fossil shows a mix of traits that links two major groups through evolutionary change."
-    },
-    {
-      stem:"A human arm, bat wing, and whale flipper share similar bones. What does this suggest?",
-      answers:[
-        "They formed during one period",
-        "They serve exactly one function",
-        "They share a common ancestor",
-        "They live in matching habitats"
-      ],
-      correct:2,
-      explanation:"Shared underlying bone patterns are homologous structures and suggest common ancestry."
-    },
-    {
-      stem:"A shark fin and a dolphin fin are similar, but sharks and dolphins are not closely related. This is an example of:",
-      answers:[
-        "Homologous structures from ancestry",
-        "Analogous structures from convergence",
-        "Vestigial structures losing function",
-        "Transitional structures between groups"
-      ],
-      correct:1,
-      explanation:"Analogous structures evolve independently in unrelated organisms facing similar environmental pressures."
-    },
-    {
-      stem:"The human tailbone no longer serves its original function. What is it called?",
-      answers:[
-        "A homologous structure from ancestry",
-        "A vestigial structure from ancestors",
-        "An analogous structure with same job",
-        "A transitional structure changing now"
-      ],
-      correct:1,
-      explanation:"Vestigial structures are inherited remnants that have lost most or all of their original function."
-    },
-    {
-      stem:"Humans and chimpanzees share about 98% of their DNA. What is the best conclusion?",
-      answers:[
-        "They are the same species today",
-        "Humans evolved directly from chimps",
-        "DNA cannot show relationships clearly",
-        "They share a recent ancestor"
+        "Organisms all changed color at once",
+        "Moths randomly changed with no cause",
+        "Light moths chose to leave on purpose",
+        "Natural selection favoring better-hidden moths"
       ],
       correct:3,
-      explanation:"A high DNA similarity suggests the two species diverged from a common ancestor relatively recently."
+      explanation:"This is natural selection in action. Dark moths already existed in the population. Predators spotted and ate more light moths. Dark moths survived and reproduced more, so dark coloring became more common over generations."
+    },
+    // Gate 3 → Reptile
+    {
+      stem:"Which of the following is an example of heritable variation?",
+      answers:[
+        "A scar from a cat fight",
+        "A plant growing tall in good sunlight",
+        "A dog losing fur due to mange",
+        "A bird born with a slightly longer beak"
+      ],
+      correct:3,
+      explanation:"Heritable variation means differences caused by genes that can be passed to offspring. A bird born with a longer beak inherited that trait and can pass it on. Scars, diseases, and environmental growth effects are NOT heritable."
+    },
+    // Gate 4 → Mammal
+    {
+      stem:"Ambulocetus was a whale ancestor with four legs that could walk AND swim. What type of fossil is this?",
+      answers:[
+        "An index fossil",
+        "A transitional fossil",
+        "A vestigial fossil",
+        "A homologous fossil"
+      ],
+      correct:1,
+      explanation:"Ambulocetus is a transitional fossil — it shows characteristics from two different groups (land animals and ocean mammals), bridging an evolutionary gap and providing evidence that whales evolved from land-walking ancestors."
+    },
+    // Gate 5 → Primate
+    {
+      stem:"A human arm, whale flipper, and bat wing all share the same underlying bone structure. What does this suggest?",
+      answers:[
+        "They evolved at the same time",
+        "They share a common ancestor",
+        "These animals live in similar environments",
+        "These limbs perform the same function"
+      ],
+      correct:1,
+      explanation:"Homologous structures — the same bone arrangement in very different limbs — suggest these species inherited their limb structure from a shared ancestor, even though the limbs now serve different purposes."
+    },
+    // Gate 6 → Human
+    {
+      stem:"A dolphin fin and shark fin look similar and do the same job, but dolphins and sharks are NOT closely related. What is this?",
+      answers:[
+        "Vestigial structures from a common ancestor",
+        "Homologous structures from the same lineage",
+        "Analogous structures from convergent evolution",
+        "Transitional structures between two forms"
+      ],
+      correct:2,
+      explanation:"Analogous structures result from convergent evolution: unrelated species independently evolve similar traits because they face similar environmental pressures. Dolphins and sharks both need fins to swim, but they evolved separately."
+    },
+    // Gate 7 → Alien
+    {
+      stem:"Humans have a tailbone (coccyx) that no longer serves its original function. What is this called?",
+      answers:[
+        "A homologous structure",
+        "A transitional fossil",
+        "A vestigial structure",
+        "An analogous structure"
+      ],
+      correct:2,
+      explanation:"The coccyx is a vestigial structure — a body part that was useful in an ancestor (for a tail) but has been reduced or lost its function in modern humans. It is evidence that we share ancestry with animals that had tails."
+    },
+    // Gate 8 → UFO
+    {
+      stem:"Chimpanzees and humans share about 98% of their DNA. What is the best conclusion?",
+      answers:[
+        "DNA comparisons are unreliable",
+        "Humans evolved directly from chimps",
+        "Chimps and humans are the same species",
+        "Chimps and humans share a recent common ancestor"
+      ],
+      correct:3,
+      explanation:"The more DNA two species share, the more recently they diverged from a common ancestor. 98% similarity means humans and chimps branched from a shared ancestor relatively recently in evolutionary time — they did not evolve from each other."
     }
   ];
   const discoveries = [
@@ -998,122 +1008,122 @@
   // ── MUTATION TRIAL QUESTIONS (17 questions) ─────────────────────────────
   const trialQuestions = [
     {
-      stem:"Scientists study fossils mainly to learn about which topic?",
-      answers:["past organisms and environments", "today's weather and seasons", "future life forms on Earth", "modern animal movement rates"],
-      correct:0,
-      explanation:"Fossils provide evidence about organisms, environments, extinction, and change over time.",
+      stem:"Scientists use fossils mainly to learn about which of the following?",
+      answers:["How fast modern animals run","Organisms and environments from the past","Only what color an organism was","Exact daily temperatures long ago"],
+      correct:1,
+      explanation:"Fossils provide evidence about organisms, environments, extinctions, and change over time.",
       reward:{ type:"multiplier", amount:0.15, unlock:"Knowledge Power +0.15x" }
     },
     {
-      stem:"Which observation best supports that two species share a common ancestor?",
-      answers:["they share similar bone patterns", "they live in similar habitats", "they move at similar speeds", "they are similar in size"],
-      correct:0,
-      explanation:"Similar anatomical structures can be evidence that organisms are related through common ancestry.",
+      stem:"Which observation would best support the idea that two organisms share a common ancestor?",
+      answers:["They move at the same speed","They live in the same region","They have similar bone structures","They are the same size"],
+      correct:2,
+      explanation:"Similar anatomical structures can be evidence of evolutionary relationships between organisms.",
       reward:{ type:"click", amount:25, unlock:"Per Click +25" }
     },
     {
-      stem:"Which statement best describes evolution over long periods of time?",
-      answers:["populations change across generations", "all organisms change in one season", "single animals evolve while living", "species stay exactly the same"],
-      correct:0,
-      explanation:"Evolution describes change in populations over many generations, not instant change in one individual.",
+      stem:"Which statement best describes how evolution works over time?",
+      answers:["Only extinct organisms change","Every organism changes identically","Organisms never change once they exist","Populations change as helpful traits spread through reproduction"],
+      correct:3,
+      explanation:"Evolution describes change in populations over time — not instant change in one individual.",
       reward:{ type:"passive", amount:18, unlock:"Per Second +18" }
     },
     {
-      stem:"A rock layer contains many marine shells. What is the best conclusion?",
-      answers:["the area was underwater long ago", "the shells were buried later", "the land stayed dry before", "storms washed them in later"],
+      stem:"A fossil layer contains many marine shells. What is the best conclusion?",
+      answers:["The area was likely underwater long ago","The shells were planted by people","The land has always been dry","The shells blew there recently"],
       correct:0,
-      explanation:"Marine fossils in rock suggest the area was once covered by water.",
+      explanation:"Marine fossils in rock layers suggest that the environment was once underwater.",
       reward:{ type:"click", amount:35, unlock:"Per Click +35" }
     },
     {
-      stem:"Why do scientists compare fossils with living organisms?",
-      answers:["to find patterns of relatedness", "to compare body structures", "to sort living species only", "to prove species never changed"],
-      correct:0,
-      explanation:"Comparing fossils and living organisms helps scientists infer relationships and evolutionary change.",
+      stem:"Why do scientists compare structures in fossils and living organisms?",
+      answers:["To decide which is prettier","To count how many exist","To look for evidence of relatedness and change over time","To prove all organisms are identical"],
+      correct:2,
+      explanation:"Comparing structures helps scientists infer evolutionary relationships and track change over time.",
       reward:{ type:"multiplier", amount:0.2, unlock:"Knowledge Power +0.20x" }
     },
     {
-      stem:"Which evidence best shows an environment changed over Earth's history?",
-      answers:["swamp plant fossils in desert rock", "a student drawing from class", "one climate record today", "a guess from one observer"],
+      stem:"Which evidence would best support that an environment changed over Earth's history?",
+      answers:["Fossils of swamp plants found in a now-dry desert","A photo taken this week","A student's guess","A drawing without labels"],
       correct:0,
-      explanation:"Fossils can show that an area once had very different environmental conditions.",
+      explanation:"Fossils can show that a place had a very different environment in the past.",
       reward:{ type:"passive", amount:25, unlock:"Per Second +25" }
     },
     {
-      stem:"Why is evolution described as a population-level process?",
-      answers:["traits spread through generations", "individuals rewrite DNA daily", "all organisms evolve together", "populations move to evolve"],
-      correct:0,
-      explanation:"Evolution happens when inherited traits become more or less common across generations in a population.",
+      stem:"Why is evolution described as a change in a POPULATION — not a change in an individual?",
+      answers:["Only the strongest individuals evolve","Individuals change their DNA based on needs","Populations only evolve when they move","Evolution works through reproduction across generations, not individual change"],
+      correct:3,
+      explanation:"An individual's DNA does not change in response to the environment. Evolution works through reproduction: helpful traits become more common over generations.",
       reward:{ type:"multiplier", amount:0.2, unlock:"Knowledge Power +0.20x" }
     },
     {
-      stem:"What does natural selection mean?",
-      answers:["helpful traits increase offspring", "people select certain traits", "mutations stop over time", "all organisms survive alike"],
-      correct:0,
-      explanation:"Natural selection favors traits that improve survival and reproduction in a given environment.",
+      stem:"What does 'natural selection' mean?",
+      answers:["Humans choosing which animals survive","Random mutations happening without cause","Organisms with helpful traits surviving and reproducing more","All organisms changing at the same rate"],
+      correct:2,
+      explanation:"Natural selection is the process by which organisms with traits that fit their environment survive and reproduce more than others, passing those traits to offspring.",
       reward:{ type:"click", amount:40, unlock:"Per Click +40" }
     },
     {
-      stem:"Darwin's finches had different beaks on different islands mainly because:",
-      answers:["food sources selected beak shapes", "all birds shared one beak", "beaks changed in one day", "islands forced matching beaks"],
-      correct:0,
-      explanation:"Different foods favored birds with different beak shapes, leading to adaptation over generations.",
+      stem:"Darwin observed that finches on different Galapagos islands had differently shaped beaks. What best explains this?",
+      answers:["The birds chose to change their beaks","Beaks changed randomly without selection pressure","Different food sources on each island selected for different beak shapes","All island birds share exactly the same beak"],
+      correct:2,
+      explanation:"Different food sources (seeds vs. insects vs. fruit) on each island favored birds with beak shapes best suited to that food — a classic example of natural selection driving adaptation.",
       reward:{ type:"multiplier", amount:0.25, unlock:"Knowledge Power +0.25x" }
     },
     {
-      stem:"Antibiotic-resistant bacteria becoming more common is an example of:",
-      answers:["evolution by natural selection", "learning during one lifetime", "change with no selection", "bacteria preparing ahead"],
-      correct:0,
-      explanation:"Bacteria with resistance survive treatment and pass that inherited trait to offspring.",
+      stem:"Bacteria that survive antibiotic treatment reproduce and pass on their resistance. Over time, the drug stops working. What is this an example of?",
+      answers:["Bacteria choosing to become stronger","Evolution by natural selection in a short timeframe","A random accident with no evolutionary cause","Bacteria learning from past experience"],
+      correct:1,
+      explanation:"Antibiotic resistance is evolution by natural selection happening in real time. Resistant bacteria have a survival advantage and pass that resistance to offspring.",
       reward:{ type:"passive", amount:40, unlock:"Per Second +40" }
     },
     {
-      stem:"A stick insect blending in like a twig is what type of adaptation?",
-      answers:["a structural adaptation", "a learned survival behavior", "a reduced body structure", "a shared limb structure"],
-      correct:0,
-      explanation:"Camouflage is a structural adaptation that helps an organism survive in its environment.",
+      stem:"A stick insect looks almost exactly like a twig. This camouflage helps it hide from predators. What type of adaptation is this?",
+      answers:["A learned behavior","A structural adaptation shaped by natural selection","A vestigial trait no longer used","A homologous structure from an ancestor"],
+      correct:1,
+      explanation:"Camouflage that mimics the environment is a structural adaptation — a physical feature that evolved because it improved survival and reproduction.",
       reward:{ type:"click", amount:50, unlock:"Per Click +50" }
     },
     {
       stem:"What is an adaptation?",
-      answers:["a heritable survival trait", "a scar gained after injury", "a change from daily weather", "a behavior copied once"],
-      correct:0,
-      explanation:"An adaptation is an inherited trait that improves survival and reproduction in a particular environment.",
+      answers:["Any change an organism makes during its life","A trait that hurts an organism's survival","A heritable trait that improves survival and reproduction in a given environment","A structure that was useful in an ancestor but not today"],
+      correct:2,
+      explanation:"An adaptation is a heritable (genetic) trait that increases an organism's ability to survive and reproduce in its environment — the result of natural selection acting over many generations.",
       reward:{ type:"multiplier", amount:0.15, unlock:"Knowledge Power +0.15x" }
     },
     {
-      stem:"Which provides the strongest direct evidence that evolution has occurred?",
-      answers:["the fossil record through time", "same-colored animals today", "one habitat with many fossils", "future ideas from scientists"],
-      correct:0,
-      explanation:"The fossil record shows how organisms have changed and diversified over long spans of time.",
+      stem:"Which provides the BEST direct evidence that evolution has occurred over time?",
+      answers:["Two animals living in the same habitat","The fossil record showing change in species over time","Animals that are the same color","Scientists making predictions about the future"],
+      correct:1,
+      explanation:"The fossil record documents how life forms have changed over billions of years, providing direct physical evidence of evolution.",
       reward:{ type:"passive", amount:30, unlock:"Per Second +30" }
     },
     {
-      stem:"Tiny leg bones inside whales are best described as:",
-      answers:["vestigial structures from ancestors", "analogous parts with same job", "index fossils in body form", "new structures still forming"],
-      correct:0,
-      explanation:"Vestigial structures are inherited remnants from ancestors that have lost most or all of their original use.",
+      stem:"A whale has tiny leg bones buried inside its body that serve no function. What are these called?",
+      answers:["Transitional fossils","Analogous structures","Vestigial structures","Homologous limbs"],
+      correct:2,
+      explanation:"Vestigial structures are body parts reduced in size or function compared to an ancestor's version. Whale hind-leg bones are evidence that whales evolved from four-legged land ancestors.",
       reward:{ type:"click", amount:60, unlock:"Per Click +60" }
     },
     {
-      stem:"Selective breeding is similar to natural selection because both:",
-      answers:["change trait frequencies over time", "remove all genetic variation", "work at the exact same speed", "happen without reproduction"],
-      correct:0,
-      explanation:"Both processes can make certain inherited traits more common across generations.",
+      stem:"Selective breeding is when humans choose which animals reproduce based on desired traits. How is this similar to natural selection?",
+      answers:["Both involve random mutation with no selection","Both result in traits spreading through a population over generations","Both happen at the same speed","Neither changes an organism's genetics"],
+      correct:1,
+      explanation:"Both selective breeding and natural selection result in certain traits becoming more common over generations. The difference is that natural selection is driven by the environment, while selective breeding is driven by human choice.",
       reward:{ type:"multiplier", amount:0.2, unlock:"Knowledge Power +0.20x" }
     },
     {
-      stem:"When unrelated species evolve similar traits for similar jobs, this is called:",
-      answers:["convergent evolution in species", "divergent evolution in species", "shared ancestry in species", "artificial selection by humans"],
+      stem:"Two unrelated species both evolved eyes. This is an example of:",
+      answers:["Convergent evolution — similar traits from different origins","Divergent evolution — same ancestor, different traits","Homologous structures — same origin, same function","Vestigial evolution — loss of an unused trait"],
       correct:0,
-      explanation:"Convergent evolution happens when unrelated organisms independently evolve similar solutions to similar challenges.",
+      explanation:"Convergent evolution occurs when unrelated species independently evolve similar traits because they face similar environmental pressures. Eyes have evolved separately many times.",
       reward:{ type:"passive", amount:50, unlock:"Per Second +50" }
     },
     {
-      stem:"A fossil with both dinosaur-like and bird-like features is most likely:",
-      answers:["a transitional fossil form", "an index fossil only", "a vestigial structure", "an unrelated organism"],
-      correct:0,
-      explanation:"Transitional fossils show a mix of traits that links major groups through evolutionary change.",
+      stem:"A scientist discovers a new fossil with features of both a dinosaur and a bird. What type of fossil is this most likely?",
+      answers:["An index fossil","A vestigial fossil","A transitional fossil","An analogous fossil"],
+      correct:2,
+      explanation:"A transitional fossil shows characteristics of two different groups, bridging an evolutionary gap. Archaeopteryx — with feathers and dinosaur-like claws — is a famous example of a dinosaur-to-bird transitional fossil.",
       reward:{ type:"multiplier", amount:0.25, unlock:"Knowledge Power +0.25x" }
     }
   ];
@@ -1155,8 +1165,6 @@
     passedGates:[],      // array of form IDs whose gate question has been answered correctly
     questionsCorrect:0,  // total gate questions answered correctly (lifetime, resets on prestige)
     transcended:false,   // true once Transcendence fires this run; resets on prestige
-    revealedPath:[],     // standard path ids already revealed this run
-    revealedCosmic:[],   // cosmic node ids already revealed this run
     profile:{ playerName:"", teacherName:"", blockName:"" }
   };
 
@@ -1164,7 +1172,6 @@
   let currentEventMultiplier = { click:1, passive:1 };
   let upgradeOpen = true;
   let activeGate = null; // formId currently being gated (in-memory only, not persisted)
-  let activeGateQuestion = null;
 
   /* ── COMBO SYSTEM ── */
   let comboCount = 1;
@@ -1217,8 +1224,6 @@
       if(!Array.isArray(state.unlockedSkins))      state.unlockedSkins = ["default"];
       if(!Array.isArray(state.purchasedUpgrades))  state.purchasedUpgrades = [];
       if(typeof state.transcended !== "boolean")   state.transcended = state.bestScore >= 2000000;
-      if(!Array.isArray(state.revealedPath))       state.revealedPath = [];
-      if(!Array.isArray(state.revealedCosmic))     state.revealedCosmic = [];
       if(!Array.isArray(state.passedGates)){
         state.passedGates = evolutionForms
           .filter(f => f.gate !== null && state.bestScore >= f.unlock)
@@ -1239,25 +1244,12 @@
   });
 
   /* ── UTILS ── */
-function formatNumber(v){
+  function formatNumber(v){
     if(v >= 1e12) return (v/1e12).toFixed(2).replace(/\.00$/,"")+"T";
     if(v >= 1e9)  return (v/1e9).toFixed(2).replace(/\.00$/,"")+"B";
     if(v >= 1e6)  return (v/1e6).toFixed(2).replace(/\.00$/,"")+"M";
     if(v >= 1e3)  return Math.floor(v).toLocaleString();
     return Math.floor(v).toString();
-  }
-
-  function getShuffledQuestion(q){
-    const options = q.answers.map((text, idx) => ({ text, idx }));
-    for(let i = options.length - 1; i > 0; i--){
-      const j = Math.floor(Math.random() * (i + 1));
-      [options[i], options[j]] = [options[j], options[i]];
-    }
-    return {
-      ...q,
-      answers: options.map(o => o.text),
-      correct: options.findIndex(o => o.idx === q.correct)
-    };
   }
 
   function showToast(msg, color="var(--cyan)"){
@@ -1288,24 +1280,6 @@ function formatNumber(v){
       osc.connect(g); g.connect(ctx.destination);
       osc.start(); osc.stop(ctx.currentTime + dur);
     }catch(e){}
-  }
-
-  function cosmicClickPulse(){
-    if(!state.transcended) return;
-    refs.clickZone.classList.remove("cosmic-hit");
-    void refs.clickZone.offsetWidth;
-    refs.clickZone.classList.add("cosmic-hit");
-    setTimeout(() => refs.clickZone.classList.remove("cosmic-hit"), 120);
-  }
-
-  function cosmicTierPulse(){
-    if(!refs.cosmicPathSection || refs.cosmicPathSection.style.display === "none") return;
-    const area = $("cosmicEvoArea");
-    if(!area) return;
-    area.classList.remove("cosmic-tier-hit");
-    void area.offsetWidth;
-    area.classList.add("cosmic-tier-hit");
-    setTimeout(() => area.classList.remove("cosmic-tier-hit"), 650);
   }
 
   /* ── CLICK RIPPLE ── */
@@ -1375,7 +1349,6 @@ function formatNumber(v){
       if(!unlocked && !gatePending) cls += " locked";
       if(cur.id === f.id)          cls += " active";
       if(gatePending)              cls += " gate-pending";
-      if(state.revealedPath.includes(f.id) && unlocked) cls += " path-reveal";
 
       const div = document.createElement("div");
       div.className = cls;
@@ -1388,28 +1361,7 @@ function formatNumber(v){
         div.innerHTML = `<div class="path-emoji">❔</div><div class="path-name">Unknown</div><div class="path-req">???</div>`;
       }
       refs.pathGrid.appendChild(div);
-      if(state.revealedPath.includes(f.id) && unlocked){
-        setTimeout(() => {
-          div.classList.remove("path-reveal");
-        }, 660);
-      }
     });
-  }
-
-  function maybeRegisterPathReveal(cur){
-    const idx = evolutionForms.findIndex(f => f.id === cur.id);
-    if(idx < 0 || idx >= COSMIC_START_IDX) return;
-    if(!state.revealedPath.includes(cur.id)){
-      state.revealedPath.push(cur.id);
-    }
-  }
-
-  function maybeRegisterCosmicReveal(cur){
-    const idx = evolutionForms.findIndex(f => f.id === cur.id);
-    if(idx < COSMIC_START_IDX) return;
-    if(!state.revealedCosmic.includes(cur.id)){
-      state.revealedCosmic.push(cur.id);
-    }
   }
 
   /* ── COSMIC PATH RENDERING ── */
@@ -1433,7 +1385,6 @@ function formatNumber(v){
       if(!unlocked) cls += " locked";
       if(cur.id === f.id) cls += " active";
       if(unlocked && cur.id !== f.id) cls += " unlocked-cosmic";
-      if(state.revealedCosmic.includes(f.id)) cls += " cosmic-reveal";
 
       const div = document.createElement("div");
       div.className = cls;
@@ -1443,11 +1394,6 @@ function formatNumber(v){
         div.innerHTML = `<div class="path-emoji">❔</div><div class="path-name">Cosmic</div><div class="path-req">${formatNumber(f.unlock)}</div>`;
       }
       refs.cosmicPathGrid.appendChild(div);
-      if(state.revealedCosmic.includes(f.id)){
-        setTimeout(() => {
-          div.classList.remove("cosmic-reveal");
-        }, 760);
-      }
     });
 
     // Update cosmic progress bar
@@ -1497,17 +1443,9 @@ function formatNumber(v){
       void refs.evoEmoji.offsetWidth;
       refs.evoEmoji.classList.add("evo-celebrate");
       setTimeout(() => refs.evoEmoji.classList.remove("evo-celebrate"), 750);
-      if(evolutionForms.findIndex(f => f.id === cur.id) >= COSMIC_START_IDX){
-        cosmicTierPulse();
-        showToast("Cosmic tier reached! " + cur.emoji + " " + cur.name, "var(--purple)");
-        playTone(760, .08, "triangle", .04);
-        setTimeout(() => playTone(980, .07, "sine", .03), 90);
-        setTimeout(() => playTone(1220, .06, "triangle", .028), 180);
-      } else {
-        showToast("Evolved into " + cur.emoji + " " + cur.name + "!", "var(--yellow)");
-        playTone(820, .1, "triangle", .05);
-        setTimeout(() => playTone(980, .08, "triangle", .04), 115);
-      }
+      showToast("Evolved into " + cur.emoji + " " + cur.name + "!", "var(--yellow)");
+      playTone(820, .1, "triangle", .05);
+      setTimeout(() => playTone(980, .08, "triangle", .04), 115);
     }
   }
 
@@ -1691,8 +1629,6 @@ function formatNumber(v){
     maybeUnlockForms();
     maybeUnlockSkins();
     const cur = getCurrentForm();
-    maybeRegisterPathReveal(cur);
-    maybeRegisterCosmicReveal(cur);
     refs.totalDisplay.textContent        = formatNumber(state.total);
     refs.perClickDisplay.textContent     = formatNumber(calcPerClick());
     refs.perSecondDisplay.textContent    = formatNumber(calcPerSecond());
@@ -1723,7 +1659,7 @@ function formatNumber(v){
     const thresholds = [40, 150, 400, 1200, 4000, 12000, 30000];
     if(state.unlockedTrials < thresholds.length && state.totalClicks >= thresholds[state.unlockedTrials]){
       state.unlockedTrials += 1;
-      showToast("Mutation Trial ready! Answer correctly for a boost.", "var(--purple)");
+      showToast("Mutation Trial ready! Answer correctly for a big boost.", "var(--purple)");
       playTone(660, .07, "triangle", .035);
     }
   }
@@ -1752,13 +1688,7 @@ function formatNumber(v){
     spawnFloat("+" + formatNumber(gain), isBig);
     if(comboCount >= 3) spawnFloat("x" + mult.toFixed(2));
     const freq = 420 + comboCount * 45 + Math.random() * 50;
-    if(state.transcended){
-      cosmicClickPulse();
-      playTone(freq + 90, .038, "triangle", .022);
-      setTimeout(() => playTone(freq + 210, .028, "sine", .014), 18);
-    } else {
-      playTone(freq, .04, "triangle", .025);
-    }
+    playTone(freq, .04, "triangle", .025);
     scheduleRender(); // batches rapid-click renders into one rAF per frame
   }
 
@@ -1825,12 +1755,11 @@ function formatNumber(v){
   /* ── EVOLUTION GATE SYSTEM ── */
   function openEvoGate(formId){
     const form = evolutionForms.find(f => f.id === formId);
-    const q    = getShuffledQuestion(gateQuestions[form.gate]);
+    const q    = gateQuestions[form.gate];
     activeGate = formId;
-    activeGateQuestion = q;
 
     refs.gateTitle.textContent = "Evolution Gate — " + form.emoji + " " + form.name;
-    refs.gateIntro.textContent = "You reached " + form.name + ". Answer correctly to unlock this evolution.";
+    refs.gateIntro.textContent = "Your organism has reached the " + form.name + " threshold. Before you can evolve, prove you understand the science behind it. Answer correctly to unlock this form.";
     refs.gateStem.textContent  = q.stem;
     refs.gateFeedback.className = "trial-fb";
     refs.gateRetryBtn.classList.remove("show");
@@ -1844,7 +1773,7 @@ function formatNumber(v){
 
   function buildGateAnswers(formId){
     const form = evolutionForms.find(f => f.id === formId);
-    const q    = activeGateQuestion || getShuffledQuestion(gateQuestions[form.gate]);
+    const q    = gateQuestions[form.gate];
     refs.gateAnswerGrid.innerHTML = "";
     q.answers.forEach((ans, i) => {
       const btn = document.createElement("button");
@@ -1857,7 +1786,7 @@ function formatNumber(v){
 
   function answerGate(chosen, formId){
     const form    = evolutionForms.find(f => f.id === formId);
-    const q       = activeGateQuestion || gateQuestions[form.gate];
+    const q       = gateQuestions[form.gate];
     const buttons = Array.from(refs.gateAnswerGrid.querySelectorAll(".answer-btn"));
 
     // Disable all buttons and reveal correct answer
@@ -1868,18 +1797,17 @@ function formatNumber(v){
       if(chosen !== q.correct) {} // (type narrowing — always correct here)
       buttons[chosen].classList.add("correct");
       refs.gateFeedback.className   = "trial-fb fb-correct";
-      refs.gateFeedback.textContent = "Correct! " + q.explanation + " Reward: Knowledge Power +0.10x.";
+      refs.gateFeedback.textContent = "Correct! " + q.explanation + " Knowledge Power +0.10x unlocked.";
       refs.gateEvolveBtn.textContent = "Evolve into " + form.name + " " + form.emoji + " →";
       refs.gateEvolveBtn.classList.add("show");
       state.questionsCorrect++;
       playTone(680, .1, "triangle", .04);
       setTimeout(() => playTone(880, .08, "triangle", .035), 110);
       setTimeout(() => playTone(1040, .06, "triangle", .03), 220);
-      spawnFloat("+0.10x", true);
     } else {
       buttons[chosen].classList.add("wrong");
       refs.gateFeedback.className   = "trial-fb fb-wrong";
-      refs.gateFeedback.textContent = "Not quite. " + q.explanation + " Try again.";
+      refs.gateFeedback.textContent = "Not quite. " + q.explanation + " Read the explanation carefully, then try again.";
       refs.gateRetryBtn.classList.add("show");
       playTone(220, .1, "square", .025);
     }
@@ -1890,7 +1818,6 @@ function formatNumber(v){
     refs.gateFeedback.className = "trial-fb";
     refs.gateRetryBtn.classList.remove("show");
     refs.gateEvolveBtn.classList.remove("show");
-    activeGateQuestion = getShuffledQuestion(gateQuestions[evolutionForms.find(f => f.id === activeGate).gate]);
     buildGateAnswers(activeGate);
   }
 
@@ -1901,9 +1828,8 @@ function formatNumber(v){
     state.passedGates.push(formId);
     state.knowledgeMultiplier += 0.1; // Gate completion bonus
     activeGate = null;
-    activeGateQuestion = null;
     closeModal("evoGateModal");
-    showToast("Evolution unlocked! " + form.emoji + " " + form.name + " +0.10x", "var(--green)");
+    showToast("Evolved into " + form.emoji + " " + form.name + "! Knowledge Power +0.10x", "var(--green)");
     playTone(820, .1, "triangle", .05);
     setTimeout(() => playTone(980, .08, "triangle", .04), 115);
     setTimeout(() => playTone(1180, .07, "triangle", .035), 240);
@@ -1919,9 +1845,9 @@ function formatNumber(v){
       showToast("Keep clicking — Mutation Trials unlock soon!", "var(--yellow)");
       return;
     }
-    currentTrial = getShuffledQuestion(trialQuestions[Math.floor(Math.random() * trialQuestions.length)]);
+    currentTrial = trialQuestions[Math.floor(Math.random() * trialQuestions.length)];
     refs.questionStem.textContent    = currentTrial.stem;
-    refs.trialUnlockText.textContent = "Reward: " + currentTrial.reward.unlock;
+    refs.trialUnlockText.textContent = "Unlocks: " + currentTrial.reward.unlock;
     refs.feedbackText.className      = "trial-fb";
     refs.feedbackText.textContent    = "";
     refs.trialContinueBtn.classList.remove("show");
@@ -1950,16 +1876,15 @@ function formatNumber(v){
       if(currentTrial.reward.type === "multiplier") state.knowledgeMultiplier += currentTrial.reward.amount;
       state.streak += 1;
       refs.feedbackText.className = "trial-fb fb-correct";
-      refs.feedbackText.innerHTML = "<strong>Correct.</strong> " + currentTrial.explanation + "<br><br><strong style='color:var(--green)'>Reward: " + currentTrial.reward.unlock + "</strong>";
-      showToast("Reward unlocked! " + currentTrial.reward.unlock, "var(--green)");
+      refs.feedbackText.innerHTML = "<strong>Correct!</strong> " + currentTrial.explanation + "<br><br><strong style='color:var(--green)'>Reward: " + currentTrial.reward.unlock + "</strong>";
+      showToast("Correct! " + currentTrial.reward.unlock, "var(--green)");
       playTone(780, .09, "sine", .045);
       setTimeout(() => playTone(940, .07, "sine", .035), 110);
-      spawnFloat(currentTrial.reward.unlock, true);
     } else {
       state.streak = 0;
       refs.feedbackText.className = "trial-fb fb-wrong";
-      refs.feedbackText.innerHTML = "<strong>Not quite.</strong> " + currentTrial.explanation + " Try again later.";
-      showToast("Incorrect — explanation shown below.", "var(--danger)");
+      refs.feedbackText.innerHTML = "<strong>Not quite.</strong> " + currentTrial.explanation;
+      showToast("Incorrect — read the explanation below.", "var(--danger)");
       playTone(220, .1, "square", .025);
     }
     currentTrial = null;
@@ -2004,8 +1929,6 @@ function formatNumber(v){
     state.passedGates = [];     // Re-gate on prestige (by design)
     state.questionsCorrect = 0; // Reset knowledge score for new run
     state.transcended = false;  // Reset transcendence for new run
-    state.revealedPath = [];
-    state.revealedCosmic = [];
     document.body.classList.remove("transcended"); // Remove cosmic visuals
     currentEventMultiplier = { click:1, passive:1 };
     refs.eventBanner.classList.remove("show");
@@ -2148,8 +2071,7 @@ function formatNumber(v){
       if((e.key==="Enter"||e.key===" ") && !holdInterval){
         e.preventDefault();
         clickEvolution();
-        const holdMs = state.transcended ? 70 : 100;
-        holdInterval = setInterval(clickEvolution, holdMs);
+        holdInterval = setInterval(clickEvolution, 100);
       }
     });
     refs.clickZone.addEventListener("keyup", e => {
@@ -2214,8 +2136,17 @@ function formatNumber(v){
 })();
 </script>
 <!-- ── GAME FOOTER ── -->
-<div class="game-footer">
-  <div class="game-footer-logo">LYFELABZ</div>
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
   <p>Grade 6 Life Science &middot; Biological Evolution &middot;
     <a href="index.html">Back to Home</a> &middot;
     <a href="about_privacy.html">Privacy</a> &middot;

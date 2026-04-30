@@ -606,56 +606,6 @@
   .cont-card.lesson .cont-link { background: rgba(122,143,166,0.1); border-color: rgba(122,143,166,0.3); color: #9fb8cc; }
   a.cont-card { text-decoration: none; cursor: pointer; }
 
-  /* ── FOOTER ── */
-footer { background:#080a0f; border-top:1px solid var(--border); padding:2rem 2rem; text-align:center; }
-.footer-logo {
-  font-family:'Fredoka One',cursive;
-  font-size:1.1rem;
-  letter-spacing:0.08em;
-  color:var(--gold);
-  margin-bottom:0.35rem;
-}
-.footer-tagline {
-  font-size:0.83rem;
-  color:rgba(240,228,200,0.6);
-  margin-bottom:0.6rem;
-}
-.footer-links {
-  display:flex;
-  gap:0.5rem;
-  justify-content:center;
-  flex-wrap:wrap;
-  margin-bottom:0.6rem;
-}
-.footer-links a {
-  color:var(--gold);
-  text-decoration:none;
-  font-size:0.72rem;
-  font-weight:800;
-  letter-spacing:0.06em;
-  text-transform:uppercase;
-  border:1px solid rgba(245,200,66,0.4);
-  background:rgba(245,200,66,0.08);
-  padding:0.25rem 0.75rem;
-  border-radius:99px;
-  transition:border-color 0.2s, background 0.2s, color 0.2s;
-}
-.footer-links a:hover { border-color:rgba(245,200,66,0.7); }
-.footer-links a.nav-why {
-  color:#3bc8e8;
-  border:1px solid rgba(59,200,232,0.7);
-  background:rgba(59,200,232,0.12);
-}
-.footer-links a.nav-why:hover {
-  color:#3bc8e8;
-  border-color:rgba(59,200,232,0.95);
-  background:rgba(59,200,232,0.22);
-}
-footer .footer-copy {
-  color:var(--text-muted);
-  font-size:0.78rem;
-}
-
   @media (max-width: 600px) {
     .nav-links { display: none; }
     .quiz-options { padding-left: 0; }
@@ -666,6 +616,66 @@ footer .footer-copy {
 .ev-detail-panel.ec2 { background: rgba(180,140,90,0.12); border-color: rgba(180,140,90,0.35); border-left-color: #d4a96a; }
 .ev-detail-panel.ec3 { background: rgba(200,80,60,0.10); border-color: rgba(200,80,60,0.35); border-left-color: #e8704e; }
 .ev-detail-panel.ec4 { background: rgba(29,180,130,0.10); border-color: rgba(29,180,130,0.35); border-left-color: #1de9b6; }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
+  }
 </style>
 
 </head>
@@ -1065,7 +1075,7 @@ footer .footer-copy {
     <a href="about_privacy.html">Privacy Policy</a>
     <a href="about_learning-science.html" class="nav-why">Why It Works</a>
   </div>
-  <p class="footer-copy">© 2026 LyfeLabz · Educational Use</p>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
 <!-- ─── SCRIPTS ─────────────────────────────────────────────────────── -->

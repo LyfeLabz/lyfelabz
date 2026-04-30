@@ -86,8 +86,6 @@
   .env-btn.dark.active   { background:rgba(80,40,15,0.5); border-color:rgba(150,100,50,0.8); box-shadow:0 0 12px rgba(120,80,40,0.4); }
   .env-btn.grass.active  { background:rgba(61,220,132,0.2); border-color:rgba(61,220,132,0.7); }
 
-
-
   /* ── RUN BUTTON ── */
   .run-btn { width:100%; padding:0.85rem; border-radius:12px; border:none; font-family:'Fredoka One',cursive; font-size:1.1rem; cursor:pointer; transition:all 0.2s; margin-top:0.5rem; }
   .run-btn.start { background:linear-gradient(135deg,var(--green),#f5c842); color:#251808; box-shadow:0 4px 20px rgba(245,160,40,0.35); }
@@ -115,8 +113,6 @@
   .gen-display { text-align:center; margin-bottom:1rem; }
   .gen-num { font-family:'Fredoka One',cursive; font-size:2.5rem; color:var(--green); line-height:1; text-shadow:0 0 20px rgba(245,160,40,0.4); }
   .gen-lbl { font-size:0.72rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
-
-
 
   /* ── CHART PANEL ── */
   .chart-panel { align-self: start; }
@@ -285,11 +281,6 @@
   .outcome.extinct h3 { color:var(--red); }
   .outcome p { font-size:0.9rem; color:var(--muted); line-height:1.6; }
 
-  footer { background:#0e0a02; border-top:1px solid var(--border); padding:2rem; text-align:center; }
-  .footer-logo { font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:900; color:var(--gold); letter-spacing:0.08em; margin-bottom:0.4rem; }
-  footer p { color:var(--muted); font-size:0.82rem; }
-  footer a { color:var(--green); text-decoration:none; }
-
   /* ── BEFORE YOU BEGIN ── */
   .byb-wrap { background:var(--dark); border-bottom:2px solid rgba(245,160,40,0.2); padding:2.5rem 1.5rem; }
   .byb-inner { max-width:980px; margin:0 auto; }
@@ -340,6 +331,65 @@
   .stem-badge { background: rgba(245,160,40,0.1); border: 1px solid rgba(245,160,40,0.3); color: var(--green); }
   .ls-badge:hover, .stem-badge:hover { opacity: 0.75; }
 
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
+  }
 </style>
 </head>
 <body>
@@ -681,10 +731,16 @@
   <span class="stem-badge" data-tip="Science Practice 2: Developing and using models — using a simulation as a model for natural selection in a population.">SP2: Modelling</span>
 </div>
 
+<!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
-  <p>Life Science · Lesson 5 — <a href="lesson_biological-evolution.html">Biological Evolution</a> &nbsp;·&nbsp; <a href="index.html">Learning Hub</a></p>
-  <p style="margin-top:0.5rem;font-size:0.7rem;color:rgba(100,160,120,0.3);">© 2026 LyfeLabz · Educational Use</p>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
 <script>

@@ -81,12 +81,6 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;background:var(--card);border:1px solid var(--border);border-radius:17px;padding:1.3rem 1.8rem;margin-top:1.4rem;}
 .s-num{font-family:'Fredoka One',cursive;font-size:1.75rem;color:var(--accent);display:block;line-height:1;margin-bottom:0.2rem;}
 .s-lbl{font-size:0.77rem;color:var(--muted);font-weight:700;}
-footer{background:#070f17;border-top:1px solid var(--border);padding:2.2rem 2rem;text-align:center;margin-top:1rem;}
-footer .footer-logo{font-family:'Fredoka One',cursive;font-size:1.3rem;color:var(--accent);margin-bottom:0.35rem;}
-  footer .footer-links { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.75rem; }
-  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.3rem 0.9rem; border-radius:99px; transition:border-color 0.2s; }
-  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
-footer p{color:var(--muted);font-size:0.83rem;}footer a{color:var(--blue);text-decoration:none;}
 @media(max-width:960px){.panels{grid-template-columns:1fr}.info-panel{position:static}}
 @media(max-width:600px){nav{padding:0.8rem 1.2rem}.nav-center{display:none}.page-header{padding:1.6rem 1.2rem 1.3rem}.explorer-wrap{padding:1.2rem 1rem 2rem}}
   /* ── Quiz Header Pill ───────────────────────────────────── */
@@ -113,6 +107,66 @@ footer p{color:var(--muted);font-size:0.83rem;}footer a{color:var(--blue);text-d
     border-color: rgba(255,255,255,0.85);
     color: #ffffff;
     box-shadow: 0 0 0 3px rgba(255,255,255,0.1), 0 0 20px rgba(255,255,255,0.15);
+  }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
   }
 </style>
 <style>
@@ -367,7 +421,6 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 
-
   /* ── READ ALOUD ── */
   .i-card-hd { justify-content: space-between !important; align-items: flex-start !important; }
   .c-card-hd { justify-content: space-between; }
@@ -487,7 +540,6 @@ body.stem-active .stem-detail {
   .quiz-notice ul li::before { content:''; width:5px; height:5px; border-radius:50%; background:#e74c3c; flex-shrink:0; }
   .quiz-container { border:1.5px solid rgba(255,255,255,0.42); border-radius:16px; margin-top:2rem; box-shadow:0 0 0 1px rgba(255,255,255,0.06), 0 0 32px rgba(255,255,255,0.03); }
   @media(max-width:600px){ .quiz-wrap{padding:0 1rem 2rem;} .quiz-turnin-bar{flex-direction:column;align-items:flex-start;} .quiz-turnin-right{width:100%;flex-direction:column;} .quiz-name-input{width:100%;} .quiz-btn-turnin{width:100%;justify-content:center;} }
-
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -660,15 +712,16 @@ body.stem-active .stem-detail {
   </div><!-- /quiz-container -->
 </div>
 
+<!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
-
-    <div class="footer-links">
-    <a href="about_lyfelabz.html">About</a>
-    <a href="about_privacy.html">Privacy</a>
-    <a href="about_learning-science.html">Why It Works</a>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
   </div>
-  <p style="margin-top:0.3rem">© 2026 LyfeLabz · Educational Use</p>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 <script>
 var organData={
