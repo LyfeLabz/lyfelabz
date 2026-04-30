@@ -282,6 +282,62 @@
   .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(159,184,204,0.6); cursor: help; }
   @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
+
+
+  /* ── ACCORDION LESSON CARDS / COMPACT NOTES ── */
+  .acc-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    margin-bottom: 0.85rem; overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    animation: fadeIn 0.3s ease both;
+  }
+  .acc-card::before {
+    content: ''; display: block; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .acc-card-header {
+    display: flex; align-items: center; gap: 1rem; padding: 1.2rem 1.6rem;
+    cursor: pointer; user-select: none; transition: background 0.18s;
+  }
+  .acc-card-header:hover { background: rgba(122,143,166,0.05); }
+  .acc-card-icon { font-size: 1.55rem; flex-shrink: 0; }
+  .acc-card-text { flex: 1; min-width: 0; }
+  .acc-card-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--text); margin-bottom: 0.2rem; }
+  .acc-card-summary { font-size: 0.86rem; color: rgba(232,237,242,0.55); line-height: 1.45; }
+  .acc-chevron {
+    font-size: 0.85rem; color: var(--accent2); flex-shrink: 0;
+    transition: transform 0.25s ease; opacity: 0.65; padding: 0.2rem;
+  }
+  .acc-card.open .acc-chevron { transform: rotate(90deg); }
+  .acc-card-body {
+    display: none; padding: 0 1.6rem 1.6rem;
+    color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75;
+    border-top: 1px solid rgba(122,143,166,0.1);
+  }
+  .acc-card.open .acc-card-body { display: block; }
+  .acc-intro { padding-top: 1.2rem; margin-bottom: 1.1rem; }
+  .compact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 1rem 0 1.1rem; }
+  .compact-grid.two { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 780px) { .compact-grid, .compact-grid.two { grid-template-columns: 1fr; } }
+  .mini-card {
+    background: rgba(255,255,255,0.035); border: 1px solid rgba(122,143,166,0.18);
+    border-radius: 12px; padding: 0.95rem 1.05rem;
+  }
+  .mini-card-title {
+    display: flex; align-items: center; gap: 0.45rem;
+    font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--accent2); margin-bottom: 0.35rem;
+  }
+  .mini-card p, .mini-card li { font-size: 0.86rem; color: rgba(232,237,242,0.78); line-height: 1.58; }
+  .mini-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.25rem; }
+  .mini-card li::before { content: '→'; opacity: 0.45; margin-right: 0.45rem; }
+  .quick-row {
+    display: flex; align-items: flex-start; gap: 0.7rem;
+    background: rgba(255,255,255,0.035); border: 1px solid rgba(122,143,166,0.16);
+    border-radius: 12px; padding: 0.85rem 1rem; margin: 0.55rem 0;
+  }
+  .quick-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .quick-row strong { color: var(--accent2); }
+
   /* ── CALLOUTS ── */
   .callout {
     border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
@@ -759,60 +815,84 @@
     </div>
 
     <!-- Rock Types -->
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">🪨</span>
-        <div class="card-title">The Three Types of Rock</div>
+    <div class="acc-card open" id="card-rock-types">
+      <div class="acc-card-header" onclick="this.closest('.acc-card').classList.toggle('open')">
+        <div class="acc-card-icon">🪨</div>
+        <div class="acc-card-text">
+          <div class="acc-card-title">The Three Types of Rock</div>
+          <div class="acc-card-summary">Rock is grouped by how it formed: layers, cooling, or heat and pressure.</div>
+        </div>
+        <div class="acc-chevron">▶</div>
       </div>
-      <div class="card-body">
-        <p>All rocks on Earth fit into one of three categories based on <em>how they formed</em>. Understanding this is the key to reading Earth's history.</p>
+      <div class="acc-card-body">
+        <p class="acc-intro">All rocks fit into one of three categories based on <em>how they formed</em>. That formation story helps scientists read Earth's history.</p>
         <div class="rock-grid">
           <div class="rock-card sedimentary">
             <span class="rock-emoji">🐚</span>
             <div class="rock-name" id="vocab-sedimentary">Sedimentary</div>
             <div class="rock-how">Layers &amp; pressure</div>
-            <p class="rock-desc">Formed when small pieces of rock, minerals, and dead organisms pile up in layers over time. Pressure from above slowly compacts them into solid rock.</p>
-            <p class="rock-fact">★ Most fossils are found in sedimentary rock — it's the best natural recorder of life.</p>
+            <p class="rock-desc">Small pieces of rock, minerals, and once-living things pile up in layers. Pressure slowly compacts them into solid rock.</p>
+            <p class="rock-fact">★ Best place to find fossils.</p>
           </div>
           <div class="rock-card igneous">
             <span class="rock-emoji">🌋</span>
             <div class="rock-name" id="vocab-igneous">Igneous</div>
             <div class="rock-how">Melted &amp; cooled</div>
-            <p class="rock-desc">Formed when melted rock (magma underground, lava above ground) cools and hardens. Can form inside Earth or on the surface after a volcanic eruption.</p>
-            <p class="rock-fact">★ Igneous rock can be used to determine the age of surrounding layers — a geologic clock.</p>
+            <p class="rock-desc">Melted rock cools and hardens. Magma forms underground; lava forms at Earth's surface.</p>
+            <p class="rock-fact">★ Can act like a geologic clock.</p>
           </div>
           <div class="rock-card metamorphic">
             <span class="rock-emoji">💎</span>
             <div class="rock-name" id="vocab-metamorphic">Metamorphic</div>
             <div class="rock-how">Heat &amp; pressure</div>
-            <p class="rock-desc">Formed when existing rocks are changed by intense heat and pressure deep underground — without actually melting. The rock transforms into something new.</p>
-            <p class="rock-fact">★ Diamonds are minerals (not rocks), but they form the same way — under extreme pressure.</p>
+            <p class="rock-desc">Existing rock changes deep underground from heat and pressure, but does not fully melt.</p>
+            <p class="rock-fact">★ Same material, new form.</p>
           </div>
         </div>
         <div class="callout slate" id="vocab-rockcycle">
           <span class="callout-icon">🔄</span>
-          <div class="callout-body"><strong>The Rock Cycle:</strong> No rock type is permanent. Sedimentary rock can be buried and become metamorphic. Metamorphic rock can melt and become igneous. Igneous rock can weather and erode into sediment. It's a continuous cycle that has been running for billions of years.</div>
+          <div class="callout-body"><strong>The Rock Cycle:</strong><br>Sedimentary → metamorphic → igneous → sediment again.<br>Rock keeps changing over long periods of time.</div>
         </div>
       </div>
     </div>
 
     <!-- Weathering & Erosion -->
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">💨</span>
-        <div class="card-title">Geological Processes: Weathering &amp; Erosion</div>
+    <div class="acc-card" id="card-weathering-erosion">
+      <div class="acc-card-header" onclick="this.closest('.acc-card').classList.toggle('open')">
+        <div class="acc-card-icon">💨</div>
+        <div class="acc-card-text">
+          <div class="acc-card-title">Weathering &amp; Erosion</div>
+          <div class="acc-card-summary">One process breaks rock apart. The other moves the pieces.</div>
+        </div>
+        <div class="acc-chevron">▶</div>
       </div>
-      <div class="card-body">
-        <p>Before sediment can pile up and become rock, something has to break existing rock apart — and then move it. Two processes handle this.</p>
-        <p><span class="vocab" id="vocab-weathering" title="Weathering: the physical or chemical breakdown of rock into smaller pieces by wind, rain, ice, or temperature changes">Weathering</span> is the breakdown of rock into smaller pieces. Wind, rain, freezing and thawing temperatures, and even plant roots can crack and crumble rock over time. Weathering happens <em>in place</em> — the rock breaks apart but doesn't go anywhere yet.</p>
-        <p><span class="vocab" id="vocab-erosion" title="Erosion: the movement of broken rock pieces by water, wind, or ice to a new location where they are deposited">Erosion</span> is when those broken pieces get picked up and carried somewhere else — by rivers, wind, glaciers, or ocean waves. When the moving water or wind slows down, the sediment drops and begins to pile up.</p>
+      <div class="acc-card-body">
+        <p class="acc-intro">Before sediment can become rock, old rock must be broken apart and moved.</p>
+        <div class="compact-grid two">
+          <div class="mini-card">
+            <div class="mini-card-title">🧊 <span class="vocab" id="vocab-weathering" title="Weathering: the physical or chemical breakdown of rock into smaller pieces by wind, rain, ice, or temperature changes">Weathering</span></div>
+            <ul>
+              <li>Breaks rock into smaller pieces</li>
+              <li>Caused by wind, water, ice, temperature changes, and roots</li>
+              <li>Happens in place</li>
+            </ul>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-title">🌊 <span class="vocab" id="vocab-erosion" title="Erosion: the movement of broken rock pieces by water, wind, or ice to a new location where they are deposited">Erosion</span></div>
+            <ul>
+              <li>Moves broken rock pieces</li>
+              <li>Carried by rivers, wind, glaciers, or waves</li>
+              <li>Drops sediment when movement slows</li>
+            </ul>
+          </div>
+        </div>
         <div class="callout teal">
           <span class="callout-icon">💡</span>
-          <div class="callout-body"><strong>Key difference:</strong> Weathering <em>breaks</em> rock. Erosion <em>moves</em> it. Both are needed to create the sediment that eventually becomes sedimentary rock.</div>
+          <div class="callout-body"><strong>Key difference:</strong><br>Weathering breaks rock.<br>Erosion moves rock.</div>
         </div>
         <div class="callout gold" id="vocab-magma">
           <span class="callout-icon">⏳</span>
-          <div class="callout-body"><strong>Heat &amp; Pressure deep underground</strong> add two more geological forces. Heat from Earth's core drives metamorphic rock formation. Pressure from kilometers of rock above can change minerals and compact sediment. Together, these four forces — weathering, erosion, heat, and pressure — are what create and recycle all rock on Earth.</div>
+          <div class="callout-body"><strong>Other forces:</strong> Heat and pressure deep underground can change rock too. Together, weathering, erosion, heat, and pressure recycle rock over time.</div>
         </div>
       </div>
     </div>
@@ -828,13 +908,17 @@
     <p class="section-desc">Scientists use four key principles to figure out the age and order of rock layers — even when they can't see the whole picture.</p>
 
     <!-- Strata interactive -->
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">📚</span>
-        <div class="card-title">Rock Strata — Layers of Earth's History</div>
+    <div class="acc-card open" id="card-strata">
+      <div class="acc-card-header" onclick="this.closest('.acc-card').classList.toggle('open')">
+        <div class="acc-card-icon">📚</div>
+        <div class="acc-card-text">
+          <div class="acc-card-title">Rock Strata — Layers of Earth's History</div>
+          <div class="acc-card-summary">Click the layer model to see how scientists read a stack of rock.</div>
+        </div>
+        <div class="acc-chevron">▶</div>
       </div>
-      <div class="card-body">
-        <p><span class="vocab" id="vocab-strata" title="Rock strata: layers of sedimentary rock, each representing a different period of Earth's history">Rock strata</span> are layers of sedimentary rock stacked on top of each other. Each layer records the environment that existed when it formed — the organisms that lived, the climate, even the events like volcanic eruptions.</p>
+      <div class="acc-card-body">
+        <p class="acc-intro"><span class="vocab" id="vocab-strata" title="Rock strata: layers of sedimentary rock, each representing a different period of Earth's history">Rock strata</span> are layers of sedimentary rock. Each layer records clues about the environment when it formed.</p>
 
         <div class="strata-wrap">
           <div class="strata-diagram">
@@ -858,7 +942,7 @@
             <div class="sd-inner">
               <div class="sd-label" id="sd-label">Click a layer</div>
               <div class="sd-title" id="sd-title">Select any layer →</div>
-              <div class="sd-body" id="sd-body">Each layer of rock has a story to tell. Click one to find out what it reveals about that moment in Earth's history.</div>
+              <div class="sd-body" id="sd-body">Each layer has a story. Click one to see what it reveals about Earth's history.</div>
             </div>
           </div>
         </div>
@@ -869,49 +953,66 @@
     <div class="principles-grid">
       <div class="principle-card p1">
         <div class="principle-term" id="term-horizontality">Original Horizontality</div>
-        <div class="principle-def">Sediment layers are always deposited flat and horizontal. If you see tilted or bent layers, something moved them after they formed — like an earthquake or tectonic pressure.</div>
+        <div class="principle-def">Sediment layers are deposited flat. If layers are tilted or bent, something moved them after they formed.</div>
         <div class="principle-key">⚖️ Flat = undisturbed</div>
       </div>
       <div class="principle-card p2">
         <div class="principle-term" id="term-superposition">Superposition</div>
-        <div class="principle-def">In undisturbed rock layers, the <em>bottom</em> layer is the oldest and the <em>top</em> layer is the youngest. Think of it like a stack of newspapers: the one on the bottom was delivered first. This gives us <strong>relative dating</strong> — we can say which layer is older without knowing the exact age.</div>
+        <div class="principle-def">In undisturbed layers, the <em>bottom</em> layer is oldest and the <em>top</em> layer is youngest. This gives scientists a relative order.</div>
         <div class="principle-key">⬇️ Older at bottom, newer at top</div>
       </div>
       <div class="principle-card p3">
         <div class="principle-term" id="term-crosscutting">Cross-Cutting Relationships</div>
-        <div class="principle-def">When a fault line or magma intrusion cuts through existing rock layers, the thing that cuts is always <em>younger</em> than the layers it cuts through. It had to exist after the rock in order to cut it.</div>
+        <div class="principle-def">A fault or magma intrusion that cuts through rock is <em>younger</em> than the rock it cuts.</div>
         <div class="principle-key">✂️ Cutters are always younger</div>
       </div>
       <div class="principle-card p4">
         <div class="principle-term" id="term-inclusions">Inclusions</div>
-        <div class="principle-def">Sometimes pieces of one rock type are found inside another. Those trapped pieces must be <em>older</em> than the rock around them — they had to exist first, before the surrounding rock formed around them.</div>
+        <div class="principle-def">Rock pieces trapped inside another rock are <em>older</em> than the surrounding rock.</div>
         <div class="principle-key">🧩 Pieces inside are older</div>
       </div>
     </div>
 
     <!-- Index Fossils & Dating -->
-    <div class="content-card" style="margin-top: 1.5rem;">
-      <div class="card-header">
-        <span class="card-icon">🦕</span>
-        <div class="card-title">Index Fossils &amp; Dating Methods</div>
+    <div class="acc-card" id="card-dating" style="margin-top: 1.5rem;">
+      <div class="acc-card-header" onclick="this.closest('.acc-card').classList.toggle('open')">
+        <div class="acc-card-icon">🦕</div>
+        <div class="acc-card-text">
+          <div class="acc-card-title">Index Fossils &amp; Dating Methods</div>
+          <div class="acc-card-summary">Index fossils act like timestamps. Dating methods tell order or exact age.</div>
+        </div>
+        <div class="acc-chevron">▶</div>
       </div>
-      <div class="card-body">
-        <p><span class="vocab" id="vocab-index" title="Index fossils: fossils from species that lived for a short, well-defined time period but were found worldwide — used to date rock layers">Index fossils</span> are like timestamps in the rock record. They come from species that:</p>
-        <div class="callout slate">
-          <div class="callout-body">
-            <div style="display:flex; gap:0.7rem; align-items:flex-start; margin-bottom:0.75rem;">
-              <span style="font-size:1.1rem; flex-shrink:0; line-height:1.5;">⏱️</span>
-              <span><strong>Lived for a short time</strong> — so if you find that fossil, you know exactly which time period the layer is from.</span>
-            </div>
-            <div style="display:flex; gap:0.7rem; align-items:flex-start;">
-              <span style="font-size:1.1rem; flex-shrink:0; line-height:1.5;">🌍</span>
-              <span><strong>Were found all over Earth</strong> — so the same time period can be identified in different locations around the world.</span>
-            </div>
+      <div class="acc-card-body">
+        <p class="acc-intro"><span class="vocab" id="vocab-index" title="Index fossils: fossils from species that lived for a short, well-defined time period but were found worldwide — used to date rock layers">Index fossils</span> help scientists match rock layers from different places.</p>
+        <div class="compact-grid two">
+          <div class="mini-card">
+            <div class="mini-card-title">⏱️ Short time</div>
+            <p>The organism lived during a short, well-defined period.</p>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-title">🌍 Found worldwide</div>
+            <p>The same fossil can match layers across faraway locations.</p>
           </div>
         </div>
-        <p>Scientists use two types of dating to figure out how old rock layers are:</p>
-        <p><span class="vocab" id="vocab-relative" title="Relative dating: determining which rock layer is older or younger compared to another, without knowing the exact age in years">Relative dating</span> tells you the order — which layer came first — but not the exact age. "You are younger than me" is relative dating. Superposition and index fossils are tools for relative dating.</p>
-        <p><span class="vocab" id="vocab-absolute" title="Absolute dating: determining the actual age of rock or fossils in years, often using radioactive decay of isotopes (radiometric dating)">Absolute dating</span> gives an actual number — years. "You are 12 years old" is absolute dating. Scientists use radioactive decay (like carbon-14 or uranium-lead dating) to calculate precise ages in millions of years.</p>
+        <div class="compact-grid two">
+          <div class="mini-card">
+            <div class="mini-card-title"><span class="vocab" id="vocab-relative" title="Relative dating: determining which rock layer is older or younger compared to another, without knowing the exact age in years">Relative dating</span></div>
+            <ul>
+              <li>Tells order: older or younger</li>
+              <li>No exact age in years</li>
+              <li>Example: Layer A is older than Layer B</li>
+            </ul>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-title"><span class="vocab" id="vocab-absolute" title="Absolute dating: determining the actual age of rock or fossils in years, often using radioactive decay of isotopes (radiometric dating)">Absolute dating</span></div>
+            <ul>
+              <li>Gives a number in years</li>
+              <li>Uses radioactive decay</li>
+              <li>Example: This rock is 250 million years old</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1133,7 +1234,10 @@ function vocabJump(targetId) {
 
   // Walk up to find the nearest card/section container to use as the scroll anchor,
   // so we land just above the card rather than tight on the term itself.
-  const card = el.closest('.content-card, .rock-card, .principle-card, .callout, .strata-detail-panel, section')
+  const accCard = el.closest('.acc-card');
+  if (accCard && !accCard.classList.contains('open')) accCard.classList.add('open');
+
+  const card = el.closest('.acc-card, .content-card, .rock-card, .principle-card, .callout, .strata-detail-panel, section')
              || el;
 
   // Offset: nav (~64px) + sticky progress bar (~56px) + breathing room (28px)
