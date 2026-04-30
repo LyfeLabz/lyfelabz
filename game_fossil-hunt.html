@@ -412,21 +412,7 @@
     .hint-box.show { display: block; }
     .hint-text { font-size: .85rem; color: var(--yellow); line-height: 1.55; margin: 0; }
 
-    /* ── Reflection Section ───────────────────────────────────────────── */
-    .reflection-section { margin-top: 16px; display: none; }
-    .reflection-section.show { display: block; }
-    .reflection-q { background: rgba(9,14,30,.7); border: 1px solid rgba(89,112,170,.2); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
-    .reflection-num { font-family: 'Orbitron', sans-serif; font-size: .58rem; font-weight: 900; color: var(--cyan); text-transform: uppercase; letter-spacing: .1em; display: block; margin-bottom: 5px; }
-    .reflection-q-text { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.5; display: block; }
-    .reflection-input {
-      width: 100%; padding: .6rem .85rem; border-radius: 10px;
-      background: rgba(9,14,30,.85); border: 1px solid rgba(89,112,170,.3);
-      color: var(--text); font-family: 'Nunito', sans-serif; font-size: .85rem;
-      outline: none; resize: vertical; min-height: 64px;
-      transition: border-color .15s ease;
-    }
-    .reflection-input::placeholder { color: rgba(145,163,201,.4); }
-    .reflection-input:focus { border-color: rgba(36,232,255,.48); box-shadow: 0 0 0 3px rgba(36,232,255,.08); }
+
 
     /* ── Mode Toggle ──────────────────────────────────────────────────── */
     .mode-toggle-bar {
@@ -641,15 +627,55 @@
     .ls-badge   { background: rgba(59,200,232,.1); border: 1px solid rgba(59,200,232,.4); color: #3bc8e8; }
     .stem-badge { background: rgba(46,204,113,.1); border: 1px solid rgba(46,204,113,.4); color: #2ecc71; }
 
-    /* ── Restore Banner ───────────────────────────────────────────────── */
-    .restore-banner {
-      display: none; text-align: center; padding: 10px 18px; margin-bottom: 14px;
-      background: rgba(36,232,255,.06); border: 1px solid rgba(36,232,255,.25);
-      border-radius: 14px; font-size: .82rem; color: var(--cyan); font-weight: 700;
-    }
-    .restore-banner.show { display: block; }
-
     .hidden { display: none !important; }
+
+    /* ── Mission Chip (fix #1) ───────────────────────────────────────── */
+    #missionChip {
+      display: none; align-items: center; gap: 10px;
+      background: rgba(245,200,66,.1); border: 1px solid rgba(245,200,66,.45);
+      border-radius: 12px; padding: 9px 14px; margin-bottom: 12px;
+    }
+    #missionChip.show { display: flex; animation: chipPop .22s ease; }
+    @keyframes chipPop {
+      from { opacity: 0; transform: translateY(-5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .mission-icon { font-size: .9rem; flex-shrink: 0; }
+    .mission-text {
+      flex: 1; font-size: .84rem; font-weight: 800; color: var(--gold); line-height: 1.3;
+    }
+    .mission-cancel {
+      font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+      color: rgba(145,163,201,.6); background: transparent; border: none; cursor: pointer;
+      padding: .2rem .4rem; border-radius: 6px; transition: color .15s;
+    }
+    .mission-cancel:hover { color: var(--muted); }
+
+    /* ── Dimmed non-target layers (fix #1) ──────────────────────────── */
+    .fossil-layer.dimmed {
+      opacity: .28; pointer-events: none;
+      transition: opacity .18s ease;
+    }
+
+    /* ── Difficulty switch warning (fix #4) ─────────────────────────── */
+    #diffWarning {
+      display: none; font-size: .76rem; font-weight: 800; color: var(--danger);
+      margin: -4px 0 8px; line-height: 1.4;
+    }
+    #diffWarning.show { display: block; }
+
+    /* ── Ordering panel reveal animation (fix #3) ───────────────────── */
+    @keyframes orderingSlideIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .ordering-panel.animate-in { animation: orderingSlideIn .38s ease forwards; }
+    #orderingRevealBanner {
+      display: none; padding: 10px 14px; border-radius: 12px; margin-bottom: 14px;
+      background: rgba(36,232,255,.07); border: 1px solid rgba(36,232,255,.35);
+      font-size: .85rem; font-weight: 800; color: var(--cyan); text-align: center;
+    }
+    #orderingRevealBanner.show { display: block; animation: chipPop .3s ease; }
 
   /* ── FOOTER ─────────────────────────────────────────── */
   footer {
@@ -757,9 +783,6 @@
       Scientists use index fossils to estimate the age of rock layers and reconstruct Earth's history.
     </p>
 
-    <!-- Restore Banner -->
-    <div class="restore-banner" id="restoreBanner">Your progress has been restored.</div>
-
     <!-- Learn Section (collapsible) -->
     <div class="learn-toggle" id="learnToggle">
       <span class="learn-toggle-label">What Are Index Fossils?</span>
@@ -833,6 +856,8 @@
           <span id="diffDescPractice">Includes highlighted index fossils and fewer horizons.</span>
           <span id="diffDescChallenge" style="display:none;">Includes more horizons and misleading fossils.</span>
         </p>
+        <!-- Difficulty-switch warning (fix #4) -->
+        <p id="diffWarning"></p>
 
         <!-- Toolbar -->
         <div class="toolbar">
@@ -851,6 +876,13 @@
           <p>Index fossils appear in exactly one layer per location. Your mission: find matching fossil horizons across all three dig sites, then determine which layers are oldest.</p>
         </div>
 
+        <!-- Mission Chip — appears when a layer is selected (fix #1) -->
+        <div id="missionChip">
+          <span class="mission-icon">&#128269;</span>
+          <span class="mission-text" id="missionChipText">Find a match for: —</span>
+          <button class="mission-cancel" id="missionChipCancel">&#10005; Cancel</button>
+        </div>
+
         <!-- Columns with SVG overlay -->
         <div class="columns-wrapper" id="columnsWrapper" style="margin-top:14px;">
           <svg class="correlation-svg" id="correlationSvg" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -859,6 +891,7 @@
 
         <!-- Ordering Panel (appears after all groups matched) -->
         <div class="ordering-panel hidden" id="orderingPanel">
+          <div id="orderingRevealBanner">&#9733; All fossil horizons identified! Determine their age order below.</div>
           <div class="ordering-title">Determine the Age Order</div>
           <p class="ordering-sub">All fossil horizons identified! Click them below in order from <strong style="color:var(--purple)">OLDEST</strong> to <strong style="color:var(--cyan)">YOUNGEST</strong>. Use both layer position and fossil age clues.</p>
           <div class="ordering-slots" id="orderingSlots"></div>
@@ -896,30 +929,6 @@
           </div>
         </div>
 
-        <!-- Reflection Questions (shown after victory) -->
-        <div class="reflection-section" id="reflectionSection">
-          <div class="section-title" style="margin-top:16px;">Reflect</div>
-          <div class="reflection-q">
-            <span class="reflection-num">Question 1</span>
-            <span class="reflection-q-text">How did index fossils help you match layers across the three locations?</span>
-            <textarea class="reflection-input" id="ref1" placeholder="Type your answer here..."></textarea>
-          </div>
-          <div class="reflection-q">
-            <span class="reflection-num">Question 2</span>
-            <span class="reflection-q-text">Why are some fossils better than others for dating rock layers?</span>
-            <textarea class="reflection-input" id="ref2" placeholder="Type your answer here..."></textarea>
-          </div>
-          <div class="reflection-q">
-            <span class="reflection-num">Question 3</span>
-            <span class="reflection-q-text">What evidence did you use to determine which fossil horizon was oldest?</span>
-            <textarea class="reflection-input" id="ref3" placeholder="Type your answer here..."></textarea>
-          </div>
-          <div class="reflection-q">
-            <span class="reflection-num">Question 4</span>
-            <span class="reflection-q-text">If scientists discovered a fourth location with the same index fossils, what could they conclude about those rock layers?</span>
-            <textarea class="reflection-input" id="ref4" placeholder="Type your answer here..."></textarea>
-          </div>
-        </div>
 
       </aside>
     </div><!-- /.main -->
@@ -1044,19 +1053,13 @@
   </div>
   <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
-    <p>Fossil Hunt &middot; Index Fossils &middot; Geologic Correlation &middot;
-      <a href="index.html">Back to Home</a> &middot;
-      <a href="about_learning-science.html">Why It Works</a>
-    </p>
-  </div>
 
   <script>
     /* ─── SITE TOGGLES ──────────────────────────────────────────────── */
     if(sessionStorage.getItem('lyfelabz-ls')==='on')   document.body.classList.add('ls-active');
     if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
 
-    /* ─── SAVE KEY & SCRIPT URLS ────────────────────────────────────── */
-    const SAVE_KEY = 'lyfelabz-fossil-hunt';
+    /* ─── SCRIPT URLS ───────────────────────────────────────────────── */
     const SCRIPT_URLS = {
       'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
       'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
@@ -1194,14 +1197,14 @@
 
     };
 
-    /* ─── QUIZ DATA ─────────────────────────────────────────────────── */
+    /* ─── QUIZ DATA (10 questions) ──────────────────────────────────── */
     const QUIZ_DATA = [
       {
         id: 1,
         text: "What is the most important feature that makes a fossil a good index fossil?",
         options: [
           "It is very large, making it easy to find in rock layers",
-          "It existed for only a short period of time",
+          "It existed for only a short period of time and is found in many locations",
           "It is found in only one specific location on Earth",
           "It is made of very hard material that preserves well"
         ],
@@ -1239,6 +1242,72 @@
           "The Law of Original Horizontality — all rock layers were once flat"
         ],
         correct: 2
+      },
+      {
+        id: 5,
+        text: "How did index fossils help you match rock layers across the three locations in this game?",
+        options: [
+          "They helped identify layers with the same rock color and texture at each site",
+          "They let you link layers containing the same fossil across all three sites, showing those layers formed at the same time",
+          "They showed which locations were closest to each other geographically",
+          "They told you exactly how many years old each layer was"
+        ],
+        correct: 1
+      },
+      {
+        id: 6,
+        text: "Why are some fossils better than others for correlating and dating rock layers?",
+        options: [
+          "Better index fossils are larger and easier to spot in rock samples",
+          "Better index fossils come from animals that lived in many different environments",
+          "Good index fossils lived for a short, specific time period and spread across many locations, giving geologists a precise time window",
+          "Better index fossils are made of harder materials that preserve more reliably over time"
+        ],
+        correct: 2
+      },
+      {
+        id: 7,
+        text: "What evidence tells a geologist which fossil horizon is the oldest at a site?",
+        options: [
+          "The oldest horizon contains the greatest variety of different fossil types",
+          "The oldest horizon is the one that appears at the fewest locations",
+          "The deepest layer at each location is oldest — the fossil horizon at the bottom of an undisturbed column is the most ancient",
+          "The oldest horizon contains the largest individual fossils"
+        ],
+        correct: 2
+      },
+      {
+        id: 8,
+        text: "Scientists discover a fourth cliff face containing the same Ammonite and Trilobite index fossil horizons found at Locations A, B, and C. What can they conclude?",
+        options: [
+          "The fourth location must be geographically close to one of the original three sites",
+          "The rock layers at the fourth location containing those fossils formed during the same time periods as at the other sites",
+          "The fourth location would have older rock layers than any of the original three",
+          "The fossils at the fourth location came from the same individual organisms as at the other sites"
+        ],
+        correct: 1
+      },
+      {
+        id: 9,
+        text: "A geologist finds the same trilobite species in rock layers in Canada, Morocco, and Australia. What does this most likely indicate?",
+        options: [
+          "The continents were physically connected when those layers were deposited",
+          "The trilobite migrated between those locations during its lifetime",
+          "The rock layers containing that trilobite in all three countries formed during the same time period",
+          "The trilobite is not a reliable index fossil because it appears on multiple continents"
+        ],
+        correct: 2
+      },
+      {
+        id: 10,
+        text: "Which statement best explains why fossil correlation is a reliable tool for geologists studying rock layers at different locations?",
+        options: [
+          "Rocks always look the same wherever they formed, so geologists can match them by appearance alone",
+          "Index fossils that lived during a specific, brief time window appear in layers worldwide, letting geologists match layers of the same age across vast distances",
+          "Geologists can use radioactive dating on any fossil to find an exact age in years",
+          "Rock layers always stay in their original positions, so depth alone is enough to determine age globally"
+        ],
+        correct: 1
       }
     ];
 
@@ -1254,7 +1323,6 @@
       classroomMode:  false,
       quizAnswers:    {},
       victoryShown:   false,
-      reflections:    {},
       orderingPhase:  false,
       orderSelected:  [],
       orderCorrect:   false,
@@ -1276,59 +1344,9 @@
 
     function getLocName(id) { return id.charAt(0); }
 
-    /* ─── SAVE / LOAD ───────────────────────────────────────────────── */
-    function saveState() {
-      const data = {
-        difficulty:       state.difficulty,
-        matched:          state.matched,
-        completedGroups:  state.completedGroups,
-        errors:           state.errors,
-        hintsUsed:        state.hintsUsed,
-        hintIndex:        state.hintIndex,
-        classroomMode:    state.classroomMode,
-        quizAnswers:      state.quizAnswers,
-        victoryShown:     state.victoryShown,
-        reflections:      state.reflections,
-        orderingPhase:    state.orderingPhase,
-        orderSelected:    state.orderSelected,
-        orderCorrect:     state.orderCorrect,
-        ageCheckAnswered: state.ageCheckAnswered,
-        ageCheckCorrect:  state.ageCheckCorrect,
-        studentName:      document.getElementById('studentNameInput').value,
-        teacher:          document.getElementById('teacherSelect').value,
-        block:            document.getElementById('blockInput').value
-      };
-      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-    }
-
-    function loadState() {
-      try {
-        const raw = localStorage.getItem(SAVE_KEY);
-        if (!raw) return false;
-        const data = JSON.parse(raw);
-        Object.assign(state, {
-          difficulty:      data.difficulty      || 'practice',
-          matched:         data.matched         || {},
-          completedGroups: data.completedGroups || [],
-          errors:          data.errors          || 0,
-          hintsUsed:       data.hintsUsed       || 0,
-          hintIndex:       data.hintIndex       || 0,
-          classroomMode:   data.classroomMode   || false,
-          quizAnswers:     data.quizAnswers      || {},
-          victoryShown:    data.victoryShown     || false,
-          reflections:     data.reflections      || {},
-          orderingPhase:   data.orderingPhase   || false,
-          orderSelected:   data.orderSelected   || [],
-          orderCorrect:    data.orderCorrect    || false,
-          ageCheckAnswered: data.ageCheckAnswered || false,
-          ageCheckCorrect:  data.ageCheckCorrect  || false
-        });
-        if (data.studentName) document.getElementById('studentNameInput').value = data.studentName;
-        if (data.teacher)     document.getElementById('teacherSelect').value     = data.teacher;
-        if (data.block)       document.getElementById('blockInput').value         = data.block;
-        return true;
-      } catch(e) { return false; }
-    }
+    /* ─── SAVE / LOAD (disabled — always start fresh) ──────────────── */
+    function saveState() {}
+    function loadState() { return false; }
 
     /* ─── STATS UPDATE ───────────────────────────────────────────────── */
     function updateStats() {
@@ -1351,6 +1369,30 @@
       tEl.textContent = title;
       bEl.textContent = body || '';
     }
+
+    /* ─── MISSION CHIP (fix #1) ─────────────────────────────────────── */
+    function updateMissionChip() {
+      const chip     = document.getElementById('missionChip');
+      const chipText = document.getElementById('missionChipText');
+      if (!state.selected) {
+        chip.classList.remove('show');
+        return;
+      }
+      const layer = getLayerById(state.selected);
+      if (!layer) { chip.classList.remove('show'); return; }
+      chipText.textContent = 'Find a match for: ' + layer.fossil + ' — pick a different location';
+      chip.classList.remove('show');
+      void chip.offsetWidth;
+      chip.classList.add('show');
+    }
+
+    document.getElementById('missionChipCancel').addEventListener('click', () => {
+      state.selected = null;
+      updateMissionChip();
+      renderLayers();
+      setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
+      saveState();
+    });
 
     /* ─── FOSSIL INFO DATA ───────────────────────────────────────────── */
     const FOSSIL_INFO = {
@@ -1505,6 +1547,7 @@
       if (!state.selected) {
         state.selected = layerId;
         renderLayers();
+        updateMissionChip();
         updateFossilInfoPanel(layer.fossil);
         setFeedback('neutral', 'Layer Selected',
           `Investigating ${layer.fossil} in ${layer.rock}. Now search for a matching fossil in a different location.`);
@@ -1516,6 +1559,7 @@
       if (state.selected === layerId) {
         state.selected = null;
         renderLayers();
+        updateMissionChip();
         setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
         saveState();
         return;
@@ -1527,6 +1571,7 @@
       if (getLocName(layerId) === getLocName(state.selected)) {
         state.selected = layerId;
         renderLayers();
+        updateMissionChip();
         updateFossilInfoPanel(layer.fossil);
         setFeedback('neutral', 'Layer Selected',
           `Investigating ${layer.fossil} in ${layer.rock}. Now search for a matching fossil in a different location.`);
@@ -1546,6 +1591,7 @@
         flashError(layerId);
         state.errors++;
         state.selected = null;
+        updateMissionChip();
         updateStats(); renderLayers(); saveState();
         return;
       }
@@ -1558,6 +1604,7 @@
         flashError(layerId);
         state.errors++;
         state.selected = null;
+        updateMissionChip();
         updateStats(); renderLayers(); saveState();
         return;
       }
@@ -1572,6 +1619,7 @@
         setFeedback('neutral', 'Already Matched',
           `These layers are already linked in Horizon ${currentLevel().groups[groupId].label}. Look for the remaining unmatched horizons!`);
         state.selected = null;
+        updateMissionChip();
         renderLayers(); saveState();
         return;
       }
@@ -1606,6 +1654,7 @@
       }
 
       state.selected = null;
+      updateMissionChip();
       updateStats(); renderLayers(); renderGroups(); renderClassroomPanel(); saveState();
 
       // Draw lines with a slight delay for earned feel
@@ -1624,19 +1673,34 @@
       const allDone = Object.keys(lv.groups).every(g => state.completedGroups.includes(g));
       if (!allDone) return;
 
-      // Enter ordering phase
+      // Enter ordering phase — track whether this is the first reveal (fix #3)
+      const firstReveal = !state.orderingPhase;
       if (!state.orderingPhase) {
         state.orderingPhase = true;
         saveState();
       }
-      renderOrderingPanel();
+      renderOrderingPanel(firstReveal);
     }
 
     /* ─── RENDER ORDERING PANEL ─────────────────────────────────────── */
-    function renderOrderingPanel() {
+    function renderOrderingPanel(firstReveal) {
       const lv = currentLevel();
       const panel = document.getElementById('orderingPanel');
       panel.classList.remove('hidden');
+
+      // Fix #3: animate + scroll on first reveal only
+      if (firstReveal) {
+        panel.classList.remove('animate-in');
+        void panel.offsetWidth;
+        panel.classList.add('animate-in');
+        panel.addEventListener('animationend', () => panel.classList.remove('animate-in'), { once: true });
+
+        const banner = document.getElementById('orderingRevealBanner');
+        banner.classList.add('show');
+        setTimeout(() => banner.classList.remove('show'), 4500);
+
+        setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120);
+      }
 
       const groups = lv.groups;
       const groupIds = Object.keys(groups);
@@ -1708,10 +1772,8 @@
           state.orderCorrect = true;
           setFeedback('success', 'Age Order Confirmed!',
             'You correctly placed the fossil horizons from oldest to youngest. This is how geologists read time in rock.');
-          if (state.classroomMode || state.difficulty !== 'practice') {
-            document.getElementById('reflectionSection').classList.add('show');
-          }
           renderOrderingPanel();
+          renderClassroomPanel();
           if (!state.ageCheckAnswered) {
             setTimeout(() => showAgeCheck(), 900);
           } else if (!state.victoryShown) {
@@ -1847,6 +1909,18 @@
           const matchedGroup = state.matched[layer.id];
           if (matchedGroup) {
             div.classList.add(currentLevel().groups[matchedGroup].cssClass);
+          }
+
+          // Dim non-target layers when something is selected (fix #1)
+          if (state.selected && state.selected !== layer.id && !matchedGroup) {
+            const selLayer = getLayerById(state.selected);
+            if (selLayer) {
+              const sameLocation   = getLocName(layer.id) === getLocName(state.selected);
+              const differentFossil = layer.fossil !== selLayer.fossil;
+              if (sameLocation || differentFossil) {
+                div.classList.add('dimmed');
+              }
+            }
           }
 
           // Index badge (practice only)
@@ -2036,8 +2110,11 @@
       saveState();
     });
 
-    /* ─── RESET PUZZLE ───────────────────────────────────────────────── */
-    document.getElementById('resetBtn').addEventListener('click', () => {
+    /* ─── RESET PUZZLE (fix #2 — two-step confirmation) ────────────── */
+    let _resetPending = false;
+    let _resetTimer   = null;
+
+    function executeReset() {
       state.selected        = null;
       state.matched         = {};
       state.completedGroups = [];
@@ -2048,21 +2125,80 @@
       state.orderSelected   = [];
       state.orderCorrect    = false;
 
+      updateMissionChip();
       document.getElementById('hintBox').classList.remove('show');
       document.getElementById('victoryOverlay').classList.remove('show');
-      document.getElementById('reflectionSection').classList.remove('show');
       document.getElementById('orderingPanel').classList.add('hidden');
+      document.getElementById('orderingRevealBanner').classList.remove('show');
       setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
 
       updateStats(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); saveState();
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      const btn = document.getElementById('resetBtn');
+
+      // If no progress yet, just reset immediately
+      if (Object.keys(state.matched).length === 0 && !state.orderingPhase) {
+        executeReset();
+        return;
+      }
+
+      if (!_resetPending) {
+        // Arm: first click
+        _resetPending = true;
+        btn.textContent  = 'Tap again to confirm';
+        btn.classList.remove('btn-subtle');
+        btn.classList.add('btn-danger');
+        _resetTimer = setTimeout(() => {
+          _resetPending    = false;
+          btn.textContent  = 'Reset Puzzle';
+          btn.classList.remove('btn-danger');
+          btn.classList.add('btn-subtle');
+        }, 3000);
+      } else {
+        // Confirm: second click
+        clearTimeout(_resetTimer);
+        _resetPending    = false;
+        btn.textContent  = 'Reset Puzzle';
+        btn.classList.remove('btn-danger');
+        btn.classList.add('btn-subtle');
+        executeReset();
+      }
     });
 
-    /* ─── DIFFICULTY TOGGLE ──────────────────────────────────────────── */
+    /* ─── DIFFICULTY TOGGLE (fix #4 — guard against mid-game switch) ── */
+    let _diffConfirmPending = null;
+    let _diffConfirmTimer   = null;
+
     document.getElementById('practiceBtn').addEventListener('click', () => switchDifficulty('practice'));
     document.getElementById('challengeBtn').addEventListener('click', () => switchDifficulty('challenge'));
 
     function switchDifficulty(diff) {
       if (state.difficulty === diff) return;
+
+      const hasProgress = Object.keys(state.matched).length > 0 || state.orderingPhase;
+      const warning = document.getElementById('diffWarning');
+
+      if (hasProgress && _diffConfirmPending !== diff) {
+        // Arm: show warning and require second click
+        _diffConfirmPending = diff;
+        clearTimeout(_diffConfirmTimer);
+        const label = diff === 'practice' ? 'Practice' : 'Challenge';
+        warning.textContent = '\u26a0\ufe0f Switching will reset your current progress. Click \u201c' + label + '\u201d again to confirm.';
+        warning.classList.add('show');
+        _diffConfirmTimer = setTimeout(() => {
+          _diffConfirmPending = null;
+          warning.classList.remove('show');
+        }, 4000);
+        return;
+      }
+
+      // Confirmed (or no progress) — clear warning and execute
+      _diffConfirmPending = null;
+      clearTimeout(_diffConfirmTimer);
+      warning.classList.remove('show');
+
       state.difficulty      = diff;
       state.selected        = null;
       state.matched         = {};
@@ -2081,12 +2217,13 @@
       document.getElementById('diffDescChallenge').style.display = diff === 'challenge' ? '' : 'none';
       document.getElementById('hintBox').classList.remove('show');
       document.getElementById('victoryOverlay').classList.remove('show');
-      document.getElementById('reflectionSection').classList.remove('show');
       document.getElementById('orderingPanel').classList.add('hidden');
+      document.getElementById('orderingRevealBanner').classList.remove('show');
       document.getElementById('quizQuestions').dataset.built = '';
       state.ageCheckAnswered = false;
       state.ageCheckCorrect  = false;
 
+      updateMissionChip();
       setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
       updateStats(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); saveState();
     }
@@ -2102,11 +2239,6 @@
       document.getElementById('modeHintPractice').classList.toggle('visible', !classroom);
       document.getElementById('modeHintClassroom').classList.toggle('visible', classroom);
       document.getElementById('classroomPanel').classList.toggle('hidden', !classroom);
-      // Show reflection if classroom mode is on and ordering is complete; hide if practice+non-classroom
-      if (state.orderCorrect) {
-        const showRef = classroom || state.difficulty !== 'practice';
-        document.getElementById('reflectionSection').classList.toggle('show', showRef);
-      }
       if (classroom) renderClassroomPanel();
       saveState();
     }
@@ -2235,11 +2367,7 @@
         groupsMatched: state.completedGroups.length + '/' + Object.keys(currentLevel().groups).length,
         errors:        String(state.errors),
         hintsUsed:     String(state.hintsUsed),
-        quizScore:     computeQuizScore(),
-        reflection1:   document.getElementById('ref1').value.trim(),
-        reflection2:   document.getElementById('ref2').value.trim(),
-        reflection3:   document.getElementById('ref3').value.trim(),
-        reflection4:   document.getElementById('ref4').value.trim()
+        quizScore:     computeQuizScore()
       });
 
       try {
@@ -2247,7 +2375,6 @@
         btn.textContent = 'Submitted';
         document.getElementById('submitHelperText').style.display = 'none';
         document.getElementById('submitSuccess').style.display    = 'block';
-        localStorage.removeItem(SAVE_KEY);
       } catch(err) {
         btn.disabled    = false;
         btn.className   = 'submit-btn ready';
@@ -2270,19 +2397,6 @@
       body.classList.toggle('open');
     });
 
-    /* ─── REFLECTION AUTO-SAVE ───────────────────────────────────────── */
-    ['ref1','ref2','ref3','ref4'].forEach(id => {
-      document.getElementById(id).addEventListener('input', function() {
-        state.reflections[id] = this.value;
-        saveState();
-      });
-    });
-
-    /* Auto-save student fields */
-    ['studentNameInput','teacherSelect','blockInput'].forEach(id => {
-      document.getElementById(id).addEventListener('change', saveState);
-    });
-
     /* ─── WINDOW RESIZE — REDRAW LINES ───────────────────────────────── */
     let resizeTimer;
     window.addEventListener('resize', () => {
@@ -2292,41 +2406,6 @@
 
     /* ─── BOOT ───────────────────────────────────────────────────────── */
     (function boot() {
-      const restored = loadState();
-
-      // Apply saved mode
-      if (state.classroomMode) setMode(true);
-      if (state.difficulty !== 'practice') {
-        document.getElementById('practiceBtn').classList.remove('active');
-        document.getElementById('challengeBtn').classList.add('active');
-      }
-
-      // Restore reflection answers
-      ['ref1','ref2','ref3','ref4'].forEach(id => {
-        if (state.reflections[id]) document.getElementById(id).value = state.reflections[id];
-      });
-
-      // Show restore banner
-      if (restored && (Object.keys(state.matched).length > 0 || state.errors > 0)) {
-        const banner = document.getElementById('restoreBanner');
-        banner.classList.add('show');
-        setTimeout(() => banner.classList.remove('show'), 3200);
-      }
-
-      // Restore reflection section if ordering was completed
-      if (state.orderCorrect && (state.classroomMode || state.difficulty !== 'practice')) {
-        document.getElementById('reflectionSection').classList.add('show');
-      }
-
-      // If age check was answered correctly and victory not yet shown, show age check again
-      // (If ageCheckCorrect already true, we skip re-showing victory so they can revisit)
-
-      // Restore ordering panel if in ordering phase
-      if (state.orderingPhase) {
-        renderOrderingPanel();
-      }
-
-      // Initial render
       updateStats();
       renderLayers();
       renderGroups();
