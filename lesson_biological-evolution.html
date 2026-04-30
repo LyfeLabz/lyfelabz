@@ -566,6 +566,17 @@
   .ct-blue   { color: #7cc8f8;        background: rgba(41,140,212,0.1);    border-color: rgba(41,140,212,0.3); }
   .ct-red    { color: #e87070;        background: rgba(231,76,60,0.08);    border-color: rgba(231,76,60,0.3); }
 
+  /* ── FOOTER ── */
+  footer { background: #080600; border-top: 1px solid var(--border); padding: 3rem 2rem; text-align: center; }
+  footer .logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--accent); margin-bottom: 0.5rem; }
+  footer p { color: rgba(176,160,122,0.8); font-size: 0.9rem; }
+  footer a {
+    color: var(--gold); text-decoration: none; font-size: 0.83rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.3); padding: 0.3rem 0.9rem; border-radius: 99px; transition: border-color 0.2s;
+  }
+  footer a:hover { border-color: rgba(245,200,66,0.6); }
+
   @media (max-width: 600px) {
     .nav-links { display: none; }
     .quiz-options { padding-left: 0; }
@@ -621,65 +632,6 @@
   .mode-hint span { display: none; }
   .mode-hint span.visible { display: inline; }
 
-  /* ── FOOTER ─────────────────────────────────────────── */
-  footer {
-    background:#070f17;
-    border-top:1px solid var(--border, rgba(245,200,66,0.12));
-    padding:2rem 2rem;
-    text-align:center;
-    margin-top:0.5rem;
-  }
-  footer .footer-logo {
-    font-family:'Fredoka One',cursive;
-    font-size:1.1rem;
-    letter-spacing:0.08em;
-    color:var(--gold);
-    margin-bottom:0.35rem;
-  }
-  footer .footer-tagline {
-    font-size:0.83rem;
-    color:rgba(240,228,200,0.6);
-    margin-bottom:0.6rem;
-  }
-  footer .footer-links {
-    display:flex;
-    gap:0.5rem;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin-bottom:0.6rem;
-  }
-  footer .footer-links a {
-    color:var(--gold);
-    text-decoration:none;
-    font-size:0.72rem;
-    font-weight:800;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    border:1px solid rgba(245,200,66,0.4);
-    background:rgba(245,200,66,0.08);
-    padding:0.25rem 0.75rem;
-    border-radius:99px;
-    transition:border-color 0.2s, background 0.2s;
-  }
-  footer .footer-links a:hover {
-    border-color:rgba(245,200,66,0.7);
-    text-decoration:none;
-  }
-  footer .footer-links a.nav-why {
-    color:#3bc8e8;
-    border:1px solid rgba(59,200,232,0.7);
-    background:rgba(59,200,232,0.12);
-    font-weight:800;
-  }
-  footer .footer-links a.nav-why:hover {
-    background:rgba(59,200,232,0.22);
-    border-color:rgba(59,200,232,0.95);
-    color:#3bc8e8;
-  }
-  footer p {
-    font-size:0.72rem;
-    color:rgba(180,200,220,0.35);
-  }
 </style>
 </head>
 <body>
@@ -730,30 +682,20 @@
 
 <!-- MA STE STANDARDS -->
 <div class="stem-focus">
-  <span class="stem-focus-label">📋 MA STE Standards · Grade 7–8</span>
-  <span class="stem-badge" data-tip="LS4.B: Natural Selection — how natural selection leads to adaptation over generations.">MS-LS4-4</span>
-  <span class="stem-badge" data-tip="LS4.A: Evidence of Common Ancestry — fossils, DNA, and homologous structures as evidence for evolution.">MS-LS4-1</span>
-  <span class="stem-badge" data-tip="LS4.B: Natural Selection — organisms with advantageous traits increase in proportion over time.">MS-LS4-2</span>
-  <span class="stem-badge" data-tip="LS4.B: Natural Selection — mathematical representations of how traits change in populations over time.">MS-LS4-6</span>
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
+  <span class="stem-badge" data-tip="Analyze and interpret evidence from the fossil record to describe organisms and their environment, extinctions, and changes to life forms throughout the history of Earth.">6.MS-LS4-1</span>
+  <span class="stem-badge" data-tip="Apply scientific ideas to construct an explanation for the anatomical similarities and differences among modern organisms and between modern and fossil organisms to infer evolutionary relationships.">6.MS-LS4-2</span>
 </div>
 <div class="stem-detail" id="stem-detail-1">
   <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-1')">▸ Show standard descriptions</button>
   <div class="stem-detail-body">
     <div class="stem-std-row">
-      <span class="stem-std-code">MS-LS4-4</span>
-      <span class="stem-std-text">Construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals' probability of surviving and reproducing in a specific environment.</span>
+      <span class="stem-std-code">6.MS-LS4-1</span>
+      <span class="stem-std-text">Analyze and interpret evidence from the fossil record to describe organisms and their environment, extinctions, and changes to life forms throughout the history of Earth.</span>
     </div>
     <div class="stem-std-row">
-      <span class="stem-std-code">MS-LS4-1</span>
-      <span class="stem-std-text">Analyze and interpret data for patterns in the fossil record that document the existence, diversity, extinction, and change of life forms throughout the history of life on Earth.</span>
-    </div>
-    <div class="stem-std-row">
-      <span class="stem-std-code">MS-LS4-2</span>
-      <span class="stem-std-text">Apply concepts of statistics and probability to support explanations that organisms with an advantageous heritable trait tend to increase in proportion to organisms lacking this trait.</span>
-    </div>
-    <div class="stem-std-row">
-      <span class="stem-std-code">MS-LS4-6</span>
-      <span class="stem-std-text">Use mathematical representations to support explanations of how natural selection may lead to increases and decreases of specific traits in populations over time.</span>
+      <span class="stem-std-code">6.MS-LS4-2</span>
+      <span class="stem-std-text">Apply scientific ideas to construct an explanation for the anatomical similarities and differences among modern organisms and between modern and fossil organisms to infer evolutionary relationships.</span>
     </div>
   </div>
 </div>
@@ -781,7 +723,7 @@
       </div>
       <div class="card-body">
         <p><span class="vocab" id="vocab-evolution" title="Biological evolution: the change in populations of organisms over many generations due to environmental pressures">Biological evolution</span> means that populations of organisms change over time due to <span class="vocab" id="vocab-env-pressure" title="Environmental pressures: challenges from the environment — predators, food scarcity, climate change — that favor certain traits">environmental pressures</span>. It does not happen to a single organism during its lifetime. It happens to entire populations across many generations.</p>
-        <p>The engine of evolution is <span class="vocab" id="vocab-natural-selection" title="Natural selection: the process by which organisms with traits that help them survive are more likely to reproduce and pass those traits to offspring">natural selection</span>. It works as a continuous cycle — each generation feeds into the next.</p>
+        <p>The engine of evolution is <span class="vocab" id="vocab-natural-selection" title="Natural selection: the process by which organisms with traits that help them survive are more likely to reproduce and pass those traits to offspring">natural selection</span>. The model below shows how it works as a continuous cycle — each generation feeds into the next.</p>
 
         <!-- NATURAL SELECTION CYCLE DIAGRAM -->
         <div class="ns-cycle-instructions">
@@ -1223,13 +1165,13 @@
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
-  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
-  <div class="footer-links">
+  <p>Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <p style="margin-top:0.8rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
     <a href="about_lyfelabz.html">About LyfeLabz</a>
     <a href="about_privacy.html">Privacy Policy</a>
-    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
-  </div>
-  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+    <a href="about_learning-science.html" style="color:#3bc8e8; border-color:rgba(59,200,232,0.4);">Why It Works</a>
+  </p>
+  <p style="margin-top:1rem; font-size:0.72rem; color:rgba(180,200,220,0.3); letter-spacing:0.05em;">© 2026 LyfeLabz · Educational Use</p>
 </footer>
 
 <!-- SESSION CHECK -->
