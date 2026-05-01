@@ -2530,10 +2530,17 @@
 
     /* ─── BOOT ───────────────────────────────────────────────────────── */
     (function boot() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const shouldOpenClassroomMode = urlParams.get('mode') === 'classroom';
+
       updateStats();
       renderLayers();
       renderGroups();
       requestAnimationFrame(drawLines);
+
+      if (shouldOpenClassroomMode) {
+        setMode(true);
+      }
     })();
   </script>
 </body>
