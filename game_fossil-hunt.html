@@ -978,7 +978,7 @@
           </div>
           <div id="quizQuestions" class="hidden"></div>
           <div id="quizScoreArea" class="hidden" style="margin-top:10px;">
-            <div class="quiz-score-badge" id="quizScoreBadge">0 / 4 answered</div>
+            <div class="quiz-score-badge" id="quizScoreBadge">0 / 10 answered</div>
           </div>
         </div>
       </div>
@@ -2428,6 +2428,8 @@
       document.getElementById('quizScoreArea').classList.remove('hidden');
 
       QUIZ_DATA[state.difficulty].forEach(q => {
+        const qDiv = document.createElement('div');
+        qDiv.className = 'quiz-question';
         qDiv.innerHTML = '<span class="quiz-question-num">Question ' + q.id + '</span><p class="quiz-question-text">' + q.text + '</p>';
         const opts = document.createElement('div');
         opts.className = 'quiz-options';
