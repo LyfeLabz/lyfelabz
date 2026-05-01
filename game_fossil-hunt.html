@@ -2497,9 +2497,12 @@
 
       try {
         await fetch(url + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
+        const finalQuizScore = computeQuizScore();
         btn.textContent = 'Submitted';
         document.getElementById('submitHelperText').style.display = 'none';
-        document.getElementById('submitSuccess').style.display    = 'block';
+        const successEl = document.getElementById('submitSuccess');
+        successEl.innerHTML = 'Your work has been submitted!<br><span style="font-size:1.15rem;display:inline-block;margin-top:8px;color:var(--cyan);">Quiz Score: ' + finalQuizScore + '</span>';
+        successEl.style.display = 'block';
       } catch(err) {
         btn.disabled    = false;
         btn.className   = 'submit-btn ready';
