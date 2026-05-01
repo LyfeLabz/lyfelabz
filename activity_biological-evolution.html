@@ -12,6 +12,8 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/activity_biological-evolution.html">
+<meta name="description" content="Analyze real evidence of evolution in this 6th grade science activity. Examine fossils, homologous structures, and DNA to build claims about common ancestry.">
 <title>LyfeLabz | Evidence of Evolution Activity</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
@@ -536,15 +538,6 @@ footer p {
         </select>
         <span class="error-hint" id="err-block">Please select your block.</span>
       </div>
-      <div class="field-group">
-        <label class="field-label" for="teacher">Teacher <span class="req">*</span></label>
-        <select id="teacher">
-          <option value="">Select…</option>
-          <option value="Mr. Brown">Mr. Brown</option>
-          <option value="Ms. Gay">Ms. Gay</option>
-        </select>
-        <span class="error-hint" id="err-teacher">Please select your teacher.</span>
-      </div>
     </div>
     <div class="progress-bar-wrap">
       <div class="progress-bar-fill" id="progressFill"></div>
@@ -908,10 +901,7 @@ footer p {
 </footer>
 
 <script>
-const SCRIPT_URLS = {
-  'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydqD0IFZKRSXi8YZt3UcWlOLIL9WRqYwQuCBml0emV42i5682YDGXPW34xAf81yWjp/exec';
 
 // ── PROGRESS TRACKING ────────────────────────────────────────────
 const TOTAL_QUESTIONS = 16; // 3 defs + 6 func table + 3 MC + 2 SA + 3 MC + 1 explain + 1 synthesis = 19 trackable
@@ -1039,7 +1029,6 @@ function validate() {
   checkField('studentName', 'err-name');
   checkField('actDate',     'err-date');
   checkField('block',       'err-block');
-  checkField('teacher',     'err-teacher');
   return ok;
 }
 
@@ -1058,7 +1047,6 @@ function submitActivity() {
     studentName:   document.getElementById('studentName').value.trim(),
     date:          document.getElementById('actDate').value,
     block:         document.getElementById('block').value,
-    teacher:       document.getElementById('teacher').value,
 
     homologousDef: document.getElementById('homologousDef').value.trim(),
     humanArm:      document.getElementById('humanArm').value.trim(),
@@ -1093,7 +1081,7 @@ function submitActivity() {
     params.append(k, data[k]);
   });
 
-  var fullURL = SCRIPT_URLS[data.teacher] + '?' + params.toString();
+  var fullURL = SCRIPT_URL + '?' + params.toString();
   console.log('Submitting to:', fullURL);
 
   fetch(fullURL, {

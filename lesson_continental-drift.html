@@ -12,6 +12,8 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_continental-drift.html">
+<meta name="description" content="Discover how continents move over millions of years. An interactive lesson on continental drift, plate tectonics, and evidence like fossils and rock patterns.">
 <title>LyfeLabz | Continental Drift</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
@@ -281,60 +283,6 @@
   .card-body p:last-child { margin-bottom: 0; }
   .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(159,184,204,0.6); cursor: help; }
   @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-
-
-
-  /* ── ACCORDION LESSON CARDS / COMPACT NOTES ── */
-  .acc-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
-    margin-bottom: 0.95rem; overflow: hidden;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    animation: fadeIn 0.3s ease both;
-  }
-  .acc-card::before {
-    content: ''; display: block; height: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-  }
-  .acc-card-header {
-    display: flex; align-items: center; gap: 1rem; padding: 1.15rem 1.55rem;
-    cursor: pointer; user-select: none; transition: background 0.18s;
-  }
-  .acc-card-header:hover { background: rgba(122,143,166,0.05); }
-  .acc-card-icon { font-size: 1.55rem; flex-shrink: 0; }
-  .acc-card-text { flex: 1; min-width: 0; }
-  .acc-card-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.18rem; }
-  .acc-card-summary { font-size: 0.86rem; color: rgba(232,237,242,0.58); line-height: 1.45; }
-  .acc-chevron {
-    font-size: 0.85rem; color: var(--accent2); flex-shrink: 0;
-    transition: transform 0.25s ease; opacity: 0.65; padding: 0.2rem;
-  }
-  .acc-card.open .acc-chevron { transform: rotate(90deg); }
-  .acc-card-body {
-    display: none; padding: 0 1.55rem 1.55rem;
-    color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75;
-    border-top: 1px solid rgba(122,143,166,0.1);
-  }
-  .acc-card.open .acc-card-body { display: block; }
-  .acc-intro { padding-top: 1.1rem; margin-bottom: 1rem; }
-  .compact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 1rem 0 1.1rem; }
-  .compact-grid.two { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 780px) { .compact-grid, .compact-grid.two { grid-template-columns: 1fr; } }
-  .mini-card {
-    background: rgba(255,255,255,0.035); border: 1px solid rgba(122,143,166,0.18);
-    border-radius: 12px; padding: 0.95rem 1.05rem;
-  }
-  .mini-card-title {
-    display: flex; align-items: center; gap: 0.45rem;
-    font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--accent2); margin-bottom: 0.35rem;
-  }
-  .mini-card p, .mini-card li { font-size: 0.86rem; color: rgba(232,237,242,0.78); line-height: 1.58; }
-  .mini-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.25rem; padding:0; margin:0; }
-  .mini-card li::before { content: '→'; opacity: 0.45; margin-right: 0.45rem; }
-  .timeline-strip { display:grid; grid-template-columns: repeat(4, 1fr); gap:0.7rem; margin:1rem 0 1.1rem; }
-  @media (max-width: 780px) { .timeline-strip { grid-template-columns: 1fr; } }
-  .timeline-step { background: rgba(122,143,166,0.06); border:1px solid rgba(122,143,166,0.18); border-radius:12px; padding:0.85rem; }
-  .timeline-year { font-size:0.72rem; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent2); margin-bottom:0.25rem; }
-  .timeline-note { font-size:0.86rem; color:rgba(232,237,242,0.78); line-height:1.55; }
 
   /* ── CALLOUTS ── */
   .callout {
@@ -817,7 +765,7 @@
   <div class="container">
     <span class="section-label">Lesson Notes</span>
     <h2 class="section-title">Continental Drift</h2>
-    <p class="section-desc">A simplified review of the evidence students used in their notes: continents fit, fossils match, rocks match, climate clues match, and plate tectonics explains the movement.</p>
+    <p class="section-desc">The ground beneath your feet has been moving for hundreds of millions of years. Science didn't always know that — here's the story of how the evidence built up, piece by piece.</p>
 
     <!-- Phenomenon card -->
     <div class="phenomenon-card">
@@ -825,201 +773,132 @@
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
         <h3>The World's Largest Puzzle</h3>
-        <p>South America and Africa fit together like puzzle pieces. Wegener asked: what if the continents used to be connected?</p>
+        <p>Look at a world map and trace the eastern coast of South America. Now look at the western coast of Africa. They fit together almost perfectly — like two pieces of a torn photograph. This isn't a coincidence. For millions of years, those two coastlines were the same piece of land. Alfred Wegener noticed this in 1912 and asked a question that changed Earth science forever: what if the continents used to be connected?</p>
       </div>
     </div>
 
-    <!-- Big Idea -->
-    <div class="acc-card open" id="card-big-idea">
-      <div class="acc-card-header" onclick="this.closest('.acc-card').classList.toggle('open')">
-        <div class="acc-card-icon">&#128218;</div>
-        <div class="acc-card-text">
-          <div class="acc-card-title">Big Idea: Continental Drift</div>
-          <div class="acc-card-summary">Continents were once connected as Pangaea, then slowly moved apart.</div>
-        </div>
-        <div class="acc-chevron">▶</div>
+    <!-- What is a Theory + Wegener -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128218;</span>
+        <div class="card-title">What Is a Theory? What Is Continental Drift?</div>
       </div>
-      <div class="acc-card-body">
-        <p class="acc-intro">A <span class="vocab" id="vocab-theory" title="Scientific theory: a well-supported explanation of some aspect of the natural world, built on a large body of testable evidence">scientific theory</span> is not a random guess. It is a well-supported explanation based on lots of evidence.</p>
-        <div class="compact-grid two">
-          <div class="mini-card">
-            <div class="mini-card-title"><span class="vocab" id="vocab-continentaldrift" title="Continental drift: the theory that Earth's continents were once joined and have slowly moved apart over hundreds of millions of years">Continental Drift</span></div>
-            <ul>
-              <li>Continents were once joined</li>
-              <li>They slowly moved apart</li>
-              <li>Evidence comes from maps, fossils, rocks, and climate clues</li>
-            </ul>
-          </div>
-          <div class="mini-card">
-            <div class="mini-card-title"><span class="vocab" id="vocab-pangaea" title="Pangaea: the name for the single supercontinent that existed about 250 million years ago before the continents separated">Pangaea</span></div>
-            <ul>
-              <li>Ancient supercontinent</li>
-              <li>Name means “all land”</li>
-              <li>Existed about 250 million years ago</li>
-            </ul>
-          </div>
-        </div>
+      <div class="card-body">
+        <p>In everyday language, people say "theory" to mean a guess. In science, it means something much stronger. A <span class="vocab" id="vocab-theory" title="Scientific theory: a well-supported explanation of some aspect of the natural world, built on a large body of testable evidence">scientific theory</span> is a well-supported explanation of the natural world, based on a large body of testable evidence. A theory isn't a hunch — it's the most reliable explanation scientists have built from decades of data.</p>
+        <p>The <span class="vocab" id="vocab-continentaldrift" title="Continental drift: the theory that Earth's continents were once joined and have slowly moved apart over hundreds of millions of years">theory of continental drift</span> proposes that Earth's continents were once joined in a single, enormous landmass and have since slowly moved apart over hundreds of millions of years. The name for that ancient supercontinent is <span class="vocab" id="vocab-pangaea" title="Pangaea: the name for the single supercontinent that existed about 250 million years ago before the continents separated">Pangaea</span>, which means "all land" in Greek.</p>
         <div class="callout slate">
           <span class="callout-icon">&#129488;</span>
-          <div class="callout-body"><strong id="vocab-wegener">Alfred Wegener</strong><br>1912 → proposed continental drift<br>Problem → he had evidence, but no mechanism explaining how continents moved.</div>
+          <div class="callout-body"><strong id="vocab-wegener">Alfred Wegener</strong> was a German meteorologist and scientist who first proposed the continental drift theory in 1912. His original clue was simple: the coastlines of South America and Africa looked like they fit together like puzzle pieces. He then spent years gathering other evidence to support the idea. Most scientists rejected his theory at the time — not because the evidence was bad, but because nobody could explain <em>how</em> continents could possibly move.</div>
         </div>
       </div>
     </div>
 
     <!-- Fossil Evidence -->
-    <div class="acc-card" id="card-fossils">
-      <div class="acc-card-header" onclick="this.closest('.acc-card').classList.toggle('open')">
-        <div class="acc-card-icon">&#129432;</div>
-        <div class="acc-card-text">
-          <div class="acc-card-title">Evidence 1: Fossils</div>
-          <div class="acc-card-summary">Same fossils on different continents → continents were once connected.</div>
-        </div>
-        <div class="acc-chevron">▶</div>
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129432;</span>
+        <div class="card-title">Evidence 1: Fossils on Separated Continents</div>
       </div>
-      <div class="acc-card-body">
-        <p class="acc-intro"><span class="vocab" id="vocab-fossils" title="Fossils: preserved remains or traces of ancient organisms found in rock — used as evidence of past environments and events">Fossils</span> show that the same organisms lived on continents that are now separated by oceans.</p>
+      <div class="card-body">
+        <p>One of the strongest lines of evidence for continental drift comes from <span class="vocab" id="vocab-fossils" title="Fossils: preserved remains or traces of ancient organisms found in rock — used as evidence of past environments and events">fossils</span>. Scientists discovered fossils of the same plant and animal species on continents that are today separated by thousands of miles of ocean. This is a puzzle that only makes sense if those continents were once connected.</p>
+
         <div class="evidence-grid">
           <div class="evidence-card ec2">
             <span class="ev-icon">&#129422;</span>
             <div class="ev-num">Fossil 1</div>
             <div class="ev-name" id="vocab-mesosaurus">Mesosaurus</div>
-            <p class="ev-desc">Freshwater reptile found in South America and Africa.</p>
-            <p class="ev-example">Key clue: could not swim across a saltwater ocean.</p>
+            <p class="ev-desc">A small freshwater reptile whose fossils are found in both South America and Africa. Here's the problem: Mesosaurus lived in freshwater — it physically could not have swum across a vast saltwater ocean to reach both continents. The only explanation is that South America and Africa were once connected.</p>
+            <p class="ev-example">★ Found in: Brazil (South America) and South Africa</p>
           </div>
           <div class="evidence-card ec3">
             <span class="ev-icon">&#127807;</span>
             <div class="ev-num">Fossil 2</div>
             <div class="ev-name" id="vocab-glossopteris">Glossopteris</div>
-            <p class="ev-desc">Plant fossil found across South America, Africa, Antarctica, India, and Australia.</p>
-            <p class="ev-example">Key clue: heavy seeds could not travel across oceans.</p>
+            <p class="ev-desc">A seed fern plant whose fossils appear across South America, Africa, Antarctica, India, and Australia. Its heavy seeds could not float or be carried by wind across an ocean. Finding the same plant on five separate continents points strongly to those continents once being one connected landmass.</p>
+            <p class="ev-example">★ Found on: 5 continents, all once part of the southern half of Pangaea</p>
           </div>
           <div class="evidence-card ec1">
             <span class="ev-icon">&#129419;</span>
             <div class="ev-num">Fossil 3</div>
             <div class="ev-name">Cynognathus</div>
-            <p class="ev-desc">Land reptile found in South America and Africa.</p>
-            <p class="ev-example">Key clue: land animals cannot cross oceans.</p>
+            <p class="ev-desc">A land-dwelling Triassic reptile about the size of a large dog. Its fossils are found in South America and Africa. As a land animal, it definitely could not have crossed an ocean. Its distribution matches perfectly with Wegener's reconstruction of Pangaea.</p>
+            <p class="ev-example">★ Found in: South America and Africa</p>
           </div>
           <div class="evidence-card ec4">
             <span class="ev-icon">&#129418;</span>
             <div class="ev-num">Fossil 4</div>
             <div class="ev-name">Lystrosaurus</div>
-            <p class="ev-desc">Land reptile found in Africa, India, and Antarctica.</p>
-            <p class="ev-example">Key clue: its fossil locations line up when Pangaea is rebuilt.</p>
+            <p class="ev-desc">Another land reptile found across Africa, India, and Antarctica. Its presence in Antarctica is especially striking — today Antarctica is buried under ice and frozen, but this reptile's fossils prove it once had a very different environment, connected to warmer landmasses.</p>
+            <p class="ev-example">★ Found in: Africa, India, and Antarctica</p>
           </div>
         </div>
+
         <div class="callout teal">
           <span class="callout-icon">&#128161;</span>
-          <div class="callout-body"><strong>Anchor idea:</strong><br>Cannot cross ocean → continents were connected.</div>
+          <div class="callout-body"><strong>Why this matters:</strong> Each of these organisms could not have crossed a major ocean on their own. Finding the same species on continents now separated by thousands of miles of ocean is powerful evidence that those continents were once connected.</div>
         </div>
       </div>
     </div>
 
     <!-- Rock Evidence -->
-    <div class="acc-card" id="card-rocks">
-      <div class="acc-card-header" onclick="this.closest('.acc-card').classList.toggle('open')">
-        <div class="acc-card-icon">&#9968;&#65039;</div>
-        <div class="acc-card-text">
-          <div class="acc-card-title">Evidence 2: Matching Rocks</div>
-          <div class="acc-card-summary">Rock type and rock age match across oceans.</div>
-        </div>
-        <div class="acc-chevron">▶</div>
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9968;&#65039;</span>
+        <div class="card-title">Evidence 2: Matching Rocks and Mountain Ranges</div>
       </div>
-      <div class="acc-card-body">
-        <div class="compact-grid two">
-          <div class="mini-card">
-            <div class="mini-card-title"><span class="vocab" id="vocab-appalachians" title="The Appalachian Mountains: a mountain range along the eastern United States that matches in rock type and age with mountains in Africa, Greenland, and Scandinavia">Appalachian Mountains</span></div>
-            <ul>
-              <li>Found in eastern North America</li>
-              <li>Match rocks across the Atlantic</li>
-              <li>Line up when continents are reconnected</li>
-            </ul>
-          </div>
-          <div class="mini-card">
-            <div class="mini-card-title">What matched?</div>
-            <ul>
-              <li>Same rock type</li>
-              <li>Same rock age</li>
-              <li>Same mountain chain pattern</li>
-            </ul>
-          </div>
-        </div>
+      <div class="card-body">
+        <p>If two continents were once connected, you would expect to find matching rock formations on both sides — as if you tore a book in half and found the same sentence on each piece. That is exactly what geologists found.</p>
+        <p>The <span class="vocab" id="vocab-appalachians" title="The Appalachian Mountains: a mountain range along the eastern United States that matches in rock type and age with mountains in Africa, Greenland, and Scandinavia">Appalachian Mountains</span> run along the eastern edge of North America. When geologists analyzed rocks across the Atlantic Ocean in Africa, Greenland, and Scandinavia, they found mountain ranges with the same rock types and the same ages. These mountain chains line up perfectly when you put the continents back together — they are the same mountain range, torn apart when the continents split.</p>
         <div class="callout gold">
           <span class="callout-icon">&#128270;</span>
-          <div class="callout-body"><strong>Anchor idea:</strong><br>Matching rocks across oceans → continents were once joined.</div>
+          <div class="callout-body"><strong>The key detail:</strong> It is not just that mountains exist in similar places. The rock <em>type</em> and rock <em>age</em> match. You cannot get rocks of the same specific composition and the same age to appear on both sides of an ocean unless they were formed at the same time as part of the same geological event.</div>
         </div>
       </div>
     </div>
 
     <!-- Climate Evidence -->
-    <div class="acc-card" id="card-climate">
-      <div class="acc-card-header" onclick="this.closest('.acc-card').classList.toggle('open')">
-        <div class="acc-card-icon">&#127784;&#65039;</div>
-        <div class="acc-card-text">
-          <div class="acc-card-title">Evidence 3: Climate Clues</div>
-          <div class="acc-card-summary">Warm clues in cold places and ice clues in warm places.</div>
-        </div>
-        <div class="acc-chevron">▶</div>
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127784;&#65039;</span>
+        <div class="card-title">Evidence 3: Climate Clues in the Wrong Places</div>
       </div>
-      <div class="acc-card-body">
-        <div class="compact-grid two">
-          <div class="mini-card">
-            <div class="mini-card-title"><span class="vocab" id="vocab-coal">Coal Deposits</span></div>
-            <ul>
-              <li>Coal forms in warm, swampy environments</li>
-              <li>Coal found in Antarctica</li>
-              <li>Antarctica must have moved</li>
-            </ul>
+      <div class="card-body">
+        <p>Some of the most striking evidence for continental drift comes from climate indicators found in places where they simply should not exist — if the continents had always been where they are today.</p>
+
+        <div class="principles-grid">
+          <div class="principle-card p2">
+            <div class="principle-term" id="vocab-coal">Coal Deposits</div>
+            <div class="principle-def">Coal forms in warm, swampy tropical environments from the compressed remains of ancient plants. Huge coal deposits have been found in Antarctica — one of the coldest places on Earth. The only explanation: Antarctica was once located near the tropics, where lush forests existed. When Pangaea broke apart, Antarctica drifted to its current polar location.</div>
+            <div class="principle-key">Warm-environment rock found in cold location</div>
           </div>
-          <div class="mini-card">
-            <div class="mini-card-title"><span class="vocab" id="vocab-glacialstriations">Glacial Striations</span></div>
-            <ul>
-              <li>Scratches carved by glaciers</li>
-              <li>Found in places now too warm for glaciers</li>
-              <li>Continents were once closer to the poles</li>
-            </ul>
+          <div class="principle-card p4">
+            <div class="principle-term" id="vocab-glacialstriations">Glacial Striations</div>
+            <div class="principle-def">Glacial striations are scratches and grooves carved into solid bedrock by the weight and movement of glaciers. Scientists found these scratches in South America, Africa, India, and Australia — regions that are far too warm today to have glaciers. This means glaciers once covered these areas, which makes sense only if these continents were once grouped near a polar region as part of the southern half of Pangaea.</div>
+            <div class="principle-key">Cold-environment scratches found in warm locations</div>
           </div>
         </div>
+
         <div class="callout slate">
           <span class="callout-icon">&#128205;</span>
-          <div class="callout-body"><strong>Anchor idea:</strong><br>Climate clues in the “wrong” place → continents changed location.</div>
+          <div class="callout-body"><strong>Put it together:</strong> Coal requires warmth. Glacial striations require ice. Finding both types of evidence in mismatched locations makes no sense unless the continents moved. When you put the continents back into Pangaea's shape, the coal and the glacier evidence each end up exactly where they should be for that climate zone.</div>
         </div>
       </div>
     </div>
 
-    <!-- Rejection and Plate Tectonics -->
-    <div class="acc-card" id="card-plate-tectonics">
-      <div class="acc-card-header" onclick="this.closest('.acc-card').classList.toggle('open')">
-        <div class="acc-card-icon">&#129668;</div>
-        <div class="acc-card-text">
-          <div class="acc-card-title">Why Wegener Was Rejected</div>
-          <div class="acc-card-summary">The evidence was strong, but the mechanism was missing.</div>
-        </div>
-        <div class="acc-chevron">▶</div>
+    <!-- Challenges and Plate Tectonics -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129668;</span>
+        <div class="card-title">Why Wegener Was Rejected — and Then Proven Right</div>
       </div>
-      <div class="acc-card-body">
-        <div class="timeline-strip">
-          <div class="timeline-step">
-            <div class="timeline-year">1912</div>
-            <div class="timeline-note">Wegener proposes continental drift.</div>
-          </div>
-          <div class="timeline-step">
-            <div class="timeline-year">Problem</div>
-            <div class="timeline-note">Scientists ask: how can continents move?</div>
-          </div>
-          <div class="timeline-step">
-            <div class="timeline-year">1950s–60s</div>
-            <div class="timeline-note">Seafloor evidence reveals moving plates.</div>
-          </div>
-          <div class="timeline-step">
-            <div class="timeline-year">Now</div>
-            <div class="timeline-note"><span class="vocab" id="vocab-platetectonics" title="Plate tectonics: the theory that Earth's outer crust is broken into large moving plates that carry the continents and ocean floor">Plate tectonics</span> explains the mechanism.</div>
-          </div>
-        </div>
+      <div class="card-body">
+        <p>When Wegener published his theory in 1912, most scientists dismissed it. The evidence he collected was actually quite good — the problem was something else entirely. He had no way to explain the <em>mechanism</em>: the physical force or process that could actually move something as enormous and heavy as a continent through solid rock. Without that explanation, most geologists refused to accept the idea.</p>
+        <p>Wegener died in 1930 without seeing his theory accepted. It was not until the 1950s and 1960s that oceanographers discovered the answer while mapping the seafloor. They found that Earth's crust is not one solid shell. It is broken into large sections called <span class="vocab" id="vocab-platetectonics" title="Plate tectonics: the theory that Earth's outer crust is broken into large moving plates that carry the continents and ocean floor">tectonic plates</span> — like cracked pieces of an eggshell — that float and move slowly on the hot, semi-molten rock below. This discovery became the theory of <strong>plate tectonics</strong>, and it provided exactly the mechanism that Wegener was missing.</p>
         <div class="callout teal">
           <span class="callout-icon">&#127775;</span>
-          <div class="callout-body"><strong>Science in action:</strong><br>The idea was rejected, then improved when new evidence explained the missing mechanism.</div>
+          <div class="callout-body"><strong>Science in action:</strong> Wegener's story is a great example of how science works. Good evidence was gathered, a theory was proposed, it was rejected because one piece was missing — and then new discoveries eventually filled that gap. Continental drift did not fail; it grew into a better, more complete theory.</div>
         </div>
+        <p><strong>The problem wasn't the evidence. The problem was the missing mechanism.</strong></p>
       </div>
     </div>
 
@@ -1263,9 +1142,7 @@ function evClick(n) {
 function vocabJump(targetId) {
   var el = document.getElementById(targetId);
   if (!el) return;
-  var accCard = el.closest('.acc-card');
-  if (accCard && !accCard.classList.contains('open')) accCard.classList.add('open');
-  var card = el.closest('.acc-card, .content-card, .evidence-card, .principle-card, .callout, .ev-detail-panel, section') || el;
+  var card = el.closest('.content-card, .evidence-card, .principle-card, .callout, .ev-detail-panel, section') || el;
   var offsetAbove = 148;
   var top = card.getBoundingClientRect().top + window.scrollY - offsetAbove;
   window.scrollTo({ top: top, behavior: 'smooth' });
