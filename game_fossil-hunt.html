@@ -490,6 +490,28 @@
       font-family: 'Orbitron', sans-serif; font-size: .58rem; font-weight: 900; color: var(--muted);
     }
     .quiz-option.selected .quiz-option-letter { background: rgba(36,232,255,.2); color: var(--cyan); }
+    .quiz-option.correct-review {
+      background: rgba(67,240,125,.12) !important;
+      border-color: rgba(67,240,125,.68) !important;
+      color: var(--green) !important;
+      font-weight: 900;
+    }
+    .quiz-option.wrong-review {
+      background: rgba(255,111,142,.12) !important;
+      border-color: rgba(255,111,142,.72) !important;
+      color: var(--danger) !important;
+      font-weight: 900;
+    }
+    .quiz-option.correct-review .quiz-option-letter {
+      background: rgba(67,240,125,.2) !important;
+      color: var(--green) !important;
+    }
+    .quiz-option.wrong-review .quiz-option-letter {
+      background: rgba(255,111,142,.18) !important;
+      color: var(--danger) !important;
+    }
+    .quiz-option.review-locked { pointer-events: none; cursor: default; }
+
     .quiz-locked-overlay { text-align: center; padding: 24px 16px; }
     .quiz-locked-text { color: var(--muted); font-size: .9rem; line-height: 1.6; }
     .quiz-score-badge {
@@ -1015,7 +1037,7 @@
         </div>
         <div class="submit-section">
           <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit to Teacher</button>
-          <p class="submit-helper" id="submitHelperText">Complete all fossil matches, age ordering, and all 4 quiz questions first.</p>
+          <p class="submit-helper" id="submitHelperText">Complete all fossil matches, age ordering, and all 10 quiz questions first.</p>
           <div class="submit-success" id="submitSuccess">Your work has been submitted! Great fossil detective work.</div>
           <div class="submit-error" id="submitError"></div>
         </div>
@@ -1199,234 +1221,231 @@
 
     /* ─── QUIZ DATA (10 questions per mode) ────────────────────────── */
     const QUIZ_DATA = {
-
       practice: [
-        {
-          id: 1,
-          text: "What is the most important feature that makes a fossil a good index fossil?",
-          options: [
-            "It is very large, making it easy to find in rock layers",
-            "It existed for only a short period of time and is found in many locations",
-            "It is found in only one specific location on Earth",
-            "It is made of very hard material that preserves well"
-          ],
-          correct: 1
-        },
-        {
-          id: 2,
-          text: "In the Fossil Hunt game, you matched layers across three locations using index fossils. What does a successful match tell you about those layers?",
-          options: [
-            "The two locations must be right next to each other geographically",
-            "Both locations have the same type of rock material",
-            "The two rock layers formed at approximately the same time in Earth's history",
-            "The fossils at both locations came from the same individual organism"
-          ],
-          correct: 2
-        },
-        {
-          id: 3,
-          text: "In the Practice puzzle, fossils like the Fern Impression and Shell Fragment are not index fossils. What most likely disqualifies them?",
-          options: [
-            "They are too small to be spotted reliably in rock samples",
-            "They do not appear at all three locations, so they cannot be used to link layers across sites",
-            "They are made of soft material and rarely preserve in rock",
-            "Scientists haven't studied them long enough to confirm their time range"
-          ],
-          correct: 1
-        },
-        {
-          id: 4,
-          text: "In this game, the deepest layers at each location are the oldest. Which law of geology explains this?",
-          options: [
-            "The Law of Lateral Continuity — layers extend outward in all directions",
-            "The Law of Cross-Cutting Relationships — younger features cut through older ones",
-            "The Law of Superposition — in undisturbed rock, older layers are deposited below younger layers",
-            "The Law of Original Horizontality — all rock layers were once flat"
-          ],
-          correct: 2
-        },
-        {
-          id: 5,
-          text: "How did index fossils help you match rock layers across the three locations in this game?",
-          options: [
-            "They helped identify layers with the same rock color and texture at each site",
-            "They let you link layers containing the same fossil across all three sites, showing those layers formed at the same time",
-            "They showed which locations were closest to each other geographically",
-            "They told you exactly how many years old each layer was"
-          ],
-          correct: 1
-        },
-        {
-          id: 6,
-          text: "The Crinoid in the Practice puzzle has existed from about 480 million years ago to today. How does this long time range affect its usefulness as an index fossil?",
-          options: [
-            "It makes the Crinoid more useful because it is found in many rock layers",
-            "It has no effect — time range is not relevant to index fossil quality",
-            "It makes the Crinoid less precise for dating because layers containing it could span hundreds of millions of years",
-            "It makes the Crinoid the best index fossil in the puzzle because scientists have studied it longest"
-          ],
-          correct: 2
-        },
-        {
-          id: 7,
-          text: "What evidence tells a geologist which fossil horizon is the oldest at a site?",
-          options: [
-            "The oldest horizon contains the greatest variety of different fossil types",
-            "The oldest horizon is the one that appears at the fewest locations",
-            "The deepest layer at each location is oldest — the fossil horizon at the bottom of an undisturbed column is the most ancient",
-            "The oldest horizon contains the largest individual fossils"
-          ],
-          correct: 2
-        },
-        {
-          id: 8,
-          text: "Scientists discover a fourth cliff face containing the same Ammonite and Trilobite index fossil horizons found at Rocky Creek. What can they conclude?",
-          options: [
-            "The fourth location must be geographically close to Rocky Creek",
-            "The rock layers at the fourth location containing those fossils formed during the same time periods as at Rocky Creek",
-            "The fourth location would have older rock layers than any of the Rocky Creek sites",
-            "The fossils at the fourth location came from the same individual organisms as at Rocky Creek"
-          ],
-          correct: 1
-        },
-        {
-          id: 9,
-          text: "A geologist finds the same trilobite species in rock layers in Canada, Morocco, and Australia. What does this most likely indicate?",
-          options: [
-            "The continents were physically connected when those layers were deposited",
-            "The trilobite migrated between those locations during its lifetime",
-            "The rock layers containing that trilobite in all three countries formed during the same time period",
-            "The trilobite is not a reliable index fossil because it appears on multiple continents"
-          ],
-          correct: 2
-        },
-        {
-          id: 10,
-          text: "Which statement best explains why fossil correlation is a reliable tool for geologists studying rock layers at different locations?",
-          options: [
-            "Rocks always look the same wherever they formed, so geologists can match them by appearance alone",
-            "Index fossils that lived during a specific, brief time window appear in layers worldwide, letting geologists match layers of the same age across vast distances",
-            "Geologists can use radioactive dating on any fossil to find an exact age in years",
-            "Rock layers always stay in their original positions, so depth alone is enough to determine age globally"
-          ],
-          correct: 1
-        }
+            {
+                  id: 1,
+                  text: "What makes a fossil useful as an index fossil?",
+                  options: [
+                        "Short-lived and widespread",
+                        "Large and easy to see",
+                        "Found in only one place",
+                        "Made of hard material"
+                  ],
+                  correct: 0
+            },
+            {
+                  id: 2,
+                  text: "What does a matched fossil horizon show?",
+                  options: [
+                        "Sites were next to each other",
+                        "Rocks have identical minerals",
+                        "Layers formed about the same time",
+                        "Fossils came from one animal"
+                  ],
+                  correct: 2
+            },
+            {
+                  id: 3,
+                  text: "Why are shell fragments weak dating clues?",
+                  options: [
+                        "They are always too small",
+                        "They preserve only in lava",
+                        "They appear only in deserts",
+                        "They lack clear identifying features"
+                  ],
+                  correct: 3
+            },
+            {
+                  id: 4,
+                  text: "Which idea explains older layers below younger layers?",
+                  options: [
+                        "Cross-cutting relationships",
+                        "Law of superposition",
+                        "Original horizontality",
+                        "Lateral continuity"
+                  ],
+                  correct: 1
+            },
+            {
+                  id: 5,
+                  text: "How did index fossils help in the game?",
+                  options: [
+                        "They linked matching layers",
+                        "They measured exact ages",
+                        "They showed rock colors",
+                        "They counted fossil sizes"
+                  ],
+                  correct: 0
+            },
+            {
+                  id: 6,
+                  text: "Why is a very long fossil time range less useful?",
+                  options: [
+                        "It makes fossils disappear",
+                        "It proves rocks are young",
+                        "It gives a less precise age",
+                        "It changes rock color"
+                  ],
+                  correct: 2
+            },
+            {
+                  id: 7,
+                  text: "Which evidence points to the oldest fossil horizon?",
+                  options: [
+                        "Largest fossil size",
+                        "Brightest rock color",
+                        "Fewest fossil types",
+                        "Deepest matching layer"
+                  ],
+                  correct: 3
+            },
+            {
+                  id: 8,
+                  text: "A fourth site has the same ammonite horizon. What can scientists infer?",
+                  options: [
+                        "The site is nearby",
+                        "That layer has a similar age",
+                        "The rock must be igneous",
+                        "The fossil is not useful"
+                  ],
+                  correct: 1
+            },
+            {
+                  id: 9,
+                  text: "Why can the same fossil across distant places be useful?",
+                  options: [
+                        "It can match layer ages",
+                        "It proves exact distance",
+                        "It shows rock hardness",
+                        "It identifies weather today"
+                  ],
+                  correct: 0
+            },
+            {
+                  id: 10,
+                  text: "Why is fossil correlation useful to geologists?",
+                  options: [
+                        "All rocks look identical",
+                        "Every fossil gives exact years",
+                        "Index fossils match ages across sites",
+                        "Depth alone works everywhere"
+                  ],
+                  correct: 2
+            }
       ],
-
       challenge: [
-        {
-          id: 1,
-          text: "What is the most important feature that makes a fossil a good index fossil?",
-          options: [
-            "It is very large, making it easy to find in rock layers",
-            "It existed for only a short period of time and is found in many locations",
-            "It is found in only one specific location on Earth",
-            "It is made of very hard material that preserves well"
-          ],
-          correct: 1
-        },
-        {
-          id: 2,
-          text: "In the Fossil Hunt game, you matched layers across three locations using index fossils. What does a successful match tell you about those layers?",
-          options: [
-            "The two locations must be right next to each other geographically",
-            "Both locations have the same type of rock material",
-            "The two rock layers formed at approximately the same time in Earth's history",
-            "The fossils at both locations came from the same individual organism"
-          ],
-          correct: 2
-        },
-        {
-          id: 3,
-          text: "In the Challenge puzzle, the Graptolite appears in two different rock layers at Location A. Why does this disqualify it as an index fossil?",
-          options: [
-            "The Graptolite is too small to identify reliably in the field",
-            "Appearing in multiple layers at one location means the organism's time range spans more than one distinct period — it cannot pinpoint a single layer's age",
-            "The Graptolite has not been found in enough locations worldwide",
-            "Scientists have not agreed on the Graptolite's correct scientific classification"
-          ],
-          correct: 1
-        },
-        {
-          id: 4,
-          text: "In this game, the deepest layers at each location are the oldest. Which law of geology explains this?",
-          options: [
-            "The Law of Lateral Continuity — layers extend outward in all directions",
-            "The Law of Cross-Cutting Relationships — younger features cut through older ones",
-            "The Law of Superposition — in undisturbed rock, older layers are deposited below younger layers",
-            "The Law of Original Horizontality — all rock layers were once flat"
-          ],
-          correct: 2
-        },
-        {
-          id: 5,
-          text: "In the Challenge puzzle you identified FOUR fossil horizons instead of three. What advantage does finding more horizons give geologists?",
-          options: [
-            "More horizons means more rock types to study, which reveals the minerals present at each site",
-            "Each additional horizon adds another time marker, allowing geologists to divide the rock column into more precise time intervals",
-            "Finding four horizons proves the locations were once connected by a shallow sea",
-            "More horizons always means older rocks are present at the site"
-          ],
-          correct: 1
-        },
-        {
-          id: 6,
-          text: "The Rugose Coral lived from 488–252 million years ago and the Ammonite from 240–66 million years ago. Which fossil confirms the youngest horizon at Cliffside Cut, and why?",
-          options: [
-            "The Rugose Coral, because it existed for a longer total time span",
-            "The Ammonite, because its time range is the most recent — it went extinct only 66 million years ago",
-            "The Brachiopod, because it still exists today and is therefore the most recent organism",
-            "The Crinoid, because it survived the longest and therefore represents the youngest layer"
-          ],
-          correct: 1
-        },
-        {
-          id: 7,
-          text: "What evidence tells a geologist which fossil horizon is the oldest at a site?",
-          options: [
-            "The oldest horizon contains the greatest variety of different fossil types",
-            "The oldest horizon is the one that appears at the fewest locations",
-            "The deepest layer at each location is oldest — the fossil horizon at the bottom of an undisturbed column is the most ancient",
-            "The oldest horizon contains the largest individual fossils"
-          ],
-          correct: 2
-        },
-        {
-          id: 8,
-          text: "Scientists discover a fourth cliff face containing Brachiopod and Rugose Coral horizons matching those at Cliffside Cut. What can they conclude?",
-          options: [
-            "The fourth location must be geographically close to Cliffside Cut",
-            "The layers containing those fossils at the fourth location formed during the same time periods as at Cliffside Cut",
-            "The fourth location would have younger rock layers than any of the Cliffside Cut sites",
-            "The Brachiopod and Rugose Coral fossils at the fourth site came from the same organisms as at Cliffside Cut"
-          ],
-          correct: 1
-        },
-        {
-          id: 9,
-          text: "The Graptolite is found at all three Cliffside Cut locations — so why can't it be used to correlate layers across sites?",
-          options: [
-            "It appears in too few rock types to be geologically significant",
-            "Its presence at all three locations is actually ideal, but its color makes it hard to identify",
-            "Because it appears in multiple layers within a single location, it cannot link one specific layer at each site to the same point in time",
-            "The Graptolite is only a plant impression, not a true fossil"
-          ],
-          correct: 2
-        },
-        {
-          id: 10,
-          text: "Which statement best explains why fossil correlation is a reliable tool for geologists studying rock layers at different locations?",
-          options: [
-            "Rocks always look the same wherever they formed, so geologists can match them by appearance alone",
-            "Index fossils that lived during a specific, brief time window appear in layers worldwide, letting geologists match layers of the same age across vast distances",
-            "Geologists can use radioactive dating on any fossil to find an exact age in years",
-            "Rock layers always stay in their original positions, so depth alone is enough to determine age globally"
-          ],
-          correct: 1
-        }
+            {
+                  id: 1,
+                  text: "What makes a fossil strong for correlation?",
+                  options: [
+                        "It is large and heavy",
+                        "It appears in one region",
+                        "It survives every era",
+                        "It is short-lived and widespread"
+                  ],
+                  correct: 3
+            },
+            {
+                  id: 2,
+                  text: "What does a successful fossil match mean?",
+                  options: [
+                        "Layers formed about the same time",
+                        "Rocks have the same minerals",
+                        "Sites must touch each other",
+                        "Fossils are from one organism"
+                  ],
+                  correct: 0
+            },
+            {
+                  id: 3,
+                  text: "Why is the graptolite misleading in Challenge mode?",
+                  options: [
+                        "It is too colorful",
+                        "It is not preserved",
+                        "It appears in multiple layers",
+                        "It is only found once"
+                  ],
+                  correct: 2
+            },
+            {
+                  id: 4,
+                  text: "Which rule explains oldest layers at the bottom?",
+                  options: [
+                        "Original horizontality",
+                        "Law of superposition",
+                        "Lateral continuity",
+                        "Cross-cutting relationships"
+                  ],
+                  correct: 1
+            },
+            {
+                  id: 5,
+                  text: "Why do more fossil horizons help geologists?",
+                  options: [
+                        "They prove all rocks are older",
+                        "They identify every mineral",
+                        "They remove the need for evidence",
+                        "They create more time markers"
+                  ],
+                  correct: 3
+            },
+            {
+                  id: 6,
+                  text: "Which fossil confirms the youngest Challenge horizon?",
+                  options: [
+                        "Ammonite",
+                        "Rugose coral",
+                        "Crinoid",
+                        "Brachiopod"
+                  ],
+                  correct: 0
+            },
+            {
+                  id: 7,
+                  text: "What evidence best supports the oldest horizon?",
+                  options: [
+                        "Largest fossil shape",
+                        "Brightest layer color",
+                        "Deepest matched layer",
+                        "Most common rock name"
+                  ],
+                  correct: 2
+            },
+            {
+                  id: 8,
+                  text: "A fourth site matches the brachiopod horizon. What does that suggest?",
+                  options: [
+                        "The site must be nearby",
+                        "The layer is about the same age",
+                        "The fossil is not useful",
+                        "The layer is always younger"
+                  ],
+                  correct: 1
+            },
+            {
+                  id: 9,
+                  text: "Why cannot Graptolite link one exact layer here?",
+                  options: [
+                        "It has no fossil shape",
+                        "It appears only once",
+                        "It is too hard to see",
+                        "It occurs in multiple layers"
+                  ],
+                  correct: 3
+            },
+            {
+                  id: 10,
+                  text: "Why is fossil correlation reliable across locations?",
+                  options: [
+                        "Rock color never changes",
+                        "All fossils give exact ages",
+                        "Depth always matches worldwide",
+                        "Index fossils mark shared time windows"
+                  ],
+                  correct: 3
+            }
       ]
-
-    };
+};
 
     /* ─── STATE ─────────────────────────────────────────────────────── */
     let state = {
@@ -1444,7 +1463,8 @@
       orderSelected:  [],
       orderCorrect:   false,
       ageCheckAnswered: false,
-      ageCheckCorrect:  false
+      ageCheckCorrect:  false,
+      quizSubmitted: false
     };
 
     /* ─── HELPERS ───────────────────────────────────────────────────── */
@@ -2246,6 +2266,8 @@
       state.errors          = 0;
       state.hintIndex       = 0;
       state.victoryShown    = false;
+      state.quizAnswers     = {};
+      state.quizSubmitted   = false;
       state.orderingPhase   = false;
       state.orderSelected   = [];
       state.orderCorrect    = false;
@@ -2255,6 +2277,10 @@
       document.getElementById('victoryOverlay').classList.remove('show');
       document.getElementById('orderingPanel').classList.add('hidden');
       document.getElementById('orderingRevealBanner').classList.remove('show');
+      document.getElementById('quizQuestions').dataset.built = '';
+      document.getElementById('quizQuestions').innerHTML = '';
+      document.getElementById('quizQuestions').classList.add('hidden');
+      document.getElementById('quizScoreArea').classList.add('hidden');
       setFeedback('neutral', 'Begin Hunt', 'Investigate any layer, then search for a matching fossil in a different location. Link all fossil horizons to solve the puzzle!');
 
       updateStats(); renderLayers(); renderGroups(); drawLines(); renderClassroomPanel(); saveState();
@@ -2332,6 +2358,7 @@
       state.hintIndex       = 0;
       state.victoryShown    = false;
       state.quizAnswers     = {};
+      state.quizSubmitted   = false;
       state.orderingPhase   = false;
       state.orderSelected   = [];
       state.orderCorrect    = false;
@@ -2430,6 +2457,7 @@
       QUIZ_DATA[state.difficulty].forEach(q => {
         const qDiv = document.createElement('div');
         qDiv.className = 'quiz-question';
+        qDiv.dataset.qid = q.id;
         qDiv.innerHTML = '<span class="quiz-question-num">Question ' + q.id + '</span><p class="quiz-question-text">' + q.text + '</p>';
         const opts = document.createElement('div');
         opts.className = 'quiz-options';
@@ -2437,8 +2465,10 @@
         q.options.forEach((opt, i) => {
           const btn = document.createElement('div');
           btn.className = 'quiz-option' + (state.quizAnswers[q.id] === i ? ' selected' : '');
+          btn.dataset.optionIndex = i;
           btn.innerHTML = '<div class="quiz-option-letter">' + letters[i] + '</div><span>' + opt + '</span>';
           btn.addEventListener('click', () => {
+            if (state.quizSubmitted) return;
             state.quizAnswers[q.id] = i;
             Array.from(opts.querySelectorAll('.quiz-option')).forEach((o,j) => {
               o.classList.toggle('selected', j === i);
@@ -2453,6 +2483,7 @@
         container.appendChild(qDiv);
       });
       updateQuizScore();
+      if (state.quizSubmitted) showQuizReview();
     }
 
     function updateQuizScore() {
@@ -2464,6 +2495,26 @@
       let correct = 0;
       QUIZ_DATA[state.difficulty].forEach(q => { if (state.quizAnswers[q.id] === q.correct) correct++; });
       return correct + '/' + QUIZ_DATA[state.difficulty].length;
+    }
+
+
+    function showQuizReview() {
+      QUIZ_DATA[state.difficulty].forEach(q => {
+        const qEl = document.querySelector('.quiz-question[data-qid="' + q.id + '"]');
+        if (!qEl) return;
+        const selected = state.quizAnswers[q.id];
+        qEl.querySelectorAll('.quiz-option').forEach(opt => {
+          const idx = Number(opt.dataset.optionIndex);
+          opt.classList.add('review-locked');
+          opt.classList.remove('wrong-review', 'correct-review');
+          if (idx === q.correct) {
+            opt.classList.add('correct-review');
+          }
+          if (idx === selected && idx !== q.correct) {
+            opt.classList.add('wrong-review');
+          }
+        });
+      });
     }
 
     /* ─── CLASSROOM SUBMIT ───────────────────────────────────────────── */
@@ -2498,10 +2549,12 @@
       try {
         await fetch(url + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
         const finalQuizScore = computeQuizScore();
+        state.quizSubmitted = true;
+        showQuizReview();
         btn.textContent = 'Submitted';
         document.getElementById('submitHelperText').style.display = 'none';
         const successEl = document.getElementById('submitSuccess');
-        successEl.innerHTML = 'Your work has been submitted!<br><span style="font-size:1.15rem;display:inline-block;margin-top:8px;color:var(--cyan);">Quiz Score: ' + finalQuizScore + '</span>';
+        successEl.innerHTML = 'Your work has been submitted!<br><span style="font-size:1.15rem;display:inline-block;margin-top:8px;color:var(--cyan);">Quiz Score: ' + finalQuizScore + '</span><br><span style="font-size:.86rem;display:inline-block;margin-top:6px;color:var(--muted);">Review your quiz below. Green shows correct answers. Red shows answers to fix.</span>';
         successEl.style.display = 'block';
       } catch(err) {
         btn.disabled    = false;
