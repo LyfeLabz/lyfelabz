@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/blog/">
+<meta name="description" content="Teaching strategies, free resources, and lesson ideas for Massachusetts Grade 6–8 science teachers. Written by a 6th grade science teacher, powered by LyfeLabz.">
+<title>LyfeLabz | For Educators — Teaching Middle School Science in Massachusetts</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  html { font-size: 18px; }
+  :root {
+    --dark:      #1a2535;
+    --card:      #1e2f42;
+    --card2:     #243447;
+    --border:    rgba(180,160,255,0.12);
+    --text:      #e8e6f4;
+    --muted:     #7b789e;
+    --gold:      #f5c842;
+    --gold-dim:  rgba(245,200,66,0.15);
+    --gold-glow: rgba(245,200,66,0.35);
+    --teal:      #3bc8e8;
+    --green:     #2ecc71;
+
+    /* Teacher mode — light content surface */
+    --blog-bg:       #f4f2ee;
+    --blog-surface:  #ffffff;
+    --blog-text:     #1c2333;
+    --blog-muted:    #6b7280;
+    --blog-border:   #e2dfd8;
+    --blog-accent:   #1a2535;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--blog-bg);
+    color: var(--blog-text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV (dark — same as LyfeLabz) ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(11,14,26,0.97);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+  .nav-back {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-decoration: none;
+    border: 1px solid rgba(245,200,66,0.4);
+    border-radius: 99px;
+    padding: 0.3rem 0.9rem;
+    background: rgba(245,200,66,0.08);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-back:hover {
+    background: rgba(245,200,66,0.18);
+    border-color: rgba(245,200,66,0.75);
+  }
+  .nav-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: rgba(59,200,232,0.1);
+    border: 1px solid rgba(59,200,232,0.35);
+    border-radius: 99px;
+    padding: 0.28rem 0.85rem;
+  }
+
+  /* ── HERO (dark) ── */
+  .blog-hero {
+    background: var(--dark);
+    padding: 4rem 2rem 3.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .blog-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(59,200,232,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 80% 100%, rgba(245,200,66,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(59,200,232,0.1);
+    border: 1px solid rgba(59,200,232,0.3);
+    color: var(--teal);
+    padding: 0.38rem 1.1rem;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .blog-hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    color: var(--text);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .blog-hero p {
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    line-height: 1.75;
+    position: relative;
+  }
+  .hero-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.2rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgba(232,230,244,0.45);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 0.35rem; }
+
+  /* ── MAIN LAYOUT ── */
+  .blog-wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 3.5rem 2rem;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  /* ── POST CARDS ── */
+  .posts-header {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--blog-muted);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--blog-border);
+  }
+
+  .post-card {
+    background: var(--blog-surface);
+    border: 1px solid var(--blog-border);
+    border-radius: 14px;
+    padding: 1.8rem 2rem;
+    margin-bottom: 1.5rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+    text-decoration: none;
+    display: block;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+  }
+  .post-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent, var(--gold));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .post-card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+    transform: translateY(-2px);
+  }
+  .post-card:hover::before { opacity: 1; }
+
+  .post-topic {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    margin-bottom: 0.9rem;
+  }
+  .topic-evolution  { background: rgba(61,220,132,0.12); color: #2ecc71; }
+  .topic-body       { background: rgba(59,200,232,0.12); color: #3bc8e8; }
+  .topic-earth      { background: rgba(180,127,255,0.12); color: #b47fff; }
+  .topic-strategies { background: rgba(245,200,66,0.12); color: #c89b00; }
+  .topic-standards  { background: rgba(255,112,67,0.12); color: #ff7043; }
+
+  .post-card h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+    color: var(--blog-text);
+    line-height: 1.25;
+    margin-bottom: 0.65rem;
+  }
+  .post-card p {
+    font-size: 0.95rem;
+    color: var(--blog-muted);
+    line-height: 1.7;
+    margin-bottom: 1.1rem;
+  }
+  .post-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .post-date {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.04em;
+  }
+  .post-read-more {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--blog-accent);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-bottom: 2px solid currentColor;
+    padding-bottom: 1px;
+    transition: opacity 0.2s;
+  }
+  .post-read-more:hover { opacity: 0.65; }
+
+  /* ── SIDEBAR ── */
+  .sidebar { position: sticky; top: 5.5rem; }
+
+  .sidebar-card {
+    background: var(--blog-surface);
+    border: 1px solid var(--blog-border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--blog-muted);
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--blog-border);
+  }
+
+  /* About card */
+  .about-card { border-top: 3px solid var(--gold); }
+  .about-card p {
+    font-size: 0.9rem;
+    color: var(--blog-muted);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+  .about-cta {
+    display: block;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dark);
+    background: var(--gold);
+    border-radius: 99px;
+    padding: 0.55rem 1.2rem;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .about-cta:hover { opacity: 0.85; }
+
+  /* Topic filter */
+  .topic-list { display: flex; flex-direction: column; gap: 0.45rem; }
+  .topic-link {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--blog-text);
+    text-decoration: none;
+    padding: 0.45rem 0.6rem;
+    border-radius: 8px;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topic-link:hover { background: var(--blog-border); }
+  .topic-count {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--blog-muted);
+    background: var(--blog-bg);
+    border-radius: 99px;
+    padding: 0.1rem 0.55rem;
+  }
+
+  /* LyfeLabz promo card */
+  .promo-card {
+    background: var(--dark);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--teal);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .promo-card .sidebar-label { color: rgba(232,230,244,0.45); border-color: rgba(255,255,255,0.07); }
+  .promo-card p {
+    font-size: 0.88rem;
+    color: rgba(232,230,244,0.65);
+    line-height: 1.65;
+    margin-bottom: 1rem;
+  }
+  .promo-link {
+    display: block;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dark);
+    background: var(--teal);
+    border-radius: 99px;
+    padding: 0.55rem 1.2rem;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .promo-link:hover { opacity: 0.85; }
+
+  /* ── FOOTER (dark — same as LyfeLabz) ── */
+  footer {
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  footer .footer-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.6rem;
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+  footer p { font-size: 0.83rem; color: var(--muted); }
+  footer a {
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.83rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    transition: all 0.2s;
+  }
+  footer a:hover { border-color: rgba(245,200,66,0.6); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 760px) {
+    .blog-wrap { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    nav { padding: 0.85rem 1.25rem; }
+    .blog-hero { padding: 2.5rem 1.25rem 2rem; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .blog-hero > * { animation: fadeUp 0.55s ease both; }
+  .blog-hero .hero-eyebrow { animation-delay: 0s; }
+  .blog-hero h1 { animation-delay: 0.08s; }
+  .blog-hero p  { animation-delay: 0.16s; }
+  .blog-hero .hero-meta { animation-delay: 0.24s; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="../index.html" class="nav-logo">LYFELABZ</a>
+  <div class="nav-right">
+    <span class="nav-badge">For Educators</span>
+    <a href="../index.html" class="nav-back">Back to LyfeLabz</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="blog-hero">
+  <div class="hero-eyebrow">Teaching Middle School Science</div>
+  <h1>Strategies, Resources &amp; Lessons<br>for MA Science Teachers</h1>
+  <p>Written by a Grade 6 science teacher in Massachusetts. Posts focus on real classroom practice, NGSS alignment, and free tools that actually work.</p>
+  <div class="hero-meta">
+    <span>Grade 6–8</span>
+    <span style="opacity:0.3;">·</span>
+    <span>Massachusetts STE Aligned</span>
+    <span style="opacity:0.3;">·</span>
+    <span>Free Resources</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="blog-wrap">
+
+  <!-- POSTS -->
+  <main>
+    <div class="posts-header">All Posts</div>
+
+    <!-- POST 1 -->
+    <a href="teach-natural-selection-6th-grade.html" class="post-card" style="--card-accent: #2ecc71;">
+      <div class="post-topic topic-evolution">Evolution &amp; Natural Selection</div>
+      <h2>How I Teach Natural Selection to 6th Graders (Without Losing Them)</h2>
+      <p>Natural selection is one of the hardest concepts in 6th grade science — not because it's complicated, but because students arrive with deep misconceptions baked in. Here's the sequence I've built to address those misconceptions head-on, including a simulation that generates real data students can graph and interpret.</p>
+      <div class="post-footer">
+        <span class="post-date">May 2026 · 6 min read</span>
+        <span class="post-read-more">Read Post →</span>
+      </div>
+    </a>
+
+    <!-- PLACEHOLDER CARDS (coming soon style) — these signal crawl depth to Google -->
+    <div class="post-card" style="opacity: 0.55; cursor: default;">
+      <div class="post-topic topic-earth">Earth &amp; Space Science</div>
+      <h2>Reading Rock Layers: Teaching Superposition Without the Textbook</h2>
+      <p>The rock layer unit is a gift — it's visual, it's logical, and students can actually do the reasoning themselves if you set it up right. Here's how I structure the three-day sequence using relative dating and index fossils.</p>
+      <div class="post-footer">
+        <span class="post-date">Coming soon</span>
+      </div>
+    </div>
+
+    <div class="post-card" style="opacity: 0.55; cursor: default;">
+      <div class="post-topic topic-body">Body Systems</div>
+      <h2>Making Body Systems Stick: An Interactions-First Approach</h2>
+      <p>Most students can name body systems. Far fewer can explain how they work together. I've flipped the sequence — we start with interactions and work backward to individual systems — and it makes a real difference.</p>
+      <div class="post-footer">
+        <span class="post-date">Coming soon</span>
+      </div>
+    </div>
+
+    <div class="post-card" style="opacity: 0.55; cursor: default;">
+      <div class="post-topic topic-standards">MA STE Standards</div>
+      <h2>A Plain-Language Guide to Grade 6 MA STE Standards</h2>
+      <p>The Massachusetts STE Frameworks document is 400 pages long. Here's what Grade 6 science teachers actually need to know, organized by unit and cross-referenced with NGSS Science and Engineering Practices.</p>
+      <div class="post-footer">
+        <span class="post-date">Coming soon</span>
+      </div>
+    </div>
+
+    <div class="post-card" style="opacity: 0.55; cursor: default;">
+      <div class="post-topic topic-strategies">Teaching Strategies</div>
+      <h2>Free Interactive Tools for Middle School Science (That I Actually Use)</h2>
+      <p>A curated list of web-based tools that work on Chromebooks, don't require logins, and are genuinely worth the class time. These are the ones I return to every year.</p>
+      <div class="post-footer">
+        <span class="post-date">Coming soon</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- About -->
+    <div class="sidebar-card about-card">
+      <div class="sidebar-label">About This Blog</div>
+      <p>I'm a Grade 6 science teacher in Massachusetts. LyfeLabz started as a tool for my own classroom — interactive lessons, simulations, and games aligned to MA STE standards. This blog is the teacher-facing side: the thinking behind the tools, and the strategies that go with them.</p>
+      <a href="../about_lyfelabz.html" class="about-cta">About LyfeLabz</a>
+    </div>
+
+    <!-- LyfeLabz Promo -->
+    <div class="promo-card">
+      <div class="sidebar-label">Free Student Platform</div>
+      <p>LyfeLabz is a free interactive science platform for Grades 6–8. Lessons, simulations, and games — all aligned to Massachusetts STE standards. No login required.</p>
+      <a href="../index.html" class="promo-link">Explore LyfeLabz</a>
+    </div>
+
+    <!-- Topics -->
+    <div class="sidebar-card">
+      <div class="sidebar-label">Topics</div>
+      <div class="topic-list">
+        <a href="#" class="topic-link">Evolution &amp; Natural Selection <span class="topic-count">1</span></a>
+        <a href="#" class="topic-link">Earth &amp; Space Science <span class="topic-count">coming</span></a>
+        <a href="#" class="topic-link">Body Systems <span class="topic-count">coming</span></a>
+        <a href="#" class="topic-link">MA STE Standards <span class="topic-count">coming</span></a>
+        <a href="#" class="topic-link">Teaching Strategies <span class="topic-count">coming</span></a>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ</div>
+  <p>Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <p style="margin-top:0.8rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+    <a href="../index.html">Back to LyfeLabz</a>
+    <a href="../about_lyfelabz.html">About</a>
+    <a href="../about_privacy.html">Privacy Policy</a>
+  </p>
+  <p style="margin-top:1rem;font-size:0.72rem;color:rgba(180,200,220,0.35);letter-spacing:0.05em;">© 2026 LyfeLabz · Educational Use</p>
+</footer>
+
+</body>
+</html>
