@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/blog/teach-natural-selection-6th-grade.html">
+<meta name="description" content="How a 6th grade Massachusetts science teacher structures a natural selection unit — addressing misconceptions, using population simulations, and aligning to MA STE standards MS-LS4.">
+<title>How to Teach Natural Selection to 6th Graders | LyfeLabz for Educators</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  html { font-size: 18px; }
+  :root {
+    --dark:      #1a2535;
+    --card:      #1e2f42;
+    --border:    rgba(180,160,255,0.12);
+    --text:      #e8e6f4;
+    --muted:     #7b789e;
+    --gold:      #f5c842;
+    --gold-glow: rgba(245,200,66,0.35);
+    --teal:      #3bc8e8;
+    --green:     #2ecc71;
+
+    --blog-bg:      #f4f2ee;
+    --blog-surface: #ffffff;
+    --blog-text:    #1c2333;
+    --blog-muted:   #6b7280;
+    --blog-border:  #e2dfd8;
+    --blog-rule:    #d4d0c8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--blog-bg);
+    color: var(--blog-text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(11,14,26,0.97);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-right { display: flex; align-items: center; gap: 0.65rem; }
+  .nav-back {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-decoration: none;
+    border: 1px solid rgba(245,200,66,0.4);
+    border-radius: 99px;
+    padding: 0.3rem 0.9rem;
+    background: rgba(245,200,66,0.08);
+    transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(245,200,66,0.18); border-color: rgba(245,200,66,0.75); }
+
+  /* ── POST HEADER ── */
+  .post-header {
+    background: var(--dark);
+    padding: 3.5rem 2rem 3rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .post-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 55% 60% at 50% 0%, rgba(46,204,113,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .post-topic {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    padding: 0.28rem 0.85rem;
+    border-radius: 99px;
+    background: rgba(46,204,113,0.12);
+    color: #2ecc71;
+    margin-bottom: 1.2rem;
+    position: relative;
+  }
+  .post-header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+    color: var(--text);
+    line-height: 1.2;
+    max-width: 750px;
+    margin: 0 auto 1.2rem;
+    position: relative;
+  }
+  .post-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgba(232,230,244,0.45);
+    letter-spacing: 0.04em;
+    position: relative;
+    flex-wrap: wrap;
+  }
+  .post-meta .dot { opacity: 0.3; }
+  .post-standard {
+    background: rgba(46,204,113,0.12);
+    border: 1px solid rgba(46,204,113,0.3);
+    color: #2ecc71;
+    border-radius: 99px;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── ARTICLE LAYOUT ── */
+  .article-wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 3.5rem 2rem;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 3.5rem;
+    align-items: start;
+  }
+
+  /* ── ARTICLE BODY ── */
+  article {
+    background: var(--blog-surface);
+    border: 1px solid var(--blog-border);
+    border-radius: 16px;
+    padding: 2.5rem 2.8rem;
+  }
+
+  article h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.3rem, 2.5vw, 1.65rem);
+    color: var(--blog-text);
+    margin: 2.2rem 0 0.9rem;
+    line-height: 1.25;
+  }
+  article h2:first-child { margin-top: 0; }
+
+  article h3 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--blog-text);
+    margin: 1.6rem 0 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  article p {
+    font-size: 0.97rem;
+    color: #374151;
+    line-height: 1.85;
+    margin-bottom: 1.1rem;
+  }
+
+  article ul, article ol {
+    padding-left: 1.4rem;
+    margin-bottom: 1.1rem;
+  }
+  article li {
+    font-size: 0.97rem;
+    color: #374151;
+    line-height: 1.8;
+    margin-bottom: 0.35rem;
+  }
+
+  article hr {
+    border: none;
+    border-top: 2px solid var(--blog-border);
+    margin: 2.2rem 0;
+  }
+
+  /* Pull quote */
+  .pull-quote {
+    border-left: 4px solid var(--green);
+    background: rgba(46,204,113,0.06);
+    padding: 1.1rem 1.4rem;
+    margin: 1.8rem 0;
+    border-radius: 0 10px 10px 0;
+  }
+  .pull-quote p {
+    font-size: 1.05rem !important;
+    font-weight: 700;
+    color: #1c5c3a !important;
+    line-height: 1.6 !important;
+    margin: 0 !important;
+    font-style: italic;
+  }
+
+  /* Teacher tip box */
+  .tip-box {
+    background: rgba(245,200,66,0.08);
+    border: 1px solid rgba(245,200,66,0.3);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin: 1.8rem 0;
+  }
+  .tip-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #9a7b00;
+    margin-bottom: 0.5rem;
+  }
+  .tip-box p {
+    font-size: 0.92rem !important;
+    color: #5a4800 !important;
+    margin: 0 !important;
+    line-height: 1.7 !important;
+  }
+
+  /* Misconception box */
+  .misconception-box {
+    background: rgba(255,112,67,0.06);
+    border: 1px solid rgba(255,112,67,0.25);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin: 1.8rem 0;
+  }
+  .misconception-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #c04000;
+    margin-bottom: 0.5rem;
+  }
+  .misconception-box p {
+    font-size: 0.92rem !important;
+    color: #6b2500 !important;
+    margin: 0 !important;
+    line-height: 1.7 !important;
+  }
+
+  /* CTA block linking to LyfeLabz */
+  .resource-cta {
+    background: var(--dark);
+    border-radius: 14px;
+    padding: 1.8rem 2rem;
+    margin: 2.2rem 0;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .resource-cta-text { flex: 1; min-width: 200px; }
+  .resource-cta-text strong {
+    display: block;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: 0.35rem;
+  }
+  .resource-cta-text p {
+    font-size: 0.85rem !important;
+    color: rgba(232,230,244,0.6) !important;
+    margin: 0 !important;
+    line-height: 1.55 !important;
+  }
+  .resource-cta-btn {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--dark);
+    background: var(--teal);
+    border-radius: 99px;
+    padding: 0.65rem 1.4rem;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .resource-cta-btn:hover { opacity: 0.85; }
+
+  /* Step cards */
+  .steps { display: flex; flex-direction: column; gap: 1rem; margin: 1.2rem 0 1.8rem; }
+  .step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: var(--blog-bg);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+  }
+  .step-num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: var(--green);
+    line-height: 1;
+    min-width: 1.6rem;
+    padding-top: 2px;
+  }
+  .step-body strong {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--blog-text);
+    margin-bottom: 0.2rem;
+  }
+  .step-body p {
+    font-size: 0.88rem !important;
+    color: var(--blog-muted) !important;
+    margin: 0 !important;
+    line-height: 1.6 !important;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar { position: sticky; top: 5.5rem; }
+  .sidebar-card {
+    background: var(--blog-surface);
+    border: 1px solid var(--blog-border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    margin-bottom: 1.4rem;
+  }
+  .sidebar-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--blog-muted);
+    margin-bottom: 0.9rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid var(--blog-border);
+  }
+
+  .toc-list { list-style: none; }
+  .toc-list li { margin-bottom: 0.4rem; }
+  .toc-list a {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--blog-muted);
+    text-decoration: none;
+    transition: color 0.15s;
+    display: block;
+    padding: 0.2rem 0;
+    border-left: 2px solid transparent;
+    padding-left: 0.7rem;
+  }
+  .toc-list a:hover { color: var(--blog-text); border-left-color: var(--green); }
+
+  .standard-badge {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #1c5c3a;
+    background: rgba(46,204,113,0.1);
+    border: 1px solid rgba(46,204,113,0.25);
+    border-radius: 8px;
+    padding: 0.65rem 0.9rem;
+    margin-bottom: 0.6rem;
+    line-height: 1.5;
+  }
+  .standard-badge strong { display: block; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.2rem; color: #157a3c; }
+
+  /* Promo card dark */
+  .promo-card {
+    background: var(--dark);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--teal);
+    border-radius: 14px;
+    padding: 1.4rem;
+    margin-bottom: 1.4rem;
+  }
+  .promo-card .sidebar-label { color: rgba(232,230,244,0.4); border-color: rgba(255,255,255,0.07); }
+  .promo-card p {
+    font-size: 0.85rem;
+    color: rgba(232,230,244,0.6);
+    line-height: 1.65;
+    margin-bottom: 0.9rem;
+  }
+  .promo-link {
+    display: block;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dark);
+    background: var(--teal);
+    border-radius: 99px;
+    padding: 0.5rem 1.1rem;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .promo-link:hover { opacity: 0.85; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  footer .footer-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.6rem;
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+  footer p { font-size: 0.83rem; color: var(--muted); }
+  footer a {
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.83rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    transition: all 0.2s;
+  }
+  footer a:hover { border-color: rgba(245,200,66,0.6); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 780px) {
+    .article-wrap { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    article { padding: 1.5rem 1.3rem; }
+    nav { padding: 0.85rem 1.25rem; }
+    .post-header { padding: 2.5rem 1.25rem 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="../index.html" class="nav-logo">LYFELABZ</a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-back">All Posts</a>
+  </div>
+</nav>
+
+<!-- POST HEADER -->
+<div class="post-header">
+  <div class="post-topic">Evolution &amp; Natural Selection</div>
+  <h1>How I Teach Natural Selection to 6th Graders (Without Losing Them)</h1>
+  <div class="post-meta">
+    <span>May 2026</span>
+    <span class="dot">·</span>
+    <span>6 min read</span>
+    <span class="dot">·</span>
+    <span>Grade 6</span>
+    <span class="dot">·</span>
+    <span class="post-standard">MS-LS4-4</span>
+    <span class="post-standard">MS-LS4-6</span>
+  </div>
+</div>
+
+<!-- ARTICLE -->
+<div class="article-wrap">
+  <article>
+
+    <h2>The Problem With How We Usually Teach This</h2>
+    <p>Natural selection is one of the most elegant ideas in all of science. It's also one of the most reliably misunderstood by 6th graders — and honestly, by most adults too. The standard approach of defining the four conditions (variation, heritability, selection pressure, differential survival) and moving on doesn't work. Students memorize the list and then immediately use it incorrectly.</p>
+
+    <div class="misconception-box">
+      <div class="misconception-label">Common Misconception</div>
+      <p>The biggest one: students believe that individual organisms <em>adapt</em> in response to their environment over their lifetime. "The giraffe stretched its neck to reach leaves, so its neck got longer." This is Lamarckian evolution, and it's deeply intuitive. You have to address it directly, not just mention it.</p>
+    </div>
+
+    <p>The fix isn't a better lecture. It's changing what students do with the concept before you ever name it. Here's the sequence I've settled on after several iterations.</p>
+
+    <hr>
+
+    <h2 id="sequence">The Teaching Sequence</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>Anchor with a population — not an individual</strong>
+          <p>Start by establishing that natural selection acts on populations over generations, not on individuals in their lifetime. I spend an entire class on this distinction before touching evolution vocabulary.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>Introduce variation as the raw material</strong>
+          <p>Students do a variation inventory of themselves — height, earlobe attachment, tongue rolling. The point: variation is already present in any population, before any selection pressure exists.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>Add a selection pressure and ask: who survives?</strong>
+          <p>Introduce a specific environmental challenge. Students predict which individuals in the variable population survive — not why animals want to survive, but which traits happen to help right now.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>Run the simulation to generate real data</strong>
+          <p>This is where the Beetle Island simulation earns its place. Students manipulate predation pressure and observe how trait frequency shifts over generations — not because beetles "try" to change, but because survivors reproduce more.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <strong>Graph and interpret the data</strong>
+          <p>Students build population graphs from simulation data, then write a claim-evidence-reasoning response explaining what happened. This is where the concept actually consolidates.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="resource-cta">
+      <div class="resource-cta-text">
+        <strong>Beetle Island Simulation</strong>
+        <p>A free browser-based simulation where students adjust predation pressure and track how beetle populations evolve over generations. Includes graphing mode and a reflection panel. No login required — works on Chromebooks.</p>
+      </div>
+      <a href="../simulation_beetle-island.html" class="resource-cta-btn">Open Simulation</a>
+    </div>
+
+    <hr>
+
+    <h2 id="misconceptions">Attacking the Misconceptions Directly</h2>
+
+    <p>I've found that the Lamarckian misconception is so persistent that it needs to be named and examined — not just corrected in passing. I use two specific moves:</p>
+
+    <h3>Move 1: The Broken Giraffe Scenario</h3>
+    <p>I present the classic giraffe story as a belief some people hold, and ask students to argue with it. Most 6th graders can identify what's wrong ("the giraffe can't change its own DNA") before I've said anything. Getting them to articulate the flaw themselves is more durable than me correcting them.</p>
+
+    <h3>Move 2: The "Want To" Test</h3>
+    <p>Any time a student says an organism "adapted to" or "evolved to" do something, I ask: "Did it want to?" This forces them to re-examine whether they're describing intention or probability. It becomes a class shorthand by week two.</p>
+
+    <div class="pull-quote">
+      <p>"Natural selection doesn't care what an organism wants. It only cares who's left after the selection pressure hits."</p>
+    </div>
+
+    <hr>
+
+    <h2 id="ngss">MA STE Standards This Addresses</h2>
+
+    <p>This sequence directly addresses two Grade 6–8 standards from the Massachusetts STE Frameworks:</p>
+
+    <ul>
+      <li><strong>MS-LS4-4:</strong> Construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals' probability of surviving and reproducing.</li>
+      <li><strong>MS-LS4-6:</strong> Use mathematical representations to support explanations of how natural selection may lead to increases and decreases of specific traits in populations over time.</li>
+    </ul>
+
+    <p>The graphing component of the Beetle Island simulation is designed specifically to hit MS-LS4-6 — students produce and interpret a mathematical representation, not just observe a phenomenon.</p>
+
+    <div class="resource-cta">
+      <div class="resource-cta-text">
+        <strong>Full Biological Evolution Lesson</strong>
+        <p>The companion lesson page covers variation, heritability, selection pressure, and adaptation with embedded checks for understanding. Pairs directly with the simulation above.</p>
+      </div>
+      <a href="../lesson_biological-evolution.html" class="resource-cta-btn">Open Lesson</a>
+    </div>
+
+    <hr>
+
+    <h2 id="tips">A Few More Things That Help</h2>
+
+    <h3>Use "trait frequency" instead of "the species changed"</h3>
+    <p>Language matters here. Saying "the species evolved darker coloring" implies a collective decision. Saying "the frequency of the dark-coloring trait increased in the population" is more precise and harder to misinterpret. It sounds technical but 6th graders pick it up quickly when you use it consistently.</p>
+
+    <h3>Return to the Chernobyl frogs</h3>
+    <p>I use the real-world example of tree frogs near Chernobyl evolving darker pigmentation after 1986 as a closure anchor. It's recent, it's verifiable, and it's strange enough to stick. There's also a simulation built around this exact case.</p>
+
+    <div class="resource-cta">
+      <div class="resource-cta-text">
+        <strong>Chernobyl Frogs Simulation</strong>
+        <p>Students simulate how radiation-induced selection pressure shifted trait frequency in a real frog population. A compelling real-world application of everything in this unit.</p>
+      </div>
+      <a href="../simulation_chernobyl-frogs.html" class="resource-cta-btn">Open Simulation</a>
+    </div>
+
+    <h3>Don't rush to the vocabulary</h3>
+    <p>I used to front-load definitions. Now I introduce vocabulary only after students have experienced the phenomenon through the simulation and can describe what they saw in their own words. Vocabulary that lands on top of experience sticks. Vocabulary that comes first just gets memorized and misapplied.</p>
+
+    <div class="tip-box">
+      <div class="tip-label">Teacher Tip</div>
+      <p>After students complete the Beetle Island simulation, ask them to explain what happened to a fictional student who missed class. Writing to a peer audience is a low-stakes way to assess understanding and surfaces misconceptions that don't show up on traditional assessments.</p>
+    </div>
+
+    <hr>
+
+    <p style="font-size: 0.88rem; color: var(--blog-muted); font-style: italic;">This is the approach that's worked best in my classroom — it will look different in yours. The core principles (population-first, misconceptions named directly, data before vocabulary) are the parts worth keeping regardless of which specific tools or activities you use.</p>
+
+  </article>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- Table of Contents -->
+    <div class="sidebar-card">
+      <div class="sidebar-label">In This Post</div>
+      <ul class="toc-list">
+        <li><a href="#sequence">The Teaching Sequence</a></li>
+        <li><a href="#misconceptions">Attacking Misconceptions</a></li>
+        <li><a href="#ngss">MA STE Standards</a></li>
+        <li><a href="#tips">Tips That Help</a></li>
+      </ul>
+    </div>
+
+    <!-- MA Standards -->
+    <div class="sidebar-card">
+      <div class="sidebar-label">MA STE Standards</div>
+      <div class="standard-badge">
+        <strong>MS-LS4-4</strong>
+        Genetic variation and probability of survival
+      </div>
+      <div class="standard-badge">
+        <strong>MS-LS4-6</strong>
+        Mathematical representations of natural selection
+      </div>
+    </div>
+
+    <!-- Simulation promos -->
+    <div class="promo-card">
+      <div class="sidebar-label">Free Simulations</div>
+      <p>Both simulations referenced in this post are free, browser-based, and built for Chromebooks. No login required.</p>
+      <a href="../simulation_beetle-island.html" class="promo-link" style="margin-bottom: 0.6rem; display: block;">Beetle Island</a>
+      <a href="../simulation_chernobyl-frogs.html" class="promo-link">Chernobyl Frogs</a>
+    </div>
+
+    <!-- Back to blog -->
+    <div class="sidebar-card" style="text-align: center;">
+      <div class="sidebar-label">More Posts</div>
+      <a href="index.html" style="
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--blog-text);
+        border: 1.5px solid var(--blog-border);
+        border-radius: 99px;
+        padding: 0.5rem 1.2rem;
+        text-decoration: none;
+        transition: all 0.2s;
+      ">All Posts →</a>
+    </div>
+
+  </aside>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ</div>
+  <p>Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <p style="margin-top:0.8rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+    <a href="../index.html">Back to LyfeLabz</a>
+    <a href="index.html">All Posts</a>
+    <a href="../about_privacy.html">Privacy Policy</a>
+  </p>
+  <p style="margin-top:1rem;font-size:0.72rem;color:rgba(180,200,220,0.35);letter-spacing:0.05em;">© 2026 LyfeLabz · Educational Use</p>
+</footer>
+
+</body>
+</html>
