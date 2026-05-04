@@ -125,6 +125,23 @@
       radial-gradient(ellipse 40% 40% at 80% 100%, rgba(245,200,66,0.06) 0%, transparent 60%);
     pointer-events: none;
   }
+  .blog-hero::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 60px;
+    background: linear-gradient(
+      to bottom,
+      rgba(26,37,53,1) 0%,
+      rgba(26,37,53,0.85) 30%,
+      rgba(244,242,238,0.6) 70%,
+      rgba(244,242,238,1) 100%
+    );
+    pointer-events: none;
+  }
+
   .hero-eyebrow {
     display: inline-flex;
     align-items: center;
@@ -279,7 +296,7 @@
   .post-read-more:hover { opacity: 0.65; }
 
   /* ── SIDEBAR ── */
-  .sidebar { position: sticky; top: 5.5rem; }
+  .sidebar { position: static; }
 
   .sidebar-card {
     background: var(--blog-surface);
