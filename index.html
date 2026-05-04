@@ -96,41 +96,75 @@
     align-items: center;
     gap: 0.65rem;
   }
-  .nav-how {
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: var(--astro);
+  /* ===== HAMBURGER MENU ===== */
+  .nav-menu-wrap {
+    position: relative;
+  }
+  .nav-hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-hamburger:hover {
+    background: rgba(255,255,255,0.09);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .nav-hamburger span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--text);
+    border-radius: 2px;
+    transition: background 0.2s;
+  }
+  .nav-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: rgba(18, 28, 44, 0.97);
+    backdrop-filter: blur(18px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.5rem 0;
+    min-width: 180px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    display: none;
+    z-index: 2000;
+  }
+  .nav-dropdown.open {
+    display: block;
+    animation: fadeDown 0.18s ease both;
+  }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .nav-dropdown a {
+    display: block;
+    padding: 0.62rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
     text-decoration: none;
-    border: 1px solid rgba(180,127,255,0.6);
-    border-radius: 99px;
-    padding: 0.3rem 0.9rem;
+    letter-spacing: 0.03em;
+    transition: background 0.15s, color 0.15s;
     white-space: nowrap;
-    background: rgba(180,127,255,0.1);
-    transition: all 0.2s;
   }
-  .nav-how:hover {
-    background: rgba(180,127,255,0.2);
-    border-color: rgba(180,127,255,0.9);
+  .nav-dropdown a:hover {
+    background: rgba(245,200,66,0.1);
+    color: var(--gold);
   }
-  .nav-why {
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: var(--teal);
-    text-decoration: none;
-    border: 1px solid rgba(59,200,232,0.7);
-    border-radius: 99px;
-    padding: 0.3rem 0.9rem;
-    white-space: nowrap;
-    background: rgba(59,200,232,0.12);
-    transition: all 0.2s;
-  }
-  .nav-why:hover {
-    background: rgba(59,200,232,0.22);
-    border-color: rgba(59,200,232,0.95);
+  .nav-dropdown a + a {
+    border-top: 1px solid var(--border);
   }
 
   /* ===== HERO ===== */
@@ -683,8 +717,16 @@
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <div class="nav-right">
-    <a href="#how" class="nav-how">How It's Built</a>
-    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+    <div class="nav-menu-wrap">
+      <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-dropdown" id="navDropdown">
+        <a href="https://www.lyfelabz.com/blog/" target="_blank" rel="noopener">Educator's Blog</a>
+        <a href="#how">How It's Built</a>
+        <a href="about_learning-science.html">Why It Works</a>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -1367,6 +1409,23 @@ function toggleStemMode() {
       window.location.href = 'https://beta.lyfelabz.com';
     }
   });
+</script>
+<script>
+  (function() {
+    const btn = document.getElementById('navHamburger');
+    const menu = document.getElementById('navDropdown');
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const open = menu.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    });
+    document.addEventListener('click', function(e) {
+      if (!menu.contains(e.target) && e.target !== btn) {
+        menu.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  })();
 </script>
 
 </body>
