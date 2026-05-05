@@ -1210,10 +1210,10 @@ const quizData = {
     {
       q: 'What makes a fossil useful as an "index fossil"?',
       options: [
-        'It comes from a large animal that lived for millions of years across many locations',
-        'It comes from a species that lived for a short, well-defined time period and was found worldwide',
-        'It is found only in one specific location on Earth',
-        'It comes from the very bottom layer of any rock sequence'
+        'Lived for millions of years across many regions',
+        'Lived briefly but spread across the whole globe',
+        'Found only in one specific location on Earth',
+        'Always found at the bottom of any rock sequence'
       ],
       correct: 1,
       explanation: 'A good index fossil comes from a species that (1) existed for a short, specific time period — so finding it precisely dates that layer — and (2) was widespread across the globe, so it can be used to match and compare layers at different locations around the world.'
@@ -1221,10 +1221,10 @@ const quizData = {
     {
       q: 'What is the difference between weathering and erosion?',
       options: [
-        'Weathering moves rock; erosion breaks it apart',
-        'Weathering breaks rock into smaller pieces; erosion moves those pieces to a new location',
-        'They are the same process, just used in different contexts',
-        'Weathering only occurs in deserts; erosion only occurs near water'
+        'Weathering moves rock; erosion breaks it down in place',
+        'Weathering breaks rock apart; erosion carries those pieces away',
+        'They are the same process, just with different names',
+        'Weathering only happens in deserts; erosion only happens near water'
       ],
       correct: 1,
       explanation: 'Weathering breaks rock down into smaller pieces (in place), while erosion picks up those pieces and transports them somewhere else — by water, wind, or ice. Both are needed to create the sediment that eventually becomes sedimentary rock.'
@@ -1233,7 +1233,7 @@ const quizData = {
       q: 'A scientist says "Layer A is older than Layer B." This is an example of which type of dating?',
       options: [
         'Absolute dating, because it uses a comparison',
-        'Relative dating, because it states a relationship without giving exact ages in years',
+        'Relative dating — it orders events without giving exact ages',
         'Index fossil dating, because it involves fossils',
         'Radiometric dating, because it uses radioactive elements'
       ],
@@ -1265,10 +1265,10 @@ const quizData = {
     {
       q: 'Small pieces of an older rock type are found trapped inside a younger layer of sedimentary rock. What principle explains this?',
       options: [
-        'Superposition — the bottom layer is always oldest',
-        'Cross-Cutting Relationships — what cuts is younger',
-        'Inclusions — pieces trapped inside a layer are older than the surrounding rock',
-        'Original Horizontality — layers are always deposited flat'
+        'Superposition — older layers always lie below younger ones',
+        'Cross-Cutting Relationships — intruding features are always younger',
+        'Inclusions — trapped pieces are older than the rock around them',
+        'Original Horizontality — sediment always deposits in flat layers'
       ],
       correct: 2,
       explanation: 'Inclusions are pieces of one rock type found inside another. Because they had to exist before the surrounding rock formed around them, inclusions are always older than the layer they are found within. It\'s one of four key principles scientists use to read the rock record.'
@@ -1458,12 +1458,10 @@ function submitQuiz() {
     tab: 'Layers', studentName: name, teacher: teacherLabel,
     block, score, percent: pct + '%'
   });
-  fetch(url + '?' + params.toString())
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById('submit-status').innerHTML = data.status === 'success'
-        ? '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>'
-        : '<div class="score-error">⚠️ Submission issue: ' + (data.message || 'Unknown error') + '</div>';
+  fetch(url + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(() => {
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
     })
     .catch(() => {
       document.getElementById('submit-status').innerHTML =

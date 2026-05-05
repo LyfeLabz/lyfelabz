@@ -428,7 +428,6 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 2rem;
   }
   .progress-bar {
     flex: 1;
@@ -1174,12 +1173,12 @@ const SCRIPT_URLS = {
 
 const quizQuestions = [
   { q: "Bacteria consist of a single cell. This makes them:", options: ["Multicellular","Eukaryotic","Unicellular","Neither living nor nonliving"], correct: 2, explanation: "Unicellular means one cell. Bacteria are single-celled (unicellular) organisms — and they're prokaryotic, not eukaryotic." },
-  { q: "Which of the following organisms are eukaryotic? (Choose the BEST answer)", options: ["Bacteria only","Bacteria and protists","Plants, animals, fungi, and protists","Viruses"], correct: 2, explanation: "Eukaryotic cells have DNA inside a nucleus. Plants, animals, fungi, and protists are all eukaryotic. Bacteria are prokaryotic." },
+  { q: "Which of the following organisms are eukaryotic?", options: ["Bacteria and archaea","Bacteria and some protists","All organisms with a nucleus","Viruses and bacteria"], correct: 2, explanation: "Eukaryotic cells are defined by having a true, membrane-bound nucleus. This includes plants, animals, fungi, and protists. Bacteria and archaea are prokaryotic — they have no nucleus." },
   { q: "In prokaryotic cells, where is the DNA found?", options: ["Inside the nucleus","In the mitochondria","Floating in the cytoplasm","In the cell wall"], correct: 2, explanation: "Prokaryotic cells do NOT have a nucleus — their DNA floats freely in the cytoplasm." },
   { q: "If an organism is made of many cells that work together to form tissues and organs, it is called:", options: ["Unicellular","Prokaryotic","Eukaryotic only","Multicellular"], correct: 3, explanation: "Multicellular means 'many cells.' Plants, animals, and fungi are multicellular — their cells work together in tissues and organs." },
   { q: "A paramecium is a single-celled organism that moves, eats, and reproduces all on its own. Which statement about it is TRUE?", options: ["It must be multicellular because it does so many things","It is unicellular — one cell handles all life functions","It is multicellular but very small","It cannot be alive because it only has one cell"], correct: 1, explanation: "A paramecium is unicellular — just one cell carries out every life function: movement, digestion, reproduction, and more!" },
   { q: "Which of the following is an example of a multicellular organism?", options: ["Amoeba","Bacteria","Oak tree","Yeast (single-celled form)"], correct: 2, explanation: "An oak tree is multicellular — billions of specialized cells organized into roots, stems, leaves, and more. The others listed are unicellular." },
-  { q: "In a multicellular organism, cells are organized into tissues. What does this mean?", options: ["All cells are identical and do the same job","Groups of similar cells work together to perform a specific function","Each cell works alone to keep the organism alive","Cells are spread randomly with no organization"], correct: 1, explanation: "In multicellular organisms, similar cells group together into tissues to carry out a specific job — like muscle tissue for movement or nerve tissue for signals." },
+  { q: "In a multicellular organism, cells are organized into tissues. What does this mean?", options: ["All cells in a tissue are identical and interchangeable","Similar cells group together to carry out one shared function","Each cell works completely alone to keep the organism alive","Cells are scattered throughout the body with no pattern at all"], correct: 1, explanation: "In multicellular organisms, similar cells group together into tissues to carry out a specific job — like muscle tissue for movement or nerve tissue for signals." },
   { q: "Can a unicellular organism also be eukaryotic?", options: ["No — all unicellular organisms are prokaryotic","Yes — for example, amoeba and paramecium are unicellular eukaryotes","No — eukaryotes must always be multicellular","Yes — but only if they have a cell wall"], correct: 1, explanation: "Unicellular and eukaryotic are not mutually exclusive! Amoeba, paramecium, and many protists are single-celled but still have a nucleus — making them unicellular eukaryotes." },
   { q: "Which of the following is BOTH prokaryotic AND unicellular?", options: ["Amoeba","Oak tree","Bacteria","Paramecium"], correct: 2, explanation: "Bacteria are the classic example — they are single-celled (unicellular) AND lack a nucleus (prokaryotic). Amoeba and paramecium are unicellular but eukaryotic." },
   { q: "A student looks at a cell under a microscope and sees no nucleus — the DNA appears to be floating freely in the cell. What type of cell is this?", options: ["Eukaryotic — it must have lost its nucleus","Prokaryotic — no nucleus is the defining feature","Multicellular — large cells don't always have nuclei","Unicellular — small cells never have nuclei"], correct: 1, explanation: "The absence of a membrane-bound nucleus is the defining feature of prokaryotic cells. Eukaryotic cells always have a nucleus enclosing their DNA." }
@@ -1331,14 +1330,15 @@ function submitQuiz() {
   const { name, teacher, block } = validateStudentInfo();
   const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
   const params = new URLSearchParams({ tab: 'Cell Types', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%' });
-  fetch(SCRIPT_URLS[teacher] + '?' + params.toString())
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById('submit-status').innerHTML = data.status === 'success'
-        ? '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>'
-        : '<div class="score-error">⚠️ Submission issue: ' + (data.message || 'Unknown error') + '</div>';
+  fetch(SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(() => {
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
     })
-    .catch(() => { document.getElementById('submit-status').innerHTML = '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>'; });
+    .catch(() => {
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
 }
 
 function resetQuiz() {

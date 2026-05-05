@@ -445,7 +445,7 @@
     padding: 1.8rem;
     margin-bottom: 1.2rem;
   }
-  .quiz-progress { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
   .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
   .progress-fill {
     height: 100%;
@@ -1333,9 +1333,9 @@ const quizQuestions = [
   { q: "The Golgi bodies are compared to a post office because they:", options: ["Generate energy for the cell","Break down waste materials","Process and package proteins for shipment","Control what enters the cell"], correct: 2, explanation: "Like a post office, Golgi bodies receive proteins from the ER, package them up, and ship them to where they're needed." },
   { q: "How are vacuoles different in plant cells vs. animal cells?", options: ["Plant cells have many small vacuoles; animal cells have one large one","Both have the same number","Plant cells have one large central vacuole; animal cells have many small ones","Neither type of cell has vacuoles"], correct: 2, explanation: "Plant cells have ONE large central vacuole (think of a big water storage tank). Animal cells have MANY small vacuoles." },
   { q: "Which organelle is compared to 'jelly in a donut' and helps organelles move around inside the cell?", options: ["Cell wall","Vacuole","Nucleus","Cytoplasm"], correct: 3, explanation: "The cytoplasm is the gel-like fluid that fills the cell. Just like jelly lets a donut's filling flow, cytoplasm lets materials move around." },
-  { q: "A student says: 'The ribosomes are like the construction crew.' Why is this a good analogy?", options: ["Because ribosomes build the cell wall","Because ribosomes follow instructions (from DNA) to build proteins","Because ribosomes remove waste from the cell","Because ribosomes generate energy"], correct: 1, explanation: "Construction crews follow blueprints to build things. Ribosomes follow DNA's instructions (via mRNA) to build proteins for the cell." },
+  { q: "A student says: 'The ribosomes are like the construction crew.' Why is this a good analogy?", options: ["Because ribosomes build the cell wall","Because ribosomes build proteins from DNA instructions","Because ribosomes remove waste from the cell","Because ribosomes generate energy for the cell"], correct: 1, explanation: "Construction crews follow blueprints to build things. Ribosomes follow DNA's instructions (via mRNA) to build proteins for the cell." },
   { q: "Which organelle acts as the 'brain' of the cell and houses the cell's DNA?", options: ["Mitochondria","Ribosome","Nucleus","Golgi bodies"], correct: 2, explanation: "The nucleus is the control center — it contains DNA with all the instructions for the cell's functions. Found in both plant and animal cells." },
-  { q: "The lysosomes are described as the cell's waste management system. What do they actually do?", options: ["Produce energy for the cell","Transport proteins through the cell","Package proteins for export","Break down waste materials and keep the cell clean"], correct: 3, explanation: "Lysosomes contain enzymes that break down worn-out cell parts, food particles, and invaders — keeping the cell clean and healthy." },
+  { q: "The lysosomes are described as the cell's waste management system. What do they actually do?", options: ["Produce energy for the cell","Transport proteins to where they're needed","Package proteins and prepare them for export","Break down waste and old cell parts"], correct: 3, explanation: "Lysosomes contain enzymes that break down worn-out cell parts, food particles, and invaders — keeping the cell clean and healthy." },
   { q: "Which of the following organelles is found in plant cells but NOT in animal cells?", options: ["Mitochondria","Ribosomes","Cell wall","Lysosomes"], correct: 2, explanation: "The cell wall is a rigid outer layer found only in plant cells — it provides structure and support. Animal cells have a cell membrane but no cell wall." }
 ];
 
@@ -1485,14 +1485,15 @@ function submitQuiz() {
   const { name, teacher, block } = validateStudentInfo();
   const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
   const params = new URLSearchParams({ tab: 'Organelles', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%' });
-  fetch(SCRIPT_URLS[teacher] + '?' + params.toString())
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById('submit-status').innerHTML = data.status === 'success'
-        ? '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>'
-        : '<div class="score-error">⚠️ Submission issue: ' + (data.message || 'Unknown error') + '</div>';
+  fetch(SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(() => {
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
     })
-    .catch(() => { document.getElementById('submit-status').innerHTML = '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>'; });
+    .catch(() => {
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
 }
 
 function resetQuiz() {

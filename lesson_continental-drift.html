@@ -1440,15 +1440,14 @@ function submitQuiz() {
     score: score,
     percent: pct + '%'
   });
-  fetch(url + '?' + params.toString())
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      document.getElementById('submit-status').innerHTML = data.status === 'success'
-        ? '<div class="score-submitted">Score submitted to ' + teacherLabel + '</div>'
-        : '<div class="score-error">Submission issue: ' + (data.message || 'Unknown error') + '</div>';
+  fetch(url + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(function() {
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
     })
     .catch(function() {
-      document.getElementById('submit-status').innerHTML = '<div class="score-error">Could not reach the server. Check your connection.</div>';
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });
 }
 
