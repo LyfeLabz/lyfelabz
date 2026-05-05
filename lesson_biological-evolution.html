@@ -475,7 +475,7 @@
   .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(29,233,182,0.08); border-left: 3px solid var(--teal); }
   .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
   .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
-  .quiz-progress { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
   .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
   .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
   .progress-text { font-size: 0.85rem; font-weight: 800; color: rgba(176,160,122,0.9); white-space: nowrap; }
@@ -1416,14 +1416,15 @@ function submitQuiz() {
   const { name, teacher, block } = validateStudentInfo();
   const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
   const params = new URLSearchParams({ tab: 'Bio Evolution', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%' });
-  fetch(SCRIPT_URLS[teacher] + '?' + params.toString())
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById('submit-status').innerHTML = data.status === 'success'
-        ? '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>'
-        : '<div class="score-error">⚠️ Submission issue: ' + (data.message || 'Unknown error') + '</div>';
+  fetch(SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(() => {
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
     })
-    .catch(() => { document.getElementById('submit-status').innerHTML = '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>'; });
+    .catch(() => {
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
 }
 
 function resetQuiz() {
