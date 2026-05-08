@@ -1,1615 +1,1630 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
 <meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wonder Box — by LyfeLabz</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Syne+Mono&family=Nunito:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
+<link rel="canonical" href="https://lyfelabz.com/">
+<meta name="description" content="LyfeLabz is a free interactive science learning platform for Grade 6–8 students. Explore body systems, evolution, cells, and more through lessons, simulations, and games.">
+<title>LyfeLabz | Science Learning Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
-/* ===== RESET & TOKENS ===== */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
-:root {
-  --void:    #050b14;
-  --surface: #0a1220;
-  --card:    #0e1928;
-  --border:  rgba(120,190,255,0.1);
-  --teal:    #00f5d4;
-  --amber:   #ffd166;
-  --coral:   #ef476f;
-  --violet:  #7c6cfa;
-  --sky:     #5ce1ff;
-  --text:    #deeaf8;
-  --muted:   rgba(180,210,240,0.5);
-  --lyfe:    #4ade80; /* LyfeLabz green hint */
-  --glow-t:  rgba(0,245,212,0.15);
-  --glow-a:  rgba(255,209,102,0.15);
-}
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--void);
-  color: var(--text);
-  font-family: 'Nunito', sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
-  overflow-x: hidden;
-  cursor: default;
-}
-
-/* ===== SPACE CANVAS ===== */
-#cosmos {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* ===== GRAIN OVERLAY ===== */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
-  background-size: 180px;
-  pointer-events: none;
-  opacity: 0.6;
-}
-
-.page { position: relative; z-index: 2; }
-
-/* ===== NAV ===== */
-nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 100;
-  padding: 0 clamp(16px, 4vw, 48px);
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(5,11,20,0.8);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-}
-
-.nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-}
-
-.wb-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.wb-icon {
-  width: 34px; height: 34px;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.wb-icon svg { width: 100%; height: 100%; }
-
-.wb-wordmark {
-  font-family: 'Syne Mono', monospace;
-  font-size: 21.6px;
-  letter-spacing: 0.06em;
-  color: var(--teal);
-  text-shadow: 0 0 20px rgba(0,245,212,0.4);
-}
-
-.wb-wordmark span {
-  color: var(--amber);
-  text-shadow: 0 0 20px rgba(255,209,102,0.4);
-}
-
-.nav-divider {
-  width: 1px;
-  height: 22px;
-  background: var(--border);
-}
-
-.nav-parent {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.3em;
-  color: var(--lyfe);
-  text-decoration: none;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-  text-transform: uppercase;
-}
-.nav-parent:hover { opacity: 1; }
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-  list-style: none;
-}
-
-.nav-links a {
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.nav-links a:hover { color: var(--teal); }
-
-.nav-cta {
-  background: rgba(0,245,212,0.08) !important;
-  border: 1px solid rgba(0,245,212,0.3) !important;
-  color: var(--teal) !important;
-  padding: 7px 18px;
-  border-radius: 4px;
-  transition: background 0.2s, box-shadow 0.2s !important;
-}
-.nav-cta:hover {
-  background: rgba(0,245,212,0.16) !important;
-  box-shadow: 0 0 20px rgba(0,245,212,0.15);
-}
-
-.nav-lyfelabz {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--lyfe);
-  text-decoration: none;
-  letter-spacing: 0.02em;
-  transition: opacity 0.2s;
-}
-.nav-lyfelabz:hover { opacity: 0.75; }
-
-/* ===== HERO ===== */
-.hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: center;
-  padding: clamp(80px, 18vh, 160px) clamp(16px, 5vw, 80px) 0;
-  position: relative;
-}
-
-.hero-eyebrow {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.5em;
-  color: var(--teal);
-  opacity: 0.75;
-  margin-bottom: 28px;
-  animation: fadeUp 0.8s both;
-}
-
-.hero-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(0,245,212,0.07);
-  border: 1px solid rgba(0,245,212,0.25);
-  padding: 9px 22px;
-  border-radius: 100px;
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  color: var(--teal);
-  margin-bottom: 24px;
-  animation: fadeUp 0.8s 0.1s both;
-  text-shadow: 0 0 20px rgba(0,245,212,0.3);
-}
-
-.hero-tag-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--lyfe);
-  box-shadow: 0 0 8px var(--lyfe);
-  animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-  0%,100% { opacity: 1; box-shadow: 0 0 8px var(--lyfe); }
-  50%      { opacity: 0.4; box-shadow: 0 0 4px var(--lyfe); }
-}
-
-.hero-headline {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: clamp(2.4rem, 6.5vw, 5.2rem);
-  line-height: 1.08;
-  letter-spacing: -0.02em;
-  margin-bottom: 20px;
-  animation: fadeUp 0.8s 0.2s both;
-  max-width: 900px;
-}
-
-.hero-headline .line1 { display: block; color: var(--text); }
-.hero-headline .line2 {
-  display: block;
-  background: linear-gradient(105deg, var(--teal) 0%, var(--sky) 40%, var(--violet) 80%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-top: 6px;
-}
-
-.hero-question-box {
-  margin: 32px auto;
-  max-width: 680px;
-  background: rgba(10,18,32,0.7);
-  border: 1px solid rgba(0,245,212,0.2);
-  border-radius: 12px;
-  padding: 18px 28px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  animation: fadeUp 0.8s 0.35s both;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 60px rgba(0,245,212,0.05), inset 0 1px 0 rgba(255,255,255,0.04);
-}
-
-.qbox-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-5px); }
-}
-
-.qbox-text {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(0.95rem, 2vw, 1.25rem);
-  font-weight: 600;
-  color: var(--text);
-  text-align: left;
-  min-height: 2em;
-}
-
-.qbox-cursor {
-  display: inline-block;
-  width: 2px;
-  height: 1.1em;
-  background: var(--teal);
-  margin-left: 2px;
-  vertical-align: middle;
-  animation: blink 0.9s step-start infinite;
-}
-@keyframes blink { 50% { opacity: 0; } }
-
-.hero-sub {
-  max-width: 560px;
-  font-size: 1.05rem;
-  font-weight: 400;
-  color: var(--muted);
-  line-height: 1.7;
-  margin: 0 auto 44px;
-  animation: fadeUp 0.8s 0.45s both;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  flex-wrap: wrap;
-  animation: fadeUp 0.8s 0.55s both;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, rgba(0,245,212,0.2), rgba(92,225,255,0.15));
-  border: 1px solid rgba(0,245,212,0.4);
-  color: var(--teal);
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.9rem;
-  letter-spacing: 0.05em;
-  padding: 14px 32px;
-  border-radius: 6px;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  transition: all 0.25s;
-  box-shadow: 0 0 40px rgba(0,245,212,0.08);
-}
-.btn-primary:hover {
-  background: linear-gradient(135deg, rgba(0,245,212,0.3), rgba(92,225,255,0.2));
-  box-shadow: 0 0 60px rgba(0,245,212,0.2);
-  transform: translateY(-2px);
-}
-
-.btn-secondary {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-family: 'Syne', sans-serif;
-  font-weight: 600;
-  font-size: 0.9rem;
-  letter-spacing: 0.05em;
-  padding: 14px 32px;
-  border-radius: 6px;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  transition: all 0.25s;
-}
-.btn-secondary:hover {
-  border-color: rgba(120,190,255,0.3);
-  color: var(--text);
-  transform: translateY(-2px);
-}
-
-/* Hero title lockup */
-.hero-title-lockup {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(16px, 3vw, 36px);
-  margin: 8px 0 0px;
-  animation: fadeUp 0.9s 0.25s both;
-}
-
-.hero-box-3d {
-  flex-shrink: 0;
-  width: clamp(70px, 10vw, 120px);
-  height: clamp(70px, 10vw, 120px);
-  filter: drop-shadow(0 0 24px rgba(0,245,212,0.25));
-  animation: boxFloat 5s ease-in-out infinite;
-}
-
-@keyframes boxFloat {
-  0%,100% { transform: translateY(0) rotate(-1deg); }
-  50%      { transform: translateY(-10px) rotate(1deg); }
-}
-
-.hero-box-svg { width: 100%; height: 100%; }
-
-.hero-wb-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: clamp(2rem, 5.5vw, 4.5rem);
-  letter-spacing: -0.03em;
-  line-height: 1;
-  background: linear-gradient(120deg, #ffffff 0%, var(--teal) 45%, var(--sky) 75%, var(--violet) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: none;
-  white-space: nowrap;
-}
-
-.hero-lid { transform-origin: 70px 76px; }
-
-/* ── Question Submission ── */
-.q-submit-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  margin-top: 20px;
-  margin-bottom: 8px;
-  animation: fadeUp 0.8s 0.7s both;
-}
-
-.btn-ask {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 11px 26px;
-  border-radius: 100px;
-  border: 1px solid rgba(92,225,255,0.35);
-  background: rgba(0,245,212,0.07);
-  color: var(--teal);
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: all 0.22s;
-  position: relative;
-  overflow: hidden;
-}
-.btn-ask::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(circle at 50% 0%, rgba(0,245,212,0.14), transparent 65%);
-  opacity: 0;
-  transition: opacity 0.22s;
-}
-.btn-ask:hover::before { opacity: 1; }
-.btn-ask:hover {
-  border-color: rgba(0,245,212,0.65);
-  box-shadow: 0 0 28px rgba(0,245,212,0.15);
-  transform: translateY(-1px);
-}
-.btn-ask-icon { font-size: 1rem; line-height: 1; }
-
-.q-form-box {
-  display: none;
-  width: min(520px, 92vw);
-  background: rgba(6,14,28,0.96);
-  border: 1px solid rgba(0,245,212,0.2);
-  border-radius: 10px;
-  padding: 18px 18px 16px;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,245,212,0.04);
-  backdrop-filter: blur(20px);
-}
-.q-form-box.open { display: block; animation: formIn 0.22s ease; }
-@keyframes formIn {
-  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-  to   { opacity: 1; transform: none; }
-}
-.q-form-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.55rem;
-  letter-spacing: 0.3em;
-  color: rgba(0,245,212,0.5);
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-.q-form-row { display: flex; gap: 10px; align-items: stretch; }
-.q-input {
-  flex: 1;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 7px;
-  padding: 11px 14px;
-  color: var(--text);
-  font-family: 'Syne', sans-serif;
-  font-size: 0.88rem;
-  outline: none;
-  transition: border-color 0.18s, box-shadow 0.18s;
-  resize: none;
-  min-height: 46px;
-  max-height: 130px;
-  line-height: 1.5;
-}
-.q-input::placeholder { color: rgba(180,210,240,0.3); }
-.q-input:focus {
-  border-color: rgba(0,245,212,0.4);
-  box-shadow: 0 0 0 3px rgba(0,245,212,0.06);
-}
-.q-send-btn {
-  flex-shrink: 0;
-  background: linear-gradient(135deg, rgba(0,245,212,0.22), rgba(92,225,255,0.15));
-  border: 1px solid rgba(0,245,212,0.4);
-  border-radius: 7px;
-  color: var(--teal);
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  padding: 0 18px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-.q-send-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(0,245,212,0.32), rgba(92,225,255,0.22));
-  box-shadow: 0 0 24px rgba(0,245,212,0.2);
-}
-.q-send-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.q-status {
-  margin-top: 9px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
-  text-align: center;
-  min-height: 16px;
-}
-.q-status.ok  { color: #4ade80; }
-.q-status.err { color: #f87171; }
-
-.hero-scroll {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  animation: fadeUp 1s 1.2s both;
-}
-
-.scroll-line {
-  width: 1px;
-  height: 40px;
-  background: linear-gradient(to bottom, var(--teal), transparent);
-  animation: scrollPulse 2s ease-in-out infinite;
-}
-@keyframes scrollPulse {
-  0%,100% { opacity: 0.3; transform: scaleY(0.8); }
-  50%      { opacity: 0.8; transform: scaleY(1); }
-}
-
-.scroll-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.5rem;
-  letter-spacing: 0.35em;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-
-/* ===== SECTION COMMON ===== */
-section {
-  padding: 0 clamp(16px, 5vw, 80px) clamp(20px, 3vw, 40px);
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-.section-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.45em;
-  color: var(--teal);
-  opacity: 0.65;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-}
-
-.section-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: clamp(1.2rem, 2.2vw, 1.8rem);
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  margin-bottom: 20px;
-}
-
-.section-body {
-  font-size: 1.05rem;
-  font-weight: 400;
-  color: var(--muted);
-  line-height: 1.75;
-  max-width: 600px;
-}
-
-/* ===== WHAT IS WONDER BOX ===== */
-.what-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(40px, 6vw, 100px);
-  align-items: center;
-}
-
-@media (max-width: 768px) {
-  .what-grid { grid-template-columns: 1fr; }
-}
-
-.what-visual {
-  position: relative;
-  aspect-ratio: 1;
-  max-width: 420px;
-}
-
-.box-3d {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  animation: boxSpin 20s linear infinite;
-}
-
-@keyframes boxSpin {
-  from { transform: rotateY(0deg) rotateX(5deg); }
-  to   { transform: rotateY(360deg) rotateX(5deg); }
-}
-
-.what-pills {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 32px;
-}
-
-.pill {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px 20px;
-  transition: all 0.2s;
-  opacity: 0;
-  transform: translateX(-16px);
-}
-
-.pill.visible {
-  opacity: 1;
-  transform: translateX(0);
-  transition: opacity 0.5s, transform 0.5s;
-}
-
-.pill:hover {
-  border-color: rgba(0,245,212,0.2);
-  background: rgba(14,25,40,0.8);
-}
-
-.pill-icon {
-  font-size: 1.4rem;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.pill-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.95rem;
-  margin-bottom: 2px;
-  color: var(--text);
-}
-
-.pill-desc {
-  font-size: 0.82rem;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-/* ===== EXPLORATIONS ===== */
-.explorations-section {
-  background: transparent;
-  max-width: 100%;
-  padding: clamp(40px, 5vw, 72px) clamp(16px, 5vw, 80px) clamp(60px, 8vw, 100px);
-}
-
-.explorations-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-.exp-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 48px;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.exp-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
-  gap: 24px;
-}
-
-.exp-card {
-  position: relative;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: var(--card);
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
-  display: block;
-  transition: transform 0.3s, box-shadow 0.3s;
-  group: true;
-}
-
-.exp-card:hover {
-  transform: translateY(-6px);
-}
-
-.exp-card.gold:hover {
-  box-shadow: 0 20px 60px rgba(201,168,76,0.15), 0 0 0 1px rgba(201,168,76,0.3);
-}
-
-.exp-card.blue:hover {
-  box-shadow: 0 20px 60px rgba(0,217,255,0.12), 0 0 0 1px rgba(0,217,255,0.25);
-}
-
-.exp-card-thumb {
-  height: 200px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Geometric Unity thumb */
-.thumb-gu {
-  background: radial-gradient(ellipse at 40% 50%, rgba(201,168,76,0.25) 0%, rgba(123,47,255,0.15) 50%, rgba(2,4,8,1) 100%);
-}
-
-.thumb-gu::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Cdefs%3E%3CradialGradient id='rg' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23c9a84c' stop-opacity='0.6'/%3E%3Cstop offset='100%25' stop-color='%23c9a84c' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cellipse cx='200' cy='100' rx='120' ry='70' fill='none' stroke='%23c9a84c' stroke-opacity='0.3' stroke-width='1'/%3E%3Cellipse cx='200' cy='100' rx='80' ry='45' fill='none' stroke='%23ffd84c' stroke-opacity='0.5' stroke-width='1.5'/%3E%3Cellipse cx='200' cy='100' rx='40' ry='25' fill='url(%23rg)' stroke='%23ffd84c' stroke-opacity='0.8' stroke-width='1'/%3E%3Cpath d='M120,100 Q200,40 280,100 Q200,160 120,100' fill='none' stroke='%2300e5ff' stroke-opacity='0.4' stroke-width='1'/%3E%3C/svg%3E") center/cover;
-  animation: thumbPulse 4s ease-in-out infinite;
-}
-
-/* Standard Model thumb */
-.thumb-sm {
-  background: radial-gradient(ellipse at 60% 40%, rgba(0,200,255,0.2) 0%, rgba(168,255,62,0.1) 50%, rgba(4,8,15,1) 100%);
-}
-
-.thumb-sm::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Crect x='40' y='40' width='48' height='52' fill='none' stroke='%23ff6b35' stroke-opacity='0.6' stroke-width='1' rx='2'/%3E%3Crect x='96' y='40' width='48' height='52' fill='none' stroke='%23ff6b35' stroke-opacity='0.4' stroke-width='1' rx='2'/%3E%3Crect x='152' y='40' width='48' height='52' fill='none' stroke='%23ff6b35' stroke-opacity='0.3' stroke-width='1' rx='2'/%3E%3Crect x='40' y='100' width='48' height='52' fill='none' stroke='%2300d9ff' stroke-opacity='0.5' stroke-width='1' rx='2'/%3E%3Crect x='96' y='100' width='48' height='52' fill='none' stroke='%2300d9ff' stroke-opacity='0.35' stroke-width='1' rx='2'/%3E%3Crect x='152' y='100' width='48' height='52' fill='none' stroke='%2300d9ff' stroke-opacity='0.25' stroke-width='1' rx='2'/%3E%3Crect x='240' y='40' width='48' height='112' fill='none' stroke='%23a8ff3e' stroke-opacity='0.5' stroke-width='1' rx='2'/%3E%3Crect x='300' y='40' width='52' height='112' fill='none' stroke='%23ff3ea8' stroke-opacity='0.6' stroke-width='1' rx='2'/%3E%3Ctext x='64' y='72' font-family='monospace' font-size='14' fill='%23ff6b35' opacity='0.8' text-anchor='middle'%3Eu%3C/text%3E%3Ctext x='120' y='72' font-family='monospace' font-size='14' fill='%23ff6b35' opacity='0.5' text-anchor='middle'%3Ec%3C/text%3E%3Ctext x='176' y='72' font-family='monospace' font-size='14' fill='%23ff6b35' opacity='0.35' text-anchor='middle'%3Et%3C/text%3E%3Ctext x='264' y='100' font-family='monospace' font-size='16' fill='%23a8ff3e' opacity='0.7' text-anchor='middle'%3E%CE%B3%3C/text%3E%3Ctext x='326' y='100' font-family='monospace' font-size='16' fill='%23ff3ea8' opacity='0.8' text-anchor='middle'%3EH%E2%81%B0%3C/text%3E%3C/svg%3E") center/cover;
-}
-
-.exp-card.purple:hover {
-  box-shadow: 0 20px 60px rgba(192,132,252,0.14), 0 0 0 1px rgba(192,132,252,0.28);
-}
-
-/* Dark Universe thumb */
-.thumb-du {
-  background: radial-gradient(ellipse at 50% 55%, rgba(192,132,252,0.22) 0%, rgba(249,115,22,0.12) 45%, rgba(2,4,8,1) 100%);
-}
-
-.thumb-du::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'%3E%3Cdefs%3E%3CradialGradient id='dg' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23c084fc' stop-opacity='0.5'/%3E%3Cstop offset='100%25' stop-color='%23c084fc' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='200' cy='100' r='70' fill='url(%23dg)' opacity='0.6'/%3E%3Ccircle cx='200' cy='100' r='48' fill='none' stroke='%23c084fc' stroke-opacity='0.35' stroke-width='1'/%3E%3Ccircle cx='200' cy='100' r='28' fill='none' stroke='%23c084fc' stroke-opacity='0.55' stroke-width='1'/%3E%3Ccircle cx='200' cy='100' r='6' fill='%23ffffff' opacity='0.9'/%3E%3Cline x1='200' y1='100' x2='310' y2='60' stroke='%23f43f5e' stroke-opacity='0.55' stroke-width='1.2'/%3E%3Cpolygon points='310,60 303,65 307,55' fill='%23f43f5e' opacity='0.55'/%3E%3Cline x1='200' y1='100' x2='90' y2='148' stroke='%23f43f5e' stroke-opacity='0.4' stroke-width='1.2'/%3E%3Cpolygon points='90,148 97,143 93,153' fill='%23f43f5e' opacity='0.4'/%3E%3Ccircle cx='148' cy='76' r='5' fill='%234ade80' opacity='0.8'/%3E%3Ccircle cx='265' cy='130' r='4' fill='%234ade80' opacity='0.6'/%3E%3Ccircle cx='310' cy='80' r='3' fill='%234ade80' opacity='0.5'/%3E%3C/svg%3E") center/cover;
-  animation: thumbPulse 5s ease-in-out infinite;
-}
-
-.purple .exp-card-thumb-label {
-  background: rgba(192,132,252,0.1);
-  border: 1px solid rgba(192,132,252,0.28);
-  color: #c084fc;
-}
-
-.exp-card-thumb-label {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.52rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 4px;
-}
-
-.gold .exp-card-thumb-label {
-  background: rgba(201,168,76,0.12);
-  border: 1px solid rgba(201,168,76,0.3);
-  color: #c9a84c;
-}
-
-.blue .exp-card-thumb-label {
-  background: rgba(0,217,255,0.1);
-  border: 1px solid rgba(0,217,255,0.25);
-  color: #00d9ff;
-}
-
-.exp-card-body {
-  padding: 24px 28px 28px;
-}
-
-.exp-card-tag {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(180,210,240,0.75);
-}
-
-.gold .exp-card-tag { color: rgba(201,168,76,0.8); }
-.blue .exp-card-tag { color: rgba(0,217,255,0.8); }
-.purple .exp-card-tag { color: rgba(192,132,252,0.8); }
-
-.exp-card-tag::before {
-  content: '';
-  width: 16px;
-  height: 1px;
-}
-.gold .exp-card-tag::before { background: rgba(201,168,76,0.5); }
-.blue .exp-card-tag::before { background: rgba(0,217,255,0.5); }
-.purple .exp-card-tag::before { background: rgba(192,132,252,0.5); }
-
-.exp-card-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 1.55rem;
-  letter-spacing: -0.01em;
-  margin-bottom: 12px;
-  line-height: 1.15;
-  color: #f0f4ff;
-}
-
-.exp-card-desc {
-  font-size: 0.96rem;
-  color: rgba(200,220,245,0.8);
-  line-height: 1.68;
-  margin-bottom: 20px;
-}
-
-.exp-card-meta {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.meta-chip {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.12em;
-  padding: 4px 10px;
-  border-radius: 100px;
-  text-transform: uppercase;
-}
-
-.chip-dim { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--muted); }
-.chip-teal { background: rgba(0,245,212,0.06); border: 1px solid rgba(0,245,212,0.2); color: var(--teal); }
-.chip-amber { background: rgba(255,209,102,0.06); border: 1px solid rgba(255,209,102,0.2); color: var(--amber); }
-
-.exp-card-arrow {
-  position: absolute;
-  top: 24px;
-  right: 28px;
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-  transition: all 0.25s;
-}
-
-.exp-card:hover .exp-card-arrow {
-  transform: translate(3px, -3px);
-  background: rgba(0,245,212,0.1);
-  border-color: rgba(0,245,212,0.3);
-}
-
-/* ===== WONDER QUESTIONS ===== */
-.wq-intro {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: start;
-  margin-bottom: 56px;
-}
-
-@media (max-width: 768px) {
-  .wq-intro { grid-template-columns: 1fr; gap: 32px; }
-}
-
-.wq-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-}
-
-.wq-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px 22px;
-  transition: all 0.2s;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-
-.wq-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(to right, transparent, var(--accent, var(--teal)), transparent);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.wq-card:hover { transform: translateY(-3px); border-color: rgba(120,190,255,0.2); }
-.wq-card:hover::before { opacity: 1; }
-
-.wq-cat {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.52rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.wq-q {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  margin-bottom: 8px;
-  color: var(--text);
-}
-
-.wq-hint {
-  font-size: 0.78rem;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.wq-soon {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.5rem;
-  letter-spacing: 0.2em;
-  color: var(--amber);
-  opacity: 0.65;
-  margin-top: 10px;
-  text-transform: uppercase;
-}
-
-/* ===== HOW IT WORKS ===== */
-.hiw-section {
-  max-width: 100%;
-  background: linear-gradient(180deg, rgba(0,245,212,0.03) 0%, transparent 100%);
-  border-top: 1px solid var(--border);
-  padding: clamp(60px, 8vw, 120px) clamp(16px, 5vw, 80px);
-}
-
-.hiw-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-.hiw-steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2px;
-  margin-top: 56px;
-  position: relative;
-}
-
-.hiw-step {
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 32px 28px;
-  position: relative;
-  transition: background 0.2s;
-}
-
-.hiw-step:hover { background: rgba(14,25,40,0.9); }
-
-.hiw-step:not(:last-child)::after {
-  content: '→';
-  position: absolute;
-  right: -14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted);
-  font-size: 1rem;
-  z-index: 1;
-}
-
-.step-num {
-  font-family: 'Syne Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.2em;
-  color: var(--teal);
-  opacity: 0.6;
-  margin-bottom: 16px;
-}
-
-.step-icon { font-size: 2rem; margin-bottom: 12px; display: block; }
-
-.step-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
-  margin-bottom: 8px;
-}
-
-.step-desc {
-  font-size: 0.83rem;
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-/* ===== COMING SOON STRIP ===== */
-.coming-strip {
-  background: rgba(10,18,32,0.8);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 40px 48px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
-  flex-wrap: wrap;
-  margin: 0 clamp(16px, 5vw, 80px);
-  max-width: calc(1280px - clamp(32px,10vw,160px));
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 80px;
-  position: relative;
-  overflow: hidden;
-}
-
-.coming-strip::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 0% 50%, rgba(0,245,212,0.06) 0%, transparent 60%);
-  pointer-events: none;
-}
-
-.coming-text .eyebrow {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.35em;
-  color: var(--amber);
-  opacity: 0.75;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.coming-text h3 {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: clamp(1.3rem, 2.5vw, 2rem);
-  letter-spacing: -0.01em;
-  margin-bottom: 8px;
-}
-
-.coming-text p {
-  font-size: 0.9rem;
-  color: var(--muted);
-  max-width: 440px;
-  line-height: 1.6;
-}
-
-.coming-topics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.topic-chip {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.55rem;
-  letter-spacing: 0.12em;
-  padding: 7px 14px;
-  border-radius: 100px;
-  text-transform: uppercase;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-/* ===== FOOTER ===== */
-footer {
-  border-top: 1px solid var(--border);
-  padding: 40px clamp(16px, 5vw, 80px);
-  max-width: 1280px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.footer-brand {
-  font-family: 'Syne Mono', monospace;
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
-}
-
-.footer-brand .wb { color: var(--teal); }
-.footer-brand .by { color: var(--muted); font-size: 0.7rem; }
-.footer-brand .lz { color: var(--lyfe); }
-
-.footer-links {
-  display: flex;
-  gap: 24px;
-  list-style: none;
-  flex-wrap: wrap;
-}
-
-.footer-links a {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.footer-links a:hover { color: var(--teal); }
-
-.footer-copy {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.55rem;
-  letter-spacing: 0.15em;
-  color: var(--muted);
-  opacity: 0.5;
-}
-
-/* ===== ANIMATIONS ===== */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s, transform 0.6s;
-}
-
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ===== RESPONSIVE TWEAKS ===== */
-@media (max-width: 600px) {
-  .nav-links { display: none; }
-  .hiw-step:not(:last-child)::after { display: none; }
-}
+  html { font-size: 18px; }
+  :root {
+    --dark:     #1a2535;
+    --card:     #1e2f42;
+    --card2:    #243447;
+    --border:   rgba(180,160,255,0.12);
+    --text:     #e8e6f4;
+    --muted:    #7b789e;
+
+    --gold:     #f5c842;
+    --gold-dim: rgba(245,200,66,0.15);
+    --gold-glow:rgba(245,200,66,0.35);
+
+    --bio:      #3ddc84;
+    --chem:     #ff7043;
+    --astro:    #b47fff;
+    --geo:      #c48a4e;
+    --phys:     #29d4f5;
+    --sci:      #f5c842;
+    --psych:    #f472b6;
+    --teal:     #3bc8e8;
+
+    /* Topic accent colors */
+    --life-science:   #3ddc84;
+    --phys-science:   #ff7043;
+    --earth-space:    #b47fff;
+    --tech-eng:       #f5c842;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  #stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+  }
+
+  nav, .hero, section, footer, .stats-bar { position: relative; z-index: 1; }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(11,14,26,0.93);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+  /* ===== HAMBURGER MENU ===== */
+  .nav-menu-wrap {
+    position: relative;
+  }
+  .nav-hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-hamburger:hover {
+    background: rgba(255,255,255,0.09);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .nav-hamburger span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--text);
+    border-radius: 2px;
+    transition: background 0.2s;
+  }
+  .nav-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: rgba(18, 28, 44, 0.97);
+    backdrop-filter: blur(18px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.5rem 0;
+    min-width: 180px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    display: none;
+    z-index: 2000;
+  }
+  .nav-dropdown.open {
+    display: block;
+    animation: fadeDown 0.18s ease both;
+  }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .nav-dropdown a {
+    display: block;
+    padding: 0.62rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .nav-dropdown a:hover {
+    background: rgba(245,200,66,0.1);
+    color: var(--gold);
+  }
+  .nav-dropdown a + a {
+    border-top: 1px solid var(--border);
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 48vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4.25rem 2rem 1.25rem;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 0%, rgba(180,127,255,0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(41,212,245,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 35% at 10% 90%, rgba(245,200,66,0.06) 0%, transparent 60%);
+  }
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    color: var(--gold);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+  .word-lyfe { color: var(--text); }
+  .word-labz {
+    background: linear-gradient(135deg, var(--gold) 0%, #ff9a42 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 680px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  /* ===== FILTER SYSTEM ===== */
+  .filter-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2.8rem;
+    animation: fadeUp 0.7s 0.3s ease both;
+  }
+  .filter-row {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .filter-pill {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.42rem 1.1rem;
+    border-radius: 99px;
+    border: 1.5px solid;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    white-space: nowrap;
+  }
+
+  /* Grade pills — gold active */
+  .fp-grade {
+    color: var(--muted);
+    border-color: rgba(255,255,255,0.14);
+  }
+  .fp-grade:hover:not(.active) {
+    color: var(--gold);
+    border-color: rgba(245,200,66,0.4);
+    background: rgba(245,200,66,0.06);
+  }
+  .fp-grade.active {
+    color: #111;
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 2px 14px rgba(245,200,66,0.4);
+  }
+
+  /* Topic pills — teal active */
+  .fp-topic {
+    color: var(--muted);
+    border-color: rgba(255,255,255,0.14);
+  }
+  .fp-topic:hover:not(.active) {
+    color: var(--teal);
+    border-color: rgba(59,200,232,0.4);
+    background: rgba(59,200,232,0.06);
+  }
+  .fp-topic.active {
+    color: #1a2535;
+    background: var(--teal);
+    border-color: var(--teal);
+    box-shadow: 0 2px 14px rgba(59,200,232,0.4);
+    font-weight: 800;
+  }
+
+  /* No-results state */
+  .filter-empty {
+    display: none;
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .filter-empty.visible { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== STATS BAR ===== */
+  .stats-bar {
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 1.8rem 2rem;
+  }
+  .stats-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 5rem;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--gold);
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 0.1rem;
+  }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5.5rem 2rem; }
+  .container { max-width: 1140px; margin: 0 auto; }
+  .section-eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.28);
+    padding: 0.28rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    margin-bottom: 0.8rem;
+    line-height: 1.2;
+  }
+  .section-desc {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 640px;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+  }
+
+  /* ===== TOPIC GROUP DIVIDERS ===== */
+  .topic-group { margin-bottom: 0.5rem; }
+  .topic-group-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1.5rem 0 1.1rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .topic-group-divider::before {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    border-radius: 2px;
+  }
+  .tg-life .topic-group-divider::before    { background: var(--life-science); }
+  .tg-physical .topic-group-divider::before { background: var(--phys-science); }
+  .tg-earth .topic-group-divider::before   { background: var(--earth-space); }
+  .tg-tech .topic-group-divider::before    { background: var(--tech-eng); }
+  .tg-psych .topic-group-divider::before   { background: var(--psych); }
+
+  .topic-group-icon { font-size: 1.6rem; line-height: 1; }
+  .topic-group-name {
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+  .tg-life    .topic-group-name { color: var(--life-science); }
+  .tg-physical .topic-group-name { color: var(--phys-science); }
+  .tg-earth   .topic-group-name { color: var(--earth-space); }
+  .tg-tech    .topic-group-name { color: var(--tech-eng); }
+  .tg-psych   .topic-group-name { color: var(--psych); }
+
+  .topic-group-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border-radius: 99px;
+    border: 1px solid;
+    margin-left: auto;
+  }
+  .tg-life    .topic-group-tag { color: var(--life-science);  background: rgba(61,220,132,0.08);  border-color: rgba(61,220,132,0.28); }
+  .tg-physical .topic-group-tag { color: var(--phys-science); background: rgba(255,112,67,0.08);  border-color: rgba(255,112,67,0.28); }
+  .tg-earth   .topic-group-tag { color: var(--earth-space);   background: rgba(180,127,255,0.08); border-color: rgba(180,127,255,0.28); }
+  .tg-tech    .topic-group-tag { color: var(--tech-eng);      background: rgba(245,200,66,0.08);  border-color: rgba(245,200,66,0.28); }
+  .tg-psych   .topic-group-tag { color: var(--psych);         background: rgba(244,114,182,0.08); border-color: rgba(244,114,182,0.28); }
+
+  /* ===== SUBJECT BLOCKS ===== */
+  #subjects { background: var(--dark); }
+  .subject-block { margin-bottom: 1.2rem; }
+  .subject-block:last-child { margin-bottom: 0; }
+  .topic-group:last-child .subject-block:last-child { margin-bottom: 0; }
+
+  .subject-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .subject-icon { font-size: 1.6rem; line-height: 1; }
+  .subject-title { font-family: 'Fredoka One', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--muted); }
+  .subject-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.22rem 0.7rem;
+    border-radius: 99px;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .grade-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.6rem;
+    border-radius: 99px;
+    border: 1px solid rgba(245,200,66,0.3);
+    color: var(--gold);
+    background: rgba(245,200,66,0.07);
+  }
+
+  /* Unit cards */
+  .unit-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+  }
+  .unit-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.28s, border-color 0.28s, box-shadow 0.28s;
+    scroll-margin-top: 80px;
+  }
+  .unit-card:hover { transform: translateY(-4px); box-shadow: 0 14px 44px rgba(0,0,0,0.4); }
+
+  /* Per-topic hover tints */
+  .tg-life    .unit-card:hover { border-color: rgba(61,220,132,0.35); }
+  .tg-physical .unit-card:hover { border-color: rgba(255,112,67,0.35); }
+  .tg-earth   .unit-card:hover { border-color: rgba(180,127,255,0.35); }
+  .tg-tech    .unit-card:hover { border-color: rgba(245,200,66,0.35); }
+  .tg-psych   .unit-card:hover { border-color: rgba(244,114,182,0.35); }
+
+  .unit-top { padding: 1.4rem 1.6rem 0.8rem; flex: 1; }
+  .unit-name {
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 1.02rem;
+    font-weight: 700;
+    margin-bottom: 0.45rem;
+    color: var(--text);
+  }
+  .unit-desc { font-size: 0.87rem; color: var(--muted); line-height: 1.6; }
+  .unit-links {
+    padding: 0.9rem 1.6rem 1.3rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .ulink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    padding: 0.4rem 1rem;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .ulink:hover { color: var(--gold); border-color: rgba(245,200,66,0.4); background: rgba(245,200,66,0.05); }
+  .ulink.live {
+    background: linear-gradient(135deg, var(--gold), #ff9a42);
+    color: #111 !important;
+    border-color: transparent;
+    font-weight: 800;
+  }
+  .ulink.live:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,200,66,0.4); color: #111 !important; }
+  .ulink.activity {
+    background: rgba(245,200,66,0.28);
+    color: var(--gold);
+    border-color: rgba(245,200,66,0.65);
+    font-weight: 700;
+  }
+  .ulink.activity:hover { background: rgba(245,200,66,0.4); border-color: rgba(245,200,66,0.9); }
+  .ulink.ext {
+    background: rgba(180,127,255,0.32);
+    color: var(--astro);
+    border-color: rgba(180,127,255,0.6);
+    font-weight: 700;
+  }
+  .ulink.ext:hover { background: rgba(180,127,255,0.45); border-color: rgba(180,127,255,0.85); color: var(--astro); }
+  .ulink.game {
+    background: rgba(61,220,132,0.3);
+    color: var(--bio);
+    border-color: rgba(61,220,132,0.6);
+    font-weight: 700;
+  }
+  .ulink.game:hover { background: rgba(61,220,132,0.44); border-color: rgba(61,220,132,0.85); color: var(--bio); }
+  .ulink.sim {
+    background: rgba(245,130,50,0.28);
+    color: #f5a028;
+    border-color: rgba(245,130,50,0.65);
+    font-weight: 700;
+  }
+  .ulink.sim:hover { background: rgba(245,130,50,0.42); border-color: rgba(245,130,50,0.9); color: #f5a028; }
+  .ulink.map {
+    background: rgba(59,200,232,0.32);
+    border-color: rgba(59,200,232,0.65);
+    color: var(--teal);
+    font-weight: 700;
+  }
+  .ulink.map:hover { background: rgba(59,200,232,0.46); border-color: rgba(59,200,232,0.88); color: var(--teal); }
+  .ulink.dis {
+    background: rgba(180,127,255,0.32);
+    color: var(--astro);
+    border-color: rgba(180,127,255,0.6);
+    font-weight: 700;
+  }
+  .ulink.dis:hover { background: rgba(180,127,255,0.45); border-color: rgba(180,127,255,0.85); color: var(--astro); }
+
+  /* ===== PILL LEGEND ===== */
+  .pill-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  .legend-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-right: 0.25rem;
+  }
+  .legend-pill {
+    pointer-events: none;
+  }
+
+  .coming-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    opacity: 0.5;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ===== HOW IT WORKS ===== */
+  #how { background: var(--dark); }
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1.5rem;
+  }
+  .how-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2rem 1.6rem;
+    text-align: center;
+    transition: transform 0.28s, border-color 0.28s;
+  }
+  .how-card:hover { transform: translateY(-3px); border-color: rgba(245,200,66,0.3); }
+  .how-icon { font-size: 2.6rem; margin-bottom: 1rem; }
+  .how-step {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.62rem;
+    color: var(--gold);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+  }
+  .how-card h3 { font-family: 'Fredoka One', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 0.55rem; }
+  .how-card p { font-size: 0.87rem; color: var(--muted); line-height: 1.65; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--dark);
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+  .footer-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.6rem;
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+  footer p { font-size: 0.83rem; color: var(--muted); }
+  footer a {
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.83rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    transition: all 0.2s;
+  }
+  footer a:hover { border-color: rgba(245,200,66,0.6); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--dark); }
+  ::-webkit-scrollbar-thumb { background: var(--card2); border-radius: 3px; }
+
+  /* ===== HIDDEN ROOM: BEHAVIORAL SCIENCE ===== */
+  .psych-locked { display: none !important; }
+  body.psych-unlocked .psych-locked { display: revert !important; }
+
+  @keyframes psychReveal {
+    0%   { opacity: 0; transform: translateY(18px) scale(0.97); filter: blur(4px); }
+    60%  { opacity: 1; filter: blur(0); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  body.psych-unlocked .tg-psych {
+    animation: psychReveal 0.55s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  body.psych-unlocked .fp-topic[data-topic="behavioral-science"] {
+    animation: psychReveal 0.4s 0.1s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  #psych-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(244,114,182,0.15);
+    border: 1px solid rgba(244,114,182,0.5);
+    color: var(--psych);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.6rem 1.4rem;
+    border-radius: 99px;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    white-space: nowrap;
+  }
+  #psych-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ===== FILTER TRANSITION ===== */
+  .subject-block, .topic-group {
+    transition: opacity 0.25s ease;
+  }
+  .subject-block.hidden {
+    display: none;
+  }
+  .topic-group.hidden {
+    display: none;
+  }
+
+  /* ===== WONDER BOX EASTER EGG ===== */
+  #wb-egg {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 9998;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(40px) scale(0.7);
+    pointer-events: none;
+    transition: opacity 0.5s cubic-bezier(0.22,1,0.36,1),
+                transform 0.5s cubic-bezier(0.22,1,0.36,1);
+  }
+  #wb-egg.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  #wb-egg-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    filter: drop-shadow(0 0 28px rgba(0,245,212,0.6))
+            drop-shadow(0 0 60px rgba(0,245,212,0.22));
+    animation: wbEggFloat 4s ease-in-out infinite;
+  }
+  @keyframes wbEggFloat {
+    0%,100% { transform: translateY(0) rotate(-1.5deg); }
+    50%      { transform: translateY(-10px) rotate(1.5deg); }
+  }
+  #wb-egg:hover #wb-egg-inner {
+    filter: drop-shadow(0 0 40px rgba(0,245,212,0.9))
+            drop-shadow(0 0 80px rgba(0,245,212,0.35));
+  }
+  #wb-egg svg { width: 110px; height: 110px; }
+  #wb-egg-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    color: rgba(0,245,212,0.7);
+    text-transform: uppercase;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  #wb-egg:hover #wb-egg-label {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  #wb-egg-dismiss {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(10,20,35,0.9);
+    border: 1px solid rgba(0,245,212,0.3);
+    color: rgba(0,245,212,0.6);
+    font-size: 0.55rem;
+    line-height: 18px;
+    text-align: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 2;
+  }
+  #wb-egg:hover #wb-egg-dismiss { opacity: 1; }
+
 </style>
 </head>
 <body>
 
-<canvas id="cosmos"></canvas>
+<canvas id="stars"></canvas>
 
-<div class="page">
-
-<!-- ===== NAV ===== -->
-<nav style="justify-content:flex-start; gap:14px;">
-  <!-- Box icon — source of truth kept left of LyfeLabz wordmark -->
-  <div class="wb-icon" style="width:34px;height:34px;flex-shrink:0;">
-    <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="8" width="32" height="24" rx="2" stroke="#00f5d4" stroke-width="1.2" fill="none"/>
-      <path d="M1 12 L17 20 L33 12" stroke="#00f5d4" stroke-width="1" fill="none" stroke-opacity="0.6"/>
-      <path d="M4 8 L17 1 L30 8" stroke="#ffd166" stroke-width="1" fill="none" stroke-opacity="0.8"/>
-      <circle cx="17" cy="15" r="3" fill="rgba(0,245,212,0.15)" stroke="#00f5d4" stroke-width="1"/>
-      <line x1="17" y1="12" x2="17" y2="1" stroke="#ffd166" stroke-width="0.8" stroke-opacity="0.5" stroke-dasharray="2,2"/>
-      <circle cx="17" cy="1" r="1.5" fill="#ffd166" fill-opacity="0.7"/>
-    </svg>
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <div class="nav-right">
+    <div class="nav-menu-wrap">
+      <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-dropdown" id="navDropdown">
+        <a href="https://www.lyfelabz.com/blog/" target="_blank" rel="noopener">Educator's Blog</a>
+        <a href="#how">How It's Built</a>
+        <a href="about_learning-science.html">Why It Works</a>
+      </div>
+    </div>
   </div>
-  <!-- LyfeLabz wordmark — matches main index header styling -->
-  <a href="https://lyfelabz.com" class="nav-lyfelabz" style="font-size:1.35rem;">LyfeLabz</a>
 </nav>
 
-<!-- ===== HERO ===== -->
-<div class="hero">
-  <div class="hero-title-lockup">
-    <!-- 3D Animated Box -->
-    <div class="hero-box-3d">
-      <svg viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg" class="hero-box-svg">
-        <defs>
-          <radialGradient id="hg1" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#00f5d4" stop-opacity="0.35"/>
-            <stop offset="100%" stop-color="#00f5d4" stop-opacity="0"/>
-          </radialGradient>
-          <radialGradient id="hg2" cx="50%" cy="30%" r="60%">
-            <stop offset="0%" stop-color="#ffd166" stop-opacity="0.3"/>
-            <stop offset="100%" stop-color="#ffd166" stop-opacity="0"/>
-          </radialGradient>
-          <filter id="hblur"><feGaussianBlur stdDeviation="6"/></filter>
-        </defs>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">Middle School Science Learning Hub</div>
+  <h1>
+    <span class="word-lyfe">Lyfe</span><span class="word-labz">Labz</span>
+  </h1>
+  <p class="hero-sub">Interactive science, built for middle school.<br>Filter by grade and topic to find exactly what you're studying.</p>
 
-        <!-- glow -->
-        <circle cx="70" cy="82" r="44" fill="url(#hg1)" filter="url(#hblur)">
-          <animate attributeName="r" values="38;50;38" dur="4s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="70" cy="52" r="30" fill="url(#hg2)" filter="url(#hblur)">
-          <animate attributeName="r" values="26;36;26" dur="5s" repeatCount="indefinite"/>
-        </circle>
-
-        <!-- Box — bottom face -->
-        <polygon points="20,76 70,104 120,76 70,48"
-          fill="rgba(0,245,212,0.04)" stroke="#00f5d4" stroke-width="1" stroke-opacity="0.3"/>
-        <!-- left face -->
-        <polygon points="20,76 20,110 70,138 70,104"
-          fill="rgba(0,245,212,0.025)" stroke="#00f5d4" stroke-width="1" stroke-opacity="0.22"/>
-        <!-- right face -->
-        <polygon points="120,76 120,110 70,138 70,104"
-          fill="rgba(0,245,212,0.04)" stroke="#00f5d4" stroke-width="1" stroke-opacity="0.28"/>
-
-        <!-- Lid (open / lifting) -->
-        <g class="hero-lid">
-          <animateTransform attributeName="transform" type="rotate"
-            values="0 70 76; -28 70 76; 0 70 76" dur="6s" repeatCount="indefinite" additive="sum"/>
-          <polygon points="20,76 70,48 120,76 70,104"
-            fill="rgba(255,209,102,0.06)" stroke="#ffd166" stroke-width="1.4" stroke-opacity="0.65"/>
-          <!-- lid grid lines -->
-          <line x1="45" y1="62" x2="95" y2="90" stroke="#ffd166" stroke-width="0.5" stroke-opacity="0.2"/>
-          <line x1="70" y1="48" x2="70" y2="104" stroke="#ffd166" stroke-width="0.5" stroke-opacity="0.2"/>
-        </g>
-
-        <!-- Particles rising from box -->
-        <circle cx="70" cy="44" r="2.5" fill="#00f5d4">
-          <animate attributeName="cy" values="48;6;48" dur="3.2s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0;1;0" dur="3.2s" repeatCount="indefinite"/>
-          <animate attributeName="r" values="1;2.5;1" dur="3.2s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="57" cy="38" r="1.8" fill="#ffd166">
-          <animate attributeName="cy" values="45;5;45" dur="4.1s" begin="0.6s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0;0.9;0" dur="4.1s" begin="0.6s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="84" cy="40" r="2" fill="#7c6cfa">
-          <animate attributeName="cy" values="46;8;46" dur="3.7s" begin="1.1s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0;1;0" dur="3.7s" begin="1.1s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="65" cy="30" r="1.3" fill="#ef476f">
-          <animate attributeName="cy" values="44;2;44" dur="5s" begin="1.8s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0;0.85;0" dur="5s" begin="1.8s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="78" cy="35" r="1.5" fill="#5ce1ff">
-          <animate attributeName="cy" values="46;10;46" dur="3.9s" begin="0.3s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0;0.8;0" dur="3.9s" begin="0.3s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="70" cy="28" r="3" fill="#ffd166" opacity="0.6">
-          <animate attributeName="cy" values="44;4;44" dur="4.6s" begin="0.9s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0;0.65;0" dur="4.6s" begin="0.9s" repeatCount="indefinite"/>
-          <animate attributeName="r" values="1;3;1" dur="4.6s" begin="0.9s" repeatCount="indefinite"/>
-        </circle>
-      </svg>
+  <!-- FILTER SYSTEM -->
+  <div class="filter-wrap">
+    <!-- Row 1: Grade -->
+    <div class="filter-row" id="grade-filters">
+      <button class="filter-pill fp-grade" data-grade="all">All Grades</button>
+      <button class="filter-pill fp-grade active" data-grade="6">Grade 6</button>
+      <button class="filter-pill fp-grade" data-grade="7">Grade 7</button>
+      <button class="filter-pill fp-grade" data-grade="8">Grade 8</button>
     </div>
-
-    <!-- Wonder Box wordmark -->
-    <h1 class="hero-wb-title">Wonder Box</h1>
-
-
+    <!-- Row 2: Topic -->
+    <div class="filter-row" id="topic-filters">
+      <button class="filter-pill fp-topic active" data-topic="all">All Topics</button>
+      <button class="filter-pill fp-topic" data-topic="life-science">🌱 Life Science</button>
+      <button class="filter-pill fp-topic" data-topic="earth-space">🌍 Earth &amp; Space</button>
+      <button class="filter-pill fp-topic" data-topic="physical-science">⚡ Physical Science</button>
+      <button class="filter-pill fp-topic" data-topic="tech-engineering">🔧 Tech &amp; Engineering</button>
+      <button class="filter-pill fp-topic psych-locked" data-topic="behavioral-science">🧠 Behavioral Science</button>
+    </div>
   </div>
 
-  <!-- ── Submit Questions pill + inline form ── -->
-  <div class="q-submit-wrap" id="qSubmitWrap">
-    <button class="btn-ask" id="btnAsk" onclick="toggleQForm()">
-      <span class="btn-ask-icon">✦</span> Submit a Question
-    </button>
-    <div class="q-form-box" id="qFormBox">
-      <div class="q-form-label">What are you curious about?</div>
-      <div class="q-form-row">
-        <textarea
-          class="q-input"
-          id="qInput"
-          rows="1"
-          placeholder="Type your question here…"
-          oninput="autoResize(this)"
-          onkeydown="handleKey(event)"
-        ></textarea>
-        <button class="q-send-btn" id="qSendBtn" onclick="submitQuestion()">
-          Send ↑
-        </button>
+</section>
+
+
+<!-- SUBJECTS -->
+<section id="subjects">
+  <div class="container">
+    <div class="section-eyebrow" style="color:var(--astro);background:rgba(180,127,255,0.1);border-color:rgba(180,127,255,0.3);">Explore</div>
+    <h2 class="section-title">Choose Your Lab</h2>
+    <div class="pill-legend">
+      <span class="legend-label">Each lab may include:</span>
+      <span class="ulink live legend-pill">Lesson</span>
+      <span class="ulink map legend-pill">Interactive Map</span>
+      <span class="ulink activity legend-pill">Activity</span>
+      <span class="ulink sim legend-pill">Simulation</span>
+      <span class="ulink ext legend-pill">Extension</span>
+      <span class="ulink game legend-pill">Game</span>
+    </div>
+
+    <!-- ─── TOPIC GROUP: LIFE SCIENCE ─────────────────────────── -->
+    <div class="topic-group tg-life" data-group="life-science">
+      <div class="topic-group-divider">
+        <span class="topic-group-icon">🌱</span>
+        <span class="topic-group-name">Life Science</span>
       </div>
-      <div class="q-status" id="qStatus"></div>
+
+      <!-- Life Science — Grade 6 -->
+      <span id="bio" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="life-science" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card" id="unit-characteristics">
+            <div class="unit-top">
+              <div class="unit-name">Characteristics of Life</div>
+              <div class="unit-desc">The 6 characteristics every living thing shares — and how to apply them to determine what's alive.</div>
+            </div>
+            <div class="unit-links">
+              <a href="lesson_characteristics.html" class="ulink live">Lesson</a>
+              <a href="extension_gray-zone.html" class="ulink ext">The Gray Zone</a>
+              <a href="game_is-it-alive.html" class="ulink game">Is It Alive?</a>
+            </div>
+          </div>
+          <div class="unit-card" id="unit-cell-types">
+            <div class="unit-top">
+              <div class="unit-name">Cell Types</div>
+              <div class="unit-desc">Unicellular vs. multicellular, prokaryotic vs. eukaryotic — the building blocks of all living things.</div>
+            </div>
+            <div class="unit-links">
+              <a href="lesson_cell-types.html" class="ulink live">Lesson</a>
+              <a href="extension_virus.html" class="ulink ext">Are Viruses Alive?</a>
+              <a href="game_cell-type-showdown.html" class="ulink game">Cell Type Showdown</a>
+            </div>
+          </div>
+          <div class="unit-card" id="unit-organelles">
+            <div class="unit-top">
+              <div class="unit-name">Cell Organelles</div>
+              <div class="unit-desc">Inside plant and animal cells — nuclei, mitochondria, chloroplasts, and more, using real-world analogies.</div>
+            </div>
+            <div class="unit-links">
+              <a href="lesson_organelles.html" class="ulink live">Lesson</a>
+              <a href="extension_organelles.html" class="ulink ext">Protein Pathway</a>
+              <a href="extension_neuron-explorer.html" class="ulink ext">Neuron Explorer</a>
+              <a href="game_cell-explorer.html" class="ulink game">Cell Explorer</a>
+            </div>
+          </div>
+          <div class="unit-card" id="unit-body-systems">
+            <div class="unit-top">
+              <div class="unit-name">Human Body Systems</div>
+              <div class="unit-desc">Circulatory, digestive, nervous systems and more — how organs work together to keep us alive.</div>
+            </div>
+            <div class="unit-links">
+              <a href="lesson_body-systems.html" class="ulink live">Lesson</a>
+              <a href="body-system-interactions.html" class="ulink map">System Interactions</a>
+              <a href="body-system-diseases.html" class="ulink dis">Diseases &amp; Disorders</a>
+              <a href="extension_body-systems.html" class="ulink ext">Medical Mysteries</a>
+              <a href="game_exercise.html" class="ulink game">Exercise Simulator</a>
+              <a href="game_relay.html" class="ulink game">Relay Race</a>
+            </div>
+          </div>
+          <div class="unit-card" id="unit-biological-evolution">
+            <div class="unit-top">
+              <div class="unit-name">Biological Evolution</div>
+              <div class="unit-desc">Natural selection, adaptation, evidence from fossils and DNA, and how life on Earth has changed over millions of years.</div>
+            </div>
+            <div class="unit-links">
+              <a href="lesson_biological-evolution.html" class="ulink live">Lesson</a>
+              <a href="activity_biological-evolution.html" class="ulink activity">Evidence of Evolution</a>
+              <a href="simulation_beetle-island.html" class="ulink sim">Beetle Island</a>
+              <a href="simulation_chernobyl-frogs.html" class="ulink sim">Chernobyl Frogs</a>
+              <a href="game_evolution-clicker.html" class="ulink game">Evolution Clicker</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tg-life -->
+
+    <!-- ─── TOPIC GROUP: EARTH & SPACE ────────────────────────── -->
+    <div class="topic-group tg-earth" data-group="earth-space">
+      <div class="topic-group-divider">
+        <span class="topic-group-icon">🌍</span>
+        <span class="topic-group-name">Earth &amp; Space</span>
+      </div>
+
+      <span id="geo" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="earth-space" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Layers of Time</div>
+              <div class="unit-desc">Igneous, sedimentary, and metamorphic rocks — how each type forms and what the layers reveal about Earth's history.</div>
+            </div>
+            <div class="unit-links">
+              <a href="lesson_layers-of-time.html" class="ulink live">Lesson</a>
+              <a href="game_layer-detective.html" class="ulink game">Layer Detective</a>
+              <a href="game_fossil-hunt.html" class="ulink game">Fossil Hunt</a>
+            </div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Continental Drift</div>
+              <div class="unit-desc">How continents move, tectonic plate boundaries, earthquakes, volcanoes, and the forces that shape landmasses over time.</div>
+            </div>
+            <div class="unit-links">
+              <a href="lesson_continental-drift.html" class="ulink live">Lesson</a>
+              <a href="simulation_floatlandia-fracture.html" class="ulink sim">Floatlandia Fracture</a>
+            </div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Sun-Earth-Moon System</div>
+              <div class="unit-desc">How gravity, orbits, and motion connect the Sun, Earth, and Moon into one system — including rotation, revolution, and the forces that keep it all balanced.</div>
+            </div>
+            <div class="unit-links">
+              <a href="lesson_sun-earth-moon.html" class="ulink live">Lesson</a>
+            </div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Phases of the Moon</div>
+              <div class="unit-desc">Why the Moon appears to change shape every night — orbit, tidal locking, the 8 phases, and the 29.5-day lunar cycle explained.</div>
+            </div>
+            <div class="unit-links">
+              <a href="lesson_phases-of-the-moon.html" class="ulink live">Lesson</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tg-earth -->
+
+    
+    <!-- ─── TOPIC GROUP: PHYSICAL SCIENCE ────────────────────── -->
+    <div class="topic-group tg-physical" data-group="physical-science">
+      <div class="topic-group-divider">
+        <span class="topic-group-icon">⚡</span>
+        <span class="topic-group-name">Physical Science</span>
+      </div>
+
+      <!-- Chemistry — Grade 8 -->
+      <span id="chem" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="physical-science" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Matter &amp; Its Properties</div>
+              <div class="unit-desc">Physical vs. chemical properties, states of matter, and the particle model of matter.</div>
+            </div>
+            <div class="unit-links"></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Atoms, Elements &amp; the Periodic Table</div>
+              <div class="unit-desc">Atomic structure, protons, neutrons, electrons, and how to navigate the periodic table.</div>
+            </div>
+            <div class="unit-links"></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Chemical Reactions</div>
+              <div class="unit-desc">Reactants, products, indicators of chemical change, conservation of mass, and balancing equations.</div>
+            </div>
+            <div class="unit-links"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Physics — Grade 8 -->
+      <span id="phys" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="physical-science" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Forces &amp; Motion</div>
+              <div class="unit-desc">Newton's laws, speed, velocity, acceleration, friction, and balanced vs. unbalanced forces.</div>
+            </div>
+            <div class="unit-links"></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Energy</div>
+              <div class="unit-desc">Kinetic and potential energy, thermal, light, sound, and electrical energy — and how energy transfers.</div>
+            </div>
+            <div class="unit-links"></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Waves, Sound &amp; Light</div>
+              <div class="unit-desc">Wavelength, frequency, amplitude, the electromagnetic spectrum, reflection, and refraction.</div>
+            </div>
+            <div class="unit-links"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tg-physical -->
+
+    
+    <!-- ─── TOPIC GROUP: TECH & ENGINEERING ──────────────────── -->
+    <div class="topic-group tg-tech" data-group="tech-engineering">
+      <div class="topic-group-divider">
+        <span class="topic-group-icon">🔧</span>
+        <span class="topic-group-name">Tech &amp; Engineering</span>
+      </div>
+
+      <!-- Science & Engineering Practices — All Grades -->
+      <span id="sci" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="tech-engineering" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">The Scientific Method</div>
+              <div class="unit-desc">Observations, hypotheses, variables, controlled experiments, data analysis, and writing conclusions.</div>
+            </div>
+            <div class="unit-links"></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Data, Graphs &amp; Measurement</div>
+              <div class="unit-desc">Reading and creating bar, line, and scatter plot graphs. SI units and measurement tools.</div>
+            </div>
+            <div class="unit-links"></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Lab Safety</div>
+              <div class="unit-desc">Safety symbols, proper equipment use, MSDS basics, and rules every scientist follows in the lab.</div>
+            </div>
+            <div class="unit-links"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tg-tech -->
+
+    <!-- ─── TOPIC GROUP: BEHAVIORAL SCIENCE ─────────────────── -->
+    <div class="topic-group tg-psych psych-locked" data-group="behavioral-science">
+      <div class="topic-group-divider">
+        <span class="topic-group-icon">🧠</span>
+        <span class="topic-group-name">Behavioral Science</span>
+      </div>
+
+      <span id="psych" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block" data-topic="behavioral-science" data-grades="6">
+        <div class="unit-row">
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Rage Baiting &amp; Media Manipulation</div>
+              <div class="unit-desc">How outrage is engineered online, why your brain falls for it, and how to become a smarter media consumer.</div>
+            </div>
+            <div class="unit-links">
+              <a href="lesson_ragebaiting.html" class="ulink live">Lesson</a>
+            </div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Cognitive Biases</div>
+              <div class="unit-desc">The mental shortcuts your brain takes — confirmation bias, anchoring, the Dunning-Kruger effect, and more.</div>
+            </div>
+            <div class="unit-links"></div>
+          </div>
+          <div class="unit-card">
+            <div class="unit-top">
+              <div class="unit-name">Emotional Regulation &amp; Social Influence</div>
+              <div class="unit-desc">How emotions are processed, why peer pressure works, and strategies for managing your own responses.</div>
+            </div>
+            <div class="unit-links"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tg-psych -->
+
+    <!-- No results message -->
+    <div class="filter-empty" id="filter-empty">
+      <p style="font-size:1.5rem; margin-bottom:0.75rem;">🔍</p>
+      <p style="font-weight:700; margin-bottom:0.4rem; color:var(--text);">No units yet for that combination</p>
+      <p>New content is added throughout the year — check back soon, or try a different filter.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="section-eyebrow" style="color:var(--astro);background:rgba(180,127,255,0.1);border-color:rgba(180,127,255,0.3);">How It's Built</div>
+    <h2 class="section-title">Designed for Learners</h2>
+    <p class="section-desc">LyfeLabz makes reviewing science engaging, effective, and fun. Here's how every unit is structured.</p>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-icon">📖</div>
+        <div class="how-step">Step 1</div>
+        <h3>Read the Review</h3>
+        <p>Clear notes and visual breakdowns cover every key concept — no textbook hunting required.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">🎮</div>
+        <div class="how-step">Step 2</div>
+        <h3>Try the Activities</h3>
+        <p>Interactive labs and extension pages help you apply what you've learned hands-on.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">✅</div>
+        <div class="how-step">Step 3</div>
+        <h3>Test Yourself</h3>
+        <p>Practice quizzes give instant feedback and real explanations — learn from every miss.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">🏆</div>
+        <div class="how-step">Step 4</div>
+        <h3>Ace Your Test</h3>
+        <p>Review your score, revisit weak spots, and walk into your exam with full confidence.</p>
+      </div>
     </div>
   </div>
+</section>
 
-</div>
-
-<!-- ===== EXPLORATIONS ===== -->
-<div class="explorations-section" id="explorations">
-  <div class="explorations-inner">
-    <div class="exp-cards">
-
-      <!-- Dark Universe -->
-      <a href="dark-universe.html" class="exp-card purple">
-        <div class="exp-card-thumb thumb-du">
-          <div class="exp-card-thumb-label">INTERACTIVE · TOGGLES</div>
-        </div>
-        <div class="exp-card-body">
-          <div class="exp-card-tag">COSMOLOGY · DARK MATTER · DARK ENERGY</div>
-          <h3 class="exp-card-title">The Dark Universe</h3>
-          <p class="exp-card-desc">
-            95% of the universe is invisible — no light, no signal, nothing we can detect directly. Dark matter holds galaxies together. Dark energy tears everything apart. Toggle each layer on and off to see what we can and can't explain.
-          </p>
-          <div class="exp-card-meta">
-            <span class="meta-chip chip-dim">95% Unseen</span>
-            <span class="meta-chip" style="background:rgba(192,132,252,0.06);border:1px solid rgba(192,132,252,0.2);color:#c084fc;">Dark Matter</span>
-            <span class="meta-chip" style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);color:#fb923c;">Dark Energy</span>
-            <span class="meta-chip chip-dim">Cosmic Web</span>
-          </div>
-        </div>
-        <div class="exp-card-arrow">↗</div>
-      </a>
-
-      <!-- Standard Model -->
-      <a href="standard-model.html" class="exp-card blue">
-        <div class="exp-card-thumb thumb-sm">
-          <div class="exp-card-thumb-label">INTERACTIVE TABLE</div>
-        </div>
-        <div class="exp-card-body">
-          <div class="exp-card-tag">QUANTUM PHYSICS · PARTICLE PHYSICS</div>
-          <h3 class="exp-card-title">The Standard Model</h3>
-          <p class="exp-card-desc">
-            Everything you can touch is made of just 17 kinds of particles. Quarks. Leptons. Bosons. One of them — the Higgs — gives everything else its mass. This interactive table puts all 17 in your hands with real data on every single one.
-          </p>
-          <div class="exp-card-meta">
-            <span class="meta-chip chip-dim">17 Particles</span>
-            <span class="meta-chip chip-teal">4 Forces</span>
-            <span class="meta-chip chip-dim">3 Generations</span>
-            <span class="meta-chip chip-dim">Hover Tooltips</span>
-          </div>
-        </div>
-        <div class="exp-card-arrow">↗</div>
-      </a>
-
-      <!-- Geometric Unity -->
-      <a href="geometric-unity.html" class="exp-card gold">
-        <div class="exp-card-thumb thumb-gu">
-          <div class="exp-card-thumb-label">3D INTERACTIVE</div>
-        </div>
-        <div class="exp-card-body">
-          <div class="exp-card-tag">THEORETICAL PHYSICS · BEYOND THE STANDARD MODEL</div>
-          <h3 class="exp-card-title">Geometric Unity</h3>
-          <p class="exp-card-desc">
-            What if every force in the universe — gravity, electromagnetism, even the nuclear forces — came from the shape of one giant 14-dimensional space? Eric Weinstein's Geometric Unity theory says maybe. Fly through the Observerse and see what that actually looks like.
-          </p>
-          <div class="exp-card-meta">
-            <span class="meta-chip chip-dim">14 Dimensions</span>
-            <span class="meta-chip chip-amber">Torus Knot Manifold</span>
-            <span class="meta-chip chip-dim">Gauge Fields</span>
-            <span class="meta-chip chip-teal">Live 3D</span>
-          </div>
-        </div>
-        <div class="exp-card-arrow">↗</div>
-      </a>
-
-    </div>
-  </div>
-</div>
-
-<!-- ===== FOOTER ===== -->
+<!-- FOOTER -->
 <footer>
-  <div class="footer-brand">
-    <div class="wb">WONDER BOX</div>
-    <div class="by">by <span class="lz">LYFELABZ</span></div>
+  <div class="footer-logo">LYFELABZ</div>
+  <p>Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <p style="margin-top:0.8rem; display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" style="color:#3bc8e8; border-color:rgba(59,200,232,0.4);">Why It Works</a>
+  </p>
+
+  <!-- ── Educator Mode Toggles ── -->
+  <div id="edu-toggle-wrap" style="
+    margin-top: 2rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  ">
+    <div style="font-size:0.62rem; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.45);">For Educators</div>
+    <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
+      <button id="edu-toggle-btn" onclick="toggleEduMode()" style="
+        display: inline-flex; align-items: center; gap: 0.6rem;
+        font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 800;
+        letter-spacing: 0.06em; text-transform: uppercase; border-radius: 99px;
+        padding: 0.5rem 1.3rem; cursor: pointer; transition: all 0.22s ease;
+        border: 1px solid rgba(59,200,232,0.8); background: rgba(59,200,232,0.18); color: #3bc8e8;
+      ">
+        <span id="edu-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3bc8e8;transition:background 0.22s,box-shadow 0.22s;"></span>
+        <span id="edu-toggle-label">Enable Educator Mode</span>
+      </button>
+      <button id="stem-toggle-btn" onclick="toggleStemMode()" style="
+        display: inline-flex; align-items: center; gap: 0.6rem;
+        font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 800;
+        letter-spacing: 0.06em; text-transform: uppercase; border-radius: 99px;
+        padding: 0.5rem 1.3rem; cursor: pointer; transition: all 0.22s ease;
+        border: 1px solid rgba(46,204,113,0.7); background: rgba(46,204,113,0.12); color: #2ecc71;
+      ">
+        <span id="stem-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2ecc71;transition:background 0.22s,box-shadow 0.22s;"></span>
+        <span id="stem-toggle-label">Show MA STE Standards</span>
+      </button>
+    </div>
+    <div style="font-size:0.63rem; color:rgba(255,255,255,0.38); max-width:900px; text-align:center; line-height:1.5; white-space:nowrap;" id="edu-toggle-hint">
+      Badges &amp; standards appear on every lesson, map, activity, simulation, extension, and game — this session only.
+    </div>
   </div>
-  <ul class="footer-links">
-    <li><a href="https://lyfelabz.com">Main Site</a></li>
-    <li><a href="#explorations">Explorations</a></li>
-    <li><a href="https://lyfelabz.com/about.html">About LyfeLabz</a></li>
-    <li><a href="https://lyfelabz.com/privacy.html">Privacy</a></li>
-  </ul>
-  <div class="footer-copy">© 2026 LyfeLabz · Educational Use</div>
+
+  <p style="margin-top:1rem;font-size:0.72rem;color:rgba(180,200,220,0.35);letter-spacing:0.05em;">© 2026 LyfeLabz · Educational Use</p>
+
+  <!-- Last updated badge -->
+  <div id="last-updated-bar" style="
+    margin-top: 1.2rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: rgba(180,200,220,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+  ">
+    <span style="opacity:0.5;">⟳</span>
+    <span id="last-updated-text">Checking for updates…</span>
+  </div>
+  <script>
+    fetch('https://api.github.com/repos/lyfelabz/lyfelabz/commits?per_page=1')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var el = document.getElementById('last-updated-text');
+        if(!el || !data[0]) return;
+        var raw = data[0].commit.author.date;
+        var d   = new Date(raw);
+        var opts = { year:'numeric', month:'long', day:'numeric',
+                     hour:'2-digit', minute:'2-digit', timeZoneName:'short' };
+        el.textContent = 'Site last updated · ' + d.toLocaleDateString('en-US', opts);
+      })
+      .catch(function(){
+        var el = document.getElementById('last-updated-text');
+        if(el) el.textContent = 'Site last updated · unavailable';
+      });
+  </script>
 </footer>
 
-</div><!-- .page -->
-
+<!-- ===== FILTER LOGIC ===== -->
 <script>
-/* ===== COSMOS CANVAS ===== */
-const canvas = document.getElementById('cosmos');
-const ctx = canvas.getContext('2d');
-let W, H, stars = [];
+var activeGrade = '6';
+var activeTopics = new Set(['all']);
 
-function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-}
+function runFilter() {
+  var blocks  = document.querySelectorAll('.subject-block');
+  var groups  = document.querySelectorAll('.topic-group');
+  var anyVisible = false;
 
-function initStars() {
-  stars = [];
-  for (let i = 0; i < 260; i++) {
-    stars.push({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: Math.random() * 1.2 + 0.3,
-      o: Math.random() * 0.5 + 0.1,
-      speed: Math.random() * 0.015 + 0.005,
-      phase: Math.random() * Math.PI * 2,
-      color: ['#00f5d4','#ffd166','#ffffff','#7c6cfa','#5ce1ff'][Math.floor(Math.random() * 5)]
-    });
-  }
-}
-
-function drawCosmos(t) {
-  ctx.clearRect(0, 0, W, H);
-
-  // Nebula gradient
-  const grd = ctx.createRadialGradient(W * 0.3, H * 0.4, 0, W * 0.3, H * 0.4, W * 0.5);
-  grd.addColorStop(0, 'rgba(0,245,212,0.018)');
-  grd.addColorStop(1, 'transparent');
-  ctx.fillStyle = grd;
-  ctx.fillRect(0, 0, W, H);
-
-  const grd2 = ctx.createRadialGradient(W * 0.75, H * 0.6, 0, W * 0.75, H * 0.6, W * 0.4);
-  grd2.addColorStop(0, 'rgba(124,108,250,0.015)');
-  grd2.addColorStop(1, 'transparent');
-  ctx.fillStyle = grd2;
-  ctx.fillRect(0, 0, W, H);
-
-  // Stars
-  stars.forEach(s => {
-    const pulse = s.o + 0.12 * Math.sin(t * s.speed * 60 + s.phase);
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    ctx.fillStyle = s.color;
-    ctx.globalAlpha = Math.max(0.05, pulse);
-    ctx.fill();
+  blocks.forEach(function(block) {
+    var grades   = (block.dataset.grades || '').split(' ');
+    var topic    = block.dataset.topic || '';
+    var gradeOk  = activeGrade === 'all' || grades.indexOf(activeGrade) > -1;
+    var topicOk  = activeTopics.has('all') || activeTopics.has(topic);
+    if (gradeOk && topicOk) {
+      block.classList.remove('hidden');
+      anyVisible = true;
+    } else {
+      block.classList.add('hidden');
+    }
   });
-  ctx.globalAlpha = 1;
+
+  // Hide topic group headers if all their subject-blocks are hidden
+  groups.forEach(function(group) {
+    var visible = group.querySelectorAll('.subject-block:not(.hidden)');
+    if (visible.length === 0) {
+      group.classList.add('hidden');
+    } else {
+      group.classList.remove('hidden');
+    }
+  });
+
+  var emptyMsg = document.getElementById('filter-empty');
+  if (emptyMsg) emptyMsg.classList.toggle('visible', !anyVisible);
 }
 
-let raf;
-function loop(t) {
-  drawCosmos(t / 1000);
-  raf = requestAnimationFrame(loop);
-}
-
-resize();
-initStars();
-requestAnimationFrame(loop);
-window.addEventListener('resize', () => { resize(); initStars(); });
-
-/* ===== HOTKEY: Cmd+Ctrl+/ → lyfelabz.com ===== */
-window.addEventListener('keydown', e => {
-  if (e.metaKey && e.ctrlKey && e.key === '/') {
-    window.location.href = 'https://lyfelabz.com';
-  }
+// Grade pills
+document.querySelectorAll('.fp-grade').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.fp-grade').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    activeGrade = btn.dataset.grade;
+    runFilter();
+  });
 });
 
-/* ===== TYPEWRITER ===== */
-const questions = [
-  "If the universe started from nothing... what was the nothing?",
-  "Why does matter exist instead of just energy?",
-  "Is there a theory that unifies all four forces?",
-  "What gives particles their mass?",
-  "Why are there exactly three generations of particles?",
-  "What would a 14-dimensional space actually feel like?",
-  "Could there be more universes like ours?",
-  "What is dark matter actually made of?",
-];
-
-const icons = ['🌌','⚛️','🔭','🧲','🧬','🌊','🔬','✨'];
-let qi = 0, ci = 0, deleting = false, delay = 60;
-const qEl = document.getElementById('typed-question');
-const qIcon = document.querySelector('.qbox-icon');
-
-function typeLoop() {
-  if (!qEl) return; // guard: element not present on this page
-  const q = questions[qi];
-  if (!deleting) {
-    ci++;
-    qEl.innerHTML = q.slice(0, ci) + '<span class="qbox-cursor"></span>';
-    if (ci === q.length) {
-      deleting = true;
-      delay = 2200;
+// Topic pills — multi-select
+document.querySelectorAll('.fp-topic').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var topic = btn.dataset.topic;
+    if (topic === 'all') {
+      // All Topics clears everything and resets
+      activeTopics = new Set(['all']);
+      document.querySelectorAll('.fp-topic').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
     } else {
-      delay = 38 + Math.random() * 30;
+      // Remove 'all' if a specific topic is picked
+      activeTopics.delete('all');
+      document.querySelector('.fp-topic[data-topic="all"]').classList.remove('active');
+      // Toggle this topic
+      if (activeTopics.has(topic)) {
+        activeTopics.delete(topic);
+        btn.classList.remove('active');
+        // If nothing selected, revert to all
+        if (activeTopics.size === 0) {
+          activeTopics.add('all');
+          document.querySelector('.fp-topic[data-topic="all"]').classList.add('active');
+        }
+      } else {
+        activeTopics.add(topic);
+        btn.classList.add('active');
+      }
     }
-  } else {
-    ci = Math.max(0, ci - 2);
-    qEl.innerHTML = q.slice(0, ci) + '<span class="qbox-cursor"></span>';
-    if (ci === 0) {
-      deleting = false;
-      qi = (qi + 1) % questions.length;
-      if (qIcon) qIcon.textContent = icons[qi % icons.length];
-      delay = 300;
-    } else {
-      delay = 22;
-    }
-  }
-  setTimeout(typeLoop, delay);
-}
-typeLoop();
-
-/* ===== SCROLL REVEALS ===== */
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('visible');
-    }
+    runFilter();
   });
-}, { threshold: 0.12 });
-
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-// Pills with stagger
-const pillObserver = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      document.querySelectorAll('.pill').forEach((pill, i) => {
-        setTimeout(() => pill.classList.add('visible'), i * 100);
-      });
-      pillObserver.disconnect();
-    }
-  });
-}, { threshold: 0.2 });
-
-const pillSection = document.querySelector('.what-pills');
-if (pillSection) pillObserver.observe(pillSection);
-
-// ── Question Submission ──────────────────────────────────────────
-// Replace this URL after deploying your Google Apps Script web app:
-const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyvFOVXOPbjh82-jVDS63wP-kImWMU0HHfRSvf14g6be2NsF7fV5OWmzOcugYvyk6SJ/exec';
-
-function toggleQForm() {
-  const box  = document.getElementById('qFormBox');
-  const btn  = document.getElementById('btnAsk');
-  const open = box.classList.toggle('open');
-  btn.querySelector('.btn-ask-icon').textContent = open ? '✕' : '✦';
-  btn.innerHTML = open
-    ? '<span class="btn-ask-icon">✕</span> Close'
-    : '<span class="btn-ask-icon">✦</span> Submit a Question';
-  if (open) setTimeout(() => document.getElementById('qInput').focus(), 50);
-  document.getElementById('qStatus').textContent = '';
-  document.getElementById('qStatus').className = 'q-status';
-}
-
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 130) + 'px';
-}
-
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    submitQuestion();
-  }
-}
-
-async function submitQuestion() {
-  const input  = document.getElementById('qInput');
-  const status = document.getElementById('qStatus');
-  const btn    = document.getElementById('qSendBtn');
-  const text   = input.value.trim();
-
-  if (!text) {
-    status.textContent = 'Please type a question first.';
-    status.className   = 'q-status err';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Sending…';
-  status.textContent = '';
-  status.className = 'q-status';
-
-  try {
-    await fetch(SHEET_ENDPOINT, {
-      method: 'POST',
-      mode:   'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        question:  text,
-        timestamp: new Date().toISOString(),
-        page:      window.location.pathname
-      })
-    });
-    // no-cors means we can't read the response — treat as success
-    status.textContent = '✓ Question received — thank you!';
-    status.className   = 'q-status ok';
-    input.value = '';
-    input.style.height = 'auto';
-    setTimeout(() => toggleQForm(), 2400);
-  } catch (err) {
-    status.textContent = 'Could not send — check your connection.';
-    status.className   = 'q-status err';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Send ↑';
-  }
-}
+});
 </script>
+
+<!-- ===== EDUCATOR MODE ===== -->
+<script>
+function syncEduToggleUI(isOn) {
+  var btn  = document.getElementById('edu-toggle-btn');
+  var dot  = document.getElementById('edu-toggle-dot');
+  var lbl  = document.getElementById('edu-toggle-label');
+  if (!btn) return;
+  if (isOn) {
+    btn.style.borderColor  = 'rgba(59,200,232,0.55)';
+    btn.style.background   = 'rgba(59,200,232,0.12)';
+    btn.style.color        = 'rgba(59,200,232,0.95)';
+    dot.style.background   = '#3bc8e8';
+    dot.style.boxShadow    = '0 0 8px rgba(59,200,232,0.7)';
+    lbl.textContent        = 'Educator Mode: On';
+  } else {
+    btn.style.borderColor  = 'rgba(59,200,232,0.8)';
+    btn.style.background   = 'rgba(59,200,232,0.18)';
+    btn.style.color        = '#3bc8e8';
+    dot.style.background   = '#3bc8e8';
+    dot.style.boxShadow    = 'none';
+    lbl.textContent        = 'Enable Educator Mode';
+  }
+}
+function toggleEduMode() {
+  var isOn = sessionStorage.getItem('lyfelabz-ls') === 'on';
+  var next = !isOn;
+  if (next) { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+  else       { sessionStorage.removeItem('lyfelabz-ls'); }
+  syncEduToggleUI(next);
+}
+
+function syncStemToggleUI(isOn) {
+  var btn  = document.getElementById('stem-toggle-btn');
+  var dot  = document.getElementById('stem-toggle-dot');
+  var lbl  = document.getElementById('stem-toggle-label');
+  if (!btn) return;
+  if (isOn) {
+    btn.style.borderColor  = 'rgba(46,204,113,0.45)';
+    btn.style.background   = 'rgba(46,204,113,0.08)';
+    btn.style.color        = 'rgba(46,204,113,0.95)';
+    dot.style.background   = '#2ecc71';
+    dot.style.boxShadow    = '0 0 8px rgba(46,204,113,0.7)';
+    lbl.textContent        = 'MA STE Standards: On';
+  } else {
+    btn.style.borderColor  = 'rgba(46,204,113,0.7)';
+    btn.style.background   = 'rgba(46,204,113,0.12)';
+    btn.style.color        = '#2ecc71';
+    dot.style.background   = '#2ecc71';
+    dot.style.boxShadow    = 'none';
+    lbl.textContent        = 'Show MA STE Standards';
+  }
+}
+function toggleStemMode() {
+  var isOn = sessionStorage.getItem('lyfelabz-stem') === 'on';
+  var next = !isOn;
+  if (next) { sessionStorage.setItem('lyfelabz-stem', 'on'); }
+  else       { sessionStorage.removeItem('lyfelabz-stem'); }
+  syncStemToggleUI(next);
+}
+
+(function() {
+  syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on');
+  syncStemToggleUI(sessionStorage.getItem('lyfelabz-stem') === 'on');
+})();
+</script>
+
+<!-- Animated Starfield -->
+<script>
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = document.body.scrollHeight;
+    generateStars();
+  }
+
+  function generateStars() {
+    stars = [];
+    const count = Math.floor((canvas.width * canvas.height) / 3800);
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.4 + 0.2,
+        a: Math.random() * 0.65 + 0.1,
+        speed: Math.random() * 0.3 + 0.04,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+      const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(220,210,255,${alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => {
+    clearTimeout(window._rt);
+    window._rt = setTimeout(resize, 200);
+  });
+
+  resize();
+  requestAnimationFrame(draw);
+</script>
+<!-- HIDDEN ROOM TOAST -->
+<div id="psych-toast">🧠 Behavioral Science unlocked</div>
+
+<!-- HIDDEN ROOM: type "psych" anywhere to reveal Behavioral Science -->
+<script>
+(function() {
+  var SEQ = 'psych';
+  var buf = '';
+  var TIMEOUT = 1800;
+  var timer = null;
+
+  function unlock() {
+    if (document.body.classList.contains('psych-unlocked')) return;
+    document.body.classList.add('psych-unlocked');
+    sessionStorage.setItem('lyfelabz-psych', 'on');
+    var toast = document.getElementById('psych-toast');
+    if (toast) {
+      toast.classList.add('show');
+      setTimeout(function() { toast.classList.remove('show'); }, 3200);
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement.isContentEditable) return;
+    if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      buf += e.key.toLowerCase();
+      if (buf.length > SEQ.length) buf = buf.slice(-SEQ.length);
+      clearTimeout(timer);
+      timer = setTimeout(function() { buf = ''; }, TIMEOUT);
+      if (buf === SEQ) {
+        buf = '';
+        clearTimeout(timer);
+        unlock();
+      }
+    }
+  });
+
+  // Persist unlock for the session
+  if (sessionStorage.getItem('lyfelabz-psych') === 'on') {
+    document.body.classList.add('psych-unlocked');
+  }
+})();
+</script>
+
+<script>
+  /* Teacher hotkeys */
+  document.addEventListener('keydown', function(e) {
+    if (e.metaKey && e.ctrlKey && e.key === 'm') {
+      e.preventDefault();
+      window.location.href = 'https://mcas.lyfelabz.com';
+    }
+    if (e.metaKey && e.ctrlKey && e.key === 'b') {
+      e.preventDefault();
+      window.location.href = 'https://beta.lyfelabz.com';
+    }
+  });
+</script>
+
+<!-- WONDER sequence easter egg: type "wonder" anywhere to reveal the WonderBox -->
+<script>
+(function() {
+  var seq     = 'wonder';
+  var buf     = '';
+  var timer   = null;
+  var TIMEOUT = 1800;
+
+  function showWbEgg() {
+    var egg = document.getElementById('wb-egg');
+    if (!egg || egg.classList.contains('show')) return;
+    egg.classList.add('show');
+    clearTimeout(egg._autoDismiss);
+    egg._autoDismiss = setTimeout(function() {
+      egg.classList.remove('show');
+    }, 12000);
+  }
+
+  window.dismissWbEgg = function() {
+    var egg = document.getElementById('wb-egg');
+    if (egg) {
+      clearTimeout(egg._autoDismiss);
+      egg.classList.remove('show');
+    }
+  };
+
+  document.addEventListener('keydown', function(e) {
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement.isContentEditable) return;
+    if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      buf += e.key.toLowerCase();
+      if (buf.length > seq.length) buf = buf.slice(-seq.length);
+      clearTimeout(timer);
+      timer = setTimeout(function() { buf = ''; }, TIMEOUT);
+      if (buf === seq) {
+        buf = '';
+        clearTimeout(timer);
+        showWbEgg();
+      }
+    }
+  });
+})();
+</script>
+<script>
+  (function() {
+    const btn = document.getElementById('navHamburger');
+    const menu = document.getElementById('navDropdown');
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const open = menu.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    });
+    document.addEventListener('click', function(e) {
+      if (!menu.contains(e.target) && e.target !== btn) {
+        menu.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  })();
+</script>
+
+
+<!-- WONDER BOX EASTER EGG: appears when "wonder" is typed -->
+<div id="wb-egg" onclick="window.location.href='https://lyfelabz.com/wonderbox'" role="button" aria-label="Open Wonder Box">
+  <div id="wb-egg-dismiss" onclick="event.stopPropagation(); dismissWbEgg()" title="close">✕</div>
+  <div id="wb-egg-inner">
+    <svg viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="eg1" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#00f5d4" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#00f5d4" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="eg2" cx="50%" cy="30%" r="60%">
+          <stop offset="0%" stop-color="#ffd166" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#ffd166" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="eblur"><feGaussianBlur stdDeviation="6"/></filter>
+      </defs>
+      <!-- glow -->
+      <circle cx="70" cy="82" r="44" fill="url(#eg1)" filter="url(#eblur)">
+        <animate attributeName="r" values="36;50;36" dur="4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="70" cy="52" r="30" fill="url(#eg2)" filter="url(#eblur)">
+        <animate attributeName="r" values="24;36;24" dur="5s" repeatCount="indefinite"/>
+      </circle>
+      <!-- box body -->
+      <polygon points="20,76 70,104 120,76 70,48"
+        fill="rgba(0,245,212,0.04)" stroke="#00f5d4" stroke-width="1" stroke-opacity="0.3"/>
+      <polygon points="20,76 20,110 70,138 70,104"
+        fill="rgba(0,245,212,0.025)" stroke="#00f5d4" stroke-width="1" stroke-opacity="0.22"/>
+      <polygon points="120,76 120,110 70,138 70,104"
+        fill="rgba(0,245,212,0.04)" stroke="#00f5d4" stroke-width="1" stroke-opacity="0.28"/>
+      <!-- lid -->
+      <g style="transform-origin:70px 76px">
+        <animateTransform attributeName="transform" type="rotate"
+          values="0 70 76; -28 70 76; 0 70 76" dur="6s" repeatCount="indefinite" additive="sum"/>
+        <polygon points="20,76 70,48 120,76 70,104"
+          fill="rgba(255,209,102,0.06)" stroke="#ffd166" stroke-width="1.4" stroke-opacity="0.65"/>
+        <line x1="45" y1="62" x2="95" y2="90" stroke="#ffd166" stroke-width="0.5" stroke-opacity="0.2"/>
+        <line x1="70" y1="48" x2="70" y2="104" stroke="#ffd166" stroke-width="0.5" stroke-opacity="0.2"/>
+      </g>
+      <!-- rising particles -->
+      <circle cx="70" cy="44" r="2.5" fill="#00f5d4">
+        <animate attributeName="cy" values="48;6;48" dur="3.2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="3.2s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="1;2.5;1" dur="3.2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="57" cy="38" r="1.8" fill="#ffd166">
+        <animate attributeName="cy" values="45;5;45" dur="4.1s" begin="0.6s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.9;0" dur="4.1s" begin="0.6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="84" cy="40" r="2" fill="#7c6cfa">
+        <animate attributeName="cy" values="46;8;46" dur="3.7s" begin="1.1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="3.7s" begin="1.1s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="65" cy="30" r="1.3" fill="#ef476f">
+        <animate attributeName="cy" values="44;2;44" dur="5s" begin="1.8s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.85;0" dur="5s" begin="1.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="78" cy="35" r="1.5" fill="#5ce1ff">
+        <animate attributeName="cy" values="46;10;46" dur="3.9s" begin="0.3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.8;0" dur="3.9s" begin="0.3s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
+    <div id="wb-egg-label">Wonder Box ↗</div>
+  </div>
+</div>
+
 </body>
 </html>
