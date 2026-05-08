@@ -707,6 +707,79 @@
   .topic-group.hidden {
     display: none;
   }
+
+  /* ===== WONDER BOX EASTER EGG ===== */
+  #wb-egg {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 9998;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(40px) scale(0.7);
+    pointer-events: none;
+    transition: opacity 0.5s cubic-bezier(0.22,1,0.36,1),
+                transform 0.5s cubic-bezier(0.22,1,0.36,1);
+  }
+  #wb-egg.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  #wb-egg-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    filter: drop-shadow(0 0 28px rgba(0,245,212,0.6))
+            drop-shadow(0 0 60px rgba(0,245,212,0.22));
+    animation: wbEggFloat 4s ease-in-out infinite;
+  }
+  @keyframes wbEggFloat {
+    0%,100% { transform: translateY(0) rotate(-1.5deg); }
+    50%      { transform: translateY(-10px) rotate(1.5deg); }
+  }
+  #wb-egg:hover #wb-egg-inner {
+    filter: drop-shadow(0 0 40px rgba(0,245,212,0.9))
+            drop-shadow(0 0 80px rgba(0,245,212,0.35));
+  }
+  #wb-egg svg { width: 110px; height: 110px; }
+  #wb-egg-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    color: rgba(0,245,212,0.7);
+    text-transform: uppercase;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  #wb-egg:hover #wb-egg-label {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  #wb-egg-dismiss {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(10,20,35,0.9);
+    border: 1px solid rgba(0,245,212,0.3);
+    color: rgba(0,245,212,0.6);
+    font-size: 0.55rem;
+    line-height: 18px;
+    text-align: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 2;
+  }
+  #wb-egg:hover #wb-egg-dismiss { opacity: 1; }
+
 </style>
 </head>
 <body>
@@ -1414,10 +1487,6 @@ function toggleStemMode() {
 <script>
   /* Teacher hotkeys */
   document.addEventListener('keydown', function(e) {
-    if (e.metaKey && e.ctrlKey && e.key === '/') {
-      e.preventDefault();
-      window.location.href = 'https://wonderbox.lyfelabz.com';
-    }
     if (e.metaKey && e.ctrlKey && e.key === 'm') {
       e.preventDefault();
       window.location.href = 'https://mcas.lyfelabz.com';
@@ -1427,6 +1496,50 @@ function toggleStemMode() {
       window.location.href = 'https://beta.lyfelabz.com';
     }
   });
+</script>
+
+<!-- WONDER sequence easter egg: type "wonder" anywhere to reveal the WonderBox -->
+<script>
+(function() {
+  var seq     = 'wonder';
+  var buf     = '';
+  var timer   = null;
+  var TIMEOUT = 1800;
+
+  function showWbEgg() {
+    var egg = document.getElementById('wb-egg');
+    if (!egg || egg.classList.contains('show')) return;
+    egg.classList.add('show');
+    clearTimeout(egg._autoDismiss);
+    egg._autoDismiss = setTimeout(function() {
+      egg.classList.remove('show');
+    }, 12000);
+  }
+
+  window.dismissWbEgg = function() {
+    var egg = document.getElementById('wb-egg');
+    if (egg) {
+      clearTimeout(egg._autoDismiss);
+      egg.classList.remove('show');
+    }
+  };
+
+  document.addEventListener('keydown', function(e) {
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement.isContentEditable) return;
+    if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      buf += e.key.toLowerCase();
+      if (buf.length > seq.length) buf = buf.slice(-seq.length);
+      clearTimeout(timer);
+      timer = setTimeout(function() { buf = ''; }, TIMEOUT);
+      if (buf === seq) {
+        buf = '';
+        clearTimeout(timer);
+        showWbEgg();
+      }
+    }
+  });
+})();
 </script>
 <script>
   (function() {
@@ -1445,6 +1558,73 @@ function toggleStemMode() {
     });
   })();
 </script>
+
+
+<!-- WONDER BOX EASTER EGG: appears when "wonder" is typed -->
+<div id="wb-egg" onclick="window.location.href='https://lyfelabz.com/wonderbox'" role="button" aria-label="Open Wonder Box">
+  <div id="wb-egg-dismiss" onclick="event.stopPropagation(); dismissWbEgg()" title="close">✕</div>
+  <div id="wb-egg-inner">
+    <svg viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="eg1" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#00f5d4" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#00f5d4" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="eg2" cx="50%" cy="30%" r="60%">
+          <stop offset="0%" stop-color="#ffd166" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#ffd166" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="eblur"><feGaussianBlur stdDeviation="6"/></filter>
+      </defs>
+      <!-- glow -->
+      <circle cx="70" cy="82" r="44" fill="url(#eg1)" filter="url(#eblur)">
+        <animate attributeName="r" values="36;50;36" dur="4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="70" cy="52" r="30" fill="url(#eg2)" filter="url(#eblur)">
+        <animate attributeName="r" values="24;36;24" dur="5s" repeatCount="indefinite"/>
+      </circle>
+      <!-- box body -->
+      <polygon points="20,76 70,104 120,76 70,48"
+        fill="rgba(0,245,212,0.04)" stroke="#00f5d4" stroke-width="1" stroke-opacity="0.3"/>
+      <polygon points="20,76 20,110 70,138 70,104"
+        fill="rgba(0,245,212,0.025)" stroke="#00f5d4" stroke-width="1" stroke-opacity="0.22"/>
+      <polygon points="120,76 120,110 70,138 70,104"
+        fill="rgba(0,245,212,0.04)" stroke="#00f5d4" stroke-width="1" stroke-opacity="0.28"/>
+      <!-- lid -->
+      <g style="transform-origin:70px 76px">
+        <animateTransform attributeName="transform" type="rotate"
+          values="0 70 76; -28 70 76; 0 70 76" dur="6s" repeatCount="indefinite" additive="sum"/>
+        <polygon points="20,76 70,48 120,76 70,104"
+          fill="rgba(255,209,102,0.06)" stroke="#ffd166" stroke-width="1.4" stroke-opacity="0.65"/>
+        <line x1="45" y1="62" x2="95" y2="90" stroke="#ffd166" stroke-width="0.5" stroke-opacity="0.2"/>
+        <line x1="70" y1="48" x2="70" y2="104" stroke="#ffd166" stroke-width="0.5" stroke-opacity="0.2"/>
+      </g>
+      <!-- rising particles -->
+      <circle cx="70" cy="44" r="2.5" fill="#00f5d4">
+        <animate attributeName="cy" values="48;6;48" dur="3.2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="3.2s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="1;2.5;1" dur="3.2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="57" cy="38" r="1.8" fill="#ffd166">
+        <animate attributeName="cy" values="45;5;45" dur="4.1s" begin="0.6s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.9;0" dur="4.1s" begin="0.6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="84" cy="40" r="2" fill="#7c6cfa">
+        <animate attributeName="cy" values="46;8;46" dur="3.7s" begin="1.1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;0" dur="3.7s" begin="1.1s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="65" cy="30" r="1.3" fill="#ef476f">
+        <animate attributeName="cy" values="44;2;44" dur="5s" begin="1.8s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.85;0" dur="5s" begin="1.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="78" cy="35" r="1.5" fill="#5ce1ff">
+        <animate attributeName="cy" values="46;10;46" dur="3.9s" begin="0.3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.8;0" dur="3.9s" begin="0.3s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
+    <div id="wb-egg-label">Wonder Box ↗</div>
+  </div>
+</div>
 
 </body>
 </html>
