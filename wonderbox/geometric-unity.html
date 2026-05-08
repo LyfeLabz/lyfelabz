@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geometric Unity — Observerse Visualization</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Fira+Code:wght@300;400&family=Syne:wght@700;800&family=Syne+Mono&display=swap');
+
+  /* ===== WONDERBOX NAV ===== */
+  .wb-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 200;
+    padding: 0 clamp(16px, 4vw, 48px);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(2,4,8,0.88);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(120,190,255,0.1);
+  }
+  .wb-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .wb-nav-icon { width: 34px; height: 34px; flex-shrink: 0; }
+  .wb-nav-icon svg { width: 100%; height: 100%; }
+  .wb-nav-wordmark {
+    font-family: 'Syne Mono', monospace;
+    font-size: 21.6px;
+    letter-spacing: 0.06em;
+    color: #00f5d4;
+    text-shadow: 0 0 20px rgba(0,245,212,0.4);
+    text-decoration: none;
+  }
+  .wb-nav-wordmark span { color: #ffd166; text-shadow: 0 0 20px rgba(255,209,102,0.4); }
+  .wb-back-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,245,212,0.07);
+    border: 1px solid rgba(0,245,212,0.28);
+    padding: 4.8px 14.4px;
+    border-radius: 99px;
+    font-family: 'Syne Mono', monospace;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: #00f5d4;
+    text-decoration: none;
+    transition: background 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+  }
+  .wb-back-pill:hover {
+    background: rgba(0,245,212,0.15);
+    box-shadow: 0 0 20px rgba(0,245,212,0.18);
+  }
+
+  :root {
+    --gold:      #e8b84b;
+    --gold-dim:  rgba(232,184,75,0.15);
+    --gold-glow: rgba(232,184,75,0.4);
+    --void:      #020408;
+    --white:     #f0f4ff;
+    --cyan:      #00e5ff;
+    --violet:    #a855f7;
+    --fiber:     #ff6b9d;
+    --spinor:    #4dffa0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--void);
+    color: var(--white);
+    font-family: 'Fira Code', monospace;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    cursor: crosshair;
+  }
+
+  #canvas { position: fixed; inset: 0; z-index: 0; }
+
+  /* ===== HEADER ===== */
+  #header {
+    position: fixed;
+    top: 64px; left: 0; right: 0;
+    z-index: 10;
+    padding: 20px 32px 16px;
+    background: linear-gradient(to bottom, rgba(2,4,8,0.95) 60%, transparent);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  #title-block h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    text-shadow: 0 0 40px var(--gold-glow);
+    line-height: 1.1;
+  }
+
+  #title-block .subtitle {
+    font-size: 0.74rem;
+    letter-spacing: 0.3em;
+    color: rgba(232,184,75,0.82);
+    margin-top: 4px;
+    text-transform: uppercase;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+
+  /* ===== EQUATION STRIP ===== */
+  #equations {
+    position: fixed;
+    top: 144px;
+    left: 20px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 270px;
+  }
+
+  .eq-intro {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: rgba(200,220,255,0.55);
+    text-transform: uppercase;
+    margin-top: 18px;
+    margin-bottom: 10px;
+    line-height: 1.6;
+    padding-left: 10px;
+    border-left: 1px solid rgba(200,220,255,0.12);
+  }
+
+  .eq-intro strong {
+    display: block;
+    font-size: 0.8rem;
+    color: rgba(232,184,75,0.88);
+    letter-spacing: 0.12em;
+    margin-bottom: 4px;
+  }
+
+  .eq {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 10px;
+    border-left: 1px solid rgba(200,220,255,0.1);
+    margin-bottom: 4px;
+    transition: all 0.3s;
+  }
+
+  .eq-name {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(200,220,255,0.42);
+    transition: color 0.3s;
+  }
+
+  .eq-formula {
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    color: rgba(200,220,255,0.62);
+    transition: color 0.3s, text-shadow 0.3s;
+  }
+
+  .eq.active { border-left-color: var(--gold); }
+  .eq.active .eq-name   { color: rgba(232,184,75,0.72); }
+  .eq.active .eq-formula {
+    color: var(--gold);
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+
+  .eq-conclusion {
+    margin-top: 8px;
+    padding: 7px 10px;
+    border-left: 1px solid rgba(200,220,255,0.12);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: rgba(200,220,255,0.5);
+    line-height: 1.65;
+    font-style: italic;
+  }
+
+  /* ===== CONTROLS — toggle switch style ===== */
+  #controls {
+    position: fixed;
+    top: 144px;
+    right: 20px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 210px;
+  }
+
+  #controls-header {
+    font-size: 0.58rem;
+    letter-spacing: 0.22em;
+    color: rgba(200,220,255,0.55);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    line-height: 1.5;
+    border-bottom: 1px solid rgba(200,220,255,0.1);
+    padding-bottom: 6px;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 5px 0;
+    gap: 10px;
+    transition: opacity 0.2s;
+  }
+  .toggle-row:hover { opacity: 0.85; }
+
+  .toggle-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 99px;
+    padding: 4px 12px 4px 8px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    color: rgba(230,240,255,0.9);
+    white-space: nowrap;
+    flex: 1;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .toggle-row.active .toggle-pill {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  .toggle-pill-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .tog-switch {
+    width: 34px; height: 18px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .toggle-row.active .tog-switch {
+    background: rgba(232,184,75,0.35);
+    border-color: rgba(232,184,75,0.65);
+    box-shadow: 0 0 10px rgba(232,184,75,0.3);
+  }
+
+  .tog-thumb {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: rgba(180,180,200,0.5);
+    transition: transform 0.25s, background 0.25s;
+  }
+  .toggle-row.active .tog-thumb {
+    transform: translateX(16px);
+    background: var(--gold);
+    box-shadow: 0 0 6px var(--gold-glow);
+  }
+
+  /* ===== BOTTOM RIGHT: learn accordions ===== */
+  #bottom-right {
+    position: fixed;
+    right: 20px;
+    bottom: 24px;
+    z-index: 10;
+    width: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  #learn-header {
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    color: rgba(200,220,255,0.58);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    border-bottom: 1px solid rgba(200,220,255,0.12);
+    padding-bottom: 6px;
+  }
+
+  .learn-item {
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: border-color 0.2s;
+  }
+  .learn-item:hover { border-color: rgba(255,255,255,0.22); }
+
+  .learn-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 11px;
+    cursor: pointer;
+    gap: 8px;
+    background: rgba(255,255,255,0.05);
+    transition: background 0.2s;
+    user-select: none;
+  }
+  .learn-trigger:hover { background: rgba(255,255,255,0.1); }
+
+  .learn-trigger-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: rgba(230,240,255,0.95);
+  }
+
+  .learn-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .learn-chevron {
+    font-size: 0.62rem;
+    color: rgba(180,200,255,0.5);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .learn-item.open .learn-chevron { transform: rotate(180deg); }
+
+  .learn-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    background: rgba(0,0,0,0.3);
+  }
+  .learn-item.open .learn-body { max-height: 200px; }
+
+  .learn-body-inner {
+    padding: 8px 12px 10px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    color: rgba(205,225,255,0.75);
+    line-height: 1.65;
+  }
+
+  /* scanlines */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 5;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+  }
+
+  /* corner accents */
+  .corner { position: fixed; z-index: 10; width: 40px; height: 40px; pointer-events: none; opacity: 0.28; }
+  .corner.tl { top:12px; left:12px; border-top:1px solid var(--gold); border-left:1px solid var(--gold); }
+  .corner.tr { top:12px; right:12px; border-top:1px solid var(--gold); border-right:1px solid var(--gold); }
+  .corner.bl { bottom:12px; left:12px; border-bottom:1px solid var(--gold); border-left:1px solid var(--gold); }
+  .corner.br { bottom:12px; right:12px; border-bottom:1px solid var(--gold); border-right:1px solid var(--gold); }
+</style>
+</head>
+<body>
+
+<!-- ===== WONDERBOX NAV ===== -->
+<nav class="wb-nav">
+  <a href="index.html" class="wb-nav-left">
+    <div class="wb-nav-icon">
+      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="8" width="32" height="24" rx="2" stroke="#00f5d4" stroke-width="1.2" fill="none"/>
+        <path d="M1 12 L17 20 L33 12" stroke="#00f5d4" stroke-width="1" fill="none" stroke-opacity="0.6"/>
+        <path d="M4 8 L17 1 L30 8" stroke="#ffd166" stroke-width="1" fill="none" stroke-opacity="0.8"/>
+        <circle cx="17" cy="15" r="3" fill="rgba(0,245,212,0.15)" stroke="#00f5d4" stroke-width="1"/>
+        <line x1="17" y1="12" x2="17" y2="1" stroke="#ffd166" stroke-width="0.8" stroke-opacity="0.5" stroke-dasharray="2,2"/>
+        <circle cx="17" cy="1" r="1.5" fill="#ffd166" fill-opacity="0.7"/>
+      </svg>
+    </div>
+    <span class="wb-nav-wordmark">LYFE<span>LABZ</span></span>
+  </a>
+  <a href="index.html" class="wb-back-pill">← WONDERBOX</a>
+</nav>
+
+<canvas id="canvas"></canvas>
+
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<div id="header">
+  <div id="title-block">
+    <h1>GEOMETRIC UNITY</h1>
+    <div class="subtitle">Eric Weinstein · Observerse Framework · π: Y¹⁴ → X⁴</div>
+  </div>
+</div>
+
+<!-- ===== EQUATIONS ===== -->
+<div id="equations">
+  <div class="eq-intro">
+    <strong>The Geometry of Everything</strong>
+    GU proposes that all of physics — every force, every particle — emerges from the geometry of one 14-dimensional space called the Observerse.
+  </div>
+
+  <div class="eq active" id="eq0">
+    <div class="eq-name">The projection map</div>
+    <div class="eq-formula">π: Y¹⁴ → X⁴</div>
+  </div>
+  <div class="eq" id="eq1">
+    <div class="eq-name">Dimension count</div>
+    <div class="eq-formula">dim(Y) = dim(X) + dim(GL(TX))</div>
+  </div>
+  <div class="eq" id="eq2">
+    <div class="eq-name">Spacetime + fiber = observerse</div>
+    <div class="eq-formula">4 + 10 = 14</div>
+  </div>
+  <div class="eq" id="eq3">
+    <div class="eq-name">Gauge potential</div>
+    <div class="eq-formula">ω ∈ Ω¹(ad P)</div>
+  </div>
+  <div class="eq" id="eq4">
+    <div class="eq-name">The symmetry group</div>
+    <div class="eq-formula">G = SO(7,7) or Spin(7,7)</div>
+  </div>
+  <div class="eq" id="eq5">
+    <div class="eq-name">Connection / Levi-Civita</div>
+    <div class="eq-formula">∇ = d + [A, ·]</div>
+  </div>
+
+  <div class="eq-conclusion">
+    If Geometric Unity is right, every force in nature is a shadow of one shape — the Observerse.
+  </div>
+</div>
+
+<!-- ===== CONTROLS — toggle switches ===== -->
+<div id="controls">
+  <div id="controls-header">Toggle layers on or off<br>to explore each component</div>
+
+  <div class="toggle-row active" id="btn-fibers" onclick="toggleFibers()">
+    <div class="toggle-pill">
+      <div class="toggle-pill-dot" style="background:#ff6b9d;box-shadow:0 0 6px #ff6b9d"></div>
+      FIBER BUNDLE
+    </div>
+    <div class="tog-switch"><div class="tog-thumb"></div></div>
+  </div>
+
+  <div class="toggle-row active" id="btn-gauge" onclick="toggleGauge()">
+    <div class="toggle-pill">
+      <div class="toggle-pill-dot" style="background:#a855f7;box-shadow:0 0 6px #a855f7"></div>
+      GAUGE FIELD
+    </div>
+    <div class="tog-switch"><div class="tog-thumb"></div></div>
+  </div>
+
+  <div class="toggle-row active" id="btn-spinor" onclick="toggleSpinors()">
+    <div class="toggle-pill">
+      <div class="toggle-pill-dot" style="background:#4dffa0;box-shadow:0 0 6px #4dffa0"></div>
+      SPINOR FIELD
+    </div>
+    <div class="tog-switch"><div class="tog-thumb"></div></div>
+  </div>
+
+  <div class="toggle-row active" id="btn-spacetime" onclick="toggleSpacetime()">
+    <div class="toggle-pill">
+      <div class="toggle-pill-dot" style="background:#00e5ff;box-shadow:0 0 6px #00e5ff"></div>
+      4D SPACETIME
+    </div>
+    <div class="tog-switch"><div class="tog-thumb"></div></div>
+  </div>
+</div>
+
+<!-- ===== BOTTOM RIGHT: learn accordions ===== -->
+<div id="bottom-right">
+  <div id="learn-header">Tap to learn more ▾</div>
+
+  <div class="learn-item" id="learn-obs">
+    <div class="learn-trigger" onclick="toggleLearn('learn-obs')">
+      <div class="learn-trigger-left">
+        <div class="learn-dot" style="background:#e8b84b;box-shadow:0 0 5px #e8b84b"></div>
+        The Observerse
+      </div>
+      <span class="learn-chevron">▾</span>
+    </div>
+    <div class="learn-body"><div class="learn-body-inner">
+      The Observerse (Y¹⁴) is the central idea of GU. It's a 14-dimensional space built on top of our familiar 4D spacetime. The extra 10 dimensions aren't random — they encode all possible ways spacetime can curve, which is exactly the information needed to describe gravity and all other forces.
+    </div></div>
+  </div>
+
+  <div class="learn-item" id="learn-fiber">
+    <div class="learn-trigger" onclick="toggleLearn('learn-fiber')">
+      <div class="learn-trigger-left">
+        <div class="learn-dot" style="background:#ff6b9d;box-shadow:0 0 5px #ff6b9d"></div>
+        Fiber Bundle
+      </div>
+      <span class="learn-chevron">▾</span>
+    </div>
+    <div class="learn-body"><div class="learn-body-inner">
+      At every point in spacetime (X⁴), the Observerse attaches a 10-dimensional "fiber" — a space of all possible metric shapes. Together they form a fiber bundle: the total space Y¹⁴ projected down to X⁴ by the map π. The fibers you see here represent these extra dimensions hanging off each point.
+    </div></div>
+  </div>
+
+  <div class="learn-item" id="learn-gauge">
+    <div class="learn-trigger" onclick="toggleLearn('learn-gauge')">
+      <div class="learn-trigger-left">
+        <div class="learn-dot" style="background:#a855f7;box-shadow:0 0 5px #a855f7"></div>
+        Gauge Field
+      </div>
+      <span class="learn-chevron">▾</span>
+    </div>
+    <div class="learn-body"><div class="learn-body-inner">
+      Gauge fields describe how forces act across space. In GU, all four forces (gravity, electromagnetism, strong, weak) are unified into one gauge connection on the Observerse. The symmetry group SO(7,7) is large enough to contain all known force symmetries simultaneously.
+    </div></div>
+  </div>
+
+  <div class="learn-item" id="learn-spinor">
+    <div class="learn-trigger" onclick="toggleLearn('learn-spinor')">
+      <div class="learn-trigger-left">
+        <div class="learn-dot" style="background:#4dffa0;box-shadow:0 0 5px #4dffa0"></div>
+        Spinor Field
+      </div>
+      <span class="learn-chevron">▾</span>
+    </div>
+    <div class="learn-body"><div class="learn-body-inner">
+      Spinors are the mathematical objects that describe fermions — electrons, quarks, neutrinos. In GU, spinors arise naturally from the geometry of the Observerse rather than being added by hand. Each green particle represents a fermion emerging from the structure of spacetime itself.
+    </div></div>
+  </div>
+
+  <div class="learn-item" id="learn-spacetime">
+    <div class="learn-trigger" onclick="toggleLearn('learn-spacetime')">
+      <div class="learn-trigger-left">
+        <div class="learn-dot" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff"></div>
+        4D Spacetime
+      </div>
+      <span class="learn-chevron">▾</span>
+    </div>
+    <div class="learn-body"><div class="learn-body-inner">
+      The glowing grid is our familiar 4D spacetime (X⁴) — 3 dimensions of space plus 1 of time. The waves show spacetime curvature, which we experience as gravity. In GU, this is just the "base" of a much larger structure — the Observerse is built on top of it.
+    </div></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const canvas = document.getElementById('canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x020408, 1);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.01, 1000);
+camera.position.set(0, 3, 9);
+camera.lookAt(0, 0, 0);
+
+// State
+let showFibers = true;
+let showGauge = true;
+let showSpinors = true;
+let slowMode = false;
+let time = 0;
+let mouseX = 0, mouseY = 0;
+let isDragging = false, lastMouse = { x: 0, y: 0 };
+let rotY = 0.3, rotX = 0.15;
+
+// ===================== GEOMETRY =====================
+
+// --- 4D Spacetime base manifold (torus knot as metaphor for curved spacetime) ---
+const baseGroup = new THREE.Group();
+scene.add(baseGroup);
+
+// Spacetime sheet — glowing grid plane
+const gridMat = new THREE.MeshBasicMaterial({
+  color: 0x00e5ff, wireframe: true, transparent: true, opacity: 0.12
+});
+const gridGeo = new THREE.PlaneGeometry(14, 14, 28, 28);
+const grid = new THREE.Mesh(gridGeo, gridMat);
+grid.rotation.x = -Math.PI / 2;
+grid.position.y = -1.5;
+baseGroup.add(grid);
+
+// Curvature wave on spacetime
+const waveGeo = new THREE.PlaneGeometry(14, 14, 60, 60);
+const waveMat = new THREE.MeshBasicMaterial({
+  color: 0x00a5cc, wireframe: true, transparent: true, opacity: 0.07
+});
+const wave = new THREE.Mesh(waveGeo, waveMat);
+wave.rotation.x = -Math.PI / 2;
+wave.position.y = -1.5;
+baseGroup.add(wave);
+
+// --- Central Observerse manifold (main body) ---
+// Represent as a beautiful torus knot — the "knotted" extra dimensions
+const obsGeo = new THREE.TorusKnotGeometry(2, 0.38, 180, 20, 3, 5);
+const obsMat = new THREE.MeshPhongMaterial({
+  color: 0xffd84c,
+  emissive: 0x7a4a00,
+  transparent: true,
+  opacity: 0.6,
+  wireframe: false,
+  shininess: 80,
+});
+const obs = new THREE.Mesh(obsGeo, obsMat);
+baseGroup.add(obs);
+
+// Wireframe overlay for Observerse
+const obsWireGeo = new THREE.TorusKnotGeometry(2, 0.38, 120, 12, 3, 5);
+const obsWireMat = new THREE.MeshBasicMaterial({
+  color: 0xffe566, wireframe: true, transparent: true, opacity: 0.75
+});
+const obsWire = new THREE.Mesh(obsWireGeo, obsWireMat);
+baseGroup.add(obsWire);
+
+// --- Fiber bundle representation ---
+// Vertical cylinders at sample points on the torus knot = fibers π⁻¹(x)
+const fiberGroup = new THREE.Group();
+baseGroup.add(fiberGroup);
+
+const fiberPositions = [];
+const N_FIBERS = 22;
+for (let i = 0; i < N_FIBERS; i++) {
+  const t = (i / N_FIBERS) * Math.PI * 2;
+  // Points along torus knot
+  const p = 2, q = 5;
+  const r = 2 + 0.38 * Math.cos(q * t);
+  const x = r * Math.cos(p * t);
+  const y = r * Math.sin(p * t);
+  const z = -0.38 * Math.sin(q * t);
+  fiberPositions.push(new THREE.Vector3(x, z, y));
+}
+
+const fiberMat = new THREE.MeshBasicMaterial({
+  color: 0xff6b9d, transparent: true, opacity: 0.55
+});
+
+fiberPositions.forEach((pos, i) => {
+  const h = 0.8 + Math.random() * 0.5;
+  const fGeo = new THREE.CylinderGeometry(0.02, 0.02, h, 6);
+  const fiber = new THREE.Mesh(fGeo, fiberMat.clone());
+  // Orient outward from the knot
+  fiber.position.copy(pos);
+  const outward = pos.clone().normalize();
+  const axis = new THREE.Vector3(0, 1, 0);
+  fiber.quaternion.setFromUnitVectors(axis, outward);
+  fiberGroup.add(fiber);
+
+  // Fiber tip sphere
+  const tipGeo = new THREE.SphereGeometry(0.055, 8, 8);
+  const tip = new THREE.Mesh(tipGeo, new THREE.MeshBasicMaterial({ color: 0xff6b9d, transparent: true, opacity: 0.9 }));
+  tip.position.copy(pos.clone().add(outward.clone().multiplyScalar(h * 0.5)));
+  fiberGroup.add(tip);
+});
+
+// --- Gauge field lines ---
+const gaugeGroup = new THREE.Group();
+baseGroup.add(gaugeGroup);
+
+for (let i = 0; i < 40; i++) {
+  const t0 = (i / 40) * Math.PI * 2;
+  const points = [];
+  for (let j = 0; j < 30; j++) {
+    const t = t0 + (j / 29) * Math.PI * 0.4;
+    const p = 3, q = 7;
+    const r = 2.7 + 0.2 * Math.cos(q * t);
+    const x = r * Math.cos(p * t);
+    const y = r * Math.sin(p * t);
+    const z = -0.2 * Math.sin(q * t) + 0.1 * Math.sin(5 * t);
+    points.push(new THREE.Vector3(x, z, y));
+  }
+  const gaugeGeo = new THREE.BufferGeometry().setFromPoints(points);
+  const gaugeLine = new THREE.Line(gaugeGeo, new THREE.LineBasicMaterial({
+    color: 0xb06fff, transparent: true,
+    opacity: 0.55 + 0.2 * Math.random()
+  }));
+  gaugeGroup.add(gaugeLine);
+}
+
+// --- Spinor field particles ---
+const spinorGroup = new THREE.Group();
+scene.add(spinorGroup);
+
+const spinorGeom = new THREE.BufferGeometry();
+const spinorCount = 300;
+const spinorPos = new Float32Array(spinorCount * 3);
+const spinorPhase = new Float32Array(spinorCount);
+for (let i = 0; i < spinorCount; i++) {
+  const phi = Math.random() * Math.PI * 2;
+  const theta = Math.random() * Math.PI * 2;
+  const r = 1.5 + Math.random() * 3.5;
+  spinorPos[i * 3] = r * Math.cos(phi) * Math.sin(theta);
+  spinorPos[i * 3 + 1] = r * Math.cos(theta) * 0.5;
+  spinorPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+  spinorPhase[i] = Math.random() * Math.PI * 2;
+}
+spinorGeom.setAttribute('position', new THREE.BufferAttribute(spinorPos, 3));
+const spinorMat = new THREE.PointsMaterial({
+  color: 0x4dffa0, size: 0.04, transparent: true, opacity: 0.6
+});
+const spinors = new THREE.Points(spinorGeom, spinorMat);
+spinorGroup.add(spinors);
+
+// --- Ambient star field ---
+const starGeo = new THREE.BufferGeometry();
+const starCount = 1200;
+const starPos = new Float32Array(starCount * 3);
+for (let i = 0; i < starCount; i++) {
+  starPos[i * 3] = (Math.random() - 0.5) * 120;
+  starPos[i * 3 + 1] = (Math.random() - 0.5) * 120;
+  starPos[i * 3 + 2] = (Math.random() - 0.5) * 120;
+}
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.06, transparent: true, opacity: 0.3 }));
+scene.add(stars);
+
+// --- Lights ---
+const ambLight = new THREE.AmbientLight(0x112233, 1.5);
+scene.add(ambLight);
+const goldLight = new THREE.PointLight(0xc9a84c, 2.5, 12);
+goldLight.position.set(2, 2, 2);
+scene.add(goldLight);
+const cyanLight = new THREE.PointLight(0x00e5ff, 1.5, 10);
+cyanLight.position.set(-3, 1, -2);
+scene.add(cyanLight);
+const violetLight = new THREE.PointLight(0x7b2fff, 1.2, 8);
+violetLight.position.set(0, -2, 3);
+scene.add(violetLight);
+
+// ===================== CONTROLS =====================
+function toggleFibers() {
+  showFibers = !showFibers;
+  fiberGroup.visible = showFibers;
+  document.getElementById('btn-fibers').classList.toggle('active', showFibers);
+}
+function toggleGauge() {
+  showGauge = !showGauge;
+  gaugeGroup.visible = showGauge;
+  document.getElementById('btn-gauge').classList.toggle('active', showGauge);
+}
+function toggleSpinors() {
+  showSpinors = !showSpinors;
+  spinorGroup.visible = showSpinors;
+  document.getElementById('btn-spinor').classList.toggle('active', showSpinors);
+}
+function toggleSpacetime() {
+  const visible = !grid.visible;
+  grid.visible  = visible;
+  wave.visible  = visible;
+  document.getElementById('btn-spacetime').classList.toggle('active', visible);
+}
+
+// Mouse drag to orbit
+canvas.addEventListener('mousedown', e => { isDragging = true; lastMouse = { x: e.clientX, y: e.clientY }; });
+canvas.addEventListener('mouseup', () => isDragging = false);
+canvas.addEventListener('mousemove', e => {
+  if (isDragging) {
+    rotY += (e.clientX - lastMouse.x) * 0.005;
+    rotX += (e.clientY - lastMouse.y) * 0.003;
+    rotX = Math.max(-1, Math.min(1, rotX));
+    lastMouse = { x: e.clientX, y: e.clientY };
+  }
+  mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+});
+
+canvas.addEventListener('touchstart', e => {
+  isDragging = true;
+  lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}, { passive: true });
+canvas.addEventListener('touchend', () => isDragging = false);
+canvas.addEventListener('touchmove', e => {
+  if (isDragging) {
+    rotY += (e.touches[0].clientX - lastMouse.x) * 0.005;
+    rotX += (e.touches[0].clientY - lastMouse.y) * 0.003;
+    lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+}, { passive: true });
+
+// Equation cycling
+const eqs = document.querySelectorAll('.eq');
+let activeEq = 0;
+setInterval(() => {
+  eqs[activeEq].classList.remove('active');
+  activeEq = (activeEq + 1) % eqs.length;
+  eqs[activeEq].classList.add('active');
+}, 2400);
+
+// ===================== WAVE ANIMATION =====================
+function updateWave(t) {
+  const pos = waveGeo.attributes.position;
+  const arr = waveGeo.attributes.position.array;
+  const cols = 61;
+  for (let i = 0; i < pos.count; i++) {
+    const x = arr[i * 3];
+    const z = arr[i * 3 + 2];
+    const d = Math.sqrt(x * x + z * z);
+    arr[i * 3 + 1] = Math.sin(d * 0.6 - t * 1.2) * 0.18 * Math.exp(-d * 0.07);
+  }
+  pos.needsUpdate = true;
+}
+
+// ===================== RENDER LOOP =====================
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = slowMode ? 0.003 : 0.008;
+  time += dt;
+
+  // Auto-rotate + mouse influence
+  baseGroup.rotation.y = rotY + time * 0.15 + mouseX * 0.08;
+  baseGroup.rotation.x = rotX + mouseY * 0.06;
+
+  // Observerse pulse
+  const pulse = 1 + 0.03 * Math.sin(time * 2.1);
+  obs.scale.setScalar(pulse);
+  obsWire.scale.setScalar(pulse * 1.002);
+  obs.material.opacity = 0.5 + 0.1 * Math.sin(time * 1.3);
+
+  // Light orbit
+  goldLight.position.x = 3 * Math.cos(time * 0.7);
+  goldLight.position.z = 3 * Math.sin(time * 0.7);
+  cyanLight.position.x = -3 * Math.cos(time * 0.4 + 1);
+  cyanLight.position.z = -3 * Math.sin(time * 0.4 + 1);
+
+  // Fiber pulsing
+  fiberGroup.children.forEach((child, i) => {
+    if (child.material) {
+      child.material.opacity = 0.3 + 0.4 * Math.abs(Math.sin(time * 1.5 + i * 0.4));
+    }
+  });
+
+  // Spinor drift
+  const sPos = spinorGeom.attributes.position.array;
+  for (let i = 0; i < spinorCount; i++) {
+    sPos[i * 3 + 1] += Math.sin(time * 2 + spinorPhase[i]) * 0.001;
+  }
+  spinorGeom.attributes.position.needsUpdate = true;
+
+  // Wave spacetime
+  updateWave(time);
+
+  // Gauge field opacity breath
+  gaugeGroup.children.forEach((line, i) => {
+    line.material.opacity = 0.45 + 0.25 * Math.abs(Math.sin(time * 0.8 + i * 0.15));
+  });
+
+  // Stars slow drift
+  stars.rotation.y = time * 0.005;
+
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+animate();
+</script>
+</body>
+</html>
