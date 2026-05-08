@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <!-- Google Analytics -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -17,8 +16,8 @@
 <meta name="description" content="Simulate tectonic plate movement in Floatlandia Fracture. Watch how continents drift, collide, and reshape over time in this interactive earth science sim.">
 <title>Floatlandia Fracture | LyfeLabz</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&amp;family=Nunito:wght@400;600;700;800;900&amp;family=Orbitron:wght@700;900&amp;display=swap" rel="stylesheet"/>
+<link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
 <style>
 /* =========================================================
    CSS VARIABLES & RESET
@@ -54,9 +53,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { font-size: 18px; scroll-behavior: smooth; }
-
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -70,43 +67,27 @@ body {
    NAV
    ========================================================= */
 nav {
-  position: sticky;
-  top: 0;
-  z-index: 200;
+  position: sticky; top: 0; z-index: 200;
   background: rgba(8,14,22,0.97);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 0.8rem 2.5rem;
 }
-
 .nav-logo {
   font-family: 'Orbitron', sans-serif;
-  font-size: 1.35rem;
-  font-weight: 900;
-  color: var(--gold);
-  text-decoration: none;
+  font-size: 1.35rem; font-weight: 900;
+  color: var(--gold); text-decoration: none;
   letter-spacing: 0.06em;
   text-shadow: 0 0 18px rgba(245,200,66,0.35);
 }
-
 .nav-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--teal);
-  background: rgba(59,200,232,0.1);
-  border: 1px solid rgba(59,200,232,0.35);
-  padding: 0.32rem 0.9rem;
-  border-radius: 99px;
-  text-decoration: none;
-  transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--teal);
+  background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.35);
+  padding: 0.32rem 0.9rem; border-radius: 99px;
+  text-decoration: none; transition: all 0.2s;
 }
 .nav-back:hover { background: rgba(59,200,232,0.18); }
 
@@ -114,46 +95,30 @@ nav {
    MODE TOGGLE BAR
    ========================================================= */
 .mode-toggle-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
+  display: flex; align-items: center; justify-content: center; gap: 0;
   margin: 0 auto 6px;
   background: rgba(42,52,71,0.45);
   border: 1.5px solid rgba(59,200,232,0.25);
-  border-radius: 14px;
-  padding: 0.35rem;
+  border-radius: 14px; padding: 0.35rem;
   width: fit-content;
   box-shadow: 0 0 0 4px rgba(59,200,232,0.04);
 }
 .mode-btn {
-  padding: 0.65rem 1.8rem;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.92rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  transition: all 0.22s;
-  color: rgba(174,184,194,0.55);
-  background: transparent;
+  padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+  font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+  letter-spacing: 0.04em; transition: all 0.22s;
+  color: rgba(174,184,194,0.55); background: transparent;
 }
 .mode-btn:hover:not(.active) { color: rgba(174,184,194,0.8); }
 .mode-btn.active {
   background: linear-gradient(135deg, rgba(59,200,232,0.18) 0%, rgba(59,200,232,0.1) 100%);
-  color: #ddeaf5;
-  border: 1px solid rgba(59,200,232,0.45);
+  color: #ddeaf5; border: 1px solid rgba(59,200,232,0.45);
   box-shadow: 0 0 14px rgba(59,200,232,0.15), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
   text-shadow: 0 0 12px rgba(59,200,232,0.4);
 }
 .mode-hint {
-  text-align: center;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  margin-bottom: 14px;
-  letter-spacing: 0.01em;
+  text-align: center; font-size: 0.82rem; font-weight: 700;
+  color: var(--text-muted); margin-bottom: 14px; letter-spacing: 0.01em;
 }
 .mode-hint span { display: none; }
 .mode-hint span.visible { display: inline; }
@@ -162,273 +127,152 @@ nav {
    CLASSROOM PANEL
    ========================================================= */
 .classroom-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.2rem 1.3rem;
-  box-shadow: var(--shadow);
-  margin-top: 1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.2rem 1.3rem;
+  box-shadow: var(--shadow); margin-top: 1rem;
 }
 .classroom-panel.hidden { display: none; }
 .classroom-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;
 }
 .mode-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.7rem;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  background: rgba(59,200,232,0.12);
-  color: var(--teal);
+  display: inline-flex; align-items: center;
+  padding: 0.25rem 0.7rem; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 800;
+  background: rgba(59,200,232,0.12); color: var(--teal);
   border: 1px solid rgba(59,200,232,0.3);
 }
 .classroom-section {
-  margin-bottom: 1.1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
 }
 .classroom-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-.classroom-section-title {
-  font-family: 'Fredoka One', cursive;
-  font-size: 0.95rem;
-  margin-bottom: 0.7rem;
-}
+.classroom-section-title { font-family: 'Fredoka One', cursive; font-size: 0.95rem; margin-bottom: 0.7rem; }
 
 /* =========================================================
-   QUIZ (post-simulation, 5-question MCQ)
+   QUIZ
    ========================================================= */
 .quiz-question {
-  margin-bottom: 1.1rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0.85rem 1rem;
+  margin-bottom: 1.1rem; background: var(--bg-secondary);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.85rem 1rem;
 }
 .quiz-question:last-child { margin-bottom: 0; }
 .quiz-question-num {
-  display: block;
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--teal);
-  margin-bottom: 0.35rem;
+  display: block; font-size: 0.68rem; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.35rem;
 }
 .quiz-question-text {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.5;
-  margin-bottom: 0.75rem;
+  font-size: 0.95rem; font-weight: 700; color: var(--text-primary); line-height: 1.5; margin-bottom: 0.75rem;
 }
 .quiz-options { display: grid; gap: 7px; }
 .quiz-option {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  padding: 0.65rem 0.85rem;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  background: var(--bg-card);
-  cursor: pointer;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #c9d1d9;
-  line-height: 1.45;
-  transition: all 0.2s;
+  display: flex; align-items: flex-start; gap: 0.6rem;
+  padding: 0.65rem 0.85rem; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--bg-card);
+  cursor: pointer; font-size: 0.88rem; font-weight: 600;
+  color: #c9d1d9; line-height: 1.45; transition: all 0.2s;
 }
 .quiz-option:hover { background: rgba(59,200,232,0.05); border-color: rgba(59,200,232,0.3); color: var(--text-primary); }
 .quiz-option.selected { background: rgba(59,200,232,0.1); border-color: rgba(59,200,232,0.5); color: var(--teal); font-weight: 800; }
 .quiz-option.correct-reveal { background: var(--green-dim); border-color: var(--green); color: var(--green); }
 .quiz-option.wrong-reveal { background: var(--red-dim); border-color: var(--red); color: var(--red); opacity: 0.75; }
 .quiz-option-letter {
-  flex-shrink: 0;
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  background: var(--bg-secondary);
-  border: 1.5px solid var(--border-light);
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--bg-secondary); border: 1.5px solid var(--border-light);
   display: flex; align-items: center; justify-content: center;
-  font-size: 0.72rem;
-  font-weight: 900;
-  color: #aeb8c2;
-  margin-top: 1px;
-  transition: all 0.2s;
+  font-size: 0.72rem; font-weight: 900; color: #aeb8c2; margin-top: 1px; transition: all 0.2s;
 }
 .quiz-option.selected .quiz-option-letter { background: rgba(59,200,232,0.2); color: var(--teal); border-color: rgba(59,200,232,0.4); }
 .quiz-option.correct-reveal .quiz-option-letter { background: var(--green); border-color: var(--green); color: #000; }
 .quiz-option.wrong-reveal .quiz-option-letter { background: var(--red); border-color: var(--red); color: #fff; }
 .quiz-score-badge {
-  display: inline-block;
-  background: rgba(59,200,232,0.1);
-  border: 1px solid rgba(59,200,232,0.3);
-  border-radius: 20px;
-  padding: 0.35rem 0.9rem;
-  font-size: 0.82rem;
-  font-weight: 800;
-  color: var(--teal);
+  display: inline-block; background: rgba(59,200,232,0.1);
+  border: 1px solid rgba(59,200,232,0.3); border-radius: 20px;
+  padding: 0.35rem 0.9rem; font-size: 0.82rem; font-weight: 800; color: var(--teal);
 }
 .quiz-result-banner {
-  margin-top: 1rem;
-  padding: 0.85rem 1rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.9rem;
-  font-weight: 700;
-  line-height: 1.55;
+  margin-top: 1rem; padding: 0.85rem 1rem; border-radius: var(--radius-sm);
+  font-size: 0.9rem; font-weight: 700; line-height: 1.55;
 }
 .quiz-result-banner.pass { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
 .quiz-result-banner.try-again { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(245,200,66,0.3); }
 
 /* =========================================================
-   STUDENT FIELDS (Classroom Mode)
+   STUDENT FIELDS
    ========================================================= */
 .student-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
-  margin-bottom: 0.9rem;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 0.9rem;
 }
 .student-fields .field-full { grid-column: 1 / -1; }
 .field-label {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 0.3rem;
+  display: block; font-size: 0.72rem; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem;
 }
 .field-input, .field-select {
-  width: 100%;
-  padding: 0.55rem 0.75rem;
-  border-radius: 8px;
-  border: 1.5px solid var(--border);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 700;
-  transition: border-color 0.2s;
+  width: 100%; padding: 0.55rem 0.75rem; border-radius: 8px;
+  border: 1.5px solid var(--border); background: var(--bg-secondary);
+  color: var(--text-primary); font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem; font-weight: 700; transition: border-color 0.2s;
 }
 .field-input:focus, .field-select:focus { border-color: var(--teal); outline: none; }
 .field-select { cursor: pointer; }
-
 .submit-section { text-align: center; }
 .submit-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.72rem 2rem;
-  border-radius: 10px;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.92rem;
-  font-weight: 800;
-  border: 1.5px solid var(--border);
-  cursor: pointer;
-  transition: all 0.22s;
-  background: var(--bg-card);
-  color: var(--text-muted);
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0.72rem 2rem; border-radius: 10px;
+  font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+  border: 1.5px solid var(--border); cursor: pointer; transition: all 0.22s;
+  background: var(--bg-card); color: var(--text-muted);
 }
 .submit-btn.locked { opacity: 0.45; cursor: not-allowed; }
 .submit-btn.ready {
-  background: var(--green);
-  border-color: var(--green);
-  color: #000;
+  background: var(--green); border-color: var(--green); color: #000;
   box-shadow: 0 2px 0 rgba(0,0,0,0.15), 0 0 14px rgba(46,204,113,0.2);
 }
 .submit-btn.ready:hover { filter: brightness(1.1); transform: translateY(-1px); }
-.submit-helper {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  margin-top: 0.5rem;
-}
+.submit-helper { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-top: 0.5rem; }
 .submit-success {
-  display: none;
-  margin-top: 0.6rem;
-  padding: 0.7rem 0.95rem;
-  border-radius: var(--radius-sm);
-  background: var(--green-dim);
-  color: var(--green);
-  border: 1px solid rgba(46,204,113,0.3);
-  font-size: 0.88rem;
-  font-weight: 700;
-  line-height: 1.5;
+  display: none; margin-top: 0.6rem; padding: 0.7rem 0.95rem; border-radius: var(--radius-sm);
+  background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.3);
+  font-size: 0.88rem; font-weight: 700; line-height: 1.5;
 }
 .submit-error {
-  display: none;
-  margin-top: 0.6rem;
-  padding: 0.7rem 0.95rem;
-  border-radius: var(--radius-sm);
-  background: var(--red-dim);
-  color: var(--red);
-  border: 1px solid rgba(232,112,112,0.3);
-  font-size: 0.88rem;
-  font-weight: 700;
+  display: none; margin-top: 0.6rem; padding: 0.7rem 0.95rem; border-radius: var(--radius-sm);
+  background: var(--red-dim); color: var(--red); border: 1px solid rgba(232,112,112,0.3);
+  font-size: 0.88rem; font-weight: 700;
 }
-
 @media (max-width: 600px) {
   .mode-btn { padding: 0.5rem 1.2rem; font-size: 0.84rem; }
   .student-fields { grid-template-columns: 1fr; }
 }
 
 /* =========================================================
-   BADGE BARS (MA STE + LEARNING SCIENCE)
+   BADGE BARS
    ========================================================= */
 .badge-bar {
-  display: none;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.6rem 1.4rem;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
+  display: none; flex-wrap: wrap; gap: 0.5rem;
+  padding: 0.6rem 1.4rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border);
 }
 body.stem-active .badge-bar.stem-bar { display: flex; }
 body.ls-active .badge-bar.ls-bar { display: flex; }
-
 .badge {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.25rem 0.7rem;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  cursor: help;
-  transition: filter 0.2s;
+  position: relative; display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.72rem;
+  font-weight: 800; cursor: help; transition: filter 0.2s;
 }
 .badge:hover { filter: brightness(1.2); }
 .badge.green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
 .badge.teal  { background: var(--teal-dim);  color: var(--teal);  border: 1px solid rgba(59,200,232,0.3); }
-
 .badge-tip {
-  display: none;
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1c2230;
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #c9d1d9;
-  width: 230px;
-  text-align: center;
-  z-index: 200;
-  pointer-events: none;
-  line-height: 1.4;
+  display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%); background: #1c2230; border: 1px solid var(--border-light);
+  border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 0.7rem; font-weight: 600;
+  color: #c9d1d9; width: 230px; text-align: center; z-index: 200;
+  pointer-events: none; line-height: 1.4;
 }
 .badge:hover .badge-tip { display: block; }
 
 /* =========================================================
-   HERO / TOP MATTER
+   HERO
    ========================================================= */
 .hero {
   background:
@@ -436,1841 +280,674 @@ body.ls-active .badge-bar.ls-bar { display: flex; }
     radial-gradient(circle at 82% 12%, rgba(46,204,113,0.10), transparent 16%),
     radial-gradient(ellipse at 50% 0%, rgba(59,200,232,0.16) 0%, transparent 52%),
     linear-gradient(135deg, #06111b 0%, #0b1d2b 50%, #07141d 100%);
-  padding: 4.1rem 2rem 3.35rem;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  border-bottom: 1px solid rgba(59,200,232,0.16);
+  padding: 4.1rem 2rem 3.35rem; text-align: center;
+  position: relative; overflow: hidden; border-bottom: 1px solid rgba(59,200,232,0.16);
 }
 .hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
+  content: ''; position: absolute; inset: 0;
   background:
     linear-gradient(180deg, rgba(255,255,255,0.02), transparent 28%),
-    repeating-linear-gradient(
-      -32deg,
-      transparent 0px,
-      transparent 36px,
-      rgba(59,200,232,0.028) 36px,
-      rgba(59,200,232,0.028) 38px
-    );
+    repeating-linear-gradient(-32deg, transparent 0px, transparent 36px,
+      rgba(59,200,232,0.028) 36px, rgba(59,200,232,0.028) 38px);
   pointer-events: none;
 }
 .hero::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 90px;
-  background: linear-gradient(180deg, transparent, rgba(6,15,26,0.65));
-  pointer-events: none;
+  content: ''; position: absolute; inset: auto 0 0 0; height: 90px;
+  background: linear-gradient(180deg, transparent, rgba(6,15,26,0.65)); pointer-events: none;
 }
 .hero-badge {
-  display: inline-block;
-  background: rgba(59,200,232,0.1);
-  border: 1px solid rgba(59,200,232,0.38);
-  color: var(--teal);
-  padding: 0.35rem 1.1rem;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 1.2rem;
-  position: relative;
-  box-shadow: 0 0 18px rgba(59,200,232,0.12);
+  display: inline-block; background: rgba(59,200,232,0.1);
+  border: 1px solid rgba(59,200,232,0.38); color: var(--teal);
+  padding: 0.35rem 1.1rem; border-radius: 99px; font-size: 0.75rem;
+  font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 1.2rem; position: relative; box-shadow: 0 0 18px rgba(59,200,232,0.12);
 }
 .hero h1 {
   font-family: 'Fredoka One', cursive;
-  font-size: clamp(2.3rem,5.6vw,3.9rem);
-  line-height: 1.06;
-  margin-bottom: 0.8rem;
+  font-size: clamp(2.3rem,5.6vw,3.9rem); line-height: 1.06; margin-bottom: 0.8rem;
   background: linear-gradient(135deg,#ffffff 20%, var(--teal) 68%, #9feaff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-  text-shadow: 0 0 22px rgba(59,200,232,0.1);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  position: relative; text-shadow: 0 0 22px rgba(59,200,232,0.1);
 }
 .hero p {
-  font-size: 1rem;
-  color: #c9d1d9;
-  max-width: 680px;
-  margin: 0 auto;
-  line-height: 1.7;
-  position: relative;
+  font-size: 1rem; color: #c9d1d9; max-width: 680px;
+  margin: 0 auto; line-height: 1.7; position: relative;
 }
-.hero-shell {
-  max-width: 1120px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-.hero-kicker {
-  margin-top: 1rem;
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: rgba(159,234,255,0.78);
-}
-.hero-stats {
-  max-width: 1120px;
-  margin: -1.1rem auto 1.15rem;
-  padding: 0 1.4rem;
-  position: relative;
-  z-index: 3;
-}
-.hero-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
-}
-.hero-stat {
-  background: linear-gradient(180deg, rgba(17,27,39,0.94), rgba(13,20,31,0.92));
-  border: 1px solid rgba(89,112,170,0.32);
-  border-radius: 20px;
-  padding: 0.95rem 1rem 0.9rem;
-  box-shadow: 0 12px 24px rgba(0,0,0,0.24);
-}
-.hero-stat-label {
-  font-size: 0.68rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.11em;
-  color: #aeb8c2;
-  margin-bottom: 0.35rem;
-}
-.hero-stat-value {
-  font-size: 1.2rem;
-  font-weight: 900;
-  color: var(--text-primary);
-  line-height: 1.15;
-}
-.hero-stat-value.teal { color: var(--teal); }
-.hero-stat-value.gold { color: var(--gold); }
-.hero-stat-value.green { color: var(--green); }
-.hero-stat-value.purple { color: var(--purple); }
+.hero-shell { max-width: 1120px; margin: 0 auto; position: relative; z-index: 1; }
+.hero-kicker { margin-top: 1rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.06em; color: rgba(159,234,255,0.78); }
 
-.byb-wrap {
-  background: var(--bg-primary);
-  border-bottom: 2px solid rgba(59,200,232,0.16);
-  padding: 2.5rem 1.5rem;
-}
+/* =========================================================
+   BEFORE YOU BEGIN
+   ========================================================= */
+.byb-wrap { background: var(--bg-primary); border-bottom: 2px solid rgba(59,200,232,0.16); padding: 2.5rem 1.5rem; }
 .byb-inner { max-width: 980px; margin: 0 auto; }
 .byb-header { text-align: center; margin-bottom: 2rem; }
-.byb-eyebrow {
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 0.6rem;
-  display: block;
-}
-.byb-title {
-  font-family: 'Fredoka One', cursive;
-  font-size: clamp(1.5rem,3vw,2.2rem);
-  color: var(--text-primary);
-  margin-bottom: 0.4rem;
-}
-.byb-sub {
-  font-size: 0.9rem;
-  color: #c9d1d9;
-  line-height: 1.6;
-}
-.byb-steps {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-.byb-step {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.2rem 1.4rem;
-  position: relative;
-  overflow: hidden;
-}
-.byb-step::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-}
-.byb-step.s1::before { background: linear-gradient(90deg,#3bc8e8,#7c3aed); }
-.byb-step.s2::before { background: linear-gradient(90deg,#f5a028,#f5c842); }
-.byb-step.s3::before { background: linear-gradient(90deg,#3ddc84,#1de9b6); }
-.byb-step-num {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.65rem;
-  font-weight: 900;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-bottom: 0.4rem;
-  display: block;
-}
-.byb-step.s1 .byb-step-num { color: var(--teal); }
-.byb-step.s2 .byb-step-num { color: var(--gold); }
-.byb-step.s3 .byb-step-num { color: var(--green); }
-.byb-step-title {
-  font-family: 'Fredoka One', cursive;
-  font-size: 1.05rem;
-  color: var(--text-primary);
-  margin-bottom: 0.3rem;
-}
-.byb-step-desc {
-  font-size: 0.82rem;
-  color: #c9d1d9;
-  line-height: 1.6;
-}
-.byb-qa {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-.byb-qa-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1.2rem 1.4rem;
-}
-.byb-q {
-  font-family: 'Fredoka One', cursive;
-  font-size: 0.97rem;
-  color: var(--gold);
-  margin-bottom: 0.55rem;
-  line-height: 1.3;
-}
-.byb-a {
-  font-size: 0.85rem;
-  color: #c9d1d9;
-  line-height: 1.7;
-}
+.byb-eyebrow { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.6rem; display: block; }
+.byb-title { font-family: 'Fredoka One', cursive; font-size: clamp(1.5rem,3vw,2.2rem); color: var(--text-primary); margin-bottom: 0.4rem; }
+.byb-sub { font-size: 0.9rem; color: #c9d1d9; line-height: 1.6; }
+.byb-qa { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.byb-qa-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.2rem 1.4rem; }
+.byb-q { font-family: 'Fredoka One', cursive; font-size: 0.97rem; color: var(--gold); margin-bottom: 0.55rem; line-height: 1.3; }
+.byb-a { font-size: 0.85rem; color: #c9d1d9; line-height: 1.7; }
 .byb-a strong { color: var(--text-primary); font-weight: 800; }
 
 /* =========================================================
    PROGRESS BAR
    ========================================================= */
-.progress-wrap {
-  max-width: 900px;
-  margin: 1rem auto 1.5rem;
-  padding: 0 1.4rem;
-}
+.progress-wrap { max-width: 900px; margin: 1rem auto 1.5rem; padding: 0 1.4rem; }
 .progress-steps {
-  display: flex;
-  gap: 0;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: var(--bg-secondary);
+  display: flex; gap: 0; border-radius: var(--radius-sm); overflow: hidden;
+  border: 1px solid var(--border); background: var(--bg-secondary);
 }
 .progress-step {
-  flex: 1;
-  padding: 0.55rem 0.25rem;
-  text-align: center;
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: #aeb8c2;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border);
-  transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
-  cursor: default;
-  letter-spacing: 0.04em;
+  flex: 1; padding: 0.55rem 0.25rem; text-align: center;
+  font-size: 0.72rem; font-weight: 800; color: #aeb8c2;
+  background: var(--bg-secondary); border-right: 1px solid var(--border);
+  transition: background 0.4s ease, color 0.4s ease; cursor: default; letter-spacing: 0.04em;
 }
 .progress-step:last-child { border-right: none; }
 .progress-step.active {
-  background: var(--teal-dim);
-  color: var(--teal);
-  border-right-color: rgba(59,200,232,0.25);
-  box-shadow: inset 0 -2px 0 var(--teal);
+  background: var(--teal-dim); color: var(--teal);
+  border-right-color: rgba(59,200,232,0.25); box-shadow: inset 0 -2px 0 var(--teal);
 }
-.progress-step.done {
-  background: rgba(46,204,113,0.1);
-  color: var(--green);
-  border-right-color: rgba(46,204,113,0.25);
-}
+.progress-step.done { background: rgba(46,204,113,0.1); color: var(--green); border-right-color: rgba(46,204,113,0.25); }
 
 /* =========================================================
    SECTION WRAPPER
    ========================================================= */
-.sim-section {
-  max-width: 900px;
-  margin: 0 auto 2.25rem;
-  padding: 0 1.4rem;
-}
-
-.section-label {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--teal);
-  margin-bottom: 0.4rem;
-}
-.section-title {
-  font-family: 'Fredoka One', sans-serif;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  line-height: 1.15;
-  color: var(--text-primary);
-  margin-bottom: 0.55rem;
-}
-.section-desc {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #d6dee6;
-  line-height: 1.65;
-  margin-bottom: 1.2rem;
-  max-width: 900px;
-}
+.sim-section { max-width: 900px; margin: 0 auto 2.25rem; padding: 0 1.4rem; }
+.section-label { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.4rem; }
+.section-title { font-family: 'Fredoka One', sans-serif; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.15; color: var(--text-primary); margin-bottom: 0.55rem; }
+.section-desc { font-size: 1rem; font-weight: 600; color: #d6dee6; line-height: 1.65; margin-bottom: 1.2rem; max-width: 900px; }
 
 /* =========================================================
-   UNIFIED BUTTON SYSTEM
+   BUTTON SYSTEM
    ========================================================= */
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.65rem 1.3rem;
-  border-radius: 10px;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 800;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  padding: 0.65rem 1.3rem; border-radius: 10px; font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem; font-weight: 800; border: 1px solid transparent;
+  cursor: pointer; transition: all 0.2s ease; text-decoration: none; line-height: 1;
 }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-teal {
-  background: var(--teal);
-  color: #000;
-  border-color: var(--teal);
-  box-shadow: 0 2px 0 rgba(0,0,0,0.15);
-}
-.btn-teal:not(:disabled):hover  { filter: brightness(1.1); transform: translateY(-1px); }
-.btn-ghost {
-  background: var(--bg-card);
-  color: #c9d1d9;
-  border: 1px solid var(--border);
-}
+.btn-teal { background: var(--teal); color: #000; border-color: var(--teal); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+.btn-teal:not(:disabled):hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-ghost { background: var(--bg-card); color: #c9d1d9; border: 1px solid var(--border); }
 .btn-ghost:not(:disabled):hover { border-color: var(--border-light); color: var(--text-primary); }
-.recon-reset-btn {
-  padding: 0.42rem 0.9rem;
-  font-size: 0.76rem;
-}
+.recon-reset-btn { padding: 0.42rem 0.9rem; font-size: 0.76rem; }
 
 /* =========================================================
-   PHASE 1: EVIDENCE
+   PHASE 1: EVIDENCE CARDS
    ========================================================= */
-.evidence-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 0.9rem;
-  margin-bottom: 1rem;
-}
+.evidence-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.9rem; margin-bottom: 1rem; }
 .evidence-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.05rem 1.15rem;
-  cursor: pointer;
-  transition: all 0.22s ease;
-  position: relative;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.05rem 1.15rem; cursor: pointer; transition: all 0.22s ease;
+  position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 .evidence-card:hover { border-color: var(--border-light); background: var(--bg-card-hover); transform: translateY(-1px); }
-.evidence-card.selected { border-color: var(--teal); background: var(--teal-dim); }
-.ev-icon { font-size: 1.6rem; margin-bottom: 0.4rem; }
-.ev-title {
-  font-family: 'Fredoka One', sans-serif;
-  font-size: 1.05rem;
-  color: var(--text-primary);
-  margin-bottom: 0.3rem;
-  line-height: 1.2;
-}
-.ev-desc { font-size: 0.85rem; color: #c9d1d9; line-height: 1.5; }
-.ev-check {
-  position: absolute;
-  top: 0.6rem; right: 0.7rem;
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  background: var(--teal);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.65rem;
-  color: #000;
-  font-weight: 900;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.evidence-card.selected .ev-check { opacity: 1; }
-
-.evidence-feedback {
-  display: none;
-  margin-top: 0.9rem;
-  margin-bottom: 1rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0.85rem 1rem;
-}
-.evidence-feedback.show { display: block; }
-.evidence-feedback-label {
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--teal);
-  margin-bottom: 0.3rem;
-}
-.evidence-feedback-text {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #c9d1d9;
-  line-height: 1.55;
-}
-
-.ev-continue-btn {
-  display: none;
-  opacity: 0;
-  pointer-events: none;
-}
-.ev-continue-btn.ready { display: none; opacity: 0; pointer-events: none; }
-
-/* ---- Lock / Unlock overlay for evidence cards ---- */
-.ev-body {
-  position: relative;
-  border-radius: 10px;
-  overflow: hidden;
-}
-.ev-lock-overlay {
-  position: absolute;
-  inset: -0.3rem -0.25rem;
-  background: rgba(20, 26, 38, 0.78);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 1;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-  z-index: 2;
-}
-.ev-lock-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  color: #c9d1d9;
-  transition: color 0.2s ease, transform 0.22s ease;
-}
-.ev-lock-icon {
-  width: 30px;
-  height: 30px;
-  stroke: currentColor;
-}
-.ev-lock-text {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-.evidence-card.locked .ev-body::before {
-  /* subtle desaturation hint behind overlay */
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(13, 17, 23, 0.18);
-  pointer-events: none;
-  z-index: 1;
-}
-.evidence-card.locked:hover .ev-lock-content {
-  color: var(--teal);
-  transform: scale(1.06);
-}
-.evidence-card:not(.locked) .ev-lock-overlay {
-  opacity: 0;
-  pointer-events: none;
-}
 .evidence-card.selected {
-  border-color: var(--teal);
-  background: var(--teal-dim);
+  border-color: var(--teal); background: var(--teal-dim);
   box-shadow: 0 2px 10px rgba(0,0,0,0.2), 0 0 0 1px rgba(59,200,232,0.18), 0 0 14px rgba(59,200,232,0.16);
 }
+.ev-icon { font-size: 1.6rem; margin-bottom: 0.4rem; }
+.ev-title { font-family: 'Fredoka One', sans-serif; font-size: 1.05rem; color: var(--text-primary); margin-bottom: 0.3rem; line-height: 1.2; }
+.ev-desc { font-size: 0.85rem; color: #c9d1d9; line-height: 1.5; }
+.ev-check {
+  position: absolute; top: 0.6rem; right: 0.7rem;
+  width: 20px; height: 20px; border-radius: 50%; background: var(--teal);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; color: #000; font-weight: 900; opacity: 0; transition: opacity 0.2s;
+}
+.evidence-card.selected .ev-check { opacity: 1; }
+.ev-body { position: relative; border-radius: 10px; overflow: hidden; }
+.ev-lock-overlay {
+  position: absolute; inset: -0.3rem -0.25rem;
+  background: rgba(20, 26, 38, 0.78); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 1; pointer-events: none; transition: opacity 0.25s ease; z-index: 2;
+}
+.ev-lock-content { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; color: #c9d1d9; transition: color 0.2s ease, transform 0.22s ease; }
+.ev-lock-icon { width: 30px; height: 30px; stroke: currentColor; }
+.ev-lock-text { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; }
+.evidence-card.locked .ev-body::before { content: ''; position: absolute; inset: 0; background: rgba(13, 17, 23, 0.18); pointer-events: none; z-index: 1; }
+.evidence-card.locked:hover .ev-lock-content { color: var(--teal); transform: scale(1.06); }
+.evidence-card:not(.locked) .ev-lock-overlay { opacity: 0; pointer-events: none; }
+.evidence-feedback { display: none; margin-top: 0.9rem; margin-bottom: 1rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.85rem 1rem; }
+.evidence-feedback.show { display: block; }
+.evidence-feedback-label { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.3rem; }
+.evidence-feedback-text { font-size: 0.88rem; font-weight: 600; color: #c9d1d9; line-height: 1.55; }
+.ev-continue-btn { display: none; opacity: 0; pointer-events: none; }
+.ev-continue-btn.ready { display: none; opacity: 0; pointer-events: none; }
 
 /* =========================================================
-   PHASE 2: RECONSTRUCTION ARENA
+   PHASE 2: RECONSTRUCTION PANEL (HTML shell)
    ========================================================= */
 .recon-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; box-shadow: 0 4px 18px rgba(0,0,0,0.25);
 }
-
 .recon-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.7rem 1rem;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.7rem 1rem; background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
 }
-.recon-toolbar-title {
-  font-weight: 800;
-  font-size: 0.82rem;
-  color: #c9d1d9;
-  margin-right: 0.5rem;
-}
-/* Evidence legend pills (static, non-interactive) */
+.recon-toolbar-title { font-weight: 800; font-size: 0.82rem; color: #c9d1d9; margin-right: 0.5rem; }
 .evidence-legend {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.28rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  border: 1.5px solid;
-  background: transparent;
-  cursor: default;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.28rem 0.75rem; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 800; border: 1.5px solid; background: transparent; cursor: default;
 }
 .evidence-legend.fossil-legend  { border-color: rgba(59,200,232,0.4); color: var(--teal); background: rgba(59,200,232,0.12); }
 .evidence-legend.rock-legend    { border-color: rgba(245,200,66,0.4); color: var(--gold); background: rgba(245,200,66,0.12); }
 .evidence-legend.climate-legend { border-color: rgba(180,127,255,0.4); color: var(--purple); background: rgba(180,127,255,0.12); }
-
 .align-meter-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: #c9d1d9;
-  margin-left: auto;
+  display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem;
+  font-weight: 800; color: #c9d1d9; margin-left: auto;
 }
-.align-bar-outer {
-  width: 100px;
-  height: 8px;
-  background: var(--bg-primary);
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-.align-bar-inner {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--teal), var(--green));
-  border-radius: 4px;
-  transition: width 0.4s ease, box-shadow 0.3s ease, filter 0.3s ease;
-}
-.align-bar-inner.high {
-  box-shadow: 0 0 12px rgba(46,204,113,0.55);
-  filter: brightness(1.08);
-}
+.align-bar-outer { width: 100px; height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+.align-bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, var(--teal), var(--green)); border-radius: 4px; transition: width 0.4s ease, box-shadow 0.3s ease; }
+.align-bar-inner.high { box-shadow: 0 0 12px rgba(46,204,113,0.55); filter: brightness(1.08); }
 #alignPct { color: var(--teal); min-width: 2.5rem; text-align: right; }
 
-/* OCEAN ARENA */
-#oceanArena {
-  position: relative;
+/* =========================================================
+   RECONSTRUCTION CANVAS
+   ========================================================= */
+#reconCanvas {
+  display: block;
   width: 100%;
-  height: 780px;
-  background: radial-gradient(ellipse at 50% 60%, #0a2040 0%, #060f1a 100%);
-  overflow: hidden;
-  cursor: default;
-  user-select: none;
-}
-
-/* ocean shimmer */
-#oceanArena::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(
-      -30deg,
-      transparent 0px,
-      transparent 28px,
-      rgba(59,200,232,0.03) 28px,
-      rgba(59,200,232,0.03) 30px
-    );
-  pointer-events: none;
-}
-
-/* reconstruction centering wrapper — centers plates & ghost outline in the arena */
-.arena-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 602px;
-  height: 692px;
-}
-
-/* target outlines — hidden from students, used only for validation */
-.plate-target {
-  position: absolute;
-  border: none;
-  pointer-events: none;
-  opacity: 0;
-}
-
-/* Ghost outline of assembled Floatlandia */
-.ghost-outline {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.14;
-  filter: blur(0.5px);
-  transition: opacity 0.5s ease;
-}
-.ghost-outline.dim { opacity: 0.06; }
-
-/* FLOAT PLATES */
-.float-plate {
-  position: absolute;
-  border-radius: 6px;
+  height: auto;
   cursor: grab;
   touch-action: none;
-  transition: box-shadow 0.18s ease, filter 0.18s ease, transform 0.16s ease;
-  z-index: 10;
-  will-change: transform, left, top;
 }
-.float-plate:hover {
-  z-index: 20;
-  filter: brightness(1.08);
-  box-shadow: 0 8px 22px rgba(0,0,0,0.18);
-}
-.float-plate.dragging {
-  cursor: grabbing;
-  z-index: 50;
-  transform: scale(1.035);
-  box-shadow: 0 14px 34px rgba(0,0,0,0.34), 0 0 0 1.5px rgba(59,200,232,0.34), 0 0 18px rgba(59,200,232,0.22);
-  filter: brightness(1.12);
-}
-.float-plate.snapped  { box-shadow: 0 0 12px rgba(59,200,232,0.4); }
-.float-plate.near-snap {
-  box-shadow: 0 0 22px rgba(59,200,232,0.5);
-  filter: brightness(1.15);
-}
-
-/* EVIDENCE LAYERS on plates — always visible */
-.fossil-layer, .rock-layer, .climate-layer { display: block; pointer-events: none; }
-.equator-line, .equator-label { opacity: 1 !important; }
-
-/* snap flash */
-@keyframes snapBounce {
-  0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(59,200,232,0.2); }
-  42%  { transform: scale(1.085); box-shadow: 0 0 20px 8px rgba(59,200,232,0.28); }
-  100% { transform: scale(1); box-shadow: 0 0 12px rgba(59,200,232,0.35); }
-}
-.float-plate.snap-anim { animation: snapBounce 0.24s cubic-bezier(.22,.68,0,1.3) forwards; }
-
-.float-plate.miss-anim {
-  animation: missNudge 0.28s ease;
-}
-@keyframes missNudge {
-  0%, 100% { transform: translateX(0); }
-  22% { transform: translateX(-4px); }
-  50% { transform: translateX(4px); }
-  78% { transform: translateX(-2px); }
-}
-
-/* hint labels removed — evidence-based puzzle replaces placement hints */
-
-.equator-line {
-  position: absolute;
-  left: -80px;
-  right: -80px;
-  top: 346px;
-  height: 0;
-  border-top: 2px dashed rgba(245,200,66,0.42);
-  opacity: 1;
-  pointer-events: none;
-  z-index: 1;
-  transition: opacity 0.22s ease;
-  box-shadow: 0 0 10px rgba(245,200,66,0.12);
-}
-.equator-label {
-  position: absolute;
-  right: -80px;
-  top: 346px;
-  transform: translateY(-50%);
-  font-size: 0.62rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(245,200,66,0.8);
-  background: rgba(13,17,23,0.78);
-  border: 1px solid rgba(245,200,66,0.28);
-  border-radius: 999px;
-  padding: 0.12rem 0.42rem;
-  opacity: 1;
-  pointer-events: none;
-  z-index: 2;
-  transition: opacity 0.22s ease;
-}
+#reconCanvas.grabbing { cursor: grabbing; }
 
 /* Phase 2 wide layout */
-.phase2-shell {
-  max-width: 1320px;
-  margin: 0 auto 2.25rem;
-  padding: 0 1.4rem;
-}
-.phase2-layout {
-  display: grid;
-  grid-template-columns: 900px minmax(280px, 1fr);
-  gap: 1rem;
-  align-items: start;
-}
-.phase2-main {
-  min-width: 0;
-}
+.phase2-shell { max-width: 1320px; margin: 0 auto 2.25rem; padding: 0 1.4rem; }
+.phase2-layout { display: grid; grid-template-columns: 900px minmax(280px, 1fr); gap: 1rem; align-items: start; }
+.phase2-main { min-width: 0; }
 .scientist-panel {
   background: linear-gradient(180deg, rgba(17,27,39,0.96), rgba(13,20,31,0.94));
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1rem;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.22);
-  align-self: stretch;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1rem; box-shadow: 0 4px 18px rgba(0,0,0,0.22); align-self: stretch;
 }
-.scientist-panel-title {
-  font-family: 'Fredoka One', sans-serif;
-  font-size: 1.02rem;
-  color: var(--text-primary);
-  margin-bottom: 0.25rem;
-}
-.scientist-panel-sub {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #c9d1d9;
-  line-height: 1.5;
-  margin-bottom: 0.85rem;
-}
-.scientist-panel-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  height: 100%;
-}
-.scientist-card {
-  background: rgba(255,255,255,0.025);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0.8rem 0.85rem;
-}
-.scientist-card-label {
-  font-size: 0.66rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--teal);
-  margin-bottom: 0.35rem;
-}
-.scientist-card p {
-  font-size: 0.82rem;
-  color: #c9d1d9;
-  line-height: 1.55;
-  margin: 0;
-}
-.scientist-checklist {
-  display: grid;
-  gap: 0.42rem;
-}
-.scientist-check {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: #c9d1d9;
-  line-height: 1.45;
-}
-.scientist-check-dot {
-  color: var(--gold);
-  font-weight: 900;
-  line-height: 1.2;
-}
-.fossil-list {
-  display: grid;
-  gap: 0.46rem;
-}
-.fossil-item {
-  display: grid;
-  grid-template-columns: 22px 1fr;
-  gap: 0.55rem;
-  align-items: start;
-}
-.fossil-badge {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.68rem;
-  font-weight: 900;
-  color: #081018;
-  margin-top: 0.05rem;
-}
+.scientist-panel-title { font-family: 'Fredoka One', sans-serif; font-size: 1.02rem; color: var(--text-primary); margin-bottom: 0.25rem; }
+.scientist-panel-sub { font-size: 0.8rem; font-weight: 700; color: #c9d1d9; line-height: 1.5; margin-bottom: 0.85rem; }
+.scientist-panel-inner { display: flex; flex-direction: column; gap: 0.75rem; height: 100%; }
+.scientist-card { background: rgba(255,255,255,0.025); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 0.85rem; }
+.scientist-card-label { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.35rem; }
+.scientist-card p { font-size: 0.82rem; color: #c9d1d9; line-height: 1.55; margin: 0; }
+.scientist-checklist { display: grid; gap: 0.42rem; }
+.scientist-check { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.8rem; color: #c9d1d9; line-height: 1.45; }
+.scientist-check-dot { color: var(--gold); font-weight: 900; line-height: 1.2; }
+.fossil-list { display: grid; gap: 0.46rem; }
+.fossil-item { display: grid; grid-template-columns: 22px 1fr; gap: 0.55rem; align-items: start; }
+.fossil-badge { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 900; color: #081018; margin-top: 0.05rem; }
 .fossil-a { background: #3bc8e8; }
 .fossil-b { background: #f5c842; }
 .fossil-c { background: #e87070; color: #fff; }
 .fossil-d { background: #b47fff; color: #fff; }
 .fossil-e { background: #2ecc71; }
-.fossil-copy {
-  font-size: 0.79rem;
-  line-height: 1.4;
-  color: #c9d1d9;
-}
-.fossil-copy strong {
-  color: var(--text-primary);
-  font-weight: 800;
-}
-@media (max-width: 1240px) {
-  .phase2-layout {
-    grid-template-columns: minmax(0, 1fr) 340px;
-  }
-}
-@media (max-width: 980px) {
-  .phase2-shell {
-    max-width: 900px;
-  }
-  .phase2-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Phase 3 hypothesis CSS removed — quiz styles in mode toggle block above */
+.fossil-copy { font-size: 0.79rem; line-height: 1.4; color: #c9d1d9; }
+.fossil-copy strong { color: var(--text-primary); font-weight: 800; }
+@media (max-width: 1240px) { .phase2-layout { grid-template-columns: minmax(0, 1fr) 340px; } }
+@media (max-width: 980px) { .phase2-shell { max-width: 900px; } .phase2-layout { grid-template-columns: 1fr; } }
 
 /* =========================================================
-   PHASE 4: SIMULATION
+   PHASE 3: SIMULATION CANVAS
    ========================================================= */
-.sim-phase {
-  opacity: 0.35;
-  pointer-events: none;
-  transition: opacity 0.5s;
-}
+.sim-phase { opacity: 0.35; pointer-events: none; transition: opacity 0.5s; }
 .sim-phase.unlocked { opacity: 1; pointer-events: auto; }
-
-.sim-canvas-wrap {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.9rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
-#simCanvas {
-  width: 100%;
-  border-radius: var(--radius-sm);
-  background: #060f1a;
-  border: 1px solid var(--border);
-  display: block;
-}
-
-.sim-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  margin-top: 0.9rem;
-  flex-wrap: wrap;
-}
-
-.sim-phase-label {
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: #aeb8c2;
-  margin-left: auto;
-}
+.sim-canvas-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+#simCanvas { width: 100%; border-radius: var(--radius-sm); background: #060f1a; border: 1px solid var(--border); display: block; }
+.sim-controls { display: flex; align-items: center; gap: 0.7rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.sim-phase-label { font-size: 0.8rem; font-weight: 800; color: #aeb8c2; margin-left: auto; }
 #simPhaseName { color: var(--teal); }
-
-/* ---- Canvas stage (hosts canvas + overlays) ---- */
-.sim-canvas-stage {
-  position: relative;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-/* ---- Floatia Unified supercontinent label ---- */
+.sim-canvas-stage { position: relative; border-radius: var(--radius-sm); overflow: hidden; }
 .floatia-unified-label {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+  position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%) scale(0.9);
-  opacity: 0;
-  pointer-events: none;
-  text-align: center;
+  opacity: 0; pointer-events: none; text-align: center;
   transition: opacity 0.5s ease, transform 0.6s cubic-bezier(.2,.9,.25,1.2);
-  z-index: 3;
-  padding: 0.5rem 1.2rem;
+  z-index: 3; padding: 0.5rem 1.2rem;
 }
-.floatia-unified-label.visible {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-.ful-eyebrow {
-  font-size: 0.62rem;
-  font-weight: 900;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--teal);
-  margin-bottom: 0.45rem;
-  text-shadow: 0 0 10px rgba(59,200,232,0.8), 0 0 2px rgba(6,15,26,0.9);
-}
-.ful-title {
-  font-family: 'Fredoka One', cursive;
-  font-size: clamp(1.8rem, 4.4vw, 2.55rem);
-  background: linear-gradient(135deg, #ffffff 18%, var(--teal) 62%, #9feaff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1;
-  margin-bottom: 0.4rem;
-  filter: drop-shadow(0 0 14px rgba(59,200,232,0.4));
-}
-.ful-sub {
-  font-size: 0.74rem;
-  font-weight: 800;
-  color: rgba(230,237,243,0.88);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-shadow: 0 0 8px rgba(6,15,26,0.85), 0 1px 2px rgba(0,0,0,0.6);
-}
-
-/* ---- Breakup emphasis label ---- */
+.floatia-unified-label.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.ful-eyebrow { font-size: 0.62rem; font-weight: 900; letter-spacing: 0.28em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; text-shadow: 0 0 10px rgba(59,200,232,0.8), 0 0 2px rgba(6,15,26,0.9); }
+.ful-title { font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4.4vw, 2.55rem); background: linear-gradient(135deg, #ffffff 18%, var(--teal) 62%, #9feaff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin-bottom: 0.4rem; filter: drop-shadow(0 0 14px rgba(59,200,232,0.4)); }
+.ful-sub { font-size: 0.74rem; font-weight: 800; color: rgba(230,237,243,0.88); letter-spacing: 0.08em; text-transform: uppercase; text-shadow: 0 0 8px rgba(6,15,26,0.85), 0 1px 2px rgba(0,0,0,0.6); }
 .breakup-label {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  transform: translateY(-8px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.35s ease, transform 0.35s ease;
-  z-index: 4;
-  text-align: right;
-  padding: 0.55rem 0.75rem;
-  border-radius: 12px;
-  background: rgba(20,26,38,0.62);
-  border: 1px solid rgba(180,127,255,0.24);
-  backdrop-filter: blur(4px);
+  position: absolute; top: 1rem; right: 1rem; transform: translateY(-8px);
+  opacity: 0; pointer-events: none; transition: opacity 0.35s ease, transform 0.35s ease;
+  z-index: 4; text-align: right; padding: 0.55rem 0.75rem; border-radius: 12px;
+  background: rgba(20,26,38,0.62); border: 1px solid rgba(180,127,255,0.24); backdrop-filter: blur(4px);
 }
-.breakup-label.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-.breakup-eyebrow {
-  display: block;
-  font-size: 0.58rem;
-  font-weight: 900;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--purple);
-  margin-bottom: 0.2rem;
-}
-.breakup-title {
-  display: block;
-  font-family: 'Fredoka One', cursive;
-  font-size: 1rem;
-  color: #e9ddff;
-  line-height: 1.05;
-  margin-bottom: 0.2rem;
-  text-shadow: 0 0 10px rgba(180,127,255,0.25);
-}
-.breakup-sub {
-  display: block;
-  font-size: 0.68rem;
-  font-weight: 800;
-  color: rgba(230,237,243,0.78);
-  letter-spacing: 0.05em;
-}
-
-@media (max-width: 600px) {
-  .breakup-label {
-    top: 0.7rem;
-    right: 0.7rem;
-    padding: 0.45rem 0.6rem;
-  }
-  .breakup-title { font-size: 0.86rem; }
-  .breakup-sub { font-size: 0.62rem; }
-}
-
-/* ---- Completion overlay ("New World Formed") ---- */
+.breakup-label.visible { opacity: 1; transform: translateY(0); }
+.breakup-eyebrow { display: block; font-size: 0.58rem; font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase; color: var(--purple); margin-bottom: 0.2rem; }
+.breakup-title { display: block; font-family: 'Fredoka One', cursive; font-size: 1rem; color: #e9ddff; line-height: 1.05; margin-bottom: 0.2rem; text-shadow: 0 0 10px rgba(180,127,255,0.25); }
+.breakup-sub { display: block; font-size: 0.68rem; font-weight: 800; color: rgba(230,237,243,0.78); letter-spacing: 0.05em; }
 .sim-completion-overlay {
-  position: absolute;
-  left: 0.9rem;
-  right: 0.9rem;
-  bottom: 0.9rem;
-  background: transparent;
-  display: flex;
-  align-items: end;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.45s ease;
-  z-index: 8;
+  position: absolute; left: 0.9rem; right: 0.9rem; bottom: 0.9rem;
+  background: transparent; display: flex; align-items: end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.45s ease; z-index: 8;
 }
-.sim-completion-overlay.visible {
-  opacity: 1;
-  pointer-events: none;
-}
+.sim-completion-overlay.visible { opacity: 1; pointer-events: none; }
 .sim-completion-card {
-  max-width: 520px;
-  width: 100%;
+  max-width: 520px; width: 100%;
   background: linear-gradient(180deg, rgba(28,34,48,0.94), rgba(20,26,38,0.93));
-  border: 1px solid rgba(59,200,232,0.4);
-  border-radius: var(--radius);
-  padding: 1rem 1.1rem 1rem;
-  text-align: center;
+  border: 1px solid rgba(59,200,232,0.4); border-radius: var(--radius);
+  padding: 1rem 1.1rem; text-align: center;
   box-shadow: 0 20px 50px rgba(0,0,0,0.45), 0 0 28px rgba(59,200,232,0.16);
   transform: translateY(16px) scale(0.98);
-  transition: transform 0.45s cubic-bezier(.2,.9,.25,1.15);
-  pointer-events: auto;
+  transition: transform 0.45s cubic-bezier(.2,.9,.25,1.15); pointer-events: auto;
 }
-.sim-completion-overlay.visible .sim-completion-card {
-  transform: translateY(0) scale(1);
-}
-.sc-eyebrow {
-  font-size: 0.66rem;
-  font-weight: 900;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--teal);
-  margin-bottom: 0.5rem;
-}
-.sim-completion-card h3 {
-  font-family: 'Fredoka One', cursive;
-  font-size: 1.55rem;
-  color: var(--text-primary);
-  margin-bottom: 0.55rem;
-  line-height: 1.15;
-}
-.sim-completion-card p {
-  font-size: 0.9rem;
-  color: #c9d1d9;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-.sc-actions {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
+.sim-completion-overlay.visible .sim-completion-card { transform: translateY(0) scale(1); }
+.sc-eyebrow { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.5rem; }
+.sim-completion-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.55rem; color: var(--text-primary); margin-bottom: 0.55rem; line-height: 1.15; }
+.sim-completion-card p { font-size: 0.9rem; color: #c9d1d9; line-height: 1.6; margin-bottom: 1rem; }
+.sc-actions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
 .sim-completion-close {
-  position: absolute;
-  top: 0.7rem;
-  right: 0.7rem;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1px solid rgba(59,200,232,0.25);
-  background: rgba(13,17,23,0.55);
-  color: #c9d1d9;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  font-weight: 900;
-  line-height: 1;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  position: absolute; top: 0.7rem; right: 0.7rem; width: 34px; height: 34px;
+  border-radius: 50%; border: 1px solid rgba(59,200,232,0.25); background: rgba(13,17,23,0.55);
+  color: #c9d1d9; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 900; line-height: 1; cursor: pointer; transition: all 0.2s ease;
 }
-.sim-completion-close:hover {
-  color: var(--text-primary);
-  border-color: rgba(59,200,232,0.5);
-  background: rgba(13,17,23,0.78);
-}
-
-/* ---- Enhanced deep-time timeline ---- */
-.deep-time-timeline {
-  margin: 1rem 4px 0;
-  padding: 0.25rem 6px 0;
-}
-.dtt-track {
-  position: relative;
-  height: 6px;
-  background: var(--bg-secondary);
-  border-radius: 999px;
-  border: 1px solid var(--border);
-}
-.dtt-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 0%;
-  background: linear-gradient(90deg,
-    var(--teal) 0%,
-    var(--teal) 42%,
-    #9feaff 52%,
-    var(--teal) 62%,
-    var(--purple) 100%);
-  border-radius: 999px;
-  transition: width 0.1s linear;
-}
-.dtt-indicator {
-  position: absolute;
-  top: 50%;
-  left: 0%;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--teal);
-  border: 2px solid #fff;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 12px rgba(59,200,232,0.7), 0 0 4px rgba(255,255,255,0.4);
-  transition: left 0.1s linear, background 0.3s, box-shadow 0.3s, transform 0.3s;
-  z-index: 3;
-  pointer-events: none;
-}
-.dtt-indicator.peak {
-  background: var(--gold);
-  box-shadow: 0 0 18px rgba(245,200,66,0.95), 0 0 6px rgba(255,255,255,0.6);
-  transform: translate(-50%, -50%) scale(1.18);
-}
-.dtt-milestone {
-  position: absolute;
-  top: 50%;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-light);
-  transform: translate(-50%, -50%);
-  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
-  z-index: 2;
-  pointer-events: none;
-}
+.sim-completion-close:hover { color: var(--text-primary); border-color: rgba(59,200,232,0.5); background: rgba(13,17,23,0.78); }
+.deep-time-timeline { margin: 1rem 4px 0; padding: 0.25rem 6px 0; }
+.dtt-track { position: relative; height: 6px; background: var(--bg-secondary); border-radius: 999px; border: 1px solid var(--border); }
+.dtt-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: linear-gradient(90deg, var(--teal) 0%, var(--teal) 42%, #9feaff 52%, var(--teal) 62%, var(--purple) 100%); border-radius: 999px; transition: width 0.1s linear; }
+.dtt-indicator { position: absolute; top: 50%; left: 0%; width: 14px; height: 14px; border-radius: 50%; background: var(--teal); border: 2px solid #fff; transform: translate(-50%, -50%); box-shadow: 0 0 12px rgba(59,200,232,0.7), 0 0 4px rgba(255,255,255,0.4); transition: left 0.1s linear, background 0.3s, box-shadow 0.3s, transform 0.3s; z-index: 3; pointer-events: none; }
+.dtt-indicator.peak { background: var(--gold); box-shadow: 0 0 18px rgba(245,200,66,0.95), 0 0 6px rgba(255,255,255,0.6); transform: translate(-50%, -50%) scale(1.18); }
+.dtt-milestone { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--border-light); transform: translate(-50%, -50%); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s; z-index: 2; pointer-events: none; }
 .dtt-milestone.reached { border-color: var(--teal); }
-.dtt-milestone.active {
-  background: var(--teal);
-  border-color: #fff;
-  box-shadow: 0 0 10px rgba(59,200,232,0.7);
-}
-
-.dtt-labels {
-  position: relative;
-  margin-top: 1.1rem;
-  height: 2.6rem;
-}
-.dtt-label {
-  position: absolute;
-  top: 0;
-  transform: translateX(-50%);
-  text-align: center;
-  white-space: nowrap;
-  transition: color 0.3s, opacity 0.3s;
-  pointer-events: none;
-}
-.dtt-label-mya {
-  display: block;
-  font-size: 0.62rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #aeb8c2;
-  margin-bottom: 0.15rem;
-}
-.dtt-label-name {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: #c9d1d9;
-  letter-spacing: 0.03em;
-}
+.dtt-milestone.active { background: var(--teal); border-color: #fff; box-shadow: 0 0 10px rgba(59,200,232,0.7); }
+.dtt-labels { position: relative; margin-top: 1.1rem; height: 2.6rem; }
+.dtt-label { position: absolute; top: 0; transform: translateX(-50%); text-align: center; white-space: nowrap; transition: color 0.3s, opacity 0.3s; pointer-events: none; }
+.dtt-label-mya { display: block; font-size: 0.62rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: #aeb8c2; margin-bottom: 0.15rem; }
+.dtt-label-name { display: block; font-size: 0.72rem; font-weight: 800; color: #c9d1d9; letter-spacing: 0.03em; }
 .dtt-label.reached .dtt-label-mya { color: var(--teal); }
 .dtt-label.reached .dtt-label-name { color: var(--text-primary); }
 .dtt-label.active .dtt-label-mya { color: var(--gold); }
-.dtt-label.active .dtt-label-name {
-  color: var(--gold);
-  text-shadow: 0 0 8px rgba(245,200,66,0.4);
-}
-
-@media (max-width: 600px) {
-  .dtt-label-name { font-size: 0.62rem; }
-  .dtt-label-mya  { font-size: 0.55rem; letter-spacing: 0.06em; }
-  .floatia-unified-label { padding: 0.35rem 0.8rem; }
-  .ful-sub { font-size: 0.66rem; }
-  .sim-completion-overlay {
-    left: 0.55rem;
-    right: 0.55rem;
-    bottom: 0.55rem;
-  }
-  .sim-completion-card { padding: 0.9rem 0.85rem 0.9rem; }
-  .sim-completion-card h3 { font-size: 1.3rem; }
-  .sim-completion-card p { font-size: 0.84rem; }
-  .sc-actions .btn { font-size: 0.8rem; padding: 0.55rem 0.9rem; }
-}
-
-/* Reflection CSS removed */
+.dtt-label.active .dtt-label-name { color: var(--gold); text-shadow: 0 0 8px rgba(245,200,66,0.4); }
 
 /* =========================================================
-   TOAST (restrained)
+   TOAST
    ========================================================= */
-#toastContainer {
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  pointer-events: none;
-}
-.toast {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: 10px;
-  padding: 0.6rem 1rem;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  min-width: 220px;
-  max-width: 320px;
-  box-shadow: var(--shadow);
-  animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
-}
+#toastContainer { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
+.toast { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 10px; padding: 0.6rem 1rem; font-size: 0.82rem; font-weight: 700; color: var(--text-primary); min-width: 220px; max-width: 320px; box-shadow: var(--shadow); animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
 .toast.success { border-color: var(--green); color: var(--green); }
 .toast.info    { border-color: var(--teal);  color: var(--teal);  }
 .toast.warn    { border-color: var(--gold);  color: var(--gold);  }
 @keyframes toastIn  { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
 @keyframes toastOut { from { opacity:1; } to { opacity:0; transform: translateY(12px); } }
-
-/* Restrain toasts slightly in classroom mode */
 body.classroom-mode .toast { max-width: 260px; font-size: 0.78rem; }
 
 /* =========================================================
-   FOOTER (standardized LyfeLabz footer)
+   FOOTER
    ========================================================= */
+footer { background:#070f17; border-top:1px solid var(--border, rgba(245,200,66,0.12)); padding:2rem; text-align:center; margin-top:0.5rem; }
+footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); font-weight:800; }
+footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); border-color:rgba(59,200,232,0.95); }
+footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
 
 /* =========================================================
    RESPONSIVE
    ========================================================= */
-@media (max-width: 900px) {
-  .hero-stats-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 680px) {
-  .byb-steps, .byb-qa { grid-template-columns: 1fr; }
-}
-
+@media (max-width: 680px) { .byb-qa { grid-template-columns: 1fr; } }
 @media (max-width: 600px) {
   nav { padding: 0.65rem 0.9rem; }
   .hero { padding: 2.7rem 1rem 2.25rem; }
-  .hero-stats { margin-top: -0.8rem; padding: 0 0.9rem; }
-  .hero-stats-grid { grid-template-columns: 1fr; }
   .byb-wrap { padding: 2rem 1rem; }
   .sim-section { padding: 0 0.9rem; margin-bottom: 1.75rem; }
   .phase2-shell { padding: 0 0.9rem; margin-bottom: 1.75rem; }
   .progress-wrap { padding: 0 0.9rem; }
-  #oceanArena { height: 580px; }
-  .time-label { font-size: 0.6rem; }
   .scientist-panel { padding: 0.9rem; }
+  .breakup-label { top: 0.7rem; right: 0.7rem; padding: 0.45rem 0.6rem; }
+  .breakup-title { font-size: 0.86rem; }
+  .breakup-sub { font-size: 0.62rem; }
+  .sim-completion-overlay { left: 0.55rem; right: 0.55rem; bottom: 0.55rem; }
+  .sim-completion-card { padding: 0.9rem 0.85rem; }
+  .sim-completion-card h3 { font-size: 1.3rem; }
+  .sim-completion-card p { font-size: 0.84rem; }
+  .sc-actions .btn { font-size: 0.8rem; padding: 0.55rem 0.9rem; }
+  .dtt-label-name { font-size: 0.62rem; }
+  .dtt-label-mya  { font-size: 0.55rem; letter-spacing: 0.06em; }
+  .ful-sub { font-size: 0.66rem; }
 }
-
-  /* ── FOOTER ─────────────────────────────────────────── */
-  footer {
-    background:#070f17;
-    border-top:1px solid var(--border, rgba(245,200,66,0.12));
-    padding:2rem 2rem;
-    text-align:center;
-    margin-top:0.5rem;
-  }
-  footer .footer-logo {
-    font-family:'Fredoka One',cursive;
-    font-size:1.1rem;
-    letter-spacing:0.08em;
-    color:var(--gold);
-    margin-bottom:0.35rem;
-  }
-  footer .footer-tagline {
-    font-size:0.83rem;
-    color:rgba(240,228,200,0.6);
-    margin-bottom:0.6rem;
-  }
-  footer .footer-links {
-    display:flex;
-    gap:0.5rem;
-    justify-content:center;
-    flex-wrap:wrap;
-    margin-bottom:0.6rem;
-  }
-  footer .footer-links a {
-    color:var(--gold);
-    text-decoration:none;
-    font-size:0.72rem;
-    font-weight:800;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    border:1px solid rgba(245,200,66,0.4);
-    background:rgba(245,200,66,0.08);
-    padding:0.25rem 0.75rem;
-    border-radius:99px;
-    transition:border-color 0.2s, background 0.2s;
-  }
-  footer .footer-links a:hover {
-    border-color:rgba(245,200,66,0.7);
-    text-decoration:none;
-  }
-  footer .footer-links a.nav-why {
-    color:#3bc8e8;
-    border:1px solid rgba(59,200,232,0.7);
-    background:rgba(59,200,232,0.12);
-    font-weight:800;
-  }
-  footer .footer-links a.nav-why:hover {
-    background:rgba(59,200,232,0.22);
-    border-color:rgba(59,200,232,0.95);
-    color:#3bc8e8;
-  }
-  footer p {
-    font-size:0.72rem;
-    color:rgba(180,200,220,0.35);
-  }
 </style>
 </head>
 <body>
-<!-- ======================================================
-     NAV
-     ====================================================== -->
+
+<!-- NAV -->
 <nav>
-<a class="nav-logo" href="index.html">LYFELABZ</a>
-<a class="nav-back" href="lesson_continental-drift.html">← Continental Drift</a>
+  <a class="nav-logo" href="index.html">LYFELABZ</a>
+  <a class="nav-back" href="lesson_continental-drift.html">← Continental Drift</a>
 </nav>
-<!-- badge bars -->
+
+<!-- BADGE BARS -->
 <div class="badge-bar stem-bar">
-<span class="badge green">🔬 ESS1-4 <span class="badge-tip">MA STE ESS1-4: Construct scientific arguments to explain how astronomical, geological, and biological evidence supports the theory of plate tectonics.</span></span>
-<span class="badge green">🔬 ESS2-2 <span class="badge-tip">MA STE ESS2-2: Analyze and interpret data on the distribution of fossils, rocks, and climate zones to support the explanation of plate motion over geologic time.</span></span>
-<span class="badge green">🔬 SEP-6 <span class="badge-tip">NGSS SEP-6: Constructing Explanations — students synthesize evidence layers to form a scientific hypothesis about continental configurations.</span></span>
+  <span class="badge green">🔬 ESS1-4<span class="badge-tip">MA STE ESS1-4: Construct scientific arguments to explain how astronomical, geological, and biological evidence supports the theory of plate tectonics.</span></span>
+  <span class="badge green">🔬 ESS2-2<span class="badge-tip">MA STE ESS2-2: Analyze and interpret data on the distribution of fossils, rocks, and climate zones to support the explanation of plate motion over geologic time.</span></span>
+  <span class="badge green">🔬 SEP-6<span class="badge-tip">NGSS SEP-6: Constructing Explanations — students synthesize evidence layers to form a scientific hypothesis about continental configurations.</span></span>
 </div>
 <div class="badge-bar ls-bar">
-<span class="badge teal">🧠 Desirable Difficulty <span class="badge-tip">Evidence-based spatial reconstruction creates productive struggle that deepens encoding (Bjork, 1994).</span></span>
-<span class="badge teal">🧠 Worked Example Fading <span class="badge-tip">Evidence cards scaffold initial reasoning before students construct their own spatial model — supports novice-to-expert progression.</span></span>
-<span class="badge teal">🧠 Multimedia Learning <span class="badge-tip">Aligned visual + conceptual layers reduce extraneous cognitive load while fostering germane connections (Mayer, 2009).</span></span>
-</div>
-<div class="hero">
-<div class="hero-shell">
-<div class="hero-badge">Simulation</div>
-<h1>Floatlandia Fracture</h1>
-<p>Use fossils, rock formations, and coal deposits to reconstruct the ancient world of Floatlandia, the distant geologic past of modern Floatia, and explain how this ocean world changed over time.</p>
-</div>
+  <span class="badge teal">🧠 Desirable Difficulty<span class="badge-tip">Evidence-based spatial reconstruction creates productive struggle that deepens encoding (Bjork, 1994).</span></span>
+  <span class="badge teal">🧠 Worked Example Fading<span class="badge-tip">Evidence cards scaffold initial reasoning before students construct their own spatial model — supports novice-to-expert progression.</span></span>
+  <span class="badge teal">🧠 Multimedia Learning<span class="badge-tip">Aligned visual + conceptual layers reduce extraneous cognitive load while fostering germane connections (Mayer, 2009).</span></span>
 </div>
 
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-shell">
+    <div class="hero-badge">Simulation</div>
+    <h1>Floatlandia Fracture</h1>
+    <p>Use fossils, rock formations, and coal deposits to reconstruct the ancient world of Floatlandia, the distant geologic past of modern Floatia, and explain how this ocean world changed over time.</p>
+  </div>
+</div>
+
+<!-- BEFORE YOU BEGIN -->
 <div class="byb-wrap">
-<div class="byb-inner">
-<div class="byb-header">
-<span class="byb-eyebrow">📋 Before You Begin</span>
-<div class="byb-title">Read this first, then investigate</div>
-<p class="byb-sub">This is a four-step investigation into ancient Floatlandia. Complete each step in order.</p>
-<div style="margin-top:1.2rem; background:rgba(232,112,112,0.07); border:1.5px solid rgba(232,112,112,0.35); border-radius:12px; padding:0.9rem 1.2rem; text-align:left; max-width:620px; margin-left:auto; margin-right:auto;">
-<div style="font-family:'Fredoka One',cursive; font-size:0.95rem; color:var(--red); margin-bottom:0.35rem;">Common Misconception</div>
-<p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.65; margin:0;">Continents do not suddenly break apart all at once. Over millions of years, <strong style="color:var(--text-primary);">plates move slowly</strong>, and scientists use patterns in rocks, fossils, and coal deposits to reconstruct what a world once looked like.</p>
+  <div class="byb-inner">
+    <div class="byb-header">
+      <span class="byb-eyebrow">Before You Begin</span>
+      <div class="byb-title">Read this first, then investigate</div>
+      <p class="byb-sub">This is a four-step investigation into ancient Floatlandia. Complete each step in order.</p>
+      <div style="margin-top:1.2rem; background:rgba(232,112,112,0.07); border:1.5px solid rgba(232,112,112,0.35); border-radius:12px; padding:0.9rem 1.2rem; text-align:left; max-width:620px; margin-left:auto; margin-right:auto;">
+        <div style="font-family:'Fredoka One',cursive; font-size:0.95rem; color:var(--red); margin-bottom:0.35rem;">Common Misconception</div>
+        <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.65; margin:0;">Continents do not suddenly break apart all at once. Over millions of years, <strong style="color:var(--text-primary);">plates move slowly</strong>, and scientists use patterns in rocks, fossils, and coal deposits to reconstruct what a world once looked like.</p>
+      </div>
+    </div>
+    <div class="byb-qa">
+      <div class="byb-qa-card">
+        <div class="byb-q">What is this simulation showing?</div>
+        <p class="byb-a">You are using <strong>evidence</strong> to reconstruct ancient Floatlandia, the distant geologic past of modern Floatia. Matching fossils, continuous rock bands, and coal deposits can reveal that landmasses were once connected before plate motion separated them.</p>
+      </div>
+      <div class="byb-qa-card">
+        <div class="byb-q">Why use three kinds of evidence?</div>
+        <p class="byb-a">A single clue can be misleading. Scientists build stronger explanations when <strong>multiple lines of evidence</strong> point to the same conclusion.</p>
+      </div>
+    </div>
+  </div>
 </div>
-</div>
-<div class="byb-qa">
-<div class="byb-qa-card">
-<div class="byb-q">What is this simulation showing?</div>
-<p class="byb-a">You are using <strong>evidence</strong> to reconstruct ancient Floatlandia, the distant geologic past of modern Floatia. Matching fossils, continuous rock bands, and coal deposits can reveal that landmasses were once connected before plate motion separated them.</p>
-</div>
-<div class="byb-qa-card">
-<div class="byb-q">Why use three kinds of evidence?</div>
-<p class="byb-a">A single clue can be misleading. Scientists build stronger explanations when <strong>multiple lines of evidence</strong> point to the same conclusion.</p>
-</div>
-</div>
-</div>
-</div>
+
+<!-- PROGRESS BAR -->
 <div class="progress-wrap">
-<div class="progress-steps">
-<div class="progress-step active" id="step1">① Evidence</div>
-<div class="progress-step" id="step2">② Reconstruct</div>
-<div class="progress-step" id="step3">③ Simulation</div>
-<div class="progress-step" id="step4">④ Quiz</div>
+  <div class="progress-steps">
+    <div class="progress-step active" id="step1">① Evidence</div>
+    <div class="progress-step" id="step2">② Reconstruct</div>
+    <div class="progress-step" id="step3">③ Simulation</div>
+    <div class="progress-step" id="step4">④ Quiz</div>
+  </div>
 </div>
-</div>
+
 <!-- ======================================================
      PHASE 1: EVIDENCE ANALYSIS
      ====================================================== -->
 <section class="sim-section" id="phase1">
-<div class="section-label">Phase 1</div>
-<div class="section-title">Analyze the Evidence</div>
-<div class="section-desc">
-<strong>Unlock all three</strong> evidence types to reveal the clues scientists use to study continental drift.
-    Each one tells a different part of the story.
+  <div class="section-label">Phase 1</div>
+  <div class="section-title">Analyze the Evidence</div>
+  <div class="section-desc"><strong>Unlock all three</strong> evidence types to reveal the clues scientists use to study continental drift. Each one tells a different part of the story.</div>
+  <div class="evidence-grid">
+    <div class="evidence-card locked" id="ev-fossils" onclick="selectEvidence(this)">
+      <div class="ev-check">✓</div>
+      <div class="ev-title">Marine Fossils on Mountains</div>
+      <div class="ev-body">
+        <div class="ev-icon">🦕</div>
+        <div class="ev-desc">Fossilized ocean creatures found at high altitudes suggest these rocks were once deep underwater — and the continents have moved dramatically since.</div>
+        <div aria-hidden="true" class="ev-lock-overlay">
+          <div class="ev-lock-content">
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <div class="ev-lock-text">Click to unlock</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="evidence-card locked" id="ev-rocks" onclick="selectEvidence(this)">
+      <div class="ev-check">✓</div>
+      <div class="ev-title">Matching Rock Formations</div>
+      <div class="ev-body">
+        <div class="ev-icon">🪨</div>
+        <div class="ev-desc">Identical rock bands — same minerals, same age, same diagonal striations — appear on coastlines thousands of kilometers apart. They must have once been connected.</div>
+        <div aria-hidden="true" class="ev-lock-overlay">
+          <div class="ev-lock-content">
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <div class="ev-lock-text">Click to unlock</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="evidence-card locked" id="ev-climate" onclick="selectEvidence(this)">
+      <div class="ev-check">✓</div>
+      <div class="ev-title">Ancient Climate Zones</div>
+      <div class="ev-body">
+        <div class="ev-icon">🌡️</div>
+        <div class="ev-desc">Coal deposits form in warm, tropical swamp forests. Finding coal far from the equator suggests those landmasses were once in very different positions.</div>
+        <div aria-hidden="true" class="ev-lock-overlay">
+          <div class="ev-lock-content">
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <div class="ev-lock-text">Click to unlock</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-<div class="evidence-grid">
-<div class="evidence-card locked" id="ev-fossils" onclick="selectEvidence(this)">
-<div class="ev-check">✓</div>
-<div class="ev-title">Marine Fossils on Mountains</div>
-<div class="ev-body">
-<div class="ev-icon">🦕</div>
-<div class="ev-desc">
-          Fossilized ocean creatures found at high altitudes suggest these rocks were once
-          deep underwater — and the continents have moved dramatically since.
-        </div>
-<div aria-hidden="true" class="ev-lock-overlay">
-<div class="ev-lock-content">
-<svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
-<rect height="10" rx="2" width="14" x="5" y="11"></rect>
-<path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
-</svg>
-<div class="ev-lock-text">Click to unlock</div>
-</div>
-</div>
-</div>
-</div>
-<div class="evidence-card locked" id="ev-rocks" onclick="selectEvidence(this)">
-<div class="ev-check">✓</div>
-<div class="ev-title">Matching Rock Formations</div>
-<div class="ev-body">
-<div class="ev-icon">🪨</div>
-<div class="ev-desc">
-          Identical rock bands — same minerals, same age, same diagonal striations —
-          appear on coastlines thousands of kilometers apart. They must have once been connected.
-        </div>
-<div aria-hidden="true" class="ev-lock-overlay">
-<div class="ev-lock-content">
-<svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
-<rect height="10" rx="2" width="14" x="5" y="11"></rect>
-<path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
-</svg>
-<div class="ev-lock-text">Click to unlock</div>
-</div>
-</div>
-</div>
-</div>
-<div class="evidence-card locked" id="ev-climate" onclick="selectEvidence(this)">
-<div class="ev-check">✓</div>
-<div class="ev-title">Ancient Climate<br/>Zones</div>
-<div class="ev-body">
-<div class="ev-icon">🌡️</div>
-<div class="ev-desc">
-          Coal deposits form in warm, tropical swamp forests. Finding coal far from the equator
-          suggests those landmasses were once in very different positions.
-        </div>
-<div aria-hidden="true" class="ev-lock-overlay">
-<div class="ev-lock-content">
-<svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
-<rect height="10" rx="2" width="14" x="5" y="11"></rect>
-<path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
-</svg>
-<div class="ev-lock-text">Click to unlock</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="evidence-feedback" id="evidenceFeedback">
-<div class="evidence-feedback-label">Why this matters</div>
-<div class="evidence-feedback-text" id="evidenceFeedbackText"></div>
-</div>
-<button aria-hidden="true" class="btn btn-teal ev-continue-btn" id="evContinueBtn" onclick="goPhase2()" tabindex="-1">Continue to Reconstruction →</button>
+  <div class="evidence-feedback" id="evidenceFeedback">
+    <div class="evidence-feedback-label">Why this matters</div>
+    <div class="evidence-feedback-text" id="evidenceFeedbackText"></div>
+  </div>
+  <button aria-hidden="true" class="btn btn-teal ev-continue-btn" id="evContinueBtn" onclick="goPhase2()" tabindex="-1">Continue to Reconstruction →</button>
 </section>
+
 <!-- ======================================================
-     PHASE 2: RECONSTRUCTION ARENA
+     PHASE 2: RECONSTRUCTION ARENA (canvas)
      ====================================================== -->
 <section class="phase2-shell" id="phase2" style="display:none;">
-<div class="phase2-layout">
-<div class="phase2-main">
-<div class="section-label">Phase 2</div>
-<div class="section-title">Reconstruct Ancient Floatlandia</div>
-<div class="section-desc">
-        Long before the floating cities of modern Floatia existed, the land that would one day become Floatlandia was part of a massive supercontinent. Use fossils, rock bands, and coal deposits to rebuild ancient Floatlandia inside the outline. When matching evidence lines up across plate edges, you know you're getting close.
-      </div>
-<div class="recon-panel">
-<div class="recon-toolbar">
-<div class="recon-toolbar-title">Evidence Key:</div>
-<span class="evidence-legend fossil-legend">🦕 Fossils</span>
-<span class="evidence-legend rock-legend">🪨 Rock Bands</span>
-<span class="evidence-legend climate-legend">◆ Coal Deposits</span>
-<button class="btn btn-ghost recon-reset-btn" id="resetPlatesBtn" onclick="resetReconstruction()">↺ Reset Plates</button>
-<div class="align-meter-wrap">
+  <div class="phase2-layout">
+    <div class="phase2-main">
+      <div class="section-label">Phase 2</div>
+      <div class="section-title">Reconstruct Ancient Floatlandia</div>
+      <div class="section-desc">Long before the floating cities of modern Floatia existed, the land that would one day become Floatlandia was part of a massive supercontinent. Use fossils, rock bands, and coal deposits to rebuild ancient Floatlandia inside the dashed outline. When matching evidence lines up across plate edges, you know you're getting close.</div>
+      <div class="recon-panel">
+        <div class="recon-toolbar">
+          <div class="recon-toolbar-title">Evidence Key:</div>
+          <span class="evidence-legend fossil-legend">🦕 Fossils</span>
+          <span class="evidence-legend rock-legend">🪨 Rock Bands</span>
+          <span class="evidence-legend climate-legend">◆ Coal Deposits</span>
+          <button class="btn btn-ghost recon-reset-btn" id="resetPlatesBtn" onclick="resetReconstruction()">↺ Reset Plates</button>
+          <div class="align-meter-wrap">
             Alignment:
             <div class="align-bar-outer"><div class="align-bar-inner" id="alignBar"></div></div>
-<span id="alignPct">0%</span>
-</div>
-</div>
-<div id="oceanArena">
-<div class="arena-center">
-<!-- Ghost outline of assembled Floatlandia -->
-<svg class="ghost-outline" id="ghostOutline" style="stroke:#3bc8e8;stroke-width:3.5;opacity:0.95;" width="350" height="350" viewBox="0 0 350 350" xmlns="http://www.w3.org/2000/svg" style="margin-top:34px; margin-left:-2px;">
-  <path d="
-    M 88,52
-    C 118,26 176,20 228,34
-    C 266,44 291,63 301,92
-    C 309,118 302,144 284,161
-    C 269,176 250,183 244,201
-    C 238,221 246,247 231,270
-    C 214,296 185,314 152,316
-    C 123,318 98,307 82,287
-    C 67,268 66,244 72,222
-    C 78,201 72,183 56,168
-    C 39,152 34,128 39,101
-    C 45,77 61,62 88,52
-    Z"
-    fill="none"
-    stroke="rgba(59,200,232,0.32)"
-    stroke-width="2.5"
-    stroke-dasharray="9 7"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-</svg>
-<div aria-hidden="true" class="equator-line"></div>
-<div aria-hidden="true" class="equator-label">Equator</div>
-<div class="plate-target" id="target1" style="left:168px;top:236px;width:145px;height:138px;"></div>
-<div class="plate-target" id="target2" style="left:306px;top:198px;width:102px;height:84px;"></div>
-<div class="plate-target" id="target3" style="left:249px;top:327px;width:130px;height:108px;"></div>
-<div class="plate-target" id="target4" style="left:154px;top:391px;width:88px;height:96px;"></div>
-<div class="plate-target" id="target5" style="left:242px;top:435px;width:92px;height:90px;"></div>
-<div class="float-plate" data-id="1" id="plate1" style="left:26px;top:118px;width:145px;height:138px;">
-<svg height="138" viewbox="0 0 145 138" width="145" xmlns="http://www.w3.org/2000/svg">
-<polygon fill="#3f7e52" points="8,10 137,4 141,130 12,134" rx="4" stroke="#2f6340" stroke-width="1.5"></polygon>
-<g class="rock-layer">
-<line opacity="0.7" stroke="#f5c842" stroke-dasharray="6 4" stroke-width="2.5" x1="0" x2="145" y1="30" y2="86"></line>
-<line opacity="0.7" stroke="#f5c842" stroke-dasharray="6 4" stroke-width="2.5" x1="0" x2="145" y1="56" y2="112"></line>
-<line opacity="0.7" stroke="#f5c842" stroke-dasharray="6 4" stroke-width="2.5" x1="0" x2="145" y1="82" y2="138"></line>
-</g>
-<g class="climate-layer">
-<!-- Coal deposits: evidence of ancient tropical swamp forests -->
-<ellipse cx="44" cy="104" fill="#1a1a1a" opacity="0.72" rx="7" ry="5"></ellipse>
-<ellipse cx="52" cy="108" fill="#232323" opacity="0.68" rx="5" ry="4"></ellipse>
-<ellipse cx="39" cy="110" fill="#1e1e1e" opacity="0.65" rx="4" ry="3.5"></ellipse>
-<ellipse cx="48" cy="101" fill="#282828" opacity="0.6" rx="3.5" ry="3"></ellipse>
-<ellipse cx="98" cy="104" fill="#1a1a1a" opacity="0.72" rx="6" ry="4.5"></ellipse>
-<ellipse cx="105" cy="108" fill="#232323" opacity="0.68" rx="4.5" ry="3.5"></ellipse>
-<ellipse cx="93" cy="109" fill="#1e1e1e" opacity="0.65" rx="4" ry="3"></ellipse>
-<ellipse cx="101" cy="101" fill="#282828" opacity="0.6" rx="3" ry="2.5"></ellipse>
-</g>
-<g class="fossil-layer">
-<circle cx="128" cy="35" fill="#3bc8e8" opacity="0.9" r="8"></circle>
-<text fill="#000" font-family="Nunito" font-size="12" font-weight="900" text-anchor="middle" x="128" y="39">A</text>
-<circle cx="82" cy="72" fill="#f5c842" opacity="0.9" r="8"></circle>
-<text fill="#000" font-family="Nunito" font-size="12" font-weight="900" text-anchor="middle" x="82" y="76">B</text>
-<circle cx="52" cy="125" fill="#b47fff" opacity="0.9" r="8"></circle>
-<text fill="#000" font-family="Nunito" font-size="12" font-weight="900" text-anchor="middle" x="52" y="129">D</text>
-</g>
-</svg>
-</div>
-<div class="float-plate" data-id="2" id="plate2" style="left:468px;top:96px;width:102px;height:84px;">
-<svg height="84" viewbox="0 0 102 84" width="102" xmlns="http://www.w3.org/2000/svg">
-<polygon fill="#5d7894" points="6,6 96,4 98,80 4,78" stroke="#445b73" stroke-width="1.5"></polygon>
-<g class="rock-layer">
-<line opacity="0.7" stroke="#f5c842" stroke-dasharray="6 4" stroke-width="2.5" x1="0" x2="102" y1="14" y2="51"></line>
-<line opacity="0.7" stroke="#f5c842" stroke-dasharray="6 4" stroke-width="2.5" x1="0" x2="102" y1="40" y2="77"></line>
-</g>
-<g class="climate-layer">
-<!-- No coal deposits on Beta -->
-</g>
-<g class="fossil-layer">
-<circle cx="14" cy="30" fill="#3bc8e8" opacity="0.9" r="8"></circle>
-<text fill="#000" font-family="Nunito" font-size="12" font-weight="900" text-anchor="middle" x="14" y="34">A</text>
-<circle cx="86" cy="64" fill="#e87070" opacity="0.9" r="8"></circle>
-<text fill="#000" font-family="Nunito" font-size="12" font-weight="900" text-anchor="middle" x="86" y="68">C</text>
-</g>
-</svg>
-</div>
-<div class="float-plate" data-id="3" id="plate3" style="left:428px;top:438px;width:130px;height:108px;">
-<svg height="108" viewbox="0 0 130 108" width="130" xmlns="http://www.w3.org/2000/svg">
-<polygon fill="#4f807a" points="6,6 124,4 126,104 4,102" stroke="#3b625d" stroke-width="1.5"></polygon>
-<g class="rock-layer">
-<line opacity="0.7" stroke="#f5c842" stroke-dasharray="6 4" stroke-width="2.5" x1="0" x2="130" y1="20" y2="68"></line>
-<line opacity="0.7" stroke="#f5c842" stroke-dasharray="6 4" stroke-width="2.5" x1="0" x2="130" y1="50" y2="98"></line>
-</g>
-<g class="climate-layer">
-<!-- Coal deposits: evidence of ancient tropical swamp forests -->
-<ellipse cx="50" cy="52" fill="#1a1a1a" opacity="0.72" rx="6.5" ry="4.5"></ellipse>
-<ellipse cx="57" cy="56" fill="#232323" opacity="0.68" rx="5" ry="3.5"></ellipse>
-<ellipse cx="44" cy="57" fill="#1e1e1e" opacity="0.65" rx="4" ry="3"></ellipse>
-<ellipse cx="52" cy="49" fill="#282828" opacity="0.6" rx="3.5" ry="3"></ellipse>
-<ellipse cx="90" cy="52" fill="#1a1a1a" opacity="0.7" rx="5.5" ry="4"></ellipse>
-<ellipse cx="96" cy="56" fill="#232323" opacity="0.65" rx="4" ry="3"></ellipse>
-<ellipse cx="85" cy="55" fill="#1e1e1e" opacity="0.6" rx="3.5" ry="2.5"></ellipse>
-</g>
-<g class="fossil-layer">
-<circle cx="18" cy="40" fill="#f5c842" opacity="0.9" r="8"></circle>
-<text fill="#000" font-family="Nunito" font-size="12" font-weight="900" text-anchor="middle" x="18" y="44">B</text>
-<circle cx="80" cy="14" fill="#e87070" opacity="0.9" r="8"></circle>
-<text fill="#000" font-family="Nunito" font-size="12" font-weight="900" text-anchor="middle" x="80" y="18">C</text>
-<circle cx="28" cy="84" fill="#2ecc71" opacity="0.9" r="8"></circle>
-<text fill="#000" font-family="Nunito" font-size="12" font-weight="900" text-anchor="middle" x="28" y="88">E</text>
-</g>
-</svg>
-</div>
-<div class="float-plate" data-id="4" id="plate4" style="left:54px;top:548px;width:88px;height:96px;">
-<svg height="96" viewbox="0 0 88 96" width="88" xmlns="http://www.w3.org/2000/svg">
-<polygon fill="#7a8b4a" points="6,6 82,4 84,92 4,90" stroke="#5f6c39" stroke-width="1.5"></polygon>
-<g class="rock-layer">
-<line opacity="0.7" stroke="#f5c842" stroke-dasharray="6 4" stroke-width="2.5" x1="0" x2="88" y1="18" y2="50"></line>
-<line opacity="0.7" stroke="#f5c842" stroke-dasharray="6 4" stroke-width="2.5" x1="0" x2="88" y1="48" y2="80"></line>
-</g>
-<g class="climate-layer">
-<!-- No coal deposits on Delta -->
-</g>
-<g class="fossil-layer">
-<circle cx="72" cy="34" fill="#b47fff" opacity="0.9" r="8"></circle>
-<text fill="#000" font-family="Nunito" font-size="12" font-weight="900" text-anchor="middle" x="72" y="38">D</text>
-</g>
-</svg>
-</div>
-<div class="float-plate" data-id="5" id="plate5" style="left:486px;top:248px;width:92px;height:90px;">
-<svg height="90" viewbox="0 0 92 90" width="92" xmlns="http://www.w3.org/2000/svg">
-<polygon fill="#6b6f96" points="6,6 86,4 88,86 4,84" stroke="#505474" stroke-width="1.5"></polygon>
-<g class="rock-layer">
-<line opacity="0.7" stroke="#f5c842" stroke-dasharray="6 4" stroke-width="2.5" x1="0" x2="92" y1="16" y2="50"></line>
-<line opacity="0.7" stroke="#f5c842" stroke-dasharray="6 4" stroke-width="2.5" x1="0" x2="92" y1="46" y2="80"></line>
-</g>
-<g class="climate-layer">
-<!-- No coal deposits on Epsilon -->
-</g>
-<g class="fossil-layer">
-<circle cx="24" cy="20" fill="#2ecc71" opacity="0.9" r="8"></circle>
-<text fill="#000" font-family="Nunito" font-size="12" font-weight="900" text-anchor="middle" x="24" y="24">E</text>
-</g>
-</svg>
-</div>
-
-</div>
-</div>
-</div>
-</div>
-<aside class="scientist-panel">
-<div class="scientist-panel-inner">
-<div>
-<div class="scientist-panel-title">Scientist Support Panel</div>
-<div class="scientist-panel-sub">Use these clues like a field scientist while you rebuild Floatlandia's ancient past and connect it to modern Floatia.</div>
-</div>
-<div class="scientist-card">
-<div class="scientist-card-label">Mission</div>
-<p>Use fossils, rock bands, and coal deposits as your guide. When evidence lines up across plate edges, you've found the right fit. Drag plates into the outline to reconstruct the ancient supercontinent.</p>
-</div>
-<div class="scientist-card">
-<div class="scientist-card-label">What to check</div>
-<div class="scientist-checklist">
-<div class="scientist-check"><span class="scientist-check-dot">•</span><span>Coal deposits suggest warm, tropical environments near the equator.</span></div>
-<div class="scientist-check"><span class="scientist-check-dot">•</span><span>Matching fossils should meet across plate edges.</span></div>
-<div class="scientist-check"><span class="scientist-check-dot">•</span><span>Rock bands should continue in the same direction.</span></div>
-<div class="scientist-check"><span class="scientist-check-dot">•</span><span>Use the equator line to reason about where plates with coal once sat.</span></div>
-</div>
-</div>
-<div class="scientist-card fossil-card">
-<div class="scientist-card-label">Fossil evidence</div>
-<div class="fossil-list">
-<div class="fossil-item">
-<span class="fossil-badge fossil-a">A</span>
-<div class="fossil-copy"><strong>Aquaclaw</strong><br/>Small shallow-sea predator found along matching coastlines.</div>
-</div>
-<div class="fossil-item">
-<span class="fossil-badge fossil-b">B</span>
-<div class="fossil-copy"><strong>Shellback</strong><br/>Hard-shelled marine organism common in warm coastal water.</div>
-</div>
-<div class="fossil-item">
-<span class="fossil-badge fossil-c">C</span>
-<div class="fossil-copy"><strong>Driftfin</strong><br/>Open-water swimmer found in the same rock layers on two plates.</div>
-</div>
-<div class="fossil-item">
-<span class="fossil-badge fossil-d">D</span>
-<div class="fossil-copy"><strong>Rootspine</strong><br/>Land plant fossil that points to warm, humid conditions.</div>
-</div>
-<div class="fossil-item">
-<span class="fossil-badge fossil-e">E</span>
-<div class="fossil-copy"><strong>Frostcrawler</strong><br/>Cold-adapted organism found near cooler ancient waters.</div>
-</div>
-</div>
-</div>
-</div>
-</aside>
-</div>
+            <span id="alignPct">0%</span>
+          </div>
+        </div>
+        <!-- DATA-DRIVEN CANVAS ARENA — replaces old HTML plate divs -->
+        <canvas id="reconCanvas" width="860" height="780"></canvas>
+      </div>
+    </div>
+    <aside class="scientist-panel">
+      <div class="scientist-panel-inner">
+        <div>
+          <div class="scientist-panel-title">Scientist Support Panel</div>
+          <div class="scientist-panel-sub">Use these clues like a field scientist while you rebuild Floatlandia's ancient past.</div>
+        </div>
+        <div class="scientist-card">
+          <div class="scientist-card-label">Mission</div>
+          <p>Use fossils, rock bands, and coal deposits as your guide. When evidence lines up across plate edges, you've found the right fit. Drag plates into the outline to reconstruct the ancient supercontinent.</p>
+        </div>
+        <div class="scientist-card">
+          <div class="scientist-card-label">What to check</div>
+          <div class="scientist-checklist">
+            <div class="scientist-check"><span class="scientist-check-dot">•</span><span>Coal deposits suggest warm, tropical environments near the equator.</span></div>
+            <div class="scientist-check"><span class="scientist-check-dot">•</span><span>Matching fossils should meet across plate edges.</span></div>
+            <div class="scientist-check"><span class="scientist-check-dot">•</span><span>Rock bands should continue in the same direction.</span></div>
+            <div class="scientist-check"><span class="scientist-check-dot">•</span><span>Use the equator line to reason about where plates with coal once sat.</span></div>
+          </div>
+        </div>
+        <div class="scientist-card">
+          <div class="scientist-card-label">Fossil evidence</div>
+          <div class="fossil-list">
+            <div class="fossil-item"><span class="fossil-badge fossil-a">A</span><div class="fossil-copy"><strong>Aquaclaw</strong><br/>Small shallow-sea predator found along matching coastlines.</div></div>
+            <div class="fossil-item"><span class="fossil-badge fossil-b">B</span><div class="fossil-copy"><strong>Shellback</strong><br/>Hard-shelled marine organism common in warm coastal water.</div></div>
+            <div class="fossil-item"><span class="fossil-badge fossil-c">C</span><div class="fossil-copy"><strong>Driftfin</strong><br/>Open-water swimmer found in the same rock layers on two plates.</div></div>
+            <div class="fossil-item"><span class="fossil-badge fossil-d">D</span><div class="fossil-copy"><strong>Rootspine</strong><br/>Land plant fossil that points to warm, humid conditions.</div></div>
+            <div class="fossil-item"><span class="fossil-badge fossil-e">E</span><div class="fossil-copy"><strong>Frostcrawler</strong><br/>Cold-adapted organism found near cooler ancient waters.</div></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
 </section>
-<!-- Phase 3 hypothesis removed — quiz now comes after simulation -->
+
 <!-- ======================================================
      PHASE 3: TIME SIMULATION
      ====================================================== -->
 <section class="sim-section" id="phase3" style="display:none;">
-<div class="sim-phase" id="simPhase">
-<div class="section-label">Phase 3</div>
-<div class="section-title">Watch Floatlandia Through Deep Time</div>
-<div class="section-desc">
-      You've placed the plates and studied the evidence. Before you press play, think about this:
+  <div class="sim-phase" id="simPhase">
+    <div class="section-label">Phase 3</div>
+    <div class="section-title">Watch Floatlandia Through Deep Time</div>
+    <div class="section-desc">You've rebuilt the ancient supercontinent. Now watch what happens next — and what will happen far into the future.</div>
+    <div style="background:rgba(59,200,232,0.06); border:1.5px solid rgba(59,200,232,0.25); border-radius:12px; padding:0.85rem 1.1rem; margin-bottom:1.1rem; max-width:680px;">
+      <div style="font-family:'Fredoka One',cursive; font-size:0.95rem; color:var(--teal); margin-bottom:0.3rem;">What do you think happens after a supercontinent breaks apart?</div>
+      <p style="font-size:0.85rem; color:#c9d1d9; line-height:1.6; margin:0;">The simulation starts with Floatlandia Unified — what you just rebuilt — then shows the plates drifting to their present-day positions, and finally where scientists predict they may be heading millions of years from now.</p>
     </div>
-<div style="background:rgba(59,200,232,0.06); border:1.5px solid rgba(59,200,232,0.25); border-radius:12px; padding:0.85rem 1.1rem; margin-bottom:1.1rem; max-width:680px;">
-<div style="font-family:'Fredoka One',cursive; font-size:0.95rem; color:var(--teal); margin-bottom:0.3rem;">What do you think will happen as the plates move through deep time?</div>
-<p style="font-size:0.85rem; color:#c9d1d9; line-height:1.6; margin:0;">Run the simulation and see how the evidence you studied plays out over hundreds of millions of years.</p>
-</div>
-<div class="sim-canvas-wrap">
-<div class="sim-canvas-stage">
-<canvas height="360" id="simCanvas" width="700"></canvas>
-<!-- Supercontinent payoff label -->
-<div aria-hidden="true" class="floatia-unified-label" id="floatiaUnifiedLabel">
-<div class="ful-eyebrow">Deep Time · 250 Mya</div>
-<div class="ful-title">Floatlandia Unified</div>
-<div class="ful-sub">All continents connected as one landmass</div>
-</div>
-<div aria-hidden="true" class="breakup-label" id="breakupLabel">
-<span class="breakup-eyebrow">Deep Time · 150 Mya</span>
-<span class="breakup-title">Floatlandia Fractures</span>
-<span class="breakup-sub">The supercontinent begins to break apart</span>
-</div>
-<!-- End-of-animation completion overlay -->
-<div aria-hidden="true" class="sim-completion-overlay" id="simCompletionOverlay" onclick="hideCompletionOverlay()">
-<div class="sim-completion-card" onclick="event.stopPropagation();" style="position:relative;">
-<button aria-label="Close completion card" class="sim-completion-close" onclick="hideCompletionOverlay()" type="button">✕</button>
-<div class="sc-eyebrow">Simulation Complete</div>
-<h3>New World Formed</h3>
-<p>Continents keep moving, even now. Over millions of years the plates beneath Floatlandia rearranged the map into the world that would one day become modern Floatia. What looks permanent today is just one frame of a much longer story.</p>
-<p style="font-size:0.78rem; margin-top:-0.25rem; margin-bottom:0.9rem; color:rgba(230,237,243,0.68); font-weight:800;">Close this card to keep exploring the finished world.</p>
-<div class="sc-actions">
-<button class="btn btn-teal" id="replayBtn" onclick="replayAnimation()">▶ Replay Animation</button>
-<button class="btn btn-ghost" id="rebuildBtn" onclick="rebuildFloatia()">🧩 Rebuild Floatia</button>
-<button class="btn btn-ghost" id="returnEvBtn" onclick="returnToEvidence()">🔍 Return to Evidence</button>
-</div>
-</div>
-</div>
-</div>
-<div class="sim-controls">
-<button class="btn btn-teal" id="playBtn" onclick="startSimulation()">▶ Play Animation</button>
-<button class="btn btn-ghost" disabled="" id="resetSimBtn" onclick="resetSimulation()">↺ Reset</button>
-<div class="sim-phase-label">Phase: <span id="simPhaseName">—</span></div>
-</div>
-<!-- Enhanced deep-time timeline -->
-<div aria-label="Deep time progress tracker" class="deep-time-timeline" role="img">
-<div class="dtt-track">
-<div class="dtt-fill" id="timelineFill"></div>
-<div class="dtt-milestone" data-phase="fragmented" style="left: 6%;"></div>
-<div class="dtt-milestone" data-phase="assembly" style="left: 27%;"></div>
-<div class="dtt-milestone" data-phase="supercontinent" style="left: 52%;"></div>
-<div class="dtt-milestone" data-phase="breakup" style="left: 81%;"></div>
-<div class="dtt-indicator" id="timelineIndicator"></div>
-</div>
-<div class="dtt-labels">
-<div class="dtt-label" data-phase="fragmented" style="left: 6%;">
-<span class="dtt-label-mya">500 Mya</span>
-<span class="dtt-label-name">Fragmented</span>
-</div>
-<div class="dtt-label" data-phase="assembly" style="left: 27%;">
-<span class="dtt-label-mya">350 Mya</span>
-<span class="dtt-label-name">Assembly</span>
-</div>
-<div class="dtt-label" data-phase="supercontinent" style="left: 52%;">
-<span class="dtt-label-mya">250 Mya</span>
-<span class="dtt-label-name">Supercontinent</span>
-</div>
-<div class="dtt-label" data-phase="breakup" style="left: 81%;">
-<span class="dtt-label-mya">150 Mya</span>
-<span class="dtt-label-name">Breakup</span>
-</div>
-</div>
-</div>
-</div>
-</div>
+    <div class="sim-canvas-wrap">
+      <div class="sim-canvas-stage">
+        <canvas height="360" id="simCanvas" width="700"></canvas>
+        <div aria-hidden="true" class="floatia-unified-label" id="floatiaUnifiedLabel">
+          <div class="ful-eyebrow">Deep Time · 250 Mya</div>
+          <div class="ful-title">Floatlandia Unified</div>
+          <div class="ful-sub">All plates connected as one supercontinent</div>
+        </div>
+        <div aria-hidden="true" class="breakup-label" id="futureLabel">
+          <span class="breakup-eyebrow">Future Configuration</span>
+          <span class="breakup-title">Two New Supercontinents</span>
+          <span class="breakup-sub">The cycle repeats in a new form</span>
+        </div>
+        <div aria-hidden="true" class="sim-completion-overlay" id="simCompletionOverlay" onclick="hideCompletionOverlay()">
+          <div class="sim-completion-card" onclick="event.stopPropagation();" style="position:relative;">
+            <button aria-label="Close completion card" class="sim-completion-close" onclick="hideCompletionOverlay()" type="button">✕</button>
+            <div class="sc-eyebrow">Simulation Complete</div>
+            <h3>The Cycle Continues</h3>
+            <p>Plates never stop moving. Floatlandia broke apart into the scattered world you see today — and over millions of years to come, those plates will collide again, building two new supercontinents. Where plates overlap, crust crumples upward into mountain ranges, just like the Himalayas in our world.</p>
+            <p style="font-size:0.78rem; margin-top:-0.25rem; margin-bottom:0.9rem; color:rgba(230,237,243,0.68); font-weight:800;">What looks permanent today is just one frame of a much longer story.</p>
+            <div class="sc-actions">
+              <button class="btn btn-teal" id="replayBtn" onclick="replayAnimation()">▶ Replay Animation</button>
+              <button class="btn btn-ghost" id="rebuildBtn" onclick="rebuildFloatia()">🧩 Rebuild Floatia</button>
+              <button class="btn btn-ghost" id="returnEvBtn" onclick="returnToEvidence()">🔍 Return to Evidence</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sim-controls">
+        <button class="btn btn-teal" id="playBtn" onclick="startSimulation()">▶ Play Animation</button>
+        <button class="btn btn-ghost" disabled id="resetSimBtn" onclick="resetSimulation()">↺ Reset</button>
+        <div class="sim-phase-label">Phase: <span id="simPhaseName">—</span></div>
+      </div>
+      <div aria-label="Deep time progress tracker" class="deep-time-timeline" role="img">
+        <div class="dtt-track">
+          <div class="dtt-fill" id="timelineFill"></div>
+          <div class="dtt-milestone" data-phase="unified" style="left: 6%;"></div>
+          <div class="dtt-milestone" data-phase="drift" style="left: 30%;"></div>
+          <div class="dtt-milestone" data-phase="presentday" style="left: 55%;"></div>
+          <div class="dtt-milestone" data-phase="future" style="left: 82%;"></div>
+          <div class="dtt-indicator" id="timelineIndicator"></div>
+        </div>
+        <div class="dtt-labels">
+          <div class="dtt-label" data-phase="unified" style="left: 6%;"><span class="dtt-label-mya">250 Mya</span><span class="dtt-label-name">Floatlandia Unified</span></div>
+          <div class="dtt-label" data-phase="drift" style="left: 30%;"><span class="dtt-label-mya">100 Mya</span><span class="dtt-label-name">Drifting Apart</span></div>
+          <div class="dtt-label" data-phase="presentday" style="left: 55%;"><span class="dtt-label-mya">Present Day</span><span class="dtt-label-name">Current Config</span></div>
+          <div class="dtt-label" data-phase="future" style="left: 82%;"><span class="dtt-label-mya">Future</span><span class="dtt-label-name">New Supercontinents</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
+
 <!-- ======================================================
-     MODE GATE (between Phase 3 and Phase 4)
+     MODE GATE
      ====================================================== -->
 <section class="sim-section" id="modeGate" style="display:none;">
-<div class="section-label">Next Step</div>
-<div class="section-title">Choose Your Mode</div>
-<div class="section-desc">
-    Switch to <strong>Classroom Mode</strong> to unlock the quiz and submit your work.
+  <div class="section-label">Next Step</div>
+  <div class="section-title">Choose Your Mode</div>
+  <div class="section-desc">Switch to <strong>Classroom Mode</strong> to unlock the quiz and submit your work.</div>
+  <div class="mode-toggle-bar" style="margin-top:0.35rem;">
+    <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
+    <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
   </div>
-
-<div class="mode-toggle-bar" style="margin-top:0.35rem;">
-  <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
-  <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
-</div>
-<div class="mode-hint">
-  <span id="modeHintPractice" class="visible">Practice Mode keeps the quiz locked.</span>
-  <span id="modeHintClassroom">Classroom Mode unlocks the quiz and teacher submission.</span>
-</div>
-
-
+  <div class="mode-hint">
+    <span id="modeHintPractice" class="visible">Practice Mode keeps the quiz locked.</span>
+    <span id="modeHintClassroom">Classroom Mode unlocks the quiz and teacher submission.</span>
+  </div>
 </section>
+
 <!-- ======================================================
      PHASE 4: QUIZ
      ====================================================== -->
 <section class="sim-section" id="phase4" style="display:none;">
-<div class="section-label">Phase 4</div>
-<div class="section-title">Check Your Understanding</div>
-<div class="section-desc">
-    You've examined the evidence, rebuilt ancient Floatlandia, and watched the plates move through deep time. Answer these five questions to see how well you understood the investigation.
+  <div class="section-label">Phase 4</div>
+  <div class="section-title">Check Your Understanding</div>
+  <div class="section-desc">You've examined the evidence, rebuilt ancient Floatlandia, and watched the plates move through deep time. Answer these five questions to see how well you understood the investigation.</div>
+  <div id="quizContainer"></div>
+  <div id="quizScoreArea" style="display:none; margin-top:1rem; text-align:center;">
+    <div class="quiz-score-badge" id="quizScoreBadge">0 / 5 answered</div>
   </div>
-<div id="quizContainer"></div>
-<div id="quizScoreArea" style="display:none; margin-top:1rem; text-align:center;">
-  <div class="quiz-score-badge" id="quizScoreBadge">0 / 5 answered</div>
-</div>
-<div id="quizSubmitArea" style="display:none !important; text-align:center; margin-top:1rem;">
-  <button class="btn btn-teal" id="quizSubmitBtn" disabled></button>
-</div>
-<div id="quizResultBanner" style="display:none;"></div>
-
-<div class="classroom-panel hidden" id="classroomPanel">
-  <div class="classroom-panel-header">
-    <div class="section-title" style="margin:0; font-size:1.2rem;">Submit Your Work</div>
-    <span class="mode-badge">Classroom Mode</span>
+  <div id="quizSubmitArea" style="display:none !important; text-align:center; margin-top:1rem;">
+    <button class="btn btn-teal" id="quizSubmitBtn" disabled></button>
   </div>
-
-  <div class="classroom-section">
-    <div class="classroom-section-title" style="color:var(--teal);">
-      Student Information
+  <div id="quizResultBanner" style="display:none;"></div>
+  <div class="classroom-panel hidden" id="classroomPanel">
+    <div class="classroom-panel-header">
+      <div class="section-title" style="margin:0; font-size:1.2rem;">Submit Your Work</div>
+      <span class="mode-badge">Classroom Mode</span>
     </div>
-    <div class="student-fields">
-      <div class="field-full">
-        <label class="field-label" for="studentNameInput">Student Name</label>
-        <input type="text" id="studentNameInput" class="field-input" placeholder="First and last name" autocomplete="off" />
-      </div>
-      <div>
-        <label class="field-label" for="teacherSelect">Teacher</label>
-        <select id="teacherSelect" class="field-select">
-          <option value="">Select teacher...</option>
-          <option value="Mr. Brown">Mr. Brown</option>
-          <option value="Ms. Gay">Ms. Gay</option>
-        </select>
-      </div>
-      <div>
-        <label class="field-label" for="blockInput">Block</label>
-        <select id="blockInput" class="field-select">
-          <option value="">Select block...</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-          <option value="D">D</option>
-          <option value="E">E</option>
-          <option value="F">F</option>
-          <option value="G">G</option>
-        </select>
+    <div class="classroom-section">
+      <div class="classroom-section-title" style="color:var(--teal);">Student Information</div>
+      <div class="student-fields">
+        <div class="field-full">
+          <label class="field-label" for="studentNameInput">Student Name</label>
+          <input type="text" id="studentNameInput" class="field-input" placeholder="First and last name" autocomplete="off"/>
+        </div>
+        <div>
+          <label class="field-label" for="teacherSelect">Teacher</label>
+          <select id="teacherSelect" class="field-select">
+            <option value="">Select teacher...</option>
+            <option value="Mr. Brown">Mr. Brown</option>
+            <option value="Ms. Gay">Ms. Gay</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="blockInput">Block</label>
+          <select id="blockInput" class="field-select">
+            <option value="">Select block...</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="classroom-section">
-    <div class="submit-section">
-      <button class="submit-btn locked" id="classroomSubmitBtn" disabled>
-        Submit Quiz
-      </button>
-      <p class="submit-helper" id="submitHelperText">Complete and submit the quiz first.</p>
-      <div class="submit-success" id="submitSuccess">
-        Your work has been submitted! Great job, scientist.
-      </div>
-      <div class="submit-error" id="submitError">
-        Submission failed. Please check your connection and try again.
+    <div class="classroom-section">
+      <div class="submit-section">
+        <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit Quiz</button>
+        <p class="submit-helper" id="submitHelperText">Complete and submit the quiz first.</p>
+        <div class="submit-success" id="submitSuccess">Your work has been submitted! Great job, scientist.</div>
+        <div class="submit-error" id="submitError">Submission failed. Please check your connection and try again.</div>
       </div>
     </div>
   </div>
-</div>
-
 </section>
-<!-- ======================================================
-     TOAST
-     ====================================================== -->
+
+<!-- TOAST -->
 <div id="toastContainer"></div>
-<!-- ======================================================
-     FOOTER (standardized LyfeLabz footer)
-     ====================================================== -->
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">LYFELABZ</div>
@@ -2282,119 +959,571 @@ body.classroom-mode .toast { max-width: 260px; font-size: 0.78rem; }
   </div>
   <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
-<!-- ======================================================
-     JAVASCRIPT
-     ====================================================== -->
+
 <script>
 /* =====================================================================
-   CONSTANTS
+   SNAP THRESHOLDS
    ===================================================================== */
-const PLATE_TARGETS = {
-  1: { left: 168, top: 236 },
-  2: { left: 306, top: 198  },
-  3: { left: 249, top: 327 },
-  4: { left: 154, top: 391 },
-  5: { left: 242, top: 435 }
-};
+const SNAP = { practice: 55, classroom: 40 };
 
-// Snap thresholds per mode
-const SNAP = { practice: 55, classroom: 40, challenge: 28 };
+/* =====================================================================
+   PLATE DATA — single source of truth for Phase 2 canvas
+   Canvas logical size: 860 × 780
+   Arena-center (602×692) offset in canvas: ox=129, oy=44
+   Equator y = 44+346 = 390
+   ===================================================================== */
+const PLATE_DATA = [
+  {
+    id: 1, name: 'Alpha',
+    color: '#3f7e52', strokeColor: '#2f6340',
+    w: 145, h: 138,
+    // Polygon points in local (plate-relative) coordinates
+    points: [[8,10],[137,4],[141,130],[12,134]],
+    // Start position: top-left in canvas space (arena-center offset applied)
+    startX: 155, startY: 162,
+    // Target position: top-left where plate snaps to
+    targetX: 295, targetY: 270,
+    // Rock band lines [x1,y1,x2,y2] in plate-local coords
+    rocks: [[0,30,145,86],[0,56,145,112]],
+    // Coal deposit ellipses {cx,cy,rx,ry} in plate-local coords
+    coals: [
+      {cx:44,cy:104,rx:7,ry:5},{cx:52,cy:108,rx:5,ry:4},
+      {cx:39,cy:110,rx:4,ry:3.5},{cx:48,cy:101,rx:3.5,ry:3},
+      {cx:98,cy:104,rx:6,ry:4.5},{cx:105,cy:108,rx:4.5,ry:3.5},
+      {cx:93,cy:109,rx:4,ry:3},{cx:101,cy:101,rx:3,ry:2.5}
+    ],
+    // Fossil markers {label, color, cx, cy} in plate-local coords
+    fossils: [
+      {label:'A',color:'#3bc8e8',cx:128,cy:35},
+      {label:'B',color:'#f5c842',cx:82,cy:72},
+      {label:'D',color:'#b47fff',cx:52,cy:125}
+    ]
+  },
+  {
+    id: 2, name: 'Beta',
+    color: '#5d7894', strokeColor: '#445b73',
+    w: 102, h: 84,
+    points: [[6,6],[96,4],[98,80],[4,78]],
+    startX: 597, startY: 140,
+    targetX: 440, targetY: 258,
+    rocks: [],
+    coals: [],
+    fossils: [
+      {label:'A',color:'#3bc8e8',cx:14,cy:30},
+      {label:'C',color:'#e87070',cx:86,cy:64}
+    ]
+  },
+  {
+    id: 3, name: 'Gamma',
+    color: '#4f807a', strokeColor: '#3b625d',
+    w: 130, h: 108,
+    points: [[6,6],[124,4],[126,104],[4,102]],
+    startX: 557, startY: 482,
+    targetX: 440, targetY: 334,
+    rocks: [[0,20,130,68],[0,50,130,98]],
+    coals: [
+      {cx:50,cy:52,rx:6.5,ry:4.5},{cx:57,cy:56,rx:5,ry:3.5},
+      {cx:44,cy:57,rx:4,ry:3},{cx:52,cy:49,rx:3.5,ry:3},
+      {cx:90,cy:52,rx:5.5,ry:4},{cx:96,cy:56,rx:4,ry:3},
+      {cx:85,cy:55,rx:3.5,ry:2.5}
+    ],
+    fossils: [
+      {label:'B',color:'#f5c842',cx:18,cy:40},
+      {label:'C',color:'#e87070',cx:80,cy:14},
+      {label:'E',color:'#2ecc71',cx:28,cy:84}
+    ]
+  },
+  {
+    id: 4, name: 'Delta',
+    color: '#7a8b4a', strokeColor: '#5f6c39',
+    w: 88, h: 96,
+    points: [[6,6],[82,4],[84,92],[4,90]],
+    startX: 183, startY: 592,
+    targetX: 360, targetY: 408,
+    rocks: [[0,18,88,50],[0,48,88,80]],
+    coals: [],
+    fossils: [
+      {label:'D',color:'#b47fff',cx:72,cy:34}
+    ]
+  },
+  {
+    id: 5, name: 'Epsilon',
+    color: '#6b6f96', strokeColor: '#505474',
+    w: 92, h: 90,
+    points: [[6,6],[86,4],[88,86],[4,84]],
+    startX: 615, startY: 292,
+    targetX: 440, targetY: 442,
+    rocks: [[0,16,92,50],[0,46,92,80]],
+    coals: [],
+    fossils: [
+      {label:'E',color:'#2ecc71',cx:24,cy:20}
+    ]
+  }
+];
 
-// Simulation canvas positions
+/* =====================================================================
+   CANVAS CONSTANTS
+   ===================================================================== */
+const CANVAS_W = 860;
+const CANVAS_H = 780;
+const EQUATOR_Y = 390; // 44 (arena-center top) + 346
+
+/* Ghost outline: SVG bezier curve offset by (255, 215)
+   Original SVG: 350×350, centered at canvas (430, 390)
+   Offset = (430-175, 390-175) = (255, 215)
+   ===================================================================== */
+const GHOST_BEZIERS = [
+  // [cp1x,cp1y, cp2x,cp2y, ex,ey]
+  [373,241, 431,235, 483,249],  // C 118,26 176,20 228,34
+  [521,259, 546,278, 556,307],  // C 266,44 291,63 301,92
+  [564,333, 557,359, 539,376],  // C 309,118 302,144 284,161
+  [524,391, 505,398, 499,416],  // C 269,176 250,183 244,201
+  [493,436, 501,462, 486,485],  // C 238,221 246,247 231,270
+  [469,511, 440,529, 407,531],  // C 214,296 185,314 152,316
+  [378,533, 353,522, 337,502],  // C 123,318 98,307 82,287
+  [322,483, 321,459, 327,437],  // C 67,268 66,244 72,222
+  [333,416, 327,398, 311,383],  // C 78,201 72,183 56,168
+  [294,367, 289,343, 294,316],  // C 39,152 34,128 39,101
+  [300,292, 316,277, 343,267],  // C 45,77 61,62 88,52
+];
+const GHOST_START = [343, 267]; // M 88,52 → (255+88, 215+52)
+
+/* =====================================================================
+   RECONSTRUCTION CANVAS STATE
+   ===================================================================== */
+const reconCanvas = document.getElementById('reconCanvas');
+const reconCtx = reconCanvas.getContext('2d');
+
+// Live plate states (cloned from PLATE_DATA, extended with runtime props)
+let plateStates = PLATE_DATA.map(p => ({
+  ...p,
+  x: p.startX, y: p.startY, // current top-left in canvas coords
+  snapped: false,
+  dragging: false,
+  snapGlow: 0   // 0-1, decays after snap
+}));
+
+let draggingPlate = null;
+let dragOffX = 0, dragOffY = 0;
+let snapAnimRAF = null;
+
+/* =====================================================================
+   RECONSTRUCTION CANVAS — DRAW
+   ===================================================================== */
+function drawRecon() {
+  reconCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+  drawOceanBg();
+  const ghostAlpha = getGhostAlpha();
+  drawGhostOutline(ghostAlpha);
+  drawEquator();
+
+  // Draw order: snapped plates first, then free, dragging plate last
+  const order = [...plateStates].sort((a, b) => {
+    if (a.dragging) return 1;
+    if (b.dragging) return -1;
+    if (a.snapped && !b.snapped) return -1;
+    if (!a.snapped && b.snapped) return 1;
+    return 0;
+  });
+  order.forEach(p => drawPlate(p));
+}
+
+function drawOceanBg() {
+  const grad = reconCtx.createRadialGradient(CANVAS_W/2, CANVAS_H*0.6, 0, CANVAS_W/2, CANVAS_H*0.6, CANVAS_W*0.75);
+  grad.addColorStop(0, '#0a2040');
+  grad.addColorStop(1, '#060f1a');
+  reconCtx.fillStyle = grad;
+  reconCtx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+  // Shimmer lines
+  reconCtx.save();
+  reconCtx.strokeStyle = 'rgba(59,200,232,0.035)';
+  reconCtx.lineWidth = 1;
+  for (let i = 0; i < CANVAS_H + 60; i += 28) {
+    reconCtx.beginPath();
+    reconCtx.moveTo(0, i);
+    reconCtx.lineTo(CANVAS_W, i + 22);
+    reconCtx.stroke();
+  }
+  reconCtx.restore();
+}
+
+function drawGhostOutline(alpha) {
+  if (alpha <= 0.01) return;
+  reconCtx.save();
+  reconCtx.beginPath();
+  reconCtx.moveTo(GHOST_START[0], GHOST_START[1]);
+  GHOST_BEZIERS.forEach(([cp1x,cp1y,cp2x,cp2y,ex,ey]) => {
+    reconCtx.bezierCurveTo(cp1x,cp1y, cp2x,cp2y, ex,ey);
+  });
+  reconCtx.closePath();
+  reconCtx.strokeStyle = `rgba(59,200,232,${0.32 * alpha})`;
+  reconCtx.lineWidth = 2.5;
+  reconCtx.setLineDash([9, 7]);
+  reconCtx.stroke();
+  reconCtx.restore();
+}
+
+function drawEquator() {
+  reconCtx.save();
+  reconCtx.strokeStyle = 'rgba(245,200,66,0.42)';
+  reconCtx.lineWidth = 2;
+  reconCtx.setLineDash([6, 4]);
+  reconCtx.shadowColor = 'rgba(245,200,66,0.15)';
+  reconCtx.shadowBlur = 8;
+  reconCtx.beginPath();
+  reconCtx.moveTo(0, EQUATOR_Y);
+  reconCtx.lineTo(CANVAS_W, EQUATOR_Y);
+  reconCtx.stroke();
+
+  // Label pill
+  reconCtx.setLineDash([]);
+  reconCtx.shadowBlur = 0;
+  const lw = 66, lh = 18, lx = CANVAS_W - 8 - lw, ly = EQUATOR_Y - lh/2;
+  reconCtx.fillStyle = 'rgba(13,17,23,0.82)';
+  reconCtx.beginPath();
+  reconCtx.roundRect(lx, ly, lw, lh, 9);
+  reconCtx.fill();
+  reconCtx.strokeStyle = 'rgba(245,200,66,0.3)';
+  reconCtx.lineWidth = 1;
+  reconCtx.stroke();
+  reconCtx.fillStyle = 'rgba(245,200,66,0.82)';
+  reconCtx.font = 'bold 9px Nunito, sans-serif';
+  reconCtx.textAlign = 'center';
+  reconCtx.textBaseline = 'middle';
+  reconCtx.fillText('EQUATOR', lx + lw/2, EQUATOR_Y + 0.5);
+  reconCtx.restore();
+}
+
+function drawPlate(p) {
+  const { x, y, w, h, points, color, strokeColor, rocks, coals, fossils, snapped, dragging, snapGlow } = p;
+  const isNearSnap = dragging && checkNearSnap(p);
+  const snapRadius = SNAP[mode] || SNAP.practice;
+
+  reconCtx.save();
+  reconCtx.translate(x, y);
+
+  // Build polygon path helper
+  const buildPoly = () => {
+    reconCtx.beginPath();
+    points.forEach(([px, py], i) => i === 0 ? reconCtx.moveTo(px, py) : reconCtx.lineTo(px, py));
+    reconCtx.closePath();
+  };
+
+  // ---- Shadow / glow ----
+  reconCtx.save();
+  if (dragging) {
+    reconCtx.shadowColor = isNearSnap ? 'rgba(59,200,232,0.75)' : 'rgba(59,200,232,0.45)';
+    reconCtx.shadowBlur = isNearSnap ? 28 : 18;
+  } else if (snapGlow > 0.01) {
+    reconCtx.shadowColor = `rgba(59,200,232,${snapGlow * 0.65})`;
+    reconCtx.shadowBlur = 22 * snapGlow;
+  } else if (snapped) {
+    reconCtx.shadowColor = 'rgba(59,200,232,0.25)';
+    reconCtx.shadowBlur = 10;
+  }
+  buildPoly();
+  reconCtx.fillStyle = color;
+  reconCtx.fill();
+  reconCtx.restore();
+
+  // ---- Clip to polygon for internal evidence layers ----
+  reconCtx.save();
+  buildPoly();
+  reconCtx.clip();
+
+  // Scale effect when dragging
+  if (dragging) {
+    reconCtx.save();
+    reconCtx.translate(w/2, h/2);
+    reconCtx.scale(1.025, 1.025);
+    reconCtx.translate(-w/2, -h/2);
+  }
+
+  // Rock bands
+  if (rocks.length) {
+    reconCtx.save();
+    reconCtx.strokeStyle = '#f5c842';
+    reconCtx.setLineDash([6, 4]);
+    reconCtx.lineWidth = 2.5;
+    reconCtx.globalAlpha = 0.72;
+    rocks.forEach(([x1,y1,x2,y2]) => {
+      reconCtx.beginPath();
+      reconCtx.moveTo(x1, y1);
+      reconCtx.lineTo(x2, y2);
+      reconCtx.stroke();
+    });
+    reconCtx.restore();
+  }
+
+  // Coal deposits
+  if (coals.length) {
+    reconCtx.save();
+    const coalColors = ['#1a1a1a','#232323','#1e1e1e','#282828'];
+    coals.forEach((c, i) => {
+      reconCtx.globalAlpha = 0.65 + (i % 3) * 0.03;
+      reconCtx.fillStyle = coalColors[i % coalColors.length];
+      reconCtx.beginPath();
+      reconCtx.ellipse(c.cx, c.cy, c.rx, c.ry, 0, 0, Math.PI * 2);
+      reconCtx.fill();
+    });
+    reconCtx.restore();
+  }
+
+  if (dragging) reconCtx.restore();
+
+  reconCtx.restore(); // end polygon clip
+
+  // ---- Plate outline ----
+  buildPoly();
+  if (snapped) {
+    reconCtx.strokeStyle = 'rgba(59,200,232,0.65)';
+    reconCtx.lineWidth = 2;
+  } else if (isNearSnap) {
+    reconCtx.strokeStyle = 'rgba(59,200,232,0.55)';
+    reconCtx.lineWidth = 2;
+  } else {
+    reconCtx.strokeStyle = strokeColor;
+    reconCtx.lineWidth = 1.5;
+  }
+  reconCtx.setLineDash([]);
+  reconCtx.stroke();
+
+  // ---- Fossil circles (drawn on top, not clipped) ----
+  fossils.forEach(f => {
+    // Halo
+    reconCtx.beginPath();
+    reconCtx.arc(f.cx, f.cy, 10, 0, Math.PI * 2);
+    reconCtx.fillStyle = 'rgba(0,0,0,0.25)';
+    reconCtx.fill();
+    // Circle
+    reconCtx.beginPath();
+    reconCtx.arc(f.cx, f.cy, 8.5, 0, Math.PI * 2);
+    reconCtx.fillStyle = f.color;
+    reconCtx.fill();
+    // Letter
+    reconCtx.fillStyle = '#000000';
+    reconCtx.font = 'bold 11px Nunito, sans-serif';
+    reconCtx.textAlign = 'center';
+    reconCtx.textBaseline = 'middle';
+    reconCtx.fillText(f.label, f.cx, f.cy + 0.5);
+  });
+
+  reconCtx.restore(); // end translate
+}
+
+function getGhostAlpha() {
+  const n = snappedPlates.size;
+  if (n >= 5) return 0;
+  if (n >= 3) return 0.28;
+  return 1;
+}
+
+function checkNearSnap(p) {
+  const cx = p.x + p.w / 2;
+  const cy = p.y + p.h / 2;
+  const tx = p.targetX + p.w / 2;
+  const ty = p.targetY + p.h / 2;
+  const dist = Math.hypot(cx - tx, cy - ty);
+  const threshold = SNAP[mode] || SNAP.practice;
+  return dist < threshold * 1.65 && dist >= threshold;
+}
+
+/* =====================================================================
+   SNAP GLOW ANIMATION
+   ===================================================================== */
+function triggerSnapGlow(plate) {
+  plate.snapGlow = 1.0;
+  if (!snapAnimRAF) animateSnapGlow();
+}
+
+function animateSnapGlow() {
+  let anyActive = plateStates.some(p => p.snapGlow > 0.01);
+  if (!anyActive) { snapAnimRAF = null; return; }
+  plateStates.forEach(p => { if (p.snapGlow > 0) p.snapGlow = Math.max(0, p.snapGlow - 0.055); });
+  drawRecon();
+  snapAnimRAF = requestAnimationFrame(animateSnapGlow);
+}
+
+/* =====================================================================
+   CANVAS POINTER EVENTS
+   ===================================================================== */
+function getCanvasXY(e) {
+  const rect = reconCanvas.getBoundingClientRect();
+  const scaleX = CANVAS_W / rect.width;
+  const scaleY = CANVAS_H / rect.height;
+  const src = e.touches ? e.touches[0] : e;
+  return { x: (src.clientX - rect.left) * scaleX, y: (src.clientY - rect.top) * scaleY };
+}
+
+function hitTestPlate(p, cx, cy) {
+  // Ray-casting point-in-polygon for accuracy
+  const lx = cx - p.x, ly = cy - p.y;
+  let inside = false;
+  const poly = p.points;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i], [xj, yj] = poly[j];
+    if (((yi > ly) !== (yj > ly)) && (lx < (xj - xi) * (ly - yi) / (yj - yi) + xi)) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+function findTopPlateAt(cx, cy) {
+  // Iterate in reverse draw order (dragging on top, then free, then snapped)
+  const ordered = [...plateStates].sort((a, b) => {
+    if (a.dragging) return 1;
+    if (b.dragging) return -1;
+    if (a.snapped && !b.snapped) return -1;
+    if (!a.snapped && b.snapped) return 1;
+    return 0;
+  }).reverse();
+  return ordered.find(p => hitTestPlate(p, cx, cy)) || null;
+}
+
+reconCanvas.addEventListener('pointerdown', e => {
+  const { x, y } = getCanvasXY(e);
+  const plate = findTopPlateAt(x, y);
+  if (!plate) return;
+
+  // Un-snap if already snapped (allow re-positioning)
+  if (plate.snapped) {
+    plate.snapped = false;
+    snappedPlates.delete(plate.id);
+    updateAlignMeter();
+  }
+
+  draggingPlate = plate;
+  dragOffX = x - plate.x;
+  dragOffY = y - plate.y;
+  plate.dragging = true;
+  plate.snapGlow = 0;
+
+  reconCanvas.classList.add('grabbing');
+  reconCanvas.setPointerCapture(e.pointerId);
+  drawRecon();
+});
+
+reconCanvas.addEventListener('pointermove', e => {
+  if (!draggingPlate) return;
+  const { x, y } = getCanvasXY(e);
+  draggingPlate.x = Math.max(0, Math.min(x - dragOffX, CANVAS_W - draggingPlate.w));
+  draggingPlate.y = Math.max(0, Math.min(y - dragOffY, CANVAS_H - draggingPlate.h));
+  drawRecon();
+});
+
+reconCanvas.addEventListener('pointerup', e => {
+  if (!draggingPlate) return;
+  draggingPlate.dragging = false;
+  reconCanvas.classList.remove('grabbing');
+  trySnapPlate(draggingPlate);
+  draggingPlate = null;
+  reconCanvas.releasePointerCapture(e.pointerId);
+  drawRecon();
+});
+
+reconCanvas.addEventListener('pointercancel', () => {
+  if (draggingPlate) { draggingPlate.dragging = false; draggingPlate = null; }
+  reconCanvas.classList.remove('grabbing');
+  drawRecon();
+});
+
+function trySnapPlate(plate) {
+  const cx = plate.x + plate.w / 2;
+  const cy = plate.y + plate.h / 2;
+  const tx = plate.targetX + plate.w / 2;
+  const ty = plate.targetY + plate.h / 2;
+  const dist = Math.hypot(cx - tx, cy - ty);
+  const threshold = SNAP[mode] || SNAP.practice;
+
+  if (dist < threshold) {
+    plate.x = plate.targetX;
+    plate.y = plate.targetY;
+    plate.snapped = true;
+    if (!snappedPlates.has(plate.id)) {
+      snappedPlates.add(plate.id);
+      triggerSnapGlow(plate);
+      toast('✅ ' + plate.name + ' Plate — evidence aligned!', 'success');
+    }
+    updateAlignMeter();
+
+    if (snappedPlates.size === 5) {
+      toast('🎉 All evidence lines up! Supercontinent reconstructed!', 'success');
+      setTimeout(() => setPhase(3), 650);
+    }
+  } else if (dist < threshold * 1.65) {
+    // Brief shake-like: nudge back to nearest reasonable position
+    // No nudge animation on canvas — toast is feedback enough
+  }
+}
+
+function resetReconstruction() {
+  snappedPlates.clear();
+  plateStates.forEach(p => {
+    p.x = p.startX;
+    p.y = p.startY;
+    p.snapped = false;
+    p.dragging = false;
+    p.snapGlow = 0;
+  });
+  updateAlignMeter();
+  drawRecon();
+  toast('↺ Plates reset. Use the evidence to rebuild.', 'info');
+}
+
+function initReconCanvas() {
+  // DPR-aware setup for crisp rendering
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  reconCanvas.width = CANVAS_W * dpr;
+  reconCanvas.height = CANVAS_H * dpr;
+  reconCtx.scale(dpr, dpr);
+  drawRecon();
+}
+
+/* =====================================================================
+   SIMULATION POSITION DATA (Phase 3 canvas)
+   ===================================================================== */
 const SIM_POSITIONS = {
-  fragmented:  { 1:{x:100,y:95},  2:{x:585,y:105}, 3:{x:595,y:305}, 4:{x:80,y:318},  5:{x:530,y:200} },
-  assembled:   { 1:{x:241,y:175}, 2:{x:357,y:110}, 3:{x:314,y:251}, 4:{x:198,y:309}, 5:{x:288,y:350} },
-  newscatter:  { 1:{x:148,y:235}, 2:{x:540,y:140}, 3:{x:355,y:340}, 4:{x:98,y:102},  5:{x:618,y:252} }
+  // Start — Floatlandia Unified (the supercontinent students just rebuilt in Phase 2)
+  supercontinent: { 1:{x:285,y:119}, 2:{x:409,y:80},  3:{x:423,y:168}, 4:{x:322,y:236}, 5:{x:404,y:267} },
+  // Middle — Present Day (plates have drifted to their current scattered positions)
+  presentday:     { 1:{x:185,y:107}, 2:{x:527,y:84},  3:{x:506,y:248}, 4:{x:185,y:296}, 5:{x:538,y:156} },
+  // End — Future (two new supercontinents forming; northern: Alpha+Beta+Epsilon, southern: Gamma+Delta)
+  future:         { 1:{x:295,y:130}, 2:{x:400,y:55},  3:{x:415,y:275}, 4:{x:325,y:308}, 5:{x:390,y:165} }
 };
-
 const PLATE_COLORS = { 1:'#3f7e52', 2:'#5d7894', 3:'#4f807a', 4:'#7a8b4a', 5:'#6b6f96' };
 const PLATE_SIZES  = { 1:{w:145,h:138}, 2:{w:102,h:84}, 3:{w:130,h:108}, 4:{w:88,h:96}, 5:{w:92,h:90} };
 const PLATE_NAMES  = { 1:'Alpha', 2:'Beta', 3:'Gamma', 4:'Delta', 5:'Epsilon' };
+const SIM_DURATION = 11000;
 
-const SIM_DURATION = 11000; // ms
-
+/* =====================================================================
+   EVIDENCE REASONING  (Phase 1)
+   ===================================================================== */
 const EVIDENCE_REASONING = {
   'ev-fossils': 'Matching fossils on separated landmasses are hard to explain unless those landmasses were once connected.',
   'ev-rocks': 'Rock bands usually form in continuous systems, so matching layers across oceans suggest the crust was once joined.',
   'ev-climate': 'Coal forms in warm tropical swamps. Finding coal far from the equator means those plates must have moved over millions of years.'
 };
 
-const START_POSITIONS = {
-  1: { left: 26,  top: 118 },
-  2: { left: 468, top: 96  },
-  3: { left: 428, top: 438 },
-  4: { left: 54,  top: 548 },
-  5: { left: 486, top: 248 }
-};
-
 /* =====================================================================
-   QUIZ DATA (5 questions — balanced answer lengths)
+   QUIZ DATA
    ===================================================================== */
 const QUIZ_DATA = [
-  {
-    id: 1,
-    topic: "Fossil Evidence",
-    text: "Identical Aquaclaw fossils appear on two Float Plates that are now separated by an ocean. What does this evidence suggest?",
-    options: [
-      "Aquaclaws swam across the ocean to reach both landmasses.",
-      "The two plates were once connected, then later drifted apart.",
-      "Aquaclaws evolved separately on each plate by coincidence.",
-      "Ocean currents deposited the same fossils on both shorelines."
-    ],
-    correct: 1
-  },
-  {
-    id: 2,
-    topic: "Matching Rock Formations",
-    text: "Rock bands on Plate Alpha continue in the exact same direction and pattern on Plate Gamma across the ocean. What is the best explanation?",
-    options: [
-      "Identical rock types always form in the same direction worldwide.",
-      "Underwater earthquakes pushed matching rocks to different coasts.",
-      "The plates were once joined, and the rock band formed continuously.",
-      "Wind erosion carved similar patterns on both continents over time."
-    ],
-    correct: 2
-  },
-  {
-    id: 3,
-    topic: "Coal Deposits and Past Climate",
-    text: "Coal deposits are found on plates that are now far from the equator. What does this tell scientists about those plates?",
-    options: [
-      "Those plates were once located near the equator in tropical zones.",
-      "Coal can form in any climate if enough pressure builds up over time.",
-      "The equator shifted its position while the plates stayed in place.",
-      "Ancient volcanoes created enough heat for coal to form anywhere."
-    ],
-    correct: 0
-  },
-  {
-    id: 4,
-    topic: "Plate Motion Over Geologic Time",
-    text: "The simulation shows continents assembling and then breaking apart over hundreds of millions of years. What drives this process?",
-    options: [
-      "Gravity pulls all continents toward the equator and then apart.",
-      "Tidal forces from the moon push continents into new positions.",
-      "Forces deep within the planet move the plates very slowly over time.",
-      "Erosion wears away land bridges until continents become separated."
-    ],
-    correct: 2
-  },
-  {
-    id: 5,
-    topic: "Continental Drift — Overall Claim",
-    text: "A scientist finds matching fossils, continuous rock bands, and tropical coal deposits across separated continents. Which conclusion is best supported?",
-    options: [
-      "Each type of evidence alone proves the continents drifted apart.",
-      "The matching evidence is most likely explained by random chance.",
-      "Multiple lines of evidence together support ancient connections.",
-      "Only fossil evidence is strong enough to support this conclusion."
-    ],
-    correct: 2
-  }
+  { id:1, topic:"Fossil Evidence", text:"Identical Aquaclaw fossils appear on two Float Plates that are now separated by an ocean. What does this evidence suggest?",
+    options:["Aquaclaws swam across the ocean to reach both landmasses.","The two plates were once connected, then later drifted apart.","Aquaclaws evolved separately on each plate by coincidence.","Ocean currents deposited the same fossils on both shorelines."], correct:1 },
+  { id:2, topic:"Matching Rock Formations", text:"Rock bands on Plate Alpha continue in the exact same direction and pattern on Plate Gamma across the ocean. What is the best explanation?",
+    options:["Identical rock types always form in the same direction worldwide.","Underwater earthquakes pushed matching rocks to different coasts.","The plates were once joined, and the rock band formed continuously.","Wind erosion carved similar patterns on both continents over time."], correct:2 },
+  { id:3, topic:"Coal Deposits and Past Climate", text:"Coal deposits are found on plates that are now far from the equator. What does this tell scientists about those plates?",
+    options:["Those plates were once located near the equator in tropical zones.","Coal can form in any climate if enough pressure builds up over time.","The equator shifted its position while the plates stayed in place.","Ancient volcanoes created enough heat for coal to form anywhere."], correct:0 },
+  { id:4, topic:"The Tectonic Cycle", text:"The simulation starts with Floatlandia Unified, shows the plates drifting to their present-day positions, and ends with two new supercontinents forming in the future. What does this pattern tell us about plate tectonics?",
+    options:["Plate movement is random and stops once plates reach a stable position.","Plates move in one direction until they permanently settle at the equator.","Plate tectonics is a cycle — supercontinents form, break apart, and can form again in new configurations.","Once a supercontinent breaks apart, its plates never come back together again."], correct:2 },
+  { id:5, topic:"Mountain Formation", text:"In the future simulation, some plates overlap as they collide to form two new supercontinents. What would these collision zones produce in the real world?",
+    options:["The overlapping plates slide apart smoothly without any surface changes.","Ocean water fills the gaps between colliding plates, creating new seas.","Plates bounce off each other and drift back to where they started.","Crust crumples and folds upward at collision zones, building mountain ranges."], correct:3 }
 ];
 
 /* =====================================================================
-   GOOGLE SHEETS SUBMISSION URLS
+   SCRIPT URLS
    ===================================================================== */
 const SCRIPT_URLS = {
   'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
@@ -2402,9 +1531,9 @@ const SCRIPT_URLS = {
 };
 
 /* =====================================================================
-   STATE
+   GLOBAL STATE
    ===================================================================== */
-let mode = 'practice';  // practice | classroom
+let mode = 'practice';
 let classroomMode = false;
 let phase = 1;
 let snappedPlates = new Set();
@@ -2413,7 +1542,7 @@ let simRunning = false;
 let simStartTime = null;
 let simRAF = null;
 let evidenceAdvanceTimer = null;
-let quizAnswers = {};      // { questionId: selectedIndex }
+let quizAnswers = {};
 let quizSubmitted = false;
 let simCompleted = false;
 
@@ -2421,38 +1550,30 @@ let simCompleted = false;
    INIT
    ===================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
-  // Reveal educator layers only when activated from the index page
   if (sessionStorage.getItem('lyfelabz-ls') === 'on') document.body.classList.add('ls-active');
   if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
 
-  // URL param mode override
   const params = new URLSearchParams(window.location.search);
-  if (params.get('mode') === 'classroom') {
-    setMode(true);
-  }
+  if (params.get('mode') === 'classroom') setMode(true);
 
-  initDrag();
+  initReconCanvas();
   updateAlignMeter();
   initModeToggle();
   initQuiz();
   initClassroomSubmit();
   initHotkeys();
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hideCompletionOverlay();
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCompletionOverlay(); });
 });
+
+window.addEventListener('load', () => { drawSimFrame(0); });
 
 /* =====================================================================
    MODE TOGGLE
    ===================================================================== */
 function initModeToggle() {
-  const practiceBtn = document.getElementById('practiceModeBtn');
-  const classroomBtn = document.getElementById('classroomModeBtn');
-  practiceBtn.addEventListener('click', () => setMode(false));
-  classroomBtn.addEventListener('click', () => setMode(true));
-
-  // Re-evaluate submit gating when student fields change
+  document.getElementById('practiceModeBtn').addEventListener('click', () => setMode(false));
+  document.getElementById('classroomModeBtn').addEventListener('click', () => setMode(true));
   ['input','change'].forEach(evt => {
     document.getElementById('studentNameInput').addEventListener(evt, renderSubmitState);
     document.getElementById('teacherSelect').addEventListener(evt, renderSubmitState);
@@ -2480,23 +1601,20 @@ function setMode(isClassroom) {
       setTimeout(() => {
         const nav = document.querySelector('nav');
         const navH = nav ? nav.offsetHeight : 0;
-        const targetY = quizSection.getBoundingClientRect().top + window.scrollY - navH - 14;
-        window.scrollTo({ top: targetY, behavior:'smooth' });
+        window.scrollTo({ top: quizSection.getBoundingClientRect().top + window.scrollY - navH - 14, behavior:'smooth' });
       }, 120);
-      toast('📝 Classroom Mode active. Quiz unlocked.', 'info');
+      toast('Classroom Mode active. Quiz unlocked.', 'info');
     }
   } else {
     panel.classList.add('hidden');
     if (simCompleted) {
       quizSection.style.display = 'none';
       document.getElementById('step4').classList.remove('active');
-      toast('📋 Practice Mode keeps the quiz locked.', 'info');
-      const gate = document.getElementById('modeGate');
-      if (gate) gate.scrollIntoView({ behavior:'smooth', block:'start' });
+      toast('Practice Mode keeps the quiz locked.', 'info');
+      document.getElementById('modeGate')?.scrollIntoView({ behavior:'smooth', block:'start' });
     }
   }
 }
-
 
 /* =====================================================================
    PHASE 1: EVIDENCE
@@ -2517,23 +1635,16 @@ function selectEvidence(card) {
     const remaining = [...evidenceSelected];
     if (remaining.length) {
       feedbackText.textContent = EVIDENCE_REASONING[remaining[remaining.length - 1]];
-      feedbackBox.classList.add('show');
     } else {
       feedbackBox.classList.remove('show');
       feedbackText.textContent = '';
     }
   }
-  const btn = document.getElementById('evContinueBtn');
+
   if (evidenceSelected.size === 3) {
-    btn.classList.add('ready');
-    if (phase === 1) {
-      clearTimeout(evidenceAdvanceTimer);
-      evidenceAdvanceTimer = setTimeout(() => {
-        if (phase === 1 && evidenceSelected.size === 3) goPhase2();
-      }, 550);
-    }
+    clearTimeout(evidenceAdvanceTimer);
+    if (phase === 1) evidenceAdvanceTimer = setTimeout(() => { if (phase === 1 && evidenceSelected.size === 3) goPhase2(); }, 550);
   } else {
-    btn.classList.remove('ready');
     clearTimeout(evidenceAdvanceTimer);
   }
 }
@@ -2541,7 +1652,7 @@ function selectEvidence(card) {
 function goPhase2() {
   if (evidenceSelected.size < 3) return;
   setPhase(2);
-  toast('🏝️ Ancient Floatlandia loaded! Use the evidence to rebuild the supercontinent.', 'info');
+  toast('Ancient Floatlandia loaded! Use the evidence to rebuild the supercontinent.', 'info');
 }
 
 /* =====================================================================
@@ -2551,203 +1662,22 @@ function setPhase(n) {
   phase = n;
   const sections = ['phase1','phase2','phase3','phase4'];
   sections.forEach((id, i) => {
-    const el = document.getElementById(id);
-    el.style.display = (i < n) ? 'block' : 'none';
+    document.getElementById(id).style.display = (i < n) ? 'block' : 'none';
   });
-  // Progress steps
   for (let i = 1; i <= 4; i++) {
     const step = document.getElementById('step' + i);
     step.classList.remove('active', 'done');
     if (i < n) step.classList.add('done');
     if (i === n) step.classList.add('active');
   }
-  // Phase 3 (simulation): unlock it
-  if (n === 3) {
-    document.getElementById('simPhase').classList.add('unlocked');
-  }
+  if (n === 3) document.getElementById('simPhase').classList.add('unlocked');
   if (classroomMode) {
     setTimeout(() => {
-      const targetSection = document.getElementById(sections[n-1]);
-      const nav = document.querySelector('nav');
-      const navH = nav ? nav.offsetHeight : 0;
-      const targetY = targetSection.getBoundingClientRect().top + window.scrollY - navH - 14;
-      window.scrollTo({ top: targetY, behavior:'smooth' });
+      const target = document.getElementById(sections[n-1]);
+      const navH = document.querySelector('nav')?.offsetHeight || 0;
+      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - navH - 14, behavior:'smooth' });
     }, 100);
   }
-}
-
-/* =====================================================================
-   EVIDENCE LAYERS — always visible (toggles removed)
-   ===================================================================== */
-
-/* =====================================================================
-   DRAG & DROP (pointer events, closure-based)
-   ===================================================================== */
-function initDrag() {
-  const plates = document.querySelectorAll('.float-plate');
-  plates.forEach(plate => {
-    plate.addEventListener('pointerdown', onPointerDown);
-  });
-}
-
-function updateNearSnapState(plate, x, y) {
-  const id = parseInt(plate.dataset.id);
-  const target = PLATE_TARGETS[id];
-  const cx = x + plate.offsetWidth / 2;
-  const cy = y + plate.offsetHeight / 2;
-  const tx = target.left + plate.offsetWidth / 2;
-  const ty = target.top + plate.offsetHeight / 2;
-  const dist = Math.sqrt((cx - tx) ** 2 + (cy - ty) ** 2);
-  const threshold = SNAP[mode] || SNAP.practice;
-  const isNear = dist < threshold * 1.6 && dist >= threshold;
-  plate.classList.toggle('near-snap', isNear);
-}
-
-function onPointerDown(e) {
-  const plate = e.currentTarget;
-  if (snappedPlates.has(parseInt(plate.dataset.id))) {
-    // Allow un-snap by clicking a snapped plate
-    const id = parseInt(plate.dataset.id);
-    snappedPlates.delete(id);
-    plate.classList.remove('snapped', 'snap-anim');
-    updateAlignMeter();
-  }
-
-  plate.setPointerCapture(e.pointerId);
-  const arena = document.getElementById('oceanArena');
-  const arenaRect = arena.getBoundingClientRect();
-
-  const startX = e.clientX - arenaRect.left - parseInt(plate.style.left);
-  const startY = e.clientY - arenaRect.top  - parseInt(plate.style.top);
-
-  plate.classList.add('dragging');
-  plate.style.zIndex = 50;
-
-  function onMove(e2) {
-    const x = e2.clientX - arenaRect.left - startX;
-    const y = e2.clientY - arenaRect.top  - startY;
-    // clamp within arena
-    const maxX = arenaRect.width  - plate.offsetWidth;
-    const maxY = arenaRect.height - plate.offsetHeight;
-    const clampedX = Math.max(0, Math.min(x, maxX));
-    const clampedY = Math.max(0, Math.min(y, maxY));
-    plate.style.left = clampedX + 'px';
-    plate.style.top  = clampedY + 'px';
-    updateNearSnapState(plate, clampedX, clampedY);
-  }
-
-  function onUp(e2) {
-    plate.classList.remove('dragging', 'near-snap');
-    plate.releasePointerCapture(e2.pointerId);
-    plate.removeEventListener('pointermove', onMove);
-    plate.removeEventListener('pointerup', onUp);
-    trySnap(plate);
-  }
-
-  plate.addEventListener('pointermove', onMove);
-  plate.addEventListener('pointerup', onUp);
-}
-
-function trySnap(plate) {
-  const id = parseInt(plate.dataset.id);
-  const target = PLATE_TARGETS[id];
-  const cx = parseInt(plate.style.left) + plate.offsetWidth  / 2;
-  const cy = parseInt(plate.style.top)  + plate.offsetHeight / 2;
-  const tx = target.left + plate.offsetWidth  / 2;
-  const ty = target.top  + plate.offsetHeight / 2;
-  const dist = Math.sqrt((cx-tx)**2 + (cy-ty)**2);
-
-  const threshold = SNAP[mode] || SNAP.practice;
-
-  if (dist < threshold) {
-    // Snap!
-    plate.style.left = target.left + 'px';
-    plate.style.top  = target.top  + 'px';
-    plate.classList.remove('near-snap');
-    plate.classList.add('snapped');
-    plate.classList.remove('snap-anim');
-    void plate.offsetWidth; // reflow
-    plate.classList.add('snap-anim');
-
-    if (!snappedPlates.has(id)) {
-      snappedPlates.add(id);
-      toast('✅ ' + PLATE_NAMES[id] + ' Plate — evidence aligned!', 'success');
-    }
-    // Dim ghost outline as plates fill in
-    const ghost = document.getElementById('ghostOutline');
-    if (ghost && snappedPlates.size >= 3) ghost.classList.add('dim');
-
-    if (snappedPlates.size === 5) {
-      toast('🎉 All evidence lines up! Supercontinent reconstructed!', 'success');
-      if (ghost) ghost.style.opacity = '0';
-      setTimeout(() => setPhase(3), 600);
-    }
-  } else if (dist < threshold * 1.45) {
-    plate.classList.remove('miss-anim');
-    void plate.offsetWidth;
-    plate.classList.add('miss-anim');
-  }
-  updateAlignMeter();
-}
-
-function resetReconstruction() {
-  snappedPlates.clear();
-
-  Object.entries(START_POSITIONS).forEach(([id, pos]) => {
-    const plate = document.getElementById('plate' + id);
-    if (plate) {
-      plate.style.left = pos.left + 'px';
-      plate.style.top = pos.top + 'px';
-      plate.classList.remove('snapped', 'snap-anim', 'near-snap', 'dragging');
-      plate.style.zIndex = 10;
-    }
-  });
-
-  // Reset ghost outline
-  const ghost = document.getElementById('ghostOutline');
-  if (ghost) { ghost.classList.remove('dim'); ghost.style.opacity = ''; }
-
-  updateAlignMeter();
-  toast('↺ Plates reset. Use the evidence to rebuild.', 'info');
-}
-
-
-/* =====================================================================
-   HOTKEYS
-   ===================================================================== */
-function initHotkeys() {
-  document.addEventListener('keydown', (e) => {
-    const inPhase2 = phase >= 2 && document.getElementById('phase2').style.display !== 'none';
-    if (!inPhase2) return;
-
-    if (e.ctrlKey && e.metaKey && e.key === '1') {
-      e.preventDefault();
-      solvePhase2Hotkey();
-    }
-  });
-}
-
-function solvePhase2Hotkey() {
-  snappedPlates.clear();
-
-  Object.entries(PLATE_TARGETS).forEach(([id, target]) => {
-    const plate = document.getElementById('plate' + id);
-    if (!plate) return;
-    plate.style.left = target.left + 'px';
-    plate.style.top = target.top + 'px';
-    plate.classList.remove('near-snap', 'dragging', 'miss-anim', 'snap-anim');
-    void plate.offsetWidth;
-    plate.classList.add('snapped', 'snap-anim');
-    plate.style.zIndex = 10;
-    snappedPlates.add(Number(id));
-  });
-
-  const ghost = document.getElementById('ghostOutline');
-  if (ghost) ghost.style.opacity = '0';
-
-  updateAlignMeter();
-  toast('🧩 Hotkey used: Floatlandia reconstructed.', 'success');
-  setTimeout(() => setPhase(3), 600);
 }
 
 /* =====================================================================
@@ -2762,568 +1692,322 @@ function updateAlignMeter() {
 }
 
 /* =====================================================================
-   PHASE 3: SIMULATION (canvas)
+   HOTKEYS
    ===================================================================== */
-const canvas = document.getElementById('simCanvas');
-const ctx = canvas.getContext('2d');
+function initHotkeys() {
+  document.addEventListener('keydown', e => {
+    if (phase >= 2 && document.getElementById('phase2').style.display !== 'none') {
+      if (e.ctrlKey && e.metaKey && e.key === '1') {
+        e.preventDefault();
+        solvePhase2Hotkey();
+      }
+    }
+  });
+}
 
-// Draw initial state on load
-window.addEventListener('load', () => { drawSimFrame(0); });
+function solvePhase2Hotkey() {
+  snappedPlates.clear();
+  plateStates.forEach(p => {
+    p.x = p.targetX; p.y = p.targetY;
+    p.snapped = true; p.dragging = false; p.snapGlow = 0.8;
+    snappedPlates.add(p.id);
+  });
+  updateAlignMeter();
+  drawRecon();
+  if (!snapAnimRAF) animateSnapGlow();
+  toast('Hotkey used: Floatlandia reconstructed.', 'success');
+  setTimeout(() => setPhase(3), 650);
+}
+
+/* =====================================================================
+   PHASE 3: SIMULATION CANVAS
+   ===================================================================== */
+const simCanvas = document.getElementById('simCanvas');
+const ctx = simCanvas.getContext('2d');
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 function easeInOut(t) { return t < 0.5 ? 2*t*t : -1 + (4-2*t)*t; }
 
-function getPositions(progress) {
+function getSimPositions(progress) {
   const result = {};
   const ids = [1,2,3,4,5];
-
-  if (progress <= 0.12) {
-    ids.forEach(id => { result[id] = { ...SIM_POSITIONS.fragmented[id] }; });
-  } else if (progress <= 0.40) {
-    const t = easeInOut((progress - 0.12) / 0.28);
-    ids.forEach(id => {
-      result[id] = {
-        x: lerp(SIM_POSITIONS.fragmented[id].x, SIM_POSITIONS.assembled[id].x, t),
-        y: lerp(SIM_POSITIONS.fragmented[id].y, SIM_POSITIONS.assembled[id].y, t)
-      };
-    });
-  } else if (progress <= 0.66) {
-    ids.forEach(id => { result[id] = { ...SIM_POSITIONS.assembled[id] }; });
+  if (progress <= 0.10) {
+    // Hold at Floatlandia Unified
+    ids.forEach(id => { result[id] = { ...SIM_POSITIONS.supercontinent[id] }; });
+  } else if (progress <= 0.45) {
+    // Drift from supercontinent → present day
+    const t = easeInOut((progress - 0.10) / 0.35);
+    ids.forEach(id => { result[id] = { x: lerp(SIM_POSITIONS.supercontinent[id].x, SIM_POSITIONS.presentday[id].x, t), y: lerp(SIM_POSITIONS.supercontinent[id].y, SIM_POSITIONS.presentday[id].y, t) }; });
+  } else if (progress <= 0.60) {
+    // Hold at present day
+    ids.forEach(id => { result[id] = { ...SIM_POSITIONS.presentday[id] }; });
   } else {
-    const t = easeInOut((progress - 0.66) / 0.34);
-    ids.forEach(id => {
-      result[id] = {
-        x: lerp(SIM_POSITIONS.assembled[id].x, SIM_POSITIONS.newscatter[id].x, t),
-        y: lerp(SIM_POSITIONS.assembled[id].y, SIM_POSITIONS.newscatter[id].y, t)
-      };
-    });
+    // Drift from present day → two future supercontinents
+    const t = easeInOut((progress - 0.60) / 0.40);
+    ids.forEach(id => { result[id] = { x: lerp(SIM_POSITIONS.presentday[id].x, SIM_POSITIONS.future[id].x, t), y: lerp(SIM_POSITIONS.presentday[id].y, SIM_POSITIONS.future[id].y, t) }; });
   }
   return result;
 }
 
 function drawSimFrame(progress) {
-  const W = canvas.width, H = canvas.height;
+  const W = simCanvas.width, H = simCanvas.height;
   ctx.clearRect(0,0,W,H);
-
-  // Ocean background
-  const grad = ctx.createRadialGradient(W/2, H*0.6, 0, W/2, H*0.6, W*0.7);
-  grad.addColorStop(0, '#0a2040');
-  grad.addColorStop(1, '#060f1a');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0,0,W,H);
-
-  // Ocean shimmer lines
-  ctx.save();
-  ctx.strokeStyle = 'rgba(59,200,232,0.04)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < H; i += 22) {
-    ctx.beginPath();
-    ctx.moveTo(0, i);
-    ctx.lineTo(W, i + 20);
-    ctx.stroke();
-  }
+  const grad = ctx.createRadialGradient(W/2,H*0.6,0,W/2,H*0.6,W*0.7);
+  grad.addColorStop(0,'#0a2040'); grad.addColorStop(1,'#060f1a');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+  ctx.save(); ctx.strokeStyle='rgba(59,200,232,0.04)'; ctx.lineWidth=1;
+  for(let i=0;i<H;i+=22){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(W,i+20);ctx.stroke();}
   ctx.restore();
 
-  const positions = getPositions(progress);
+  const positions = getSimPositions(progress);
   const ids = [1,2,3,4,5];
+  const inUnified    = progress <= 0.10;
+  const inDrift      = progress > 0.10 && progress <= 0.45;
+  const inPresentDay = progress > 0.45 && progress <= 0.60;
+  const inFuture     = progress > 0.60;
 
-  // ---- Phase detection ----
-  const inFragmented = progress <= 0.12;
-  const inAssembly   = progress >  0.12 && progress <= 0.40;
-  const inSuper      = progress >  0.40 && progress <= 0.66;
-  const inBreakup    = progress >  0.66;
-
-  // Assembly energy: 0 → 1 across the assembly phase (1 once locked)
-  const assemblyEnergy = inAssembly ? easeInOut((progress - 0.12) / 0.30)
-                      : (inSuper || inBreakup ? 1 : 0);
-
-  // Supercontinent pulse (sine curve peaks near the middle of the phase)
-  let superGlowAlpha = 0;
-  let superScale = 1;
-  if (inSuper) {
-    const phaseProgress = (progress - 0.40) / 0.26;
-    superGlowAlpha = Math.sin(phaseProgress * Math.PI);
-    superScale = 1 + 0.035 * superGlowAlpha;
-
-    // Soft radial highlight behind the landmass
+  // ── Supercontinent glow (start) ──────────────────────────────────
+  let superGlowAlpha = 0, superScale = 1;
+  if (inUnified) {
+    const pp = progress / 0.10;
+    superGlowAlpha = Math.sin(pp * Math.PI);
+    superScale = 1 + 0.025 * superGlowAlpha;
     ctx.save();
-    const cx = SIM_POSITIONS.assembled[1].x + 60;
-    const cy = SIM_POSITIONS.assembled[1].y + 70;
-    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 260);
-    glow.addColorStop(0,   `rgba(59,200,232,${0.32 * superGlowAlpha})`);
-    glow.addColorStop(0.55,`rgba(59,200,232,${0.12 * superGlowAlpha})`);
-    glow.addColorStop(1,   'transparent');
-    ctx.fillStyle = glow;
-    ctx.fillRect(0,0,W,H);
-    ctx.restore();
+    const cx2 = SIM_POSITIONS.supercontinent[1].x + 60, cy2 = SIM_POSITIONS.supercontinent[1].y + 70;
+    const g = ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,260);
+    g.addColorStop(0,`rgba(59,200,232,${0.28*superGlowAlpha})`);
+    g.addColorStop(0.55,`rgba(59,200,232,${0.10*superGlowAlpha})`);
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H); ctx.restore();
   }
 
-  // Breakup directional drift trails + fracture energy
-  if (inBreakup) {
-    const breakupProgress = (progress - 0.66) / 0.34;
-
-    // soft purple fracture haze
-    ctx.save();
-    const haze = ctx.createLinearGradient(0, 0, W, H);
-    haze.addColorStop(0, `rgba(180,127,255,${0.04 + 0.05 * breakupProgress})`);
-    haze.addColorStop(0.5, 'rgba(180,127,255,0)');
-    haze.addColorStop(1, `rgba(180,127,255,${0.05 + 0.06 * breakupProgress})`);
-    ctx.fillStyle = haze;
-    ctx.fillRect(0, 0, W, H);
-    ctx.restore();
-
-    ctx.save();
-    ctx.setLineDash([5, 6]);
-    ctx.lineWidth = 1.5;
-    ids.forEach(id => {
-      const pos = positions[id];
-      const startPos = SIM_POSITIONS.assembled[id];
-      const trailAlpha = 0.3 - breakupProgress * 0.12;
-      ctx.strokeStyle = `rgba(180,127,255,${trailAlpha})`;
-      ctx.beginPath();
-      ctx.moveTo(startPos.x, startPos.y);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-
-      // direction arrowhead for clearer outward drift
-      const angle = Math.atan2(pos.y - startPos.y, pos.x - startPos.x);
-      const arrowLen = 8;
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
-      ctx.lineTo(
-        pos.x - arrowLen * Math.cos(angle - 0.38),
-        pos.y - arrowLen * Math.sin(angle - 0.38)
-      );
-      ctx.moveTo(pos.x, pos.y);
-      ctx.lineTo(
-        pos.x - arrowLen * Math.cos(angle + 0.38),
-        pos.y - arrowLen * Math.sin(angle + 0.38)
-      );
-      ctx.stroke();
-    });
-    ctx.restore();
-  }
-
-  // ---- Draw plates with phase-dependent emphasis ----
-  ids.forEach(id => {
-    const pos = positions[id];
-    const sz = PLATE_SIZES[id];
-    const col = PLATE_COLORS[id];
-    const drawX = inSuper ? W/2 + (pos.x - W/2) * superScale : pos.x;
-    const drawY = inSuper ? H/2 + (pos.y - H/2) * superScale : pos.y;
-    const drawW = inSuper ? sz.w * superScale : sz.w;
-    const drawH = inSuper ? sz.h * superScale : sz.h;
-
-    // Phase-dependent glow + subtle opacity
-    let shadowAlpha = 0.2;
-    let shadowBlur  = 8;
-    let plateAlpha  = 1;
-
-    if (inFragmented) {
-      shadowAlpha = 0.12;
-      shadowBlur  = 5;
-      plateAlpha  = 0.92;
-    } else if (inAssembly) {
-      shadowAlpha = 0.18 + 0.18 * assemblyEnergy;
-      shadowBlur  = 7 + 5 * assemblyEnergy;
-      plateAlpha  = 0.94 + 0.06 * assemblyEnergy;
-    } else if (inSuper) {
-      shadowAlpha = 0.32 + 0.3 * superGlowAlpha;
-      shadowBlur  = 16 + 10 * superGlowAlpha;
-      plateAlpha  = 1;
-    } else if (inBreakup) {
-      const bp = (progress - 0.66) / 0.34;
-      shadowAlpha = 0.26 * (1 - bp * 0.45);
-      shadowBlur  = 12 - 4.5 * bp;
-      plateAlpha  = 1 - bp * 0.18;
+  // ── Drift arrows (faint, fade in during drift phase) ─────────────
+  if (inDrift) {
+    const driftT = (progress - 0.10) / 0.35;
+    if (driftT > 0.2) {
+      ctx.save(); ctx.setLineDash([4,6]); ctx.lineWidth=1.2;
+      ids.forEach(id => {
+        const pos = positions[id], sp = SIM_POSITIONS.supercontinent[id];
+        ctx.strokeStyle = `rgba(59,200,232,${Math.min(driftT*1.2,1)*0.18})`;
+        ctx.beginPath(); ctx.moveTo(sp.x,sp.y); ctx.lineTo(pos.x,pos.y); ctx.stroke();
+      });
+      ctx.restore();
     }
+  }
 
-    ctx.save();
-    ctx.globalAlpha = plateAlpha;
-    ctx.shadowColor = `rgba(59,200,232,${shadowAlpha})`;
-    ctx.shadowBlur  = shadowBlur;
-    ctx.fillStyle   = col;
-    ctx.beginPath();
-    ctx.roundRect(drawX - drawW/2, drawY - drawH/2, drawW, drawH, 6);
-    ctx.fill();
-    // Plate label
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = 'rgba(255,255,255,0.88)';
-    ctx.font = inSuper ? 'bold 12px Nunito, sans-serif' : 'bold 11px Nunito, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(PLATE_NAMES[id], drawX, drawY);
-    ctx.restore();
+  // ── Future collision glow (warm gold, two clusters) ───────────────
+  if (inFuture) {
+    const fp = (progress - 0.60) / 0.40;
+    if (fp > 0.25) {
+      const glowStr = Math.min((fp - 0.25) / 0.55, 1);
+      ctx.save();
+      // Northern supercontinent glow (Alpha center)
+      const ng = ctx.createRadialGradient(295,140,0,295,140,170);
+      ng.addColorStop(0,`rgba(245,200,66,${0.20*glowStr})`);
+      ng.addColorStop(0.6,`rgba(245,200,66,${0.07*glowStr})`);
+      ng.addColorStop(1,'transparent');
+      ctx.fillStyle=ng; ctx.fillRect(0,0,W,H);
+      // Southern supercontinent glow (Gamma/Delta center)
+      const sg = ctx.createRadialGradient(385,292,0,385,292,140);
+      sg.addColorStop(0,`rgba(245,200,66,${0.20*glowStr})`);
+      sg.addColorStop(0.6,`rgba(245,200,66,${0.07*glowStr})`);
+      sg.addColorStop(1,'transparent');
+      ctx.fillStyle=sg; ctx.fillRect(0,0,W,H);
+      ctx.restore();
+    }
+  }
+
+  // ── Draw plates ───────────────────────────────────────────────────
+  ids.forEach(id => {
+    const pos = positions[id], sz = PLATE_SIZES[id], col = PLATE_COLORS[id];
+    const dx = inUnified ? W/2+(pos.x-W/2)*superScale : pos.x;
+    const dy = inUnified ? H/2+(pos.y-H/2)*superScale : pos.y;
+    const dw = inUnified ? sz.w*superScale : sz.w;
+    const dh = inUnified ? sz.h*superScale : sz.h;
+    let sha=0.16, shb=7, pa=1;
+    if      (inUnified)    { sha=0.28+0.22*superGlowAlpha; shb=14+8*superGlowAlpha; pa=1; }
+    else if (inDrift)      { sha=0.12; shb=5; pa=0.92+(0.08*((progress-0.10)/0.35)); }
+    else if (inPresentDay) { sha=0.16; shb=7; pa=1; }
+    else if (inFuture)     { const fp2=(progress-0.60)/0.40; sha=0.16+0.18*fp2; shb=7+9*fp2; pa=1; }
+    ctx.save(); ctx.globalAlpha=pa;
+    ctx.shadowColor=`rgba(59,200,232,${sha})`; ctx.shadowBlur=shb;
+    ctx.fillStyle=col; ctx.beginPath(); ctx.roundRect(dx-dw/2,dy-dh/2,dw,dh,6); ctx.fill();
+    ctx.shadowBlur=0; ctx.fillStyle='rgba(255,255,255,0.88)';
+    ctx.font=inUnified?'bold 12px Nunito,sans-serif':'bold 11px Nunito,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(PLATE_NAMES[id],dx,dy); ctx.restore();
   });
 
-  // Phase label overlay (canvas, top-left)
+  // ── Phase label (top-left of canvas) ─────────────────────────────
   let phaseLabel;
-  if      (inFragmented) phaseLabel = '500 Mya — Fragmented';
-  else if (inAssembly)   phaseLabel = '350 Mya — Assembling';
-  else if (inSuper)      phaseLabel = '250 Mya — Supercontinent';
-  else                   phaseLabel = '150 Mya — Fracturing and drifting apart';
+  if      (inUnified)    phaseLabel = '250 Mya — Floatlandia Unified';
+  else if (inDrift)      phaseLabel = '100 Mya — Drifting Apart';
+  else if (inPresentDay) phaseLabel = 'Present Day — Current Configuration';
+  else                   phaseLabel = 'Future — New Supercontinents Forming';
+  ctx.save(); ctx.font='bold 12px Nunito,sans-serif'; ctx.fillStyle='rgba(59,200,232,0.85)';
+  ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(phaseLabel,12,10); ctx.restore();
 
-  ctx.save();
-  ctx.font = 'bold 12px Nunito, sans-serif';
-  ctx.fillStyle = 'rgba(59,200,232,0.85)';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  ctx.fillText(phaseLabel, 12, 10);
-  ctx.restore();
-
-  // ---- Sync external UI ----
   document.getElementById('simPhaseName').textContent = phaseLabel;
   updateTimelineUI(progress);
-  updateSupercontinentLabel(inSuper, superGlowAlpha);
-  updateBreakupLabel(inBreakup, progress);
+  updateSupercontinentLabel(inUnified, superGlowAlpha);
+  updateFutureLabel(inFuture, progress);
 }
 
-/* ---- Timeline UI sync ---- */
-function updateTimelineUI(progress) {
-  const pct = progress * 100;
-  const fill = document.getElementById('timelineFill');
-  const indicator = document.getElementById('timelineIndicator');
-  if (fill) fill.style.width = pct + '%';
-  if (indicator) {
-    indicator.style.left = pct + '%';
-    const isPeak = progress > 0.42 && progress <= 0.62;
-    indicator.classList.toggle('peak', isPeak);
-  }
-
-  let activePhase;
-  if      (progress <= 0.12) activePhase = 'fragmented';
-  else if (progress <= 0.40) activePhase = 'assembly';
-  else if (progress <= 0.66) activePhase = 'supercontinent';
-  else                       activePhase = 'breakup';
-
-  const phaseOrder = ['fragmented','assembly','supercontinent','breakup'];
-  const activeIndex = phaseOrder.indexOf(activePhase);
-
-  document.querySelectorAll('.dtt-label, .dtt-milestone').forEach(el => {
-    const i = phaseOrder.indexOf(el.dataset.phase);
-    el.classList.toggle('reached', i < activeIndex);
-    el.classList.toggle('active',  i === activeIndex);
-  });
+function updateTimelineUI(progress){
+  const pct=progress*100;
+  const fill=document.getElementById('timelineFill'),ind=document.getElementById('timelineIndicator');
+  if(fill)fill.style.width=pct+'%';
+  if(ind){ind.style.left=pct+'%';ind.classList.toggle('peak',progress>0.45&&progress<=0.60);}
+  let activePhase=progress<=0.10?'unified':progress<=0.45?'drift':progress<=0.60?'presentday':'future';
+  const phaseOrder=['unified','drift','presentday','future'];
+  const ai=phaseOrder.indexOf(activePhase);
+  document.querySelectorAll('.dtt-label,.dtt-milestone').forEach(el=>{const i=phaseOrder.indexOf(el.dataset.phase);el.classList.toggle('reached',i<ai);el.classList.toggle('active',i===ai);});
 }
+function updateSupercontinentLabel(isUnified,alpha){const l=document.getElementById('floatiaUnifiedLabel');if(l)l.classList.toggle('visible',isUnified&&alpha>0.12);}
+function updateFutureLabel(isFuture,progress){const l=document.getElementById('futureLabel');if(l){const fp=isFuture?(progress-0.60)/0.40:0;l.classList.toggle('visible',isFuture&&fp>0.35);}}
 
-/* ---- Supercontinent HTML label (shown during peak of pulse) ---- */
-function updateSupercontinentLabel(isSuper, alpha) {
-  const label = document.getElementById('floatiaUnifiedLabel');
-  if (!label) return;
-  const visible = isSuper && alpha > 0.12;
-  label.classList.toggle('visible', visible);
-}
-
-function updateBreakupLabel(isBreakup, progress) {
-  const label = document.getElementById('breakupLabel');
-  if (!label) return;
-  const breakupProgress = isBreakup ? (progress - 0.66) / 0.34 : 0;
-  const visible = isBreakup && breakupProgress > 0.08;
-  label.classList.toggle('visible', visible);
-}
-
-function startSimulation() {
-  if (simRunning) return;
-  simRunning = true;
-  document.getElementById('playBtn').disabled = true;
-  document.getElementById('resetSimBtn').disabled = false;
-  simStartTime = performance.now();
-
-  function frame(now) {
-    const elapsed = now - simStartTime;
-    const progress = Math.min(elapsed / SIM_DURATION, 1);
+function startSimulation(){
+  if(simRunning)return;
+  simRunning=true;
+  document.getElementById('playBtn').disabled=true;
+  document.getElementById('resetSimBtn').disabled=false;
+  simStartTime=performance.now();
+  function frame(now){
+    const progress=Math.min((now-simStartTime)/SIM_DURATION,1);
     drawSimFrame(progress);
-    if (progress < 1) {
-      simRAF = requestAnimationFrame(frame);
-    } else {
-      simRunning = false;
-      document.getElementById('playBtn').disabled = false;
-      toast('🌍 Animation complete! Floatlandia has a new world configuration.', 'info');
-      markSimDone();
-    }
+    if(progress<1){simRAF=requestAnimationFrame(frame);}
+    else{simRunning=false;document.getElementById('playBtn').disabled=false;toast('Animation complete! Floatlandia has a new world configuration.','info');markSimDone();}
   }
-  simRAF = requestAnimationFrame(frame);
+  simRAF=requestAnimationFrame(frame);
 }
 
-function resetSimulation() {
-  if (simRAF) cancelAnimationFrame(simRAF);
-  simRunning = false;
-  simCompleted = false;
-  simStartTime = null;
-  document.getElementById('playBtn').disabled = false;
-  document.getElementById('resetSimBtn').disabled = true;
-  document.getElementById('timelineFill').style.width = '0%';
-  document.getElementById('simPhaseName').textContent = '—';
-  document.getElementById('modeGate').style.display = 'none';
-  document.getElementById('phase4').style.display = 'none';
-  document.getElementById('step4').classList.remove('active', 'done');
-
-  const indicator = document.getElementById('timelineIndicator');
-  if (indicator) {
-    indicator.style.left = '0%';
-    indicator.classList.remove('peak');
-  }
-  document.querySelectorAll('.dtt-label, .dtt-milestone').forEach(el => {
-    el.classList.remove('active', 'reached');
-  });
-
-  const superLabel = document.getElementById('floatiaUnifiedLabel');
-  if (superLabel) superLabel.classList.remove('visible');
-
-  const breakupLbl = document.getElementById('breakupLabel');
-  if (breakupLbl) breakupLbl.classList.remove('visible');
-
-  const overlay = document.getElementById('simCompletionOverlay');
-  if (overlay) overlay.classList.remove('visible');
-
+function resetSimulation(){
+  if(simRAF)cancelAnimationFrame(simRAF);
+  simRunning=false;simCompleted=false;simStartTime=null;
+  document.getElementById('playBtn').disabled=false;
+  document.getElementById('resetSimBtn').disabled=true;
+  document.getElementById('timelineFill').style.width='0%';
+  document.getElementById('simPhaseName').textContent='—';
+  document.getElementById('modeGate').style.display='none';
+  document.getElementById('phase4').style.display='none';
+  document.getElementById('step4').classList.remove('active','done');
+  const ind=document.getElementById('timelineIndicator');if(ind){ind.style.left='0%';ind.classList.remove('peak');}
+  document.querySelectorAll('.dtt-label,.dtt-milestone').forEach(el=>el.classList.remove('active','reached'));
+  document.getElementById('floatiaUnifiedLabel')?.classList.remove('visible');
+  document.getElementById('breakupLabel')?.classList.remove('visible');
+  document.getElementById('simCompletionOverlay')?.classList.remove('visible');
   drawSimFrame(0);
 }
 
-function markSimDone() {
-  simCompleted = true;
+function markSimDone(){
+  simCompleted=true;
   document.getElementById('step3').classList.add('done');
   document.getElementById('step3').classList.remove('active');
-  document.getElementById('modeGate').style.display = 'block';
-  document.getElementById('phase4').style.display = classroomMode ? 'block' : 'none';
-  // Show the end-of-animation completion overlay
-  setTimeout(showCompletionOverlay, 350);
-
-  if (classroomMode) {
-    toast('📝 Classroom Mode is ready. Close the completion card, then continue to the quiz.', 'info');
-  } else {
-    toast('📋 Choose Classroom Mode below to unlock the quiz.', 'info');
-  }
+  document.getElementById('modeGate').style.display='block';
+  document.getElementById('phase4').style.display=classroomMode?'block':'none';
+  setTimeout(showCompletionOverlay,350);
+  toast(classroomMode?'Classroom Mode is ready. Close the card, then continue to the quiz.':'Choose Classroom Mode below to unlock the quiz.','info');
 }
 
-/* =====================================================================
-   COMPLETION OVERLAY CONTROLS
-   ===================================================================== */
-function showCompletionOverlay() {
-  const overlay = document.getElementById('simCompletionOverlay');
-  if (overlay) overlay.classList.add('visible');
+function showCompletionOverlay(){document.getElementById('simCompletionOverlay')?.classList.add('visible');}
+function hideCompletionOverlay(){document.getElementById('simCompletionOverlay')?.classList.remove('visible');}
+function replayAnimation(){hideCompletionOverlay();resetSimulation();setTimeout(()=>startSimulation(),250);}
+function rebuildFloatia(){
+  hideCompletionOverlay();resetSimulation();resetReconstruction();setPhase(2);
+  setTimeout(()=>{document.getElementById('phase2')?.scrollIntoView({behavior:'smooth',block:'start'});},150);
+  toast('Ready to rebuild Floatlandia — use the evidence to align the plates.','info');
 }
-
-function hideCompletionOverlay() {
-  const overlay = document.getElementById('simCompletionOverlay');
-  if (overlay) overlay.classList.remove('visible');
-}
-
-function replayAnimation() {
-  hideCompletionOverlay();
-  resetSimulation();
-  setTimeout(() => startSimulation(), 250);
-}
-
-function rebuildFloatia() {
-  hideCompletionOverlay();
-  resetSimulation();
-  resetReconstruction();
-  setPhase(2);
-  setTimeout(() => {
-    const p2 = document.getElementById('phase2');
-    if (p2) p2.scrollIntoView({ behavior:'smooth', block:'start' });
-  }, 150);
-  toast('🧩 Ready to rebuild Floatlandia — use the evidence to align the plates.', 'info');
-}
-
-function returnToEvidence() {
-  hideCompletionOverlay();
-  const p1 = document.getElementById('phase1');
-  if (p1) p1.scrollIntoView({ behavior:'smooth', block:'start' });
-}
+function returnToEvidence(){hideCompletionOverlay();document.getElementById('phase1')?.scrollIntoView({behavior:'smooth',block:'start'});}
 
 /* =====================================================================
    PHASE 4: QUIZ
    ===================================================================== */
-function initQuiz() {
-  const container = document.getElementById('quizContainer');
-  QUIZ_DATA.forEach(q => {
-    const qDiv = document.createElement('div');
-    qDiv.className = 'quiz-question';
-    qDiv.dataset.qid = q.id;
-    qDiv.innerHTML = `
-      <span class="quiz-question-num">Question ${q.id} — ${q.topic}</span>
-      <div class="quiz-question-text">${q.text}</div>
-      <div class="quiz-options">
-        ${q.options.map((opt, i) => `
-          <div class="quiz-option" data-qid="${q.id}" data-idx="${i}">
-            <div class="quiz-option-letter">${String.fromCharCode(65+i)}</div>
-            <span>${opt}</span>
-          </div>
-        `).join('')}
-      </div>
-    `;
+function initQuiz(){
+  const container=document.getElementById('quizContainer');
+  QUIZ_DATA.forEach(q=>{
+    const qDiv=document.createElement('div');qDiv.className='quiz-question';qDiv.dataset.qid=q.id;
+    qDiv.innerHTML=`<span class="quiz-question-num">Question ${q.id} — ${q.topic}</span><div class="quiz-question-text">${q.text}</div><div class="quiz-options">${q.options.map((opt,i)=>`<div class="quiz-option" data-qid="${q.id}" data-idx="${i}"><div class="quiz-option-letter">${String.fromCharCode(65+i)}</div><span>${opt}</span></div>`).join('')}</div>`;
     container.appendChild(qDiv);
   });
-
-  // Event delegation for quiz option clicks
-  container.addEventListener('click', e => {
-    if (quizSubmitted) return;
-    const opt = e.target.closest('.quiz-option');
-    if (!opt) return;
-    const qid = Number(opt.dataset.qid);
-    const idx = Number(opt.dataset.idx);
-    quizAnswers[qid] = idx;
-    // Update selection UI for this question
-    const qDiv = container.querySelector('.quiz-question[data-qid="' + qid + '"]');
-    if (qDiv) {
-      qDiv.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
-      opt.classList.add('selected');
-    }
-    updateQuizScore();
-    renderSubmitState();
+  container.addEventListener('click',e=>{
+    if(quizSubmitted)return;
+    const opt=e.target.closest('.quiz-option');if(!opt)return;
+    const qid=Number(opt.dataset.qid),idx=Number(opt.dataset.idx);
+    quizAnswers[qid]=idx;
+    const qDiv=container.querySelector('.quiz-question[data-qid="'+qid+'"]');
+    if(qDiv){qDiv.querySelectorAll('.quiz-option').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');}
+    updateQuizScore();renderSubmitState();
   });
-
-  // Quiz submit button
-  document.getElementById('quizSubmitBtn').addEventListener('click', submitQuiz);
-
-  // Show score area only (legacy standalone submit button stays hidden)
-  document.getElementById('quizScoreArea').style.display = 'block';
-  document.getElementById('quizSubmitArea').style.display = 'none';
+  document.getElementById('quizSubmitBtn').addEventListener('click',submitQuiz);
+  document.getElementById('quizScoreArea').style.display='block';
+  document.getElementById('quizSubmitArea').style.display='none';
 }
 
-function updateQuizScore() {
-  const answered = Object.keys(quizAnswers).length;
-  const badge = document.getElementById('quizScoreBadge');
-  badge.textContent = answered + ' / ' + QUIZ_DATA.length + ' answered';
-  const submitBtn = document.getElementById('quizSubmitBtn');
-  const allAnswered = answered === QUIZ_DATA.length;
-  submitBtn.disabled = !allAnswered;
-  submitBtn.style.opacity = allAnswered ? '1' : '0.45';
+function updateQuizScore(){
+  const answered=Object.keys(quizAnswers).length;
+  document.getElementById('quizScoreBadge').textContent=answered+' / '+QUIZ_DATA.length+' answered';
+  const btn=document.getElementById('quizSubmitBtn');
+  btn.disabled=answered!==QUIZ_DATA.length;
+  btn.style.opacity=answered===QUIZ_DATA.length?'1':'0.45';
 }
 
-function submitQuiz() {
-  if (quizSubmitted) return;
-  quizSubmitted = true;
-
-  let correct = 0;
-  const container = document.getElementById('quizContainer');
-
-  QUIZ_DATA.forEach(q => {
-    const qDiv = container.querySelector('.quiz-question[data-qid="' + q.id + '"]');
-    if (!qDiv) return;
-    const opts = qDiv.querySelectorAll('.quiz-option');
-    opts.forEach((opt, i) => {
-      opt.style.cursor = 'default';
-      opt.classList.remove('selected');
-      if (i === q.correct) {
-        opt.classList.add('correct-reveal');
-      } else if (quizAnswers[q.id] === i) {
-        opt.classList.add('wrong-reveal');
-      }
+function submitQuiz(){
+  if(quizSubmitted)return;quizSubmitted=true;let correct=0;
+  const container=document.getElementById('quizContainer');
+  QUIZ_DATA.forEach(q=>{
+    const qDiv=container.querySelector('.quiz-question[data-qid="'+q.id+'"]');if(!qDiv)return;
+    qDiv.querySelectorAll('.quiz-option').forEach((opt,i)=>{
+      opt.style.cursor='default';opt.classList.remove('selected');
+      if(i===q.correct)opt.classList.add('correct-reveal');
+      else if(quizAnswers[q.id]===i)opt.classList.add('wrong-reveal');
     });
-    if (quizAnswers[q.id] === q.correct) correct++;
+    if(quizAnswers[q.id]===q.correct)correct++;
   });
-
-  // Update score badge
-  const badge = document.getElementById('quizScoreBadge');
-  badge.textContent = correct + ' / ' + QUIZ_DATA.length + ' correct';
-
-  // Hide submit button
-  document.getElementById('quizSubmitBtn').style.display = 'none';
-
-  // Show result banner
-  const banner = document.getElementById('quizResultBanner');
-  banner.style.display = 'block';
-  if (correct >= 4) {
-    banner.className = 'quiz-result-banner pass';
-    banner.textContent = '🎉 Great work! You scored ' + correct + '/' + QUIZ_DATA.length + '. You showed strong understanding of continental drift evidence.';
-  } else if (correct >= 2) {
-    banner.className = 'quiz-result-banner try-again';
-    banner.textContent = '📚 You scored ' + correct + '/' + QUIZ_DATA.length + '. Review the correct answers above — the green highlights show the right choice for each question.';
-  } else {
-    banner.className = 'quiz-result-banner try-again';
-    banner.textContent = '📚 You scored ' + correct + '/' + QUIZ_DATA.length + '. Take another look at the evidence from earlier phases and review the correct answers highlighted above.';
-  }
-
-  // Mark quiz step done
-  document.getElementById('step4').classList.add('done');
-  document.getElementById('step4').classList.remove('active');
-
-  toast('📝 Quiz complete! ' + correct + '/' + QUIZ_DATA.length + ' correct.', correct >= 4 ? 'success' : 'info');
+  document.getElementById('quizScoreBadge').textContent=correct+' / '+QUIZ_DATA.length+' correct';
+  document.getElementById('quizSubmitBtn').style.display='none';
+  const banner=document.getElementById('quizResultBanner');banner.style.display='block';
+  if(correct>=4){banner.className='quiz-result-banner pass';banner.textContent='Great work! You scored '+correct+'/'+QUIZ_DATA.length+'. You showed strong understanding of continental drift evidence.';}
+  else{banner.className='quiz-result-banner try-again';banner.textContent='You scored '+correct+'/'+QUIZ_DATA.length+'. Review the correct answers above — the green highlights show the right choice for each question.';}
+  document.getElementById('step4').classList.add('done');document.getElementById('step4').classList.remove('active');
+  toast('Quiz complete! '+correct+'/'+QUIZ_DATA.length+' correct.',correct>=4?'success':'info');
   renderSubmitState();
 }
 
-function computeQuizScore() {
-  let correct = 0;
-  QUIZ_DATA.forEach(q => {
-    if (quizAnswers[q.id] === q.correct) correct++;
-  });
-  return correct + '/' + QUIZ_DATA.length;
+function computeQuizScore(){let c=0;QUIZ_DATA.forEach(q=>{if(quizAnswers[q.id]===q.correct)c++;});return c+'/'+QUIZ_DATA.length;}
+
+function renderSubmitState(){
+  if(!classroomMode)return;
+  const nameOk=document.getElementById('studentNameInput').value.trim().length>0;
+  const teacherOk=document.getElementById('teacherSelect').value!=='';
+  const blockOk=document.getElementById('blockInput').value.trim().length>0;
+  const ready=quizSubmitted&&nameOk&&teacherOk&&blockOk;
+  const btn=document.getElementById('classroomSubmitBtn'),helper=document.getElementById('submitHelperText');
+  btn.disabled=!ready;btn.className='submit-btn '+(ready?'ready':'locked');btn.textContent='Submit Quiz';
+  if(ready)helper.textContent='Everything looks good. Ready to submit!';
+  else if(!quizSubmitted)helper.textContent='Complete and submit the quiz first.';
+  else if(!nameOk)helper.textContent='Enter your student name to submit.';
+  else if(!teacherOk)helper.textContent='Select your teacher to submit.';
+  else if(!blockOk)helper.textContent='Select your block to submit.';
 }
 
-function allQuizAnswered() {
-  return Object.keys(quizAnswers).length === QUIZ_DATA.length;
-}
-
-/* =====================================================================
-   CLASSROOM SUBMIT
-   ===================================================================== */
-function renderSubmitState() {
-  if (!classroomMode) return;
-  const nameOk    = document.getElementById('studentNameInput').value.trim().length > 0;
-  const teacherOk = document.getElementById('teacherSelect').value !== '';
-  const blockOk   = document.getElementById('blockInput').value.trim().length > 0;
-  const fieldsOk  = nameOk && teacherOk && blockOk;
-  const ready     = quizSubmitted && fieldsOk;
-
-  const btn = document.getElementById('classroomSubmitBtn');
-  const helper = document.getElementById('submitHelperText');
-  btn.disabled  = !ready;
-  btn.className = 'submit-btn ' + (ready ? 'ready' : 'locked');
-  btn.textContent = 'Submit Quiz';
-
-  if (ready) {
-    helper.textContent = 'Everything looks good. Ready to submit!';
-  } else if (!quizSubmitted) {
-    helper.textContent = 'Complete and submit the quiz first.';
-  } else if (!nameOk) {
-    helper.textContent = 'Enter your student name to submit.';
-  } else if (!teacherOk) {
-    helper.textContent = 'Select your teacher to submit.';
-  } else if (!blockOk) {
-    helper.textContent = 'Select your block to submit.';
-  }
-}
-
-function initClassroomSubmit() {
-  document.getElementById('classroomSubmitBtn').addEventListener('click', async () => {
-    const btn = document.getElementById('classroomSubmitBtn');
-    if (btn.disabled) return;
-
-    const teacher   = document.getElementById('teacherSelect').value;
-    const scriptUrl = SCRIPT_URLS[teacher];
-    if (!scriptUrl) {
-      document.getElementById('submitError').textContent = 'Unknown teacher selection.';
-      document.getElementById('submitError').style.display = 'block';
-      return;
-    }
-
-    btn.disabled  = true;
-    btn.className = 'submit-btn locked';
-    btn.textContent = 'Submitting...';
-    document.getElementById('submitError').style.display = 'none';
-
-    const params = new URLSearchParams({
-      tab:         'Floatlandia Fracture',
-      studentName: document.getElementById('studentNameInput').value.trim(),
-      teacher:     teacher,
-      block:       document.getElementById('blockInput').value.trim(),
-      quizScore:   computeQuizScore()
-    });
-
-    try {
-      await fetch(scriptUrl + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
-      btn.textContent = 'Submitted';
-      document.getElementById('submitHelperText').style.display = 'none';
-      document.getElementById('submitSuccess').innerHTML = 'Your work has been submitted! Great job, scientist.<br><span class="quiz-score-badge" style="margin-top:10px;">Your quiz score: ' + computeQuizScore() + '</span>';
-      document.getElementById('submitSuccess').style.display = 'block';
-    } catch(err) {
-      btn.disabled  = false;
-      btn.className = 'submit-btn ready';
-      btn.textContent = 'Submit Quiz';
-      document.getElementById('submitError').textContent = 'Submission failed. Check your connection and try again.';
-      document.getElementById('submitError').style.display = 'block';
+function initClassroomSubmit(){
+  document.getElementById('classroomSubmitBtn').addEventListener('click',async()=>{
+    const btn=document.getElementById('classroomSubmitBtn');if(btn.disabled)return;
+    const teacher=document.getElementById('teacherSelect').value;
+    const scriptUrl=SCRIPT_URLS[teacher];
+    if(!scriptUrl){document.getElementById('submitError').textContent='Unknown teacher selection.';document.getElementById('submitError').style.display='block';return;}
+    btn.disabled=true;btn.className='submit-btn locked';btn.textContent='Submitting...';
+    document.getElementById('submitError').style.display='none';
+    const params=new URLSearchParams({tab:'Floatlandia Fracture',studentName:document.getElementById('studentNameInput').value.trim(),teacher,block:document.getElementById('blockInput').value.trim(),quizScore:computeQuizScore()});
+    try{
+      await fetch(scriptUrl+'?'+params.toString(),{method:'GET',mode:'no-cors'});
+      btn.textContent='Submitted';
+      document.getElementById('submitHelperText').style.display='none';
+      document.getElementById('submitSuccess').innerHTML='Your work has been submitted! Great job, scientist.<br><span class="quiz-score-badge" style="margin-top:10px;">Your quiz score: '+computeQuizScore()+'</span>';
+      document.getElementById('submitSuccess').style.display='block';
+    }catch(err){
+      btn.disabled=false;btn.className='submit-btn ready';btn.textContent='Submit Quiz';
+      document.getElementById('submitError').textContent='Submission failed. Check your connection and try again.';
+      document.getElementById('submitError').style.display='block';
     }
   });
 }
@@ -3331,15 +2015,11 @@ function initClassroomSubmit() {
 /* =====================================================================
    TOAST
    ===================================================================== */
-function toast(msg, type = 'info') {
-  const container = document.getElementById('toastContainer');
-  const el = document.createElement('div');
-  el.className = 'toast ' + type;
-  el.textContent = msg;
-  container.appendChild(el);
-  setTimeout(() => { el.remove(); }, 3000);
+function toast(msg,type='info'){
+  const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(()=>el.remove(),3000);
 }
-
 </script>
 </body>
 </html>
