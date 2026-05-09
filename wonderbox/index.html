@@ -465,6 +465,43 @@ nav {
   text-transform: uppercase;
   margin-bottom: 10px;
 }
+.q-student-row {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.q-student-field,
+.q-block-select {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.84rem;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.q-student-field::placeholder { color: rgba(180,210,240,0.3); }
+
+.q-block-select {
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.q-student-field:focus,
+.q-block-select:focus {
+  border-color: rgba(0,245,212,0.4);
+  box-shadow: 0 0 0 3px rgba(0,245,212,0.06);
+}
+
+@media (max-width: 520px) {
+  .q-student-row { grid-template-columns: 1fr; }
+}
+
 .q-form-row { display: flex; gap: 10px; align-items: stretch; }
 .q-input {
   flex: 1;
@@ -1289,6 +1326,26 @@ footer {
     </button>
     <div class="q-form-box" id="qFormBox">
       <div class="q-form-label">What are you curious about?</div>
+      <div class="q-student-row">
+        <input
+          class="q-student-field"
+          id="qStudentName"
+          type="text"
+          placeholder="First and last name"
+          autocomplete="name"
+          required
+        >
+        <select class="q-block-select" id="qBlock" required>
+          <option value="">Block</option>
+          <option value="A">Block A</option>
+          <option value="B">Block B</option>
+          <option value="C">Block C</option>
+          <option value="D">Block D</option>
+          <option value="E">Block E</option>
+          <option value="F">Block F</option>
+          <option value="G">Block G</option>
+        </select>
+      </div>
       <div class="q-form-row">
         <textarea
           class="q-input"
@@ -1552,7 +1609,7 @@ function toggleQForm() {
   btn.innerHTML = open
     ? '<span class="btn-ask-icon">✕</span> Close'
     : '<span class="btn-ask-icon">✦</span> Submit a Question';
-  if (open) setTimeout(() => document.getElementById('qInput').focus(), 50);
+  if (open) setTimeout(() => document.getElementById('qStudentName').focus(), 50);
   document.getElementById('qStatus').textContent = '';
   document.getElementById('qStatus').className = 'q-status';
 }
@@ -1570,14 +1627,33 @@ function handleKey(e) {
 }
 
 async function submitQuestion() {
-  const input  = document.getElementById('qInput');
-  const status = document.getElementById('qStatus');
-  const btn    = document.getElementById('qSendBtn');
-  const text   = input.value.trim();
+  const input       = document.getElementById('qInput');
+  const nameInput   = document.getElementById('qStudentName');
+  const blockSelect = document.getElementById('qBlock');
+  const status      = document.getElementById('qStatus');
+  const btn         = document.getElementById('qSendBtn');
+  const text        = input.value.trim();
+  const studentName = nameInput.value.trim();
+  const block       = blockSelect.value.trim();
+
+  if (!studentName) {
+    status.textContent = 'Please enter your name before submitting.';
+    status.className   = 'q-status err';
+    nameInput.focus();
+    return;
+  }
+
+  if (!block) {
+    status.textContent = 'Please choose your block before submitting.';
+    status.className   = 'q-status err';
+    blockSelect.focus();
+    return;
+  }
 
   if (!text) {
     status.textContent = 'Please type a question first.';
     status.className   = 'q-status err';
+    input.focus();
     return;
   }
 
@@ -1592,6 +1668,8 @@ async function submitQuestion() {
       mode:   'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name:      studentName,
+        block:     block,
         question:  text,
         timestamp: new Date().toISOString(),
         page:      window.location.pathname
@@ -1600,6 +1678,8 @@ async function submitQuestion() {
     // no-cors means we can't read the response — treat as success
     status.textContent = '✓ Question received — thank you!';
     status.className   = 'q-status ok';
+    nameInput.value = '';
+    blockSelect.value = '';
     input.value = '';
     input.style.height = 'auto';
     setTimeout(() => toggleQForm(), 2400);
