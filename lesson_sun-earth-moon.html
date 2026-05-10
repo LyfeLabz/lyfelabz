@@ -570,6 +570,7 @@
 
   /* ── CONTINUE ── */
   #continue { background: var(--dark2); }
+  #go-further-anchor { display: block; position: relative; top: -86px; visibility: hidden; }
   .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
   .cont-card {
     border-radius: 18px; padding: 1.6rem 1.5rem; text-decoration: none;
@@ -684,7 +685,7 @@
     <li><a href="#bodies">Bodies</a></li>
     <li><a href="#concepts">Vocab</a></li>
     <li><a href="#quiz">Quiz</a></li>
-    <li><a href="#continue">More</a></li>
+    <li><a href="#go-further-anchor">More</a></li>
   </ul>
   <a href="index.html" class="nav-back">← Home</a>
 </nav>
@@ -1205,7 +1206,8 @@
 <!-- ────────────────────────────────────────────────────────── -->
 <section id="continue">
   <div class="container">
-    <span class="section-label">Go Further</span>
+    <span id="go-further-anchor"></span>
+    <span class="section-label">🚀 Go Further</span>
     <h2 class="section-title">More Learning</h2>
     <p class="section-desc" style="white-space:nowrap; max-width:none;">The lesson is just the beginning — go deeper, see the next lesson in the unit, or explore NASA's real data.</p>
     <div class="continue-grid" style="text-align:left;">
