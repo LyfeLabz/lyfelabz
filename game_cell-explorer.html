@@ -41,6 +41,10 @@
     --neuro: #9b59b6;
     --astro: #9b59b6;
     --chem: #e67e22;
+    /* layout aliases */
+    --muted: #8aafca;
+    --ink2:  #1e2f42;
+    --ink3:  rgba(255,255,255,0.08);
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -133,7 +137,9 @@
   .cell-container { flex:1; min-width:320px; }
   .cell-frame { background:var(--card); border:1px solid var(--border); border-radius:24px; padding:12px; overflow:hidden; position:relative; }
   .cell-frame::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 65% 60% at 50% 48%,rgba(61,220,132,0.04) 0%,transparent 70%); pointer-events:none; border-radius:24px; }
+  .cell-svg-wrap { position:relative; display:block; }
   #cellSvg { width:100%; display:block; }
+  #cellAnim { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
   .cell-hint { text-align:center; font-size:0.72rem; color:var(--muted); margin-top:8px; letter-spacing:0.06em; font-weight:500; }
   .organelle { cursor:pointer; }
 
@@ -548,7 +554,7 @@ body.stem-active .stem-detail {
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
   <span class="stem-badge" data-tip="Provide evidence that all organisms (unicellular and multicellular) are made of cells.">6.MS-LS1-1</span>
-  <span class="stem-badge" data-tip="Develop and use a model to describe how parts of cells contribute to cellular functions: obtaining food, water, and nutrients, disposing of wastes, and providing energy for cellular processes.">6.MS-LS1-2</span></div>
+  <span class="stem-badge" data-tip="Develop and use a model to describe how parts of cells contribute to cellular functions: obtaining food, water, and nutrients, disposing of wastes, and providing energy for cellular processes.">6.MS-LS1-2</span>
 </div>
 
 
@@ -581,6 +587,7 @@ body.stem-active .stem-detail {
     <!-- Cell SVG -->
     <div class="cell-container">
       <div class="cell-frame">
+        <div class="cell-svg-wrap">
         <svg id="cellSvg" viewBox="0 0 660 580" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <radialGradient id="cellBg" cx="50%" cy="50%" r="50%">
@@ -630,15 +637,15 @@ body.stem-active .stem-detail {
           <g class="organelle" data-id="rough-er"
             onmouseenter="tip(event,'Rough ER')" onmouseleave="tipOff()"
             onclick="pick('rough-er')">
-            <path d="M118,182 C136,164 159,175 154,193 C149,211 173,217 167,235 C161,253 185,259 179,277" fill="none" stroke="#9966ff" stroke-width="7.5" stroke-linecap="round" opacity="0.85"/>
-            <path d="M138,182 C156,164 179,175 174,193 C169,211 193,217 187,235 C181,253 205,259 199,277" fill="none" stroke="#9966ff" stroke-width="7.5" stroke-linecap="round" opacity="0.82"/>
-            <circle cx="128" cy="186" r="4.5" fill="#ff8844"/><circle cx="148" cy="186" r="4.5" fill="#ff8844"/>
-            <circle cx="140" cy="202" r="4.5" fill="#ff9955"/><circle cx="160" cy="202" r="4.5" fill="#ff9955"/>
-            <circle cx="136" cy="218" r="4.5" fill="#ff8844"/><circle cx="156" cy="218" r="4.5" fill="#ff8844"/>
-            <circle cx="148" cy="233" r="4.5" fill="#ff9955"/><circle cx="168" cy="233" r="4.5" fill="#ff9955"/>
-            <circle cx="163" cy="248" r="4.5" fill="#ff8844"/><circle cx="183" cy="248" r="4.5" fill="#ff8844"/>
-            <circle cx="171" cy="263" r="4.5" fill="#ff9955"/><circle cx="191" cy="263" r="4.5" fill="#ff9955"/>
-            <rect x="106" y="158" width="106" height="130" fill="transparent"/>
+            <path d="M383,222 C401,204 424,215 419,233 C414,251 438,257 432,275 C426,293 450,299 444,317" fill="none" stroke="#9966ff" stroke-width="7.5" stroke-linecap="round" opacity="0.85"/>
+            <path d="M403,222 C421,204 444,215 439,233 C434,251 458,257 452,275 C446,293 470,299 464,317" fill="none" stroke="#9966ff" stroke-width="7.5" stroke-linecap="round" opacity="0.82"/>
+            <circle cx="393" cy="226" r="4.5" fill="#ff8844"/><circle cx="413" cy="226" r="4.5" fill="#ff8844"/>
+            <circle cx="405" cy="242" r="4.5" fill="#ff9955"/><circle cx="425" cy="242" r="4.5" fill="#ff9955"/>
+            <circle cx="401" cy="258" r="4.5" fill="#ff8844"/><circle cx="421" cy="258" r="4.5" fill="#ff8844"/>
+            <circle cx="413" cy="273" r="4.5" fill="#ff9955"/><circle cx="433" cy="273" r="4.5" fill="#ff9955"/>
+            <circle cx="428" cy="288" r="4.5" fill="#ff8844"/><circle cx="448" cy="288" r="4.5" fill="#ff8844"/>
+            <circle cx="436" cy="303" r="4.5" fill="#ff9955"/><circle cx="456" cy="303" r="4.5" fill="#ff9955"/>
+            <rect x="371" y="198" width="106" height="130" fill="transparent"/>
           </g>
 
           <!-- ── SMOOTH ER ── -->
@@ -654,62 +661,110 @@ body.stem-active .stem-detail {
           <g class="organelle" data-id="golgi"
             onmouseenter="tip(event,'Golgi Apparatus')" onmouseleave="tipOff()"
             onclick="pick('golgi')">
-            <path d="M425,228 C466,218 490,237 484,252 C478,267 452,273 410,263" fill="none" stroke="#f5c842" stroke-width="6.5" stroke-linecap="round" opacity="0.93"/>
-            <path d="M420,247 C461,237 485,256 479,272 C473,288 445,293 403,282" fill="none" stroke="#f5c842" stroke-width="6.5" stroke-linecap="round" opacity="0.88"/>
-            <path d="M415,266 C456,256 480,275 474,292 C468,309 439,313 397,302" fill="none" stroke="#f5c842" stroke-width="6.5" stroke-linecap="round" opacity="0.83"/>
-            <path d="M410,285 C451,275 476,295 470,312 C464,329 434,332 392,321" fill="none" stroke="#ffdd66" stroke-width="6" stroke-linecap="round" opacity="0.77"/>
+            <path d="M535,228 C576,218 600,237 594,252 C588,267 562,273 520,263" fill="none" stroke="#f5c842" stroke-width="6.5" stroke-linecap="round" opacity="0.93"/>
+            <path d="M530,247 C571,237 595,256 589,272 C583,288 555,293 513,282" fill="none" stroke="#f5c842" stroke-width="6.5" stroke-linecap="round" opacity="0.88"/>
+            <path d="M525,266 C566,256 590,275 584,292 C578,309 549,313 507,302" fill="none" stroke="#f5c842" stroke-width="6.5" stroke-linecap="round" opacity="0.83"/>
+            <path d="M520,285 C561,275 586,295 580,312 C574,329 544,332 502,321" fill="none" stroke="#ffdd66" stroke-width="6" stroke-linecap="round" opacity="0.77"/>
             <!-- budding vesicles -->
-            <circle cx="496" cy="251" r="9.5" fill="#f5c842" opacity="0.62"/>
-            <circle cx="492" cy="270" r="7.5" fill="#f5c842" opacity="0.55"/>
-            <circle cx="488" cy="289" r="8.5" fill="#f5c842" opacity="0.52"/>
-            <circle cx="483" cy="307" r="6.5" fill="#ffdd66" opacity="0.48"/>
-            <rect x="390" y="215" width="118" height="120" fill="transparent"/>
+            <circle cx="606" cy="251" r="9.5" fill="#f5c842" opacity="0.62"/>
+            <circle cx="602" cy="270" r="7.5" fill="#f5c842" opacity="0.55"/>
+            <circle cx="598" cy="289" r="8.5" fill="#f5c842" opacity="0.52"/>
+            <circle cx="593" cy="307" r="6.5" fill="#ffdd66" opacity="0.48"/>
+            <rect x="500" y="215" width="118" height="120" fill="transparent"/>
           </g>
 
           <!-- ── MITOCHONDRIA ── -->
           <g class="organelle" data-id="mitochondria"
             onmouseenter="tip(event,'Mitochondria')" onmouseleave="tipOff()"
             onclick="pick('mitochondria')">
-            <!-- main mito -->
-            <ellipse cx="464" cy="402" rx="44" ry="23" fill="#3a0c00" stroke="#ff5500" stroke-width="2.8" opacity="0.97"/>
-            <path d="M425,402 C437,385 452,382 464,394" fill="none" stroke="#ff7722" stroke-width="2.2" opacity="0.72"/>
-            <path d="M464,394 C476,382 491,385 503,402" fill="none" stroke="#ff7722" stroke-width="2.2" opacity="0.72"/>
-            <path d="M425,402 C437,419 452,422 464,410" fill="none" stroke="#ff5500" stroke-width="2" opacity="0.65"/>
-            <path d="M464,410 C476,422 491,419 503,402" fill="none" stroke="#ff5500" stroke-width="2" opacity="0.65"/>
-            <!-- small mito -->
-            <ellipse cx="168" cy="445" rx="36" ry="18" fill="#3a0c00" stroke="#ff5500" stroke-width="2.3" opacity="0.88" transform="rotate(-20,168,445)"/>
-            <path d="M138,438 C148,428 160,427 169,437" fill="none" stroke="#ff7722" stroke-width="1.8" opacity="0.6" transform="rotate(-20,154,433)"/>
+
+            <!-- ── LARGE MITO (cx=464, cy=402) ─────────────────────── -->
+            <!-- outer membrane -->
+            <ellipse cx="464" cy="402" rx="48" ry="26" fill="#300900" stroke="#ff4400" stroke-width="2.8" opacity="0.97"/>
+            <!-- intermembrane space (lighter band between membranes) -->
+            <ellipse cx="464" cy="402" rx="44" ry="22" fill="#4a1400" stroke="none" opacity="0.80"/>
+            <!-- inner membrane + matrix -->
+            <ellipse cx="464" cy="402" rx="38" ry="17" fill="#170400" stroke="#ff6624" stroke-width="1.8" opacity="0.95"/>
+            <!-- crista 1 — C-shape anchored at inner membrane, curves left into matrix -->
+            <path d="M444,388 C438,391 435,396 435,402 C435,408 438,413 444,417" fill="none" stroke="#ff7733" stroke-width="2.3" stroke-linecap="round" opacity="0.90"/>
+            <!-- crista 2 — C-shape curves right into matrix -->
+            <path d="M478,386 C484,390 487,396 487,402 C487,408 484,414 478,418" fill="none" stroke="#ff7733" stroke-width="2.3" stroke-linecap="round" opacity="0.90"/>
+            <!-- mitochondrial DNA (circular loop) -->
+            <path d="M455,395 C453,391 456,388 460,390 C463,392 462,396 459,397 C457,398 454,396 455,395" fill="none" stroke="#ff6624" stroke-width="1.4" stroke-linecap="round" opacity="0.80"/>
+            <!-- ribosomes (tiny dots in matrix) -->
+            <circle cx="451" cy="405" r="1.6" fill="#ffaa77" opacity="0.72"/>
+            <circle cx="468" cy="397" r="1.6" fill="#ffaa77" opacity="0.70"/>
+            <circle cx="479" cy="407" r="1.6" fill="#ffaa77" opacity="0.68"/>
+            <circle cx="463" cy="412" r="1.6" fill="#ffaa77" opacity="0.65"/>
+
+            <!-- ── SMALL MITO (cx=168, cy=445, rotate -20°) ──────────── -->
+            <!-- outer membrane -->
+            <ellipse cx="168" cy="445" rx="38" ry="20" fill="#300900" stroke="#ff4400" stroke-width="2.3" opacity="0.90" transform="rotate(-20,168,445)"/>
+            <!-- intermembrane space ring -->
+            <ellipse cx="168" cy="445" rx="34" ry="16" fill="#4a1400" stroke="none" opacity="0.75" transform="rotate(-20,168,445)"/>
+            <!-- inner membrane + matrix -->
+            <ellipse cx="168" cy="445" rx="28" ry="11" fill="#170400" stroke="#ff6624" stroke-width="1.5" opacity="0.92" transform="rotate(-20,168,445)"/>
+            <!-- crista -->
+            <path d="M158,435 C152,437 149,441 149,445 C149,449 152,453 158,455" fill="none" stroke="#ff7733" stroke-width="1.9" stroke-linecap="round" opacity="0.88" transform="rotate(-20,168,445)"/>
+            <!-- mitochondrial DNA -->
+            <path d="M165,441 C163,438 166,436 169,438 C172,440 171,443 168,444" fill="none" stroke="#ff6624" stroke-width="1.2" stroke-linecap="round" opacity="0.74" transform="rotate(-20,168,445)"/>
+            <!-- ribosomes -->
+            <circle cx="174" cy="442" r="1.4" fill="#ffaa77" opacity="0.68" transform="rotate(-20,168,445)"/>
+            <circle cx="164" cy="449" r="1.4" fill="#ffaa77" opacity="0.65" transform="rotate(-20,168,445)"/>
+            <circle cx="177" cy="449" r="1.4" fill="#ffaa77" opacity="0.62" transform="rotate(-20,168,445)"/>
+
+            <!-- ── THIRD MITO — above nucleus (cx=310, cy=115, rotate +15°) ── -->
+            <!-- outer membrane -->
+            <ellipse cx="310" cy="115" rx="42" ry="22" fill="#300900" stroke="#ff4400" stroke-width="2.5" opacity="0.93" transform="rotate(15,310,115)"/>
+            <!-- intermembrane space ring -->
+            <ellipse cx="310" cy="115" rx="38" ry="18" fill="#4a1400" stroke="none" opacity="0.78" transform="rotate(15,310,115)"/>
+            <!-- inner membrane + matrix -->
+            <ellipse cx="310" cy="115" rx="31" ry="12" fill="#170400" stroke="#ff6624" stroke-width="1.7" opacity="0.94" transform="rotate(15,310,115)"/>
+            <!-- crista 1 — curves left into matrix -->
+            <path d="M295,105 C289,108 286,111 286,115 C286,119 289,122 295,126" fill="none" stroke="#ff7733" stroke-width="2.0" stroke-linecap="round" opacity="0.88" transform="rotate(15,310,115)"/>
+            <!-- crista 2 — curves right into matrix -->
+            <path d="M320,104 C326,107 329,111 329,115 C329,119 326,123 320,126" fill="none" stroke="#ff7733" stroke-width="2.0" stroke-linecap="round" opacity="0.88" transform="rotate(15,310,115)"/>
+            <!-- mitochondrial DNA -->
+            <path d="M300,109 C298,106 301,103 304,105 C307,107 306,111 303,112 C301,113 299,111 300,109" fill="none" stroke="#ff6624" stroke-width="1.3" stroke-linecap="round" opacity="0.77" transform="rotate(15,310,115)"/>
+            <!-- ribosomes -->
+            <circle cx="298" cy="118" r="1.5" fill="#ffaa77" opacity="0.70" transform="rotate(15,310,115)"/>
+            <circle cx="314" cy="112" r="1.5" fill="#ffaa77" opacity="0.68" transform="rotate(15,310,115)"/>
+            <circle cx="322" cy="119" r="1.5" fill="#ffaa77" opacity="0.65" transform="rotate(15,310,115)"/>
+            <circle cx="306" cy="122" r="1.5" fill="#ffaa77" opacity="0.63" transform="rotate(15,310,115)"/>
+
+            <!-- hit areas -->
             <rect x="130" y="422" width="84" height="48" fill="transparent"/>
-            <rect x="418" y="377" width="92" height="52" fill="transparent"/>
+            <rect x="414" y="374" width="100" height="58" fill="transparent"/>
+            <rect x="268" y="93"  width="84" height="44" fill="transparent"/>
           </g>
 
           <!-- ── NUCLEUS ── -->
           <g class="organelle" data-id="nucleus"
             onmouseenter="tip(event,'Nucleus')" onmouseleave="tipOff()"
             onclick="pick('nucleus')">
-            <ellipse cx="318" cy="278" rx="95" ry="82" fill="url(#nucGrad)" opacity="0.97"/>
-            <ellipse cx="318" cy="278" rx="95" ry="82" fill="none" stroke="rgba(100,160,255,0.65)" stroke-width="3" stroke-dasharray="10,5"/>
+            <ellipse cx="283" cy="248" rx="95" ry="82" fill="url(#nucGrad)" opacity="0.97"/>
+            <ellipse cx="283" cy="248" rx="95" ry="82" fill="none" stroke="rgba(100,160,255,0.65)" stroke-width="3" stroke-dasharray="10,5"/>
             <!-- nuclear pores -->
-            <circle cx="318" cy="197" r="5.5" fill="#4488ff" opacity="0.85"/>
-            <circle cx="272" cy="205" r="5.5" fill="#4488ff" opacity="0.85"/>
-            <circle cx="237" cy="232" r="5.5" fill="#4488ff" opacity="0.85"/>
-            <circle cx="224" cy="278" r="5.5" fill="#4488ff" opacity="0.85"/>
-            <circle cx="237" cy="324" r="5.5" fill="#4488ff" opacity="0.85"/>
-            <circle cx="272" cy="351" r="5.5" fill="#4488ff" opacity="0.85"/>
-            <circle cx="318" cy="359" r="5.5" fill="#4488ff" opacity="0.85"/>
-            <circle cx="364" cy="351" r="5.5" fill="#4488ff" opacity="0.85"/>
-            <circle cx="399" cy="324" r="5.5" fill="#4488ff" opacity="0.85"/>
-            <circle cx="412" cy="278" r="5.5" fill="#4488ff" opacity="0.85"/>
-            <circle cx="399" cy="232" r="5.5" fill="#4488ff" opacity="0.85"/>
-            <circle cx="364" cy="205" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="283" cy="167" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="237" cy="175" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="202" cy="202" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="189" cy="248" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="202" cy="294" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="237" cy="321" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="283" cy="329" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="329" cy="321" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="364" cy="294" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="377" cy="248" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="364" cy="202" r="5.5" fill="#4488ff" opacity="0.85"/>
+            <circle cx="329" cy="175" r="5.5" fill="#4488ff" opacity="0.85"/>
           </g>
 
           <!-- ── NUCLEOLUS (inside nucleus, stops propagation) ── -->
-          <circle cx="300" cy="268" r="29" fill="#0d2a5e" stroke="rgba(80,140,255,0.55)" stroke-width="2.5" opacity="0.96"
+          <circle cx="265" cy="238" r="29" fill="#0d2a5e" stroke="rgba(80,140,255,0.55)" stroke-width="2.5" opacity="0.96"
             class="organelle" data-id="nucleolus"
             onmouseenter="tip(event,'Nucleolus')" onmouseleave="tipOff()"
             onclick="pickStop('nucleolus',event)"/>
-          <circle cx="300" cy="268" r="14" fill="#19357a" opacity="0.8" pointer-events="none"/>
+          <circle cx="265" cy="238" r="14" fill="#19357a" opacity="0.8" pointer-events="none"/>
 
           <!-- ── LYSOSOMES ── -->
           <g class="organelle" data-id="lysosome"
@@ -748,32 +803,32 @@ body.stem-active .stem-detail {
             <path d="M476,180 C483,175 490,180 497,175 C504,170 511,175 518,180" fill="none" stroke="rgba(41,212,245,0.35)" stroke-width="1.3"/>
             <path d="M482,192 C489,187 496,192 503,187" fill="none" stroke="rgba(41,212,245,0.25)" stroke-width="1.1"/>
             <!-- small secondary vacuole -->
-            <ellipse cx="185" cy="195" rx="28" ry="22" fill="rgba(41,212,245,0.06)" stroke="#29d4f5" stroke-width="2" opacity="0.75"/>
-            <path d="M170,190 C175,186 181,190 187,186 C193,182 199,186 205,190" fill="none" stroke="rgba(41,212,245,0.4)" stroke-width="1.2"/>
+            <ellipse cx="258" cy="472" rx="28" ry="22" fill="rgba(41,212,245,0.06)" stroke="#29d4f5" stroke-width="2" opacity="0.75"/>
+            <path d="M243,467 C248,463 254,467 260,463 C266,459 272,463 278,467" fill="none" stroke="rgba(41,212,245,0.4)" stroke-width="1.2"/>
             <rect x="450" y="130" width="105" height="92" fill="transparent"/>
-            <rect x="154" y="170" width="64" height="52" fill="transparent"/>
+            <rect x="228" y="452" width="64" height="52" fill="transparent"/>
           </g>
 
           <!-- ── VESICLES ── -->
           <g class="organelle" data-id="vesicle"
             onmouseenter="tip(event,'Vesicles')" onmouseleave="tipOff()"
             onclick="pick('vesicle')">
-            <!-- near Golgi (transport vesicle) -->
-            <circle cx="528" cy="256" r="12"  fill="rgba(245,200,66,0.08)"  stroke="#f5c842"  stroke-width="2.2" opacity="0.88"/>
-            <circle cx="528" cy="256" r="5.5" fill="rgba(245,200,66,0.18)"  opacity="0.6"/>
+            <!-- near Golgi (transport vesicle) — above vacuole, clear of Golgi -->
+            <circle cx="595" cy="175" r="12"  fill="rgba(255,109,170,0.08)"  stroke="#ff6daa"  stroke-width="2.2" opacity="0.88"/>
+            <circle cx="595" cy="175" r="5.5" fill="rgba(255,109,170,0.18)"  opacity="0.6"/>
             <!-- near plasma membrane top-left (secretory vesicle) -->
-            <circle cx="228" cy="118" r="13.5" fill="rgba(180,127,255,0.08)" stroke="#b47fff"  stroke-width="2.2" opacity="0.82"/>
-            <circle cx="228" cy="118" r="6"   fill="rgba(180,127,255,0.16)" opacity="0.58"/>
+            <circle cx="228" cy="118" r="13.5" fill="rgba(255,109,170,0.08)" stroke="#ff6daa"  stroke-width="2.2" opacity="0.82"/>
+            <circle cx="228" cy="118" r="6"   fill="rgba(255,109,170,0.18)" opacity="0.58"/>
             <!-- bottom center (endocytic vesicle) -->
-            <circle cx="330" cy="492" r="11"  fill="rgba(61,220,132,0.08)"  stroke="#3ddc84"  stroke-width="2"   opacity="0.78"/>
-            <circle cx="330" cy="492" r="5"   fill="rgba(61,220,132,0.16)"  opacity="0.52"/>
+            <circle cx="330" cy="492" r="11"  fill="rgba(255,109,170,0.08)"  stroke="#ff6daa"  stroke-width="2"   opacity="0.78"/>
+            <circle cx="330" cy="492" r="5"   fill="rgba(255,109,170,0.18)"  opacity="0.52"/>
             <!-- left side (lysosomal vesicle) -->
-            <circle cx="94"  cy="258" r="10"  fill="rgba(255,112,67,0.08)"  stroke="#ff7043"  stroke-width="1.8" opacity="0.74"/>
-            <circle cx="94"  cy="258" r="4.5" fill="rgba(255,112,67,0.16)"  opacity="0.5"/>
-            <!-- right lower (another transport) -->
-            <circle cx="556" cy="368" r="9.5" fill="rgba(61,220,132,0.07)"  stroke="#3ddc84"  stroke-width="1.8" opacity="0.7"/>
+            <circle cx="94"  cy="258" r="10"  fill="rgba(255,109,170,0.08)"  stroke="#ff6daa"  stroke-width="1.8" opacity="0.74"/>
+            <circle cx="94"  cy="258" r="4.5" fill="rgba(255,109,170,0.18)"  opacity="0.5"/>
+            <!-- right lower (transport vesicle) -->
+            <circle cx="556" cy="368" r="9.5" fill="rgba(255,109,170,0.07)"  stroke="#ff6daa"  stroke-width="1.8" opacity="0.7"/>
             <!-- hit areas -->
-            <circle cx="528" cy="256" r="22"  fill="transparent"/>
+            <circle cx="595" cy="175" r="22"  fill="transparent"/>
             <circle cx="228" cy="118" r="22"  fill="transparent"/>
             <circle cx="330" cy="492" r="20"  fill="transparent"/>
             <circle cx="94"  cy="258" r="20"  fill="transparent"/>
@@ -782,19 +837,22 @@ body.stem-active .stem-detail {
 
           <!-- SVG LABELS -->
           <g font-family="'Orbitron',monospace" pointer-events="none" font-weight="700">
-            <text x="318" y="283" text-anchor="middle" font-size="8"   fill="rgba(100,160,255,0.55)">NUCLEUS</text>
-            <text x="298" y="271" text-anchor="middle" font-size="7"   fill="rgba(80,120,255,0.45)">NUCLEOLUS</text>
-            <text x="128" y="155" text-anchor="middle" font-size="7.5" fill="rgba(153,102,255,0.65)">ROUGH ER</text>
+            <text x="283" y="288" text-anchor="middle" font-size="8"   fill="rgba(100,160,255,0.55)">NUCLEUS</text>
+            <text x="263" y="241" text-anchor="middle" font-size="7"   fill="rgba(80,120,255,0.45)">NUCLEOLUS</text>
+            <text x="413" y="205" text-anchor="middle" font-size="7.5" fill="rgba(153,102,255,0.65)">ROUGH ER</text>
             <text x="114" y="308" text-anchor="middle" font-size="7.5" fill="rgba(41,212,245,0.65)">SMOOTH ER</text>
-            <text x="448" y="214" text-anchor="middle" font-size="7.5" fill="rgba(245,200,66,0.78)">GOLGI</text>
-            <text x="466" y="437" text-anchor="middle" font-size="7.5" fill="rgba(255,85,0,0.72)">MITO.</text>
+            <text x="558" y="214" text-anchor="middle" font-size="7.5" fill="rgba(245,200,66,0.78)">GOLGI</text>
+            <text x="466" y="437" text-anchor="middle" font-size="7.5" fill="rgba(255,85,0,0.72)">MITOCHONDRIA</text>
+            <text x="310" y="88"  text-anchor="middle" font-size="7.5" fill="rgba(255,85,0,0.72)">MITOCHONDRIA</text>
             <text x="378" y="392" text-anchor="middle" font-size="7"   fill="rgba(204,34,255,0.72)">LYSOSOME</text>
             <text x="504" y="152" text-anchor="middle" font-size="7.5" fill="rgba(41,212,245,0.72)">VACUOLE</text>
-            <text x="190" y="183" text-anchor="middle" font-size="6.5" fill="rgba(41,212,245,0.55)">VACUOLE</text>
-            <text x="540" y="240" text-anchor="middle" font-size="7"   fill="rgba(245,200,66,0.65)">VESICLE</text>
-            <text x="228" y="103" text-anchor="middle" font-size="7"   fill="rgba(180,127,255,0.62)">VESICLE</text>
+            <text x="258" y="457" text-anchor="middle" font-size="6.5" fill="rgba(41,212,245,0.55)">VACUOLE</text>
+            <text x="595" y="159" text-anchor="middle" font-size="7"   fill="rgba(255,109,170,0.65)">VESICLE</text>
+            <text x="228" y="103" text-anchor="middle" font-size="7"   fill="rgba(255,109,170,0.65)">VESICLE</text>
           </g>
         </svg>
+        <canvas id="cellAnim"></canvas>
+        </div>
         <div class="cell-hint">Hover to identify · Click to explore · 13 organelles to find</div>
       </div>
     </div>
@@ -1087,5 +1145,191 @@ function restart() {
 init();
 </script>
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
+
+<!-- ── CELL ANIMATION OVERLAY ─────────────────────────────────────────
+     Canvas-based living-cell effects layered over the SVG:
+       · Vesicle transport (Golgi→membrane, ER→Golgi, Golgi→lysosome, nucleus→ER)
+       · Nucleus breathing glow
+       · Mitochondria energy pulse
+       · Cytoplasmic ambient particles (Brownian-style drift)
+     pointer-events: none on canvas — all SVG click/hover still works.
+──────────────────────────────────────────────────────────────────── -->
+<script>
+(function() {
+  const canvas = document.getElementById('cellAnim');
+  const ctx    = canvas.getContext('2d');
+  const svgEl  = document.getElementById('cellSvg');
+
+  // Scale factors: SVG viewBox is 660×580
+  let sx = 1, sy = 1;
+
+  function syncSize() {
+    const r = svgEl.getBoundingClientRect();
+    canvas.width  = r.width  * (window.devicePixelRatio || 1);
+    canvas.height = r.height * (window.devicePixelRatio || 1);
+    canvas.style.width  = r.width  + 'px';
+    canvas.style.height = r.height + 'px';
+    sx = canvas.width  / 660;
+    sy = canvas.height / 580;
+  }
+
+  // Convert SVG-space coord to canvas pixels
+  function P(x, y) { return { x: x * sx, y: y * sy }; }
+
+  // ── VESICLE TRANSPORT PATHS ──────────────────────────────────────
+  // Each path: cubic bezier in SVG coords, colour, independent t, speed, dot radius
+  const PATHS = [
+    { // Golgi → plasma membrane (secretory vesicle — coral pink)
+      p0:{x:606,y:252}, p1:{x:622,y:180}, p2:{x:530,y:100}, p3:{x:420,y:62},
+      rgb:[255,109,170], t:0,    speed:0.0026, r:4.5
+    },
+    { // Rough ER → Golgi (transport vesicle — coral pink)
+      p0:{x:460,y:278}, p1:{x:455,y:255}, p2:{x:492,y:245}, p3:{x:528,y:248},
+      rgb:[255,109,170], t:0.38, speed:0.0034, r:3.8
+    },
+    { // Golgi → lysosome (lysosomal vesicle — coral pink)
+      p0:{x:562,y:322}, p1:{x:520,y:365}, p2:{x:450,y:400}, p3:{x:376,y:416},
+      rgb:[255,109,170], t:0.65, speed:0.0048, r:3.2
+    },
+    { // Nucleus → rough ER (mRNA export — coral pink)
+      p0:{x:283,y:167}, p1:{x:310,y:155}, p2:{x:365,y:218}, p3:{x:400,y:278},
+      rgb:[255,109,170], t:0.12, speed:0.0022, r:3.0
+    },
+    { // Smooth ER → vacuole (lipid — coral pink)
+      p0:{x:162,y:445}, p1:{x:240,y:400}, p2:{x:380,y:225}, p3:{x:455,y:168},
+      rgb:[255,109,170], t:0.82, speed:0.0030, r:3.2
+    }
+  ];
+
+  // ── CYTOPLASM AMBIENT PARTICLES ──────────────────────────────────
+  // Small teal dots floating inside the cell ellipse
+  const PARTS = [];
+  for (let i = 0; i < 32; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const d = Math.random() * 210 + 20;
+    PARTS.push({
+      x:  330 + Math.cos(a) * d * 0.92,
+      y:  290 + Math.sin(a) * d * 0.80,
+      vx: (Math.random() - 0.5) * 0.16,
+      vy: (Math.random() - 0.5) * 0.12,
+      r:  Math.random() * 1.4 + 0.5,
+      a:  Math.random() * 0.32 + 0.08,
+      ph: Math.random() * Math.PI * 2
+    });
+  }
+
+  function cubic(t, p0, p1, p2, p3) {
+    const m = 1 - t;
+    return {
+      x: m*m*m*p0.x + 3*m*m*t*p1.x + 3*m*t*t*p2.x + t*t*t*p3.x,
+      y: m*m*m*p0.y + 3*m*m*t*p1.y + 3*m*t*t*p2.y + t*t*t*p3.y
+    };
+  }
+
+  function radialGlow(cx, cy, r0, r1, rgba0, rgba1) {
+    const g = ctx.createRadialGradient(cx, cy, r0, cx, cy, r1);
+    g.addColorStop(0, rgba0);
+    g.addColorStop(1, rgba1);
+    return g;
+  }
+
+  function frame(ts) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const t = ts * 0.001; // seconds
+
+    // ── nucleus breathing glow ──────────────────────────────────────
+    const nucP  = P(283, 248);
+    const nucPulse = 0.5 + 0.5 * Math.sin(t * 0.75);  // 0→1 cycle
+    const nucR  = (88 + 10 * nucPulse) * sx;
+    const nucA  = 0.032 + 0.028 * nucPulse;
+    const ng = radialGlow(nucP.x, nucP.y, nucR * 0.3, nucR * 1.6,
+                          `rgba(68,136,255,${nucA * 2.2})`,
+                          'rgba(68,136,255,0)');
+    ctx.beginPath();
+    ctx.ellipse(nucP.x, nucP.y, nucR * 1.6, nucR * 1.4, 0, 0, Math.PI * 2);
+    ctx.fillStyle = ng;
+    ctx.fill();
+
+    // ── mitochondria energy pulse ───────────────────────────────────
+    [ [464, 402], [168, 445], [310, 115] ].forEach(([mx, my], i) => {
+      const mp    = P(mx, my);
+      const beat  = 0.5 + 0.5 * Math.sin(t * 1.55 + i * 1.2);
+      const mitoA = 0.04 + 0.06 * beat;
+      const mitoR = (30 + 16 * beat) * sx;
+      const mg = radialGlow(mp.x, mp.y, 4*sx, mitoR,
+                            `rgba(255,100,0,${mitoA * 1.8})`,
+                            'rgba(255,60,0,0)');
+      ctx.beginPath();
+      ctx.arc(mp.x, mp.y, mitoR, 0, Math.PI * 2);
+      ctx.fillStyle = mg;
+      ctx.fill();
+    });
+
+    // ── cytoplasm ambient particles ─────────────────────────────────
+    PARTS.forEach(p => {
+      // Brownian drift
+      p.x += p.vx;
+      p.y += p.vy;
+      // Soft containment: stay inside cell ellipse (rx≈300, ry≈255, c=330,290)
+      const ex = (p.x - 330) / 295, ey = (p.y - 290) / 252;
+      if (ex*ex + ey*ey > 0.88) { p.vx *= -0.65; p.vy *= -0.65; }
+      // Nucleus exclusion (r≈95)
+      const nx = p.x - 318, ny = p.y - 278;
+      if (nx*nx + ny*ny < 90*90) { p.vx += nx * 0.001; p.vy += ny * 0.001; }
+      const alpha = p.a * (0.45 + 0.55 * Math.sin(t * 1.2 + p.ph));
+      const pp = P(p.x, p.y);
+      ctx.beginPath();
+      ctx.arc(pp.x, pp.y, p.r * sx, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(41,212,245,${alpha})`;
+      ctx.fill();
+    });
+
+    // ── vesicle transport ───────────────────────────────────────────
+    PATHS.forEach(path => {
+      path.t = (path.t + path.speed) % 1;
+      const pos = cubic(path.t, path.p0, path.p1, path.p2, path.p3);
+      const pp  = P(pos.x, pos.y);
+      const [r, g, b] = path.rgb;
+
+      // outer glow
+      const vg = radialGlow(pp.x, pp.y, 0, path.r * 4.5 * sx,
+                            `rgba(${r},${g},${b},0.45)`,
+                            `rgba(${r},${g},${b},0)`);
+      ctx.beginPath();
+      ctx.arc(pp.x, pp.y, path.r * 4.5 * sx, 0, Math.PI * 2);
+      ctx.fillStyle = vg;
+      ctx.fill();
+
+      // bright core dot
+      ctx.beginPath();
+      ctx.arc(pp.x, pp.y, path.r * sx, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${b},0.92)`;
+      ctx.fill();
+
+      // white specular highlight
+      ctx.beginPath();
+      ctx.arc(pp.x - path.r * 0.28 * sx, pp.y - path.r * 0.28 * sy,
+              path.r * 0.38 * sx, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.fill();
+    });
+
+    requestAnimationFrame(frame);
+  }
+
+  function start() {
+    syncSize();
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', () => {
+    clearTimeout(window._cellResizeT);
+    window._cellResizeT = setTimeout(syncSize, 150);
+  });
+
+  if (document.readyState === 'complete') { start(); }
+  else { window.addEventListener('load', start); }
+})();
+</script>
 </body>
 </html>
