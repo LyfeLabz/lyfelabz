@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="utf-8"/>
+<link href="favicon.ico" rel="icon" type="image/x-icon"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link rel="canonical" href="https://lyfelabz.com/simulation_gravity-wells.html">
+<meta name="description" content="Explore how mass curves spacetime in Gravity Wells. Build gravity wells, launch satellites, and discover why planets orbit instead of flying away or crashing.">
+<title>Gravity Wells | LyfeLabz</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+/* =========================================================
+   CSS VARIABLES & RESET
+   ========================================================= */
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #1c2230;
+  --bg-card-hover: #222b3a;
+  --border: #2a3447;
+  --border-light: #3a4a5e;
+  --text-primary: #e6edf3;
+  --text-secondary: #b8c1cc;
+  --text-muted: #9aa4af;
+  --muted: #9aa4af;
+  --teal: #3bc8e8;
+  --teal-dim: rgba(59,200,232,0.15);
+  --teal-glow: rgba(59,200,232,0.35);
+  --purple: #b47fff;
+  --purple-dim: rgba(180,127,255,0.15);
+  --gold: #f5c842;
+  --gold-dim: rgba(245,200,66,0.15);
+  --green: #2ecc71;
+  --green-dim: rgba(46,204,113,0.15);
+  --red: #e87070;
+  --red-dim: rgba(232,112,112,0.15);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 18px; scroll-behavior: smooth; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Nunito', sans-serif;
+  line-height: 1.75;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   NAV
+   ========================================================= */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(8,14,22,0.97);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.8rem 2.5rem;
+}
+.nav-logo { font-family:'Orbitron',sans-serif; font-size:1.35rem; font-weight:900; color:var(--gold); text-decoration:none; letter-spacing:0.06em; text-shadow:0 0 18px rgba(245,200,66,0.35); }
+.nav-back { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--teal); background:rgba(59,200,232,0.1); border:1px solid rgba(59,200,232,0.35); padding:0.32rem 0.9rem; border-radius:99px; text-decoration:none; transition:all 0.2s; }
+.nav-back:hover { background:rgba(59,200,232,0.18); }
+
+/* =========================================================
+   BADGE BARS
+   ========================================================= */
+.badge-bar { display:none; flex-wrap:wrap; gap:0.5rem; padding:0.6rem 1.4rem; background:var(--bg-secondary); border-bottom:1px solid var(--border); }
+body.stem-active .badge-bar.stem-bar { display:flex; }
+body.ls-active .badge-bar.ls-bar { display:flex; }
+.badge { position:relative; display:inline-flex; align-items:center; gap:0.3rem; padding:0.25rem 0.7rem; border-radius:20px; font-size:0.72rem; font-weight:800; cursor:help; transition:filter 0.2s; }
+.badge:hover { filter:brightness(1.2); }
+.badge.green { background:var(--green-dim); color:var(--green); border:1px solid rgba(46,204,113,0.3); }
+.badge.teal  { background:var(--teal-dim);  color:var(--teal);  border:1px solid rgba(59,200,232,0.3); }
+.badge-tip { display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#1c2230; border:1px solid var(--border-light); border-radius:8px; padding:0.5rem 0.75rem; font-size:0.7rem; font-weight:600; color:#c9d1d9; width:240px; text-align:center; z-index:200; pointer-events:none; line-height:1.4; }
+.badge:hover .badge-tip { display:block; }
+
+/* =========================================================
+   HERO
+   ========================================================= */
+.hero {
+  background:
+    radial-gradient(circle at 15% 25%, rgba(180,127,255,0.16), transparent 25%),
+    radial-gradient(circle at 85% 15%, rgba(180,127,255,0.10), transparent 20%),
+    radial-gradient(ellipse at 50% 0%, rgba(59,200,232,0.10) 0%, transparent 50%),
+    linear-gradient(135deg, #07101a 0%, #0c1828 50%, #080f1c 100%);
+  padding: 4.1rem 2rem 3.35rem; text-align:center;
+  position:relative; overflow:hidden; border-bottom:1px solid rgba(180,127,255,0.18);
+}
+.hero::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(-32deg, transparent 0px, transparent 36px, rgba(180,127,255,0.018) 36px, rgba(180,127,255,0.018) 38px); pointer-events:none; }
+.hero::after { content:''; position:absolute; inset:auto 0 0 0; height:90px; background:linear-gradient(180deg, transparent, rgba(7,16,26,0.65)); pointer-events:none; }
+.hero-badge { display:inline-block; background:rgba(180,127,255,0.1); border:1px solid rgba(180,127,255,0.42); color:var(--purple); padding:0.35rem 1.1rem; border-radius:99px; font-size:0.75rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:1.2rem; position:relative; box-shadow:0 0 18px rgba(180,127,255,0.14); }
+.hero h1 { font-family:'Fredoka One',cursive; font-size:clamp(2.3rem,5.6vw,3.9rem); line-height:1.06; margin-bottom:0.8rem; background:linear-gradient(135deg,#ffffff 20%,var(--purple) 65%,#d4aaff 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; position:relative; }
+.hero p { font-size:1rem; color:#c9d1d9; max-width:700px; margin:0 auto; line-height:1.7; position:relative; }
+.hero-kicker { margin-top:1rem; font-size:0.8rem; font-weight:800; letter-spacing:0.06em; color:rgba(180,127,255,0.78); position:relative; }
+.hero-shell { max-width:1120px; margin:0 auto; position:relative; z-index:1; }
+
+/* =========================================================
+   BEFORE YOU BEGIN
+   ========================================================= */
+.byb-wrap { background:var(--bg-primary); border-bottom:2px solid rgba(180,127,255,0.14); padding:2.5rem 1.5rem; }
+.byb-inner { max-width:980px; margin:0 auto; }
+.byb-header { text-align:center; margin-bottom:2rem; }
+.byb-eyebrow { font-size:0.72rem; font-weight:900; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; display:block; }
+.byb-title { font-family:'Fredoka One',cursive; font-size:clamp(1.5rem,3vw,2.2rem); color:var(--text-primary); margin-bottom:0.4rem; }
+.byb-sub { font-size:0.9rem; color:#c9d1d9; line-height:1.6; }
+.byb-qa { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.byb-qa-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:1.2rem 1.4rem; }
+.byb-q { font-family:'Fredoka One',cursive; font-size:0.97rem; color:var(--gold); margin-bottom:0.55rem; line-height:1.3; }
+.byb-a { font-size:0.85rem; color:#c9d1d9; line-height:1.7; }
+.byb-a strong { color:var(--text-primary); font-weight:800; }
+
+/* =========================================================
+   PROGRESS BAR
+   ========================================================= */
+.progress-wrap { max-width:900px; margin:1rem auto 1.5rem; padding:0 1.4rem; }
+.progress-steps { display:flex; gap:0; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border); background:var(--bg-secondary); }
+.progress-step { flex:1; padding:0.55rem 0.25rem; text-align:center; font-size:0.72rem; font-weight:800; color:#aeb8c2; background:var(--bg-secondary); border-right:1px solid var(--border); transition:background 0.4s ease, color 0.4s ease; cursor:default; letter-spacing:0.04em; }
+.progress-step:last-child { border-right:none; }
+.progress-step.active { background:var(--purple-dim); color:var(--purple); border-right-color:rgba(180,127,255,0.25); box-shadow:inset 0 -2px 0 var(--purple); }
+.progress-step.done { background:rgba(46,204,113,0.1); color:var(--green); border-right-color:rgba(46,204,113,0.25); }
+
+/* =========================================================
+   SECTION WRAPPER
+   ========================================================= */
+.sim-section { max-width:900px; margin:0 auto 2.25rem; padding:0 1.4rem; }
+.section-label { font-size:0.72rem; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--purple); margin-bottom:0.4rem; }
+.section-title { font-family:'Fredoka One',sans-serif; font-size:clamp(1.5rem,3vw,2rem); line-height:1.15; color:var(--text-primary); margin-bottom:0.55rem; }
+.section-desc { font-size:1rem; font-weight:600; color:#d6dee6; line-height:1.65; margin-bottom:1.2rem; max-width:900px; }
+
+/* =========================================================
+   BUTTON SYSTEM
+   ========================================================= */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.65rem 1.3rem; border-radius:10px; font-family:'Nunito',sans-serif; font-size:0.88rem; font-weight:800; border:1px solid transparent; cursor:pointer; transition:all 0.2s ease; text-decoration:none; line-height:1; }
+.btn:disabled { opacity:0.4; cursor:not-allowed; }
+.btn-purple { background:var(--purple); color:#000; border-color:var(--purple); box-shadow:0 2px 0 rgba(0,0,0,0.15); }
+.btn-purple:not(:disabled):hover { filter:brightness(1.1); transform:translateY(-1px); }
+.btn-teal { background:var(--teal); color:#000; border-color:var(--teal); box-shadow:0 2px 0 rgba(0,0,0,0.15); }
+.btn-teal:not(:disabled):hover { filter:brightness(1.1); transform:translateY(-1px); }
+.btn-ghost { background:var(--bg-card); color:#c9d1d9; border:1px solid var(--border); }
+.btn-ghost:not(:disabled):hover { border-color:var(--border-light); color:var(--text-primary); }
+.recon-reset-btn { padding:0.42rem 0.9rem; font-size:0.76rem; }
+
+/* =========================================================
+   EVIDENCE CARDS
+   ========================================================= */
+.evidence-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:0.9rem; margin-bottom:1rem; }
+.evidence-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.05rem 1.15rem; cursor:pointer; transition:all 0.22s ease; position:relative; box-shadow:0 2px 10px rgba(0,0,0,0.2); }
+.evidence-card:hover { border-color:var(--border-light); background:var(--bg-card-hover); transform:translateY(-1px); }
+.evidence-card.selected { border-color:var(--purple); background:var(--purple-dim); box-shadow:0 2px 10px rgba(0,0,0,0.2), 0 0 0 1px rgba(180,127,255,0.18), 0 0 14px rgba(180,127,255,0.16); }
+.ev-icon { font-size:1.6rem; margin-bottom:0.4rem; }
+.ev-title { font-family:'Fredoka One',sans-serif; font-size:1.05rem; color:var(--text-primary); margin-bottom:0.3rem; line-height:1.2; }
+.ev-desc { font-size:0.85rem; color:#c9d1d9; line-height:1.5; }
+.ev-check { position:absolute; top:0.6rem; right:0.7rem; width:20px; height:20px; border-radius:50%; background:var(--purple); display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:#fff; font-weight:900; opacity:0; transition:opacity 0.2s; }
+.evidence-card.selected .ev-check { opacity:1; }
+.ev-body { position:relative; border-radius:10px; overflow:hidden; }
+.ev-lock-overlay { position:absolute; inset:-0.3rem -0.25rem; background:rgba(20,26,38,0.78); border-radius:10px; display:flex; align-items:center; justify-content:center; opacity:1; pointer-events:none; transition:opacity 0.25s ease; z-index:2; }
+.ev-lock-content { display:flex; flex-direction:column; align-items:center; gap:0.4rem; color:#c9d1d9; transition:color 0.2s ease, transform 0.22s ease; }
+.ev-lock-icon { width:30px; height:30px; stroke:currentColor; }
+.ev-lock-text { font-size:0.72rem; font-weight:800; letter-spacing:0.09em; text-transform:uppercase; }
+.evidence-card.locked:hover .ev-lock-content { color:var(--purple); transform:scale(1.06); }
+.evidence-card:not(.locked) .ev-lock-overlay { opacity:0; pointer-events:none; }
+.evidence-feedback { display:none; margin-top:0.9rem; margin-bottom:1rem; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.85rem 1rem; }
+.evidence-feedback.show { display:block; }
+.evidence-feedback-label { font-size:0.68rem; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--purple); margin-bottom:0.3rem; }
+.evidence-feedback-text { font-size:0.88rem; font-weight:600; color:#c9d1d9; line-height:1.55; }
+
+/* =========================================================
+   PHASE 2: GRAVITY WELL BUILDER
+   ========================================================= */
+.well-shell { max-width:1100px; margin:0 auto 2.25rem; padding:0 1.4rem; }
+.well-layout { display:grid; grid-template-columns:1fr 270px; gap:1rem; align-items:start; }
+.well-main { min-width:0; }
+.well-canvas-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:0 4px 18px rgba(0,0,0,0.25); }
+.well-toolbar { display:flex; align-items:center; gap:0.6rem; padding:0.65rem 1rem; background:var(--bg-secondary); border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.well-toolbar-title { font-weight:800; font-size:0.82rem; color:#c9d1d9; }
+.well-toolbar-note { font-size:0.68rem; font-weight:700; color:var(--text-muted); margin-top:0.12rem; line-height:1.35; }
+#wellCanvas { display:block; width:100%; background:#040c18; }
+.well-info-box { margin:0.8rem 1rem 0.8rem; background:rgba(180,127,255,0.06); border:1px solid rgba(180,127,255,0.2); border-radius:var(--radius-sm); padding:0.7rem 0.85rem; min-height:62px; }
+.well-info-label { font-size:0.65rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--purple); margin-bottom:0.2rem; }
+.well-info-text { font-size:0.82rem; font-weight:600; color:#c9d1d9; line-height:1.5; }
+.well-info-sub { font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-top:0.2rem; }
+.well-side-panel { background:linear-gradient(180deg,rgba(17,27,39,0.96),rgba(13,20,31,0.94)); border:1px solid var(--border); border-radius:var(--radius); padding:1rem; box-shadow:0 4px 18px rgba(0,0,0,0.22); }
+.well-side-title { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--text-primary); margin-bottom:0.25rem; }
+.well-side-sub { font-size:0.8rem; font-weight:700; color:#c9d1d9; line-height:1.5; margin-bottom:0.85rem; }
+.mass-btn-grid { display:flex; flex-direction:column; gap:0.45rem; margin-bottom:0.9rem; }
+.mass-btn { display:flex; align-items:center; gap:0.55rem; padding:0.55rem 0.8rem; border-radius:10px; border:1.5px solid var(--border); background:var(--bg-card); cursor:pointer; font-family:'Nunito',sans-serif; font-size:0.85rem; font-weight:800; color:#c9d1d9; transition:all 0.2s; text-align:left; }
+.mass-btn:hover { border-color:var(--border-light); background:var(--bg-card-hover); color:var(--text-primary); }
+.mass-btn.active { border-color:var(--purple); background:var(--purple-dim); color:var(--text-primary); }
+.mass-btn-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+.mass-btn-tested { margin-left:auto; font-size:0.65rem; font-weight:900; letter-spacing:0.06em; color:var(--green); opacity:0; transition:opacity 0.2s; }
+.mass-btn.tested .mass-btn-tested { opacity:1; }
+.tested-counter { background:rgba(46,204,113,0.1); border:1px solid rgba(46,204,113,0.3); border-radius:8px; padding:0.5rem 0.75rem; text-align:center; transition:background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease; }
+.tested-counter-num { font-family:'Fredoka One',cursive; font-size:1.35rem; color:var(--green); line-height:1; }
+.tested-counter-label { font-size:0.72rem; font-weight:800; color:#c9d1d9; margin-top:0.15rem; }
+
+/* =========================================================
+   PHASE 2: GRAVITY COMPARISON TABLE
+   ========================================================= */
+.gravity-compare { margin-top:1rem; background:rgba(255,255,255,0.025); border:1px solid rgba(180,127,255,0.2); border-radius:var(--radius); padding:0.95rem 1.2rem; }
+.gravity-compare-title { font-family:'Fredoka One',cursive; font-size:0.95rem; color:var(--text-primary); margin-bottom:0.15rem; }
+.gravity-compare-sub { font-size:0.78rem; font-weight:700; color:var(--text-muted); margin-bottom:0.9rem; line-height:1.5; }
+.gravity-compare-row { display:flex; align-items:center; gap:0.65rem; margin-bottom:0.55rem; opacity:0; transform:translateX(-10px); transition:opacity 0.38s ease, transform 0.38s ease; }
+.gravity-compare-row.revealed { opacity:1; transform:translateX(0); }
+.gravity-compare-row:last-child { margin-bottom:0; }
+.gc-name { font-size:0.82rem; font-weight:800; width:78px; flex-shrink:0; }
+.gc-bar-wrap { flex:1; height:9px; background:rgba(255,255,255,0.07); border-radius:99px; overflow:hidden; }
+.gc-bar { height:100%; border-radius:99px; width:0; transition:width 0.65s cubic-bezier(0.2,0.8,0.3,1); }
+.gc-label { font-size:0.82rem; font-weight:900; width:38px; text-align:right; flex-shrink:0; }
+
+/* =========================================================
+   PHASE 2: CHECKPOINT CARD
+   ========================================================= */
+.p2-checkpoint { margin-top:1.1rem; background:var(--bg-card); border:1px solid rgba(180,127,255,0.35); border-radius:var(--radius); padding:1.3rem 1.4rem; box-shadow:0 0 32px rgba(180,127,255,0.09); animation:cpReveal 0.5s cubic-bezier(0.2,0.9,0.25,1.1) forwards; }
+@keyframes cpReveal { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+.p2-cp-eyebrow { font-size:0.68rem; font-weight:900; letter-spacing:0.18em; text-transform:uppercase; color:var(--purple); margin-bottom:0.45rem; }
+.p2-cp-title { font-family:'Fredoka One',cursive; font-size:clamp(1.2rem,2.5vw,1.55rem); color:var(--text-primary); margin-bottom:0.3rem; line-height:1.2; }
+.p2-cp-question { font-size:0.95rem; font-weight:700; color:#d6dee6; line-height:1.55; margin-bottom:1rem; }
+.p2-cp-options { display:grid; gap:0.5rem; margin-bottom:0; }
+.p2-cp-opt { display:flex; align-items:flex-start; gap:0.6rem; padding:0.65rem 0.9rem; border-radius:10px; border:1.5px solid var(--border); background:var(--bg-secondary); cursor:pointer; font-family:'Nunito',sans-serif; font-size:0.88rem; font-weight:600; color:#c9d1d9; line-height:1.45; text-align:left; transition:all 0.2s; width:100%; }
+.p2-cp-opt:hover:not(:disabled) { background:rgba(180,127,255,0.06); border-color:rgba(180,127,255,0.3); color:var(--text-primary); }
+.p2-cp-opt:disabled { cursor:default; }
+.p2-cp-opt.correct { background:var(--green-dim); border-color:var(--green); color:var(--green); font-weight:800; }
+.p2-cp-opt.wrong   { background:var(--red-dim);   border-color:var(--red);   color:var(--red);   opacity:0.75; }
+.p2-cp-letter { flex-shrink:0; width:24px; height:24px; border-radius:50%; background:var(--bg-card); border:1.5px solid var(--border-light); display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:900; color:#aeb8c2; margin-top:1px; transition:all 0.2s; }
+.p2-cp-opt.correct .p2-cp-letter { background:var(--green); border-color:var(--green); color:#000; }
+.p2-cp-opt.wrong   .p2-cp-letter { background:var(--red);   border-color:var(--red);   color:#fff; }
+.p2-cp-feedback { margin-top:0.9rem; padding:0.78rem 1rem; border-radius:var(--radius-sm); font-size:0.88rem; font-weight:700; line-height:1.6; }
+.p2-cp-feedback.correct { background:var(--green-dim); color:var(--green); border:1px solid rgba(46,204,113,0.3); }
+.p2-cp-feedback.wrong   { background:rgba(232,112,112,0.07); color:#e8a0a0; border:1px solid rgba(232,112,112,0.22); }
+.p2-cp-retry { display:inline-block; margin-top:0.45rem; padding:0.3rem 0.85rem; border-radius:8px; border:1.5px solid rgba(232,112,112,0.38); background:rgba(232,112,112,0.1); color:var(--red); font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:800; cursor:pointer; transition:all 0.2s; }
+.p2-cp-retry:hover { background:rgba(232,112,112,0.2); }
+
+/* =========================================================
+   PHASE 3: ORBIT CHALLENGE
+   ========================================================= */
+.orbit-shell { max-width:1100px; margin:0 auto 2.25rem; padding:0 1.4rem; }
+.orbit-layout { display:grid; grid-template-columns:1fr 270px; gap:1rem; align-items:start; }
+.orbit-main { min-width:0; }
+.orbit-canvas-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:0 4px 18px rgba(0,0,0,0.25); }
+.orbit-toolbar { display:flex; align-items:center; gap:0.55rem; padding:0.65rem 1rem; background:var(--bg-secondary); border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.orbit-mass-btn { padding:0.3rem 0.75rem; border-radius:20px; border:1.5px solid var(--border); background:var(--bg-card); cursor:pointer; font-family:'Nunito',sans-serif; font-size:0.76rem; font-weight:800; color:#c9d1d9; transition:all 0.2s; white-space:nowrap; }
+.orbit-mass-btn:hover { border-color:var(--border-light); color:var(--text-primary); }
+.orbit-mass-btn.active { background:rgba(180,127,255,0.12); border-color:rgba(180,127,255,0.5); color:var(--purple); }
+#orbitCanvas { display:block; width:100%; background:#030c16; cursor:crosshair; }
+.orbit-controls { display:flex; align-items:center; gap:0.6rem; padding:0.7rem 1rem; background:var(--bg-secondary); border-top:1px solid var(--border); flex-wrap:wrap; }
+.outcome-badge { display:inline-flex; align-items:center; gap:0.3rem; padding:0.28rem 0.75rem; border-radius:20px; font-size:0.72rem; font-weight:900; letter-spacing:0.06em; border:1.5px solid; }
+.outcome-badge.flying   { background:var(--teal-dim);   color:var(--teal);   border-color:rgba(59,200,232,0.4); }
+.outcome-badge.orbiting { background:var(--green-dim);  color:var(--green);  border-color:rgba(46,204,113,0.4); }
+.outcome-badge.escaped  { background:var(--purple-dim); color:var(--purple); border-color:rgba(180,127,255,0.4); }
+.outcome-badge.crashed  { background:var(--red-dim);    color:var(--red);    border-color:rgba(232,112,112,0.4); }
+.outcome-badge.ready    { background:var(--gold-dim);   color:var(--gold);   border-color:rgba(245,200,66,0.4); }
+.orbit-hint { font-size:0.78rem; font-weight:700; color:var(--text-muted); margin-left:auto; }
+.orbit-side-panel { background:linear-gradient(180deg,rgba(17,27,39,0.96),rgba(13,20,31,0.94)); border:1px solid var(--border); border-radius:var(--radius); padding:1rem; }
+.orbit-side-title { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--text-primary); margin-bottom:0.7rem; }
+.challenge-card { background:rgba(255,255,255,0.025); border:1px solid var(--border); border-radius:10px; padding:0.65rem 0.8rem; display:flex; align-items:flex-start; gap:0.55rem; margin-bottom:0.45rem; }
+.challenge-card:last-child { margin-bottom:0; }
+.challenge-check { width:20px; height:20px; border-radius:50%; border:2px solid var(--border-light); background:var(--bg-secondary); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.6rem; font-weight:900; color:transparent; margin-top:1px; transition:all 0.3s; }
+.challenge-card.done .challenge-check { background:var(--green); border-color:var(--green); color:#000; }
+.challenge-title { font-size:0.8rem; font-weight:800; color:var(--text-primary); line-height:1.3; margin-bottom:0.15rem; }
+.challenge-desc { font-size:0.72rem; color:var(--text-muted); line-height:1.4; }
+.challenge-card.done .challenge-title { color:var(--green); }
+
+/* =========================================================
+   COMPLETION OVERLAY
+   ========================================================= */
+.sim-completion-overlay { position:absolute; left:0.9rem; right:0.9rem; bottom:0.9rem; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.45s ease; z-index:8; }
+.sim-completion-overlay.visible { opacity:1; pointer-events:none; }
+.sim-completion-card { max-width:500px; width:100%; background:linear-gradient(180deg,rgba(28,34,48,0.96),rgba(20,26,38,0.94)); border:1px solid rgba(180,127,255,0.45); border-radius:var(--radius); padding:1rem 1.1rem; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.5), 0 0 28px rgba(180,127,255,0.18); transform:translateY(16px) scale(0.98); transition:transform 0.45s cubic-bezier(.2,.9,.25,1.15); pointer-events:auto; position:relative; }
+.sim-completion-overlay.visible .sim-completion-card { transform:translateY(0) scale(1); }
+.sc-eyebrow { font-size:0.66rem; font-weight:900; letter-spacing:0.22em; text-transform:uppercase; color:var(--purple); margin-bottom:0.5rem; }
+.sim-completion-card h3 { font-family:'Fredoka One',cursive; font-size:1.5rem; color:var(--text-primary); margin-bottom:0.5rem; line-height:1.15; }
+.sim-completion-card p { font-size:0.88rem; color:#c9d1d9; line-height:1.6; margin-bottom:0.9rem; }
+.sc-actions { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; }
+.sim-completion-close { position:absolute; top:0.7rem; right:0.7rem; width:34px; height:34px; border-radius:50%; border:1px solid rgba(180,127,255,0.25); background:rgba(13,17,23,0.55); color:#c9d1d9; display:inline-flex; align-items:center; justify-content:center; font-size:1rem; font-weight:900; line-height:1; cursor:pointer; transition:all 0.2s ease; }
+.sim-completion-close:hover { color:var(--text-primary); border-color:rgba(180,127,255,0.5); }
+.orbit-canvas-stage { position:relative; }
+
+/* =========================================================
+   MODE TOGGLE
+   ========================================================= */
+.mode-toggle-bar { display:flex; align-items:center; justify-content:center; gap:0; margin:0 auto 6px; background:rgba(42,52,71,0.45); border:1.5px solid rgba(180,127,255,0.25); border-radius:14px; padding:0.35rem; width:fit-content; box-shadow:0 0 0 4px rgba(180,127,255,0.04); }
+.mode-btn { padding:0.65rem 1.8rem; border-radius:10px; border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-size:0.92rem; font-weight:800; letter-spacing:0.04em; transition:all 0.22s; color:rgba(174,184,194,0.55); background:transparent; }
+.mode-btn:hover:not(.active) { color:rgba(174,184,194,0.8); }
+.mode-btn.active { background:linear-gradient(135deg,rgba(180,127,255,0.18) 0%,rgba(180,127,255,0.1) 100%); color:#dde4f5; border:1px solid rgba(180,127,255,0.45); box-shadow:0 0 14px rgba(180,127,255,0.15), 0 2px 10px rgba(0,0,0,0.4); text-shadow:0 0 12px rgba(180,127,255,0.4); }
+.mode-hint { text-align:center; font-size:0.82rem; font-weight:700; color:var(--text-muted); margin-bottom:14px; }
+.mode-hint span { display:none; }
+.mode-hint span.visible { display:inline; }
+
+/* =========================================================
+   CLASSROOM PANEL
+   ========================================================= */
+.classroom-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.2rem 1.3rem; box-shadow:var(--shadow); margin-top:1rem; }
+.classroom-panel.hidden { display:none; }
+.classroom-panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; }
+.mode-badge { display:inline-flex; align-items:center; padding:0.25rem 0.7rem; border-radius:20px; font-size:0.72rem; font-weight:800; background:rgba(180,127,255,0.12); color:var(--purple); border:1px solid rgba(180,127,255,0.3); }
+.classroom-section { margin-bottom:1.1rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
+.classroom-section:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+.classroom-section-title { font-family:'Fredoka One',cursive; font-size:0.95rem; margin-bottom:0.7rem; }
+.student-fields { display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; margin-bottom:0.9rem; }
+.student-fields .field-full { grid-column:1/-1; }
+.field-label { display:block; font-size:0.72rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.3rem; }
+.field-input, .field-select { width:100%; padding:0.55rem 0.75rem; border-radius:8px; border:1.5px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); font-family:'Nunito',sans-serif; font-size:0.88rem; font-weight:700; transition:border-color 0.2s; }
+.field-input:focus, .field-select:focus { border-color:var(--purple); outline:none; }
+.field-select { cursor:pointer; }
+.submit-section { text-align:center; }
+.submit-btn { display:inline-flex; align-items:center; justify-content:center; padding:0.72rem 2rem; border-radius:10px; font-family:'Nunito',sans-serif; font-size:0.92rem; font-weight:800; border:1.5px solid var(--border); cursor:pointer; transition:all 0.22s; background:var(--bg-card); color:var(--text-muted); }
+.submit-btn.locked { opacity:0.45; cursor:not-allowed; }
+.submit-btn.ready { background:var(--green); border-color:var(--green); color:#000; box-shadow:0 2px 0 rgba(0,0,0,0.15), 0 0 14px rgba(46,204,113,0.2); }
+.submit-btn.ready:hover { filter:brightness(1.1); transform:translateY(-1px); }
+.submit-helper { font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-top:0.5rem; }
+.submit-success { display:none; margin-top:0.6rem; padding:0.7rem 0.95rem; border-radius:var(--radius-sm); background:var(--green-dim); color:var(--green); border:1px solid rgba(46,204,113,0.3); font-size:0.88rem; font-weight:700; line-height:1.5; }
+.submit-error { display:none; margin-top:0.6rem; padding:0.7rem 0.95rem; border-radius:var(--radius-sm); background:var(--red-dim); color:var(--red); border:1px solid rgba(232,112,112,0.3); font-size:0.88rem; font-weight:700; }
+
+/* =========================================================
+   QUIZ
+   ========================================================= */
+.quiz-question { margin-bottom:1.1rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.85rem 1rem; }
+.quiz-question:last-child { margin-bottom:0; }
+.quiz-question-num { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--purple); margin-bottom:0.35rem; }
+.quiz-question-text { font-size:0.95rem; font-weight:700; color:var(--text-primary); line-height:1.5; margin-bottom:0.75rem; }
+.quiz-options { display:grid; gap:7px; }
+.quiz-option { display:flex; align-items:flex-start; gap:0.6rem; padding:0.65rem 0.85rem; border-radius:10px; border:1.5px solid var(--border); background:var(--bg-card); cursor:pointer; font-size:0.88rem; font-weight:600; color:#c9d1d9; line-height:1.45; transition:all 0.2s; }
+.quiz-option:hover { background:rgba(180,127,255,0.05); border-color:rgba(180,127,255,0.3); color:var(--text-primary); }
+.quiz-option.selected { background:rgba(180,127,255,0.1); border-color:rgba(180,127,255,0.5); color:var(--purple); font-weight:800; }
+.quiz-option.correct-reveal { background:var(--green-dim); border-color:var(--green); color:var(--green); }
+.quiz-option.wrong-reveal { background:var(--red-dim); border-color:var(--red); color:var(--red); opacity:0.75; }
+.quiz-option-letter { flex-shrink:0; width:24px; height:24px; border-radius:50%; background:var(--bg-secondary); border:1.5px solid var(--border-light); display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:900; color:#aeb8c2; margin-top:1px; transition:all 0.2s; }
+.quiz-option.selected .quiz-option-letter { background:rgba(180,127,255,0.2); color:var(--purple); border-color:rgba(180,127,255,0.4); }
+.quiz-option.correct-reveal .quiz-option-letter { background:var(--green); border-color:var(--green); color:#000; }
+.quiz-option.wrong-reveal .quiz-option-letter { background:var(--red); border-color:var(--red); color:#fff; }
+.quiz-score-badge { display:inline-block; background:rgba(180,127,255,0.1); border:1px solid rgba(180,127,255,0.3); border-radius:20px; padding:0.35rem 0.9rem; font-size:0.82rem; font-weight:800; color:var(--purple); }
+.quiz-result-banner { margin-top:1rem; padding:0.85rem 1rem; border-radius:var(--radius-sm); font-size:0.9rem; font-weight:700; line-height:1.55; }
+.quiz-result-banner.pass { background:var(--green-dim); color:var(--green); border:1px solid rgba(46,204,113,0.3); }
+.quiz-result-banner.try-again { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(245,200,66,0.3); }
+
+/* =========================================================
+   VOCABULARY PILLS
+   ========================================================= */
+.vocab-section { max-width:900px; margin:0 auto 2rem; padding:0 1.4rem; }
+.vocab-pills { display:flex; flex-wrap:wrap; gap:0.5rem; }
+.vocab-pill { background:rgba(180,127,255,0.08); border:1px solid rgba(180,127,255,0.28); border-radius:99px; padding:0.28rem 0.8rem; font-size:0.78rem; font-weight:800; color:#c9d1d9; letter-spacing:0.02em; }
+
+/* =========================================================
+   GO FURTHER
+   ========================================================= */
+.go-further-section { max-width:900px; margin:0 auto 2rem; padding:0 1.4rem; }
+.go-further-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:0.8rem; }
+.gf-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1rem 1.1rem; text-decoration:none; display:block; transition:all 0.22s; }
+.gf-card:hover { border-color:var(--border-light); transform:translateY(-2px); }
+.gf-card-label { font-size:0.65rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--purple); margin-bottom:0.35rem; }
+.gf-card-title { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--text-primary); margin-bottom:0.3rem; }
+.gf-card-desc { font-size:0.78rem; color:#c9d1d9; line-height:1.5; }
+.gf-card.placeholder { opacity:0.5; pointer-events:none; }
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+#toastContainer { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999; display:flex; flex-direction:column; gap:0.5rem; pointer-events:none; }
+.toast { background:var(--bg-card); border:1px solid var(--border-light); border-radius:10px; padding:0.6rem 1rem; font-size:0.82rem; font-weight:700; color:var(--text-primary); min-width:220px; max-width:320px; box-shadow:var(--shadow); animation:toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
+.toast.success { border-color:var(--green); color:var(--green); }
+.toast.info    { border-color:var(--purple); color:var(--purple); }
+.toast.warn    { border-color:var(--gold); color:var(--gold); }
+@keyframes toastIn  { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+@keyframes toastOut { from { opacity:1; } to { opacity:0; transform:translateY(12px); } }
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:0.5rem; }
+footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); font-weight:800; }
+footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); }
+footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
+
+/* =========================================================
+   PHASE 3: HOW TO LAUNCH GUIDE
+   ========================================================= */
+.launch-guide-card { background:rgba(59,200,232,0.05); border:1px solid rgba(59,200,232,0.25); border-radius:var(--radius); padding:1rem 1.2rem; margin-bottom:1.1rem; }
+.launch-guide-header { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--teal); margin-bottom:0.8rem; letter-spacing:0.01em; }
+.launch-guide-steps { display:grid; grid-template-columns:1fr 1fr; gap:0.4rem 0.75rem; }
+.launch-step { display:flex; align-items:flex-start; gap:0.45rem; }
+.launch-step-num { flex-shrink:0; width:20px; height:20px; border-radius:50%; background:rgba(59,200,232,0.18); border:1.5px solid rgba(59,200,232,0.4); display:flex; align-items:center; justify-content:center; font-family:'Orbitron',sans-serif; font-size:0.55rem; font-weight:900; color:var(--teal); margin-top:2px; }
+.launch-step-text { font-size:0.78rem; font-weight:700; color:var(--text-secondary); line-height:1.45; }
+.launch-step-text strong { color:var(--text-primary); }
+.launch-guide-diagrams { display:flex; flex-direction:row; justify-content:center; gap:3rem; margin-top:0.9rem; padding-top:0.8rem; border-top:1px solid rgba(59,200,232,0.12); }
+.launch-diagram { display:flex; flex-direction:column; align-items:center; gap:0.3rem; }
+.launch-diagram svg { width:110px; height:80px; }
+.launch-diagram-label { font-size:0.6rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); }
+
+/* =========================================================
+   PHASE 3: SPEED METER
+   ========================================================= */
+.speed-meter-wrap { padding:0.5rem 1rem 0.65rem; background:var(--bg-secondary); border-top:1px solid var(--border); }
+.speed-meter-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.32rem; }
+.speed-meter-title { font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); }
+.speed-meter-zone-label { font-size:0.7rem; font-weight:800; color:var(--text-muted); transition:color 0.15s; }
+.speed-meter-bar { position:relative; height:10px; border-radius:99px; overflow:visible; background:linear-gradient(to right,#e87070 0%,#e87070 30%,#2ecc71 30%,#2ecc71 60%,#f5c842 60%,#f5c842 100%); border:1px solid rgba(255,255,255,0.07); }
+.speed-meter-cursor { position:absolute; top:-3px; width:4px; height:16px; background:#fff; border-radius:2px; box-shadow:0 0 8px rgba(255,255,255,0.85); transform:translateX(-50%); transition:left 0.08s linear; pointer-events:none; }
+.speed-zone-ticks { display:flex; justify-content:space-between; margin-top:0.22rem; }
+.speed-zone-ticks span { font-size:0.58rem; font-weight:800; color:var(--text-muted); letter-spacing:0.04em; }
+
+/* =========================================================
+   PHASE 3: CHECKPOINT CARD
+   ========================================================= */
+.p3-checkpoint { margin-top:1.1rem; background:var(--bg-card); border:1px solid rgba(59,200,232,0.35); border-radius:var(--radius); padding:1.3rem 1.4rem; box-shadow:0 0 32px rgba(59,200,232,0.09); animation:cpReveal 0.5s cubic-bezier(0.2,0.9,0.25,1.1) forwards; }
+.p3-cp-eyebrow { font-size:0.68rem; font-weight:900; letter-spacing:0.18em; text-transform:uppercase; color:var(--teal); margin-bottom:0.45rem; }
+.p3-cp-title { font-family:'Fredoka One',cursive; font-size:clamp(1.2rem,2.5vw,1.55rem); color:var(--text-primary); margin-bottom:0.3rem; line-height:1.2; }
+.p3-cp-options { display:grid; gap:0.5rem; margin-bottom:0; }
+.p3-cp-opt { display:flex; align-items:flex-start; gap:0.6rem; padding:0.65rem 0.9rem; border-radius:10px; border:1.5px solid var(--border); background:var(--bg-secondary); cursor:pointer; font-family:'Nunito',sans-serif; font-size:0.88rem; font-weight:600; color:#c9d1d9; line-height:1.45; text-align:left; transition:all 0.2s; width:100%; }
+.p3-cp-opt:hover:not(:disabled) { background:rgba(59,200,232,0.06); border-color:rgba(59,200,232,0.3); color:var(--text-primary); }
+.p3-cp-opt:disabled { cursor:default; }
+.p3-cp-opt.correct { background:var(--green-dim); border-color:var(--green); color:var(--green); font-weight:800; }
+.p3-cp-opt.wrong   { background:var(--red-dim);   border-color:var(--red);   color:var(--red);   opacity:0.75; }
+.p3-cp-letter { flex-shrink:0; width:24px; height:24px; border-radius:50%; background:var(--bg-card); border:1.5px solid var(--border-light); display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:900; color:#aeb8c2; margin-top:1px; transition:all 0.2s; }
+.p3-cp-opt.correct .p3-cp-letter { background:var(--green); border-color:var(--green); color:#000; }
+.p3-cp-opt.wrong   .p3-cp-letter { background:var(--red);   border-color:var(--red);   color:#fff; }
+
+/* Required badge on challenge cards */
+.challenge-required-badge { font-size:0.58rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); background:rgba(59,200,232,0.12); border:1px solid rgba(59,200,232,0.3); border-radius:20px; padding:0.1rem 0.4rem; margin-left:0.4rem; flex-shrink:0; align-self:flex-start; margin-top:1px; }
+.p3-progress-note { font-size:0.7rem; font-weight:700; color:var(--text-muted); text-align:center; margin-top:0.6rem; padding:0.4rem 0.6rem; background:rgba(59,200,232,0.05); border:1px solid rgba(59,200,232,0.15); border-radius:8px; line-height:1.4; }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:1000px) { .well-layout, .orbit-layout { grid-template-columns:1fr; } }
+@media (max-width:680px) { .byb-qa { grid-template-columns:1fr; } .student-fields { grid-template-columns:1fr; } }
+@media (max-width:600px) {
+  nav { padding:0.65rem 0.9rem; }
+  .hero { padding:2.7rem 1rem 2.25rem; }
+  .byb-wrap { padding:2rem 1rem; }
+  .sim-section { padding:0 0.9rem; margin-bottom:1.75rem; }
+  .well-shell, .orbit-shell { padding:0 0.9rem; margin-bottom:1.75rem; }
+  .progress-wrap { padding:0 0.9rem; }
+  .mode-btn { padding:0.5rem 1.2rem; font-size:0.84rem; }
+  .vocab-section, .go-further-section { padding:0 0.9rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="index.html">LYFELABZ</a>
+  <a class="nav-back" href="index.html">← All Simulations</a>
+</nav>
+
+<!-- BADGE BARS -->
+<div class="badge-bar stem-bar">
+  <span class="badge green">6.MS-PS2-4<span class="badge-tip">MA STE 6.MS-PS2-4: Use evidence to support the claim that gravitational forces between objects are attractive and only noticeable when one or both objects have very large mass.</span></span>
+  <span class="badge green">MS-ESS1-2<span class="badge-tip">MA STE MS-ESS1-2: Develop and use a model to describe the role of gravity in the motions within galaxies and the solar system.</span></span>
+  <span class="badge green">SEP-2<span class="badge-tip">NGSS SEP-2: Developing and Using Models — students build and test mental models of gravity wells and orbital motion.</span></span>
+  <span class="badge green">SEP-6<span class="badge-tip">NGSS SEP-6: Constructing Explanations — students synthesize evidence from the simulation to explain why planets orbit rather than crash or escape.</span></span>
+</div>
+<div class="badge-bar ls-bar">
+  <span class="badge teal">Phenomenon-First<span class="badge-tip">Students encounter the orbiting-vs-crashing phenomenon before receiving formal explanation, activating prior knowledge and curiosity (Bransford et al., 2000).</span></span>
+  <span class="badge teal">Spatial Reasoning<span class="badge-tip">Interactive spacetime grid visualization builds spatial mental models of gravitational fields (Newcombe, 2010).</span></span>
+  <span class="badge teal">Productive Exploration<span class="badge-tip">Trial-and-error orbit launching creates productive struggle that deepens conceptual encoding (Kapur, 2016).</span></span>
+  <span class="badge teal">Retrieval Practice<span class="badge-tip">End-of-simulation quiz prompts active retrieval of concepts, strengthening long-term retention (Roediger &amp; Butler, 2011).</span></span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-shell">
+    <div class="hero-badge">Simulation</div>
+    <h1>Gravity Wells</h1>
+    <p>Explore how mass, gravity, and motion work together to create orbits. Build gravity wells, launch objects into space, and discover why planets do not simply fly away or crash into the Sun.</p>
+  </div>
+</div>
+
+<!-- BEFORE YOU BEGIN -->
+<div class="byb-wrap">
+  <div class="byb-inner">
+    <div class="byb-header">
+      <span class="byb-eyebrow">Before You Begin</span>
+      <div class="byb-title">Read this first, then investigate</div>
+      <p class="byb-sub">This is a four-step investigation into gravity, mass, and orbital motion. Complete each step in order.</p>
+      <div style="margin-top:1.2rem; background:rgba(232,112,112,0.07); border:1.5px solid rgba(232,112,112,0.35); border-radius:12px; padding:0.9rem 1.2rem; text-align:left; max-width:640px; margin-left:auto; margin-right:auto;">
+        <div style="font-family:'Fredoka One',cursive; font-size:0.95rem; color:var(--red); margin-bottom:0.35rem;">Common Misconception</div>
+        <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.65; margin:0;">Gravity does not only pull things straight down. Gravity pulls objects <strong style="color:var(--text-primary);">toward the center of mass</strong>. In space, this pull can bend an object's path into an orbit — the object is constantly falling, but also moving forward fast enough to keep missing the mass.</p>
+      </div>
+    </div>
+    <div class="byb-qa">
+      <div class="byb-qa-card">
+        <div class="byb-q">What is this simulation showing?</div>
+        <p class="byb-a">Students test how <strong>mass changes the shape of a gravity well</strong> and how moving objects respond to that pull. Imagine spacetime as a rubber sheet — a massive object pushes the sheet downward, and nearby objects roll toward the depression.</p>
+      </div>
+      <div class="byb-qa-card">
+        <div class="byb-q">Why do objects orbit?</div>
+        <p class="byb-a">An orbit happens when <strong>forward motion and gravity are balanced</strong>. The object is constantly falling toward the massive body, but also moving forward fast enough to keep missing it. Too slow: crash. Too fast: escape. Just right: orbit.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="progress-step active" id="step1">① Mass</div>
+    <div class="progress-step" id="step2">② Build Well</div>
+    <div class="progress-step" id="step3">③ Launch Orbit</div>
+    <div class="progress-step" id="step4">④ Quiz</div>
+  </div>
+</div>
+
+<!-- ======================================================
+     PHASE 1: GRAVITY AND MOTION CONCEPTS
+     ====================================================== -->
+<section class="sim-section" id="phase1">
+  <div class="section-label">Phase 1</div>
+  <div class="section-title">Gravity and Motion Concepts</div>
+  <div class="section-desc"><strong>Unlock all three</strong> gravity concepts to reveal how mass, gravity, and motion work together. Each one tells a different part of the story.</div>
+  <div class="evidence-grid">
+    <div class="evidence-card locked" id="ev-lowmass" onclick="selectEvidence(this)">
+      <div class="ev-check">✓</div>
+      <div class="ev-title">Low Mass</div>
+      <div class="ev-body">
+        <div class="ev-icon">🌙</div>
+        <div class="ev-desc">A small object creates a shallow gravity well. Its pull is weaker and affects nearby objects less strongly — like a golf ball resting on a trampoline.</div>
+        <div aria-hidden="true" class="ev-lock-overlay">
+          <div class="ev-lock-content">
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <div class="ev-lock-text">Click to unlock</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="evidence-card locked" id="ev-highmass" onclick="selectEvidence(this)">
+      <div class="ev-check">✓</div>
+      <div class="ev-title">High Mass</div>
+      <div class="ev-body">
+        <div class="ev-icon">☀️</div>
+        <div class="ev-desc">A massive object creates a deeper gravity well. Its stronger pull can bend paths into orbit across enormous distances — like a bowling ball warping a trampoline sheet.</div>
+        <div aria-hidden="true" class="ev-lock-overlay">
+          <div class="ev-lock-content">
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <div class="ev-lock-text">Click to unlock</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="evidence-card locked" id="ev-motion" onclick="selectEvidence(this)">
+      <div class="ev-check">✓</div>
+      <div class="ev-title">Motion Matters</div>
+      <div class="ev-body">
+        <div class="ev-icon">🚀</div>
+        <div class="ev-desc">Gravity alone does not make an orbit. An object also needs sideways motion. Too slow means crash. Too fast means escape. The right balance creates a stable orbit.</div>
+        <div aria-hidden="true" class="ev-lock-overlay">
+          <div class="ev-lock-content">
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <div class="ev-lock-text">Click to unlock</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="evidence-feedback" id="evidenceFeedback">
+    <div class="evidence-feedback-label">Why this matters</div>
+    <div class="evidence-feedback-text" id="evidenceFeedbackText"></div>
+  </div>
+</section>
+
+<!-- ======================================================
+     PHASE 2: GRAVITY WELL BUILDER
+     ====================================================== -->
+<section class="well-shell" id="phase2" style="display:none;">
+  <div class="section-label">Phase 2</div>
+  <div class="section-title">Gravity Well Builder</div>
+  <div class="section-desc">Select each mass object and watch how it warps the spacetime grid. Compare the well depth across all five — notice how dramatically the shape changes. You must explore all five masses before the Orbit Challenge unlocks.</div>
+  <div class="well-layout">
+    <div class="well-main">
+      <div class="well-canvas-wrap">
+        <div class="well-toolbar">
+          <div>
+            <div class="well-toolbar-title">Spacetime Grid</div>
+            <div class="well-toolbar-note">Glowing trails show how nearby objects curve toward each mass — stronger gravity bends paths more sharply</div>
+          </div>
+          <button class="btn btn-ghost recon-reset-btn" onclick="resetWell()">↺ Clear Field</button>
+        </div>
+        <canvas id="wellCanvas" width="640" height="400"></canvas>
+        <div class="well-info-box" id="wellInfoBox">
+          <div class="well-info-label">Selected Mass</div>
+          <div class="well-info-text" id="wellInfoText">Select a mass from the panel to place it in the gravity field.</div>
+          <div class="well-info-sub" id="wellInfoSub"></div>
+        </div>
+      </div>
+    </div>
+    <div class="well-side-panel">
+      <div class="well-side-title">Select a Mass</div>
+      <div class="well-side-sub">Click each object to see how it warps the spacetime grid. Notice how well depth changes with mass.</div>
+      <div class="mass-btn-grid" id="massBtnGrid">
+        <button class="mass-btn" data-mass="moon" onclick="selectWellMass('moon')">
+          <div class="mass-btn-dot" style="background:#c0ccd8;box-shadow:0 0 6px rgba(192,204,216,0.5);"></div>
+          Moon
+          <span class="mass-btn-tested">Tested</span>
+        </button>
+        <button class="mass-btn" data-mass="earth" onclick="selectWellMass('earth')">
+          <div class="mass-btn-dot" style="background:#3bc8e8;box-shadow:0 0 6px rgba(59,200,232,0.5);"></div>
+          Earth
+          <span class="mass-btn-tested">Tested</span>
+        </button>
+        <button class="mass-btn" data-mass="jupiter" onclick="selectWellMass('jupiter')">
+          <div class="mass-btn-dot" style="background:#c89060;box-shadow:0 0 6px rgba(200,144,96,0.5);"></div>
+          Jupiter
+          <span class="mass-btn-tested">Tested</span>
+        </button>
+        <button class="mass-btn" data-mass="sun" onclick="selectWellMass('sun')">
+          <div class="mass-btn-dot" style="background:#f5c842;box-shadow:0 0 8px rgba(245,200,66,0.6);"></div>
+          Sun
+          <span class="mass-btn-tested">Tested</span>
+        </button>
+        <button class="mass-btn" data-mass="blackhole" onclick="selectWellMass('blackhole')">
+          <div class="mass-btn-dot" style="background:#b47fff;box-shadow:0 0 8px rgba(180,127,255,0.6);"></div>
+          Black Hole
+          <span class="mass-btn-tested">Tested</span>
+        </button>
+      </div>
+      <div class="tested-counter" id="testedCounter">
+        <div class="tested-counter-num"><span id="testedCount">0</span> / 5</div>
+        <div class="tested-counter-label" id="testedCounterLabel">Masses Explored — need all 5</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRAVITY COMPARISON TABLE -->
+  <div class="gravity-compare" id="gravityCompare">
+    <div class="gravity-compare-title">Gravity Well Comparison</div>
+    <div class="gravity-compare-sub">Rows appear as you test each mass. Compare how gravitational strength scales with mass.</div>
+    <div class="gravity-compare-row" id="gcrow-moon">
+      <div class="gc-name" style="color:#c0ccd8;">Moon</div>
+      <div class="gc-bar-wrap"><div class="gc-bar" style="background:#c0ccd8; box-shadow:0 0 5px rgba(192,204,216,0.5);" data-pct="6"></div></div>
+      <div class="gc-label" style="color:#c0ccd8;">1×</div>
+    </div>
+    <div class="gravity-compare-row" id="gcrow-earth">
+      <div class="gc-name" style="color:#3bc8e8;">Earth</div>
+      <div class="gc-bar-wrap"><div class="gc-bar" style="background:#3bc8e8; box-shadow:0 0 5px rgba(59,200,232,0.5);" data-pct="28"></div></div>
+      <div class="gc-label" style="color:#3bc8e8;">4×</div>
+    </div>
+    <div class="gravity-compare-row" id="gcrow-jupiter">
+      <div class="gc-name" style="color:#c89060;">Jupiter</div>
+      <div class="gc-bar-wrap"><div class="gc-bar" style="background:#c89060; box-shadow:0 0 5px rgba(200,144,96,0.5);" data-pct="50"></div></div>
+      <div class="gc-label" style="color:#c89060;">12×</div>
+    </div>
+    <div class="gravity-compare-row" id="gcrow-sun">
+      <div class="gc-name" style="color:#f5c842;">Sun</div>
+      <div class="gc-bar-wrap"><div class="gc-bar" style="background:#f5c842; box-shadow:0 0 5px rgba(245,200,66,0.5);" data-pct="74"></div></div>
+      <div class="gc-label" style="color:#f5c842;">40×</div>
+    </div>
+    <div class="gravity-compare-row" id="gcrow-blackhole">
+      <div class="gc-name" style="color:#b47fff;">Black Hole</div>
+      <div class="gc-bar-wrap"><div class="gc-bar" style="background:#b47fff; box-shadow:0 0 5px rgba(180,127,255,0.5);" data-pct="100"></div></div>
+      <div class="gc-label" style="color:#b47fff;">∞</div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 CHECKPOINT -->
+  <div class="p2-checkpoint" id="phase2Checkpoint" style="display:none;">
+    <div class="p2-cp-eyebrow">Phase 2 Checkpoint</div>
+    <div class="p2-cp-title">What pattern did you observe?</div>
+    <div class="p2-cp-question">Which statement best explains the relationship between mass and gravity wells?</div>
+    <div class="p2-cp-options" id="cpOptions">
+      <button class="p2-cp-opt" data-idx="0" onclick="answerCheckpoint(0)">
+        <div class="p2-cp-letter">A</div>
+        <span>Smaller masses create deeper gravity wells than larger masses.</span>
+      </button>
+      <button class="p2-cp-opt" data-idx="1" onclick="answerCheckpoint(1)">
+        <div class="p2-cp-letter">B</div>
+        <span>Mass does not affect the shape of spacetime.</span>
+      </button>
+      <button class="p2-cp-opt" data-idx="2" onclick="answerCheckpoint(2)">
+        <div class="p2-cp-letter">C</div>
+        <span>Larger masses create deeper gravity wells and stronger gravitational pull.</span>
+      </button>
+      <button class="p2-cp-opt" data-idx="3" onclick="answerCheckpoint(3)">
+        <div class="p2-cp-letter">D</div>
+        <span>Gravity wells only form around black holes.</span>
+      </button>
+    </div>
+    <div class="p2-cp-feedback" id="cpFeedback" style="display:none;"></div>
+  </div>
+</section>
+
+<!-- ======================================================
+     PHASE 3: ORBIT CHALLENGE
+     ====================================================== -->
+<section class="orbit-shell" id="phase3" style="display:none;">
+  <div class="section-label">Phase 3</div>
+  <div class="section-title">Orbit Challenge</div>
+  <div class="section-desc">Select a central mass, then drag on the canvas to aim and set your probe's launch speed. Release to preview, then click Launch. Try to create a stable orbit or escape the gravity well.</div>
+  <!-- HOW TO LAUNCH GUIDE -->
+  <div class="launch-guide-card">
+    <div class="launch-guide-header">How to Launch a Probe</div>
+    <div class="launch-guide-steps">
+      <div class="launch-step">
+        <div class="launch-step-num">1</div>
+        <div class="launch-step-text">Drag from the probe dot on the canvas to set your aim direction.</div>
+      </div>
+      <div class="launch-step">
+        <div class="launch-step-num">2</div>
+        <div class="launch-step-text">Longer drag = faster speed. Watch the speed meter below the canvas.</div>
+      </div>
+      <div class="launch-step">
+        <div class="launch-step-num">3</div>
+        <div class="launch-step-text">Aim <strong>sideways</strong> — perpendicular to the planet — to create orbit.</div>
+      </div>
+      <div class="launch-step">
+        <div class="launch-step-num">4</div>
+        <div class="launch-step-text"><strong>Too slow</strong> → gravity wins and the probe crashes in.</div>
+      </div>
+      <div class="launch-step">
+        <div class="launch-step-num">5</div>
+        <div class="launch-step-text"><strong>Too fast</strong> → probe escapes the gravity well entirely.</div>
+      </div>
+      <div class="launch-step">
+        <div class="launch-step-num">6</div>
+        <div class="launch-step-text">Use Reset to try again. Experiment until you find the orbit zone.</div>
+      </div>
+    </div>
+    <div class="launch-guide-diagrams">
+      <div class="launch-diagram">
+        <svg viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="55" cy="42" rx="34" ry="26" fill="none" stroke="#2ecc71" stroke-width="1.5" stroke-dasharray="5 3"/>
+          <circle cx="55" cy="42" r="8" fill="#3bc8e8" opacity="0.9"/>
+          <circle cx="89" cy="42" r="4.5" fill="#fff" opacity="0.9"/>
+          <path d="M89 32 Q92 22 82 18" stroke="#2ecc71" stroke-width="1.5" fill="none" marker-end="url(#ao)"/>
+          <defs><marker id="ao" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#2ecc71"/></marker></defs>
+        </svg>
+        <div class="launch-diagram-label" style="color:#2ecc71;">Orbit</div>
+      </div>
+      <div class="launch-diagram">
+        <svg viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="55" cy="50" r="9" fill="#3bc8e8" opacity="0.9"/>
+          <line x1="85" y1="14" x2="61" y2="44" stroke="#e87070" stroke-width="2"/>
+          <circle cx="85" cy="14" r="4.5" fill="#fff" opacity="0.9"/>
+          <path d="M46 57 Q40 62 44 67 Q51 70 57 65 Q60 70 55 72" stroke="#e87070" stroke-width="1.3" fill="none" opacity="0.7"/>
+          <circle cx="55" cy="50" r="12" fill="none" stroke="#e87070" stroke-width="1" opacity="0.25" stroke-dasharray="2 2"/>
+        </svg>
+        <div class="launch-diagram-label" style="color:#e87070;">Crash</div>
+      </div>
+      <div class="launch-diagram">
+        <svg viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="55" cy="50" r="9" fill="#f5c842" opacity="0.85"/>
+          <path d="M34 18 Q32 30 40 38 Q55 50 73 56 Q87 61 98 58" stroke="#f5c842" stroke-width="2" fill="none"/>
+          <circle cx="34" cy="18" r="4.5" fill="#fff" opacity="0.9"/>
+          <path d="M93 54 L98 58 L93 61" stroke="#f5c842" stroke-width="1.8" fill="none"/>
+        </svg>
+        <div class="launch-diagram-label" style="color:#f5c842;">Escape</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="orbit-layout">
+    <div class="orbit-main">
+      <div class="orbit-canvas-wrap">
+        <div class="orbit-toolbar">
+          <button class="orbit-mass-btn active" data-omass="earth" onclick="selectOrbitMass('earth')">Earth</button>
+          <button class="orbit-mass-btn" data-omass="jupiter" onclick="selectOrbitMass('jupiter')">Jupiter</button>
+          <button class="orbit-mass-btn" data-omass="sun" onclick="selectOrbitMass('sun')">Sun</button>
+          <button class="orbit-mass-btn" data-omass="blackhole" onclick="selectOrbitMass('blackhole')">Black Hole</button>
+        </div>
+        <div class="orbit-canvas-stage">
+          <canvas id="orbitCanvas" width="640" height="440"></canvas>
+          <div class="sim-completion-overlay" id="orbitCompletionOverlay">
+            <div class="sim-completion-card" onclick="event.stopPropagation();" style="position:relative;">
+              <button aria-label="Close" class="sim-completion-close" onclick="hideCompletionOverlay()" type="button">✕</button>
+              <div class="sc-eyebrow">Phase 3 Complete</div>
+              <h3>Gravity and Motion Work Together</h3>
+              <p>A stable orbit is not just gravity. It is gravity plus forward motion. Too little speed and the object crashes. Too much speed and it escapes. The right balance creates an orbit.</p>
+              <div class="sc-actions">
+                <button class="btn btn-purple" onclick="hideCompletionOverlay(); resetOrbit();">Try Another Orbit</button>
+                <button class="btn btn-ghost" onclick="hideCompletionOverlay(); document.getElementById('phase1').scrollIntoView({behavior:'smooth'});">Return to Gravity Wells</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="orbit-controls">
+          <button class="btn btn-purple" id="launchBtn" onclick="launchProbe()" disabled>Launch Probe</button>
+          <button class="btn btn-ghost" id="resetOrbitBtn" onclick="resetOrbit()">↺ Reset</button>
+          <span class="outcome-badge ready" id="outcomeBadge">Aim to launch</span>
+          <span class="orbit-hint" id="orbitHintText">Drag on canvas to aim</span>
+        </div>
+        <div class="speed-meter-wrap">
+          <div class="speed-meter-header">
+            <span class="speed-meter-title">Launch Speed</span>
+            <span class="speed-meter-zone-label" id="speedMeterZoneLabel">Drag to set speed</span>
+          </div>
+          <div class="speed-meter-bar" id="speedMeterBar">
+            <div class="speed-meter-cursor" id="speedMeterCursor" style="left:0%"></div>
+          </div>
+          <div class="speed-zone-ticks">
+            <span style="color:#e87070;">Too Slow</span>
+            <span style="color:#2ecc71;">Orbit Zone</span>
+            <span style="color:#f5c842;">Too Fast</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="orbit-side-panel">
+      <div class="orbit-side-title">Challenges</div>
+      <div id="challengeCards">
+        <div class="challenge-card" id="chal1">
+          <div class="challenge-check">✓</div>
+          <div style="flex:1;">
+            <div class="challenge-title" style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;">Stable Orbit — Earth<span class="challenge-required-badge">Required</span></div>
+            <div class="challenge-desc">Keep a probe orbiting Earth for 4 seconds without crashing or escaping.</div>
+          </div>
+        </div>
+        <div class="challenge-card" id="chal2">
+          <div class="challenge-check">✓</div>
+          <div>
+            <div class="challenge-title">Escape — Sun</div>
+            <div class="challenge-desc">Launch a probe fast enough to escape the Sun's gravity entirely.</div>
+          </div>
+        </div>
+        <div class="challenge-card" id="chal3">
+          <div class="challenge-check">✓</div>
+          <div>
+            <div class="challenge-title">Stable Orbit — Jupiter</div>
+            <div class="challenge-desc">Orbit Jupiter without crashing into its massive gravitational pull.</div>
+          </div>
+        </div>
+        <div class="challenge-card" id="chal4">
+          <div class="challenge-check">✓</div>
+          <div>
+            <div class="challenge-title">Flyby / Slingshot</div>
+            <div class="challenge-desc">Pass close to a mass and escape — a slingshot path around any object.</div>
+          </div>
+        </div>
+        <div class="challenge-card" id="chal5">
+          <div class="challenge-check">✓</div>
+          <div>
+            <div class="challenge-title">Black Hole Survival</div>
+            <div class="challenge-desc">Survive near the black hole for 2 seconds without being captured.</div>
+          </div>
+        </div>
+      </div>
+      <div class="p3-progress-note" id="p3ProgressNote">Complete Earth orbit + 2 more missions to unlock the checkpoint.</div>
+      <div style="margin-top:0.9rem; background:rgba(180,127,255,0.07); border:1px solid rgba(180,127,255,0.22); border-radius:10px; padding:0.7rem 0.8rem;">
+        <div style="font-size:0.65rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--purple); margin-bottom:0.3rem;">Current Mass Hint</div>
+        <div style="font-size:0.8rem; font-weight:700; color:#c9d1d9; line-height:1.5;" id="orbitMassHint">Earth: Drag about 1/3 of the canvas width sideways (perpendicular to the planet). Green zone on the speed meter = orbit range.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 CHECKPOINT (revealed after Earth orbit + one additional mission) -->
+  <div class="p3-checkpoint" id="phase3Checkpoint" style="display:none;">
+    <div class="p3-cp-eyebrow">Phase 3 Checkpoint</div>
+    <div class="p3-cp-title">What creates a stable orbit?</div>
+    <div class="p3-cp-options">
+      <button class="p3-cp-opt" onclick="answerPhase3Checkpoint(0)">
+        <div class="p3-cp-letter">A</div>
+        <span>Gravity alone pulls objects into a circular orbit.</span>
+      </button>
+      <button class="p3-cp-opt" onclick="answerPhase3Checkpoint(1)">
+        <div class="p3-cp-letter">B</div>
+        <span>Objects orbit only when there is no gravity present.</span>
+      </button>
+      <button class="p3-cp-opt" onclick="answerPhase3Checkpoint(2)">
+        <div class="p3-cp-letter">C</div>
+        <span>Gravity and sideways motion work together to create orbit.</span>
+      </button>
+      <button class="p3-cp-opt" onclick="answerPhase3Checkpoint(3)">
+        <div class="p3-cp-letter">D</div>
+        <span>Faster speed always creates a more stable orbit path.</span>
+      </button>
+    </div>
+    <div class="p2-cp-feedback" id="p3cpFeedback" style="display:none;"></div>
+  </div>
+</section>
+
+<!-- ======================================================
+     MODE GATE
+     ====================================================== -->
+<section class="sim-section" id="modeGate" style="display:none;">
+  <div class="section-label">Next Step</div>
+  <div class="section-title">Choose Your Mode</div>
+  <div class="section-desc">Switch to <strong>Classroom Mode</strong> to unlock the quiz and submit your work.</div>
+  <div class="mode-toggle-bar" style="margin-top:0.35rem;">
+    <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
+    <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
+  </div>
+  <div class="mode-hint">
+    <span id="modeHintPractice" class="visible">Practice Mode keeps the quiz locked.</span>
+    <span id="modeHintClassroom">Classroom Mode unlocks the quiz and teacher submission.</span>
+  </div>
+</section>
+
+<!-- ======================================================
+     PHASE 4: QUIZ
+     ====================================================== -->
+<section class="sim-section" id="phase4" style="display:none;">
+  <div class="section-label">Phase 4</div>
+  <div class="section-title">Check Your Understanding</div>
+  <div class="section-desc">You have examined the evidence, built gravity wells, and launched orbital probes. Answer these five questions to show what you have discovered.</div>
+  <div id="quizContainer"></div>
+  <div id="quizScoreArea" style="display:none; margin-top:1rem; text-align:center;">
+    <div class="quiz-score-badge" id="quizScoreBadge">0 / 5 answered</div>
+  </div>
+  <div id="quizSubmitArea" style="display:none !important; text-align:center; margin-top:1rem;">
+    <button class="btn btn-purple" id="quizSubmitBtn" disabled>Submit Quiz</button>
+  </div>
+  <div id="quizResultBanner" style="display:none;"></div>
+  <div class="classroom-panel hidden" id="classroomPanel">
+    <div class="classroom-panel-header">
+      <div class="section-title" style="margin:0; font-size:1.2rem;">Submit Your Work</div>
+      <span class="mode-badge">Classroom Mode</span>
+    </div>
+    <div class="classroom-section">
+      <div class="classroom-section-title" style="color:var(--purple);">Student Information</div>
+      <div class="student-fields">
+        <div class="field-full">
+          <label class="field-label" for="studentNameInput">Student Name</label>
+          <input type="text" id="studentNameInput" class="field-input" placeholder="First and last name" autocomplete="off"/>
+        </div>
+        <div>
+          <label class="field-label" for="teacherSelect">Teacher</label>
+          <select id="teacherSelect" class="field-select">
+            <option value="">Select teacher...</option>
+            <option value="Mr. Brown">Mr. Brown</option>
+            <option value="Ms. Gay">Ms. Gay</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="blockInput">Block</label>
+          <select id="blockInput" class="field-select">
+            <option value="">Select block...</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="classroom-section">
+      <div class="submit-section">
+        <button class="submit-btn locked" id="classroomSubmitBtn" disabled>Submit Quiz</button>
+        <p class="submit-helper" id="submitHelperText">Complete and submit the quiz first.</p>
+        <div class="submit-success" id="submitSuccess">Your work has been submitted! Great job, scientist.</div>
+        <div class="submit-error" id="submitError">Submission failed. Please check your connection and try again.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VOCABULARY -->
+<div class="vocab-section" id="vocabSection" style="display:none;">
+  <div class="section-label" style="margin-bottom:0.6rem;">Vocabulary</div>
+  <div class="vocab-pills">
+    <span class="vocab-pill">gravity</span>
+    <span class="vocab-pill">mass</span>
+    <span class="vocab-pill">orbit</span>
+    <span class="vocab-pill">inertia</span>
+    <span class="vocab-pill">velocity</span>
+    <span class="vocab-pill">escape velocity</span>
+    <span class="vocab-pill">spacetime</span>
+    <span class="vocab-pill">black hole</span>
+  </div>
+</div>
+
+<!-- GO FURTHER -->
+<div class="go-further-section" id="goFurtherSection" style="display:none;">
+  <div class="section-label" style="margin-bottom:0.6rem;">Go Further</div>
+  <div class="go-further-grid">
+    <a class="gf-card" href="https://spaceplace.nasa.gov/what-is-gravity/en/" target="_blank" rel="noopener">
+      <div class="gf-card-label">External Resource</div>
+      <div class="gf-card-title">NASA Space Place — Gravity</div>
+      <div class="gf-card-desc">NASA's student-friendly guide to gravity, mass, and why things fall.</div>
+    </a>
+    <a class="gf-card" href="https://solarsystem.nasa.gov/planets/overview/" target="_blank" rel="noopener">
+      <div class="gf-card-label">External Resource</div>
+      <div class="gf-card-title">NASA Solar System Exploration</div>
+      <div class="gf-card-desc">Explore each planet and how gravity governs their orbital paths.</div>
+    </a>
+    <a class="gf-card" href="https://www.nasa.gov/black-holes/" target="_blank" rel="noopener">
+      <div class="gf-card-label">External Resource</div>
+      <div class="gf-card-title">NASA — Black Holes</div>
+      <div class="gf-card-desc">What happens when gravity becomes so strong that not even light escapes?</div>
+    </a>
+    <div class="gf-card placeholder">
+      <div class="gf-card-label">Coming Soon</div>
+      <div class="gf-card-title">Orbit Builder Simulation</div>
+      <div class="gf-card-desc">Design multi-body orbital systems and explore gravitational interactions.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toastContainer"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<script>
+/* =====================================================================
+   CONSTANTS — QUIZ DATA
+   ===================================================================== */
+const QUIZ_DATA = [
+  { id:1, topic:'Mass and Gravity',
+    text:'Which statement best describes how mass affects gravitational pull?',
+    options:['More mass usually creates a stronger gravitational pull.','More mass always creates weaker orbital motion.','Less mass creates deeper gravity wells nearby.','Mass changes appearance but not gravitational pull.'],
+    correct:0 },
+  { id:2, topic:'Gravity Wells',
+    text:'In the simulation, why does the Sun create a deeper gravity well than Earth?',
+    options:['The Sun spins differently from Earth in the simulation.','The Sun has much more mass than Earth does.','Earth moves farther across the gravity grid.','Earth creates more motion than the Sun.'],
+    correct:1 },
+  { id:3, topic:'Orbit',
+    text:'What must an object have to stay in orbit instead of falling straight inward?',
+    options:['A perfectly circular path around the mass.','No gravitational pull acting on the object.','Sideways motion combined with gravity.','Extra energy from the nearby star.'],
+    correct:2 },
+  { id:4, topic:'Escape',
+    text:'What usually happens when a launched probe has too much speed?',
+    options:['It escapes the gravity well.','It stops moving once gravity reaches it.','It becomes heavier than the nearby planet.','It turns into a permanent moon immediately.'],
+    correct:0 },
+  { id:5, topic:'Black Hole',
+    text:'Why is the black hole challenge in the simulation so difficult?',
+    options:['Black holes have no gravity outside the center.','Black holes only pull slow-moving objects.','Black holes push nearby objects outward.','Black holes create extremely strong gravity nearby.'],
+    correct:3 }
+];
+
+/* =====================================================================
+   CONSTANTS — EVIDENCE
+   ===================================================================== */
+const EVIDENCE_REASONING = {
+  'ev-lowmass': 'Low-mass objects create only shallow gravity wells. The Moon has 1/6 the gravity of Earth — enough to hold dust on its surface, but not an atmosphere.',
+  'ev-highmass': 'High-mass objects warp spacetime more dramatically. The Sun\'s deep gravity well holds eight planets in orbit across billions of kilometers.',
+  'ev-motion': 'Forward motion is what turns a fall into an orbit. Without it, every object in space would spiral into the nearest mass. This is why satellites need a precise launch speed.'
+};
+
+/* =====================================================================
+   CONSTANTS — WELL MASSES (Phase 2)
+   ===================================================================== */
+const WELL_MASSES = {
+  moon:      { name:'Moon',       strength:55,   radius:10, color:'#c0ccd8', glowR:28, desc:'Shallow gravity well — the Moon has low mass and creates only a weak pull on nearby objects.', sub:'Moon\'s gravity is about 1/6th of Earth\'s surface gravity.' },
+  earth:     { name:'Earth',      strength:220,  radius:17, color:'#3bc8e8', glowR:42, desc:'Medium gravity well — Earth holds the Moon in orbit and keeps our atmosphere close.', sub:'Earth\'s gravity feels like 1 G at the surface.' },
+  jupiter:   { name:'Jupiter',    strength:650,  radius:27, color:'#c89060', glowR:60, desc:'Deep gravity well — Jupiter\'s enormous mass bends spacetime significantly, trapping 95+ moons.', sub:'Jupiter\'s surface gravity is 2.4× stronger than Earth\'s.' },
+  sun:       { name:'Sun',        strength:2200, radius:38, color:'#f5c842', glowR:88, desc:'Very deep gravity well — the Sun holds all 8 planets in orbit across billions of kilometers.', sub:'The Sun contains 99.86% of the Solar System\'s total mass.' },
+  blackhole: { name:'Black Hole', strength:7500, radius:13, color:'#b47fff', glowR:120, desc:'Extreme curvature — even light cannot escape from within the event horizon.', sub:'Near a black hole, even photons are trapped permanently.' }
+};
+const CHECKPOINT_CORRECT = 2; // answer C — index of the correct option
+
+/* =====================================================================
+   CONSTANTS — MARBLE PATH PARAMS (Phase 2)
+   speed     = initial inward px/frame
+   G         = gravity constant in stepAndDrawMarbles formula
+   maxLife   = frames before fade-out
+   tang      = tangential-to-inward velocity ratio (higher = gentler curve)
+   ===================================================================== */
+const MARBLE_PARAMS = {
+  moon:      { count:10, speed:1.0,  G:0.06, maxLife:150, tang:1.1  },
+  earth:     { count:11, speed:1.2,  G:0.22, maxLife:125, tang:0.75 },
+  jupiter:   { count:12, speed:1.6,  G:0.65, maxLife:100, tang:0.50 },
+  sun:       { count:12, speed:2.1,  G:1.80, maxLife:80,  tang:0.30 },
+  blackhole: { count:12, speed:2.6,  G:4.80, maxLife:65,  tang:0.15 }
+};
+
+/* =====================================================================
+   CONSTANTS — ORBIT MASSES (Phase 3)  G = 1.0, DT = 1 per frame
+   v_orbit = sqrt(G*M/r)  ·  v_escape = v_orbit * sqrt(2)
+   ===================================================================== */
+const G = 1.0;
+const ORBIT_MASSES = {
+  earth:     { name:'Earth',      mass:1200,  radius:17, color:'#3bc8e8', crashR:27, startDist:130, hint:'Earth: Drag about 1/3 of the canvas width sideways (perpendicular to the planet). Green zone on the speed meter = orbit range.' },
+  jupiter:   { name:'Jupiter',    mass:2000,  radius:27, color:'#c89060', crashR:40, startDist:158, hint:'Jupiter: Similar drag to Earth but aim precisely sideways. The speed meter will guide you into the orbit zone.' },
+  sun:       { name:'Sun',        mass:7000,  radius:38, color:'#f5c842', crashR:57, startDist:185, hint:'Sun: Needs a longer drag than Earth — aim for the upper half of the speed meter. Too slow and gravity wins.' },
+  blackhole: { name:'Black Hole', mass:9000,  radius:13, color:'#b47fff', crashR:28, startDist:155, hint:'Black Hole: Orbit is extremely difficult. Try a fast flyby — drag near maximum and aim to sweep past the mass.' }
+};
+const ESCAPE_R = 300; // logical canvas px from center
+const MAX_SPEED = 10; // px/frame at max drag — reduced to widen orbit window
+const MAX_DRAG  = 220; // logical canvas px for max speed
+
+/* =====================================================================
+   SCRIPT URLS
+   ===================================================================== */
+const SCRIPT_URLS = {
+  'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+
+/* =====================================================================
+   GLOBAL STATE
+   ===================================================================== */
+let mode = 'practice';
+let classroomMode = false;
+let phase = 1;
+let evidenceSelected = new Set();
+let evidenceAdvanceTimer = null;
+
+// Phase 2
+let wellCanvas, wellCtx;
+let wellDPR = 1;
+const WELL_W = 640, WELL_H = 400;
+const WELL_CX = 320, WELL_CY = 200;
+let selectedWellMass = null;
+let wellTested = new Set();
+let wellAnimRAF = null;
+let wellTime = 0;
+let wellStars = [];
+let marbles = [];
+let marbleRespawnTimeout = null;
+let checkpointAnswered = false;
+
+// Phase 3
+let orbitCanvas, orbitCtx;
+let orbitDPR = 1;
+const ORBIT_W = 640, ORBIT_H = 440;
+const ORBIT_CX = 320, ORBIT_CY = 220;
+let selectedOrbitMassKey = 'earth';
+let probe = null;
+let orbitStars = [];
+let isDragging = false;
+let dragVx = 0, dragVy = 0;
+let vectorSet = false;
+let orbitRAF = null;
+let orbitRunning = false;
+let orbitFrameCount = 0;
+let currentOutcome = 'ready';
+let minDistSoFar = Infinity;
+let challengesDone = new Set();
+let phase3Completed = false;
+let p3EarthDone = false;
+let p3AdditionalDone = false;
+let phase3CheckpointAnswered = false;
+const P3_CHECKPOINT_CORRECT = 2; // Answer C
+let bhSurvivalFrames = 0;
+
+// Phase 4
+let quizAnswers = {};
+let quizSubmitted = false;
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('lyfelabz-ls') === 'on') document.body.classList.add('ls-active');
+  if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') setMode(true);
+
+  initWellCanvas();
+  initOrbitCanvas();
+  initModeToggle();
+  initQuiz();
+  initClassroomSubmit();
+});
+
+/* =====================================================================
+   PHASE NAVIGATION
+   ===================================================================== */
+function setPhase(n) {
+  phase = n;
+  ['phase1','phase2','phase3','phase4'].forEach((id, i) => {
+    document.getElementById(id).style.display = (i < n) ? 'block' : 'none';
+  });
+  for (let i = 1; i <= 4; i++) {
+    const step = document.getElementById('step'+i);
+    step.classList.remove('active','done');
+    if (i < n) step.classList.add('done');
+    if (i === n) step.classList.add('active');
+  }
+  if (n >= 2) { startWellAnimation(); }
+  if (n === 4) {
+    document.getElementById('vocabSection').style.display = 'block';
+    document.getElementById('goFurtherSection').style.display = 'block';
+  }
+}
+
+/* =====================================================================
+   MODE TOGGLE
+   ===================================================================== */
+function initModeToggle() {
+  document.getElementById('practiceModeBtn').addEventListener('click', () => setMode(false));
+  document.getElementById('classroomModeBtn').addEventListener('click', () => setMode(true));
+  ['input','change'].forEach(evt => {
+    document.getElementById('studentNameInput').addEventListener(evt, renderSubmitState);
+    document.getElementById('teacherSelect').addEventListener(evt, renderSubmitState);
+    document.getElementById('blockInput').addEventListener(evt, renderSubmitState);
+  });
+}
+
+function setMode(isClassroom) {
+  classroomMode = isClassroom;
+  mode = isClassroom ? 'classroom' : 'practice';
+  document.getElementById('practiceModeBtn').classList.toggle('active', !isClassroom);
+  document.getElementById('classroomModeBtn').classList.toggle('active', isClassroom);
+  document.getElementById('modeHintPractice').classList.toggle('visible', !isClassroom);
+  document.getElementById('modeHintClassroom').classList.toggle('visible', isClassroom);
+
+  const panel = document.getElementById('classroomPanel');
+  const quizSection = document.getElementById('phase4');
+
+  if (isClassroom) {
+    panel.classList.remove('hidden');
+    renderSubmitState();
+    if (phase3Completed) {
+      quizSection.style.display = 'block';
+      setPhase(4);
+      setTimeout(() => {
+        const nav = document.querySelector('nav');
+        const navH = nav ? nav.offsetHeight : 0;
+        window.scrollTo({ top: quizSection.getBoundingClientRect().top + window.scrollY - navH - 14, behavior:'smooth' });
+      }, 120);
+      toast('Classroom Mode active. Quiz unlocked.', 'info');
+    }
+  } else {
+    panel.classList.add('hidden');
+    if (phase3Completed) {
+      quizSection.style.display = 'none';
+      document.getElementById('step4').classList.remove('active');
+      toast('Practice Mode keeps the quiz locked.', 'info');
+      document.getElementById('modeGate')?.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+  }
+}
+
+/* =====================================================================
+   PHASE 1: EVIDENCE
+   ===================================================================== */
+function selectEvidence(card, silent) {
+  card.classList.remove('locked');
+  card.classList.toggle('selected');
+  const id = card.id;
+  const feedbackBox = document.getElementById('evidenceFeedback');
+  const feedbackText = document.getElementById('evidenceFeedbackText');
+
+  if (card.classList.contains('selected')) {
+    evidenceSelected.add(id);
+    feedbackText.textContent = EVIDENCE_REASONING[id];
+    feedbackBox.classList.add('show');
+  } else {
+    evidenceSelected.delete(id);
+    const remaining = [...evidenceSelected];
+    if (remaining.length) { feedbackText.textContent = EVIDENCE_REASONING[remaining[remaining.length-1]]; }
+    else { feedbackBox.classList.remove('show'); }
+  }
+
+  if (evidenceSelected.size === 3 && phase === 1) {
+    clearTimeout(evidenceAdvanceTimer);
+    if (!silent) {
+      evidenceAdvanceTimer = setTimeout(() => {
+        if (phase === 1 && evidenceSelected.size === 3) {
+          setPhase(2);
+          toast('Great! Now explore how mass shapes spacetime.', 'info');
+          setTimeout(() => {
+            const target = document.getElementById('phase2');
+            const navH = document.querySelector('nav')?.offsetHeight || 0;
+            window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - navH - 14, behavior:'smooth' });
+          }, 150);
+        }
+      }, 600);
+    }
+  }
+}
+
+/* =====================================================================
+   PHASE 2: WELL CANVAS
+   ===================================================================== */
+function initWellCanvas() {
+  wellCanvas = document.getElementById('wellCanvas');
+  wellCtx = wellCanvas.getContext('2d');
+  wellDPR = Math.min(window.devicePixelRatio || 1, 2);
+  wellCanvas.width  = WELL_W * wellDPR;
+  wellCanvas.height = WELL_H * wellDPR;
+  wellCtx.scale(wellDPR, wellDPR);
+  wellCanvas.style.width  = WELL_W + 'px';
+  wellCanvas.style.height = WELL_H + 'px';
+
+  // Generate stars
+  for (let i = 0; i < 90; i++) {
+    wellStars.push({ x: Math.random()*WELL_W, y: Math.random()*WELL_H, r: Math.random()*1.4+0.3, a: Math.random()*0.7+0.3 });
+  }
+  drawWellCanvas();
+}
+
+function startWellAnimation() {
+  if (wellAnimRAF) return;
+  function loop() {
+    wellTime++;
+    drawWellCanvas();
+    wellAnimRAF = requestAnimationFrame(loop);
+  }
+  wellAnimRAF = requestAnimationFrame(loop);
+}
+
+function drawWellCanvas() {
+  const ctx = wellCtx;
+  ctx.clearRect(0, 0, WELL_W, WELL_H);
+
+  // Space background
+  ctx.fillStyle = '#040c18';
+  ctx.fillRect(0, 0, WELL_W, WELL_H);
+
+  // Stars
+  wellStars.forEach(s => {
+    const twinkle = s.a * (0.6 + 0.4 * Math.sin(wellTime * 0.015 + s.x));
+    ctx.fillStyle = `rgba(220,232,255,${twinkle})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+  });
+
+  const mass = selectedWellMass ? WELL_MASSES[selectedWellMass] : null;
+
+  // Draw deformed grid
+  const COLS = 22, ROWS = 16, SEGS = 80;
+  const cellW = WELL_W / COLS, cellH = WELL_H / ROWS;
+
+  function getDisp(gx, gy) {
+    if (!mass) return { dx:0, dy:0 };
+    const dx = WELL_CX - gx, dy = WELL_CY - gy;
+    const distSq = dx*dx + dy*dy;
+    const pull = Math.min(mass.strength / Math.sqrt(distSq + 1), 72);
+    const dist = Math.sqrt(distSq) + 0.001;
+    return { dx: (dx/dist)*pull, dy: (dy/dist)*pull };
+  }
+
+  // Grid color fades to purple near mass
+  const gridAlpha = mass ? 0.28 : 0.16;
+  ctx.lineWidth = 1;
+
+  // Horizontal grid lines
+  for (let r = 0; r <= ROWS; r++) {
+    const y_base = r * cellH;
+    ctx.beginPath();
+    for (let i = 0; i <= SEGS; i++) {
+      const x = i * WELL_W / SEGS;
+      const { dx, dy } = getDisp(x, y_base);
+      const px = x + dx, py = y_base + dy;
+      const distFrac = mass ? Math.min(Math.sqrt((x-WELL_CX)**2+(y_base-WELL_CY)**2) / 200, 1) : 1;
+      ctx.strokeStyle = mass
+        ? `rgba(${Math.round(59 + (121)*distFrac)},${Math.round(200 - (73)*distFrac)},${Math.round(232 - (105)*distFrac)},${gridAlpha + (1-distFrac)*0.25})`
+        : `rgba(59,200,232,${gridAlpha})`;
+      if (i === 0) { ctx.beginPath(); ctx.moveTo(px, py); }
+      else { ctx.lineTo(px, py); }
+    }
+    ctx.stroke();
+  }
+
+  // Vertical grid lines
+  for (let c = 0; c <= COLS; c++) {
+    const x_base = c * cellW;
+    ctx.beginPath();
+    for (let i = 0; i <= SEGS; i++) {
+      const y = i * WELL_H / SEGS;
+      const { dx, dy } = getDisp(x_base, y);
+      const px = x_base + dx, py = y + dy;
+      const distFrac = mass ? Math.min(Math.sqrt((x_base-WELL_CX)**2+(y-WELL_CY)**2) / 200, 1) : 1;
+      ctx.strokeStyle = mass
+        ? `rgba(${Math.round(59+(121)*distFrac)},${Math.round(200-(73)*distFrac)},${Math.round(232-(105)*distFrac)},${gridAlpha + (1-distFrac)*0.20})`
+        : `rgba(59,200,232,${gridAlpha})`;
+      if (i === 0) { ctx.beginPath(); ctx.moveTo(px, py); }
+      else { ctx.lineTo(px, py); }
+    }
+    ctx.stroke();
+  }
+
+  if (!mass) return;
+
+  // Mass glow
+  const pulse = 0.55 + 0.45 * Math.sin(wellTime * 0.055);
+  const glowR = mass.glowR * (0.85 + 0.15 * pulse);
+
+  const grd = ctx.createRadialGradient(WELL_CX, WELL_CY, 0, WELL_CX, WELL_CY, glowR);
+  grd.addColorStop(0, hexToRgba(mass.color, 0.55 * pulse));
+  grd.addColorStop(0.4, hexToRgba(mass.color, 0.25 * pulse));
+  grd.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.arc(WELL_CX, WELL_CY, glowR, 0, Math.PI*2); ctx.fill();
+
+  // Mass body
+  ctx.fillStyle = mass.color;
+  ctx.shadowColor = mass.color;
+  ctx.shadowBlur = 12;
+  ctx.beginPath(); ctx.arc(WELL_CX, WELL_CY, mass.radius, 0, Math.PI*2); ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Mass label
+  ctx.fillStyle = 'rgba(230,237,243,0.9)';
+  ctx.font = 'bold 11px Nunito, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(mass.name, WELL_CX, WELL_CY - mass.radius - 10);
+
+  // Marble path previews — drawn above grid and mass
+  stepAndDrawMarbles(ctx);
+}
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/* =====================================================================
+   PHASE 2: MARBLE PATH PREVIEWS
+   ===================================================================== */
+function spawnMarbles(key) {
+  clearTimeout(marbleRespawnTimeout);
+  marbles = [];
+  const p = MARBLE_PARAMS[key];
+  const mass = WELL_MASSES[key];
+  if (!p || !mass) return;
+
+  for (let i = 0; i < p.count; i++) {
+    // Distribute evenly around a circle with slight random jitter
+    const angle = (i / p.count) * Math.PI * 2 + (Math.random() - 0.5) * 0.45;
+    const spawnR = 148 + Math.random() * 24;
+    const x = WELL_CX + Math.cos(angle) * spawnR;
+    const y = WELL_CY + Math.sin(angle) * spawnR;
+
+    // Unit vector toward center
+    const toDx = WELL_CX - x, toDy = WELL_CY - y;
+    const dist = Math.sqrt(toDx*toDx + toDy*toDy) + 0.001;
+    const nx = toDx/dist, ny = toDy/dist;
+    // Perpendicular (tangential) direction
+    const px = -ny, py = nx;
+    const sign = Math.random() > 0.5 ? 1 : -1;
+
+    const inSpeed   = p.speed * (0.5 + Math.random() * 0.35);
+    const tangSpeed = p.speed * p.tang * (0.6 + Math.random() * 0.8) * sign;
+
+    marbles.push({
+      x, y,
+      vx: nx * inSpeed + px * tangSpeed,
+      vy: ny * inSpeed + py * tangSpeed,
+      life: 0,
+      maxLife: p.maxLife + Math.round(Math.random() * 24 - 12),
+      trail: [],
+      G: p.G,
+      color: mass.color,
+      r: 2.0 + Math.random() * 0.7,
+      crashR: mass.radius + 8
+    });
+  }
+}
+
+function stepAndDrawMarbles(ctx) {
+  if (!marbles.length) return;
+  const toRemove = [];
+
+  // Step physics
+  marbles.forEach((m, idx) => {
+    m.trail.push({ x: m.x, y: m.y });
+    if (m.trail.length > 6) m.trail.shift();
+
+    const dx = WELL_CX - m.x, dy = WELL_CY - m.y;
+    const distSq = dx*dx + dy*dy;
+    const dist = Math.sqrt(distSq) + 0.001;
+    // Inverse-square gravity, softened near center, capped for performance
+    const acc = Math.min(m.G * 2000 / (distSq + 400), 1.5);
+    m.vx += (dx/dist) * acc;
+    m.vy += (dy/dist) * acc;
+    m.x  += m.vx;
+    m.y  += m.vy;
+    m.life++;
+
+    if (m.life >= m.maxLife || dist < m.crashR ||
+        m.x < -14 || m.x > WELL_W + 14 || m.y < -14 || m.y > WELL_H + 14) {
+      toRemove.push(idx);
+    }
+  });
+
+  // Draw (before removal so dying frame still renders)
+  marbles.forEach(m => {
+    if (m.life >= m.maxLife) return;
+    const lifeFrac = m.life / m.maxLife;
+    const alpha = (1 - lifeFrac) * 0.88;
+    if (alpha < 0.03) return;
+    const cr = parseInt(m.color.slice(1,3),16);
+    const cg = parseInt(m.color.slice(3,5),16);
+    const cb = parseInt(m.color.slice(5,7),16);
+
+    // Trail segments — fade and thin toward tail
+    if (m.trail.length > 1) {
+      for (let t = 1; t < m.trail.length; t++) {
+        const tFrac = t / m.trail.length;
+        ctx.strokeStyle = `rgba(${cr},${cg},${cb},${alpha * tFrac * 0.42})`;
+        ctx.lineWidth = m.r * tFrac * 0.9;
+        ctx.beginPath();
+        ctx.moveTo(m.trail[t-1].x, m.trail[t-1].y);
+        ctx.lineTo(m.trail[t].x, m.trail[t].y);
+        ctx.stroke();
+      }
+    }
+
+    // Soft glow halo (no shadowBlur — keeps Chromebook-friendly)
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha * 0.22})`;
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, m.r * 2.8, 0, Math.PI*2);
+    ctx.fill();
+
+    // Core dot
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, m.r, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  // Remove dead marbles (reverse order preserves indices)
+  for (let i = toRemove.length - 1; i >= 0; i--) marbles.splice(toRemove[i], 1);
+
+  // Loop: when all marbles have cleared, respawn after a short pause
+  if (marbles.length === 0 && selectedWellMass) {
+    clearTimeout(marbleRespawnTimeout);
+    marbleRespawnTimeout = setTimeout(() => {
+      if (selectedWellMass) spawnMarbles(selectedWellMass);
+    }, 900);
+  }
+}
+
+function selectWellMass(key, silent) {
+  selectedWellMass = key;
+  document.querySelectorAll('.mass-btn').forEach(b => b.classList.toggle('active', b.dataset.mass === key));
+  const m = WELL_MASSES[key];
+  document.getElementById('wellInfoText').textContent = m.desc;
+  document.getElementById('wellInfoSub').textContent = m.sub;
+  spawnMarbles(key);
+
+  if (!wellTested.has(key)) {
+    wellTested.add(key);
+    document.querySelector(`.mass-btn[data-mass="${key}"]`)?.classList.add('tested');
+    updateTestedUI();
+    if (!silent) {
+      toast(`${m.name} placed! Observe the well depth.`, 'info');
+    }
+  }
+}
+
+function updateTestedUI() {
+  const count = wellTested.size;
+  document.getElementById('testedCount').textContent = count;
+  wellTested.forEach(k => {
+    document.querySelector(`.mass-btn[data-mass="${k}"]`)?.classList.add('tested');
+    revealCompareRow(k);
+  });
+
+  // Completion glow when all 5 explored
+  if (count >= 5) {
+    const counter = document.getElementById('testedCounter');
+    if (counter) {
+      counter.style.background = 'rgba(46,204,113,0.22)';
+      counter.style.borderColor = 'rgba(46,204,113,0.6)';
+      counter.style.boxShadow = '0 0 16px rgba(46,204,113,0.2)';
+    }
+    document.getElementById('testedCounterLabel').textContent = 'All masses explored!';
+    showCheckpoint();
+  }
+}
+
+function revealCompareRow(key) {
+  const row = document.getElementById('gcrow-' + key);
+  if (!row || row.classList.contains('revealed')) return;
+  row.classList.add('revealed');
+  // Animate the bar width after a brief paint delay
+  setTimeout(() => {
+    const bar = row.querySelector('.gc-bar');
+    if (bar) bar.style.width = bar.dataset.pct + '%';
+  }, 60);
+}
+
+/* =====================================================================
+   PHASE 2: CHECKPOINT
+   ===================================================================== */
+function showCheckpoint() {
+  const card = document.getElementById('phase2Checkpoint');
+  if (!card || card.style.display !== 'none') return;
+  card.style.display = 'block';
+  setTimeout(() => card.scrollIntoView({ behavior:'smooth', block:'nearest' }), 200);
+  toast('All 5 masses explored! Answer the checkpoint to continue.', 'info');
+}
+
+function answerCheckpoint(idx) {
+  if (checkpointAnswered) return;
+  const opts = document.querySelectorAll('.p2-cp-opt');
+  const feedback = document.getElementById('cpFeedback');
+
+  opts.forEach(o => { o.disabled = true; });
+
+  if (idx === CHECKPOINT_CORRECT) {
+    checkpointAnswered = true;
+    opts[idx].classList.add('correct');
+    feedback.className = 'p2-cp-feedback correct';
+    feedback.textContent = 'Correct! Mass affects the depth of the gravity well. Larger masses create stronger gravitational pull and bend spacetime more strongly.';
+    feedback.style.display = 'block';
+    setTimeout(unlockPhase3, 1000);
+  } else {
+    opts[idx].classList.add('wrong');
+    opts[CHECKPOINT_CORRECT].classList.add('correct');
+    feedback.className = 'p2-cp-feedback wrong';
+    feedback.innerHTML = 'Not quite — look back at the comparison table. Which mass created the deepest well?<br><button class="p2-cp-retry" onclick="retryCheckpoint()">Try Again</button>';
+    feedback.style.display = 'block';
+  }
+}
+
+function retryCheckpoint() {
+  const opts = document.querySelectorAll('.p2-cp-opt');
+  opts.forEach(o => {
+    o.disabled = false;
+    o.classList.remove('correct', 'wrong');
+  });
+  const feedback = document.getElementById('cpFeedback');
+  feedback.style.display = 'none';
+  feedback.className = 'p2-cp-feedback';
+}
+
+function unlockPhase3() {
+  setPhase(3);
+  resetOrbit();
+  toast('Phase 3 Unlocked: Orbit Challenge Ready', 'success');
+  setTimeout(() => {
+    const target = document.getElementById('phase3');
+    const navH = document.querySelector('nav')?.offsetHeight || 0;
+    window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - navH - 14, behavior:'smooth' });
+  }, 150);
+}
+
+function resetWell() {
+  selectedWellMass = null;
+  marbles = [];
+  clearTimeout(marbleRespawnTimeout);
+  document.querySelectorAll('.mass-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('wellInfoText').textContent = 'Select a mass from the panel to place it in the gravity field.';
+  document.getElementById('wellInfoSub').textContent = '';
+  drawWellCanvas();
+}
+
+/* =====================================================================
+   PHASE 3: ORBIT CANVAS
+   ===================================================================== */
+function initOrbitCanvas() {
+  orbitCanvas = document.getElementById('orbitCanvas');
+  orbitCtx = orbitCanvas.getContext('2d');
+  orbitDPR = Math.min(window.devicePixelRatio || 1, 2);
+  orbitCanvas.width  = ORBIT_W * orbitDPR;
+  orbitCanvas.height = ORBIT_H * orbitDPR;
+  orbitCtx.scale(orbitDPR, orbitDPR);
+  orbitCanvas.style.width  = ORBIT_W + 'px';
+  orbitCanvas.style.height = ORBIT_H + 'px';
+
+  // Stars
+  for (let i = 0; i < 100; i++) {
+    orbitStars.push({ x:Math.random()*ORBIT_W, y:Math.random()*ORBIT_H, r:Math.random()*1.3+0.3, a:Math.random()*0.6+0.3 });
+  }
+
+  // Mouse drag for launch vector
+  orbitCanvas.addEventListener('mousedown', startDrag);
+  orbitCanvas.addEventListener('mousemove', moveDrag);
+  orbitCanvas.addEventListener('mouseup', endDrag);
+  orbitCanvas.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e.touches[0]); }, { passive:false });
+  orbitCanvas.addEventListener('touchmove', e => { e.preventDefault(); moveDrag(e.touches[0]); }, { passive:false });
+  orbitCanvas.addEventListener('touchend', e => { e.preventDefault(); endDrag(e.changedTouches[0]); }, { passive:false });
+
+  resetOrbit();
+  updateSpeedMeter(0);
+}
+
+function getLogicalPos(e) {
+  const rect = orbitCanvas.getBoundingClientRect();
+  const scaleX = ORBIT_W / rect.width;
+  const scaleY = ORBIT_H / rect.height;
+  return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+}
+
+let dragStartX = 0, dragStartY = 0;
+
+function startDrag(e) {
+  if (orbitRunning) return;
+  const pos = getLogicalPos(e);
+  isDragging = true;
+  // Always drag from probe position
+  dragStartX = probe ? probe.x : ORBIT_CX + ORBIT_MASSES[selectedOrbitMassKey].startDist;
+  dragStartY = probe ? probe.y : ORBIT_CY;
+  dragVx = pos.x - dragStartX;
+  dragVy = pos.y - dragStartY;
+  drawOrbitFrame();
+}
+
+function moveDrag(e) {
+  if (!isDragging || orbitRunning) return;
+  const pos = getLogicalPos(e);
+  dragVx = pos.x - dragStartX;
+  dragVy = pos.y - dragStartY;
+  const dragDist = Math.sqrt(dragVx*dragVx + dragVy*dragVy);
+  const frac = Math.min(dragDist / MAX_DRAG, 1);
+  updateSpeedMeter(frac);
+  drawOrbitFrame();
+}
+
+function endDrag(e) {
+  if (!isDragging || orbitRunning) return;
+  isDragging = false;
+  const dragDist = Math.sqrt(dragVx*dragVx + dragVy*dragVy);
+  if (dragDist < 5) return; // too short — ignore
+  const speed = Math.min(dragDist / MAX_DRAG * MAX_SPEED, MAX_SPEED);
+  const nx = dragVx/dragDist, ny = dragVy/dragDist;
+  probe.vx = nx * speed;
+  probe.vy = ny * speed;
+  vectorSet = true;
+  const frac = speed / MAX_SPEED;
+  updateSpeedMeter(frac);
+  document.getElementById('launchBtn').disabled = false;
+  setOutcomeBadge('ready', 'Vector set — click Launch!');
+  document.getElementById('orbitHintText').textContent = `Speed: ${speed.toFixed(1)} — click Launch Probe`;
+  drawOrbitFrame();
+}
+
+function selectOrbitMass(key) {
+  selectedOrbitMassKey = key;
+  document.querySelectorAll('.orbit-mass-btn').forEach(b => b.classList.toggle('active', b.dataset.omass === key));
+  document.getElementById('orbitMassHint').textContent = ORBIT_MASSES[key].hint;
+  resetOrbit();
+  updateSpeedMeter(0); // refresh zone boundaries for new mass
+}
+
+function resetOrbit() {
+  if (orbitRAF) { cancelAnimationFrame(orbitRAF); orbitRAF = null; }
+  orbitRunning = false;
+  orbitFrameCount = 0;
+  minDistSoFar = Infinity;
+  bhSurvivalFrames = 0;
+  currentOutcome = 'ready';
+  isDragging = false;
+  vectorSet = false;
+  dragVx = 0; dragVy = 0;
+
+  const m = ORBIT_MASSES[selectedOrbitMassKey];
+  probe = { x: ORBIT_CX + m.startDist, y: ORBIT_CY, vx:0, vy:0, trail:[] };
+
+  document.getElementById('launchBtn').disabled = true;
+  setOutcomeBadge('ready', 'Aim to launch');
+  document.getElementById('orbitHintText').textContent = 'Drag on canvas to aim';
+  updateSpeedMeter(0);
+  drawOrbitFrame();
+}
+
+function launchProbe() {
+  if (orbitRunning || !vectorSet) return;
+  orbitRunning = true;
+  document.getElementById('launchBtn').disabled = true;
+  setOutcomeBadge('flying', 'Flying...');
+  document.getElementById('orbitHintText').textContent = 'Observing outcome...';
+  runOrbitLoop();
+}
+
+function runOrbitLoop() {
+  const mass = ORBIT_MASSES[selectedOrbitMassKey];
+  const dx = ORBIT_CX - probe.x, dy = ORBIT_CY - probe.y;
+  const distSq = dx*dx + dy*dy;
+  const dist = Math.sqrt(distSq);
+
+  // Crash
+  if (dist < mass.crashR) {
+    orbitRunning = false;
+    currentOutcome = 'crashed';
+    setOutcomeBadge('crashed', 'Crashed into mass!');
+    document.getElementById('orbitHintText').textContent = 'Not enough sideways speed to stay in orbit — try aiming more sideways.';
+    toast('Crashed! Your probe didn\'t have enough sideways speed to stay in orbit.', 'warn');
+    drawOrbitFrame(); return;
+  }
+
+  // Escape
+  if (dist > ESCAPE_R) {
+    orbitRunning = false;
+    currentOutcome = 'escaped';
+    // Check flyby: if probe passed close during flight
+    const isFlyby = minDistSoFar < mass.crashR * 3.5;
+    setOutcomeBadge('escaped', 'Escaped gravity well!');
+    document.getElementById('orbitHintText').textContent = isFlyby ? 'Flyby path! Your probe curved around without being captured.' : 'Probe moved too fast to be trapped — try a shorter drag for orbit.';
+    toast(isFlyby ? 'Flyby! Probe curved around the mass — not captured by gravity.' : 'Escaped! Your probe moved too fast to remain trapped by gravity.', 'success');
+    achieveEscape(isFlyby);
+    drawOrbitFrame(); return;
+  }
+
+  // Leapfrog integration (more stable orbits)
+  const acc = G * mass.mass / distSq;
+  probe.x += probe.vx * 0.5;
+  probe.y += probe.vy * 0.5;
+  const dx2 = ORBIT_CX - probe.x, dy2 = ORBIT_CY - probe.y;
+  const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2) + 0.001;
+  const acc2 = G * mass.mass / (dist2*dist2);
+  probe.vx += acc2 * dx2/dist2;
+  probe.vy += acc2 * dy2/dist2;
+  probe.x += probe.vx * 0.5;
+  probe.y += probe.vy * 0.5;
+
+  // Trail
+  probe.trail.push({ x:probe.x, y:probe.y });
+  if (probe.trail.length > 400) probe.trail.shift();
+
+  minDistSoFar = Math.min(minDistSoFar, dist);
+  orbitFrameCount++;
+
+  // Orbit success (4 seconds at 60fps)
+  if (orbitFrameCount >= 240 && currentOutcome !== 'orbiting') {
+    currentOutcome = 'orbiting';
+    setOutcomeBadge('orbiting', 'Stable orbit!');
+    document.getElementById('orbitHintText').textContent = 'Gravity and forward motion balanced — stable orbit achieved!';
+    toast('Stable orbit! Gravity and sideways motion worked together perfectly.', 'success');
+    achieveOrbit();
+  }
+
+  // Black hole survival (2 seconds at 60fps)
+  if (selectedOrbitMassKey === 'blackhole' && orbitFrameCount >= 120 && !challengesDone.has('c5')) {
+    challengesDone.add('c5');
+    updateChallengeCard('chal5');
+    toast('Black Hole Survival! Challenge complete.', 'success');
+    checkP3Progress();
+  }
+
+  drawOrbitFrame();
+  orbitRAF = requestAnimationFrame(runOrbitLoop);
+}
+
+function achieveOrbit() {
+  if (selectedOrbitMassKey === 'earth' && !challengesDone.has('c1')) {
+    challengesDone.add('c1');
+    updateChallengeCard('chal1');
+    toast('Stable Orbit Achieved around Earth! Now complete one more mission.', 'success');
+  } else if (selectedOrbitMassKey === 'jupiter' && !challengesDone.has('c3')) {
+    challengesDone.add('c3');
+    updateChallengeCard('chal3');
+    toast('Stable Orbit Around Jupiter! Challenge complete.', 'success');
+  }
+  checkP3Progress();
+}
+
+function achieveEscape(isFlyby) {
+  if (selectedOrbitMassKey === 'sun' && !challengesDone.has('c2')) {
+    challengesDone.add('c2');
+    updateChallengeCard('chal2');
+    toast('Escape Successful! Probe broke free of the Sun\'s gravity.', 'success');
+  }
+  if (isFlyby && !challengesDone.has('c4')) {
+    challengesDone.add('c4');
+    updateChallengeCard('chal4');
+    toast('Flyby Completed! Nice slingshot maneuver.', 'success');
+  }
+  checkP3Progress();
+}
+
+function updateChallengeCard(id) {
+  document.getElementById(id)?.classList.add('done');
+}
+
+function checkP3Progress() {
+  p3EarthDone = challengesDone.has('c1');
+  const p3AdditionalCount = ['c2','c3','c4','c5'].filter(c => challengesDone.has(c)).length;
+  p3AdditionalDone = p3AdditionalCount >= 2;
+
+  // Update progress note in the challenge panel
+  const note = document.getElementById('p3ProgressNote');
+  if (note) {
+    if (!p3EarthDone && p3AdditionalCount === 0) {
+      note.textContent = 'Complete Earth orbit + 2 more missions to unlock the checkpoint.';
+    } else if (!p3EarthDone && p3AdditionalCount === 1) {
+      note.textContent = 'Good start! Still need to orbit Earth + 1 more mission.';
+    } else if (!p3EarthDone) {
+      note.textContent = 'Almost there — still need to complete Earth orbit.';
+    } else if (p3AdditionalCount === 0) {
+      note.textContent = 'Earth orbit done! Complete 2 more missions.';
+    } else if (p3AdditionalCount === 1) {
+      note.textContent = 'Earth orbit done! Complete 1 more mission to unlock the checkpoint.';
+    } else {
+      note.textContent = 'All requirements met — answer the checkpoint below!';
+      note.style.color = 'var(--teal)';
+    }
+  }
+
+  // Unlock checkpoint when Earth orbit + one additional mission complete
+  if (p3EarthDone && p3AdditionalDone && !phase3CheckpointAnswered) {
+    showPhase3Checkpoint();
+  }
+}
+
+function showPhase3Checkpoint() {
+  const card = document.getElementById('phase3Checkpoint');
+  if (!card || card.style.display !== 'none') return;
+  card.style.display = 'block';
+  setTimeout(() => {
+    const navH = document.querySelector('nav')?.offsetHeight || 0;
+    window.scrollTo({ top: card.getBoundingClientRect().top + window.scrollY - navH - 20, behavior:'smooth' });
+  }, 300);
+  toast('Missions complete! Answer the checkpoint to unlock the quiz.', 'info');
+}
+
+function answerPhase3Checkpoint(idx) {
+  if (phase3CheckpointAnswered) return;
+  const opts = document.querySelectorAll('.p3-cp-opt');
+  const feedback = document.getElementById('p3cpFeedback');
+  opts.forEach(o => { o.disabled = true; });
+
+  if (idx === P3_CHECKPOINT_CORRECT) {
+    phase3CheckpointAnswered = true;
+    opts[idx].classList.add('correct');
+    feedback.className = 'p2-cp-feedback correct';
+    feedback.textContent = 'Correct! A stable orbit forms when gravity pulls inward while forward motion keeps the object moving sideways. Both forces must work together.';
+    feedback.style.display = 'block';
+    setTimeout(completePhase3, 1200);
+  } else {
+    opts[idx].classList.add('wrong');
+    opts[P3_CHECKPOINT_CORRECT].classList.add('correct');
+    feedback.className = 'p2-cp-feedback wrong';
+    feedback.innerHTML = 'Not quite. Think about what you just did in the simulation — what two things had to work together for orbit to happen?<br><button class="p2-cp-retry" onclick="retryPhase3Checkpoint()">Try Again</button>';
+    feedback.style.display = 'block';
+  }
+}
+
+function retryPhase3Checkpoint() {
+  const opts = document.querySelectorAll('.p3-cp-opt');
+  opts.forEach(o => {
+    o.disabled = false;
+    o.classList.remove('correct', 'wrong');
+  });
+  const feedback = document.getElementById('p3cpFeedback');
+  feedback.style.display = 'none';
+  feedback.className = 'p2-cp-feedback';
+}
+
+function completePhase3() {
+  if (phase3Completed) return;
+  phase3Completed = true;
+  document.getElementById('step3').classList.add('done');
+  document.getElementById('step3').classList.remove('active');
+  document.getElementById('modeGate').style.display = 'block';
+  document.getElementById('phase4').style.display = classroomMode ? 'block' : 'none';
+  if (classroomMode) setPhase(4);
+  setTimeout(showCompletionOverlay, 500);
+  toast('Phase 3 Complete: Orbit Mechanics Mastered', 'success');
+  setTimeout(() => {
+    const gate = document.getElementById('modeGate');
+    const navH = document.querySelector('nav')?.offsetHeight || 0;
+    window.scrollTo({ top: gate.getBoundingClientRect().top + window.scrollY - navH - 14, behavior:'smooth' });
+  }, 800);
+}
+
+function drawOrbitFrame() {
+  const ctx = orbitCtx;
+  const mass = ORBIT_MASSES[selectedOrbitMassKey];
+  ctx.clearRect(0, 0, ORBIT_W, ORBIT_H);
+
+  // Background
+  ctx.fillStyle = '#030c16';
+  ctx.fillRect(0, 0, ORBIT_W, ORBIT_H);
+
+  // Stars
+  orbitStars.forEach(s => {
+    ctx.fillStyle = `rgba(220,232,255,${s.a})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+  });
+
+  // Faint gravity grid
+  ctx.strokeStyle = 'rgba(180,127,255,0.06)';
+  ctx.lineWidth = 1;
+  for (let c = 0; c <= 16; c++) {
+    const x = c * ORBIT_W/16;
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,ORBIT_H); ctx.stroke();
+  }
+  for (let r = 0; r <= 11; r++) {
+    const y = r * ORBIT_H/11;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(ORBIT_W,y); ctx.stroke();
+  }
+
+  // Escape radius indicator
+  ctx.strokeStyle = 'rgba(180,127,255,0.08)';
+  ctx.setLineDash([4,8]);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(ORBIT_CX, ORBIT_CY, ESCAPE_R, 0, Math.PI*2); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Mass glow
+  const massGrd = ctx.createRadialGradient(ORBIT_CX, ORBIT_CY, 0, ORBIT_CX, ORBIT_CY, mass.radius*4.5);
+  massGrd.addColorStop(0, hexToRgba(mass.color, 0.55));
+  massGrd.addColorStop(0.5, hexToRgba(mass.color, 0.15));
+  massGrd.addColorStop(1, 'transparent');
+  ctx.fillStyle = massGrd;
+  ctx.beginPath(); ctx.arc(ORBIT_CX, ORBIT_CY, mass.radius*4.5, 0, Math.PI*2); ctx.fill();
+
+  // Mass body
+  ctx.fillStyle = mass.color;
+  ctx.shadowColor = mass.color;
+  ctx.shadowBlur = 14;
+  ctx.beginPath(); ctx.arc(ORBIT_CX, ORBIT_CY, mass.radius, 0, Math.PI*2); ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Mass label
+  ctx.fillStyle = 'rgba(230,237,243,0.85)';
+  ctx.font = 'bold 10px Nunito, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(mass.name, ORBIT_CX, ORBIT_CY - mass.radius - 4);
+
+  // Trail
+  if (probe && probe.trail.length > 1) {
+    for (let i = 1; i < probe.trail.length; i++) {
+      const alpha = (i / probe.trail.length) * 0.7;
+      const hue = currentOutcome === 'orbiting' ? '120' : currentOutcome === 'escaped' ? '270' : '200';
+      ctx.strokeStyle = `hsla(${hue},80%,70%,${alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(probe.trail[i-1].x, probe.trail[i-1].y);
+      ctx.lineTo(probe.trail[i].x, probe.trail[i].y);
+      ctx.stroke();
+    }
+  }
+
+  // Probe
+  if (probe) {
+    // Probe glow
+    const pGrd = ctx.createRadialGradient(probe.x, probe.y, 0, probe.x, probe.y, 16);
+    pGrd.addColorStop(0, 'rgba(255,255,255,0.5)');
+    pGrd.addColorStop(1, 'transparent');
+    ctx.fillStyle = pGrd;
+    ctx.beginPath(); ctx.arc(probe.x, probe.y, 16, 0, Math.PI*2); ctx.fill();
+
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = '#fff';
+    ctx.shadowBlur = 6;
+    ctx.beginPath(); ctx.arc(probe.x, probe.y, 4, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Drag arrow
+    if (isDragging || vectorSet) {
+      const endX = probe.x + dragVx, endY = probe.y + dragVy;
+      const dragDist = Math.sqrt(dragVx*dragVx + dragVy*dragVy);
+      const speed = Math.min(dragDist / MAX_DRAG * MAX_SPEED, MAX_SPEED);
+      // Color: slow=red, medium=gold, fast=teal
+      const frac = speed / MAX_SPEED;
+      const r = Math.round(232 - frac*173), g = Math.round(112 + frac*88), b = Math.round(112 + frac*120);
+      ctx.strokeStyle = `rgb(${r},${g},${b})`;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(probe.x, probe.y); ctx.lineTo(endX, endY); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Arrowhead
+      if (dragDist > 8) {
+        const angle = Math.atan2(dragVy, dragVx);
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.save();
+        ctx.translate(endX, endY);
+        ctx.rotate(angle);
+        ctx.beginPath(); ctx.moveTo(8,0); ctx.lineTo(-5,4); ctx.lineTo(-5,-4); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+
+      // Speed label
+      ctx.fillStyle = 'rgba(230,237,243,0.9)';
+      ctx.font = 'bold 10px Nunito, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(`Speed: ${speed.toFixed(1)}`, endX, endY + 10);
+    }
+
+    // Probe label
+    ctx.fillStyle = 'rgba(200,220,240,0.75)';
+    ctx.font = 'bold 9px Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('PROBE', probe.x, probe.y - 8);
+  }
+
+  // Crash marker
+  if (currentOutcome === 'crashed') {
+    ctx.fillStyle = 'rgba(232,112,112,0.9)';
+    ctx.font = 'bold 13px Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('CRASH', ORBIT_CX, ORBIT_CY + mass.radius + 20);
+  }
+}
+
+function setOutcomeBadge(type, text) {
+  const badge = document.getElementById('outcomeBadge');
+  badge.className = 'outcome-badge ' + type;
+  badge.textContent = text;
+}
+
+function showCompletionOverlay() {
+  document.getElementById('orbitCompletionOverlay')?.classList.add('visible');
+}
+function hideCompletionOverlay() {
+  document.getElementById('orbitCompletionOverlay')?.classList.remove('visible');
+}
+
+/* =====================================================================
+   PHASE 4: QUIZ
+   ===================================================================== */
+function initQuiz() {
+  const container = document.getElementById('quizContainer');
+  QUIZ_DATA.forEach(q => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'quiz-question';
+    qDiv.dataset.qid = q.id;
+    qDiv.innerHTML = `<span class="quiz-question-num">Question ${q.id} — ${q.topic}</span><div class="quiz-question-text">${q.text}</div><div class="quiz-options">${q.options.map((opt,i) => `<div class="quiz-option" data-qid="${q.id}" data-idx="${i}"><div class="quiz-option-letter">${String.fromCharCode(65+i)}</div><span>${opt}</span></div>`).join('')}</div>`;
+    container.appendChild(qDiv);
+  });
+  container.addEventListener('click', e => {
+    if (quizSubmitted) return;
+    const opt = e.target.closest('.quiz-option'); if (!opt) return;
+    const qid = Number(opt.dataset.qid), idx = Number(opt.dataset.idx);
+    quizAnswers[qid] = idx;
+    const qDiv = container.querySelector('.quiz-question[data-qid="'+qid+'"]');
+    if (qDiv) { qDiv.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected')); opt.classList.add('selected'); }
+    updateQuizScore();
+    renderSubmitState();
+  });
+  document.getElementById('quizSubmitBtn').addEventListener('click', submitQuiz);
+  document.getElementById('quizScoreArea').style.display = 'block';
+  document.getElementById('quizSubmitArea').style.removeProperty('display');
+}
+
+function updateQuizScore() {
+  const answered = Object.keys(quizAnswers).length;
+  document.getElementById('quizScoreBadge').textContent = answered + ' / ' + QUIZ_DATA.length + ' answered';
+  const btn = document.getElementById('quizSubmitBtn');
+  btn.disabled = answered !== QUIZ_DATA.length;
+  btn.style.opacity = answered === QUIZ_DATA.length ? '1' : '0.45';
+}
+
+function submitQuiz() {
+  if (quizSubmitted) return;
+  quizSubmitted = true;
+  let correct = 0;
+  const container = document.getElementById('quizContainer');
+  QUIZ_DATA.forEach(q => {
+    const qDiv = container.querySelector('.quiz-question[data-qid="'+q.id+'"]'); if (!qDiv) return;
+    qDiv.querySelectorAll('.quiz-option').forEach((opt, i) => {
+      opt.style.cursor = 'default'; opt.classList.remove('selected');
+      if (i === q.correct) opt.classList.add('correct-reveal');
+      else if (quizAnswers[q.id] === i) opt.classList.add('wrong-reveal');
+    });
+    if (quizAnswers[q.id] === q.correct) correct++;
+  });
+  document.getElementById('quizScoreBadge').textContent = correct + ' / ' + QUIZ_DATA.length + ' correct';
+  document.getElementById('quizSubmitBtn').style.display = 'none';
+  const banner = document.getElementById('quizResultBanner');
+  banner.style.display = 'block';
+  if (correct >= 4) {
+    banner.className = 'quiz-result-banner pass';
+    banner.textContent = 'Excellent work! You scored ' + correct + '/' + QUIZ_DATA.length + '. You demonstrated strong understanding of gravity, mass, and orbital motion.';
+  } else {
+    banner.className = 'quiz-result-banner try-again';
+    banner.textContent = 'You scored ' + correct + '/' + QUIZ_DATA.length + '. Review the green-highlighted answers — they show the correct choice for each question.';
+  }
+  document.getElementById('step4').classList.add('done');
+  document.getElementById('step4').classList.remove('active');
+  toast('Quiz complete! ' + correct + '/' + QUIZ_DATA.length + ' correct.', correct >= 4 ? 'success' : 'info');
+  renderSubmitState();
+}
+
+function computeQuizScore() {
+  let c = 0; QUIZ_DATA.forEach(q => { if (quizAnswers[q.id] === q.correct) c++; }); return c + '/' + QUIZ_DATA.length;
+}
+
+function renderSubmitState() {
+  if (!classroomMode) return;
+  const nameOk   = document.getElementById('studentNameInput').value.trim().length > 0;
+  const teacherOk = document.getElementById('teacherSelect').value !== '';
+  const blockOk  = document.getElementById('blockInput').value.trim().length > 0;
+  const ready = quizSubmitted && nameOk && teacherOk && blockOk;
+  const btn = document.getElementById('classroomSubmitBtn');
+  const helper = document.getElementById('submitHelperText');
+  btn.disabled = !ready;
+  btn.className = 'submit-btn ' + (ready ? 'ready' : 'locked');
+  btn.textContent = 'Submit Quiz';
+  if (ready)           helper.textContent = 'Everything looks good. Ready to submit!';
+  else if (!quizSubmitted) helper.textContent = 'Complete and submit the quiz first.';
+  else if (!nameOk)    helper.textContent = 'Enter your student name to submit.';
+  else if (!teacherOk) helper.textContent = 'Select your teacher to submit.';
+  else if (!blockOk)   helper.textContent = 'Select your block to submit.';
+}
+
+function initClassroomSubmit() {
+  document.getElementById('classroomSubmitBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('classroomSubmitBtn'); if (btn.disabled) return;
+    const teacher = document.getElementById('teacherSelect').value;
+    const scriptUrl = SCRIPT_URLS[teacher];
+    if (!scriptUrl) { document.getElementById('submitError').textContent = 'Unknown teacher selection.'; document.getElementById('submitError').style.display = 'block'; return; }
+    btn.disabled = true; btn.className = 'submit-btn locked'; btn.textContent = 'Submitting...';
+    document.getElementById('submitError').style.display = 'none';
+    const params = new URLSearchParams({
+      tab: 'Gravity Wells',
+      studentName: document.getElementById('studentNameInput').value.trim(),
+      teacher,
+      block: document.getElementById('blockInput').value.trim(),
+      quizScore: computeQuizScore()
+    });
+    try {
+      await fetch(scriptUrl + '?' + params.toString(), { method:'GET', mode:'no-cors' });
+      btn.textContent = 'Submitted';
+      document.getElementById('submitHelperText').style.display = 'none';
+      document.getElementById('submitSuccess').innerHTML = 'Your work has been submitted! Great job, scientist.<br><span class="quiz-score-badge" style="margin-top:10px;">Your quiz score: ' + computeQuizScore() + '</span>';
+      document.getElementById('submitSuccess').style.display = 'block';
+    } catch(err) {
+      btn.disabled = false; btn.className = 'submit-btn ready'; btn.textContent = 'Submit Quiz';
+      document.getElementById('submitError').textContent = 'Submission failed. Check your connection and try again.';
+      document.getElementById('submitError').style.display = 'block';
+    }
+  });
+}
+
+/* =====================================================================
+   PHASE 3: SPEED METER
+   ===================================================================== */
+function updateSpeedMeter(frac) {
+  const cursor = document.getElementById('speedMeterCursor');
+  const zoneLabel = document.getElementById('speedMeterZoneLabel');
+  const bar = document.getElementById('speedMeterBar');
+  if (!cursor || !bar) return;
+
+  // Compute orbit zone boundaries based on current mass physics
+  const m = ORBIT_MASSES[selectedOrbitMassKey];
+  const vOrbit = Math.sqrt(G * m.mass / m.startDist);
+  const vEscape = vOrbit * Math.sqrt(2);
+  const zoneStart = Math.max((vOrbit * 0.75) / MAX_SPEED, 0.05);
+  const zoneEnd   = Math.min((vEscape * 1.2)  / MAX_SPEED, 0.96);
+
+  // Update gradient colours to match current mass's orbit physics
+  const s = (zoneStart * 100).toFixed(1);
+  const e = (zoneEnd   * 100).toFixed(1);
+  bar.style.background = `linear-gradient(to right,#e87070 0%,#e87070 ${s}%,#2ecc71 ${s}%,#2ecc71 ${e}%,#f5c842 ${e}%,#f5c842 100%)`;
+
+  // Move cursor
+  const pct = Math.min(frac, 1) * 100;
+  cursor.style.left = pct.toFixed(1) + '%';
+
+  // Zone label
+  if (zoneLabel) {
+    if (frac < zoneStart) {
+      zoneLabel.textContent = 'Too slow — likely to crash';
+      zoneLabel.style.color = '#e87070';
+    } else if (frac <= zoneEnd) {
+      zoneLabel.textContent = 'Orbit zone — aim sideways!';
+      zoneLabel.style.color = '#2ecc71';
+    } else {
+      zoneLabel.textContent = 'Too fast — likely to escape';
+      zoneLabel.style.color = '#f5c842';
+    }
+  }
+}
+
+/* =====================================================================
+   TOAST
+   ===================================================================== */
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+</script>
+</body>
+</html>
