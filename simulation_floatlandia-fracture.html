@@ -1449,6 +1449,7 @@ function trySnapPlate(plate) {
     updateAlignMeter();
 
     if (snappedPlates.size === 5) {
+      phase2Complete = true;
       toast('🎉 All evidence lines up! Supercontinent reconstructed!', 'success');
       setTimeout(() => setPhase(3), 650);
     }
@@ -1460,6 +1461,7 @@ function trySnapPlate(plate) {
 
 function resetReconstruction() {
   snappedPlates.clear();
+  phase2Complete = false;
   plateStates.forEach(p => {
     p.x = p.startX;
     p.y = p.startY;
@@ -1536,6 +1538,7 @@ const SCRIPT_URLS = {
 let mode = 'practice';
 let classroomMode = false;
 let phase = 1;
+let phase2Complete = false; // set true only when all 5 plates snap; gates phase 3 visibility
 let snappedPlates = new Set();
 let evidenceSelected = new Set();
 let simRunning = false;
@@ -1662,7 +1665,9 @@ function setPhase(n) {
   phase = n;
   const sections = ['phase1','phase2','phase3','phase4'];
   sections.forEach((id, i) => {
-    document.getElementById(id).style.display = (i < n) ? 'block' : 'none';
+    // Phase 3 requires an explicit completion flag (all 5 plates snapped) in addition to normal progression
+    const show = (i < n) && (id !== 'phase3' || phase2Complete);
+    document.getElementById(id).style.display = show ? 'block' : 'none';
   });
   for (let i = 1; i <= 4; i++) {
     const step = document.getElementById('step' + i);
@@ -1716,6 +1721,7 @@ function solvePhase2Hotkey() {
   drawRecon();
   if (!snapAnimRAF) animateSnapGlow();
   toast('Hotkey used: Floatlandia reconstructed.', 'success');
+  phase2Complete = true;
   setTimeout(() => setPhase(3), 650);
 }
 
