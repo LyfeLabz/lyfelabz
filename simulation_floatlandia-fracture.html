@@ -1954,6 +1954,7 @@ function updateQuizScore(){
   const btn=document.getElementById('quizSubmitBtn');
   btn.disabled=answered!==QUIZ_DATA.length;
   btn.style.opacity=answered===QUIZ_DATA.length?'1':'0.45';
+  if(answered===QUIZ_DATA.length&&!quizSubmitted)submitQuiz();
 }
 
 function submitQuiz(){

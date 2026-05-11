@@ -2132,7 +2132,7 @@ function initQuiz() {
   });
   document.getElementById('quizSubmitBtn').addEventListener('click', submitQuiz);
   document.getElementById('quizScoreArea').style.display = 'block';
-  document.getElementById('quizSubmitArea').style.removeProperty('display');
+  document.getElementById('quizSubmitArea').style.display = 'none';
 }
 
 function updateQuizScore() {
@@ -2141,6 +2141,7 @@ function updateQuizScore() {
   const btn = document.getElementById('quizSubmitBtn');
   btn.disabled = answered !== QUIZ_DATA.length;
   btn.style.opacity = answered === QUIZ_DATA.length ? '1' : '0.45';
+  if (answered === QUIZ_DATA.length && !quizSubmitted) submitQuiz();
 }
 
 function submitQuiz() {
