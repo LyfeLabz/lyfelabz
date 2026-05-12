@@ -1042,48 +1042,6 @@ footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
   </div>
 </section>
 
-<!-- VOCABULARY -->
-<div class="vocab-section" id="vocabSection" style="display:none;">
-  <div class="section-label" style="margin-bottom:0.6rem;">Vocabulary</div>
-  <div class="vocab-pills">
-    <span class="vocab-pill">gravity</span>
-    <span class="vocab-pill">mass</span>
-    <span class="vocab-pill">orbit</span>
-    <span class="vocab-pill">inertia</span>
-    <span class="vocab-pill">velocity</span>
-    <span class="vocab-pill">escape velocity</span>
-    <span class="vocab-pill">spacetime</span>
-    <span class="vocab-pill">black hole</span>
-  </div>
-</div>
-
-<!-- GO FURTHER -->
-<div class="go-further-section" id="goFurtherSection" style="display:none;">
-  <div class="section-label" style="margin-bottom:0.6rem;">Go Further</div>
-  <div class="go-further-grid">
-    <a class="gf-card" href="https://spaceplace.nasa.gov/what-is-gravity/en/" target="_blank" rel="noopener">
-      <div class="gf-card-label">External Resource</div>
-      <div class="gf-card-title">NASA Space Place — Gravity</div>
-      <div class="gf-card-desc">NASA's student-friendly guide to gravity, mass, and why things fall.</div>
-    </a>
-    <a class="gf-card" href="https://solarsystem.nasa.gov/planets/overview/" target="_blank" rel="noopener">
-      <div class="gf-card-label">External Resource</div>
-      <div class="gf-card-title">NASA Solar System Exploration</div>
-      <div class="gf-card-desc">Explore each planet and how gravity governs their orbital paths.</div>
-    </a>
-    <a class="gf-card" href="https://www.nasa.gov/black-holes/" target="_blank" rel="noopener">
-      <div class="gf-card-label">External Resource</div>
-      <div class="gf-card-title">NASA — Black Holes</div>
-      <div class="gf-card-desc">What happens when gravity becomes so strong that not even light escapes?</div>
-    </a>
-    <div class="gf-card placeholder">
-      <div class="gf-card-label">Coming Soon</div>
-      <div class="gf-card-title">Orbit Builder Simulation</div>
-      <div class="gf-card-desc">Design multi-body orbital systems and explore gravitational interactions.</div>
-    </div>
-  </div>
-</div>
-
 <!-- TOAST -->
 <div id="toastContainer"></div>
 
@@ -1269,8 +1227,6 @@ function setPhase(n) {
   }
   if (n >= 2) { startWellAnimation(); }
   if (n === 4) {
-    document.getElementById('vocabSection').style.display = 'block';
-    document.getElementById('goFurtherSection').style.display = 'block';
   }
 }
 
