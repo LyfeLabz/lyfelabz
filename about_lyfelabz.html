@@ -451,21 +451,37 @@
   <div class="content-section">
     <div class="section-eyebrow">For Educators</div>
     <h2 class="section-title">Educator Mode</h2>
-    <div class="standards-block" style="margin-bottom:1.25rem;">
-      <p>LyfeLabz includes two optional educator overlays that surface instructional context hidden by default — so students see clean content while teachers can access the layer underneath.</p>
-      <ul class="standards-list" style="margin-top:1.2rem;">
-        <li><strong style="color:#3bc8e8;">Learning Science Badges</strong> — teal badges that appear on every lesson, extension, and game. Each badge names a research-backed learning principle used in that activity (e.g. Retrieval Practice, Dual Coding, Spaced Practice) with a tooltip linking to the source. Visit the <a href="about_learning-science.html" style="color:#3bc8e8;font-weight:700;">Learning Science</a> page for the full breakdown.</li>
-        <li><strong style="color:#2ecc71;">MA STE Standards</strong> — green badges that display the aligned 2016 Massachusetts Science &amp; Technology/Engineering standard codes for Grade 6 Life Science. An expandable detail card shows the full standard text. Only activities with a mapped standard show these badges.</li>
-      </ul>
-      <p style="margin-top:1.4rem;">Both modes are <strong style="color:var(--text);">session-only</strong> — they reset automatically when the tab is closed, so there's no risk of students seeing them next time.</p>
-    </div>
-    <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:1.8rem 2rem;text-align:center;">
-      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.1rem;letter-spacing:0.04em;">Toggle both modes on for this session from here or from the <a href="index.html" style="color:var(--gold);font-weight:700;">Learning Hub</a> footer.</p>
-      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;">
-        <button onclick="document.getElementById('edu-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.55rem;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(59,200,232,0.6);background:rgba(59,200,232,0.1);color:#3bc8e8;">🔬 Learning Science Badges</button>
-        <button onclick="document.getElementById('stem-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.55rem;font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;border-radius:99px;padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(46,204,113,0.6);background:rgba(46,204,113,0.1);color:#2ecc71;">📋 MA STE Standards</button>
+    <p style="font-size:0.97rem;color:var(--muted);line-height:1.8;margin-bottom:1.5rem;">Students see clean content. Teachers can surface the layer underneath — session-only, no setup required.</p>
+
+    <!-- Feature rows -->
+    <div style="display:flex;flex-direction:column;gap:0.85rem;margin-bottom:1.4rem;">
+
+      <!-- Learning Science Badges -->
+      <div style="background:var(--card);border:1px solid var(--border);border-left:4px solid #3bc8e8;border-radius:14px;padding:1.1rem 1.5rem;display:flex;align-items:flex-start;gap:1rem;">
+        <div style="flex-shrink:0;width:2.2rem;height:2.2rem;border-radius:99px;background:rgba(59,200,232,0.12);border:1px solid rgba(59,200,232,0.3);display:flex;align-items:center;justify-content:center;font-size:1rem;">🔬</div>
+        <div>
+          <div style="font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#3bc8e8;margin-bottom:0.3rem;">Learning Science Badges</div>
+          <p style="font-size:0.92rem;color:var(--muted);line-height:1.65;margin:0;">Teal badges on every lesson and game — each names a research-backed principle (Retrieval Practice, Dual Coding, Spaced Practice) with a tooltip linking to the source.</p>
+        </div>
       </div>
-      <p style="font-size:0.72rem;color:rgba(255,255,255,0.25);margin-top:0.85rem;">Session resets when tab is closed</p>
+
+      <!-- MA STE Standards -->
+      <div style="background:var(--card);border:1px solid var(--border);border-left:4px solid #2ecc71;border-radius:14px;padding:1.1rem 1.5rem;display:flex;align-items:flex-start;gap:1rem;">
+        <div style="flex-shrink:0;width:2.2rem;height:2.2rem;border-radius:99px;background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.3);display:flex;align-items:center;justify-content:center;font-size:1rem;">📋</div>
+        <div>
+          <div style="font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#2ecc71;margin-bottom:0.3rem;">MA STE Standards</div>
+          <p style="font-size:0.92rem;color:var(--muted);line-height:1.65;margin:0;">Green badges showing aligned 2016 Massachusetts STE standard codes for Grade 6 Life Science — with an expandable card displaying the full standard text.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Unified controls row -->
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:1rem 1.5rem;display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;">
+      <span style="font-size:0.75rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-right:0.25rem;">Enable for this session:</span>
+      <button onclick="document.getElementById('edu-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.45rem;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;border-radius:99px;padding:0.38rem 1rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(59,200,232,0.6);background:rgba(59,200,232,0.1);color:#3bc8e8;">Learning Science</button>
+      <button onclick="document.getElementById('stem-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.45rem;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;border-radius:99px;padding:0.38rem 1rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(46,204,113,0.6);background:rgba(46,204,113,0.1);color:#2ecc71;">MA STE Standards</button>
+      <span style="font-size:0.72rem;color:rgba(255,255,255,0.2);margin-left:auto;">Session resets on tab close</span>
     </div>
   </div>
 
