@@ -549,6 +549,13 @@
     font-weight: 700;
   }
   .ulink.sim:hover { background: rgba(245,130,50,0.42); border-color: rgba(245,130,50,0.9); color: #f5a028; }
+  .ulink.inv {
+    background: rgba(248,124,60,0.18);
+    color: #f87c3c;
+    border-color: rgba(248,124,60,0.55);
+    font-weight: 700;
+  }
+  .ulink.inv:hover { background: rgba(248,124,60,0.32); border-color: rgba(248,124,60,0.9); color: #f87c3c; }
   .ulink.map {
     background: rgba(59,200,232,0.32);
     border-color: rgba(59,200,232,0.65);
@@ -563,6 +570,9 @@
     font-weight: 700;
   }
   .ulink.dis:hover { background: rgba(180,127,255,0.45); border-color: rgba(180,127,255,0.85); color: var(--astro); }
+
+  /* ===== WHAT IS LIFE CARD — compact pills ===== */
+  #unit-what-is-life .ulink { padding-left: 0.65rem; padding-right: 0.65rem; }
 
   /* ===== PILL LEGEND ===== */
   .pill-legend {
@@ -857,11 +867,10 @@
     <div class="pill-legend">
       <span class="legend-label">Each lab may include:</span>
       <span class="ulink live legend-pill">Lesson</span>
-      <span class="ulink map legend-pill">Interactive Map</span>
-      <span class="ulink activity legend-pill">Activity</span>
       <span class="ulink sim legend-pill">Simulation</span>
-      <span class="ulink ext legend-pill">Extension</span>
+      <span class="ulink inv legend-pill">Investigation</span>
       <span class="ulink game legend-pill">Game</span>
+      <span class="ulink ext legend-pill">Extension</span>
     </div>
 
     <!-- ─── TOPIC GROUP: LIFE SCIENCE ─────────────────────────── -->
@@ -882,10 +891,15 @@
             </div>
             <div class="unit-links">
               <a href="lesson_what-is-life.html" class="ulink live">Lesson</a>
-              <a href="extension_gray-zone.html" class="ulink ext">The Gray Zone</a>
-              <a href="extension_virus.html" class="ulink ext">Are Viruses Alive?</a>
-              <a href="game_is-it-alive.html" class="ulink game">Is It Alive?</a>
-              <a href="game_cell-type-showdown.html" class="ulink game">Cell Type Showdown</a>
+              <a href="investigation_cell-energy.html" class="ulink inv">Cell Energy</a>
+              <span style="display:inline-flex;flex-wrap:nowrap;gap:0.45rem;">
+                <a href="game_is-it-alive.html" class="ulink game">Is It Alive?</a>
+                <a href="game_cellular-showdown.html" class="ulink game">Cellular Showdown</a>
+              </span>
+              <span style="display:inline-flex;flex-wrap:nowrap;gap:0.45rem;">
+                <a href="extension_gray-zone.html" class="ulink ext">The Gray Zone</a>
+                <a href="extension_virus.html" class="ulink ext">Are Viruses Alive?</a>
+              </span>
             </div>
           </div>
           <div class="unit-card" id="unit-organelles">
@@ -895,9 +909,9 @@
             </div>
             <div class="unit-links">
               <a href="lesson_organelles.html" class="ulink live">Lesson</a>
+              <a href="game_cell-explorer.html" class="ulink game">Cell Explorer</a>
               <a href="extension_organelles.html" class="ulink ext">Protein Pathway</a>
               <a href="extension_neuron-explorer.html" class="ulink ext">Neuron Explorer</a>
-              <a href="game_cell-explorer.html" class="ulink game">Cell Explorer</a>
             </div>
           </div>
           <div class="unit-card" id="unit-body-systems">
@@ -907,11 +921,9 @@
             </div>
             <div class="unit-links">
               <a href="lesson_body-systems.html" class="ulink live">Lesson</a>
-              <a href="body-system-interactions.html" class="ulink map">System Interactions</a>
-              <a href="body-system-diseases.html" class="ulink dis">Diseases &amp; Disorders</a>
-              <a href="extension_body-systems.html" class="ulink ext">Medical Mysteries</a>
               <a href="game_exercise.html" class="ulink game">Exercise Simulator</a>
               <a href="game_relay.html" class="ulink game">Relay Race</a>
+              <a href="extension_body-systems.html" class="ulink ext">Medical Mysteries</a>
             </div>
           </div>
           <div class="unit-card" id="unit-biological-evolution">
@@ -921,7 +933,6 @@
             </div>
             <div class="unit-links">
               <a href="lesson_biological-evolution.html" class="ulink live">Lesson</a>
-              <a href="activity_biological-evolution.html" class="ulink activity">Evidence of Evolution</a>
               <a href="simulation_beetle-island.html" class="ulink sim">Beetle Island</a>
               <a href="simulation_chernobyl-frogs.html" class="ulink sim">Chernobyl Frogs</a>
               <a href="game_evolution-clicker.html" class="ulink game">Evolution Clicker</a>
