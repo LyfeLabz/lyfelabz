@@ -42,7 +42,7 @@
     font-family: 'Nunito', sans-serif;
     background: var(--dark);
     color: var(--text);
-    line-height: 1.6;
+    line-height: 1.75;
     overflow-x: hidden;
   }
 
@@ -230,6 +230,21 @@
   .stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
   .stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
   .stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
+
+  /* ── BRIDGE CALLOUT ── */
+  .bridge-callout {
+    margin: 0 auto;
+    padding: 1.4rem 1.8rem;
+    background: rgba(122,143,166,0.06);
+    border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2);
+    border-radius: 14px;
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 760px;
+  }
+  .bridge-callout strong { color: var(--text); }
+  .bridge-callout em { color: var(--accent2); font-style: normal; font-weight: 700; }
 
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; }
@@ -566,6 +581,8 @@
     white-space: nowrap; align-self: flex-start; margin-top: auto;
   }
   .cont-card.game .cont-link { background: rgba(61,220,132,0.1); border-color: rgba(61,220,132,0.3); color: #3ddc84; }
+  .cont-card.sim  .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5a028; }
+  .cont-card.sim:hover .cont-link { background: rgba(245,160,40,0.2); border-color: rgba(245,160,40,0.55); color: #f5c842; }
   .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2); border-color: rgba(61,220,132,0.55); }
   a.cont-card { text-decoration: none; cursor: pointer; }
 
@@ -746,8 +763,8 @@
 <!-- LESSON NOTES -->
 <section id="lesson">
   <div class="container">
-    <span class="section-label">📖 Lesson Notes</span>
-    <h2 class="section-title">Layers of Time 🪨&#xFE0E;</h2>
+    <span class="section-label">How Rocks Form</span>
+    <h2 class="section-title">From Sediment to Stone</h2>
     <p class="section-desc">Rock isn't just rock — it's a record. Every layer tells a story about what Earth was like when it formed. Here's how to read it.</p>
 
     <!-- Phenomenon card -->
@@ -802,10 +819,9 @@
     <div class="content-card">
       <div class="card-header">
         <span class="card-icon">💨</span>
-        <div class="card-title">Geological Processes: Weathering &amp; Erosion</div>
+        <div class="card-title">Weathering &amp; Erosion</div>
       </div>
       <div class="card-body">
-        <p>Before sediment can pile up and become rock, something has to break existing rock apart — and then move it. Two processes handle this.</p>
         <p><span class="vocab" id="vocab-weathering" title="Weathering: the physical or chemical breakdown of rock into smaller pieces by wind, rain, ice, or temperature changes">Weathering</span> is the breakdown of rock into smaller pieces. Wind, rain, freezing and thawing temperatures, and even plant roots can crack and crumble rock over time. Weathering happens <em>in place</em> — the rock breaks apart but doesn't go anywhere yet.</p>
         <p><span class="vocab" id="vocab-erosion" title="Erosion: the movement of broken rock pieces by water, wind, or ice to a new location where they are deposited">Erosion</span> is when those broken pieces get picked up and carried somewhere else — by rivers, wind, glaciers, or ocean waves. When the moving water or wind slows down, the sediment drops and begins to pile up.</p>
         <div class="callout teal">
@@ -814,7 +830,7 @@
         </div>
         <div class="callout gold" id="vocab-magma">
           <span class="callout-icon">⏳</span>
-          <div class="callout-body"><strong>Heat &amp; Pressure deep underground</strong> add two more geological forces. Heat from Earth's core drives metamorphic rock formation. Pressure from kilometers of rock above can change minerals and compact sediment. Together, these four forces — weathering, erosion, heat, and pressure — are what create and recycle all rock on Earth.</div>
+          <div class="callout-body"><strong>Heat &amp; Pressure deep underground</strong> add two more geological forces. Heat from Earth's core drives metamorphic rock formation. Pressure from kilometers of rock above compacts sediment and transforms minerals into new rock.</div>
         </div>
       </div>
     </div>
@@ -822,10 +838,19 @@
   </div>
 </section>
 
+<!-- BRIDGE -->
+<div style="background: var(--dark); padding: 0 2rem;">
+  <div style="max-width: 1100px; margin: 0 auto; padding: 0 0 0.5rem;">
+    <div class="bridge-callout">
+      Sedimentary rock is the key. Because it forms in slow, predictable layers, it preserves a sequence — oldest at the bottom, newest at the top. Scientists figured out that if you understand <em>how</em> rocks form, you can use that knowledge to read <em>when</em> they formed. That's what the next four principles are all about.
+    </div>
+  </div>
+</div>
+
 <!-- PRINCIPLES SECTION -->
 <section id="principles" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">🔬 Key Principles</span>
+    <span class="section-label">Key Principles</span>
     <h2 class="section-title">Reading the Rock Record</h2>
     <p class="section-desc">Scientists use four key principles to figure out the age and order of rock layers — even when they can't see the whole picture.</p>
 
@@ -865,6 +890,101 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Four principles -->
+    <!-- CONCEPTUAL SVG: Superposition + Cross-Cutting -->
+    <div style="margin: 2rem 0 1.8rem;">
+      <p style="font-size: 0.75rem; font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(159,184,204,0.45); margin-bottom: 0.85rem; text-align: center;">Two Rules at a Glance</p>
+      <svg viewBox="0 0 740 295" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+        <defs>
+          <pattern id="grain" x="0" y="0" width="40" height="8" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="4" x2="40" y2="4" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          </pattern>
+        </defs>
+
+        <!-- ── LEFT PANEL: SUPERPOSITION ── -->
+        <text x="176" y="20" text-anchor="middle" font-family="Fredoka One, cursive" font-size="13" fill="#9fb8cc" letter-spacing="0.5">SUPERPOSITION</text>
+
+        <!-- TIME arrow -->
+        <line x1="12" y1="255" x2="12" y2="44" stroke="rgba(159,184,204,0.35)" stroke-width="1.5"/>
+        <polygon points="12,38 8,50 16,50" fill="rgba(159,184,204,0.55)"/>
+        <text x="12" y="274" text-anchor="middle" font-family="Nunito, sans-serif" font-size="9" fill="rgba(159,184,204,0.45)" letter-spacing="1">TIME</text>
+
+        <!-- Layer A - Youngest -->
+        <rect x="22" y="34" width="308" height="44" rx="2" fill="rgba(160,170,200,0.25)" stroke="rgba(160,170,200,0.4)" stroke-width="1"/>
+        <rect x="22" y="34" width="308" height="44" fill="url(#grain)"/>
+        <text x="32" y="61" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#b8c8dc">Layer A</text>
+        <text x="235" y="61" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(100,210,160,0.85)">&#9664; Youngest</text>
+
+        <!-- Layer B -->
+        <rect x="22" y="78" width="308" height="44" rx="2" fill="rgba(180,145,90,0.3)" stroke="rgba(180,145,90,0.5)" stroke-width="1"/>
+        <rect x="22" y="78" width="308" height="44" fill="url(#grain)"/>
+        <text x="32" y="105" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#d4b070">Layer B</text>
+
+        <!-- Layer C -->
+        <rect x="22" y="122" width="308" height="44" rx="2" fill="rgba(150,115,75,0.35)" stroke="rgba(150,115,75,0.55)" stroke-width="1"/>
+        <rect x="22" y="122" width="308" height="44" fill="url(#grain)"/>
+        <text x="32" y="149" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#c4a060">Layer C</text>
+
+        <!-- Layer D -->
+        <rect x="22" y="166" width="308" height="44" rx="2" fill="rgba(90,120,155,0.3)" stroke="rgba(90,120,155,0.5)" stroke-width="1"/>
+        <rect x="22" y="166" width="308" height="44" fill="url(#grain)"/>
+        <text x="32" y="193" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#80a8c0">Layer D</text>
+
+        <!-- Layer E - Oldest -->
+        <rect x="22" y="210" width="308" height="44" rx="2" fill="rgba(90,70,55,0.4)" stroke="rgba(90,70,55,0.6)" stroke-width="1"/>
+        <rect x="22" y="210" width="308" height="44" fill="url(#grain)"/>
+        <text x="32" y="237" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#a08878">Layer E</text>
+        <text x="235" y="237" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(210,140,100,0.85)">&#9664; Oldest</text>
+
+        <!-- Rule -->
+        <text x="176" y="272" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(159,184,204,0.5)" letter-spacing="0.2">Bottom = Oldest · Top = Youngest</text>
+
+        <!-- Divider -->
+        <line x1="370" y1="26" x2="370" y2="265" stroke="rgba(122,143,166,0.15)" stroke-width="1" stroke-dasharray="4,4"/>
+
+        <!-- ── RIGHT PANEL: CROSS-CUTTING ── -->
+        <text x="564" y="20" text-anchor="middle" font-family="Fredoka One, cursive" font-size="13" fill="#9fb8cc" letter-spacing="0.5">CROSS-CUTTING</text>
+
+        <!-- Same 5 layers -->
+        <rect x="410" y="34" width="308" height="44" rx="2" fill="rgba(160,170,200,0.25)" stroke="rgba(160,170,200,0.4)" stroke-width="1"/>
+        <rect x="410" y="34" width="308" height="44" fill="url(#grain)"/>
+        <text x="420" y="61" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#b8c8dc">Layer A</text>
+
+        <rect x="410" y="78" width="308" height="44" rx="2" fill="rgba(180,145,90,0.3)" stroke="rgba(180,145,90,0.5)" stroke-width="1"/>
+        <rect x="410" y="78" width="308" height="44" fill="url(#grain)"/>
+        <text x="420" y="105" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#d4b070">Layer B</text>
+
+        <rect x="410" y="122" width="308" height="44" rx="2" fill="rgba(150,115,75,0.35)" stroke="rgba(150,115,75,0.55)" stroke-width="1"/>
+        <rect x="410" y="122" width="308" height="44" fill="url(#grain)"/>
+        <text x="420" y="149" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#c4a060">Layer C</text>
+
+        <rect x="410" y="166" width="308" height="44" rx="2" fill="rgba(90,120,155,0.3)" stroke="rgba(90,120,155,0.5)" stroke-width="1"/>
+        <rect x="410" y="166" width="308" height="44" fill="url(#grain)"/>
+        <text x="420" y="193" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#80a8c0">Layer D</text>
+
+        <rect x="410" y="210" width="308" height="44" rx="2" fill="rgba(90,70,55,0.4)" stroke="rgba(90,70,55,0.6)" stroke-width="1"/>
+        <rect x="410" y="210" width="308" height="44" fill="url(#grain)"/>
+        <text x="420" y="237" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="#a08878">Layer E</text>
+
+        <!-- Igneous intrusion: vertical dike through Layers A–D only -->
+        <rect x="586" y="34" width="22" height="176" rx="2" fill="rgba(220,95,45,0.15)"/>
+        <rect x="590" y="34" width="14" height="176" rx="2" fill="rgba(220,95,45,0.82)"/>
+        <rect x="590" y="34" width="14" height="176" rx="2" fill="rgba(255,160,80,0.18)"/>
+
+        <!-- Intrusion label with leader line -->
+        <line x1="604" y1="115" x2="636" y2="100" stroke="rgba(220,120,55,0.6)" stroke-width="1.2"/>
+        <text x="638" y="97" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(230,140,75,0.95)">Igneous</text>
+        <text x="638" y="109" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(230,140,75,0.95)">intrusion</text>
+
+        <!-- "Does not cut Layer E" indicator -->
+        <line x1="597" y1="214" x2="597" y2="254" stroke="rgba(220,120,55,0.4)" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="597" y="268" text-anchor="middle" font-family="Nunito, sans-serif" font-size="9" font-weight="700" fill="rgba(220,120,55,0.65)">stopped here</text>
+
+        <!-- Rule -->
+        <text x="564" y="284" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(159,184,204,0.5)" letter-spacing="0.2">The cutter is always younger</text>
+      </svg>
     </div>
 
     <!-- Four principles -->
@@ -919,8 +1039,8 @@
 
     <!-- Key concepts -->
     <div style="margin-top: 2rem;">
-      <div id="vocab" class="section-label" style="margin-bottom: 0; scroll-margin-top: 80px;">🏷️ Key Vocabulary</div>
-      <div class="concepts-hint">👆 Click any term to jump to its explanation in the lesson</div>
+      <div id="vocab" class="section-label" style="margin-bottom: 0; scroll-margin-top: 80px;">Key Vocabulary</div>
+      <div class="concepts-hint">Click any term to jump to its explanation in the lesson</div>
       <div class="concepts-grid">
         <span class="concept-tag ct-brown"  onclick="vocabJump('vocab-sedimentary')">Sedimentary Rock</span>
         <span class="concept-tag ct-red"    onclick="vocabJump('vocab-igneous')">Igneous Rock</span>
@@ -944,7 +1064,7 @@
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">✅ Check Your Understanding</span>
+    <span class="section-label">Check Your Understanding</span>
     <h2 class="section-title">Layers of Time Quiz</h2>
     <p class="section-desc">10 questions on rock types, geological processes, and reading the rock record. Fill in your info below before you begin — your score will be sent to your teacher when you submit.</p>
 
@@ -1023,8 +1143,8 @@
 <!-- CONTINUE / EXTENSIONS -->
 <section id="continue">
   <div class="container">
-    <span class="section-label">🚀 Go Further</span>
-    <h2 class="section-title">More Learning</h2>
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">Keep Exploring</h2>
     <p class="section-desc">The lesson is just the beginning — go deeper, test your skills, or see how it all connects.</p>
     <div class="continue-grid">
       <a href="game_layer-detective.html" class="cont-card game">
@@ -1039,7 +1159,12 @@
         <div class="cont-desc">Apply what you learned about index fossils to match rock layers and determine their relative ages across multiple locations.</div>
         <span class="cont-link">Play</span>
       </a>
-
+      <a href="simulation_floatlandia-fracture.html" class="cont-card sim">
+        <div class="cont-icon">🌍</div>
+        <div class="cont-name">Floatlandia Fracture</div>
+        <div class="cont-desc">Simulate the tectonic forces that tilt, fold, and rupture rock layers in the first place — see what happens to superposition when the ground moves.</div>
+        <span class="cont-link">Simulation</span>
+      </a>
     </div>
   </div>
 </section>
@@ -1066,12 +1191,8 @@ function toggleStemDetail(id) {
   const btn = el.querySelector('.stem-show-btn');
   btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
 }
-// Listen for educator-mode class on body from parent site toggle
-const lsObserver = new MutationObserver(() => {
-  document.body.classList.toggle('ls-active', document.body.classList.contains('educator-mode'));
-  document.body.classList.toggle('stem-active', document.body.classList.contains('educator-mode'));
-});
-lsObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
 </script>
 
 <!-- Strata interactive diagram -->
