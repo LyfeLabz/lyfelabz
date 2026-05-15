@@ -689,8 +689,11 @@
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#hook">Observe</a></li>
     <li><a href="#lesson">Lesson</a></li>
+    <li><a href="#missing-piece">Wegener</a></li>
     <li><a href="#evidence">Evidence</a></li>
+    <li><a href="#apply-it">Apply It</a></li>
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
@@ -760,14 +763,13 @@
   </div>
 </div>
 
-<!-- LESSON NOTES -->
-<section id="lesson">
+<!-- OPENING OBSERVATION / HOOK -->
+<section id="hook" style="background: var(--dark2); padding: 4rem 2rem 3.5rem;">
   <div class="container">
-    <span class="section-label">Lesson Notes</span>
-    <h2 class="section-title">Continental Drift</h2>
-    <p class="section-desc">The ground beneath your feet has been moving for hundreds of millions of years. Science didn't always know that — here's the story of how the evidence built up, piece by piece.</p>
+    <span class="section-label">Opening Observation</span>
+    <h2 class="section-title">Before We Explain Anything — Just Look</h2>
+    <p class="section-desc">No explanation yet. Just notice something.</p>
 
-    <!-- Phenomenon card -->
     <div class="phenomenon-card">
       <div class="phenomenon-icon">&#127757;</div>
       <div class="phenomenon-body">
@@ -777,31 +779,113 @@
       </div>
     </div>
 
-    <!-- What is a Theory + Wegener -->
+    <!-- Coastline SVG -->
+    <div style="margin: 1.8rem auto 1.6rem; max-width: 760px; background: rgba(122,143,166,0.04); border: 1px solid rgba(122,143,166,0.15); border-radius: 18px; padding: 1.2rem 1rem 0.6rem;">
+      <svg viewBox="0 0 800 410" xmlns="http://www.w3.org/2000/svg" style="width:100%; display:block;">
+
+        <!-- South America -->
+        <path d="M155,75 L195,55 L245,65 L290,95 L295,130 L285,175 L272,220 L255,265 L235,305 L210,338 L185,315 L162,262 L145,205 L140,155 L148,110 Z"
+              fill="rgba(122,143,166,0.22)" stroke="rgba(122,143,166,0.4)" stroke-width="1.5"/>
+
+        <!-- Eastern coast of South America — the key fit segment (gold highlight) -->
+        <path d="M245,65 L290,95 L295,130 L285,175 L272,220 L255,265"
+              fill="none" stroke="rgba(245,200,66,0.8)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Africa -->
+        <path d="M500,55 L545,42 L595,52 L640,80 L658,135 L652,190 L632,255 L608,308 L578,342 L550,322 L522,278 L505,228 L492,175 L498,125 Z"
+              fill="rgba(122,143,166,0.22)" stroke="rgba(122,143,166,0.4)" stroke-width="1.5"/>
+
+        <!-- Western coast of Africa — the key fit segment (gold highlight) -->
+        <path d="M522,278 L505,228 L492,175 L498,125"
+              fill="none" stroke="rgba(245,200,66,0.8)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Dashed alignment lines across the Atlantic -->
+        <line x1="290" y1="95"  x2="498" y2="125" stroke="rgba(245,200,66,0.22)" stroke-width="1.5" stroke-dasharray="6,7"/>
+        <line x1="272" y1="220" x2="505" y2="228" stroke="rgba(245,200,66,0.22)" stroke-width="1.5" stroke-dasharray="6,7"/>
+
+        <!-- Continent labels -->
+        <text x="193" y="195" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="17" fill="rgba(232,237,242,0.6)">South</text>
+        <text x="193" y="215" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="17" fill="rgba(232,237,242,0.6)">America</text>
+
+        <text x="590" y="185" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="17" fill="rgba(232,237,242,0.6)">Africa</text>
+
+        <!-- Atlantic Ocean label -->
+        <text x="396" y="177" text-anchor="middle" font-family="'Nunito',sans-serif" font-size="11" fill="rgba(122,143,166,0.4)" font-weight="700" letter-spacing="2">ATLANTIC</text>
+        <text x="396" y="194" text-anchor="middle" font-family="'Nunito',sans-serif" font-size="11" fill="rgba(122,143,166,0.4)" font-weight="700" letter-spacing="2">OCEAN</text>
+
+        <!-- Caption -->
+        <text x="400" y="388" text-anchor="middle" font-family="'Nunito',sans-serif" font-size="13" fill="rgba(245,200,66,0.6)" font-weight="800">The highlighted coasts are the ones Wegener noticed. Do they look like they could fit?</text>
+
+      </svg>
+    </div>
+
+    <div class="callout gold" style="max-width:680px;">
+      <span class="callout-icon">&#129300;</span>
+      <div class="callout-body"><strong>Think about it:</strong> If you can only look at the shape of the coastlines — without any other information — does that feel like enough evidence to claim the continents were once connected? Keep that question in mind as we go.</div>
+    </div>
+  </div>
+</section>
+
+<!-- LESSON NOTES -->
+<section id="lesson">
+  <div class="container">
+    <span class="section-label">Lesson Notes</span>
+    <h2 class="section-title">Continental Drift</h2>
+    <p class="section-desc">The ground beneath your feet has been moving for hundreds of millions of years. Science didn't always know that — here's the story of how the evidence built up, piece by piece.</p>
+
+    <!-- Card 1: Theory vs. Guess -->
     <div class="content-card">
       <div class="card-header">
         <span class="card-icon">&#128218;</span>
-        <div class="card-title">What Is a Theory? What Is Continental Drift?</div>
+        <div class="card-title">A Theory Is Not a Guess</div>
       </div>
       <div class="card-body">
         <p>In everyday language, people say "theory" to mean a guess. In science, it means something much stronger. A <span class="vocab" id="vocab-theory" title="Scientific theory: a well-supported explanation of some aspect of the natural world, built on a large body of testable evidence">scientific theory</span> is a well-supported explanation of the natural world, based on a large body of testable evidence. A theory isn't a hunch — it's the most reliable explanation scientists have built from decades of data.</p>
-        <p>The <span class="vocab" id="vocab-continentaldrift" title="Continental drift: the theory that Earth's continents were once joined and have slowly moved apart over hundreds of millions of years">theory of continental drift</span> proposes that Earth's continents were once joined in a single, enormous landmass and have since slowly moved apart over hundreds of millions of years. The name for that ancient supercontinent is <span class="vocab" id="vocab-pangaea" title="Pangaea: the name for the single supercontinent that existed about 250 million years ago before the continents separated">Pangaea</span>, which means "all land" in Greek.</p>
-        <div class="callout slate">
-          <span class="callout-icon">&#129488;</span>
-          <div class="callout-body"><strong id="vocab-wegener">Alfred Wegener</strong> was a German meteorologist and scientist who first proposed the continental drift theory in 1912. His original clue was simple: the coastlines of South America and Africa looked like they fit together like puzzle pieces. He then spent years gathering other evidence to support the idea. Most scientists rejected his theory at the time — not because the evidence was bad, but because nobody could explain <em>how</em> continents could possibly move.</div>
+        <div class="callout gold">
+          <span class="callout-icon">&#9888;&#65039;</span>
+          <div class="callout-body"><strong>Common misconception:</strong> When someone says "it's just a theory," they're using the everyday meaning. In science, calling something a theory is a compliment — it means the evidence is strong enough to build on.</div>
         </div>
       </div>
     </div>
 
-    <!-- Fossil Evidence -->
+    <!-- Card 2: Wegener's Story -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129488;</span>
+        <div class="card-title">The Man Who Noticed the Puzzle</div>
+      </div>
+      <div class="card-body">
+        <p><strong id="vocab-wegener">Alfred Wegener</strong> was a German meteorologist who, in 1912, proposed that Earth's continents were once joined in a single enormous landmass. He called it <span class="vocab" id="vocab-pangaea" title="Pangaea: the name for the single supercontinent that existed about 250 million years ago before the continents separated">Pangaea</span> — meaning "all land" in Greek. His theory, <span class="vocab" id="vocab-continentaldrift" title="Continental drift: the theory that Earth's continents were once joined and have slowly moved apart over hundreds of millions of years">continental drift</span>, proposed that those landmasses had slowly moved apart over hundreds of millions of years.</p>
+        <p>Wegener's first clue was the same one you just saw: the coastlines of South America and Africa looked like torn puzzle pieces. But he knew that observation alone wasn't enough. So he spent years searching for other kinds of evidence — from fossils, rocks, and ancient climate records — to build a stronger case.</p>
+        <div class="callout teal">
+          <span class="callout-icon">&#128336;</span>
+          <div class="callout-body"><strong>Worth noting:</strong> Most scientists rejected Wegener's theory when he published it — not because the evidence was bad, but because he couldn't explain <em>how</em> continents could possibly move through solid rock. That missing piece would take another 50 years to find.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fossil Evidence: Concept -->
     <div class="content-card">
       <div class="card-header">
         <span class="card-icon">&#129432;</span>
         <div class="card-title">Evidence 1: Fossils on Separated Continents</div>
       </div>
       <div class="card-body">
-        <p>One of the strongest lines of evidence for continental drift comes from <span class="vocab" id="vocab-fossils" title="Fossils: preserved remains or traces of ancient organisms found in rock — used as evidence of past environments and events">fossils</span>. Scientists discovered fossils of the same plant and animal species on continents that are today separated by thousands of miles of ocean. This is a puzzle that only makes sense if those continents were once connected.</p>
+        <p>One of the strongest lines of evidence for continental drift comes from <span class="vocab" id="vocab-fossils" title="Fossils: preserved remains or traces of ancient organisms found in rock — used as evidence of past environments and events">fossils</span>. Scientists found fossils of the same plant and animal species on continents now separated by thousands of miles of ocean. The key question: how did the same organism end up on two different continents?</p>
+        <div class="callout slate">
+          <span class="callout-icon">&#128270;</span>
+          <div class="callout-body">There are two possible explanations: <strong>(A)</strong> these organisms somehow crossed a vast ocean, or <strong>(B)</strong> the continents were once connected and later separated. As you read the four fossils below, ask yourself — which explanation actually holds up?</div>
+        </div>
+      </div>
+    </div>
 
+    <!-- Fossil Evidence: The Four Species -->
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128064;</span>
+        <div class="card-title">Meet the Fossils</div>
+      </div>
+      <div class="card-body">
         <div class="evidence-grid">
           <div class="evidence-card ec2">
             <span class="ev-icon">&#129422;</span>
@@ -835,7 +919,7 @@
 
         <div class="callout teal">
           <span class="callout-icon">&#128161;</span>
-          <div class="callout-body"><strong>Why this matters:</strong> Each of these organisms could not have crossed a major ocean on their own. Finding the same species on continents now separated by thousands of miles of ocean is powerful evidence that those continents were once connected.</div>
+          <div class="callout-body"><strong>The pattern:</strong> None of these organisms could have crossed an ocean on their own. One fossil on two continents could be a coincidence. Four fossils, multiple continents, all with the same problem — that's a pattern that demands an explanation.</div>
         </div>
       </div>
     </div>
@@ -885,33 +969,51 @@
       </div>
     </div>
 
-    <!-- Challenges and Plate Tectonics -->
+  </div>
+</section>
+
+<!-- THE MISSING PIECE -->
+<section id="missing-piece" style="background: linear-gradient(135deg, rgba(122,143,166,0.06) 0%, rgba(29,233,182,0.04) 100%); border-top: 1px solid rgba(122,143,166,0.15); border-bottom: 1px solid rgba(29,233,182,0.15);">
+  <div class="container">
+    <span class="section-label">Science in Action</span>
+    <h2 class="section-title">Why Wegener Was Rejected — and Then Proven Right</h2>
+    <p class="section-desc">Good evidence isn't always enough. Here's what was missing — and what it took to find it.</p>
+
     <div class="content-card">
       <div class="card-header">
         <span class="card-icon">&#129668;</span>
-        <div class="card-title">Why Wegener Was Rejected — and Then Proven Right</div>
+        <div class="card-title">The Problem Was the Mechanism</div>
       </div>
       <div class="card-body">
-        <p>When Wegener published his theory in 1912, most scientists dismissed it. The evidence he collected was actually quite good — the problem was something else entirely. He had no way to explain the <em>mechanism</em>: the physical force or process that could actually move something as enormous and heavy as a continent through solid rock. Without that explanation, most geologists refused to accept the idea.</p>
-        <p>Wegener died in 1930 without seeing his theory accepted. It was not until the 1950s and 1960s that oceanographers discovered the answer while mapping the seafloor. They found that Earth's crust is not one solid shell. It is broken into large sections called <span class="vocab" id="vocab-platetectonics" title="Plate tectonics: the theory that Earth's outer crust is broken into large moving plates that carry the continents and ocean floor">tectonic plates</span> — like cracked pieces of an eggshell — that float and move slowly on the hot, semi-molten rock below. This discovery became the theory of <strong>plate tectonics</strong>, and it provided exactly the mechanism that Wegener was missing.</p>
-        <div class="callout teal">
-          <span class="callout-icon">&#127775;</span>
-          <div class="callout-body"><strong>Science in action:</strong> Wegener's story is a great example of how science works. Good evidence was gathered, a theory was proposed, it was rejected because one piece was missing — and then new discoveries eventually filled that gap. Continental drift did not fail; it grew into a better, more complete theory.</div>
-        </div>
-        <p><strong>The problem wasn't the evidence. The problem was the missing mechanism.</strong></p>
+        <p>When Wegener published his theory in 1912, most scientists dismissed it. The evidence he had collected was actually quite good — the problem was something else entirely. He had no way to explain the <em>mechanism</em>: the physical force or process that could move something as enormous and heavy as a continent through solid rock. Without that explanation, most geologists refused to accept the idea, no matter how compelling the fossils and rock patterns were.</p>
+        <p>Wegener died in 1930 without seeing his theory accepted. It was not until the 1950s and 1960s that oceanographers mapping the seafloor found the answer: Earth's crust is not one solid shell. It is broken into large sections called <span class="vocab" id="vocab-platetectonics" title="Plate tectonics: the theory that Earth's outer crust is broken into large moving plates that carry the continents and ocean floor">tectonic plates</span> — like cracked pieces of an eggshell — that float and move slowly on the hot, semi-molten rock below. This discovery became the theory of <strong>plate tectonics</strong>, and it provided exactly the mechanism Wegener was missing.</p>
       </div>
     </div>
 
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem; margin-bottom:1.5rem;">
+      <div class="callout slate" style="margin:0;">
+        <span class="callout-icon">&#10060;</span>
+        <div class="callout-body"><strong>Why he was rejected:</strong> No one could explain how continents move. Without a physical mechanism, the theory felt like speculation — even with strong evidence behind it.</div>
+      </div>
+      <div class="callout teal" style="margin:0;">
+        <span class="callout-icon">&#10004;&#65039;</span>
+        <div class="callout-body"><strong>Why he was eventually right:</strong> New technology revealed tectonic plates. The mechanism was found. Continental drift didn't fail — it grew into a more complete theory.</div>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#127775;</span>
+      <div class="callout-body"><strong>The bigger lesson:</strong> Science doesn't require a perfect theory on the first try. It requires honest evidence, willingness to revise, and time. The problem wasn't Wegener's evidence. The problem was that the tools to find the missing piece didn't exist yet.</div>
+    </div>
   </div>
 </section>
 
 <!-- EVIDENCE INTERACTIVE -->
 <section id="evidence" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Evidence Review</span>
+    <span class="section-label">Put It Together</span>
     <h2 class="section-title">The Four Lines of Evidence</h2>
-    <p class="section-desc">Wegener did not rely on one observation. He built his case from four independent categories of evidence. Click each one to review what it showed.</p>
-    <p style="margin-top:-1.5rem;margin-bottom:2rem;"><strong>Each piece of evidence tells the same story from a different angle.</strong></p>
+    <p class="section-desc">You've seen each piece separately. Now look at them together — four independent sources, from biology, geology, and climatology, all pointing to the same conclusion. Click each one to see why it couldn't be explained any other way.</p>
 
     <div class="content-card">
       <div class="card-header">
@@ -919,8 +1021,6 @@
         <div class="card-title">Explore the Evidence</div>
       </div>
       <div class="card-body">
-        <p>Each line of evidence below is independent — they come from completely different sources (biology, geology, and climatology). The fact that they all point to the same conclusion makes the case for continental drift very strong.</p>
-
         <div class="ev-wrap">
           <div class="ev-selector">
             <button class="ev-btn eb1" onclick="evClick(1)">
@@ -971,6 +1071,137 @@
     </div>
   </div>
 </section>
+
+<!-- CLOSING LOOP: THINK LIKE WEGENER -->
+<section id="apply-it" style="background: var(--dark); border-top: 1px solid rgba(122,143,166,0.12);">
+  <div class="container">
+    <span class="section-label">Think Like Wegener</span>
+    <h2 class="section-title">Back to the Beginning</h2>
+    <p class="section-desc">At the start of this lesson, you were asked whether the shape of the coastlines alone was enough. Now you have the full picture. Three questions — no score, no submission. Just reasoning.</p>
+
+    <div id="apply-questions">
+
+      <!-- Q1 -->
+      <div class="apply-card" id="aq1">
+        <div class="apply-qnum">Question 1 of 3</div>
+        <div class="apply-qtext">You've now seen fossils, rocks, climate indicators, and coastline shape all pointing the same direction. Which of the following best explains why this matters more than any single piece of evidence alone?</div>
+        <div class="apply-options">
+          <button class="apply-opt" onclick="applyAnswer(1, this, false, 'One strong piece of evidence can be powerful, but it can also have alternative explanations. Convergence across independent fields — biology, geology, climatology — is what makes a theory hard to dismiss.')">One piece of very strong evidence is always enough to prove a theory</button>
+          <button class="apply-opt" onclick="applyAnswer(1, this, true,  'Exactly. When independent fields of science — biology, geology, climatology — all arrive at the same conclusion without coordinating, that convergence is far more persuasive than any single observation.')">When many independent lines of evidence all point the same way, the conclusion becomes very hard to explain away</button>
+          <button class="apply-opt" onclick="applyAnswer(1, this, false, 'Quantity alone doesn\'t make evidence better. Four weak observations are still weak. What matters here is that the evidence comes from completely different scientific fields and still reaches the same conclusion.')">More evidence is always better, even if it all comes from the same source</button>
+          <button class="apply-opt" onclick="applyAnswer(1, this, false, 'Not quite. Evidence from different fields doesn\'t cancel out — it strengthens the case. When geology, biology, and climatology agree, that agreement is the point.')">Evidence from different fields tends to contradict each other, so you should pick the most reliable one</button>
+        </div>
+        <div class="apply-feedback" id="af1"></div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="apply-card" id="aq2">
+        <div class="apply-qnum">Question 2 of 3</div>
+        <div class="apply-qtext">Wegener's evidence was actually solid — but his theory was rejected anyway. What does his story reveal about how science works?</div>
+        <div class="apply-options">
+          <button class="apply-opt" onclick="applyAnswer(2, this, false, 'This isn\'t quite right. Wegener\'s evidence — fossils, rock matches, climate data — was genuinely strong. The problem wasn\'t the evidence; it was the missing explanation for HOW continents move.')">Weak evidence was the real problem — he should have gathered more before publishing</button>
+          <button class="apply-opt" onclick="applyAnswer(2, this, false, 'His field of expertise did make some scientists skeptical, but that wasn\'t the scientific reason for rejection. The core issue was the missing mechanism — no one could explain how continents actually move.')">Scientists rejected him purely because he was a meteorologist, not a geologist</button>
+          <button class="apply-opt" onclick="applyAnswer(2, this, true,  'Yes. A theory needs both evidence AND a mechanism — an explanation of how the phenomenon actually happens. Wegener had the evidence but not the mechanism. Plate tectonics, discovered 40 years later, provided it.')">A theory can have good evidence and still be incomplete — you also need to explain the mechanism behind it</button>
+          <button class="apply-opt" onclick="applyAnswer(2, this, false, 'Science does self-correct, but not by ignoring evidence. Wegener\'s theory was rejected because the mechanism was missing, not because scientists were being unreasonable. Once plate tectonics was discovered, the theory was accepted.')">Science is unreliable — good theories get rejected all the time for no good reason</button>
+        </div>
+        <div class="apply-feedback" id="af2"></div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="apply-card" id="aq3">
+        <div class="apply-qnum">Question 3 of 3</div>
+        <div class="apply-qtext">You're back at the opening question: is the coastline fit between South America and Africa enough on its own to conclude the continents were once connected?</div>
+        <div class="apply-options">
+          <button class="apply-opt" onclick="applyAnswer(3, this, false, 'The coastline fit is a compelling observation — it was Wegener\'s original clue. But a single visual match could theoretically be coincidence. It\'s suggestive, not conclusive on its own.')">Yes — the fit is too precise to be a coincidence, so no other evidence is needed</button>
+          <button class="apply-opt" onclick="applyAnswer(3, this, true,  'Correct. The coastline fit was the clue that started the investigation — but science requires corroboration. The fossils, rocks, and climate evidence all independently confirmed what the coastlines suggested. That\'s what makes the case strong.')">No — it's a powerful starting clue, but it becomes convincing only when supported by independent evidence from fossils, rocks, and climate</button>
+          <button class="apply-opt" onclick="applyAnswer(3, this, false, 'The coastline fit is actually quite meaningful — it was Wegener\'s first clue and it holds up. But meaningful is not the same as sufficient. On its own, it still needs corroboration from other evidence types.')">No — coastline shapes are random and the fit means nothing at all</button>
+          <button class="apply-opt" onclick="applyAnswer(3, this, false, 'Actually, Wegener did take the coastline fit seriously as a starting point — and he was right to. The question is whether it\'s sufficient on its own, which it isn\'t. Science requires independent corroboration.')">Yes — Wegener proved it using only the coastline shape, so the other evidence was just extra</button>
+        </div>
+        <div class="apply-feedback" id="af3"></div>
+      </div>
+
+    </div>
+
+    <div id="apply-reset-wrap" style="display:none; text-align:center; margin-top:1.5rem;">
+      <button onclick="applyReset()" style="background:none; border:1px solid rgba(122,143,166,0.4); color:var(--text-muted); font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; padding:0.5rem 1.4rem; border-radius:99px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(122,143,166,0.8)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='rgba(122,143,166,0.4)';this.style.color='var(--text-muted)'">Reset Questions</button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .apply-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1.8rem; margin-bottom: 1.4rem;
+    position: relative; overflow: hidden;
+  }
+  .apply-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .apply-qnum {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.6rem;
+  }
+  .apply-qtext {
+    font-family: 'Fredoka One', cursive; font-size: 1.15rem;
+    color: var(--text); line-height: 1.4; margin-bottom: 1.2rem;
+  }
+  .apply-options { display: flex; flex-direction: column; gap: 0.65rem; }
+  .apply-opt {
+    text-align: left; background: rgba(122,143,166,0.06);
+    border: 1px solid rgba(122,143,166,0.22); border-radius: 10px;
+    padding: 0.75rem 1.1rem; color: rgba(232,237,242,0.88);
+    font-family: 'Nunito', sans-serif; font-size: 0.93rem; font-weight: 600;
+    line-height: 1.5; cursor: pointer; transition: background 0.18s, border-color 0.18s;
+  }
+  .apply-opt:hover:not(:disabled) { background: rgba(122,143,166,0.13); border-color: rgba(122,143,166,0.45); }
+  .apply-opt:disabled { cursor: default; }
+  .apply-opt.ao-correct { background: rgba(46,204,113,0.1); border-color: rgba(46,204,113,0.55); color: #2ecc71; font-weight: 800; }
+  .apply-opt.ao-incorrect { background: rgba(231,76,60,0.08); border-color: rgba(231,76,60,0.35); color: rgba(232,237,242,0.45); }
+  .apply-feedback {
+    margin-top: 1rem; font-size: 0.9rem; line-height: 1.65;
+    color: rgba(232,237,242,0.8); display: none;
+    background: rgba(122,143,166,0.06); border-left: 3px solid var(--accent2);
+    border-radius: 0 8px 8px 0; padding: 0.75rem 1rem;
+  }
+  .apply-feedback.show { display: block; }
+</style>
+
+<script>
+var applyAnswered = [false, false, false];
+function applyAnswer(qNum, btn, isCorrect, feedback) {
+  if (applyAnswered[qNum - 1]) return;
+  applyAnswered[qNum - 1] = true;
+  var card = document.getElementById('aq' + qNum);
+  var opts = card.querySelectorAll('.apply-opt');
+  opts.forEach(function(o) {
+    o.disabled = true;
+    o.classList.add('ao-incorrect');
+  });
+  btn.classList.remove('ao-incorrect');
+  btn.classList.add(isCorrect ? 'ao-correct' : 'ao-incorrect');
+  var fb = document.getElementById('af' + qNum);
+  fb.textContent = (isCorrect ? '✓ ' : '✗ ') + feedback;
+  fb.classList.add('show');
+  if (applyAnswered.every(Boolean)) {
+    document.getElementById('apply-reset-wrap').style.display = 'block';
+  }
+}
+function applyReset() {
+  applyAnswered = [false, false, false];
+  [1,2,3].forEach(function(n) {
+    var card = document.getElementById('aq' + n);
+    card.querySelectorAll('.apply-opt').forEach(function(o) {
+      o.disabled = false;
+      o.classList.remove('ao-correct','ao-incorrect');
+    });
+    var fb = document.getElementById('af' + n);
+    fb.textContent = '';
+    fb.classList.remove('show');
+  });
+  document.getElementById('apply-reset-wrap').style.display = 'none';
+}
+</script>
 
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
@@ -1054,9 +1285,9 @@
 <!-- CONTINUE / EXTENSIONS -->
 <section id="continue">
   <div class="container">
-    <span class="section-label">&#128640; Go Further</span>
+    <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="section-desc">The lesson is just the beginning. Go deeper into Earth history, explore fossils, or see how continental drift connects to biological evolution.</p>
+    <p class="section-desc">You just reasoned like Wegener — working from evidence toward a conclusion. Now apply it. The Floatlandia simulation gives you the same four types of evidence and puts you in the scientist's seat.</p>
     <div class="continue-grid">
       <a href="simulation_floatlandia-fracture.html" class="cont-card sim">
         <div class="cont-icon">&#127757;</div>
