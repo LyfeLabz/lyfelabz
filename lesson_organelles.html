@@ -308,64 +308,7 @@
     line-height: 1.65;
   }
 
-  /* ===== EXTENSION BANNER ===== */
-  .extension-banner {
-    margin-top: 3.5rem;
-    border-radius: 20px;
-    padding: 2.2rem 2.5rem;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-    background: linear-gradient(135deg, rgba(230,126,34,0.10) 0%, rgba(52,152,219,0.06) 100%);
-    border: 2px solid rgba(230,126,34,0.3);
-  }
-  .extension-banner-icon {
-    font-size: 3.5rem;
-    flex-shrink: 0;
-    animation: float 5s ease-in-out infinite;
-  }
-  .extension-banner-body { flex: 1; min-width: 200px; }
-  .extension-banner-tag-orange {
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--orange);
-    background: rgba(230,126,34,0.12);
-    border: 1px solid rgba(230,126,34,0.35);
-    padding: 0.25rem 0.8rem;
-    border-radius: 99px;
-    margin-bottom: 0.6rem;
-  }
-  .extension-banner h3 {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.5rem;
-    margin-bottom: 0.4rem;
-    color: var(--text);
-  }
-  .extension-banner p { color: var(--text-muted); font-size: 0.95rem; }
-  .btn-extension-orange {
-    background: linear-gradient(135deg, var(--orange), #d35400);
-    color: #fff;
-    box-shadow: 0 4px 20px rgba(230,126,34,0.35);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .btn-extension-orange:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(230,126,34,0.5); }
-
   /* ===== CITY ANALOGY ===== */
-  #city { background: var(--dark); }
-  .city-intro {
-    background: linear-gradient(135deg, rgba(52,152,219,0.1), rgba(46,204,113,0.05));
-    border: 1px solid rgba(52,152,219,0.25);
-    border-radius: 20px;
-    padding: 2.5rem;
-    margin-bottom: 3rem;
-    text-align: center;
-  }
-  .city-intro p { font-size: 1.1rem; color: var(--text-muted); max-width: 720px; margin: 0 auto; }
   .city-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -990,8 +933,8 @@ body.stem-active .stem-detail {
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
-    <li><a href="#organelles">Organelles</a></li>
     <li><a href="#city">Cell City</a></li>
+    <li><a href="#organelles">Organelles</a></li>
     <li><a href="#concepts">Vocab</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
@@ -1032,7 +975,7 @@ body.stem-active .stem-detail {
 <!-- HOOK -->
 <section id="hook" style="background: var(--dark);">
   <div class="container" style="text-align: center;">
-    <span class="section-label">The Big Idea</span>
+    <span class="section-label">Opening Phenomenon</span>
     <h2 class="section-title">Something's Running This Cell</h2>
     <p class="section-desc" style="margin: 0 auto 3rem;">
       You already know a cell is the smallest unit of life. But life isn't passive — a cell is constantly building proteins, generating energy, cleaning out waste, reading its own DNA. Something inside is doing all of it. That something has a name.
@@ -1090,22 +1033,127 @@ body.stem-active .stem-detail {
       <circle cx="562" cy="167" r="18" fill="rgba(231,76,60,0.17)" stroke="#e74c3c" stroke-width="1.5"/>
       <text x="562" y="173" text-anchor="middle" font-family="Fredoka One, cursive" font-size="15" fill="#e87070">?</text>
 
-      <!-- Label -->
-      <text x="350" y="20" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10.5" font-weight="800" letter-spacing="2.5" fill="rgba(26,188,156,0.5)">CELL MEMBRANE</text>
+
     </svg>
 
     <p style="font-size:0.92rem;color:var(--text-muted);margin-top:1.8rem;max-width:580px;margin-left:auto;margin-right:auto;line-height:1.75;">
-      Each glowing structure inside this cell has a specialized job to do. They're called <strong style="color:var(--text);">organelles</strong> — and together, they keep the cell alive.
+      Every structure marked <strong style="color:var(--text);">?</strong> inside this cell is running right now. Each one has a specific job — and without any single one of them, the cell would fail. Scroll down to find out what each one does and why it matters.
     </p>
+    <div style="margin:2.5rem auto 0;max-width:620px;padding:1.1rem 1.6rem;background:rgba(59,200,232,0.06);border:1px solid rgba(59,200,232,0.22);border-left:4px solid #3bc8e8;border-radius:14px;font-size:0.95rem;color:var(--text-muted);text-align:left;">
+      <strong style="color:var(--text);">Think about it first:</strong> If you had to guess which structure is the most important — which one would you pick, and why? Keep that answer in mind as you work through the lesson.
+    </div>
+  </div>
+</section>
+
+<!-- CELL CITY ANALOGY -->
+<section id="city" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Cell City Analogy</span>
+    <h2 class="section-title">The Cell is a City</h2>
+    <p class="section-desc">Before naming every organelle, here's a framework that will make them stick. A cell and a city solve the same problem: how do you keep a complex system running when every part depends on every other part? Find the city job first — then the organelle names will follow naturally.</p>
+    <div class="city-grid">
+      <div class="city-card">
+        <div class="city-icon-box">🏛️</div>
+        <div class="city-content">
+          <div class="city-analog">Nucleus → City Hall / Mayor's Office</div>
+          <h3>The Control Center</h3>
+          <p>Just as the Mayor's Office issues laws and decisions that guide the whole city, the <strong>nucleus</strong> contains the DNA "rulebook" that tells every organelle what to do.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🚦</div>
+        <div class="city-content">
+          <div class="city-analog">Cell Membrane → City Border Control</div>
+          <h3>The Gatekeeper</h3>
+          <p>Border control decides who and what enters or leaves the city. The <strong>cell membrane</strong> does the same — carefully regulating what passes in and out of the cell.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🧱</div>
+        <div class="city-content">
+          <div class="city-analog">Cell Wall → City Walls / Fortification</div>
+          <h3>The Protective Structure</h3>
+          <p>Ancient city walls kept the city standing tall and protected. The <strong>cell wall</strong> gives plant cells rigid structure and protection (only in plant cities!).</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">⚡</div>
+        <div class="city-content">
+          <div class="city-analog">Mitochondria → Power Plant</div>
+          <h3>The Energy Source</h3>
+          <p>No city runs without electricity. The <strong>mitochondria</strong> generate ATP energy to power all of the cell's activities, just like a power station keeps the lights on.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🏭</div>
+        <div class="city-content">
+          <div class="city-analog">Ribosomes → Manufacturing Factories</div>
+          <h3>The Builders</h3>
+          <p>Factories follow blueprints from headquarters to manufacture products. <strong>Ribosomes</strong> read instructions from the nucleus (DNA) to build proteins the cell needs.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🚇</div>
+        <div class="city-content">
+          <div class="city-analog">Rough ER → Transit System</div>
+          <h3>The Transport Network</h3>
+          <p>A city's subway and road system moves people and goods around. The <strong>rough endoplasmic reticulum</strong> is the cell's highway, transporting proteins where they need to go.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">📮</div>
+        <div class="city-content">
+          <div class="city-analog">Golgi Bodies → Post Office / Shipping Center</div>
+          <h3>The Packaging &amp; Delivery Hub</h3>
+          <p>The post office sorts, packages, and ships mail. <strong>Golgi bodies</strong> receive proteins from the ER, package them up, and ship them to the right destination inside or outside the cell.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">☀️</div>
+        <div class="city-content">
+          <div class="city-analog">Chloroplasts → Solar Farm</div>
+          <h3>The Renewable Energy Source</h3>
+          <p>Solar panels collect sunlight and convert it to usable energy. <strong>Chloroplasts</strong> do the exact same thing for plant cells through photosynthesis.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🏊</div>
+        <div class="city-content">
+          <div class="city-analog">Vacuoles → Reservoir / Water Tower</div>
+          <h3>Storage &amp; Water Supply</h3>
+          <p>A city reservoir stores water for when citizens need it. <strong>Vacuoles</strong> store water, nutrients, and waste — plant cells have one giant central reservoir; animal cells have many smaller ones.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🗑️</div>
+        <div class="city-content">
+          <div class="city-analog">Lysosomes → Sanitation Department</div>
+          <h3>Waste Management</h3>
+          <p>Every city needs garbage trucks and waste processing. <strong>Lysosomes</strong> are the cell's clean-up crew — breaking down waste, worn-out parts, and invaders to keep the cell healthy.</p>
+        </div>
+      </div>
+      <div class="city-card">
+        <div class="city-icon-box">🌊</div>
+        <div class="city-content">
+          <div class="city-analog">Cytoplasm → City Streets &amp; Water Supply</div>
+          <h3>The Medium Everything Moves Through</h3>
+          <p>Streets connect every part of a city. The <strong>cytoplasm</strong> is the gel-like fluid that all organelles are suspended in — it lets nutrients and materials move freely from place to place.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-bridge">
+      Now that you have the framework, let's name every organelle and see exactly what it does — you already know its city equivalent.
+    </div>
   </div>
 </section>
 
 <!-- ORGANELLES REFERENCE SECTION -->
 <section id="organelles">
   <div class="container">
-    <span class="section-label">Lesson Notes</span>
+    <span class="section-label">Meet the Organelles</span>
     <h2 class="section-title">Cell Organelles</h2>
-    <p class="section-desc">Organelles are specialized structures inside a cell — each one does a different job. They work as a team to keep the cell alive.</p>
+    <p class="section-desc">Every one of those <strong style="color:var(--text);">?</strong> structures has a name and a job. Organelles are specialized parts inside a cell — each one doing something the cell can't survive without.</p>
 
     <!-- GROUP 1: Boundary & Structure -->
     <div class="org-group">
@@ -1252,7 +1300,7 @@ body.stem-active .stem-detail {
     </div>
 
     <div class="section-bridge">
-      You now know what every organelle does — and can group them by job. Next: do plant and animal cells actually share the same set of organelles?
+      You now know what every organelle does — and can match each one to its city job. One question remains: do plant and animal cells share the exact same set of organelles?
     </div>
 
   </div>
@@ -1263,7 +1311,7 @@ body.stem-active .stem-detail {
   <div class="container">
     <span class="section-label">Compare</span>
     <h2 class="section-title">Plant Cell vs. Animal Cell</h2>
-    <p class="section-desc">Both are eukaryotic cells with a nucleus and shared organelles — but they're not identical. Three structures appear only in plant cells. See if you can spot them.</p>
+    <p class="section-desc">Both are eukaryotic cells with a nucleus and shared organelles — but they're not identical. Study the diagram below. The green labels mark something specific — what do you notice about which cell has them?</p>
 
     <svg viewBox="0 0 860 385" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;margin:0 auto;overflow:visible;">
       <defs>
@@ -1385,6 +1433,10 @@ body.stem-active .stem-detail {
 
     <p style="font-size:0.82rem;color:var(--text-muted);text-align:center;margin-top:1.2rem;">Green labels = structures found <strong style="color:#2ecc71;">only in plant cells</strong>.</p>
 
+    <div style="margin:2.2rem auto;max-width:700px;padding:1.2rem 1.8rem;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.25);border-left:4px solid var(--green);border-radius:14px;font-size:0.97rem;color:var(--text-muted);">
+      Three structures appear in the plant cell that the animal cell is missing: the <strong style="color:var(--green);">Cell Wall</strong>, the <strong style="color:var(--green);">Chloroplasts</strong>, and the <strong style="color:var(--green);">Large Central Vacuole</strong>. Each one exists because plants solve a problem animals don't have to — here's how.
+    </div>
+
     <!-- 3 plant-only difference cards -->
     <div class="plant-diff-grid">
       <div class="plant-diff-card">
@@ -1405,113 +1457,12 @@ body.stem-active .stem-detail {
     </div>
 
     <div class="section-bridge">
-      Now that you know each organelle and what's unique to plant cells, let's look at the same structures through a completely different lens — one that makes them much harder to forget.
+      You now know each organelle and what separates plant cells from animal cells. Before the quiz, use the vocabulary section below to lock in the terminology — click any term to jump back to where it was first explained.
     </div>
   </div>
 </section>
 
-<!-- CELL CITY ANALOGY -->
-<section id="city">
-  <div class="container">
-    <span class="section-label">Cell City Analogy</span>
-    <h2 class="section-title">The Cell is a City</h2>
-    <p class="section-desc">You've learned what each organelle does. Now see them through a different lens — a city analogy that makes them stick. A cell and a city solve the same problem: how do you keep a complex system running when every part depends on every other part?</p>
-    <div class="city-grid">
-      <div class="city-card">
-        <div class="city-icon-box">🏛️</div>
-        <div class="city-content">
-          <div class="city-analog">Nucleus → City Hall / Mayor's Office</div>
-          <h3>The Control Center</h3>
-          <p>Just as the Mayor's Office issues laws and decisions that guide the whole city, the <strong>nucleus</strong> contains the DNA "rulebook" that tells every organelle what to do.</p>
-        </div>
-      </div>
-      <div class="city-card">
-        <div class="city-icon-box">🚦</div>
-        <div class="city-content">
-          <div class="city-analog">Cell Membrane → City Border Control</div>
-          <h3>The Gatekeeper</h3>
-          <p>Border control decides who and what enters or leaves the city. The <strong>cell membrane</strong> does the same — carefully regulating what passes in and out of the cell.</p>
-        </div>
-      </div>
-      <div class="city-card">
-        <div class="city-icon-box">🧱</div>
-        <div class="city-content">
-          <div class="city-analog">Cell Wall → City Walls / Fortification</div>
-          <h3>The Protective Structure</h3>
-          <p>Ancient city walls kept the city standing tall and protected. The <strong>cell wall</strong> gives plant cells rigid structure and protection (only in plant cities!).</p>
-        </div>
-      </div>
-      <div class="city-card">
-        <div class="city-icon-box">⚡</div>
-        <div class="city-content">
-          <div class="city-analog">Mitochondria → Power Plant</div>
-          <h3>The Energy Source</h3>
-          <p>No city runs without electricity. The <strong>mitochondria</strong> generate ATP energy to power all of the cell's activities, just like a power station keeps the lights on.</p>
-        </div>
-      </div>
-      <div class="city-card">
-        <div class="city-icon-box">🏭</div>
-        <div class="city-content">
-          <div class="city-analog">Ribosomes → Manufacturing Factories</div>
-          <h3>The Builders</h3>
-          <p>Factories follow blueprints from headquarters to manufacture products. <strong>Ribosomes</strong> read instructions from the nucleus (DNA) to build proteins the cell needs.</p>
-        </div>
-      </div>
-      <div class="city-card">
-        <div class="city-icon-box">🚇</div>
-        <div class="city-content">
-          <div class="city-analog">Rough ER → Transit System</div>
-          <h3>The Transport Network</h3>
-          <p>A city's subway and road system moves people and goods around. The <strong>rough endoplasmic reticulum</strong> is the cell's highway, transporting proteins where they need to go.</p>
-        </div>
-      </div>
-      <div class="city-card">
-        <div class="city-icon-box">📮</div>
-        <div class="city-content">
-          <div class="city-analog">Golgi Bodies → Post Office / Shipping Center</div>
-          <h3>The Packaging &amp; Delivery Hub</h3>
-          <p>The post office sorts, packages, and ships mail. <strong>Golgi bodies</strong> receive proteins from the ER, package them up, and ship them to the right destination inside or outside the cell.</p>
-        </div>
-      </div>
-      <div class="city-card">
-        <div class="city-icon-box">☀️</div>
-        <div class="city-content">
-          <div class="city-analog">Chloroplasts → Solar Farm</div>
-          <h3>The Renewable Energy Source</h3>
-          <p>Solar panels collect sunlight and convert it to usable energy. <strong>Chloroplasts</strong> do the exact same thing for plant cells through photosynthesis.</p>
-        </div>
-      </div>
-      <div class="city-card">
-        <div class="city-icon-box">🏊</div>
-        <div class="city-content">
-          <div class="city-analog">Vacuoles → Reservoir / Water Tower</div>
-          <h3>Storage &amp; Water Supply</h3>
-          <p>A city reservoir stores water for when citizens need it. <strong>Vacuoles</strong> store water, nutrients, and waste — plant cells have one giant central reservoir; animal cells have many smaller ones.</p>
-        </div>
-      </div>
-      <div class="city-card">
-        <div class="city-icon-box">🗑️</div>
-        <div class="city-content">
-          <div class="city-analog">Lysosomes → Sanitation Department</div>
-          <h3>Waste Management</h3>
-          <p>Every city needs garbage trucks and waste processing. <strong>Lysosomes</strong> are the cell's clean-up crew — breaking down waste, worn-out parts, and invaders to keep the cell healthy.</p>
-        </div>
-      </div>
-      <div class="city-card">
-        <div class="city-icon-box">🌊</div>
-        <div class="city-content">
-          <div class="city-analog">Cytoplasm → City Streets &amp; Water Supply</div>
-          <h3>The Medium Everything Moves Through</h3>
-          <p>Streets connect every part of a city. The <strong>cytoplasm</strong> is the gel-like fluid that all organelles are suspended in — it lets nutrients and materials move freely from place to place.</p>
-        </div>
-      </div>
-    </div>
 
-    <div class="section-bridge">
-      Every city job has a cell equivalent — and vice versa. Before the quiz, use the vocabulary section below to lock in the terminology. If any term feels fuzzy, click it to jump straight back to its definition.
-    </div>
-  </div>
-</section>
 
 <section id="concepts" style="background: var(--dark); padding: 5rem 2rem;">
   <div class="container">
