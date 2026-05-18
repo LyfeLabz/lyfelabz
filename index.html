@@ -790,6 +790,37 @@
   }
   #wb-egg:hover #wb-egg-dismiss { opacity: 1; }
 
+  /* ===== MISSION EASTER EGG ===== */
+  #mission-egg {
+    position: fixed;
+    bottom: 32px;
+    left: 32px;
+    z-index: 9998;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(40px) scale(0.7);
+    pointer-events: none;
+    transition: opacity 0.5s cubic-bezier(0.22,1,0.36,1),
+                transform 0.5s cubic-bezier(0.22,1,0.36,1);
+  }
+  #mission-egg.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  #mission-egg img {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 28px rgba(61,220,132,0.6))
+            drop-shadow(0 0 60px rgba(61,220,132,0.22));
+    animation: wbEggFloat 4s ease-in-out infinite;
+  }
+  #mission-egg:hover img {
+    filter: drop-shadow(0 0 40px rgba(61,220,132,0.9))
+            drop-shadow(0 0 80px rgba(61,220,132,0.35));
+  }
+
   /* ===== COMING SOON CARD ===== */
   .unit-card--coming-soon {
     border-style: dashed;
@@ -1502,6 +1533,42 @@ function toggleStemMode() {
   });
 })();
 </script>
+
+<!-- MISSION sequence easter egg: type "mission" anywhere to reveal the mission icon -->
+<script>
+(function() {
+  var seq     = 'mission';
+  var buf     = '';
+  var timer   = null;
+  var TIMEOUT = 1800;
+
+  function showMissionEgg() {
+    var egg = document.getElementById('mission-egg');
+    if (!egg || egg.classList.contains('show')) return;
+    egg.classList.add('show');
+    clearTimeout(egg._autoDismiss);
+    egg._autoDismiss = setTimeout(function() {
+      egg.classList.remove('show');
+    }, 12000);
+  }
+
+  document.addEventListener('keydown', function(e) {
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement.isContentEditable) return;
+    if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      buf += e.key.toLowerCase();
+      if (buf.length > seq.length) buf = buf.slice(-seq.length);
+      clearTimeout(timer);
+      timer = setTimeout(function() { buf = ''; }, TIMEOUT);
+      if (buf === seq) {
+        buf = '';
+        clearTimeout(timer);
+        showMissionEgg();
+      }
+    }
+  });
+})();
+</script>
 <script>
   (function() {
     const btn = document.getElementById('navHamburger');
@@ -1585,6 +1652,11 @@ function toggleStemMode() {
     </svg>
     <div id="wb-egg-label">Wonder Box ↗</div>
   </div>
+</div>
+
+<!-- MISSION EASTER EGG: appears when "mission" is typed -->
+<div id="mission-egg" onclick="window.location.href='https://mission.lyfelabz.com'" role="button" aria-label="Go to Mission">
+  <img src="mission-icon.png" alt="Mission">
 </div>
 
 </body>
