@@ -229,7 +229,7 @@
   }
 
   /* ===== HIERARCHY SECTION ===== */
-  #hierarchy { background: var(--dark2); padding-top: 2.5rem; padding-bottom: 2.5rem; }
+  #hierarchy { background: var(--dark2); padding-top: 2.5rem; padding-bottom: 2.5rem; scroll-margin-top: 45px; }
   .hierarchy-flow {
     display: flex;
     align-items: flex-start;
@@ -282,7 +282,7 @@
     width: 100%;
   }
   .hier-item.open .hier-dropdown {
-    max-height: 400px;
+    max-height: 700px;
     opacity: 1;
   }
   .hier-dropdown-inner {
@@ -314,7 +314,28 @@
     100% { box-shadow: none; border-color: var(--border); background: var(--card); }
   }
   .hier-item.pulsing { animation: hierPulse 3s ease forwards; }
-  .hier-icon { font-size: 2rem; }
+  .hier-icon {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+  }
+  .hier-scale-diagram {
+    width: 100%;
+    max-width: 680px;
+    display: block;
+    margin: 2rem auto 1.5rem;
+  }
+  .hier-drop-example {
+    margin-top: 0.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid rgba(245,200,66,0.15);
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.55);
+    font-style: italic;
+    line-height: 1.6;
+  }
   .hier-name {
     font-weight: 900;
     font-size: 0.9rem;
@@ -337,6 +358,111 @@
     color: var(--text-muted);
     font-size: 0.97rem;
     font-weight: 700;
+  }
+
+  /* ===== INTERACTIVE HIERARCHY RINGS ===== */
+  .nhr-wrap {
+    display: flex;
+    align-items: stretch;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 1.8rem 0 1rem;
+    min-height: 310px;
+  }
+  .nhr-rings {
+    width: 296px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 8px;
+    position: relative;
+  }
+  .nhr-callout {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 30, 46, 0.95);
+    border: 1.5px solid rgba(245,200,66,0.65);
+    border-radius: 99px;
+    padding: 0.38rem 1.1rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: rgba(245,200,66,0.92);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+    animation: nhrCalloutAnim 4s ease forwards;
+  }
+  @keyframes nhrCalloutAnim {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(-5px); }
+    12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    70%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-5px); }
+  }
+  .nhr-panel {
+    flex: 1;
+    border-left: 1px solid var(--border);
+    padding: 2.2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+  .nhr-ring-g { cursor: pointer; }
+  .nhr-ring-c { transition: stroke-width .2s, stroke-opacity .2s, fill-opacity .2s; }
+  .nhr-ring-g:hover .nhr-ring-c { stroke-opacity: 1 !important; fill-opacity: .14 !important; }
+  .nhr-ring-g.nhr-on .nhr-ring-c { stroke-width: 2.5 !important; stroke-opacity: 1 !important; fill-opacity: .16 !important; }
+  .nhr-empty {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    text-align: center;
+    font-style: italic;
+    line-height: 1.7;
+    opacity: 0.7;
+  }
+  .nhr-content { transition: opacity .15s; }
+  .nhr-content.nhr-fade { opacity: 0; }
+  .nhr-num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+  }
+  .nhr-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.15;
+  }
+  .nhr-divider {
+    width: 32px;
+    height: 2px;
+    border-radius: 1px;
+    margin-bottom: 1.1rem;
+    opacity: 0.75;
+  }
+  .nhr-def {
+    color: var(--text);
+    font-size: 0.97rem;
+    line-height: 1.72;
+    margin-bottom: 1rem;
+  }
+  .nhr-example {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.65;
+    font-style: italic;
+  }
+  @media (max-width: 700px) {
+    .nhr-wrap { flex-direction: column; min-height: auto; }
+    .nhr-rings { width: 100%; padding: 20px; }
+    .nhr-panel { border-left: none; border-top: 1px solid var(--border); padding: 1.5rem 1.25rem; }
   }
 
   /* ===== SYSTEMS GRID ===== */
@@ -483,6 +609,13 @@
   .conn-header.digestive   .conn-header-name { color: #ffb74d; }
   .conn-header.immune      { background: rgba(29,233,182,0.08);  border-bottom-color: rgba(29,233,182,0.18); }
   .conn-header.immune      .conn-header-name { color: #1de9b6; }
+  .conn-intro {
+    padding: 0.65rem 1rem 0.4rem;
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.55;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
   .conn-rows { padding: 0.5rem 0; }
   .conn-row {
     display: flex;
@@ -1457,9 +1590,9 @@ body.stem-active .stem-detail {
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
-    <li><a href="#hierarchy">Hierarchy</a></li>
-    <li><a href="#connections">Connections</a></li>
-    <li><a href="#systems">Explorations</a></li>
+    <li><a href="#hierarchy">Trace</a></li>
+    <li><a href="#connections">Connect</a></li>
+    <li><a href="#systems">Explore</a></li>
     <li><a href="#concepts">Vocab</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
@@ -1474,7 +1607,7 @@ body.stem-active .stem-detail {
   <span class="hero-floats">🧠</span>
   <span class="hero-floats">🫁</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Body Systems 🫀&#xFE0E;</h1>
+  <h1>Body Systems</h1>
   <p>Explore how the body's major systems work together — from cells to organs — to keep every living organism alive and in balance.</p>
   <div class="driving-question">
     <div class="dq-icon">🔍</div>
@@ -1503,79 +1636,47 @@ body.stem-active .stem-detail {
 <!-- HIERARCHY -->
 <section id="hierarchy">
   <div class="container">
-    <span class="section-label">📖 Lesson Notes</span>
-    <h2 class="section-title">From Cells to Body Systems 🔬</h2>
-    <p class="section-desc">Life is organized in levels. Each level is built from the one below — and if any level fails, everything above it is affected.</p>
+    <span class="section-label">Organization</span>
+    <h2 class="section-title">How Does a Cell Become a System?</h2>
+    <p class="section-desc">Your body has trillions of cells. So does a whale. So does a mushroom. But how do you get from a single cell to a working hand, a beating heart, or a thinking brain? Life solves this problem the same way every time.</p>
 
-    <div class="hierarchy-flow">
-
-      <div class="hier-item" id="vocab-organelle" onclick="toggleHier(this)">
-        <span class="hier-icon">⚙️</span>
-        <div class="hier-name">Organelles</div>
-        <span class="hier-chevron">▼</span>
-        <div class="hier-dropdown">
-          <div class="hier-dropdown-inner">
-            <div class="hier-drop-def">Tiny structures inside a cell that each have a specific job — like the organelles of a cell are to the cell what organs are to your body.</div>
-          </div>
+    <div class="nhr-wrap" id="nhr-wrap">
+      <div class="nhr-rings">
+        <div class="nhr-callout" id="nhr-callout">Click a ring to explore ↓</div>
+        <svg width="272" height="296" viewBox="0 0 272 296" style="display:block;overflow:visible" role="img" aria-label="Nested rings representing biological organization levels. Tap each ring to explore.">
+          <!-- Rings rendered outermost-first so inner rings sit on top in z-order -->
+          <g class="nhr-ring-g" id="nhr-bs" onclick="selRing('bs')" aria-label="Body Systems">
+            <circle class="nhr-ring-c" cx="136" cy="144" r="126" fill="rgba(245,200,66,0.07)" stroke="#f5c842" stroke-width="1.5" stroke-opacity="0.5"/>
+          </g>
+          <g class="nhr-ring-g" id="nhr-og" onclick="selRing('og')" aria-label="Organs">
+            <circle class="nhr-ring-c" cx="136" cy="144" r="95" fill="rgba(238,188,55,0.07)" stroke="rgba(238,188,55,1)" stroke-width="1.5" stroke-opacity="0.5"/>
+          </g>
+          <g class="nhr-ring-g" id="nhr-ts" onclick="selRing('ts')" aria-label="Tissues">
+            <circle class="nhr-ring-c" cx="136" cy="144" r="66" fill="rgba(155,200,72,0.07)" stroke="rgba(155,200,72,1)" stroke-width="1.5" stroke-opacity="0.55"/>
+          </g>
+          <g class="nhr-ring-g" id="nhr-cl" onclick="selRing('cl')" aria-label="Cells">
+            <circle class="nhr-ring-c" cx="136" cy="144" r="40" fill="rgba(59,200,232,0.08)" stroke="rgba(59,200,232,1)" stroke-width="1.5" stroke-opacity="0.5"/>
+          </g>
+          <g class="nhr-ring-g" id="nhr-or" onclick="selRing('or')" aria-label="Organelles">
+            <circle class="nhr-ring-c" cx="136" cy="144" r="16" fill="rgba(59,200,232,0.20)" stroke="#3bc8e8" stroke-width="2" stroke-opacity="0.55"/>
+          </g>
+          <text x="136" y="288" text-anchor="middle" font-size="12.5" font-style="italic" font-family="Nunito, sans-serif" fill="rgba(245,200,66,0.6)">tap a ring to explore each level</text>
+        </svg>
+      </div>
+      <div class="nhr-panel" id="nhr-panel">
+        <div class="nhr-empty" id="nhr-empty">Click any ring to discover<br>what happens at that level.</div>
+        <div class="nhr-content nhr-fade" id="nhr-content" style="display:none">
+          <div class="nhr-num" id="nhr-num"></div>
+          <div class="nhr-name" id="nhr-name"></div>
+          <div class="nhr-divider" id="nhr-div"></div>
+          <div class="nhr-def" id="nhr-def"></div>
+          <div class="nhr-example" id="nhr-ex"></div>
         </div>
       </div>
-
-      <div class="hier-arrow">→</div>
-
-      <div class="hier-item" id="vocab-cell" onclick="toggleHier(this)">
-        <span class="hier-icon">🟠</span>
-        <div class="hier-name">Cells</div>
-        <span class="hier-chevron">▼</span>
-        <div class="hier-dropdown">
-          <div class="hier-dropdown-inner">
-            <div class="hier-drop-def">The basic structural and functional unit of all living things. Every living organism is made of one or more cells.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hier-arrow">→</div>
-
-      <div class="hier-item" id="vocab-tissue" onclick="toggleHier(this)">
-        <span class="hier-icon">🧱</span>
-        <div class="hier-name">Tissues</div>
-        <span class="hier-chevron">▼</span>
-        <div class="hier-dropdown">
-          <div class="hier-dropdown-inner">
-            <div class="hier-drop-def">A group of similar cells working together to perform a specific function. Tissues are one level above cells.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hier-arrow">→</div>
-
-      <div class="hier-item" id="vocab-organ" onclick="toggleHier(this)">
-        <span class="hier-icon">🫁</span>
-        <div class="hier-name">Organs</div>
-        <span class="hier-chevron">▼</span>
-        <div class="hier-dropdown">
-          <div class="hier-dropdown-inner">
-            <div class="hier-drop-def">A structure made of two or more types of tissue working together to carry out a specific job in the body.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hier-arrow">→</div>
-
-      <div class="hier-item" id="vocab-body-systems" onclick="toggleHier(this)">
-        <span class="hier-icon">🏂🏽</span>
-        <div class="hier-name">Body Systems</div>
-        <span class="hier-chevron">▼</span>
-        <div class="hier-dropdown">
-          <div class="hier-dropdown-inner">
-            <div class="hier-drop-def">A group of organs that work together to perform a major function for the whole organism. Multiple systems interact constantly to keep the body alive.</div>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <div class="hierarchy-note">
-      🔑 <strong>Key Idea:</strong> If <span class="vocab" title="Cell: the basic structural and functional unit of all living organisms">cells</span> do not function properly, the <span class="vocab" title="Tissue: a group of similar cells that work together to perform a specific function">tissues</span>, <span class="vocab" title="Organ: a structure made of different tissues that work together to do a specific job">organs</span>, and body systems that depend on them cannot function properly either. Everything starts at the cellular level.
+      🔑 <strong>Key Idea:</strong> A body system is only as strong as the cells that build it. Damage one level, and everything above it feels it. Now the bigger question: how do eight of these systems manage to work together at once?
     </div>
   </div>
 </section>
@@ -1584,8 +1685,8 @@ body.stem-active .stem-detail {
 <section id="connections">
   <div class="container">
     <span class="section-label">System Interactions</span>
-    <h2 class="section-title">How Systems Work Together 🔗</h2>
-    <p class="section-desc">No body system works alone — they are constantly depending on and supporting each other. Here's a quick reference for the key interactions.</p>
+    <h2 class="section-title">No System Works Alone</h2>
+    <p class="section-desc">Remember sprinting for that bus? At least six systems fired at once. Pick any system below — then trace how far its connections reach.</p>
     <div class="connections-grid">
 
       <!-- NERVOUS — spans full width, first ─────────────────────────────── -->
@@ -1593,7 +1694,7 @@ body.stem-active .stem-detail {
         <div class="conn-header nervous">
           <div class="conn-header-group"><span class="conn-header-icon">🧠</span><span class="conn-header-name">Nervous — The Master Controller</span></div>
         </div>
-        <div class="nervous-intro">The brain and spinal cord send and receive signals through neurons to coordinate every other system. Nothing in the body operates without nervous system involvement.</div>
+        <div class="nervous-intro">The brain and spinal cord send and receive signals through neurons to coordinate every other system.</div>
         <div class="nervous-connections-grid">
           <div class="nervous-conn-item">
             <span class="conn-partner circulatory">Circulatory</span>
@@ -1631,6 +1732,7 @@ body.stem-active .stem-detail {
         <div class="conn-header circulatory">
           <div class="conn-header-group"><span class="conn-header-icon">🫀</span><span class="conn-header-name">Circulatory</span></div>
         </div>
+        <div class="conn-intro">Delivers oxygen, nutrients, hormones, and immune cells to every part of the body through a closed loop of blood vessels driven by the heart.</div>
         <div class="conn-rows">
           <div class="conn-row">
             <span class="conn-partner respiratory">Respiratory</span>
@@ -1656,6 +1758,7 @@ body.stem-active .stem-detail {
         <div class="conn-header muscular">
           <div class="conn-header-group"><span class="conn-header-icon">💪</span><span class="conn-header-name">Muscular</span></div>
         </div>
+        <div class="conn-intro">Generates all movement in the body — from blinking and breathing to running and pumping blood — through the controlled contraction of muscle tissue.</div>
         <div class="conn-rows">
           <div class="conn-row">
             <span class="conn-partner digestive">Digestive</span>
@@ -1677,6 +1780,7 @@ body.stem-active .stem-detail {
         <div class="conn-header skeletal">
           <div class="conn-header-group"><span class="conn-header-icon">🦴</span><span class="conn-header-name">Skeletal</span></div>
         </div>
+        <div class="conn-intro">Provides the body's structural framework, protects vital organs, anchors muscles, and manufactures blood cells deep inside bone marrow.</div>
         <div class="conn-rows">
           <div class="conn-row">
             <span class="conn-partner muscular">Muscular</span>
@@ -1694,6 +1798,7 @@ body.stem-active .stem-detail {
         <div class="conn-header respiratory">
           <div class="conn-header-group"><span class="conn-header-icon">🫁</span><span class="conn-header-name">Respiratory</span></div>
         </div>
+        <div class="conn-intro">Pulls oxygen into the body and expels carbon dioxide with every breath — the body's primary gas exchange system, running without pause from birth to death.</div>
         <div class="conn-rows">
           <div class="conn-row">
             <span class="conn-partner excretory">Excretory</span>
@@ -1711,6 +1816,7 @@ body.stem-active .stem-detail {
         <div class="conn-header digestive">
           <div class="conn-header-group"><span class="conn-header-icon">🫄</span><span class="conn-header-name">Digestive</span></div>
         </div>
+        <div class="conn-intro">Breaks food down into molecules small enough for cells to absorb — converting meals into the glucose, amino acids, and fatty acids that fuel everything else.</div>
         <div class="conn-rows">
           <div class="conn-row">
             <span class="conn-partner immune">Immune</span>
@@ -1728,6 +1834,7 @@ body.stem-active .stem-detail {
         <div class="conn-header excretory">
           <div class="conn-header-group"><span class="conn-header-icon">🚽</span><span class="conn-header-name">Excretory</span></div>
         </div>
+        <div class="conn-intro">Filters metabolic waste from the blood and expels it from the body — keeping internal chemistry stable so cells don't poison themselves with their own byproducts.</div>
         <div class="conn-rows">
           <div class="conn-row">
             <span class="conn-partner circulatory">Circulatory</span>
@@ -1745,6 +1852,7 @@ body.stem-active .stem-detail {
         <div class="conn-header immune">
           <div class="conn-header-group"><span class="conn-header-icon">🛡️</span><span class="conn-header-name">Immune</span></div>
         </div>
+        <div class="conn-intro">Identifies and destroys pathogens, foreign substances, and damaged cells — a constant surveillance system that distinguishes self from threat.</div>
         <div class="conn-rows">
           <div class="conn-row">
             <span class="conn-partner skeletal">Skeletal</span>
@@ -1765,8 +1873,8 @@ body.stem-active .stem-detail {
 <section id="systems" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Explorations</span>
-    <h2 class="section-title">Dive Deeper 🔍</h2>
-    <p class="section-desc">Now that you've seen how the systems connect, go deeper — explore interactive maps or see what happens when things go wrong.</p>
+    <h2 class="section-title">Take the Next Step</h2>
+    <p class="section-desc">You've seen how the systems connect. Now pick your path — explore the full interactive maps, or find out what happens when a system breaks down.</p>
 
     <div class="gateway-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem;margin-top:1rem;max-width:none;">
 
@@ -1801,10 +1909,10 @@ body.stem-active .stem-detail {
 
 <section id="concepts" style="background: var(--dark2); padding: 5rem 2rem;">
   <div class="container">
-    <span class="section-label">🏷️ Key Vocabulary</span>
+    <span class="section-label">Key Vocabulary</span>
     <h2 class="section-title">Vocabulary to Know</h2>
-    <p class="section-desc" style="margin-bottom:0.5rem;">Every term below appeared in this lesson. Click any pill to jump to its explanation.</p>
-    <p style="font-size:0.78rem; color:rgba(59,200,232,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">👆 Click any term to jump to its explanation in the lesson</p>
+    <p class="section-desc" style="margin-bottom:0.5rem;">These terms appear everywhere in biology — from the hierarchy you just traced to the disease pages ahead.</p>
+    <p style="font-size:0.78rem; color:rgba(59,200,232,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">Tap any term to jump to its definition above.</p>
     <div style="display:flex; flex-wrap:wrap; gap:0.65rem;">
       <span class="concept-tag ct-red"    onclick="vocabJump('sc-circulatory')">Circulatory System</span>
       <span class="concept-tag ct-blue"   onclick="vocabJump('sc-digestive')">Digestive System</span>
@@ -1827,9 +1935,9 @@ body.stem-active .stem-detail {
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">✅ Check Your Understanding</span>
-    <h2 class="section-title">Body Systems Quiz 📝</h2>
-    <p class="section-desc">15 questions on the major body systems, their functions, and how they work together. Fill in your info below — your score will be sent to your teacher when you submit.</p>
+    <span class="section-label">Mastery Check</span>
+    <h2 class="section-title">Body Systems Quiz</h2>
+    <p class="section-desc">You've traced how systems are built and how they connect. Now see how much you can recall on your own — no notes needed.</p>
 
     <!-- Quiz Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -1903,9 +2011,9 @@ body.stem-active .stem-detail {
 <!-- CONTINUE LEARNING -->
 <section id="continue">
   <div class="container">
-    <span class="section-label">🚀 Go Further</span>
-    <h2 class="section-title">More Learning</h2>
-    <p class="section-desc" style="white-space:nowrap; max-width:none;">The lesson is just the beginning — go deeper, test your skills, or see how it all connects.</p>
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">Keep Investigating</h2>
+    <p class="section-desc" style="white-space:nowrap; max-width:none;">The quiz was a checkpoint — not a finish line. Go further.</p>
     <div class="continue-grid" style="text-align:left;">
       <a href="extension_body-systems.html" class="cont-card ext">
         <div class="cont-icon">🩺</div>
@@ -1948,19 +2056,19 @@ const SCRIPT_URLS = {
 };
 
 const quizQuestions = [
-  { q: "Which body system is responsible for pumping blood throughout the body?", options: ["Respiratory system","Circulatory system","Muscular system","Excretory system"], correct: 1, explanation: "The circulatory system — powered by the heart — pumps blood through veins and arteries to deliver oxygen, nutrients, and remove waste from every cell in the body." },
-  { q: "What is the correct order of biological organization from smallest to largest?", options: ["Cells → Organelles → Tissues → Organs → Body Systems","Organelles → Cells → Tissues → Organs → Body Systems","Tissues → Cells → Organs → Organelles → Body Systems","Organs → Tissues → Cells → Organelles → Body Systems"], correct: 1, explanation: "Organelles work together to form cells → cells form tissues → tissues form organs → organs form body systems. This is the hierarchy of biological organization!" },
-  { q: "Which system detects, interprets, and responds to information from the environment?", options: ["Immune system","Endocrine system","Nervous system","Circulatory system"], correct: 2, explanation: "The nervous system — brain, spinal cord, and neurons — detects stimuli, interprets signals, and coordinates responses. It helps control and coordinate all other body systems." },
-  { q: "Where are nutrients absorbed into the bloodstream during digestion?", options: ["Stomach","Large intestine","Mouth","Small intestine"], correct: 3, explanation: "After food is broken down in the mouth and stomach, nutrients are absorbed into the bloodstream through the walls of the small intestine." },
+  { q: "A virus destroys the cells lining the small intestine. Which prediction correctly applies the hierarchy of biological organization?", options: ["Only the intestine is affected — it is just one organ","The digestive system fails, but other body systems are unaffected","The digestive system is disrupted, which reduces nutrients reaching the circulatory system","All body systems immediately stop functioning"], correct: 2, explanation: "When cells fail, the tissue they form breaks down. That damages the organ (small intestine), which disrupts the digestive system — which then starves the circulatory system of nutrients it needs to deliver. This is the hierarchy in action: damage at one level cascades upward." },
+  { q: "A student says 'fix the tissue and the organ heals.' Her lab partner says 'you have to fix the cells first.' Who is right?", options: ["The first student — organs are more important than the tissues inside them","The lab partner — cells build tissues, which build organs; damage at the bottom affects everything above","Both are wrong — you can only treat a whole body system at once","Neither — the nervous system automatically repairs cellular damage"], correct: 1, explanation: "The hierarchy runs from smallest to largest: organelles → cells → tissues → organs → body systems. Damage at the bottom cascades upward — broken cells mean broken tissue, which means a failing organ. You cannot fix the top without addressing the foundation." },
+  { q: "During a sprint, a student's heart rate, breathing rate, and muscle contractions all increase at the same time. What does this tell you about the nervous system?", options: ["It controls only voluntary muscle movements","It coordinates multiple systems simultaneously, acting as the body's master controller","It only activates during emergencies","It communicates using blood rather than electrical signals"], correct: 1, explanation: "The nervous system sent signals to the circulatory system (speed up the heart), the respiratory system (breathe faster), and the muscular system (contract harder) — all at once. That simultaneous coordination is exactly what makes it the master controller." },
+  { q: "A patient had surgery that removed most of their small intestine. Which prediction about their circulatory system is most likely correct?", options: ["Their heart rate would immediately slow down","Their blood would carry fewer nutrients to cells throughout the body","Their white blood cell count would decrease","Their lungs would begin absorbing nutrients instead"], correct: 1, explanation: "Nutrients are absorbed into the bloodstream through the walls of the small intestine. Without it, the circulatory system has less to deliver — cells throughout the body would receive fewer of the glucose, amino acids, and fatty acids they need to function." },
   { q: "The excretory system removes three types of waste. Which option correctly matches the type of waste to the organ?", options: ["CO₂ = large intestine; liquid = lungs; solid = bladder","Solid = large intestine; liquid = bladder; CO₂ = lungs","Solid = bladder; CO₂ = large intestine; liquid = lungs","Liquid = stomach; solid = lungs; CO₂ = bladder"], correct: 1, explanation: "The large intestine removes solid waste, the bladder stores and removes liquid waste (urine), and the lungs exhale gaseous carbon dioxide (CO₂) waste." },
   { q: "Ligaments and tendons are both part of the skeletal system. What is the difference between them?", options: ["Ligaments connect bones to muscles; tendons connect bones to bones","Ligaments connect bones to bones; tendons connect bones to muscles","Both connect muscles to muscles","Both connect bones to bones"], correct: 1, explanation: "Ligaments connect bone to bone at joints. Tendons connect bone to muscle, allowing muscles to pull on bones and create movement." },
-  { q: "Which type of muscle is responsible for pumping blood throughout the body?", options: ["Skeletal muscle","Smooth muscle","Cardiac muscle","Voluntary muscle"], correct: 2, explanation: "Cardiac muscle is found only in the heart. It contracts continuously and involuntarily to keep blood pumping through the circulatory system. The heart is the only organ made of cardiac muscle." },
-  { q: "How does the immune system rely on the circulatory system?", options: ["It uses the lungs to filter germs from the air","It uses blood vessels to carry white blood cells around","It uses the stomach to digest and destroy bacteria","It uses bones as physical barriers to block viruses"], correct: 1, explanation: "The circulatory system acts as the 'highway' for the immune system — blood vessels carry white blood cells to wherever an infection is occurring in the body." },
+  { q: "An athlete's heart rate jumps from 70 to 160 beats per minute mid-race. Which correctly identifies both the system that triggered this AND the system that benefits most?", options: ["Digestive system triggered it; skeletal system benefits","Nervous system triggered it; muscular system benefits from increased oxygen delivery","Excretory system triggered it; immune system benefits","Immune system triggered it; respiratory system benefits"], correct: 1, explanation: "The nervous system detected the demand for more oxygen and sent signals to speed up the heart. The faster-beating heart pumps more blood — delivering more oxygen to the muscular system, which needs it to keep contracting. This nervous → circulatory → muscular chain is the sprint scenario from the start of this lesson." },
+  { q: "A serious infection develops in a patient's foot. Within minutes, white blood cells arrive at the infected site. What does this tell you about how the circulatory and immune systems work together?", options: ["The immune system manufactures white blood cells near the site of infection","The circulatory system acts as a transport network, delivering immune cells wherever they are needed","The circulatory system temporarily becomes part of the immune system during infection","White blood cells travel independently through tissue, not through blood vessels"], correct: 1, explanation: "The speed of the immune response depends entirely on the circulatory system — blood vessels carry white blood cells throughout the body, allowing immune cells to reach any infection site within minutes. Without this transport network, the immune system could not respond quickly." },
   { q: "If a student's cells are not functioning properly, what else would be affected?", options: ["Only their skin would be affected","Nothing — all cells work independently","Their tissues, organs, and body systems","Only their immune system would suffer"], correct: 2, explanation: "Cells are the foundation of all biological organization. If cells malfunction, the tissues they form can't work, which means organs fail, which causes body systems to break down." },
   { q: "Bone marrow produces blood cells. This means the skeletal system directly supports which two other systems?", options: ["Digestive and nervous systems","Excretory and respiratory systems","Circulatory and immune systems","Muscular and respiratory systems"], correct: 2, explanation: "Bone marrow produces red blood cells (for the circulatory system to carry oxygen) and white blood cells (for the immune system to fight infections)." },
   { q: "Which body system works with BOTH the respiratory system AND the digestive system to deliver what cells need?", options: ["Nervous system","Excretory system","Circulatory system","Immune system"], correct: 2, explanation: "The circulatory system is the great connector — it picks up oxygen from the respiratory system and nutrients from the digestive system, then delivers both to cells throughout the body." },
-  { q: "What role does smooth muscle play in the digestive system?", options: ["It pumps blood to the stomach","It breaks down food with acid","It moves food through the digestive tract","It absorbs nutrients into the blood"], correct: 2, explanation: "Smooth muscle lines the walls of the digestive organs. It contracts in waves (peristalsis) to push food from the mouth through the stomach and intestines." },
-  { q: "Which statement about the nervous system is TRUE?", options: ["It only controls voluntary movements in the body","It only detects pain and pressure signals","It coordinates and controls all other body systems","It only connects to the muscular and skeletal systems"], correct: 2, explanation: "The nervous system is the master controller — the brain sends and receives signals through the spinal cord and neurons to coordinate ALL body systems, not just muscles." },
+  { q: "Food travels 9 meters through the digestive tract without you consciously doing anything. Which comparison best explains how this is possible?", options: ["Skeletal muscle in the gut works the same way as leg muscles — both are consciously controlled","Smooth muscle contracts in automatic waves called peristalsis — unlike skeletal muscle, you have no control over it","The nervous system pushes food using electrical signals alone, without any muscle involvement","Cardiac muscle in the gut beats rhythmically, the same way it does in the heart"], correct: 1, explanation: "The digestive tract is lined with smooth muscle, which contracts involuntarily in rhythmic waves — a process called peristalsis. This differs from the skeletal muscles in your arms and legs, which you consciously command. Smooth muscle works automatically, so digestion continues even while you sleep." },
+  { q: "A doctor tells a patient: 'Your nervous system is damaged.' The patient asks which other systems will be affected. What is the most accurate answer?", options: ["Only the muscular system — nerves exist only to control movement","Only the muscular and skeletal systems — nerves only connect to muscles and bones","All body systems — the nervous system coordinates every other system in the body","Only the circulatory system — nerves primarily regulate the heart"], correct: 2, explanation: "The nervous system is the body's master controller — it sends signals to the heart (circulatory), lungs (respiratory), muscles (muscular), gut (digestive), kidneys (excretory), and immune cells. Damage to it does not affect just one system; it ripples across all of them." },
   { q: "Why is removing waste important for the body?", options: ["It makes room for new organs to grow","It helps maintain homeostasis","It increases blood pressure","It produces more white blood cells"], correct: 1, explanation: "Waste products are toxic when they build up. Removing them through the excretory system helps the body maintain homeostasis — a stable internal environment that cells need to survive." },
   { q: "A student runs a race. Which THREE systems are most immediately working together to power her muscles?", options: ["Immune, digestive, and excretory systems","Muscular, circulatory, and respiratory systems","Nervous, skeletal, and excretory systems","Digestive, immune, and muscular systems"], correct: 1, explanation: "The muscular system moves her legs. The respiratory system brings in extra oxygen. The circulatory system delivers that oxygen (and removes CO₂) to the working muscles. These three are the core trio for physical activity!" }
 ];
@@ -2157,22 +2265,62 @@ function vocabJump(targetId) {
   }, 600);
 }
 
-function hierJump(targetId) {
-  const el = document.getElementById(targetId);
-  if (!el) return;
-  const top = el.getBoundingClientRect().top + window.scrollY - 120;
-  window.scrollTo({ top, behavior: 'smooth' });
+// ── Interactive Hierarchy Rings ─────────────────────────────
+const nhrData = {
+  bs: { num:'05', name:'Body Systems', color:'#f5c842',
+    def:'A group of organs that work together to perform a major function for the whole organism.',
+    ex:'Example: Your digestive system spans from your mouth to your large intestine — nine meters of coordinated organs all working on the same job: breaking food down into fuel your cells can actually use.' },
+  og: { num:'04', name:'Organs', color:'rgba(238,188,55,0.97)',
+    def:'A structure made of two or more types of tissue working together to carry out a specific job in the body.',
+    ex:'Example: Your stomach is built from four different tissue types — muscle tissue churns your food, epithelial tissue lines the walls, connective tissue holds it together, and nervous tissue tells it when to act.' },
+  ts: { num:'03', name:'Tissues', color:'rgba(155,200,72,0.97)',
+    def:'A group of similar cells working together to perform a specific function.',
+    ex:'Example: The muscle tissue in your heart beats over 100,000 times a day — each contraction is billions of cardiac muscle cells firing in perfect unison.' },
+  cl: { num:'02', name:'Cells', color:'rgba(59,200,232,0.97)',
+    def:'The basic unit of all living things — the smallest structure that counts as alive.',
+    ex:'Example: A single red blood cell is so small that 10,000 of them could fit on the period at the end of this sentence — yet each one carries oxygen to every corner of your body.' },
+  or: { num:'01', name:'Organelles', color:'#3bc8e8',
+    def:'Tiny structures inside a cell — each with a specific job to keep the cell running.',
+    ex:'Example: Your mitochondria are working right now — converting the glucose from your last meal into the energy your brain needs to read this sentence.' }
+};
+let nhrCur = null;
+
+function selRing(id) {
+  if (nhrCur) document.getElementById('nhr-' + nhrCur).classList.remove('nhr-on');
+  nhrCur = id;
+  document.getElementById('nhr-' + id).classList.add('nhr-on');
+  const d = nhrData[id];
+  const empty   = document.getElementById('nhr-empty');
+  const content = document.getElementById('nhr-content');
+  empty.style.display = 'none';
+  content.style.display = 'block';
+  content.classList.add('nhr-fade');
   setTimeout(() => {
-    el.classList.remove('pulsing');
-    void el.offsetWidth;
-    el.classList.add('pulsing');
-    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
-  }, 600);
+    document.getElementById('nhr-num').textContent  = d.num;
+    document.getElementById('nhr-num').style.color  = d.color;
+    document.getElementById('nhr-name').textContent = d.name;
+    document.getElementById('nhr-name').style.color = d.color;
+    document.getElementById('nhr-div').style.background = d.color;
+    document.getElementById('nhr-def').textContent  = d.def;
+    document.getElementById('nhr-ex').textContent   = d.ex;
+    content.classList.remove('nhr-fade');
+  }, 150);
 }
 
-function toggleHier(card) {
-  card.classList.toggle('open');
+function hierJump(targetId) {
+  const idMap = {
+    'vocab-organelle':    'or',
+    'vocab-cell':         'cl',
+    'vocab-tissue':       'ts',
+    'vocab-organ':        'og',
+    'vocab-body-systems': 'bs'
+  };
+  const section = document.getElementById('hierarchy');
+  if (section) section.scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => { const r = idMap[targetId]; if (r) selRing(r); }, 650);
 }
+
+function toggleHier() {} // retired — rings replace accordion
 
 buildQuiz();
 </script>
