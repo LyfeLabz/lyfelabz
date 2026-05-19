@@ -1583,14 +1583,15 @@ buildQuiz();
 const canvas = document.getElementById('stars');
 const ctx = canvas.getContext('2d');
 let stars = [];
+var STAR_DENSITY = 3200;
 function resize() {
   canvas.width = window.innerWidth;
-  canvas.height = document.body.scrollHeight;
+  canvas.height = window.innerHeight;
   generateStars();
 }
 function generateStars() {
   stars = [];
-  const count = Math.floor((canvas.width * canvas.height) / 4200);
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
   for (let i = 0; i < count; i++) {
     stars.push({
       x: Math.random() * canvas.width, y: Math.random() * canvas.height,

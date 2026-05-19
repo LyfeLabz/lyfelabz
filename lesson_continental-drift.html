@@ -296,6 +296,18 @@
   .callout.teal   { background: rgba(29,233,182,0.06);  border-left: 3px solid var(--teal);    color: rgba(232,237,242,0.85); }
   .callout.gold   { background: rgba(245,200,66,0.07);  border-left: 3px solid var(--gold);    color: rgba(232,237,242,0.85); }
 
+  /* bridge between sections */
+  .bridge-callout {
+    padding: 1.4rem 1.8rem;
+    border: 1px solid;
+    border-left: 4px solid;
+    border-radius: 14px;
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 760px;
+  }
+  .bridge-callout strong { color: var(--text); }
+
   /* ── EVIDENCE GRID (same pattern as rock-grid) ── */
   .evidence-grid {
     display: grid; grid-template-columns: repeat(2, 1fr);
@@ -690,10 +702,7 @@
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
     <li><a href="#hook">Observe</a></li>
-    <li><a href="#lesson">Lesson</a></li>
-    <li><a href="#missing-piece">Wegener</a></li>
-    <li><a href="#evidence">Evidence</a></li>
-    <li><a href="#apply-it">Apply It</a></li>
+    <li><a href="#lesson">Evidence</a></li>
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
@@ -718,15 +727,6 @@
     </div>
   </div>
 </header>
-
-<div class="container" style="margin-top:1.5rem;">
-  <div class="callout teal" style="max-width:700px;margin:0 auto 0;">
-    <span class="callout-icon">&#129327;</span>
-    <div class="callout-body">
-      South America and Africa were once connected. Scientists proved it without ever seeing it happen.
-    </div>
-  </div>
-</div>
 
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
@@ -780,41 +780,92 @@
     </div>
 
     <!-- Coastline SVG -->
-    <div style="margin: 1.8rem auto 1.6rem; max-width: 760px; background: rgba(122,143,166,0.04); border: 1px solid rgba(122,143,166,0.15); border-radius: 18px; padding: 1.2rem 1rem 0.6rem;">
-      <svg viewBox="0 0 800 410" xmlns="http://www.w3.org/2000/svg" style="width:100%; display:block;">
+    <div style="margin: 1.8rem auto 1.6rem; max-width: 760px; background: rgba(8,18,32,0.55); border-radius: 18px; padding: 1.2rem 0.8rem 0.5rem; border: 1px solid rgba(122,143,166,0.12);">
+      <svg id="coastline-comparison" viewBox="0 0 600 425" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" preserveAspectRatio="xMidYMid meet" role="img" aria-label="South America and Africa separated by the Atlantic Ocean, showing the matching coastlines Wegener noticed">
 
-        <!-- South America -->
-        <path d="M155,75 L195,55 L245,65 L290,95 L295,130 L285,175 L272,220 L255,265 L235,305 L210,338 L185,315 L162,262 L145,205 L140,155 L148,110 Z"
-              fill="rgba(122,143,166,0.22)" stroke="rgba(122,143,166,0.4)" stroke-width="1.5"/>
+        <!-- ── SOUTH AMERICA ──────────────────────────────────── -->
+        <g id="south-america">
 
-        <!-- Eastern coast of South America — the key fit segment (gold highlight) -->
-        <path d="M245,65 L290,95 L295,130 L285,175 L272,220 L255,265"
-              fill="none" stroke="rgba(245,200,66,0.8)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path id="sa-body" fill="#5DAA82"
+            d="M 52,30
+               C 80,14 112,8 145,10
+               C 165,11 182,20 196,38
+               C 212,58 213,85 202,112
+               C 191,137 175,158 160,180
+               C 144,202 128,224 112,246
+               C 96,268 80,290 65,310
+               C 55,326 46,342 42,356
+               C 34,346 26,330 20,313
+               C 10,286 4,256 2,226
+               C 0,196 1,167 5,140
+               C 9,114 15,90 23,68
+               C 31,48 42,36 52,30 Z"/>
 
-        <!-- Africa -->
-        <path d="M500,55 L545,42 L595,52 L640,80 L658,135 L652,190 L632,255 L608,308 L578,342 L550,322 L522,278 L505,228 L492,175 L498,125 Z"
-              fill="rgba(122,143,166,0.22)" stroke="rgba(122,143,166,0.4)" stroke-width="1.5"/>
+          <!-- East coast highlight — NE Brazil bulge, the matching puzzle edge -->
+          <path id="sa-east-coast" fill="none"
+            stroke="rgba(245,200,66,0.92)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"
+            d="M 196,38
+               C 212,58 213,85 202,112
+               C 191,137 175,158 160,180
+               C 144,202 128,224 112,246"/>
 
-        <!-- Western coast of Africa — the key fit segment (gold highlight) -->
-        <path d="M522,278 L505,228 L492,175 L498,125"
-              fill="none" stroke="rgba(245,200,66,0.8)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="80" y="188" text-anchor="middle"
+            font-family="'Fredoka One',cursive" font-size="22" fill="white" opacity="0.92">SOUTH</text>
+          <text x="80" y="214" text-anchor="middle"
+            font-family="'Fredoka One',cursive" font-size="22" fill="white" opacity="0.92">AMERICA</text>
 
-        <!-- Dashed alignment lines across the Atlantic -->
-        <line x1="290" y1="95"  x2="498" y2="125" stroke="rgba(245,200,66,0.22)" stroke-width="1.5" stroke-dasharray="6,7"/>
-        <line x1="272" y1="220" x2="505" y2="228" stroke="rgba(245,200,66,0.22)" stroke-width="1.5" stroke-dasharray="6,7"/>
+        </g>
 
-        <!-- Continent labels -->
-        <text x="193" y="195" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="17" fill="rgba(232,237,242,0.6)">South</text>
-        <text x="193" y="215" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="17" fill="rgba(232,237,242,0.6)">America</text>
+        <!-- ── AFRICA ──────────────────────────────────────────── -->
+        <g id="africa">
 
-        <text x="590" y="185" text-anchor="middle" font-family="'Fredoka One',cursive" font-size="17" fill="rgba(232,237,242,0.6)">Africa</text>
+          <path id="af-body" fill="#D46858"
+            d="M 290,18
+               C 335,5 382,0 428,6
+               C 462,10 490,24 510,50
+               C 526,72 530,105 526,138
+               C 522,170 510,198 494,224
+               C 477,250 456,272 432,292
+               C 410,310 386,326 362,336
+               C 346,343 330,344 315,336
+               C 300,327 288,312 278,292
+               C 268,270 260,244 258,218
+               C 256,192 260,166 266,144
+               C 272,122 280,102 284,82
+               C 287,62 284,40 290,18 Z"/>
 
-        <!-- Atlantic Ocean label -->
-        <text x="396" y="177" text-anchor="middle" font-family="'Nunito',sans-serif" font-size="11" fill="rgba(122,143,166,0.4)" font-weight="700" letter-spacing="2">ATLANTIC</text>
-        <text x="396" y="194" text-anchor="middle" font-family="'Nunito',sans-serif" font-size="11" fill="rgba(122,143,166,0.4)" font-weight="700" letter-spacing="2">OCEAN</text>
+          <!-- West coast highlight — Gulf of Guinea concavity, the matching puzzle edge -->
+          <path id="af-west-coast" fill="none"
+            stroke="rgba(245,200,66,0.92)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"
+            d="M 284,82
+               C 280,102 272,122 266,144
+               C 260,166 256,192 258,218
+               C 260,244 268,270 278,292"/>
 
-        <!-- Caption -->
-        <text x="400" y="388" text-anchor="middle" font-family="'Nunito',sans-serif" font-size="13" fill="rgba(245,200,66,0.6)" font-weight="800">The highlighted coasts are the ones Wegener noticed. Do they look like they could fit?</text>
+          <text x="398" y="190" text-anchor="middle"
+            font-family="'Fredoka One',cursive" font-size="22" fill="white" opacity="0.92">AFRICA</text>
+
+        </g>
+
+        <!-- ── ALIGNMENT LINES ─────────────────────────────────── -->
+        <g id="alignment-lines">
+          <line x1="196" y1="38"  x2="284" y2="82"
+            stroke="rgba(245,200,66,0.32)" stroke-width="1.5" stroke-dasharray="6,7"/>
+          <line x1="112" y1="246" x2="278" y2="292"
+            stroke="rgba(245,200,66,0.32)" stroke-width="1.5" stroke-dasharray="6,7"/>
+        </g>
+
+        <!-- ── OCEAN LABEL ──────────────────────────────────────── -->
+        <text x="232" y="188" text-anchor="middle"
+          font-family="Nunito,sans-serif" font-size="10" fill="rgba(180,205,225,0.4)"
+          font-weight="900" letter-spacing="2">ATLANTIC</text>
+        <text x="232" y="202" text-anchor="middle"
+          font-family="Nunito,sans-serif" font-size="10" fill="rgba(180,205,225,0.4)"
+          font-weight="900" letter-spacing="2">OCEAN</text>
+
+        <!-- ── CAPTION ─────────────────────────────────────────── -->
+        <text x="300" y="418" text-anchor="middle"
+          font-family="Nunito,sans-serif" font-size="13" fill="rgba(245,200,66,0.62)" font-weight="800">The highlighted coasts are the ones Wegener noticed. Do they look like they could fit?</text>
 
       </svg>
     </div>
@@ -826,12 +877,12 @@
   </div>
 </section>
 
-<!-- LESSON NOTES -->
-<section id="lesson">
+<!-- WEGENER'S PROPOSAL -->
+<section id="lesson" style="scroll-margin-top: 80px;">
   <div class="container">
-    <span class="section-label">Lesson Notes</span>
-    <h2 class="section-title">Continental Drift</h2>
-    <p class="section-desc">The ground beneath your feet has been moving for hundreds of millions of years. Science didn't always know that — here's the story of how the evidence built up, piece by piece.</p>
+    <span class="section-label">Wegener's Proposal</span>
+    <h2 class="section-title">What Did Wegener Actually Propose?</h2>
+    <p class="section-desc">Before we look at the evidence, we need to understand the claim — and why it was so hard for the scientific world to accept.</p>
 
     <!-- Card 1: Theory vs. Guess -->
     <div class="content-card">
@@ -858,11 +909,25 @@
         <p><strong id="vocab-wegener">Alfred Wegener</strong> was a German meteorologist who, in 1912, proposed that Earth's continents were once joined in a single enormous landmass. He called it <span class="vocab" id="vocab-pangaea" title="Pangaea: the name for the single supercontinent that existed about 250 million years ago before the continents separated">Pangaea</span> — meaning "all land" in Greek. His theory, <span class="vocab" id="vocab-continentaldrift" title="Continental drift: the theory that Earth's continents were once joined and have slowly moved apart over hundreds of millions of years">continental drift</span>, proposed that those landmasses had slowly moved apart over hundreds of millions of years.</p>
         <p>Wegener's first clue was the same one you just saw: the coastlines of South America and Africa looked like torn puzzle pieces. But he knew that observation alone wasn't enough. So he spent years searching for other kinds of evidence — from fossils, rocks, and ancient climate records — to build a stronger case.</p>
         <div class="callout teal">
-          <span class="callout-icon">&#128336;</span>
-          <div class="callout-body"><strong>Worth noting:</strong> Most scientists rejected Wegener's theory when he published it — not because the evidence was bad, but because he couldn't explain <em>how</em> continents could possibly move through solid rock. That missing piece would take another 50 years to find.</div>
+          <span class="callout-icon">&#128270;</span>
+          <div class="callout-body"><strong>Worth knowing:</strong> When Wegener published this theory in 1912, most of the scientific world rejected it. The evidence you're about to read is genuinely compelling — so what was missing? Keep that question open as you go.</div>
         </div>
       </div>
     </div>
+
+    <!-- BRIDGE -->
+    <div class="bridge-callout" style="margin-top:2.5rem; border-left-color: var(--accent2); background: rgba(122,143,166,0.05); border-color: rgba(122,143,166,0.22);">
+      Wegener had a bold claim and a starting observation. But one coastline match was never going to be enough. So he did what scientists do — he went looking for more evidence. <strong>Here's what he found.</strong>
+    </div>
+  </div>
+</section>
+
+<!-- THE EVIDENCE -->
+<section id="evidence-sections" style="background: var(--dark2); padding: 3.5rem 2rem 5rem;">
+  <div class="container">
+    <span class="section-label">Building the Case</span>
+    <h2 class="section-title">The Evidence, Piece by Piece</h2>
+    <p class="section-desc">Three independent types of evidence — from biology, geology, and climatology — all pointing toward the same conclusion. Each one, on its own, is striking. Together, they're hard to argue with.</p>
 
     <!-- Fossil Evidence: Concept -->
     <div class="content-card">
@@ -876,6 +941,69 @@
           <span class="callout-icon">&#128270;</span>
           <div class="callout-body">There are two possible explanations: <strong>(A)</strong> these organisms somehow crossed a vast ocean, or <strong>(B)</strong> the continents were once connected and later separated. As you read the four fossils below, ask yourself — which explanation actually holds up?</div>
         </div>
+      </div>
+    </div>
+
+    <!-- REASONING MOMENT: Mesosaurus prediction -->
+    <style>
+      .predict-card {
+        background: rgba(180,140,90,0.06);
+        border: 1px solid rgba(180,140,90,0.25);
+        border-left: 4px solid rgba(195,158,95,0.55);
+        border-radius: 18px;
+        padding: 1.8rem;
+        margin-bottom: 1.5rem;
+      }
+      .predict-pill {
+        display: inline-block; font-size: 0.7rem; font-weight: 900;
+        letter-spacing: 0.14em; text-transform: uppercase;
+        color: #d4a96a; background: rgba(180,140,90,0.12);
+        border: 1px solid rgba(180,140,90,0.35); padding: 0.22rem 0.85rem;
+        border-radius: 99px; margin-bottom: 0.9rem;
+      }
+      .predict-q {
+        font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+        color: var(--text); line-height: 1.4; margin-bottom: 1rem;
+      }
+      .predict-clue {
+        background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.14);
+        border-radius: 12px; padding: 0.9rem 1.2rem; margin-bottom: 1.2rem;
+        font-size: 0.92rem; color: rgba(232,237,242,0.85); line-height: 1.75;
+      }
+      .predict-clue strong { color: #d4a96a; }
+      #meso-feedback {
+        border-left-color: #d4a96a;
+        background: rgba(180,140,90,0.05);
+      }
+    </style>
+    <script>
+    var mesoPredicted = false;
+    function mesoPick(btn, isCorrect) {
+      if (mesoPredicted) return;
+      mesoPredicted = true;
+      var card = document.getElementById('predict-fossil');
+      var opts = card.querySelectorAll('.apply-opt');
+      opts.forEach(function(o) { o.disabled = true; o.classList.add('ao-incorrect'); });
+      btn.classList.remove('ao-incorrect');
+      btn.classList.add(isCorrect ? 'ao-correct' : 'ao-incorrect');
+      document.getElementById('meso-feedback').classList.add('show');
+    }
+    </script>
+
+    <div class="predict-card" id="predict-fossil">
+      <div class="predict-pill">Before You Read</div>
+      <div class="predict-q">One fossil. Two continents. Which explanation holds up?</div>
+      <div class="predict-clue">
+        <strong>Mesosaurus</strong> — a small reptile, extinct for about 280 million years. Fossils of Mesosaurus have been found in exactly two places on Earth: <strong>Brazil</strong> and <strong>South Africa</strong>. They are separated today by over 5,000 miles of open ocean.<br><br>
+        Critical detail: Mesosaurus was a <strong>freshwater animal</strong>. It could not survive in saltwater.
+      </div>
+      <div class="predict-q" style="font-size:1rem; margin-bottom:0.85rem;">How did the same freshwater animal end up on two continents separated by an ocean?</div>
+      <div class="apply-options">
+        <button class="apply-opt" onclick="mesoPick(this, false)">A — It swam across the Atlantic Ocean</button>
+        <button class="apply-opt" onclick="mesoPick(this, true)">B — South America and Africa were once connected — no ocean to cross</button>
+      </div>
+      <div class="apply-feedback" id="meso-feedback">
+        Wegener made the same call. Since Mesosaurus couldn't survive in saltwater, option A is physically impossible — the crossing never happened. The only explanation that holds is that the two continents were once the same landmass. Now read all four fossils below and watch this same reasoning repeat — each organism rules out the ocean-crossing explanation in a different way.
       </div>
     </div>
 
@@ -969,11 +1097,35 @@
       </div>
     </div>
 
+    <!-- EVIDENCE SYNTHESIS BRIDGE -->
+    <div style="margin-top: 2.8rem; padding: 1.6rem 1.8rem; background: rgba(29,233,182,0.04); border: 1px solid rgba(29,233,182,0.15); border-left: 4px solid rgba(29,233,182,0.45); border-radius: 14px;">
+
+      <!-- Three-field summary row -->
+      <div style="display:flex; gap:0.8rem; flex-wrap:wrap; margin-bottom:1.2rem;">
+        <div style="flex:1; min-width:155px; background:rgba(180,140,90,0.08); border:1px solid rgba(180,140,90,0.25); border-radius:10px; padding:0.7rem 1rem;">
+          <div style="font-size:0.68rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:#d4a96a; margin-bottom:0.3rem;">Biology</div>
+          <div style="font-size:0.88rem; color:rgba(232,237,242,0.82); line-height:1.55;">Same fossils on continents an ocean apart</div>
+        </div>
+        <div style="flex:1; min-width:155px; background:rgba(122,143,166,0.08); border:1px solid rgba(122,143,166,0.25); border-radius:10px; padding:0.7rem 1rem;">
+          <div style="font-size:0.68rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:#9fb8cc; margin-bottom:0.3rem;">Geology</div>
+          <div style="font-size:0.88rem; color:rgba(232,237,242,0.82); line-height:1.55;">Identical mountains on opposite sides of the Atlantic</div>
+        </div>
+        <div style="flex:1; min-width:155px; background:rgba(29,180,130,0.07); border:1px solid rgba(29,180,130,0.22); border-radius:10px; padding:0.7rem 1rem;">
+          <div style="font-size:0.68rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:#1de9b6; margin-bottom:0.3rem;">Climatology</div>
+          <div style="font-size:0.88rem; color:rgba(232,237,242,0.82); line-height:1.55;">Climate records found in impossible locations</div>
+        </div>
+      </div>
+
+      <p style="font-size:1rem; color:rgba(232,237,242,0.85); line-height:1.78; margin:0;">
+        Three sciences. Three independent lines of evidence. None of them set out to answer the same question — and yet all three reached the same conclusion. That kind of convergence is exactly what strong scientific evidence looks like. <strong style="color:var(--text);">So why did most scientists reject Wegener's theory for the next 50 years?</strong>
+      </p>
+    </div>
+
   </div>
 </section>
 
 <!-- THE MISSING PIECE -->
-<section id="missing-piece" style="background: linear-gradient(135deg, rgba(122,143,166,0.06) 0%, rgba(29,233,182,0.04) 100%); border-top: 1px solid rgba(122,143,166,0.15); border-bottom: 1px solid rgba(29,233,182,0.15);">
+<section id="missing-piece" style="background: linear-gradient(135deg, rgba(122,143,166,0.06) 0%, rgba(29,233,182,0.04) 100%); border-top: 1px solid rgba(122,143,166,0.15); border-bottom: 1px solid rgba(29,233,182,0.15); padding: 3.5rem 2rem;">
   <div class="container">
     <span class="section-label">Science in Action</span>
     <h2 class="section-title">Why Wegener Was Rejected — and Then Proven Right</h2>
@@ -1009,7 +1161,7 @@
 </section>
 
 <!-- EVIDENCE INTERACTIVE -->
-<section id="evidence" style="background: var(--dark2);">
+<section id="evidence" style="background: var(--dark2); padding: 3.5rem 2rem 5rem;">
   <div class="container">
     <span class="section-label">Put It Together</span>
     <h2 class="section-title">The Four Lines of Evidence</h2>
@@ -1073,11 +1225,20 @@
 </section>
 
 <!-- CLOSING LOOP: THINK LIKE WEGENER -->
-<section id="apply-it" style="background: var(--dark); border-top: 1px solid rgba(122,143,166,0.12);">
+<section id="apply-it" style="background: var(--dark); border-top: 1px solid rgba(122,143,166,0.12); padding: 3.5rem 2rem 5rem;">
   <div class="container">
     <span class="section-label">Think Like Wegener</span>
     <h2 class="section-title">Back to the Beginning</h2>
     <p class="section-desc">At the start of this lesson, you were asked whether the shape of the coastlines alone was enough. Now you have the full picture. Three questions — no score, no submission. Just reasoning.</p>
+
+    <!-- DQ CALLBACK -->
+    <div class="driving-question" style="margin-bottom: 2.5rem;">
+      <div class="dq-icon">&#128269;</div>
+      <div class="dq-body">
+        <div class="dq-label">Driving Question — Revisited</div>
+        <div class="dq-text">If you can't travel back 250 million years, how do scientists know the continents were once one giant landmass?</div>
+      </div>
+    </div>
 
     <div id="apply-questions">
 
@@ -1696,14 +1857,15 @@ buildQuiz();
 var canvas = document.getElementById('stars');
 var ctx = canvas.getContext('2d');
 var stars = [];
+var STAR_DENSITY = 3200;
 function resize() {
   canvas.width  = window.innerWidth;
-  canvas.height = document.body.scrollHeight;
+  canvas.height = window.innerHeight;
   generateStars();
 }
 function generateStars() {
   stars = [];
-  var count = Math.floor((canvas.width * canvas.height) / 4200);
+  var count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
   for (var i = 0; i < count; i++) {
     stars.push({
       x: Math.random() * canvas.width,
