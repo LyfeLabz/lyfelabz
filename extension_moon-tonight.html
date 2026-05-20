@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/extension_moon-tonight.html">
+<meta name="description" content="Use what you learned about Moon phases to understand the real Moon in the sky tonight. An interactive extension for LyfeLabz Moon Phases.">
+<title>LyfeLabz | The Moon Tonight</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #9b59b6;
+    --accent-dim:  rgba(155,89,182,0.15);
+    --accent-glow: rgba(155,89,182,0.35);
+    --accent-dark: #7d3c98;
+    --accent2:     #c39bd3;
+    --teal:        #3bc8e8;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #0d1117;
+    --dark2:       #111820;
+    --card:        #161e28;
+    --text:        #e8edf2;
+    --text-muted:  #7a8fa6;
+    --border:      rgba(155,89,182,0.18);
+    --red:         #e74c3c;
+    --green:       #2ecc71;
+    --silver:      #c8d8e8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { font-size: 18px; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  #stars {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0; opacity: 0.5;
+  }
+
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(8,12,18,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent2); background: var(--accent-dim);
+    border: 1px solid rgba(155,89,182,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(155,89,182,0.25); border-color: rgba(155,89,182,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #09101a 0%, #130d1a 50%, #0a0f18 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(155,89,182,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(195,155,211,0.05) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4.5s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+
+  .hero-badge {
+    display: inline-block; background: var(--accent-dim);
+    border: 1px solid rgba(155,89,182,0.4); color: var(--accent2);
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,237,242,0.78); max-width: 600px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+  .hero-invite {
+    max-width: 680px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(155,89,182,0.07); border: 1px solid rgba(155,89,182,0.28);
+    border-left: 4px solid var(--accent); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    position: relative;
+  }
+  .hero-invite-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .hero-invite-text { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); line-height: 1.5; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(155,89,182,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc {
+    color: rgba(232,237,242,0.78); font-size: 1.05rem;
+    max-width: 680px; margin-bottom: 3rem; line-height: 1.7;
+  }
+
+  /* ── CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout.purple { background: rgba(155,89,182,0.08); border-left: 3px solid var(--accent); color: rgba(232,237,242,0.88); }
+  .callout.teal   { background: rgba(59,200,232,0.06);  border-left: 3px solid var(--teal);   color: rgba(232,237,242,0.88); }
+
+  /* ── MORE / CONTINUE ── */
+  #continue { background: var(--dark2); }
+  .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
+  .cont-card {
+    border-radius: 18px; padding: 1.6rem 1.5rem; text-decoration: none;
+    transition: transform 0.25s, box-shadow 0.25s;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    position: relative; overflow: hidden;
+  }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .cont-card.lesson { background: rgba(245,200,66,0.08); border: 1px solid rgba(245,200,66,0.35); }
+  .cont-card.sim    { background: rgba(245,160,40,0.08); border: 1px solid rgba(245,160,40,0.35); }
+  .cont-card.game   { background: rgba(61,220,132,0.1);  border: 1px solid rgba(61,220,132,0.35); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #f5c842, #f5a028); }
+  .cont-card.sim::before    { background: linear-gradient(90deg, #f5a028, #f5c842); }
+  .cont-card.game::before   { background: linear-gradient(90deg, #3ddc84, #1de9b6); }
+  .cont-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
+  .cont-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .cont-card.lesson .cont-icon { background: rgba(245,200,66,0.15); }
+  .cont-card.sim    .cont-icon { background: rgba(245,160,40,0.18); }
+  .cont-card.game   .cont-icon { background: rgba(61,220,132,0.18); }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
+  .cont-desc { font-size: 0.86rem; color: rgba(232,237,242,0.82); line-height: 1.6; }
+  .cont-link {
+    display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.04em; text-decoration: none; padding: 0.4rem 1rem;
+    border-radius: 99px; border: 1px solid; transition: all 0.2s;
+    white-space: nowrap; align-self: flex-start; margin-top: auto;
+  }
+  .cont-card.lesson .cont-link { background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.4); color: var(--gold); }
+  .cont-card.sim    .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.4); color: #f5a028; }
+  .cont-card.game   .cont-link { background: rgba(61,220,132,0.1); border-color: rgba(61,220,132,0.4); color: #3ddc84; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #070f17;
+    border-top: 1px solid rgba(155,89,182,0.12);
+    padding: 2rem; text-align: center; margin-top: 0.5rem;
+  }
+  footer .footer-logo {
+    font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+    letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.35rem;
+  }
+  footer .footer-tagline { font-size: 0.83rem; color: rgba(232,237,242,0.6); margin-bottom: 0.6rem; }
+  footer .footer-links {
+    display: flex; gap: 0.5rem; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 0.6rem;
+  }
+  footer .footer-links a {
+    color: var(--gold); text-decoration: none; font-size: 0.72rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.4); background: rgba(245,200,66,0.08);
+    padding: 0.25rem 0.75rem; border-radius: 99px; transition: border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover { border-color: rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why {
+    color: #3bc8e8; border: 1px solid rgba(59,200,232,0.7); background: rgba(59,200,232,0.12); font-weight: 800;
+  }
+  footer .footer-links a.nav-why:hover { background: rgba(59,200,232,0.22); border-color: rgba(59,200,232,0.95); }
+  footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+  }
+
+  /* ── TONIGHT'S MOON SECTION ── */
+  .phase-card {
+    max-width: 520px; margin: 0 auto 2.5rem;
+    background: linear-gradient(160deg, #0f1622 0%, #13111e 100%);
+    border: 1px solid rgba(155,89,182,0.28); border-radius: 24px;
+    padding: 2.5rem 2rem; text-align: center; position: relative; overflow: hidden;
+  }
+  .phase-card::before {
+    content: ''; position: absolute; inset: 0; border-radius: 24px;
+    background: radial-gradient(ellipse at 50% 30%, rgba(155,89,182,0.1) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .tonight-badge {
+    display: inline-block; font-size: 0.68rem; font-weight: 900;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent2); background: rgba(155,89,182,0.18);
+    border: 1px solid rgba(155,89,182,0.5); padding: 0.3rem 1rem;
+    border-radius: 99px; margin-bottom: 1.8rem;
+    animation: pulseBadge 2.5s ease-in-out infinite;
+  }
+  @keyframes pulseBadge {
+    0%,100% { box-shadow: 0 0 0 0 rgba(155,89,182,0); }
+    50%      { box-shadow: 0 0 0 5px rgba(155,89,182,0.15); }
+  }
+  .phase-moon-wrap {
+    width: 130px; height: 130px; margin: 0 auto 1.6rem;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .phase-moon-glow {
+    position: absolute; inset: -16px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(215,230,245,0.06) 0%, transparent 70%);
+  }
+  .phase-name {
+    font-family: 'Fredoka One', cursive; font-size: 2rem;
+    color: var(--text); margin-bottom: 0.5rem; position: relative;
+  }
+  .phase-meta {
+    display: flex; justify-content: center; gap: 1rem;
+    flex-wrap: wrap; margin-bottom: 1.8rem; position: relative;
+  }
+  .phase-pill {
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 0.3rem 0.9rem; border-radius: 99px;
+  }
+  .phase-pill.age  { background: rgba(122,143,166,0.12); border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted); }
+  .phase-pill.wax  { background: rgba(245,200,66,0.1);   border: 1px solid rgba(245,200,66,0.4);  color: var(--gold); }
+  .phase-pill.wan  { background: rgba(155,89,182,0.1);   border: 1px solid rgba(155,89,182,0.4);  color: var(--accent2); }
+  .phase-pill.full { background: rgba(215,230,245,0.1);  border: 1px solid rgba(215,230,245,0.35); color: #d7e6f5; }
+  .phase-pill.new  { background: rgba(122,143,166,0.07); border: 1px solid rgba(122,143,166,0.2);  color: var(--text-muted); }
+
+  .sky-tips {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    max-width: 520px; margin: 0 auto 2rem;
+  }
+  @media (max-width: 520px) { .sky-tips { grid-template-columns: 1fr; } }
+  .sky-tip {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.1rem 1.3rem;
+  }
+  .sky-tip-label {
+    font-size: 0.68rem; font-weight: 900; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent2); margin-bottom: 0.4rem;
+  }
+  .sky-tip-text {
+    font-size: 0.92rem; font-weight: 700; color: var(--text); line-height: 1.55;
+  }
+  .nasa-note {
+    max-width: 520px; margin: 0 auto; text-align: center;
+    font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;
+  }
+  .nasa-note a { color: var(--accent2); text-decoration: none; font-weight: 700; }
+  .nasa-note a:hover { color: #fff; }
+
+  /* ── 29.5 MYSTERY SECTION ── */
+  .mystery-canvas-card {
+    background: #0b1018; border: 1px solid rgba(155,89,182,0.22);
+    border-radius: 18px; overflow: hidden; margin-bottom: 1rem;
+  }
+  #mystery-canvas { display: block; margin: 0 auto; max-width: 100%; }
+  .step-text {
+    min-height: 3.6rem; font-size: 0.93rem; font-weight: 700;
+    color: var(--text); line-height: 1.65; padding: 0.8rem 1rem 0;
+    text-align: center; transition: opacity 0.3s;
+  }
+  .step-controls {
+    display: flex; align-items: center; justify-content: center;
+    gap: 1rem; margin-top: 1rem;
+  }
+  .step-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(155,89,182,0.3); transition: background 0.3s;
+  }
+  .step-dot.active { background: var(--accent); }
+  .mystery-btn {
+    padding: 0.55rem 1.3rem; border-radius: 99px;
+    border: 1.5px solid rgba(155,89,182,0.5);
+    background: rgba(155,89,182,0.1); color: var(--accent2);
+    font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 800;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
+  }
+  .mystery-btn:hover:not(:disabled) { background: rgba(155,89,182,0.25); border-color: rgba(155,89,182,0.8); }
+  .mystery-btn:disabled { opacity: 0.35; cursor: default; }
+
+  /* ── MOON NAMES SECTION ── */
+  .names-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1.2rem; margin-top: 0.5rem;
+  }
+  .moon-name-card {
+    background: var(--card); border-radius: 18px; overflow: hidden;
+    border: 1px solid var(--border); transition: border-color 0.2s;
+  }
+  .moon-name-card:hover { border-color: rgba(155,89,182,0.35); }
+  .moon-name-header {
+    display: grid; grid-template-columns: 56px 1fr auto;
+    align-items: center; gap: 0.9rem; padding: 1.2rem 1.3rem;
+    cursor: pointer; user-select: none;
+  }
+  .moon-name-icon {
+    width: 52px; height: 52px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .moon-name-title {
+    font-family: 'Fredoka One', cursive; font-size: 1.15rem;
+    color: var(--text); margin-bottom: 0.2rem;
+  }
+  .moon-name-teaser {
+    font-size: 0.83rem; font-weight: 700; color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .toggle-icon {
+    font-size: 1rem; color: var(--text-muted);
+    display: inline-block; transition: transform 0.25s;
+    flex-shrink: 0; padding: 0.3rem;
+  }
+  .moon-name-card.expanded .toggle-icon { transform: rotate(180deg); }
+  .moon-name-detail {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.32s ease, padding 0.32s ease;
+    padding: 0 1.3rem;
+  }
+  .moon-name-card.expanded .moon-name-detail {
+    max-height: 240px; padding: 0 1.3rem 1.3rem;
+  }
+  .moon-name-divider {
+    height: 1px; background: var(--border); margin-bottom: 1rem;
+  }
+  .moon-name-science {
+    font-size: 0.92rem; color: rgba(232,237,242,0.82);
+    line-height: 1.7;
+  }
+
+  /* ── OBSERVE SECTION ── */
+  .mission-card {
+    max-width: 560px; margin: 0 auto 2.8rem; text-align: center;
+    background: linear-gradient(160deg, #110d1a 0%, #0d1117 100%);
+    border: 1px solid rgba(155,89,182,0.3); border-radius: 24px;
+    padding: 2.8rem 2rem; position: relative; overflow: hidden;
+  }
+  .mission-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 20%, rgba(155,89,182,0.12) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .mission-moon-icon {
+    font-size: 3.5rem; display: block; margin-bottom: 1rem;
+    filter: drop-shadow(0 0 14px rgba(215,230,245,0.4));
+  }
+  .mission-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--accent2);
+    margin-bottom: 1.2rem; opacity: 0.85;
+  }
+  .mission-text {
+    font-family: 'Fredoka One', cursive; font-size: 1.25rem;
+    color: var(--text); line-height: 1.55; position: relative;
+    max-width: 420px; margin: 0 auto;
+  }
+  .prompts-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; max-width: 860px; margin: 0 auto 2.5rem;
+  }
+  .prompt-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.4rem 1.3rem;
+  }
+  .prompt-num {
+    font-family: 'Orbitron', sans-serif; font-size: 0.72rem;
+    font-weight: 700; color: var(--accent); letter-spacing: 0.12em;
+    margin-bottom: 0.5rem; opacity: 0.7;
+  }
+  .prompt-title {
+    font-family: 'Fredoka One', cursive; font-size: 1.15rem;
+    color: var(--text); margin-bottom: 0.55rem;
+  }
+  .prompt-text {
+    font-size: 0.88rem; color: rgba(232,237,242,0.75);
+    line-height: 1.65;
+  }
+  .horizon-accordion {
+    max-width: 680px; margin: 0 auto;
+    border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+  }
+  .horizon-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.3rem; cursor: pointer;
+    font-size: 0.92rem; font-weight: 700; color: rgba(232,237,242,0.75);
+    gap: 1rem; user-select: none;
+    transition: background 0.18s;
+  }
+  .horizon-header:hover { background: rgba(155,89,182,0.06); }
+  .horizon-detail {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.32s ease, padding 0.32s ease;
+    padding: 0 1.3rem;
+  }
+  .horizon-accordion.expanded .horizon-detail {
+    max-height: 200px; padding: 0 1.3rem 1.2rem;
+  }
+  .horizon-accordion.expanded .toggle-icon { transform: rotate(180deg); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 720px) {
+    .prompts-grid { grid-template-columns: 1fr; }
+    .sky-tips     { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .nav-links    { display: none; }
+    .phase-card   { padding: 1.8rem 1.2rem; }
+    .mission-card { padding: 2rem 1.2rem; }
+    .mystery-canvas-card { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="#tonight">Tonight</a></li>
+    <li><a href="#mystery">Why 29.5?</a></li>
+    <li><a href="#names">Moon Names</a></li>
+    <li><a href="#observe">Observe</a></li>
+    <li><a href="#continue">More</a></li>
+  </ul>
+  <a href="lesson_phases-of-the-moon.html" class="nav-back">← Moon Phases</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">🌕</span>
+  <span class="hero-float">🌙</span>
+  <span class="hero-float">⭐</span>
+  <span class="hero-float">✨</span>
+  <div class="hero-badge">Extension</div>
+  <h1>The Moon Tonight</h1>
+  <p>You learned why phases happen. Now use that knowledge to read the real Moon in the sky tonight.</p>
+  <div class="hero-invite">
+    <div class="hero-invite-icon">🔭</div>
+    <div class="hero-invite-text">The science is already in your head — this page just points you at the sky.</div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus" style="display:none;"></div>
+
+<!-- SECTION 1: TONIGHT'S MOON -->
+<section id="tonight" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Tonight's Moon</span>
+    <h2 class="section-title">What's Up There Right Now?</h2>
+    <p class="section-desc">The Moon you learned about is up there tonight. Here's exactly what phase it's in — and how to find it in the sky.</p>
+
+    <!-- Phase display card -->
+    <div class="phase-card">
+      <div class="tonight-badge">Live — Tonight</div>
+      <div class="phase-moon-wrap">
+        <div class="phase-moon-glow"></div>
+        <svg id="phase-svg" width="110" height="110" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+          <defs><clipPath id="moon-clip"><circle cx="45" cy="45" r="40"/></clipPath></defs>
+          <circle cx="45" cy="45" r="40" fill="rgba(180,200,220,0.07)" stroke="rgba(200,216,232,0.18)" stroke-width="1.5"/>
+          <path id="moon-lit" clip-path="url(#moon-clip)" fill="rgba(215,230,245,0.92)"/>
+        </svg>
+      </div>
+      <div class="phase-name" id="phase-name">—</div>
+      <div class="phase-meta">
+        <span class="phase-pill age" id="phase-age">Day — of 29.5</span>
+        <span class="phase-pill" id="phase-wx">—</span>
+      </div>
+      <p style="font-size:0.9rem; color:rgba(232,237,242,0.7); line-height:1.65; position:relative;" id="phase-desc">Calculating…</p>
+    </div>
+
+    <!-- Sky tips grid -->
+    <div class="sky-tips">
+      <div class="sky-tip">
+        <div class="sky-tip-label">What to look for</div>
+        <div class="sky-tip-text" id="sky-look">—</div>
+      </div>
+      <div class="sky-tip">
+        <div class="sky-tip-label">Best time tonight</div>
+        <div class="sky-tip-text" id="sky-time">—</div>
+      </div>
+      <div class="sky-tip">
+        <div class="sky-tip-label">Where in the sky</div>
+        <div class="sky-tip-text" id="sky-where">—</div>
+      </div>
+      <div class="sky-tip">
+        <div class="sky-tip-label">Illumination</div>
+        <div class="sky-tip-text" id="sky-illum">—</div>
+      </div>
+    </div>
+
+    <p class="nasa-note">
+      Phase calculated using a local lunar formula accurate to within ±1 day.&nbsp;
+      <a href="https://moon.nasa.gov" target="_blank" rel="noopener">moon.nasa.gov</a> has real-time data and stunning photography from NASA missions.
+    </p>
+
+  </div>
+</section>
+
+<!-- SECTION 2: THE 29.5-DAY MYSTERY -->
+<section id="mystery" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">The Mystery</span>
+    <h2 class="section-title">Why Does the Cycle Take 29.5 Days?</h2>
+    <p class="section-desc">The Moon orbits Earth in 27.3 days. But the time from one new moon to the next is 29.5 days. Where do the extra 2.2 days come from?</p>
+
+    <div style="max-width: 560px; margin: 0 auto 2.5rem;">
+      <div class="mystery-canvas-card">
+        <canvas id="mystery-canvas"></canvas>
+      </div>
+      <p class="step-text" id="mystery-step-text">Day 0 — New Moon. The Moon, Earth, and Sun form a straight line.</p>
+      <div class="step-controls">
+        <button class="mystery-btn" id="mystery-prev" onclick="mysteryPrev()" disabled>← Back</button>
+        <div style="display:flex; gap:6px;">
+          <div class="step-dot active" id="mdot-0"></div>
+          <div class="step-dot" id="mdot-1"></div>
+          <div class="step-dot" id="mdot-2"></div>
+        </div>
+        <button class="mystery-btn" id="mystery-next" onclick="mysteryNext()">Next →</button>
+      </div>
+    </div>
+
+    <div class="callout purple" style="max-width: 680px;">
+      <div class="callout-icon">💡</div>
+      <div><strong>The key insight:</strong> The Moon doesn't just need to orbit Earth — it needs to restore its alignment with the Sun. While it was orbiting, Earth moved forward along its own path. So the Moon travels a little extra to catch up. Those 2.2 extra days are that catch-up distance.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SECTION 3: SPECIAL MOON NAMES -->
+<section id="names" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Moon Names</span>
+    <h2 class="section-title">Names You've Heard Before</h2>
+    <p class="section-desc">Four moon names that sound mysterious — and what the real science actually says. Click any card to find out.</p>
+
+    <div class="names-grid">
+
+      <!-- SUPERMOON -->
+      <div class="moon-name-card" id="card-super">
+        <div class="moon-name-header" onclick="toggleMoonCard('card-super')">
+          <div class="moon-name-icon" style="filter: drop-shadow(0 0 10px rgba(245,200,66,0.65));">
+            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="26" cy="26" r="22" fill="rgba(235,245,255,0.95)"/>
+              <circle cx="22" cy="21" r="8" fill="rgba(255,255,255,0.18)"/>
+            </svg>
+          </div>
+          <div>
+            <div class="moon-name-title">Supermoon</div>
+            <div class="moon-name-teaser">The Moon looks bigger than usual</div>
+          </div>
+          <span class="toggle-icon">▾</span>
+        </div>
+        <div class="moon-name-detail">
+          <div class="moon-name-divider"></div>
+          <p class="moon-name-science">The Moon's orbit around Earth is an ellipse, not a perfect circle. At its closest point, it can appear up to 14% larger and 30% brighter than when it's farthest away. The term "Supermoon" is informal — scientists call it a <em>perigee full moon</em>.</p>
+        </div>
+      </div>
+
+      <!-- BLOOD MOON -->
+      <div class="moon-name-card" id="card-blood">
+        <div class="moon-name-header" onclick="toggleMoonCard('card-blood')">
+          <div class="moon-name-icon" style="filter: drop-shadow(0 0 10px rgba(231,76,60,0.65));">
+            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="blood-grad" cx="40%" cy="38%" r="55%">
+                  <stop offset="0%" stop-color="#e8604a"/>
+                  <stop offset="100%" stop-color="#8b1a0a"/>
+                </radialGradient>
+              </defs>
+              <circle cx="26" cy="26" r="22" fill="url(#blood-grad)"/>
+              <circle cx="21" cy="20" r="7" fill="rgba(255,180,160,0.15)"/>
+            </svg>
+          </div>
+          <div>
+            <div class="moon-name-title">Blood Moon</div>
+            <div class="moon-name-teaser">The Moon turns deep red or orange</div>
+          </div>
+          <span class="toggle-icon">▾</span>
+        </div>
+        <div class="moon-name-detail">
+          <div class="moon-name-divider"></div>
+          <p class="moon-name-science">This happens during a total lunar eclipse — Earth passes directly between the Sun and Moon. Earth's atmosphere filters out blue light but bends red and orange light around the planet, bathing the Moon in the same warm colors you see at sunset. The more dust or smoke in the atmosphere, the deeper red it gets.</p>
+        </div>
+      </div>
+
+      <!-- BLUE MOON -->
+      <div class="moon-name-card" id="card-blue">
+        <div class="moon-name-header" onclick="toggleMoonCard('card-blue')">
+          <div class="moon-name-icon" style="filter: drop-shadow(0 0 10px rgba(59,200,232,0.5));">
+            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="26" cy="26" r="22" fill="rgba(215,235,250,0.92)"/>
+              <circle cx="21" cy="20" r="8" fill="rgba(255,255,255,0.15)"/>
+            </svg>
+          </div>
+          <div>
+            <div class="moon-name-title">Blue Moon</div>
+            <div class="moon-name-teaser">It's not actually blue</div>
+          </div>
+          <span class="toggle-icon">▾</span>
+        </div>
+        <div class="moon-name-detail">
+          <div class="moon-name-divider"></div>
+          <p class="moon-name-science">A Blue Moon is the second full moon in a single calendar month. Because the lunar cycle is 29.5 days and most months have 30 or 31 days, a Blue Moon happens roughly once every 2–3 years — which is exactly where the phrase <em>"once in a blue moon"</em> comes from. The Moon itself looks completely normal.</p>
+        </div>
+      </div>
+
+      <!-- HARVEST MOON -->
+      <div class="moon-name-card" id="card-harvest">
+        <div class="moon-name-header" onclick="toggleMoonCard('card-harvest')">
+          <div class="moon-name-icon" style="filter: drop-shadow(0 0 10px rgba(230,126,34,0.65));">
+            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="harvest-grad" cx="40%" cy="38%" r="55%">
+                  <stop offset="0%" stop-color="#f5a623"/>
+                  <stop offset="100%" stop-color="#c0690a"/>
+                </radialGradient>
+              </defs>
+              <circle cx="26" cy="26" r="22" fill="url(#harvest-grad)"/>
+              <circle cx="21" cy="20" r="7" fill="rgba(255,220,160,0.18)"/>
+            </svg>
+          </div>
+          <div>
+            <div class="moon-name-title">Harvest Moon</div>
+            <div class="moon-name-teaser">Farmers once worked by its light</div>
+          </div>
+          <span class="toggle-icon">▾</span>
+        </div>
+        <div class="moon-name-detail">
+          <div class="moon-name-divider"></div>
+          <p class="moon-name-science">The Harvest Moon is the full moon closest to the autumn equinox, usually in September. What makes it special: around the equinox, the Moon rises only about 25 minutes later each night instead of the usual 50 minutes. That gave farmers several nights of bright moonlight in a row — just enough extra time to finish the harvest after sunset.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: GO OBSERVE -->
+<section id="observe" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Go Observe</span>
+    <h2 class="section-title">Step Outside Tonight</h2>
+    <p class="section-desc">The science is already in your head. Now go use it. No submission, no grade — just you, the sky, and a Moon you can actually explain.</p>
+
+    <!-- Mission card -->
+    <div class="mission-card">
+      <span class="mission-moon-icon" id="mission-moon-emoji">🌕</span>
+      <div class="mission-label">Your Mission Tonight</div>
+      <p class="mission-text">Go outside. Find the Moon. Name the phase you see — then predict what it will look like in 7 days.</p>
+    </div>
+
+    <!-- Three prompt cards -->
+    <div class="prompts-grid">
+      <div class="prompt-card">
+        <div class="prompt-num">01</div>
+        <div class="prompt-title">Look</div>
+        <p class="prompt-text">Find the Moon in the sky. Does it match the phase shown in the Tonight section above? Which side is lit?</p>
+      </div>
+      <div class="prompt-card">
+        <div class="prompt-num">02</div>
+        <div class="prompt-title">Sketch</div>
+        <p class="prompt-text">Draw a circle and shade the dark portion. You don't need to be an artist — just capture what you see.</p>
+      </div>
+      <div class="prompt-card">
+        <div class="prompt-num">03</div>
+        <div class="prompt-title">Predict</div>
+        <p class="prompt-text">Draw a second circle: what will the Moon look like in 7 days? Come back next week and see how close you were.</p>
+      </div>
+    </div>
+
+    <div class="callout teal" style="max-width:680px; margin: 0 auto 2.5rem;">
+      <div class="callout-icon">☁️</div>
+      <div>If the Moon isn't visible tonight — it might be a New Moon, overcast, or not yet risen. Check the Tonight section above for the best viewing time, or try again the following evening.</div>
+    </div>
+
+    <!-- Horizon illusion accordion -->
+    <div class="horizon-accordion" id="horizon-acc">
+      <div class="horizon-header" onclick="toggleHorizon()">
+        <span>Why does the Moon sometimes look huge near the horizon?</span>
+        <span class="toggle-icon" style="flex-shrink:0;">▾</span>
+      </div>
+      <div class="horizon-detail" id="horizon-detail">
+        <p style="font-size:0.92rem; color:rgba(232,237,242,0.8); line-height:1.7; border-top:1px solid var(--border); padding-top:1rem;">
+          This is almost entirely a trick of your brain, not physics. The Moon is actually the same angular size at the horizon as it is high overhead — it hasn't gotten larger. Your brain interprets the low Moon against familiar objects like trees, buildings, and the horizon line as something far away, then compensates by making it seem bigger than it does in open sky. You can test it yourself: hold your thumb at arm's length and cover the Moon near the horizon, then compare the same thumb against the Moon when it's high up. Same size.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- MORE LEARNING -->
+<section id="continue" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="section-desc" style="margin-bottom: 1.5rem;">Back to the lesson or keep exploring.</p>
+    <div class="continue-grid">
+      <a href="lesson_phases-of-the-moon.html" class="cont-card lesson">
+        <div class="cont-icon">🌕</div>
+        <div class="cont-name">Moon Phases Lesson</div>
+        <div class="cont-desc">Review the science behind why the Moon appears to change shape each night.</div>
+        <span class="cont-link">Lesson</span>
+      </a>
+      <a href="lesson_sun-earth-moon.html" class="cont-card lesson">
+        <div class="cont-icon">☀️</div>
+        <div class="cont-name">Sun-Earth-Moon System</div>
+        <div class="cont-desc">Explore orbits, gravity, and why the Moon never crashes into Earth — the bigger picture behind phases.</div>
+        <span class="cont-link">Lesson</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<!-- MOON PHASE ENGINE -->
+<script>
+(function() {
+  // ── Reference new moon: Jan 6, 2000, 18:14 UTC ──
+  var REF_NEW_MOON  = new Date(Date.UTC(2000, 0, 6, 18, 14, 0)).getTime();
+  var SYNODIC_MS    = 29.53058867 * 24 * 60 * 60 * 1000;
+
+  var now         = new Date();
+  var elapsed     = now.getTime() - REF_NEW_MOON;
+  var cyclePos    = ((elapsed % SYNODIC_MS) + SYNODIC_MS) % SYNODIC_MS;
+  var phase       = cyclePos / SYNODIC_MS;        // 0–1
+  var lunarAge    = phase * 29.53058867;           // days into cycle
+  var illum       = Math.round((1 - Math.cos(phase * 2 * Math.PI)) / 2 * 100);
+
+  // ── Phase classification ──
+  var PHASES = [
+    { name: 'New Moon',        min: 0,     max: 0.025, wax: 'new',  desc: 'The Moon is between Earth and the Sun right now — its sunlit side faces away from us, making it invisible in the night sky.',                emoji: '🌑' },
+    { name: 'Waxing Crescent', min: 0.025, max: 0.235, wax: 'wax',  desc: 'A thin sliver of the Moon\'s sunlit half is visible. Each night the lit portion grows — this is the Moon waxing, or filling in.', emoji: '🌒' },
+    { name: 'First Quarter',   min: 0.235, max: 0.265, wax: 'wax',  desc: 'Exactly half the Moon\'s face is lit tonight. The Moon has completed one quarter of its orbit around Earth since the last New Moon.', emoji: '🌓' },
+    { name: 'Waxing Gibbous',  min: 0.265, max: 0.485, wax: 'wax',  desc: 'More than half the Moon\'s face is lit and growing. "Gibbous" means hump-shaped — the lit area bulges toward full.',            emoji: '🌔' },
+    { name: 'Full Moon',       min: 0.485, max: 0.515, wax: 'full', desc: 'The Moon is on the opposite side of Earth from the Sun — we see its entire sunlit face. The brightest night of the lunar cycle.', emoji: '🌕' },
+    { name: 'Waning Gibbous',  min: 0.515, max: 0.735, wax: 'wan',  desc: 'The Moon is still more than half lit, but the illuminated area is shrinking each night as it moves back toward the Sun.',          emoji: '🌖' },
+    { name: 'Third Quarter',   min: 0.735, max: 0.765, wax: 'wan',  desc: 'Half the Moon\'s face is lit again — but the opposite half from First Quarter. The Moon has three-quarters of its orbit complete.',  emoji: '🌗' },
+    { name: 'Waning Crescent', min: 0.765, max: 0.975, wax: 'wan',  desc: 'A shrinking sliver in the pre-dawn sky. In a few nights the Moon will disappear at New Moon before the cycle begins again.',        emoji: '🌘' },
+    { name: 'New Moon',        min: 0.975, max: 1.001, wax: 'new',  desc: 'The Moon is between Earth and the Sun right now — its sunlit side faces away from us, making it invisible in the night sky.',        emoji: '🌑' }
+  ];
+
+  var SKY = [
+    { look: 'Not visible — dark side faces Earth', time: 'Not visible tonight',       where: 'Rises and sets with the Sun',      wax: 'new'  },
+    { look: 'Thin bright sliver low in the west',  time: 'Just after sunset (1–2 hrs)', where: 'Look west after sunset',           wax: 'wax'  },
+    { look: 'Sharp right-half disc, crisp edge',   time: 'Sunset until around midnight', where: 'High in the south at sunset',     wax: 'wax'  },
+    { look: 'More than half lit, bright disc',     time: 'Afternoon through late evening', where: 'Rises in east before sunset',   wax: 'wax'  },
+    { look: 'Full bright disc, no shadow edge',    time: 'All night — rises at sunset',  where: 'Look east as the Sun goes down',  wax: 'full' },
+    { look: 'Still mostly lit, one edge darkening',time: 'Rises after midnight',          where: 'In the eastern morning sky',     wax: 'wan'  },
+    { look: 'Left half lit, right half dark',      time: 'Midnight through morning',      where: 'High in the south before dawn',  wax: 'wan'  },
+    { look: 'Thin sliver curving to the left',     time: '1–2 hours before sunrise',      where: 'Low in the east before dawn',    wax: 'wan'  },
+    { look: 'Not visible — dark side faces Earth', time: 'Not visible tonight',           where: 'Rises and sets with the Sun',    wax: 'new'  }
+  ];
+
+  // ── Find current phase ──
+  var pi = 0;
+  for (var i = 0; i < PHASES.length; i++) {
+    if (phase >= PHASES[i].min && phase < PHASES[i].max) { pi = i; break; }
+  }
+  var P = PHASES[pi];
+  var S = SKY[pi];
+
+  // ── Populate text ──
+  document.getElementById('phase-name').textContent = P.emoji + ' ' + P.name;
+  document.getElementById('phase-age').textContent  = 'Day ' + lunarAge.toFixed(1) + ' of 29.5';
+  document.getElementById('phase-desc').textContent = P.desc;
+  document.getElementById('sky-look').textContent   = S.look;
+  document.getElementById('sky-time').textContent   = S.time;
+  document.getElementById('sky-where').textContent  = S.where;
+  document.getElementById('sky-illum').textContent  = illum + '% of the surface is lit tonight';
+
+  var wxEl = document.getElementById('phase-wx');
+  if (P.wax === 'wax')  { wxEl.textContent = 'Waxing — Growing';  wxEl.className = 'phase-pill wax'; }
+  else if (P.wax === 'wan') { wxEl.textContent = 'Waning — Shrinking'; wxEl.className = 'phase-pill wan'; }
+  else if (P.wax === 'full'){ wxEl.textContent = 'Full — Peak';       wxEl.className = 'phase-pill full'; }
+  else                  { wxEl.textContent = 'New Moon';            wxEl.className = 'phase-pill new'; }
+
+  // ── Draw moon SVG ──
+  var litPath = document.getElementById('moon-lit');
+  var R = 40, cx = 45;
+  var top = cx + ',5';
+  var bot = cx + ',85';
+
+  if (P.wax === 'new') {
+    litPath.setAttribute('d', '');
+  } else if (P.wax === 'full') {
+    litPath.setAttribute('d', 'M 5,45 A 40,40 0 1,1 85,45 A 40,40 0 1,1 5,45 Z');
+  } else {
+    var rx = Math.abs(Math.cos(phase * Math.PI * 2)) * R;
+    var d;
+    if (phase < 0.5) {
+      // Waxing — lit on right
+      var sweep = phase < 0.25 ? '0' : '1';
+      d = 'M ' + top + ' A ' + R + ',' + R + ' 0 0,1 ' + bot +
+          ' A ' + rx.toFixed(1) + ',' + R + ' 0 0,' + sweep + ' ' + top + ' Z';
+    } else {
+      // Waning — lit on left
+      var sweep = phase < 0.75 ? '0' : '1';
+      d = 'M ' + top + ' A ' + R + ',' + R + ' 0 0,0 ' + bot +
+          ' A ' + rx.toFixed(1) + ',' + R + ' 0 0,' + sweep + ' ' + top + ' Z';
+    }
+    litPath.setAttribute('d', d);
+  }
+})();
+</script>
+
+<!-- SESSION CHECK -->
+<script>
+  if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+  if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
+</script>
+
+<!-- STARFIELD — cool silver/purple tint for Moon Tonight -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,
+      a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(210,190,240,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+<!-- MOON NAMES TOGGLE -->
+<script>
+function toggleMoonCard(id) {
+  var card = document.getElementById(id);
+  if (card) card.classList.toggle('expanded');
+}
+</script>
+
+<!-- MYSTERY CANVAS ENGINE -->
+<script>
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    var W = 520, H = 280;
+    var dpr = window.devicePixelRatio || 1;
+    var canvas = document.getElementById('mystery-canvas');
+    if (!canvas) return;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    // ── Geometry ──────────────────────────────────
+    var SUN    = { x: 82,  y: 188, r: 22 };
+    var E_ORB  = 190;  // Earth orbit radius
+    var M_ORB  = 46;   // Moon orbit radius
+    var E_R    = 13;   // Earth draw radius
+    var M_R    = 8;    // Moon draw radius
+
+    var A0 = 0;
+    var A1 = -(27.3 / 365.25) * 2 * Math.PI;  // -0.4696 rad
+    var A2 = -(29.5 / 365.25) * 2 * Math.PI;  // -0.5073 rad
+
+    function earthPos(a) {
+      return { x: SUN.x + E_ORB * Math.cos(a), y: SUN.y + E_ORB * Math.sin(a) };
+    }
+    function moonAligned(e) {
+      var dx = SUN.x - e.x, dy = SUN.y - e.y;
+      var mag = Math.sqrt(dx*dx + dy*dy);
+      return { x: e.x + M_ORB * (dx/mag), y: e.y + M_ORB * (dy/mag) };
+    }
+
+    var E0 = earthPos(A0);                        // (272, 188)
+    var E1 = earthPos(A1);                        // (251, 102)
+    var E2 = earthPos(A2);                        // (248,  96)
+    var M0 = moonAligned(E0);                     // (226, 188) — aligned Day 0
+    var M1 = { x: E1.x - M_ORB, y: E1.y };       // (205, 102) — orbit complete, not aligned
+    var M2 = moonAligned(E2);                     // aligned Day 29.5
+
+    var STEP_TEXTS = [
+      'Day 0 — New Moon. The Moon, Earth, and Sun form a straight line.',
+      'Day 27.3 — The Moon completes one orbit of Earth. But Earth kept moving along its own path. The three are no longer in line.',
+      'Day 29.5 — The Moon travels further and catches up. The line is restored. New Moon again. Those extra 2.2 days are the catch-up distance.'
+    ];
+
+    // ── Animation state ───────────────────────────
+    var step      = 0;
+    var animating = false;
+    var animStart = 0;
+    var DUR       = 950;
+
+    var fromE = { x: E0.x, y: E0.y };
+    var fromM = { x: M0.x, y: M0.y };
+    var fromA = A0;
+    var dispE = { x: E0.x, y: E0.y };
+    var dispM = { x: M0.x, y: M0.y };
+    var dispA = A0;
+
+    var TARGETS = [
+      { e: E0, m: M0, a: A0 },
+      { e: E1, m: M1, a: A1 },
+      { e: E2, m: M2, a: A2 }
+    ];
+
+    function lerp(a, b, t)  { return a + (b - a) * t; }
+    function ease(t)        { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+    function lerpP(a, b, t) { return { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t) }; }
+
+    // ── Draw helpers ──────────────────────────────
+    function bg() {
+      ctx.fillStyle = '#0b1018';
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    function drawOrbitArc(curAngle) {
+      // Faint full orbit
+      ctx.beginPath();
+      ctx.arc(SUN.x, SUN.y, E_ORB, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(155,89,182,0.12)';
+      ctx.lineWidth   = 1;
+      ctx.setLineDash([4, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Traveled arc highlight
+      if (curAngle !== 0) {
+        ctx.beginPath();
+        ctx.arc(SUN.x, SUN.y, E_ORB, 0, curAngle, true);
+        ctx.strokeStyle = 'rgba(155,89,182,0.5)';
+        ctx.lineWidth   = 2.5;
+        ctx.stroke();
+      }
+    }
+
+    function drawMoonOrbit(e) {
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, M_ORB, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(184,207,224,0.09)';
+      ctx.lineWidth   = 1;
+      ctx.setLineDash([3, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function drawSun() {
+      ctx.shadowBlur  = 28;
+      ctx.shadowColor = 'rgba(245,200,66,0.6)';
+      ctx.beginPath();
+      ctx.arc(SUN.x, SUN.y, SUN.r, 0, Math.PI * 2);
+      ctx.fillStyle = '#f5c842';
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    function drawEarth(e) {
+      ctx.shadowBlur  = 14;
+      ctx.shadowColor = 'rgba(59,200,232,0.5)';
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, E_R, 0, Math.PI * 2);
+      ctx.fillStyle = '#2980b9';
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // highlight
+      ctx.beginPath();
+      ctx.arc(e.x - 3, e.y - 3, E_R * 0.45, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fill();
+    }
+
+    function drawMoon(m) {
+      ctx.shadowBlur  = 10;
+      ctx.shadowColor = 'rgba(215,230,245,0.4)';
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, M_R, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(215,230,245,0.9)';
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    function drawAlignLine(e, m, color) {
+      var dx = e.x - SUN.x, dy = e.y - SUN.y;
+      var mag = Math.sqrt(dx*dx + dy*dy);
+      ctx.beginPath();
+      ctx.moveTo(SUN.x, SUN.y);
+      ctx.lineTo(e.x + (dx/mag)*18, e.y + (dy/mag)*18);
+      ctx.strokeStyle = color || 'rgba(155,89,182,0.45)';
+      ctx.lineWidth   = 1.5;
+      ctx.setLineDash([5, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function drawMisalign(e, m) {
+      var am = moonAligned(e);
+      // ghost ring at aligned position
+      ctx.beginPath();
+      ctx.arc(am.x, am.y, M_R, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(46,204,113,0.45)';
+      ctx.lineWidth   = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // dashed line from actual moon to ghost
+      ctx.beginPath();
+      ctx.moveTo(m.x, m.y);
+      ctx.lineTo(am.x, am.y);
+      ctx.strokeStyle = 'rgba(231,76,60,0.55)';
+      ctx.lineWidth   = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // label
+      ctx.font      = '700 9px Nunito, sans-serif';
+      ctx.fillStyle = 'rgba(231,76,60,0.85)';
+      ctx.textAlign = 'center';
+      ctx.fillText('not aligned', e.x + 32, e.y - 22);
+    }
+
+    function drawExtraArc(e) {
+      // Arc from Moon1 direction (π) to Moon2 direction around E2
+      var endAng = Math.atan2(M2.y - E2.y, M2.x - E2.x); // ≈ 2.635
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, M_ORB, Math.PI, endAng, true);
+      ctx.strokeStyle = 'rgba(46,204,113,0.65)';
+      ctx.lineWidth   = 2.5;
+      ctx.stroke();
+      // small label
+      ctx.font      = '700 9px Nunito, sans-serif';
+      ctx.fillStyle = 'rgba(46,204,113,0.9)';
+      ctx.textAlign = 'center';
+      ctx.fillText('+ 2.2 days', e.x - 62, e.y + 32);
+    }
+
+    function drawLabel(txt, x, y, color) {
+      ctx.font      = '700 10px Nunito, sans-serif';
+      ctx.fillStyle = color || 'rgba(184,207,224,0.7)';
+      ctx.textAlign = 'center';
+      ctx.fillText(txt, x, y);
+    }
+
+    // ── Main draw ─────────────────────────────────
+    function draw(e, m, s, animDone) {
+      bg();
+      drawOrbitArc(dispA);
+      drawMoonOrbit(e);
+      // Alignment or misalignment
+      if (s === 0 || s === 2) drawAlignLine(e, m, s === 2 ? 'rgba(46,204,113,0.5)' : 'rgba(155,89,182,0.45)');
+      if (s === 1 && animDone) drawMisalign(e, m);
+      if (s === 2 && animDone) drawExtraArc(e);
+      // Bodies (drawn on top)
+      drawSun();
+      drawEarth(e);
+      drawMoon(m);
+      // Labels
+      drawLabel('Sun',   SUN.x,      SUN.y + SUN.r + 13,    'rgba(245,200,66,0.75)');
+      drawLabel('Earth', e.x,        e.y   + E_R   + 14);
+      drawLabel('Moon',  m.x,        m.y   + M_R   + 13);
+      // Day label top-right
+      var dayLabels = ['Day 0', 'Day 27.3', 'Day 29.5'];
+      ctx.font      = '800 11px Nunito, sans-serif';
+      ctx.fillStyle = 'rgba(155,89,182,0.7)';
+      ctx.textAlign = 'right';
+      ctx.fillText(dayLabels[s], W - 16, 22);
+    }
+
+    // ── Animation loop ────────────────────────────
+    var lastT = null;
+    var animT = 1;
+
+    function loop(ts) {
+      if (animating) {
+        animT = Math.min(1, (ts - animStart) / DUR);
+        var t = ease(animT);
+        dispE = lerpP(fromE, TARGETS[step].e, t);
+        dispM = lerpP(fromM, TARGETS[step].m, t);
+        dispA = lerp(fromA, TARGETS[step].a, t);
+        if (animT >= 1) { animating = false; animT = 1; }
+      }
+      draw(dispE, dispM, step, !animating && animT >= 1);
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    // ── Public controls ───────────────────────────
+    window.mysteryNext = function() {
+      if (animating || step >= 2) return;
+      fromE = { x: dispE.x, y: dispE.y };
+      fromM = { x: dispM.x, y: dispM.y };
+      fromA = dispA;
+      step++;
+      animating = true;
+      animStart = performance.now();
+      // Update UI
+      var el = document.getElementById('mystery-step-text');
+      if (el) { el.style.opacity = '0'; setTimeout(function(){ el.textContent = STEP_TEXTS[step]; el.style.opacity = '1'; }, 220); }
+      document.getElementById('mdot-0').classList.toggle('active', step === 0);
+      document.getElementById('mdot-1').classList.toggle('active', step === 1);
+      document.getElementById('mdot-2').classList.toggle('active', step === 2);
+      document.getElementById('mystery-prev').disabled = false;
+      document.getElementById('mystery-next').disabled = step >= 2;
+    };
+
+    window.mysteryPrev = function() {
+      if (animating || step <= 0) return;
+      fromE = { x: dispE.x, y: dispE.y };
+      fromM = { x: dispM.x, y: dispM.y };
+      fromA = dispA;
+      step--;
+      animating = true;
+      animStart = performance.now();
+      var el = document.getElementById('mystery-step-text');
+      if (el) { el.style.opacity = '0'; setTimeout(function(){ el.textContent = STEP_TEXTS[step]; el.style.opacity = '1'; }, 220); }
+      document.getElementById('mdot-0').classList.toggle('active', step === 0);
+      document.getElementById('mdot-1').classList.toggle('active', step === 1);
+      document.getElementById('mdot-2').classList.toggle('active', step === 2);
+      document.getElementById('mystery-prev').disabled = step <= 0;
+      document.getElementById('mystery-next').disabled = false;
+    };
+  });
+})();
+</script>
+<!-- OBSERVE ENGINE -->
+<script>
+function toggleHorizon() {
+  document.getElementById('horizon-acc').classList.toggle('expanded');
+}
+
+// Inject tonight's phase emoji into mission card
+(function() {
+  var REF  = new Date(Date.UTC(2000, 0, 6, 18, 14, 0)).getTime();
+  var SYN  = 29.53058867 * 86400000;
+  var phase = (((Date.now() - REF) % SYN) + SYN) % SYN / SYN;
+  var emojis = ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
+  var el = document.getElementById('mission-moon-emoji');
+  if (el) el.textContent = emojis[Math.round(phase * 8) % 8];
+})();
+</script>
+
+</body>
+</html>

@@ -676,6 +676,50 @@
     font-size: 0.83rem; color: rgba(184,207,224,0.88);
     margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.45rem;
   }
+
+  /* ── HOOK INVESTIGATION ── */
+  .hook-option {
+    text-align: left; width: 100%; padding: 0.85rem 1.1rem; border-radius: 12px;
+    border: 1.5px solid var(--border); background: rgba(255,255,255,0.02);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.95rem;
+    font-weight: 600; cursor: pointer; transition: all 0.2s; display: block;
+  }
+  .hook-option:hover:not(:disabled) { border-color: rgba(122,143,166,0.4); background: rgba(122,143,166,0.06); }
+  .hook-option:disabled { pointer-events: none; }
+  .hook-option.hook-correct { border-color: var(--green) !important; background: rgba(46,204,113,0.08) !important; }
+  .hook-option.hook-wrong   { border-color: rgba(122,143,166,0.35) !important; }
+
+  /* ── REFLECTION MC ── */
+  .reflect-options { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.9rem; }
+  .reflect-option {
+    display: flex; align-items: center; gap: 0.75rem;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.22);
+    border-radius: 10px; padding: 0.75rem 1rem; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.93rem; color: var(--text);
+    line-height: 1.55; text-align: left; transition: background 0.15s, border-color 0.15s;
+    width: 100%;
+  }
+  .reflect-option:hover:not(.r-disabled) { background: rgba(122,143,166,0.1); border-color: rgba(122,143,166,0.4); }
+  .reflect-option .r-letter {
+    flex-shrink: 0; width: 1.7rem; height: 1.7rem; border-radius: 50%;
+    background: rgba(122,143,166,0.12); border: 1px solid rgba(122,143,166,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 900; color: var(--accent); letter-spacing: 0;
+  }
+  .reflect-option.r-correct   { background: rgba(46,204,113,0.08);  border-color: rgba(46,204,113,0.45); }
+  .reflect-option.r-incorrect { background: rgba(231,76,60,0.07);   border-color: rgba(231,76,60,0.4); }
+  .reflect-option.r-revealed  { background: rgba(46,204,113,0.05);  border-color: rgba(46,204,113,0.25); }
+  .reflect-option.r-disabled  { cursor: default; }
+  .reflect-option.r-correct   .r-letter { background: rgba(46,204,113,0.2);  border-color: var(--green); color: var(--green); }
+  .reflect-option.r-incorrect .r-letter { background: rgba(231,76,60,0.18); border-color: var(--red);   color: var(--red); }
+  .reflect-option.r-revealed  .r-letter { background: rgba(46,204,113,0.12); border-color: rgba(46,204,113,0.4); color: var(--green); }
+  .reflect-feedback {
+    margin-top: 0.85rem; padding: 0.75rem 1rem; border-radius: 10px;
+    font-size: 0.88rem; line-height: 1.65; display: none;
+  }
+  .reflect-feedback.show { display: block; }
+  .reflect-feedback.fb-correct   { background: rgba(46,204,113,0.07); border-left: 3px solid var(--green); color: rgba(232,237,242,0.9); }
+  .reflect-feedback.fb-incorrect { background: rgba(231,76,60,0.06);  border-left: 3px solid var(--red);   color: rgba(232,237,242,0.9); }
 </style>
 </head>
 <body>
@@ -686,7 +730,7 @@
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
-    <li><a href="#lesson">Lesson</a></li>
+    <li><a href="#hook">Investigate</a></li>
     <li><a href="#motion">Motion</a></li>
     <li><a href="#bodies">Bodies</a></li>
     <li><a href="#concepts">Vocab</a></li>
@@ -744,6 +788,76 @@
 </div>
 
 <!-- ────────────────────────────────────────────────────────── -->
+<!-- INVESTIGATION HOOK -->
+<section id="hook" style="background: var(--dark2); padding: 4rem 2rem 3.5rem;">
+  <div class="container">
+    <span class="section-label">Investigation</span>
+    <h2 class="section-title">Something Doesn't Add Up</h2>
+    <p class="section-desc" style="margin-bottom: 2.5rem;">Before we explain anything — just think. You've seen the first thing happen thousands of times. The second one has been happening for 4.5 billion years.</p>
+
+    <!-- Two-panel comparison SVG -->
+    <div style="display:flex; justify-content:center; margin:0 0 2.8rem;">
+      <svg viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:560px; height:auto;">
+        <defs>
+          <marker id="sem-arr-d" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <polygon points="0 0, 7 3.5, 0 7" fill="rgba(122,143,166,0.7)"/>
+          </marker>
+          <marker id="sem-arr-v" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <polygon points="0 0, 7 3.5, 0 7" fill="#3bc8e8"/>
+          </marker>
+          <marker id="sem-arr-g" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <polygon points="0 0, 7 3.5, 0 7" fill="rgba(122,143,166,0.55)"/>
+          </marker>
+        </defs>
+
+        <!-- LEFT PANEL: Ball drops -->
+        <text x="120" y="22" text-anchor="middle" font-family="Nunito, sans-serif" font-size="11" font-weight="800" fill="rgba(184,207,224,0.55)" letter-spacing="1.5">DROP A BALL</text>
+        <!-- Ball -->
+        <circle cx="120" cy="52" r="12" fill="rgba(122,143,166,0.25)" stroke="rgba(122,143,166,0.6)" stroke-width="1.5"/>
+        <!-- Fall arrow -->
+        <line x1="120" y1="66" x2="120" y2="148" stroke="rgba(122,143,166,0.7)" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#sem-arr-d)"/>
+        <!-- Ground -->
+        <rect x="70" y="158" width="100" height="6" rx="3" fill="rgba(122,143,166,0.2)" stroke="rgba(122,143,166,0.3)" stroke-width="1"/>
+        <text x="120" y="183" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="700" fill="rgba(184,207,224,0.5)">It hits the ground.</text>
+
+        <!-- DIVIDER -->
+        <text x="260" y="105" text-anchor="middle" font-family="Fredoka One, cursive" font-size="22" fill="rgba(122,143,166,0.35)">vs.</text>
+
+        <!-- RIGHT PANEL: Moon orbits -->
+        <text x="390" y="22" text-anchor="middle" font-family="Nunito, sans-serif" font-size="11" font-weight="800" fill="rgba(184,207,224,0.55)" letter-spacing="1.5">THE MOON</text>
+        <!-- Orbit path -->
+        <ellipse cx="390" cy="130" rx="72" ry="62" fill="none" stroke="rgba(122,143,166,0.18)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <!-- Earth -->
+        <circle cx="390" cy="130" r="22" fill="rgba(59,200,232,0.15)" stroke="rgba(59,200,232,0.5)" stroke-width="1.5"/>
+        <text x="390" y="135" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="rgba(59,200,232,0.8)">Earth</text>
+        <!-- Moon -->
+        <circle cx="390" cy="58" r="10" fill="rgba(184,207,224,0.18)" stroke="rgba(184,207,224,0.55)" stroke-width="1.5"/>
+        <!-- Gravity arrow (toward Earth) -->
+        <line x1="390" y1="70" x2="390" y2="104" stroke="rgba(122,143,166,0.55)" stroke-width="1.5" marker-end="url(#sem-arr-g)"/>
+        <!-- Velocity arrow (sideways) -->
+        <line x1="402" y1="58" x2="450" y2="58" stroke="#3bc8e8" stroke-width="1.5" marker-end="url(#sem-arr-v)"/>
+        <!-- Labels -->
+        <text x="420" y="50" font-family="Nunito, sans-serif" font-size="9" font-weight="700" fill="rgba(59,200,232,0.7)">moving sideways</text>
+        <text x="396" y="90" font-family="Nunito, sans-serif" font-size="9" font-weight="700" fill="rgba(122,143,166,0.65)">pulled down</text>
+        <text x="390" y="183" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="700" fill="rgba(184,207,224,0.5)">It never hits. Why?</text>
+      </svg>
+    </div>
+
+    <!-- Observation question -->
+    <div style="max-width:640px; margin:0 auto;">
+      <p style="font-size:1rem; font-weight:800; color:var(--text); margin-bottom:1rem; line-height:1.5;">Gravity pulls the Moon toward Earth — just like it pulled that ball. So why hasn't the Moon crashed into Earth in 4.5 billion years?</p>
+      <div style="display:flex; flex-direction:column; gap:0.6rem;" id="hook-options">
+        <button class="hook-option" onclick="hookAnswer(this,'a')">A — The Moon is too far away for Earth's gravity to reach it</button>
+        <button class="hook-option" onclick="hookAnswer(this,'b')">B — The Moon's gravity pushes back against Earth's pull</button>
+        <button class="hook-option" onclick="hookAnswer(this,'c')">C — The Moon moves sideways so fast that as it falls, it curves around Earth</button>
+        <button class="hook-option" onclick="hookAnswer(this,'d')">D — There is no gravity in space, so nothing is pulling the Moon</button>
+      </div>
+      <div id="hook-feedback" style="display:none; margin-top:1rem; padding:1rem 1.3rem; border-radius:12px; border-left:4px solid var(--accent); background:rgba(122,143,166,0.07); font-size:0.95rem; color:var(--text); line-height:1.75;"></div>
+    </div>
+
+  </div>
+</section>
+
 <!-- SECTION: LESSON NOTES                                       -->
 <!-- ────────────────────────────────────────────────────────── -->
 <section id="lesson">
@@ -1131,6 +1245,54 @@
 </section>
 
 <!-- ────────────────────────────────────────────────────────── -->
+<!-- SECTION: REFLECTION                                         -->
+<!-- ────────────────────────────────────────────────────────── -->
+<section id="reflection" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Think About It</span>
+    <h2 class="section-title">Reflect Before You Quiz</h2>
+    <p class="section-desc">Three questions — no grade, no pressure. Just think it through before the quiz.</p>
+
+    <!-- R1: Rotation vs. Revolution -->
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.6rem 1.8rem; margin-bottom: 1.5rem;">
+      <p style="font-weight: 800; font-size: 0.97rem; color: var(--text); line-height: 1.6; margin-bottom: 0.2rem;">Earth completes one full spin every 24 hours and one full orbit around the Sun every 365 days. Which of these is its <em>rotation</em>?</p>
+      <div class="reflect-options" id="r1-options">
+        <button class="reflect-option" onclick="reflectAnswer('r1',0)" disabled><span class="r-letter">A</span>The 365-day orbit — rotation means traveling around another object</button>
+        <button class="reflect-option" onclick="reflectAnswer('r1',1)" disabled><span class="r-letter">B</span>The 24-hour spin — rotation means spinning on its own axis</button>
+        <button class="reflect-option" onclick="reflectAnswer('r1',2)" disabled><span class="r-letter">C</span>Both count as rotation — revolution is a completely separate motion</button>
+        <button class="reflect-option" onclick="reflectAnswer('r1',3)" disabled><span class="r-letter">D</span>Neither — Earth only revolves and does not rotate at all</button>
+      </div>
+      <div class="reflect-feedback" id="r1-feedback"></div>
+    </div>
+
+    <!-- R2: Gravity removed — Moon's fate -->
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.6rem 1.8rem; margin-bottom: 1.5rem;">
+      <p style="font-weight: 800; font-size: 0.97rem; color: var(--text); line-height: 1.6; margin-bottom: 0.2rem;">If Earth's gravity suddenly switched off, what would happen to the Moon?</p>
+      <div class="reflect-options" id="r2-options">
+        <button class="reflect-option" onclick="reflectAnswer('r2',0)" disabled><span class="r-letter">A</span>The Moon would immediately fall toward the Sun</button>
+        <button class="reflect-option" onclick="reflectAnswer('r2',1)" disabled><span class="r-letter">B</span>The Moon would slow down and gradually stop moving</button>
+        <button class="reflect-option" onclick="reflectAnswer('r2',2)" disabled><span class="r-letter">C</span>The Moon would continue orbiting Earth on its own momentum</button>
+        <button class="reflect-option" onclick="reflectAnswer('r2',3)" disabled><span class="r-letter">D</span>The Moon would fly off in a straight line away from Earth</button>
+      </div>
+      <div class="reflect-feedback" id="r2-feedback"></div>
+    </div>
+
+    <!-- R3: Tidal locking inference -->
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.6rem 1.8rem; margin-bottom: 1.5rem;">
+      <p style="font-weight: 800; font-size: 0.97rem; color: var(--text); line-height: 1.6; margin-bottom: 0.2rem;">From Earth, we always see the same face of the Moon — the far side was never photographed until a spacecraft flew around it. What does this tell us about the Moon?</p>
+      <div class="reflect-options" id="r3-options">
+        <button class="reflect-option" onclick="reflectAnswer('r3',0)" disabled><span class="r-letter">A</span>The Moon does not rotate at all — it stays perfectly still as it orbits</button>
+        <button class="reflect-option" onclick="reflectAnswer('r3',1)" disabled><span class="r-letter">B</span>The Moon rotates much faster than it orbits, so the same face stays forward</button>
+        <button class="reflect-option" onclick="reflectAnswer('r3',2)" disabled><span class="r-letter">C</span>The Moon rotates once for every orbit it completes around Earth</button>
+        <button class="reflect-option" onclick="reflectAnswer('r3',3)" disabled><span class="r-letter">D</span>The Moon's far side is permanently dark and never lit by the Sun</button>
+      </div>
+      <div class="reflect-feedback" id="r3-feedback"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────────────────── -->
 <!-- SECTION: QUIZ                                               -->
 <!-- ────────────────────────────────────────────────────────── -->
 <section id="quiz" class="quiz-section">
@@ -1213,7 +1375,7 @@
 <section id="continue">
   <div class="container">
     <span id="go-further-anchor"></span>
-    <span class="section-label">🚀 Go Further</span>
+    <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
     <p class="section-desc" style="white-space:nowrap; max-width:none;">The lesson is just the beginning — go deeper, see the next lesson in the unit, or explore NASA's real data.</p>
     <div class="continue-grid" style="text-align:left;">
@@ -1240,6 +1402,80 @@
   </div>
   <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
+
+<!-- REFLECTION MC ENGINE -->
+<script>
+const reflectData = {
+  r1: {
+    correct: 1,
+    feedback: [
+      'The 365-day orbit is actually Earth\'s revolution — its path around the Sun. Rotation is the spin on Earth\'s own axis, which takes 24 hours and creates day and night.',
+      'Correct. Rotation = spinning on an internal axis. Earth\'s 24-hour spin creates day and night as different parts of Earth face the Sun. The 365-day trip around the Sun is its revolution.',
+      'Rotation and revolution are two distinct motions. Rotation = spinning on its own axis (24 hours). Revolution = traveling around another object (365 days). Earth does both simultaneously.',
+      'Earth definitely rotates — that spin is what creates day and night. Without rotation, one side of Earth would face the Sun permanently and the other side would be in permanent darkness.'
+    ]
+  },
+  r2: {
+    correct: 3,
+    feedback: [
+      'The Sun\'s gravity would eventually affect the Moon — but first, without Earth\'s gravity bending its path, the Moon would fly off in a straight line. It wouldn\'t head straight for the Sun.',
+      'There\'s nothing to slow the Moon down in space — no air resistance, no friction. Without gravity, an object keeps moving at the same speed in a straight line.',
+      'The orbit only exists because Earth\'s gravity continuously bends the Moon\'s path. Remove the gravity and there\'s no longer anything to curve the path — it flies straight.',
+      'Correct. Newton\'s first law: an object keeps moving in a straight line unless a force acts on it. Earth\'s gravity is that force — it bends the Moon\'s straight-line path into a continuous curve. Remove it, and the Moon travels straight into space.'
+    ]
+  },
+  r3: {
+    correct: 2,
+    feedback: [
+      'The Moon does rotate — just very slowly. If it didn\'t rotate at all, we\'d gradually see all of its sides as it orbited Earth. The fact that we don\'t means its rotation is precisely matched to its orbit.',
+      'If the Moon rotated faster than it orbited, different sides would face us over time. The reason we always see the same face is that its rotation speed exactly equals its orbital speed — not that it spins faster.',
+      'Correct. This is called tidal locking. The Moon takes about 27.3 days to orbit Earth — and also takes 27.3 days to complete one full rotation. The two periods match perfectly, so the same face is always pointing toward us.',
+      'The far side of the Moon is lit by the Sun just as often as the near side — it just never faces Earth. During a new moon, the far side is fully lit while the near side faces away from the Sun. There is no permanently dark side.'
+    ]
+  }
+};
+
+function reflectAnswer(qid, chosen) {
+  const q       = reflectData[qid];
+  const options = document.querySelectorAll('#' + qid + '-options .reflect-option');
+  const fb      = document.getElementById(qid + '-feedback');
+  if (fb.classList.contains('show')) return;
+  const correct = chosen === q.correct;
+  options.forEach(function(btn, i) {
+    btn.classList.add('r-disabled');
+    btn.disabled = true;
+    if (i === q.correct && !correct) btn.classList.add('r-revealed');
+  });
+  options[chosen].classList.add(correct ? 'r-correct' : 'r-incorrect');
+  fb.textContent = q.feedback[chosen];
+  fb.className   = 'reflect-feedback show ' + (correct ? 'fb-correct' : 'fb-incorrect');
+}
+
+// Enable reflect options after page load
+window.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.reflect-option').forEach(function(btn) {
+    btn.disabled = false;
+  });
+});
+</script>
+
+<!-- HOOK INVESTIGATION ENGINE -->
+<script>
+function hookAnswer(btn, choice) {
+  document.querySelectorAll('#hook-options .hook-option').forEach(b => { b.disabled = true; });
+  const msgs = {
+    a: 'Earth\'s gravity actually reaches the Moon — and far beyond. Distance weakens gravity but never cuts it off completely. The Moon is well within Earth\'s gravitational pull. Something else explains why it never crashes. Scroll down.',
+    b: 'The Moon does have gravity — but it pulls on Earth, not away from it. That\'s what causes ocean tides. The Moon\'s gravity doesn\'t push back against Earth\'s pull. Scroll down to find out what actually keeps it in orbit.',
+    c: '<strong>Exactly right.</strong> The Moon is constantly falling toward Earth — but it\'s also moving sideways so fast that Earth\'s surface curves away beneath it at the same rate. The result is a continuous orbit: always falling, never arriving. Scroll down to see how this works.',
+    d: 'Space has plenty of gravity — in fact, gravity is the force that governs almost everything in space. Earth\'s gravity reaches the Moon and far beyond. Scroll down to find out what actually keeps the Moon from crashing.'
+  };
+  btn.classList.add(choice === 'c' ? 'hook-correct' : 'hook-wrong');
+  const fb = document.getElementById('hook-feedback');
+  fb.style.display = 'block';
+  fb.style.borderLeftColor = choice === 'c' ? 'var(--green)' : 'var(--accent)';
+  fb.innerHTML = msgs[choice];
+}
+</script>
 
 <!-- SESSION CHECK -->
 <script>
