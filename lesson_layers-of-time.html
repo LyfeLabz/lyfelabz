@@ -269,7 +269,7 @@
     gap: 1.2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
   }
   .phenomenon-icon { font-size: 2.6rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
-  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
   .phenomenon-body { flex: 1; min-width: 280px; }
   .phenomenon-tag {
     display: inline-block; font-size: 0.7rem; font-weight: 900;
@@ -321,7 +321,7 @@
     border-radius: 16px; padding: 1.5rem; border: 1px solid; position: relative; overflow: hidden;
     transition: transform 0.25s, box-shadow 0.25s;
   }
-  .rock-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
+  .rock-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
   .rock-card.sedimentary { background: rgba(180,140,90,0.08);  border-color: rgba(180,140,90,0.3);  }
   .rock-card.igneous     { background: rgba(200,80,60,0.08);   border-color: rgba(200,80,60,0.3);   }
   .rock-card.metamorphic { background: rgba(122,143,166,0.08); border-color: rgba(122,143,166,0.3); }
@@ -355,13 +355,13 @@
   .principle-card:hover { transform: translateY(-3px); }
   .principle-card.p1 { border-left-color: #9fb8cc; }
   .principle-card.p2 { border-left-color: #d4a96a; }
-  .principle-card.p3 { border-left-color: #e8704e; }
-  .principle-card.p4 { border-left-color: #2ecc71; }
+  .principle-card.p3 { border-left-color: #9fb8cc; }
+  .principle-card.p4 { border-left-color: #d4a96a; }
   .principle-term { font-family: 'Fredoka One', cursive; font-size: 1.1rem; margin-bottom: 0.4rem; }
   .p1 .principle-term { color: #9fb8cc; }
   .p2 .principle-term { color: #d4a96a; }
-  .p3 .principle-term { color: #e8704e; }
-  .p4 .principle-term { color: #2ecc71; }
+  .p3 .principle-term { color: #9fb8cc; }
+  .p4 .principle-term { color: #d4a96a; }
   .principle-def { font-size: 0.88rem; color: rgba(232,237,242,0.82); line-height: 1.65; }
   .principle-key { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.5rem; opacity: 0.6; }
 
@@ -483,9 +483,9 @@
   .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
   .score-board {
-    display: none; background: var(--card); border: 2px solid var(--accent2);
+    display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3);
     border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem;
-    box-shadow: 0 0 40px rgba(122,143,166,0.15);
+    box-shadow: 0 0 24px rgba(122,143,166,0.08);
   }
   .score-board.show { display: block; animation: fadeIn 0.5s ease; }
   .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
@@ -531,7 +531,6 @@
     color: #ddeaf5;
     border: 1px solid rgba(159,184,204,0.55);
     box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
-    text-shadow: 0 0 12px rgba(159,184,204,0.6);
   }
   .mode-hint {
     text-align: center; font-size: 0.82rem; font-weight: 700;
@@ -557,10 +556,10 @@
   .cont-card.sim::before  { background: linear-gradient(90deg, #f5a028, #f5c842); }
   .cont-card.game::before { background: linear-gradient(90deg, #3ddc84, #1de9b6); }
   .cont-card.ext::before  { background: linear-gradient(90deg, #b47fff, #7c3aed); }
-  .cont-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
-  .cont-card.sim:hover  { border-color: rgba(245,160,40,0.6);  box-shadow: 0 14px 40px rgba(245,160,40,0.12); }
-  .cont-card.game:hover { border-color: rgba(61,220,132,0.6);  box-shadow: 0 14px 40px rgba(61,220,132,0.12); }
-  .cont-card.ext:hover  { border-color: rgba(180,127,255,0.6); box-shadow: 0 14px 40px rgba(180,127,255,0.12); }
+  .cont-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+  .cont-card.sim:hover  { border-color: rgba(245,160,40,0.5);  box-shadow: 0 6px 20px rgba(245,160,40,0.08); }
+  .cont-card.game:hover { border-color: rgba(61,220,132,0.5);  box-shadow: 0 6px 20px rgba(61,220,132,0.08); }
+  .cont-card.ext:hover  { border-color: rgba(180,127,255,0.5); box-shadow: 0 6px 20px rgba(180,127,255,0.08); }
   .cont-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.3rem; }
   .cont-card.sim  .cont-icon { background: rgba(245,160,40,0.18); }
   .cont-card.game .cont-icon { background: rgba(61,220,132,0.18); }
@@ -699,8 +698,8 @@
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
-    <li><a href="#lesson">Lesson</a></li>
-    <li><a href="#principles">Principles</a></li>
+    <li><a href="#hook">Investigate</a></li>
+    <li><a href="#lesson">Read Rocks</a></li>
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
@@ -760,12 +759,238 @@
   </div>
 </div>
 
+<!-- ── MICROPASS 1: INVESTIGATION HOOK ── -->
+<style>
+  .inv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .inv-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .inv-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .inv-question {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.05rem;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .inv-visual {
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.25);
+  }
+  .inv-nudge {
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(159,184,204,0.4);
+    text-align: center;
+  }
+  .inv-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .inv-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.6rem 0.9rem;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.35;
+  }
+  .inv-btn:hover:not(.locked) {
+    border-color: rgba(159,184,204,0.5);
+    background: rgba(159,184,204,0.07);
+  }
+  .inv-btn.correct {
+    border-color: var(--green);
+    background: rgba(46,204,113,0.12);
+    color: var(--green);
+  }
+  .inv-btn.incorrect {
+    border-color: rgba(231,76,60,0.45);
+    background: rgba(231,76,60,0.06);
+    color: rgba(231,76,60,0.8);
+  }
+  .inv-btn.locked { pointer-events: none; }
+  .inv-feedback {
+    display: none;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    background: rgba(122,143,166,0.06);
+    border-left: 3px solid var(--accent2);
+  }
+  .inv-feedback.show { display: block; }
+  .inv-feedback strong { color: var(--text); }
+</style>
+
+<section id="hook" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Investigation</span>
+    <h2 class="section-title">Can You Read the Rocks?</h2>
+    <p class="section-desc">Before we explain anything — look at these three formations and trust your instincts. What do you notice?</p>
+
+    <div class="inv-grid">
+
+      <!-- CARD 1: Superposition -->
+      <div class="inv-card">
+        <div class="inv-question">In this undisturbed stack, which layer formed first?</div>
+        <div class="inv-visual">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+            <defs>
+              <pattern id="g1" x="0" y="0" width="40" height="6" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="3" x2="40" y2="3" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect x="10" y="8"   width="260" height="30" rx="2" fill="rgba(160,170,200,0.28)" stroke="rgba(160,170,200,0.45)" stroke-width="1"/>
+            <rect x="10" y="8"   width="260" height="30" fill="url(#g1)"/>
+            <text x="22" y="28" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#b8c8dc">Layer A</text>
+            <rect x="10" y="40"  width="260" height="30" rx="2" fill="rgba(180,145,90,0.32)"  stroke="rgba(180,145,90,0.5)"   stroke-width="1"/>
+            <rect x="10" y="40"  width="260" height="30" fill="url(#g1)"/>
+            <text x="22" y="60" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#d4b070">Layer B</text>
+            <rect x="10" y="72"  width="260" height="30" rx="2" fill="rgba(140,110,75,0.38)"  stroke="rgba(140,110,75,0.58)"  stroke-width="1"/>
+            <rect x="10" y="72"  width="260" height="30" fill="url(#g1)"/>
+            <text x="22" y="92" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#c4a060">Layer C</text>
+            <rect x="10" y="104" width="260" height="36" rx="2" fill="rgba(90,70,55,0.48)"    stroke="rgba(90,70,55,0.68)"    stroke-width="1"/>
+            <rect x="10" y="104" width="260" height="36" fill="url(#g1)"/>
+            <text x="22" y="127" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#a08878">Layer D</text>
+          </svg>
+        </div>
+        <div class="inv-choices">
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','1')">Layer A</button>
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','1')">Layer B</button>
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','1')">Layer C</button>
+          <button class="inv-btn" onclick="invAnswer(this,'right','1')">Layer D</button>
+        </div>
+        <div class="inv-feedback" id="inv-fb-1"><strong>Superposition:</strong> Sediment piles on top of what's already there. Layer D settled first — everything above it came later. In undisturbed rock, bottom = oldest, top = youngest.</div>
+      </div>
+
+      <!-- CARD 2: Cross-Cutting Relationships -->
+      <div class="inv-card">
+        <div class="inv-question">An igneous rock punched through these layers after they formed. Is it older or younger than the layers it cut?</div>
+        <div class="inv-visual">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+            <defs>
+              <pattern id="g2" x="0" y="0" width="40" height="6" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="3" x2="40" y2="3" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect x="10" y="8"   width="260" height="30" rx="2" fill="rgba(160,170,200,0.28)" stroke="rgba(160,170,200,0.45)" stroke-width="1"/>
+            <rect x="10" y="8"   width="260" height="30" fill="url(#g2)"/>
+            <text x="22" y="28" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#b8c8dc">Layer A</text>
+            <rect x="10" y="40"  width="260" height="30" rx="2" fill="rgba(180,145,90,0.32)"  stroke="rgba(180,145,90,0.5)"   stroke-width="1"/>
+            <rect x="10" y="40"  width="260" height="30" fill="url(#g2)"/>
+            <text x="22" y="60" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#d4b070">Layer B</text>
+            <rect x="10" y="72"  width="260" height="30" rx="2" fill="rgba(140,110,75,0.38)"  stroke="rgba(140,110,75,0.58)"  stroke-width="1"/>
+            <rect x="10" y="72"  width="260" height="30" fill="url(#g2)"/>
+            <text x="22" y="92" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#c4a060">Layer C</text>
+            <rect x="10" y="104" width="260" height="36" rx="2" fill="rgba(90,70,55,0.48)"    stroke="rgba(90,70,55,0.68)"    stroke-width="1"/>
+            <rect x="10" y="104" width="260" height="36" fill="url(#g2)"/>
+            <text x="22" y="127" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#a08878">Layer D</text>
+            <!-- Igneous intrusion -->
+            <rect x="178" y="8"  width="26" height="132" rx="2" fill="rgba(220,95,45,0.14)"/>
+            <rect x="182" y="8"  width="18" height="132" rx="2" fill="rgba(210,85,38,0.86)"/>
+            <!-- Glow -->
+            <rect x="176" y="8"  width="28" height="132" rx="3" fill="rgba(240,120,60,0.1)"/>
+            <!-- Label -->
+            <line x1="191" y1="56" x2="220" y2="44" stroke="rgba(230,140,75,0.65)" stroke-width="1.2"/>
+            <text x="222" y="42"  font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="rgba(235,145,80,1)">Igneous</text>
+            <text x="222" y="54"  font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="rgba(235,145,80,1)">intrusion</text>
+          </svg>
+        </div>
+        <div class="inv-choices">
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','2')">Older than the layers</button>
+          <button class="inv-btn" onclick="invAnswer(this,'right','2')">Younger than the layers</button>
+        </div>
+        <div class="inv-feedback" id="inv-fb-2"><strong>Cross-Cutting Relationships:</strong> The intrusion had to push through layers that were already there. You can't cut through something that doesn't exist yet. Whatever cuts through is always younger than what it cuts.</div>
+      </div>
+
+      <!-- CARD 3: Original Horizontality -->
+      <div class="inv-card">
+        <div class="inv-question">These rock layers are tilted at a steep angle. What does that tell you?</div>
+        <div class="inv-visual">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+            <clipPath id="inv3-clip">
+              <rect x="0" y="0" width="280" height="148"/>
+            </clipPath>
+            <g clip-path="url(#inv3-clip)" transform="rotate(-28, 140, 74)">
+              <rect x="-30" y="6"   width="340" height="30" rx="2" fill="rgba(160,170,200,0.28)" stroke="rgba(160,170,200,0.45)" stroke-width="1"/>
+              <text x="20"  y="26"  font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#b8c8dc">Layer A</text>
+              <rect x="-30" y="38"  width="340" height="30" rx="2" fill="rgba(180,145,90,0.32)"  stroke="rgba(180,145,90,0.5)"   stroke-width="1"/>
+              <text x="20"  y="58"  font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#d4b070">Layer B</text>
+              <rect x="-30" y="70"  width="340" height="30" rx="2" fill="rgba(140,110,75,0.38)"  stroke="rgba(140,110,75,0.58)"  stroke-width="1"/>
+              <text x="20"  y="90"  font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#c4a060">Layer C</text>
+              <rect x="-30" y="102" width="340" height="36" rx="2" fill="rgba(90,70,55,0.48)"    stroke="rgba(90,70,55,0.68)"    stroke-width="1"/>
+              <text x="20"  y="125" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#a08878">Layer D</text>
+            </g>
+          </svg>
+        </div>
+        <div class="inv-choices">
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','3')">They formed at an angle</button>
+          <button class="inv-btn" onclick="invAnswer(this,'right','3')">Something moved them</button>
+          <button class="inv-btn" onclick="invAnswer(this,'wrong','3')">Wind eroded them</button>
+        </div>
+        <div class="inv-feedback" id="inv-fb-3"><strong>Original Horizontality:</strong> Sediment always settles flat — gravity pulls it level. If layers are tilted, they formed horizontal first. Something moved them later: tectonic pressure, an earthquake, or land shifting over millions of years.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+function invAnswer(btn, result, cardNum) {
+  const card = btn.closest('.inv-card');
+  card.querySelectorAll('.inv-btn').forEach(b => b.classList.add('locked'));
+  btn.classList.add(result === 'right' ? 'correct' : 'incorrect');
+  document.getElementById('inv-fb-' + cardNum).classList.add('show');
+}
+</script>
+
+<!-- ── MICROPASS 2: BRIDGE CALLOUT ── -->
+<div style="background: var(--dark2); padding: 0 2rem 3rem;">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div class="bridge-callout">
+      You just made predictions using nothing but observation. That's exactly what geologists do. Now let's understand the <strong>actual processes</strong> that create those patterns.
+    </div>
+  </div>
+</div>
+
 <!-- LESSON NOTES -->
 <section id="lesson">
   <div class="container">
-    <span class="section-label">How Rocks Form</span>
+    <span class="section-label">The Foundation</span>
     <h2 class="section-title">From Sediment to Stone</h2>
-    <p class="section-desc">Rock isn't just rock — it's a record. Every layer tells a story about what Earth was like when it formed. Here's how to read it.</p>
+    <p class="section-desc">Those patterns you just noticed — flat layers, tilted layers, things that cut through — all come from how rocks form in the first place.</p>
 
     <!-- Phenomenon card -->
     <div class="phenomenon-card">
@@ -840,7 +1065,7 @@
 
 <!-- BRIDGE -->
 <div style="background: var(--dark); padding: 0 2rem;">
-  <div style="max-width: 1100px; margin: 0 auto; padding: 0 0 0.5rem;">
+  <div style="max-width: 1100px; margin: 0 auto; padding: 0 0 2.5rem;">
     <div class="bridge-callout">
       Sedimentary rock is the key. Because it forms in slow, predictable layers, it preserves a sequence — oldest at the bottom, newest at the top. Scientists figured out that if you understand <em>how</em> rocks form, you can use that knowledge to read <em>when</em> they formed. That's what the next four principles are all about.
     </div>
@@ -852,7 +1077,7 @@
   <div class="container">
     <span class="section-label">Key Principles</span>
     <h2 class="section-title">Reading the Rock Record</h2>
-    <p class="section-desc">Scientists use four key principles to figure out the age and order of rock layers — even when they can't see the whole picture.</p>
+    <p class="section-desc">You made predictions about all three of these in the Investigation. Here's what each one is actually called — and why it works.</p>
 
     <!-- Strata interactive -->
     <div class="content-card">
@@ -895,7 +1120,6 @@
     <!-- Four principles -->
     <!-- CONCEPTUAL SVG: Superposition + Cross-Cutting -->
     <div style="margin: 2rem 0 1.8rem;">
-      <p style="font-size: 0.75rem; font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(159,184,204,0.45); margin-bottom: 0.85rem; text-align: center;">Two Rules at a Glance</p>
       <svg viewBox="0 0 740 295" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
         <defs>
           <pattern id="grain" x="0" y="0" width="40" height="8" patternUnits="userSpaceOnUse">
@@ -992,7 +1216,7 @@
       </div>
       <div class="principle-card p2">
         <div class="principle-term" id="term-superposition">Superposition</div>
-        <div class="principle-def">In undisturbed rock layers, the <em>bottom</em> layer is the oldest and the <em>top</em> layer is the youngest. Think of it like a stack of newspapers: the one on the bottom was delivered first. This gives us <strong>relative dating</strong> — we can say which layer is older without knowing the exact age.</div>
+        <div class="principle-def">In undisturbed rock layers, the <em>bottom</em> layer is the oldest and the <em>top</em> layer is the youngest. Think of it like a stack of newspapers: the one on the bottom was delivered first.</div>
         <div class="principle-key">⬇️ Older at bottom, newer at top</div>
       </div>
       <div class="principle-card p3">
@@ -1014,22 +1238,47 @@
         <div class="card-title">Index Fossils &amp; Dating Methods</div>
       </div>
       <div class="card-body">
-        <p><span class="vocab" id="vocab-index" title="Index fossils: fossils from species that lived for a short, well-defined time period but were found worldwide — used to date rock layers">Index fossils</span> are like timestamps in the rock record. They come from species that:</p>
-        <div class="callout slate">
-          <div class="callout-body">
-            <div style="display:flex; gap:0.7rem; align-items:flex-start; margin-bottom:0.75rem;">
-              <span style="font-size:1.1rem; flex-shrink:0; line-height:1.5;">⏱️</span>
-              <span><strong>Lived for a short time</strong> — so if you find that fossil, you know exactly which time period the layer is from.</span>
-            </div>
-            <div style="display:flex; gap:0.7rem; align-items:flex-start;">
-              <span style="font-size:1.1rem; flex-shrink:0; line-height:1.5;">🌍</span>
-              <span><strong>Were found all over Earth</strong> — so the same time period can be identified in different locations around the world.</span>
-            </div>
-          </div>
-        </div>
-        <p>Scientists use two types of dating to figure out how old rock layers are:</p>
-        <p><span class="vocab" id="vocab-relative" title="Relative dating: determining which rock layer is older or younger compared to another, without knowing the exact age in years">Relative dating</span> tells you the order — which layer came first — but not the exact age. "You are younger than me" is relative dating. Superposition and index fossils are tools for relative dating.</p>
-        <p><span class="vocab" id="vocab-absolute" title="Absolute dating: determining the actual age of rock or fossils in years, often using radioactive decay of isotopes (radiometric dating)">Absolute dating</span> gives an actual number — years. "You are 12 years old" is absolute dating. Scientists use radioactive decay (like carbon-14 or uranium-lead dating) to calculate precise ages in millions of years.</p>
+        <p><span class="vocab" id="vocab-index" title="Index fossils: fossils from species that lived for a short, well-defined time period but were found worldwide — used to date rock layers">Index fossils</span> are like timestamps in the rock record — from species that lived for a short, well-defined window of time and were found all over Earth. Find one, and you know exactly which period that layer is from, anywhere on the planet.</p>
+        <p>Scientists use two types of dating to figure out how old rock layers are. They answer different questions — and geologists often use both together.</p>
+        <style>
+          .compare-table { width:100%; border-collapse:collapse; border-radius:14px; overflow:hidden; margin-top:1.2rem; }
+          .compare-table th { background:rgba(122,143,166,0.1); padding:0.85rem 1.2rem; text-align:left; font-weight:800; font-size:0.9rem; }
+          .compare-table td { padding:0.8rem 1.2rem; border-bottom:1px solid var(--border); font-size:0.92rem; color:var(--text-muted); }
+          .compare-table tr:last-child td { border-bottom:none; }
+          .compare-table tr:nth-child(even) td { background:rgba(255,255,255,0.018); }
+          .compare-table td:first-child { color:var(--text); font-weight:700; }
+        </style>
+        <table class="compare-table" style="margin-top:1.2rem;">
+          <thead>
+            <tr>
+              <th></th>
+              <th id="vocab-relative" style="color:var(--accent2);">Relative Dating</th>
+              <th id="vocab-absolute" style="color:var(--teal);">Absolute Dating</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>What it tells you</td>
+              <td>Which layer is <em>older or younger</em> — the sequence, not the age</td>
+              <td>The <em>actual age in years</em> — a number</td>
+            </tr>
+            <tr>
+              <td>Tools used</td>
+              <td>Superposition, cross-cutting, index fossils</td>
+              <td>Radioactive decay (carbon-14, uranium-lead)</td>
+            </tr>
+            <tr>
+              <td>Everyday equivalent</td>
+              <td>"You are younger than me"</td>
+              <td>"You are 12 years old"</td>
+            </tr>
+            <tr>
+              <td>Limitation</td>
+              <td>Can't say <em>how many years</em> ago something happened</td>
+              <td>Requires the right minerals to be present in the rock</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -1056,11 +1305,22 @@
   </div>
 </section>
 
+<!-- ── MICROPASS 6: REFLECTION MOMENT ── -->
+<div style="background: var(--dark2); padding: 0 2rem 4rem;">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    <div class="callout gold" style="max-width:760px;">
+      <span class="callout-icon">💭</span>
+      <div class="callout-body">
+        <strong>Think About It:</strong> Scientists had access to rock strata for thousands of years before anyone formally described superposition. What do you think made it so hard to see something that now seems obvious? What had to change — in tools, in thinking, or in the questions people were asking?
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Check Your Understanding</span>
+    <span class="section-label">Quiz</span>
     <h2 class="section-title">Layers of Time Quiz</h2>
     <p class="section-desc">10 questions on rock types, geological processes, and reading the rock record. Fill in your info below before you begin — your score will be sent to your teacher when you submit.</p>
 

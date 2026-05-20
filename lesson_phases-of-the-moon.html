@@ -628,6 +628,50 @@
     .quiz-options { padding-left: 0; }
     .option-feedback { padding-left: 1rem; }
   }
+
+  /* ── REFLECTION MC ── */
+  .reflect-options { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.9rem; }
+  .reflect-option {
+    display: flex; align-items: center; gap: 0.75rem;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.22);
+    border-radius: 10px; padding: 0.75rem 1rem; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.93rem; color: var(--text);
+    line-height: 1.55; text-align: left; transition: background 0.15s, border-color 0.15s;
+    width: 100%;
+  }
+  .reflect-option:hover:not(.r-disabled) { background: rgba(122,143,166,0.1); border-color: rgba(122,143,166,0.4); }
+  .reflect-option .r-letter {
+    flex-shrink: 0; width: 1.7rem; height: 1.7rem; border-radius: 50%;
+    background: rgba(122,143,166,0.12); border: 1px solid rgba(122,143,166,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 900; color: var(--accent); letter-spacing: 0;
+  }
+  .reflect-option.r-correct  { background: rgba(46,204,113,0.08);  border-color: rgba(46,204,113,0.45); }
+  .reflect-option.r-incorrect { background: rgba(231,76,60,0.07);   border-color: rgba(231,76,60,0.4); }
+  .reflect-option.r-revealed  { background: rgba(46,204,113,0.05);  border-color: rgba(46,204,113,0.25); }
+  .reflect-option.r-disabled  { cursor: default; }
+  .reflect-option.r-correct  .r-letter { background: rgba(46,204,113,0.2);  border-color: var(--green); color: var(--green); }
+  .reflect-option.r-incorrect .r-letter { background: rgba(231,76,60,0.18); border-color: var(--red);   color: var(--red); }
+  .reflect-option.r-revealed  .r-letter { background: rgba(46,204,113,0.12); border-color: rgba(46,204,113,0.4); color: var(--green); }
+  .reflect-feedback {
+    margin-top: 0.85rem; padding: 0.75rem 1rem; border-radius: 10px;
+    font-size: 0.88rem; line-height: 1.65; display: none;
+  }
+  .reflect-feedback.show { display: block; }
+  .reflect-feedback.fb-correct   { background: rgba(46,204,113,0.07); border-left: 3px solid var(--green); color: rgba(232,237,242,0.9); }
+  .reflect-feedback.fb-incorrect { background: rgba(231,76,60,0.06);  border-left: 3px solid var(--red);   color: rgba(232,237,242,0.9); }
+
+  /* ── HOOK INVESTIGATION ── */
+  .hook-option {
+    text-align: left; width: 100%; padding: 0.85rem 1.1rem; border-radius: 12px;
+    border: 1.5px solid var(--border); background: rgba(255,255,255,0.02);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.95rem;
+    font-weight: 600; cursor: pointer; transition: all 0.2s; display: block;
+  }
+  .hook-option:hover:not(:disabled) { border-color: rgba(122,143,166,0.4); background: rgba(122,143,166,0.06); }
+  .hook-option:disabled { pointer-events: none; }
+  .hook-option.hook-correct { border-color: var(--green) !important; background: rgba(46,204,113,0.08) !important; }
+  .hook-option.hook-wrong   { border-color: rgba(122,143,166,0.35) !important; }
 </style>
 </head>
 <body>
@@ -638,7 +682,7 @@
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
-    <li><a href="#lesson">Lesson</a></li>
+    <li><a href="#hook">Investigate</a></li>
     <li><a href="#tools">Drawing</a></li>
     <li><a href="#phases">Phases</a></li>
     <li><a href="#concepts">Vocab</a></li>
@@ -655,7 +699,7 @@
   <span class="hero-float">🌍</span>
   <span class="hero-float">🔭</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Phases of the Moon 🌕&#xFE0E;</h1>
+  <h1>Phases of the Moon</h1>
   <p>The Moon appears to change shape every night — not because it is actually changing, but because of where it sits in its orbit and how much of its lit half we can see from Earth.</p>
   <div class="driving-question">
     <div class="dq-icon">🔍</div>
@@ -696,11 +740,76 @@
   </div>
 </div>
 
+<!-- INVESTIGATION HOOK -->
+<section id="hook" style="background: var(--dark2); padding: 4rem 2rem 3.5rem;">
+  <div class="container">
+    <span class="section-label">Investigation</span>
+    <h2 class="section-title">What's Happening to the Moon?</h2>
+    <p class="section-desc" style="margin-bottom: 2.5rem;">Before we explain anything — just observe. These four images show the same Moon, photographed on different nights over two weeks. Nothing was done to it. It's the same Moon each time.</p>
+
+    <!-- Moon phase SVG illustrations — waning sequence, two-arc path technique -->
+    <div style="display:flex; justify-content:center; gap:2rem; flex-wrap:wrap; margin:0 0 3rem; align-items:center;">
+
+      <!-- Night 1: Full Moon -->
+      <div style="text-align:center;">
+        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="45" cy="45" r="40" fill="rgba(215,230,245,0.92)" stroke="rgba(200,216,232,0.3)" stroke-width="1.5"/>
+        </svg>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.6rem; font-weight:800; letter-spacing:0.08em;">NIGHT 1</div>
+      </div>
+
+      <!-- Night 8: Waning Gibbous — left ~75% lit, small dark crescent right -->
+      <div style="text-align:center;">
+        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+          <defs><clipPath id="hmc2"><circle cx="45" cy="45" r="40"/></clipPath></defs>
+          <circle cx="45" cy="45" r="40" fill="rgba(180,200,220,0.07)" stroke="rgba(200,216,232,0.18)" stroke-width="1.5"/>
+          <path d="M 45,5 A 40,40 0 0,0 45,85 A 28,40 0 0,0 45,5 Z" fill="rgba(215,230,245,0.92)" clip-path="url(#hmc2)"/>
+        </svg>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.6rem; font-weight:800; letter-spacing:0.08em;">NIGHT 8</div>
+      </div>
+
+      <!-- Night 15: Third Quarter — exactly left half lit -->
+      <div style="text-align:center;">
+        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+          <defs><clipPath id="hmc3"><circle cx="45" cy="45" r="40"/></clipPath></defs>
+          <circle cx="45" cy="45" r="40" fill="rgba(180,200,220,0.07)" stroke="rgba(200,216,232,0.18)" stroke-width="1.5"/>
+          <path d="M 45,5 A 40,40 0 0,0 45,85 L 45,5 Z" fill="rgba(215,230,245,0.92)" clip-path="url(#hmc3)"/>
+        </svg>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.6rem; font-weight:800; letter-spacing:0.08em;">NIGHT 15</div>
+      </div>
+
+      <!-- Night 22: Waning Crescent — thin sliver on left -->
+      <div style="text-align:center;">
+        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+          <defs><clipPath id="hmc4"><circle cx="45" cy="45" r="40"/></clipPath></defs>
+          <circle cx="45" cy="45" r="40" fill="rgba(180,200,220,0.07)" stroke="rgba(200,216,232,0.18)" stroke-width="1.5"/>
+          <path d="M 45,5 A 40,40 0 0,0 45,85 A 14,40 0 0,1 45,5 Z" fill="rgba(215,230,245,0.92)" clip-path="url(#hmc4)"/>
+        </svg>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.6rem; font-weight:800; letter-spacing:0.08em;">NIGHT 22</div>
+      </div>
+
+    </div>
+
+    <!-- Observation question -->
+    <div style="max-width:640px; margin:0 auto;">
+      <p style="font-size:1rem; font-weight:800; color:var(--text); margin-bottom:1rem; line-height:1.5;">What do you think is happening to the Moon itself?</p>
+      <div style="display:flex; flex-direction:column; gap:0.6rem;" id="hook-options">
+        <button class="hook-option" onclick="hookAnswer(this,'a')">A — It physically grows larger, then shrinks, each month</button>
+        <button class="hook-option" onclick="hookAnswer(this,'b')">B — Earth's shadow falls across different parts of it</button>
+        <button class="hook-option" onclick="hookAnswer(this,'c')">C — We're seeing different amounts of its sunlit half</button>
+        <button class="hook-option" onclick="hookAnswer(this,'d')">D — It rotates to show us a different face each week</button>
+      </div>
+      <div id="hook-feedback" style="display:none; margin-top:1rem; padding:1rem 1.3rem; border-radius:12px; border-left:4px solid var(--accent); background:rgba(122,143,166,0.07); font-size:0.95rem; color:var(--text); line-height:1.75;"></div>
+    </div>
+
+  </div>
+</section>
+
 <!-- LESSON NOTES -->
 <section id="lesson">
   <div class="container">
-    <span class="section-label">📖 Lesson Notes</span>
-    <h2 class="section-title">Phases of the Moon 🌕&#xFE0E;</h2>
+    <span class="section-label">Lesson Notes</span>
+    <h2 class="section-title">Phases of the Moon</h2>
     <p class="section-desc">The Moon doesn't glow on its own — it reflects sunlight. As it orbits Earth, we see different amounts of the lit half. Here's what's really going on.</p>
 
     <!-- Phenomenon anchor card -->
@@ -747,6 +856,12 @@
       </div>
     </div>
 
+    <!-- BRIDGE 1 -->
+    <div class="callout slate" style="margin-bottom:1.5rem;">
+      <span class="callout-icon">→</span>
+      <div class="callout-body">Now that you know the Moon reflects sunlight and stays in a fixed orbit, one question naturally follows: if the lit half is always there, why doesn't it always look the same from Earth?</div>
+    </div>
+
     <!-- What Causes Moon Phases -->
     <div class="content-card" id="card-causes">
       <div class="card-header">
@@ -761,6 +876,12 @@
           <div class="callout-body"><strong>Key Misconception:</strong> Moon phases are <em>not</em> caused by Earth's shadow falling on the Moon. That's a <em>lunar eclipse</em> — a different and much rarer event. Phases happen simply because of our changing angle of view as the Moon orbits Earth. On most nights, the Moon is not in Earth's shadow at all.</div>
         </div>
       </div>
+    </div>
+
+    <!-- BRIDGE 2 -->
+    <div class="callout slate" style="margin-bottom:1.5rem;">
+      <span class="callout-icon">→</span>
+      <div class="callout-body">You now understand the mechanism. Scientists have precise names for each position in the cycle — learning them lets you describe any Moon phase you see with a single, exact term.</div>
     </div>
 
     <!-- Phase Vocabulary -->
@@ -812,10 +933,18 @@
   </div>
 </section>
 
+<!-- BRIDGE: LESSON → DRAWING RULES -->
+<div style="max-width:1100px; margin:0 auto; padding:0 2rem 1rem;">
+  <div class="callout slate">
+    <span class="callout-icon">→</span>
+    <div class="callout-body">Now that you understand why phases happen and what each one is called, the next step is knowing how to draw them accurately — and how to remember all eight in order, every time.</div>
+  </div>
+</div>
+
 <!-- DRAWING RULES & MNEMONIC -->
 <section id="tools">
   <div class="container">
-    <span class="section-label">✏️ Drawing Rules</span>
+    <span class="section-label">Drawing Rules</span>
     <h2 class="section-title">Drawing Moon Phases</h2>
     <p class="section-desc">Two tools to help you draw any phase correctly and remember the sequence every time.</p>
 
@@ -866,10 +995,18 @@
   </div>
 </section>
 
+<!-- BRIDGE: DRAWING RULES → THE 8 PHASES -->
+<div style="max-width:1100px; margin:0 auto; padding:0 2rem 1rem;">
+  <div class="callout slate">
+    <span class="callout-icon">→</span>
+    <div class="callout-body">With those rules and the mnemonic in hand, you're ready to meet each phase by name — and see exactly where it sits in the Moon's orbit around Earth.</div>
+  </div>
+</div>
+
 <!-- THE 8 PHASES -->
 <section id="phases">
   <div class="container">
-    <span class="section-label">🌕 The 8 Phases</span>
+    <span class="section-label">The 8 Phases</span>
     <h2 class="section-title">Eight Phases of the Lunar Cycle</h2>
     <p class="section-desc">The lunar cycle contains eight distinct phases, each with a name that tells you whether the Moon is growing or shrinking, and how much of its surface is lit. Click any card to expand it.</p>
 
@@ -1044,10 +1181,18 @@
   </div>
 </section>
 
+<!-- BRIDGE: THE 8 PHASES → VOCABULARY -->
+<div style="max-width:1100px; margin:0 auto; padding:0 2rem 1rem;">
+  <div class="callout slate">
+    <span class="callout-icon">→</span>
+    <div class="callout-body">You've now seen all eight phases in action. Before the quiz, make sure the vocabulary is solid — these are the exact terms you'll need to use with precision.</div>
+  </div>
+</div>
+
 <!-- KEY CONCEPTS -->
 <section id="concepts">
   <div class="container">
-    <span class="section-label">🏷️ Key Vocabulary</span>
+    <span class="section-label">Key Vocabulary</span>
     <h2 class="section-title">Vocabulary to Know</h2>
     <p class="section-desc" style="margin-bottom:0.5rem;">Every term below appeared in this lesson. Click any pill to jump to its explanation.</p>
     <p style="font-size:0.78rem; color:rgba(122,143,166,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">👆 Click any term to jump to its explanation in the lesson</p>
@@ -1068,11 +1213,88 @@
   </div>
 </section>
 
+<!-- BRIDGE: VOCABULARY → REFLECTION -->
+<div style="max-width:1100px; margin:0 auto; padding:0 2rem 1rem;">
+  <div class="callout slate">
+    <span class="callout-icon">→</span>
+    <div class="callout-body">Every term on that list appeared somewhere in this lesson. If any feel uncertain, scroll back and review — then take a moment to reflect before the quiz.</div>
+  </div>
+</div>
+
+<!-- REFLECTION -->
+<section id="reflection">
+  <div class="container">
+    <span class="section-label">Think About It</span>
+    <h2 class="section-title">Reflect Before You Quiz</h2>
+    <p class="section-desc">Three questions to check your thinking before the quiz. Select an answer — feedback appears right away.</p>
+
+    <!-- R1: The Misconception -->
+    <div class="content-card">
+      <div class="card-header">
+        <div class="card-title">The Misconception</div>
+      </div>
+      <div class="card-body">
+        <p>What actually causes the Moon to appear to change shape from night to night?</p>
+        <div class="reflect-options" id="r1-options">
+          <button class="reflect-option" onclick="reflectAnswer('r1',0)"><span class="r-letter">A</span>Earth's shadow gradually covers and uncovers different parts of the Moon's surface</button>
+          <button class="reflect-option" onclick="reflectAnswer('r1',1)"><span class="r-letter">B</span>Our viewing angle of the Moon's sunlit half shifts as the Moon orbits Earth</button>
+          <button class="reflect-option" onclick="reflectAnswer('r1',2)"><span class="r-letter">C</span>The Moon rotates slowly, revealing different sides to us over the course of a month</button>
+          <button class="reflect-option" onclick="reflectAnswer('r1',3)"><span class="r-letter">D</span>Atmospheric haze at different altitudes blocks different portions of the Moon</button>
+        </div>
+        <div class="reflect-feedback" id="r1-feedback"></div>
+      </div>
+    </div>
+
+    <!-- R2: The Night Sky -->
+    <div class="content-card">
+      <div class="card-header">
+        <div class="card-title">The Night Sky</div>
+      </div>
+      <div class="card-body">
+        <p>You look up and see a crescent Moon with the lit sliver on the right side, growing slightly larger each night. Which phase are you seeing?</p>
+        <div class="reflect-options" id="r2-options">
+          <button class="reflect-option" onclick="reflectAnswer('r2',0)"><span class="r-letter">A</span>Waning Crescent — the Moon is shrinking toward New Moon on the left side</button>
+          <button class="reflect-option" onclick="reflectAnswer('r2',1)"><span class="r-letter">B</span>First Quarter — exactly half the Moon is lit and growing toward Full Moon</button>
+          <button class="reflect-option" onclick="reflectAnswer('r2',2)"><span class="r-letter">C</span>Waxing Crescent — the lit portion is increasing toward First Quarter</button>
+          <button class="reflect-option" onclick="reflectAnswer('r2',3)"><span class="r-letter">D</span>Waning Gibbous — the lit area is decreasing from Full Moon toward Third Quarter</button>
+        </div>
+        <div class="reflect-feedback" id="r2-feedback"></div>
+      </div>
+    </div>
+
+    <!-- R3: The Big Idea -->
+    <div class="content-card">
+      <div class="card-header">
+        <div class="card-title">The Big Idea</div>
+      </div>
+      <div class="card-body">
+        <p>Every person who has ever lived has seen the exact same face of the Moon. What explains this?</p>
+        <div class="reflect-options" id="r3-options">
+          <button class="reflect-option" onclick="reflectAnswer('r3',0)"><span class="r-letter">A</span>The Moon does not rotate — it stays fixed in space while Earth spins beneath it</button>
+          <button class="reflect-option" onclick="reflectAnswer('r3',1)"><span class="r-letter">B</span>The Moon's rotation and orbital periods are equal, keeping one face permanently toward Earth</button>
+          <button class="reflect-option" onclick="reflectAnswer('r3',2)"><span class="r-letter">C</span>Earth's gravity holds the Moon's near side fixed in place at all times</button>
+          <button class="reflect-option" onclick="reflectAnswer('r3',3)"><span class="r-letter">D</span>The Moon rotates once per year, synchronized with Earth's orbit around the Sun</button>
+        </div>
+        <div class="reflect-feedback" id="r3-feedback"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- BRIDGE: REFLECTION → QUIZ -->
+<div style="max-width:1100px; margin:0 auto; padding:0 2rem 1rem;">
+  <div class="callout slate">
+    <span class="callout-icon">→</span>
+    <div class="callout-body">Your reflections don't need to be perfect — they just need to be honest. When you're ready, the quiz is next.</div>
+  </div>
+</div>
+
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">✅ Check Your Understanding</span>
-    <h2 class="section-title">Moon Phases Quiz 🌕&#xFE0E;</h2>
+    <span class="section-label">Check Your Understanding</span>
+    <h2 class="section-title">Moon Phases Quiz</h2>
     <p class="section-desc">10 questions on Moon phases, tidal locking, and the lunar cycle. Fill in your info below — your score will be sent to your teacher when you submit.</p>
 
     <!-- Quiz Mode Toggle -->
@@ -1145,7 +1367,7 @@
 <!-- CONTINUE -->
 <section id="continue">
   <div class="container">
-    <span class="section-label">🚀 Go Further</span>
+    <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
     <p class="section-desc" style="white-space:nowrap; max-width:none;">The lesson is just the beginning — go deeper, explore the real data, or connect it to the bigger picture.</p>
     <div class="continue-grid" style="text-align:left;">
@@ -1183,10 +1405,78 @@
   <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
+<!-- HOOK INVESTIGATION ENGINE -->
+<script>
+function hookAnswer(btn, choice) {
+  const btns = document.querySelectorAll('#hook-options .hook-option');
+  btns.forEach(b => { b.disabled = true; });
+  const msgs = {
+    a: 'Not quite — the Moon stays exactly the same size and shape throughout its cycle. Something about our <em>view</em> of it is changing. Scroll down to find out what.',
+    b: 'That\'s actually what happens during a lunar eclipse — a rare event that only occurs a few times a year. Moon phases happen every single month for a completely different reason. Scroll down.',
+    c: '<strong>Right.</strong> The Moon is always half lit by the Sun. As it orbits Earth, our angle changes — so we see more or less of that sunlit half. That\'s what makes phases. Scroll down to see how it works.',
+    d: 'Interesting — but we actually always see the same face of the Moon, every single night. Something else is changing. Scroll down to find out what.'
+  };
+  btn.classList.add(choice === 'c' ? 'hook-correct' : 'hook-wrong');
+  const fb = document.getElementById('hook-feedback');
+  fb.style.display = 'block';
+  fb.style.borderLeftColor = choice === 'c' ? 'var(--green)' : 'var(--accent)';
+  fb.innerHTML = msgs[choice];
+}
+</script>
+
 <!-- SESSION CHECK -->
 <script>
   if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
   if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
+</script>
+
+<!-- REFLECTION MC ENGINE -->
+<script>
+const reflectData = {
+  r1: {
+    correct: 1,
+    feedback: [
+      'Not quite. Earth\'s shadow only reaches the Moon during a lunar eclipse — a rare event. Most nights the Moon is not in Earth\'s shadow at all. Phases have a different cause.',
+      'Correct. The Sun always illuminates exactly half the Moon. As the Moon orbits Earth, we see different amounts of that lit half depending on our angle of view. That changing angle is what creates phases.',
+      'Not quite. The Moon does rotate, but tidal locking means it always shows the same face to Earth — not different sides. Rotation is not what causes phases.',
+      'Not quite. Atmospheric haze can affect visibility, but it does not cause the consistent, predictable cycle of phases we see every month. Phases are caused by the Moon\'s orbit.'
+    ]
+  },
+  r2: {
+    correct: 2,
+    feedback: [
+      'Not quite. Waning means the lit portion is shrinking and the Moon is heading toward New Moon. A shrinking crescent would be lit on the left — not the right.',
+      'Not quite. First Quarter shows exactly half the Moon lit — not a thin crescent. A crescent means less than half is illuminated.',
+      'Correct. Right side lit and growing = Waxing Crescent. "Waxing" means the lit portion is increasing. The Moon is moving counterclockwise from New Moon toward First Quarter.',
+      'Not quite. Waning Gibbous means more than half the Moon is lit and shrinking — far larger than a crescent. A crescent is a thin sliver, less than half lit.'
+    ]
+  },
+  r3: {
+    correct: 1,
+    feedback: [
+      'Not quite. The Moon does rotate — once every 27.3 days. If it did not rotate at all, we would eventually see all sides of it as it orbited. It rotates at exactly the right rate to stay locked.',
+      'Correct. This is called tidal locking. The Moon\'s rotation period (27.3 days) equals its orbital period (27.3 days). Because they match perfectly, the same face always points toward Earth.',
+      'Not quite. Gravity keeps the Moon in orbit, but it is the gradual effect of tidal forces over millions of years that synchronized the Moon\'s rotation — not gravity holding the surface still.',
+      'Not quite. The Moon\'s rotation is synchronized with its orbit around Earth (27.3 days), not with Earth\'s orbit around the Sun (365 days). These are two different cycles.'
+    ]
+  }
+};
+
+function reflectAnswer(qid, chosen) {
+  const q       = reflectData[qid];
+  const options = document.querySelectorAll('#' + qid + '-options .reflect-option');
+  const fb      = document.getElementById(qid + '-feedback');
+  if (fb.classList.contains('show')) return; // already answered
+  const correct = chosen === q.correct;
+  options.forEach(function(btn, i) {
+    btn.classList.add('r-disabled');
+    btn.disabled = true;
+    if (i === q.correct && !correct) btn.classList.add('r-revealed');
+  });
+  options[chosen].classList.add(correct ? 'r-correct' : 'r-incorrect');
+  fb.textContent  = q.feedback[chosen];
+  fb.className    = 'reflect-feedback show ' + (correct ? 'fb-correct' : 'fb-incorrect');
+}
 </script>
 
 <!-- UTILITY FUNCTIONS -->
