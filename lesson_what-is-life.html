@@ -1009,6 +1009,32 @@ body.stem-active .stem-focus {
   .stem-badge[data-tip]::before { display: none; }
 }
 
+/* ── Stem Detail Expand ── */
+.stem-detail { display: none; }
+body.stem-active .stem-detail {
+  width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
+  text-align: center; animation: stemFadeIn 0.35s ease both;
+}
+.stem-show-btn {
+  background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
+}
+.stem-show-btn:hover { color: rgba(46,204,113,0.85); }
+.stem-detail-body {
+  display: none; margin-top: 0.5rem;
+  background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
+  border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
+}
+.stem-detail.stem-open .stem-detail-body { display: block; }
+.stem-std-row {
+  display: flex; gap: 0.8rem; align-items: flex-start;
+  padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
+.stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
+.stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
+
 /* ── Driving Question ── */
 .driving-question {
   max-width: 760px;
@@ -1074,19 +1100,32 @@ body.stem-active .stem-focus {
 
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
-  <span class="ls-focus-label">Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. — Noetel et al., 2022">Dual Coding</span>
-  <span class="ls-badge" data-tip="Content builds progressively — each new idea is scaffolded by the one before it, reducing cognitive strain. — Kirschner et al., 2006">Scaffolding</span>
-  <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. — Schroeder et al., 2018">Concept Formation</span>
-  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. — Adesope et al., 2017">Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Content is chunked and sequenced so working memory is never overwhelmed by too much at once. — Sweller et al., 2019">Load Management</span>
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Content builds progressively — each new idea is scaffolded by the one before it, reducing cognitive strain. — Kirschner et al., 2006">🏗️ Scaffolding</span>
+  <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. — Schroeder et al., 2018">🗂️ Concept Formation</span>
+  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. — Adesope et al., 2017">✅ Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Content is chunked and sequenced so working memory is never overwhelmed by too much at once. — Sweller et al., 2019">⚖️ Load Management</span>
 </div>
 
 <!-- MA STE STANDARDS BADGES -->
 <div class="stem-focus">
-  <span class="stem-focus-label">MA STE Standards · Grade 6</span>
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
   <span class="stem-badge" data-tip="Provide evidence that all organisms (unicellular and multicellular) are made of cells.">6.MS-LS1-1</span>
   <span class="stem-badge" data-tip="Develop and use a model to describe the function of a cell as a whole and ways the parts of cells contribute to the function.">6.MS-LS1-2</span>
+</div>
+<div class="stem-detail" id="stem-detail-1">
+  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-1')">▸ Show standard descriptions</button>
+  <div class="stem-detail-body">
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-LS1-1</span>
+      <span class="stem-std-text">Provide evidence that all organisms (unicellular and multicellular) are made of cells.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-LS1-2</span>
+      <span class="stem-std-text">Develop and use a model to describe the function of a cell as a whole and ways the parts of cells contribute to the function.</span>
+    </div>
+  </div>
 </div>
 
 <!-- CHALLENGE STYLES -->
@@ -2209,6 +2248,12 @@ buildQuiz();
 <script>
 if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
 if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
+function toggleStemDetail(id) {
+  const el  = document.getElementById(id);
+  el.classList.toggle('stem-open');
+  const btn = el.querySelector('.stem-show-btn');
+  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
+}
 </script>
 
 <script>

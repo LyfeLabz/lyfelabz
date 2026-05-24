@@ -970,7 +970,21 @@ body.stem-active .stem-detail {
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
   <span class="stem-badge" data-tip="Provide evidence that all organisms (unicellular and multicellular) are made of cells.">6.MS-LS1-1</span>
-  <span class="stem-badge" data-tip="Develop and use a model to describe how parts of cells contribute to cellular functions: obtaining food, water, and nutrients, disposing of wastes, and providing energy for cellular processes.">6.MS-LS1-2</span></div>
+  <span class="stem-badge" data-tip="Develop and use a model to describe how parts of cells contribute to cellular functions: obtaining food, water, and nutrients, disposing of wastes, and providing energy for cellular processes.">6.MS-LS1-2</span>
+</div>
+<div class="stem-detail" id="stem-detail-1">
+  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-1')">▸ Show standard descriptions</button>
+  <div class="stem-detail-body">
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-LS1-1</span>
+      <span class="stem-std-text">Provide evidence that all organisms (unicellular and multicellular) are made of cells.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-LS1-2</span>
+      <span class="stem-std-text">Develop and use a model to describe how parts of cells contribute to cellular functions: obtaining food, water, and nutrients, disposing of wastes, and providing energy for cellular processes.</span>
+    </div>
+  </div>
+</div>
 
 <!-- HOOK -->
 <section id="hook" style="background: var(--dark);">
@@ -1801,7 +1815,16 @@ function vocabJump(targetId) {
 
 buildQuiz();
 </script>
-<script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
+<script>
+if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');
+if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');
+function toggleStemDetail(id) {
+  const el  = document.getElementById(id);
+  el.classList.toggle('stem-open');
+  const btn = el.querySelector('.stem-show-btn');
+  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
+}
+</script>
 <script>
 const canvas = document.getElementById('stars');
 const ctx = canvas.getContext('2d');
