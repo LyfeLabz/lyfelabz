@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="utf-8"/>
+<link href="favicon.ico" rel="icon" type="image/x-icon"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link rel="canonical" href="https://lyfelabz.com/simulation_eclipse-alignment.html"/>
+<meta name="description" content="Manipulate moon phase, orbital tilt, and node alignment to discover why solar and lunar eclipses only happen sometimes. An interactive Grade 6 Earth and Space Science simulation aligned to Massachusetts STE standards."/>
+<title>LyfeLabz | Eclipse Alignment</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+/* =========================================================
+   CSS VARIABLES & RESET
+   ========================================================= */
+:root {
+  --bg-primary:     #0d1117;
+  --bg-secondary:   #111820;
+  --bg-card:        #161e28;
+  --bg-card-hover:  #1c2638;
+  --border:         #2a3447;
+  --border-light:   #3a4a5e;
+  --text-primary:   #e8edf2;
+  --text-secondary: #b8c8d8;
+  --text-muted:     #7a8fa6;
+
+  /* Eclipse astronomy palette — matches lesson_eclipses.html */
+  --accent:         #7a8fc8;
+  --accent-dim:     rgba(122,143,200,0.15);
+  --accent-glow:    rgba(122,143,200,0.30);
+  --accent2:        #a0b4e4;
+  --teal:           #3bc8e8;
+  --teal-dim:       rgba(59,200,232,0.15);
+  --gold:           #f5c842;
+  --gold-dim:       rgba(245,200,66,0.15);
+  --gold-glow:      rgba(245,200,66,0.35);
+  --green:          #2ecc71;
+  --green-dim:      rgba(46,204,113,0.15);
+  --red:            #e87070;
+  --red-dim:        rgba(232,112,112,0.15);
+
+  /* Simulation accent — orange (consistent with other sims) */
+  --orange:         #f5a028;
+  --orange-dim:     rgba(245,160,40,0.12);
+  --orange-glow:    rgba(245,160,40,0.35);
+
+  /* Solar / Lunar specific */
+  --solar:          #f5c842;
+  --solar-dim:      rgba(245,200,66,0.12);
+  --solar-border:   rgba(245,160,40,0.35);
+  --lunar:          #a0b4e4;
+  --lunar-dim:      rgba(160,180,228,0.10);
+  --lunar-border:   rgba(122,143,200,0.35);
+
+  --radius:    14px;
+  --radius-sm: 10px;
+  --shadow:    0 4px 20px rgba(0,0,0,0.4);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 18px; scroll-behavior: smooth; scroll-padding-top: 68px; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Nunito', sans-serif;
+  line-height: 1.75;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   STARFIELD
+   ========================================================= */
+#stars {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0; opacity: 0.45;
+}
+nav, header, .hero, section, footer, .badge-bar { position: relative; z-index: 1; }
+
+/* =========================================================
+   NAV
+   ========================================================= */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(8,14,22,0.97);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 2.5rem;
+}
+.nav-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.35rem; font-weight: 900;
+  color: var(--gold); text-decoration: none;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 18px var(--gold-glow);
+}
+.nav-links {
+  display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap;
+}
+.nav-links a {
+  color: var(--text-muted); text-decoration: none;
+  font-size: 0.85rem; font-weight: 700;
+  transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.nav-links a:hover { color: var(--accent2); }
+.nav-back {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--accent2);
+  background: var(--accent-dim); border: 1px solid rgba(122,143,200,0.4);
+  padding: 0.35rem 0.9rem; border-radius: 99px;
+  text-decoration: none; transition: all 0.2s;
+}
+.nav-back:hover { background: rgba(122,143,200,0.25); border-color: rgba(122,143,200,0.7); }
+
+/* =========================================================
+   BADGE BARS — LS / STE
+   ========================================================= */
+.badge-bar {
+  display: none; flex-wrap: wrap; gap: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+}
+body.stem-active .badge-bar.stem-bar { display: flex; }
+body.ls-active   .badge-bar.ls-bar   { display: flex; }
+.badge {
+  position: relative; display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.25rem 0.7rem; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 800; cursor: help; transition: filter 0.2s;
+}
+.badge:hover { filter: brightness(1.2); }
+.badge.green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+.badge.teal  { background: var(--teal-dim);  color: var(--teal);  border: 1px solid rgba(59,200,232,0.3); }
+.badge-tip {
+  display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: #1c2230; border: 1px solid var(--border-light);
+  border-radius: 8px; padding: 0.5rem 0.75rem;
+  font-size: 0.7rem; font-weight: 600; color: #c9d1d9;
+  width: 240px; text-align: center; z-index: 200;
+  pointer-events: none; line-height: 1.4;
+}
+.badge:hover .badge-tip { display: block; }
+
+/* =========================================================
+   HERO
+   ========================================================= */
+.hero {
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(80,100,180,0.10) 0%, transparent 65%),
+    radial-gradient(ellipse at 20% 60%, rgba(60,80,160,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 25%, rgba(245,160,40,0.05) 0%, transparent 40%),
+    linear-gradient(160deg, #070b10 0%, #0c1420 55%, #080d16 100%);
+  padding: 5.5rem 2rem 5rem; text-align: center;
+  position: relative; overflow: hidden;
+  min-height: 58vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  border-bottom: 1px solid rgba(122,143,200,0.12);
+}
+.hero-corona {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(360px, 78vw); height: min(360px, 78vw);
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    transparent 0%, transparent 25%,
+    rgba(255,120,30,0.05) 27%, rgba(200,150,80,0.08) 38%,
+    rgba(130,110,200,0.06) 55%, transparent 72%);
+  pointer-events: none;
+  animation: coronaPulse 9s ease-in-out infinite;
+}
+@keyframes coronaPulse {
+  0%,100%{ opacity:0.5; transform:translate(-50%,-50%) scale(1); }
+  50%    { opacity:1;   transform:translate(-50%,-50%) scale(1.05); }
+}
+.hero-float {
+  position: absolute; font-size: 2.4rem; opacity: 0.06;
+  animation: float 6s ease-in-out infinite; pointer-events: none;
+}
+.hero-float:nth-child(1){ top:12%;  left:8%;   animation-delay:0s;   font-size:2.2rem; }
+.hero-float:nth-child(2){ top:16%;  right:10%; animation-delay:1.5s; font-size:1.9rem; }
+.hero-float:nth-child(3){ bottom:20%; left:13%; animation-delay:3s;   font-size:2rem;   }
+.hero-float:nth-child(4){ bottom:22%; right:9%; animation-delay:4.5s; font-size:2.4rem; }
+@keyframes float {
+  0%,100%{ transform:translateY(0) rotate(0deg); }
+  50%    { transform:translateY(-20px) rotate(8deg); }
+}
+.hero-shell { max-width: 760px; margin: 0 auto; position: relative; z-index: 1; }
+.hero-badge {
+  display: inline-block;
+  background: rgba(245,160,40,0.10); border: 1px solid rgba(245,160,40,0.42);
+  color: var(--orange); padding: 0.38rem 1.1rem; border-radius: 99px;
+  font-size: 0.78rem; font-weight: 800; letter-spacing: 0.12em;
+  text-transform: uppercase; margin-bottom: 1.3rem; position: relative;
+  box-shadow: 0 0 18px rgba(245,160,40,0.14);
+}
+.hero h1 {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.3rem, 5.5vw, 4rem); line-height: 1.08;
+  margin-bottom: 0.9rem;
+  background: linear-gradient(135deg, #e8edf2 30%, var(--accent2) 80%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; position: relative;
+}
+.hero-subtitle {
+  font-size: 1.05rem; color: rgba(232,237,242,0.65);
+  max-width: 520px; margin: 0 auto 2rem; line-height: 1.7; position: relative;
+}
+.driving-question {
+  max-width: 700px; margin: 0 auto; padding: 1.1rem 1.6rem;
+  background: rgba(122,143,200,0.07); border: 1px solid rgba(122,143,200,0.3);
+  border-left: 4px solid var(--accent2); border-radius: 14px;
+  display: flex; align-items: flex-start; gap: 0.85rem;
+  box-sizing: border-box; position: relative;
+}
+.dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+.dq-label {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em;
+  text-transform: uppercase; color: rgba(160,180,228,0.8); margin-bottom: 0.3rem;
+}
+.dq-text {
+  font-family: 'Fredoka One', cursive; font-size: 1.05rem;
+  color: var(--text-primary); line-height: 1.4;
+}
+
+/* =========================================================
+   SECTION GLOBALS
+   ========================================================= */
+.sim-section    { max-width: 960px;  margin: 0 auto 2.25rem; padding: 0 1.4rem; }
+.sim-shell-wide { max-width: 1100px; margin: 0 auto 2.25rem; padding: 0 1.4rem; }
+section { padding: 3rem 2rem; }
+section:nth-child(even) { background: var(--bg-secondary); }
+
+.section-label {
+  display: inline-block; font-size: 0.75rem; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent2); background: var(--accent-dim);
+  border: 1px solid rgba(122,143,200,0.3);
+  padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 0.9rem;
+}
+.section-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.2; margin-bottom: 0.9rem;
+}
+.section-desc {
+  font-size: 1.05rem; color: rgba(232,237,242,0.75);
+  max-width: 680px; margin-bottom: 2.5rem; line-height: 1.7;
+}
+
+/* =========================================================
+   CALLOUT CARDS (Mission Briefing)
+   ========================================================= */
+.callout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.2rem; margin-bottom: 2rem;
+}
+.callout-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.4rem 1.5rem;
+  position: relative; overflow: hidden;
+}
+.callout-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.callout-card.solar::before   { background: linear-gradient(90deg, #f5a028, #f5c842); }
+.callout-card.lunar::before   { background: linear-gradient(90deg, #6480dc, #a0b4e4); }
+.callout-card.no-eclipse::before { background: linear-gradient(90deg, #7a8fc8, #3bc8e8); }
+.callout-card-label {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 0.22rem 0.8rem;
+  border-radius: 99px; display: inline-block; margin-bottom: 0.8rem;
+}
+.callout-card.solar   .callout-card-label { background: var(--solar-dim);  color: var(--solar);  border: 1px solid var(--solar-border); }
+.callout-card.lunar   .callout-card-label { background: var(--lunar-dim);  color: var(--lunar);  border: 1px solid var(--lunar-border); }
+.callout-card.no-eclipse .callout-card-label { background: var(--accent-dim); color: var(--accent2); border: 1px solid rgba(122,143,200,0.3); }
+.callout-card-title {
+  font-family: 'Fredoka One', cursive; font-size: 1.25rem;
+  margin-bottom: 0.6rem; line-height: 1.2;
+}
+.callout-card.solar   .callout-card-title { color: var(--solar); }
+.callout-card.lunar   .callout-card-title { color: var(--lunar); }
+.callout-card.no-eclipse .callout-card-title { color: var(--accent2); }
+.callout-card-body {
+  font-size: 0.92rem; color: rgba(232,237,242,0.82);
+  line-height: 1.7;
+}
+.callout-card-body strong { color: var(--text-primary); font-weight: 800; }
+
+/* Bridge callout */
+.bridge-callout {
+  margin-top: 0.5rem; padding: 1.2rem 1.6rem;
+  background: rgba(122,143,200,0.06);
+  border: 1px solid rgba(122,143,200,0.22);
+  border-left: 4px solid var(--accent2);
+  border-radius: 14px; font-size: 1rem;
+  color: var(--text-muted); max-width: 900px;
+}
+.bridge-callout strong { color: var(--text-primary); }
+.bridge-callout em     { color: var(--accent2); font-style: normal; font-weight: 700; }
+
+/* =========================================================
+   MODE TOGGLE BAR
+   ========================================================= */
+.mode-toggle-bar {
+  display: flex; align-items: center; justify-content: center; gap: 0;
+  margin: 0 auto 6px;
+  background: rgba(42,52,71,0.45);
+  border: 1.5px solid rgba(122,143,200,0.25);
+  border-radius: 14px; padding: 0.35rem;
+  width: fit-content;
+  box-shadow: 0 0 0 4px rgba(122,143,200,0.04);
+}
+.mode-btn {
+  padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+  font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+  letter-spacing: 0.04em; transition: all 0.22s;
+  color: rgba(174,184,194,0.55); background: transparent;
+}
+.mode-btn:hover:not(.active) { color: rgba(174,184,194,0.8); }
+.mode-btn.active {
+  background: linear-gradient(135deg, rgba(122,143,200,0.18) 0%, rgba(122,143,200,0.10) 100%);
+  color: #ddeaf5; border: 1px solid rgba(122,143,200,0.45);
+  box-shadow: 0 0 14px rgba(122,143,200,0.15), 0 2px 10px rgba(0,0,0,0.4);
+  text-shadow: 0 0 12px rgba(122,143,200,0.4);
+}
+.mode-hint {
+  text-align: center; font-size: 0.82rem; font-weight: 700;
+  color: var(--text-muted); margin-bottom: 1.2rem;
+}
+.mode-hint span { display: none; }
+.mode-hint span.visible { display: inline; }
+
+/* =========================================================
+   LAB PANEL — placeholder shell
+   ========================================================= */
+.lab-panel {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 2rem;
+  box-shadow: var(--shadow); text-align: center;
+  position: relative; overflow: hidden;
+}
+.lab-panel::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--teal));
+}
+
+/* Control row */
+.control-row {
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  justify-content: center; margin-bottom: 1.5rem;
+}
+.control-group { display: flex; flex-direction: column; gap: 0.45rem; }
+.control-group-label {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-muted); text-align: center;
+}
+.ctrl-btn-row { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; }
+.ctrl-btn {
+  padding: 0.5rem 1.05rem; border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: rgba(232,237,242,0.65);
+  font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; transition: all 0.18s;
+}
+.ctrl-btn:hover { background: rgba(122,143,200,0.1); border-color: rgba(122,143,200,0.4); }
+.ctrl-btn.active {
+  background: rgba(122,143,200,0.18); border-color: var(--accent2);
+  color: var(--accent2); box-shadow: 0 0 8px rgba(122,143,200,0.15);
+}
+/* Solar active state */
+.ctrl-btn.solar-active {
+  background: rgba(245,160,40,0.18); border-color: var(--orange);
+  color: var(--orange); box-shadow: 0 0 8px rgba(245,160,40,0.15);
+}
+/* Lunar active state */
+.ctrl-btn.lunar-active {
+  background: rgba(160,180,228,0.18); border-color: var(--lunar);
+  color: var(--lunar); box-shadow: 0 0 8px rgba(160,180,228,0.15);
+}
+
+/* SVG stage */
+.sim-stage {
+  background: rgba(4,8,14,0.85); border-radius: var(--radius-sm);
+  overflow: hidden; border: 1px solid rgba(122,143,200,0.10);
+  min-height: 200px; display: flex; justify-content: center; align-items: center;
+  margin-bottom: 1.2rem; transition: opacity 0.18s ease;
+}
+
+/* Feedback result strip */
+.sim-result {
+  padding: 1rem 1.4rem; border-radius: var(--radius-sm);
+  font-size: 0.95rem; font-weight: 700; line-height: 1.55;
+  min-height: 3.6rem; display: flex; align-items: center; gap: 0.8rem;
+  transition: all 0.3s;
+}
+.sim-result.idle    { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); color: rgba(232,237,242,0.45); }
+.sim-result.miss    { background: rgba(255,200,60,0.07);  border: 1px solid rgba(255,200,60,0.25); color: rgba(255,220,120,0.9); }
+.sim-result.solar   { background: rgba(245,160,40,0.09);  border: 1px solid rgba(245,160,40,0.40); color: rgba(245,200,100,1.0); }
+.sim-result.lunar   { background: rgba(122,143,200,0.09); border: 1px solid rgba(122,143,200,0.40); color: rgba(160,185,240,1.0); }
+.sim-result-icon    { font-size: 1.5rem; flex-shrink: 0; }
+
+/* Moon Height controls — muted when height is irrelevant */
+.control-group.height-muted .control-group-label {
+  opacity: 0.38; transition: opacity 0.22s;
+}
+.control-group.height-muted .ctrl-btn {
+  opacity: 0.28; cursor: not-allowed; pointer-events: none;
+  transition: opacity 0.22s;
+}
+.height-disabled-note {
+  display: none; margin-top: 0.45rem; max-width: 240px;
+  font-size: 0.74rem; line-height: 1.45; color: var(--text-muted);
+  background: rgba(122,143,200,0.07); border: 1px solid rgba(122,143,200,0.18);
+  border-radius: 9px; padding: 0.5rem 0.65rem; text-align: center;
+  margin-left: auto; margin-right: auto;
+}
+.height-disabled-note.show { display: block; animation: fadeIn 0.25s ease both; }
+
+/* =========================================================
+   CHALLENGE CARDS
+   ========================================================= */
+.challenge-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem;
+  margin-top: 0.5rem;
+}
+@media (max-width: 820px) {
+  .challenge-grid { grid-template-columns: 1fr; }
+  .challenge-hint { min-height: 0; }
+}
+
+.challenge-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem;
+  position: relative; overflow: hidden;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.challenge-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+.challenge-card.solar-card::before   { background: linear-gradient(90deg, #f5a028, #f5c842); }
+.challenge-card.lunar-card::before   { background: linear-gradient(90deg, #6480dc, #a0b4e4); }
+.challenge-card.neutral-card::before { background: linear-gradient(90deg, #7a8fc8, #3bc8e8); }
+
+/* States */
+.challenge-card.solved { border-color: rgba(46,204,113,0.4); box-shadow: 0 0 14px rgba(46,204,113,0.08); }
+
+.challenge-num {
+  font-size: 0.68rem; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 0.2rem 0.75rem; border-radius: 99px;
+  display: inline-block; margin-bottom: 0.7rem;
+}
+.solar-card   .challenge-num { background: var(--solar-dim);  color: var(--solar);  border: 1px solid var(--solar-border); }
+.lunar-card   .challenge-num { background: var(--lunar-dim);  color: var(--lunar);  border: 1px solid var(--lunar-border); }
+.neutral-card .challenge-num { background: var(--accent-dim); color: var(--accent2); border: 1px solid rgba(122,143,200,0.3); }
+
+.challenge-q {
+  font-family: 'Fredoka One', cursive; font-size: 1.05rem;
+  color: var(--text-primary); margin-bottom: 0.9rem; line-height: 1.4;
+}
+.challenge-hint {
+  font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;
+  min-height: 8.5rem;
+}
+
+.challenge-success {
+  display: none; margin-top: 1rem;
+  padding: 0.9rem 1.1rem; border-radius: var(--radius-sm);
+}
+.challenge-success.show { display: block; animation: fadeIn 0.3s ease both; }
+.solar-card   .challenge-success { background: var(--solar-dim);  border: 1px solid var(--solar-border); }
+.lunar-card   .challenge-success { background: var(--lunar-dim);  border: 1px solid var(--lunar-border); }
+.neutral-card .challenge-success { background: var(--accent-dim); border: 1px solid rgba(122,143,200,0.25); }
+
+.success-head {
+  font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+  margin-bottom: 0.35rem; color: var(--text-primary);
+}
+.success-why { font-size: 0.86rem; color: rgba(232,237,242,0.85); line-height: 1.65; }
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;} }
+
+/* =========================================================
+   DISCOVERY SUMMARY
+   ========================================================= */
+.discovery-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+  gap: 1.2rem; margin-bottom: 2rem;
+}
+.discovery-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem;
+  position: relative; overflow: hidden;
+}
+.discovery-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.discovery-card.phase-card::before  { background: linear-gradient(90deg, #f5a028, #a0b4e4); }
+.discovery-card.node-card::before   { background: linear-gradient(90deg, #3bc8e8, #7a8fc8); }
+.discovery-card.shadow-card::before { background: linear-gradient(90deg, #f5c842, #3bc8e8); }
+.discovery-card-title {
+  font-family: 'Fredoka One', cursive; font-size: 1.2rem;
+  color: var(--text-primary); margin-bottom: 0.65rem; line-height: 1.25;
+}
+.discovery-card-body {
+  font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7;
+}
+.discovery-card-body strong { color: var(--text-primary); font-weight: 800; }
+
+/* =========================================================
+   CHALLENGE COUNTER PILL
+   ========================================================= */
+.challenge-counter-wrap {
+  display: flex; align-items: center; margin-bottom: 1.6rem;
+}
+.challenge-counter {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  font-size: 0.78rem; font-weight: 800; letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(122,143,166,0.08);
+  border: 1px solid rgba(122,143,166,0.22);
+  padding: 0.3rem 0.95rem; border-radius: 99px;
+  transition: color 0.35s ease, background 0.35s ease, border-color 0.35s ease;
+}
+.challenge-counter.all-done {
+  color: var(--green);
+  background: var(--green-dim);
+  border-color: rgba(46,204,113,0.32);
+}
+.counter-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(122,143,166,0.4);
+  transition: background 0.35s ease;
+}
+.challenge-counter.all-done .counter-dot { background: var(--green); }
+
+/* =========================================================
+   ECLIPSE PAYOFF OVERLAY
+   ========================================================= */
+.sim-stage-wrap {
+  position: relative;
+}
+.eclipse-payoff {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.85);
+  pointer-events: none; opacity: 0; z-index: 10;
+  text-align: center; white-space: nowrap;
+}
+.eclipse-payoff.active {
+  animation: payoffShow 1.9s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+.eclipse-payoff-badge {
+  display: inline-block; padding: 0.48rem 1.5rem; border-radius: 11px;
+  font-family: 'Orbitron', sans-serif; font-weight: 900;
+  font-size: clamp(0.78rem, 2vw, 1rem); letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.eclipse-payoff.solar .eclipse-payoff-badge {
+  background: rgba(245,160,40,0.18); color: #f5d870;
+  border: 1.5px solid rgba(245,200,66,0.62);
+  box-shadow: 0 0 28px rgba(245,180,50,0.38), 0 0 56px rgba(245,180,50,0.12);
+  text-shadow: 0 0 18px rgba(245,200,66,0.75);
+}
+.eclipse-payoff.lunar .eclipse-payoff-badge {
+  background: rgba(140,42,18,0.22); color: #eb9060;
+  border: 1.5px solid rgba(205,80,48,0.52);
+  box-shadow: 0 0 28px rgba(185,60,20,0.32), 0 0 56px rgba(185,60,20,0.10);
+  text-shadow: 0 0 18px rgba(225,90,40,0.65);
+}
+@keyframes payoffShow {
+  0%   { opacity:0;   transform:translate(-50%,-50%) scale(0.82); }
+  16%  { opacity:1;   transform:translate(-50%,-50%) scale(1.03); }
+  22%  { opacity:1;   transform:translate(-50%,-50%) scale(1.00); }
+  66%  { opacity:1;   transform:translate(-50%,-50%) scale(1.00); }
+  100% { opacity:0;   transform:translate(-50%,-50%) scale(0.96); }
+}
+@keyframes resultFlash {
+  0%,100% { filter: brightness(1); }
+  30%     { filter: brightness(1.55); }
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+#toastContainer {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999;
+  display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none;
+}
+.toast {
+  background: var(--bg-card); border: 1px solid var(--border-light);
+  border-radius: 10px; padding: 0.6rem 1rem; font-size: 0.82rem; font-weight: 700;
+  color: var(--text-primary); min-width: 220px; max-width: 320px; box-shadow: var(--shadow);
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
+}
+.toast.success { border-color: var(--green); color: var(--green); }
+.toast.info    { border-color: var(--accent2); color: var(--accent2); }
+@keyframes toastIn  { from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;} }
+@keyframes toastOut { from{opacity:1;}to{opacity:0;transform:translateY(12px);} }
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+footer {
+  background: #070f17; border-top: 1px solid var(--border);
+  padding: 2rem; text-align: center; margin-top: 0.5rem;
+}
+footer .footer-logo {
+  font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+  letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.35rem;
+}
+footer .footer-tagline { font-size: 0.83rem; color: rgba(240,228,200,0.6); margin-bottom: 0.6rem; }
+footer .footer-links {
+  display: flex; gap: 0.5rem; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 0.6rem;
+}
+footer .footer-links a {
+  color: var(--gold); text-decoration: none; font-size: 0.72rem; font-weight: 800;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  border: 1px solid rgba(245,200,66,0.4); background: rgba(245,200,66,0.08);
+  padding: 0.25rem 0.75rem; border-radius: 99px;
+  transition: border-color 0.2s, background 0.2s;
+}
+footer .footer-links a:hover { border-color: rgba(245,200,66,0.7); }
+footer .footer-links a.nav-why {
+  color: #3bc8e8; border: 1px solid rgba(59,200,232,0.7);
+  background: rgba(59,200,232,0.12);
+}
+footer .footer-links a.nav-why:hover { background: rgba(59,200,232,0.22); border-color: rgba(59,200,232,0.95); }
+footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 600px) {
+  .nav-links { display: none; }
+  .callout-grid { grid-template-columns: 1fr; }
+}
+
+/* =========================================================
+   QUIZ / CHECKPOINT SECTION
+   ========================================================= */
+.quiz-info-box {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem 1.7rem;
+  margin-bottom: 2rem; border-top: 3px solid var(--accent2);
+}
+.quiz-info-title {
+  font-family: 'Fredoka One', cursive; font-size: 1.05rem;
+  color: var(--text-primary); margin-bottom: 0.25rem;
+}
+.quiz-info-sub { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 1.1rem; }
+.info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.8rem; }
+.info-field label {
+  display: block; font-size: 0.72rem; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 0.32rem;
+}
+.info-field input, .info-field select {
+  width: 100%; padding: 0.58rem 0.85rem;
+  background: var(--bg-secondary); border: 1.5px solid var(--border);
+  border-radius: 9px; color: var(--text-primary);
+  font-family: 'Nunito', sans-serif; font-size: 0.88rem; font-weight: 600;
+  transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+}
+.info-field input:focus, .info-field select:focus {
+  outline: none; border-color: var(--accent2);
+  box-shadow: 0 0 0 3px rgba(122,143,200,0.12);
+}
+.info-field select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238aafca' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 0.85rem center;
+  background-color: var(--bg-secondary); padding-right: 2.2rem;
+}
+.info-field select option { background: var(--bg-card); color: var(--text-primary); }
+.info-error { display: none; font-size: 0.76rem; color: var(--red); margin-top: 0.32rem; font-weight: 700; }
+.info-error.show { display: block; }
+
+.quiz-progress-sticky {
+  position: sticky; top: 64px; z-index: 100;
+  background: var(--bg-secondary); padding: 0.75rem 0 0.65rem;
+  margin-bottom: 1.7rem; border-bottom: 1px solid var(--border);
+}
+.quiz-progress { display: flex; align-items: center; gap: 1rem; }
+.progress-bar { flex: 1; height: 7px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--accent), var(--teal));
+  border-radius: 99px; transition: width 0.4s; width: 0%;
+}
+.progress-text { font-size: 0.82rem; color: var(--text-muted); font-weight: 700; min-width: 76px; text-align: right; }
+
+.quiz-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem;
+}
+.quiz-header { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.45rem; }
+.quiz-num {
+  font-family: 'Fredoka One', cursive; font-size: 0.95rem; color: var(--text-muted);
+  width: 1.9rem; height: 1.9rem; border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.quiz-question-text { font-weight: 800; font-size: 0.96rem; line-height: 1.5; }
+.quiz-options {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  margin-top: 0.9rem; padding-left: 2.75rem;
+}
+.quiz-option {
+  display: flex; align-items: flex-start; gap: 0.65rem;
+  padding: 0.75rem 1rem; border-radius: 10px;
+  border: 2px solid var(--border); cursor: pointer;
+  transition: all 0.18s; background: rgba(255,255,255,0.02);
+  font-size: 0.9rem; font-weight: 600; font-family: 'Nunito', sans-serif;
+  text-align: left; color: var(--text-primary); width: 100%;
+}
+.quiz-option:hover:not(.selected):not(.disabled) {
+  border-color: rgba(122,143,200,0.42); background: rgba(122,143,200,0.06);
+}
+.quiz-option.selected        { border-color: var(--accent2)  !important; background: rgba(122,143,200,0.12) !important; }
+.quiz-option.correct         { border-color: var(--green)    !important; background: rgba(46,204,113,0.10)  !important; }
+.quiz-option.incorrect       { border-color: var(--red)      !important; background: rgba(232,112,112,0.08) !important; }
+.quiz-option.disabled        { pointer-events: none; }
+.quiz-option.revealed-correct { border-color: rgba(46,204,113,0.36) !important; background: rgba(46,204,113,0.05) !important; }
+.option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.15rem; font-size: 0.8rem; }
+.option-feedback {
+  display: none; font-size: 0.83rem; margin-top: 0.7rem;
+  padding: 0.7rem 1rem 0.7rem 2.75rem; border-radius: 9px; font-weight: 700; line-height: 1.5;
+}
+.option-feedback.correct-fb  { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+.option-feedback.incorrect-fb { display: block; color: var(--red);  background: rgba(232,112,112,0.08); border-left: 3px solid var(--red); }
+
+.quiz-submit-wrap { margin-top: 1.4rem; display: flex; justify-content: center; }
+.quiz-submit-btn {
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: #fff; border: none; padding: 0.9rem 2.8rem; border-radius: 12px;
+  font-weight: 900; font-size: 1rem; cursor: pointer;
+  font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em;
+}
+.quiz-submit-btn:hover    { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(122,143,200,0.32); }
+.quiz-submit-btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.score-board {
+  display: none; background: rgba(122,143,200,0.07);
+  border: 1px solid rgba(122,143,200,0.26); border-radius: 18px;
+  padding: 2.2rem; text-align: center; margin-top: 1.8rem;
+}
+.score-board.show { display: block; animation: fadeIn 0.35s ease both; }
+.big-score { font-family: 'Fredoka One', cursive; font-size: 3.8rem; color: var(--accent2); margin-bottom: 0.4rem; }
+.score-board p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.3rem; }
+.reset-btn {
+  background: rgba(122,143,200,0.14); color: var(--accent2);
+  border: 1.5px solid rgba(122,143,200,0.45); padding: 0.75rem 2.2rem;
+  border-radius: 10px; font-weight: 800; font-size: 0.93rem; cursor: pointer;
+  font-family: 'Nunito', sans-serif; transition: all 0.22s; letter-spacing: 0.03em;
+}
+.reset-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 18px rgba(122,143,200,0.22); }
+
+.score-submitted {
+  display: block; font-size: 0.76rem; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--green);
+  background: rgba(46,204,113,0.09); border: 1px solid rgba(46,204,113,0.28);
+  padding: 0.38rem 1rem; border-radius: 99px; margin-bottom: 1.3rem;
+}
+.score-practice-note {
+  display: block; font-size: 0.76rem; font-weight: 800; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-muted);
+  background: rgba(122,143,166,0.08); border: 1px solid rgba(122,143,166,0.22);
+  padding: 0.38rem 1rem; border-radius: 99px; margin-bottom: 1.3rem;
+}
+.score-error {
+  display: block; font-size: 0.76rem; font-weight: 800; color: var(--red);
+  background: rgba(232,112,112,0.09); border: 1px solid rgba(232,112,112,0.28);
+  padding: 0.38rem 1rem; border-radius: 99px; margin-bottom: 1.3rem;
+}
+
+@media (max-width: 600px) {
+  .info-fields  { grid-template-columns: 1fr; }
+  .quiz-options { padding-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- Starfield canvas -->
+<canvas id="stars"></canvas>
+
+<!-- ── NAV ─────────────────────────────────────────────── -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="#mission">Mission</a></li>
+    <li><a href="#lab">Lab</a></li>
+    <li><a href="#challenges">Challenges</a></li>
+    <li><a href="#discovery">Discovery</a></li>
+    <li><a href="#quiz">Check In</a></li>
+  </ul>
+  <a href="lesson_eclipses.html" class="nav-back">&#8592; Eclipses</a>
+</nav>
+
+<!-- ── BADGE BARS ────────────────────────────────────────── -->
+<div class="badge-bar stem-bar">
+  <span class="badge green">MS-ESS1-1<span class="badge-tip">ESS1.B: Earth and the Solar System — scale, properties, and motions of objects in the solar system. Eclipses arise from the geometric relationship among the Sun, Earth, and Moon.</span></span>
+  <span class="badge green">SP2: Modelling<span class="badge-tip">Science Practice 2: Developing and using models — students manipulate a physical model of the Sun-Earth-Moon system to test conditions for solar and lunar eclipses.</span></span>
+  <span class="badge green">SP4: Analyzing Data<span class="badge-tip">Science Practice 4: Analyzing and interpreting data — students observe outcomes across multiple conditions and identify the pattern that produces an eclipse.</span></span>
+</div>
+<div class="badge-bar ls-bar">
+  <span class="badge teal">Spatial Reasoning<span class="badge-tip">Spatial manipulation of a 3D orbital geometry builds mental models that text alone cannot — direct manipulation of the SVG model activates visuospatial processing. (Hegarty &amp; Waller, 2005)</span></span>
+  <span class="badge teal">Productive Struggle<span class="badge-tip">Students who discover the eclipse condition through trial and error show deeper conceptual retention than those who are told the answer. (Kapur, 2016 — Productive Failure)</span></span>
+  <span class="badge teal">Guided Inquiry<span class="badge-tip">Structured challenges with feedback scaffold inquiry while keeping cognitive load manageable — key for middle school learners. (Kirschner et al., 2006)</span></span>
+</div>
+
+<!-- ── HERO ──────────────────────────────────────────────── -->
+<div class="hero" id="mission">
+  <div class="hero-corona"></div>
+  <span class="hero-float">&#127761;</span>
+  <span class="hero-float">&#9728;&#65039;</span>
+  <span class="hero-float">&#127765;</span>
+  <span class="hero-float">&#128301;</span>
+  <div class="hero-shell">
+    <div class="hero-badge">Simulation</div>
+    <h1>Eclipse Alignment</h1>
+    <p class="hero-subtitle">Can you create an eclipse by lining up the Sun, Earth, and Moon?</p>
+    <div class="driving-question">
+      <span class="dq-icon">&#128269;</span>
+      <div>
+        <div class="dq-label">Driving Question</div>
+        <div class="dq-text">Why does the Moon reach new moon and full moon every month, but eclipses only happen sometimes?</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MISSION BRIEFING ──────────────────────────────────── -->
+<section>
+  <div class="sim-section">
+    <span class="section-label">Mission Briefing</span>
+    <h2 class="section-title">What You Need to Know First</h2>
+    <p class="section-desc">Before you touch the controls, read these three facts. They are the rules of the simulation.</p>
+
+    <div class="callout-grid">
+      <div class="callout-card solar">
+        <span class="callout-card-label">Solar Eclipse</span>
+        <div class="callout-card-title">New Moon + Node</div>
+        <div class="callout-card-body">
+          The Moon must be <strong>between the Sun and Earth</strong> — that is a new moon. It also must be <strong>near a node</strong>, the point where its tilted orbit crosses Earth's orbital plane. Both must be true at the same time.
+        </div>
+      </div>
+      <div class="callout-card lunar">
+        <span class="callout-card-label">Lunar Eclipse</span>
+        <div class="callout-card-title">Full Moon + Node</div>
+        <div class="callout-card-body">
+          Earth must be <strong>between the Sun and Moon</strong> — that is a full moon. The Moon must also be <strong>near a node</strong> so Earth's shadow actually reaches it. Phase alone is not enough.
+        </div>
+      </div>
+      <div class="callout-card no-eclipse">
+        <span class="callout-card-label">Most Months</span>
+        <div class="callout-card-title">Shadow Misses</div>
+        <div class="callout-card-body">
+          The Moon's orbit is tilted about <strong>5 degrees</strong> relative to Earth's orbital plane. Most new and full moons, the Moon is slightly above or below the plane — and the shadow passes without hitting.
+        </div>
+      </div>
+    </div>
+
+    <div class="bridge-callout">
+      <strong>The core idea:</strong> <em>A new moon or full moon is not enough. The Moon also has to be near a node.</em>
+    </div>
+  </div>
+</section>
+
+<!-- ── MAIN LAB ──────────────────────────────────────────── -->
+<section id="lab" style="background: var(--bg-secondary);">
+  <div class="sim-section">
+    <span class="section-label">Lab</span>
+    <h2 class="section-title">Eclipse Alignment</h2>
+    <p class="section-desc">Use the controls below to set up the Sun-Earth-Moon system. Adjust all three dials and watch the result change in real time.</p>
+
+    <!-- Controls + Diagram -->
+    <div class="lab-panel">
+
+      <!-- Control row -->
+      <div class="control-row">
+
+        <div class="control-group">
+          <div class="control-group-label">Eclipse Type</div>
+          <div class="ctrl-btn-row">
+            <button class="ctrl-btn" id="type-solar" onclick="setEclipseType('solar')">Solar Eclipse</button>
+            <button class="ctrl-btn" id="type-lunar" onclick="setEclipseType('lunar')">Lunar Eclipse</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-group-label">Moon Phase</div>
+          <div class="ctrl-btn-row">
+            <button class="ctrl-btn" id="phase-new"     onclick="setPhase('new')">New Moon</button>
+            <button class="ctrl-btn" id="phase-quarter" onclick="setPhase('quarter')">Quarter Moon</button>
+            <button class="ctrl-btn" id="phase-full"    onclick="setPhase('full')">Full Moon</button>
+          </div>
+        </div>
+
+        <div class="control-group" id="height-control-group">
+          <div class="control-group-label">Moon Height</div>
+          <div class="ctrl-btn-row">
+            <button class="ctrl-btn" id="height-above"  onclick="setHeight('above')">Above Plane</button>
+            <button class="ctrl-btn" id="height-node"   onclick="setHeight('node')">Near Node</button>
+            <button class="ctrl-btn" id="height-below"  onclick="setHeight('below')">Below Plane</button>
+          </div>
+          <div class="height-disabled-note" id="height-disabled-note" aria-live="polite"></div>
+        </div>
+
+      </div><!-- /control-row -->
+
+      <!-- SVG diagram placeholder — replaced in Micropass 3 -->
+      <div class="sim-stage-wrap">
+      <div class="sim-stage" id="sim-stage">
+        <!-- Idle placeholder SVG — full diagram built in Micropass 3 -->
+        <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:640px; opacity:0.35;">
+          <defs>
+            <radialGradient id="idS" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#fff7c0"/>
+              <stop offset="100%" stop-color="#c07820" stop-opacity=".85"/>
+            </radialGradient>
+            <radialGradient id="idE" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#3a80c0"/>
+              <stop offset="100%" stop-color="#102040"/>
+            </radialGradient>
+          </defs>
+          <line x1="0" y1="110" x2="640" y2="110" stroke="rgba(122,143,200,.15)" stroke-width="1" stroke-dasharray="6,5"/>
+          <circle cx="60"  cy="110" r="44" fill="url(#idS)"/>
+          <circle cx="520" cy="110" r="36" fill="url(#idE)"/>
+          <text x="320" y="117" text-anchor="middle" font-size="13" fill="rgba(122,143,200,.30)" font-family="Nunito,sans-serif">Select all three controls above to begin</text>
+        </svg>
+      </div><!-- /sim-stage -->
+      <!-- Eclipse payoff overlay — sibling of sim-stage so innerHTML wipes don't touch it -->
+      <div id="eclipse-payoff" class="eclipse-payoff" aria-hidden="true">
+        <div class="eclipse-payoff-badge" id="eclipse-payoff-text"></div>
+      </div>
+      </div><!-- /sim-stage-wrap -->
+
+      <!-- Feedback strip -->
+      <div class="sim-result idle" id="sim-result">
+        <span class="sim-result-icon">&#128070;</span>
+        <span>Select an eclipse type, moon phase, and moon height to begin.</span>
+      </div>
+
+    </div><!-- /lab-panel -->
+  </div>
+</section>
+
+<!-- ── GUIDED CHALLENGES ─────────────────────────────────── -->
+<section id="challenges">
+  <div class="sim-section">
+    <span class="section-label">Guided Challenges</span>
+    <h2 class="section-title">Three Challenges</h2>
+    <p class="section-desc">Use the lab controls above to solve each challenge. Read the goal, set the controls, and watch the result. You can revise as many times as you like.</p>
+
+    <div class="challenge-counter-wrap">
+      <span class="challenge-counter" id="challenge-counter">
+        <span class="counter-dot"></span>
+        <span id="counter-text">0 / 3 completed</span>
+      </span>
+    </div>
+
+    <div class="challenge-grid">
+
+      <!-- Challenge 1 — Solar Eclipse -->
+      <div class="challenge-card solar-card" id="ch1">
+        <span class="challenge-num">Challenge 1</span>
+        <div class="challenge-q">Create a total solar eclipse.</div>
+        <div class="challenge-hint">
+          Think carefully: which phase puts the Moon between the Sun and Earth? And where does the Moon need to be in its orbit for the shadow to actually connect?
+        </div>
+        <div class="challenge-success" id="ch1-success">
+          <div class="success-head">Solar eclipse achieved.</div>
+          <div class="success-why">New moon + near a node = the Moon's shadow reaches Earth. Both conditions had to be true at the same time.</div>
+        </div>
+      </div>
+
+      <!-- Challenge 2 — Lunar Eclipse -->
+      <div class="challenge-card lunar-card" id="ch2">
+        <span class="challenge-num">Challenge 2</span>
+        <div class="challenge-q">Create a lunar eclipse.</div>
+        <div class="challenge-hint">
+          This time Earth casts the shadow. Which phase puts the Moon on the far side of Earth from the Sun? What else has to be true?
+        </div>
+        <div class="challenge-success" id="ch2-success">
+          <div class="success-head">Lunar eclipse achieved.</div>
+          <div class="success-why">Full moon + near a node = Earth's shadow falls on the Moon. The Moon had to be on the right side of Earth and close to the orbital plane.</div>
+        </div>
+      </div>
+
+      <!-- Challenge 3 — No Eclipse -->
+      <div class="challenge-card neutral-card" id="ch3">
+        <span class="challenge-num">Challenge 3</span>
+        <div class="challenge-q">Create a month with no eclipse.</div>
+        <div class="challenge-hint">
+          The right phase is there — but the shadow still misses. Show what happens most months when the Moon is above or below the orbital plane.
+        </div>
+        <div class="challenge-success" id="ch3-success">
+          <div class="success-head">Shadow misses. No eclipse this month.</div>
+          <div class="success-why">This is what happens most of the time. Even with the right phase, the Moon's tilt keeps the shadow from connecting. A node alignment is what makes eclipses rare.</div>
+        </div>
+      </div>
+
+    </div><!-- /challenge-grid -->
+  </div>
+</section>
+
+<!-- ── DISCOVERY SUMMARY ──────────────────────────────────── -->
+<section id="discovery" style="background: var(--bg-secondary);">
+  <div class="sim-section">
+    <span class="section-label">Discovery Summary</span>
+    <h2 class="section-title">What You Found Out</h2>
+    <p class="section-desc">Three things the lab just showed you. Each one connects to a challenge you solved.</p>
+
+    <div class="discovery-grid">
+
+      <div class="discovery-card phase-card">
+        <div class="discovery-card-title">Phase Matters</div>
+        <div class="discovery-card-body">
+          In Challenge 1 you needed a <strong>new moon</strong> — the only phase that puts the Moon between the Sun and Earth.<br>
+          In Challenge 2 you needed a <strong>full moon</strong> — the only phase that puts Earth between the Sun and Moon.<br>
+          Quarter moon failed both. The geometry has to be right from the start.
+        </div>
+      </div>
+
+      <div class="discovery-card node-card">
+        <div class="discovery-card-title">Nodes Matter</div>
+        <div class="discovery-card-body">
+          In Challenge 3 the phase was correct — but the shadow still missed.<br>
+          The Moon's orbit is tilted about <strong>5 degrees</strong>, so it usually passes above or below the orbital plane. The shadow misses Earth or the Moon entirely.<br>
+          Eclipses only happen when the Moon is near a <strong>node</strong> — one of two places where its orbit crosses the plane.
+        </div>
+      </div>
+
+      <div class="discovery-card shadow-card">
+        <div class="discovery-card-title">Shadow Zone Matters</div>
+        <div class="discovery-card-body">
+          Even when an eclipse happens, not everyone sees the same thing.<br>
+          The <strong>umbra</strong> is the darkest part of the shadow — observers inside it see a total eclipse.<br>
+          The <strong>penumbra</strong> is the outer shadow — observers there see only a partial eclipse.<br>
+          Your location relative to the shadow determines what you experience.
+        </div>
+      </div>
+
+    </div><!-- /discovery-grid -->
+
+    <div class="bridge-callout">
+      <strong>The big takeaway:</strong> <em>Moon phase creates the possibility. Node alignment makes the eclipse happen.</em>
+    </div>
+  </div>
+</section>
+
+<!-- ── CHECK YOUR UNDERSTANDING ───────────────────────────── -->
+<section id="quiz" class="quiz-section" style="padding-top: 2.5rem;">
+  <div class="sim-section">
+    <span class="section-label">Check Your Understanding</span>
+    <h2 class="section-title">Checkpoint</h2>
+    <p class="section-desc">5 questions about eclipse alignment, moon phase, orbital tilt, nodes, and shadows.</p>
+
+    <!-- Practice / Classroom toggle -->
+    <div class="mode-toggle-bar" style="margin-bottom: 6px;">
+      <button class="mode-btn active" id="btn-practice"  onclick="setQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="setQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint" style="margin-bottom: 1.8rem;">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+
+    <!-- Student info box (Classroom mode only) -->
+    <div class="quiz-info-box" id="quiz-info-box" style="display:none;">
+      <div class="quiz-info-title">Before You Submit</div>
+      <div class="quiz-info-sub">Your name, teacher, and block are required to send your results.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="quiz-student-name">Your Name</label>
+          <input type="text" id="quiz-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="quiz-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="quiz-teacher-select">Teacher</label>
+          <select id="quiz-teacher-select">
+            <option value="">&#8212; Select &#8212;</option>
+            <option value="MrBrown">Mr. Brown</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="quiz-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="quiz-block-select">Block</label>
+          <select id="quiz-block-select">
+            <option value="">&#8212; Select &#8212;</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="quiz-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky progress bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar">
+          <div class="progress-fill" id="chk-progress-fill"></div>
+        </div>
+        <div class="progress-text" id="chk-progress-text">0 / 5 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="chk-questions"></div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="chk-submit-btn" onclick="submitCheckpoint()" disabled>Submit Checkpoint</button>
+    </div>
+
+    <!-- Score board -->
+    <div class="score-board" id="chk-score-board">
+      <div class="big-score" id="chk-score-num"></div>
+      <p id="chk-score-msg"></p>
+      <div id="chk-submit-status"></div>
+      <button class="reset-btn" onclick="resetCheckpoint()">Try Again</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-logo">LYFELABZ</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<div id="toastContainer"></div>
+
+<!-- ── SCRIPTS ────────────────────────────────────────────── -->
+
+<!-- sessionStorage → body classes -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
+</script>
+
+<!-- Mode toggle logic (Practice / Classroom) -->
+<script>
+var simMode = 'practice';
+
+function setMode(mode) {
+  simMode = mode;
+  var panel  = document.getElementById('classroom-panel');
+  var btnP   = document.getElementById('btn-practice');
+  var btnC   = document.getElementById('btn-classroom');
+  var hintP  = document.getElementById('hint-practice');
+  var hintC  = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    if (panel)  panel.classList.add('hidden');
+    if (btnP)   btnP.classList.add('active');
+    if (btnC)   btnC.classList.remove('active');
+    if (hintP)  hintP.classList.add('visible');
+    if (hintC)  hintC.classList.remove('visible');
+  } else {
+    if (panel)  panel.classList.remove('hidden');
+    if (btnC)   btnC.classList.add('active');
+    if (btnP)   btnP.classList.remove('active');
+    if (hintC)  hintC.classList.add('visible');
+    if (hintP)  hintP.classList.remove('visible');
+  }
+  if (typeof saveState === 'function') saveState();
+}
+
+// URL param support
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') setMode('classroom');
+})();
+</script>
+
+<!-- Simulation engine — Micropass 3 -->
+<script>
+/* ── STATE ─────────────────────────────────────────────── */
+var simState = { eclipseType:null, phase:null, height:null, ch1Solved:false, ch2Solved:false, ch3Solved:false };
+var STORAGE_KEY = 'lyfelabz-eclipse-alignment-lab';
+
+/* ── HEIGHT CONTROL STATE ───────────────────────────────── */
+function updateHeightControls() {
+  var t = simState.eclipseType, p = simState.phase;
+  var hGroup = document.getElementById('height-control-group');
+  var hNote  = document.getElementById('height-disabled-note');
+  if (!hGroup || !hNote) return;
+
+  // Height is relevant only for: solar+new, lunar+full
+  var relevant = (t === 'solar' && p === 'new') || (t === 'lunar' && p === 'full');
+
+  if (relevant || (!t || !p)) {
+    hGroup.classList.remove('height-muted');
+    hNote.classList.remove('show');
+    hNote.textContent = '';
+    return;
+  }
+
+  // Height irrelevant — mute and explain why
+  hGroup.classList.add('height-muted');
+  hNote.classList.add('show');
+
+  if (p === 'quarter') {
+    hNote.textContent = 'Quarter moon geometry places the Moon off to the side, so no eclipse can happen.';
+  } else if (t === 'solar' && p === 'full') {
+    hNote.textContent = 'A solar eclipse requires a new moon. During a full moon, the Moon is on the opposite side of Earth.';
+  } else if (t === 'lunar' && p === 'new') {
+    hNote.textContent = 'A lunar eclipse requires a full moon. During a new moon, the Moon is between the Sun and Earth.';
+  }
+}
+
+/* ── CONTROL SETTERS ───────────────────────────────────── */
+function setEclipseType(t) {
+  simState.eclipseType = t;
+  ['solar','lunar'].forEach(function(id){ document.getElementById('type-'+id).classList.remove('active','solar-active','lunar-active'); });
+  document.getElementById('type-'+t).classList.add(t+'-active');
+  updateHeightControls();
+  renderSim();
+}
+function setPhase(p) {
+  simState.phase = p;
+  ['new','quarter','full'].forEach(function(id){ document.getElementById('phase-'+id).classList.remove('active'); });
+  document.getElementById('phase-'+p).classList.add('active');
+  updateHeightControls();
+  renderSim();
+}
+function setHeight(h) {
+  simState.height = h;
+  ['above','node','below'].forEach(function(id){ document.getElementById('height-'+id).classList.remove('active'); });
+  document.getElementById('height-'+h).classList.add('active');
+  renderSim();
+}
+
+/* ── FEEDBACK MESSAGES ─────────────────────────────────── */
+var MSG = {
+  'solar|new|node':      {c:'solar', i:'&#127761;', t:'<strong>Solar eclipse!</strong> New moon + near a node &mdash; the Moon\'s shadow reaches Earth.'},
+  'solar|new|above':     {c:'miss',  i:'&uarr;',    t:'Right phase, wrong height. New moon &mdash; but the Moon is <strong>above the orbital plane</strong>. Shadow misses Earth.'},
+  'solar|new|below':     {c:'miss',  i:'&darr;',    t:'Right phase, wrong height. New moon &mdash; but the Moon is <strong>below the orbital plane</strong>. Shadow misses Earth.'},
+  'solar|quarter|above': {c:'miss',  i:'&#9676;',   t:'Quarter moon sits <strong>90&deg; to the side</strong> of Earth. It is not between the Sun and Earth.'},
+  'solar|quarter|node':  {c:'miss',  i:'&#9676;',   t:'Quarter moon sits <strong>90&deg; to the side</strong> of Earth. It is not between the Sun and Earth.'},
+  'solar|quarter|below': {c:'miss',  i:'&#9676;',   t:'Quarter moon sits <strong>90&deg; to the side</strong> of Earth. It is not between the Sun and Earth.'},
+  'solar|full|above':    {c:'miss',  i:'&#9676;',   t:'Full moon is on the <strong>far side of Earth</strong> from the Sun. It cannot cause a solar eclipse.'},
+  'solar|full|node':     {c:'miss',  i:'&#9676;',   t:'Full moon is on the <strong>far side of Earth</strong> from the Sun. It cannot cause a solar eclipse.'},
+  'solar|full|below':    {c:'miss',  i:'&#9676;',   t:'Full moon is on the <strong>far side of Earth</strong> from the Sun. It cannot cause a solar eclipse.'},
+  'lunar|full|node':     {c:'lunar', i:'&#127765;', t:'<strong>Lunar eclipse!</strong> Full moon + near a node &mdash; Earth\'s shadow falls on the Moon.'},
+  'lunar|full|above':    {c:'miss',  i:'&uarr;',    t:'Right phase, wrong height. Full moon &mdash; but the Moon is <strong>above Earth\'s shadow</strong>. Shadow misses.'},
+  'lunar|full|below':    {c:'miss',  i:'&darr;',    t:'Right phase, wrong height. Full moon &mdash; but the Moon is <strong>below Earth\'s shadow</strong>. Shadow misses.'},
+  'lunar|new|above':     {c:'miss',  i:'&#9676;',   t:'New moon is between Earth and the Sun. Earth\'s shadow points the <strong>other direction</strong>.'},
+  'lunar|new|node':      {c:'miss',  i:'&#9676;',   t:'New moon is between Earth and the Sun. Earth\'s shadow points the <strong>other direction</strong>.'},
+  'lunar|new|below':     {c:'miss',  i:'&#9676;',   t:'New moon is between Earth and the Sun. Earth\'s shadow points the <strong>other direction</strong>.'},
+  'lunar|quarter|above': {c:'miss',  i:'&#9676;',   t:'Quarter moon is <strong>90&deg; to the side</strong> of Earth. Earth\'s shadow points the other direction.'},
+  'lunar|quarter|node':  {c:'miss',  i:'&#9676;',   t:'Quarter moon is <strong>90&deg; to the side</strong> of Earth. Earth\'s shadow points the other direction.'},
+  'lunar|quarter|below': {c:'miss',  i:'&#9676;',   t:'Quarter moon is <strong>90&deg; to the side</strong> of Earth. Earth\'s shadow points the other direction.'}
+};
+
+function setFeedback(t, p, h) {
+  var result = document.getElementById('sim-result');
+  if (!t || !p || !h) {
+    result.className = 'sim-result idle';
+    result.innerHTML = '<span class="sim-result-icon">&#128070;</span><span>Select all three controls to see the result.</span>';
+    return;
+  }
+  var m = MSG[t+'|'+p+'|'+h];
+  if (!m) return;
+  result.className = 'sim-result ' + m.c;
+  result.innerHTML = '<span class="sim-result-icon">' + m.i + '</span><span>' + m.t + '</span>';
+}
+
+/* ── SVG HELPERS ───────────────────────────────────────── */
+// Returns the Moon body SVG (circle + phase gradient + rim)
+function moonCircle(mx, my, phase) {
+  var MR = 16;
+  var gid = phase==='new' ? 'gMN' : phase==='full' ? 'gMF' : 'gMQ';
+  var s = '<circle cx="'+mx+'" cy="'+my+'" r="'+MR+'" fill="url(#'+gid+')"/>';
+  if (phase==='new') {
+    // Faint sunward rim glow for new moon
+    s += '<circle cx="'+mx+'" cy="'+my+'" r="'+MR+'" fill="none" stroke="rgba(210,175,80,0.18)" stroke-width="2.5"/>';
+  }
+  return s;
+}
+
+/* ── SVG BUILDER ───────────────────────────────────────── */
+function buildSVG(type, phase, height) {
+  var W=640, H=240, CY=120;
+  var SX=60, SY=CY, SR=44;
+  var EX=420, EY=CY, ER=32;
+  var MR=16;
+
+  // Height displacement from orbital plane
+  var hoff = height==='above' ? -48 : height==='below' ? 48 : 0;
+
+  // Moon position by type + phase
+  var mx, my;
+  if (type==='solar') {
+    if      (phase==='new')     { mx=210; my=CY+hoff; }
+    else if (phase==='quarter') { mx=340; my=CY-68; }   // upper-left of Earth, clearly off-axis
+    else                        { mx=568; my=CY; }       // full: beyond Earth
+  } else {                                               // lunar
+    if      (phase==='full')    { mx=568; my=CY+hoff; }
+    else if (phase==='quarter') { mx=340; my=CY-68; }
+    else                        { mx=210; my=CY; }       // new: wrong side
+  }
+
+  // Outcome key
+  var out;
+  if      (type==='solar' && phase==='new'  && height==='node')  out='solar-eclipse';
+  else if (type==='solar' && phase==='new')                       out='solar-miss';
+  else if (type==='solar' && phase==='full')                      out='solar-wrong-full';
+  else if (type==='lunar' && phase==='full' && height==='node')   out='lunar-eclipse';
+  else if (type==='lunar' && phase==='full')                      out='lunar-miss';
+  else if (type==='lunar' && phase==='new')                       out='lunar-wrong-new';
+  else                                                             out='quarter';
+
+  var svg = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">';
+
+  /* ── DEFS ── */
+  svg += '<defs>';
+  // Sun
+  svg += '<radialGradient id="gSun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fffde8"/><stop offset="52%" stop-color="#f5c842"/><stop offset="100%" stop-color="#cc6e10" stop-opacity=".92"/></radialGradient>';
+  svg += '<radialGradient id="gSunHalo" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(245,200,66,.22)"/><stop offset="100%" stop-color="rgba(245,200,66,0)"/></radialGradient>';
+  // Earth
+  svg += '<radialGradient id="gEarth" cx="34%" cy="30%" r="70%"><stop offset="0%" stop-color="#72c4f4"/><stop offset="48%" stop-color="#2870c0"/><stop offset="100%" stop-color="#09182e"/></radialGradient>';
+  // Moon phases
+  svg += '<radialGradient id="gMN" cx="28%" cy="36%" r="75%"><stop offset="0%" stop-color="#3c3c50"/><stop offset="100%" stop-color="#18181e"/></radialGradient>';
+  svg += '<radialGradient id="gMF" cx="42%" cy="35%" r="65%"><stop offset="0%" stop-color="#dee4f0"/><stop offset="62%" stop-color="#b2baca"/><stop offset="100%" stop-color="#8890a0"/></radialGradient>';
+  // Quarter moon: left side lit (Sun is to the left), right side dark
+  svg += '<linearGradient id="gMQ" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#cdd5e5"/><stop offset="46%" stop-color="#909ab0"/><stop offset="54%" stop-color="#2a2c3a"/><stop offset="100%" stop-color="#181820"/></linearGradient>';
+  // Clip group to viewbox
+  svg += '<clipPath id="clip"><rect x="0" y="-20" width="'+W+'" height="'+(H+40)+'"/></clipPath>';
+  svg += '</defs>';
+
+  svg += '<g clip-path="url(#clip)">';
+
+  /* ── ORBITAL PLANE ── */
+  svg += '<line x1="0" y1="'+CY+'" x2="'+W+'" y2="'+CY+'" stroke="rgba(122,143,200,.18)" stroke-width="1" stroke-dasharray="8,6"/>';
+
+  /* ── SUNLIGHT WEDGE (background, very subtle) ── */
+  svg += '<polygon points="'+(SX+SR)+','+(SY-40)+' '+W+','+(CY-58)+' '+W+','+(CY+58)+' '+(SX+SR)+','+(SY+40)+'" fill="rgba(245,200,66,0.038)"/>';
+
+  /* ── SHADOWS ── */
+
+  if (out === 'solar-eclipse') {
+    // Eclipse: Moon shadow hits Earth
+    // Penumbra (wide, very soft)
+    svg += '<polygon points="'+(mx+MR)+','+(my-22)+' '+(EX-ER)+','+(EY-19)+' '+(EX-ER)+','+(EY+19)+' '+(mx+MR)+','+(my+22)+'" fill="rgba(80,80,140,0.13)"/>';
+    // Umbra (narrow, dark, tapering toward Earth)
+    svg += '<polygon points="'+(mx+MR)+','+(my-10)+' '+(EX-ER)+','+(EY-7)+' '+(EX-ER)+','+(EY+7)+' '+(mx+MR)+','+(my+10)+'" fill="rgba(8,8,28,0.68)"/>';
+
+  } else if (out === 'solar-miss') {
+    // Right phase, wrong height: shadow angles above/below Earth
+    // Compute shadow direction (Sun → Moon, extended)
+    var sdx=mx-SX, sdy=my-SY, slen=Math.sqrt(sdx*sdx+sdy*sdy);
+    var udx=sdx/slen, udy=sdy/slen;
+    var px=-udy, py=udx; // perpendicular vector
+    var L=260;
+    var tx=mx+udx*L, ty=my+udy*L;
+    // Penumbra
+    svg += '<polygon points="'+(mx+px*22)+','+(my+py*22)+' '+(tx+px*14)+','+(ty+py*14)+' '+(tx-px*14)+','+(ty-py*14)+' '+(mx-px*22)+','+(my-py*22)+'" fill="rgba(70,70,120,0.11)"/>';
+    // Umbra
+    svg += '<polygon points="'+(mx+px*10)+','+(my+py*10)+' '+(tx+px*6)+','+(ty+py*6)+' '+(tx-px*6)+','+(ty-py*6)+' '+(mx-px*10)+','+(my-py*10)+'" fill="rgba(8,8,28,0.58)"/>';
+    // Dashed guide: Moon → orbital plane (shows tilt displacement)
+    svg += '<line x1="'+mx+'" y1="'+my+'" x2="'+mx+'" y2="'+CY+'" stroke="rgba(255,195,70,0.40)" stroke-width="1.2" stroke-dasharray="4,3"/>';
+
+  } else if (out === 'solar-wrong-full') {
+    // Full moon: its shadow goes to the RIGHT (away from Earth). Show it clearly.
+    svg += '<polygon points="'+(mx+MR)+','+(my-9)+' '+(mx+MR+110)+','+(my-5)+' '+(mx+MR+110)+','+(my+5)+' '+(mx+MR)+','+(my+9)+'" fill="rgba(8,8,28,0.42)"/>';
+
+  } else if (out === 'lunar-eclipse') {
+    // Earth's shadow goes right, Moon is inside it
+    // Penumbra (wide, soft)
+    svg += '<polygon points="'+(EX+ER)+','+(EY-38)+' '+W+','+(EY-24)+' '+W+','+(EY+24)+' '+(EX+ER)+','+(EY+38)+'" fill="rgba(55,55,100,0.10)"/>';
+    // Umbra (narrower, darker — Moon fits inside it)
+    svg += '<polygon points="'+(EX+ER)+','+(EY-22)+' '+(mx+MR+8)+','+(EY-9)+' '+(mx+MR+8)+','+(EY+9)+' '+(EX+ER)+','+(EY+22)+'" fill="rgba(8,8,35,0.62)"/>';
+
+  } else if (out === 'lunar-miss') {
+    // Earth's shadow goes horizontally right — Moon above/below
+    // Penumbra
+    svg += '<polygon points="'+(EX+ER)+','+(EY-38)+' '+W+','+(EY-24)+' '+W+','+(EY+24)+' '+(EX+ER)+','+(EY+38)+'" fill="rgba(55,55,100,0.10)"/>';
+    // Umbra (horizontal — does NOT reach Moon)
+    svg += '<polygon points="'+(EX+ER)+','+(EY-22)+' '+(W-20)+','+(EY-9)+' '+(W-20)+','+(EY+9)+' '+(EX+ER)+','+(EY+22)+'" fill="rgba(8,8,35,0.55)"/>';
+    // Dashed guide: Moon → orbital plane
+    svg += '<line x1="'+mx+'" y1="'+my+'" x2="'+mx+'" y2="'+CY+'" stroke="rgba(255,195,70,0.40)" stroke-width="1.2" stroke-dasharray="4,3"/>';
+
+  } else if (out === 'lunar-wrong-new') {
+    // Earth's shadow goes right — Moon is to the LEFT of Earth, not in shadow
+    svg += '<polygon points="'+(EX+ER)+','+(EY-22)+' '+(W-20)+','+(EY-9)+' '+(W-20)+','+(EY+9)+' '+(EX+ER)+','+(EY+22)+'" fill="rgba(8,8,35,0.45)"/>';
+  }
+
+  /* ── BODIES (z-order: Moon-left → Earth → Moon-right/side → Sun → eclipse FX) ── */
+
+  // Moon if LEFT of Earth (solar-new, lunar-new)
+  if (mx < EX - ER) svg += moonCircle(mx, my, phase);
+
+  // Earth
+  svg += '<circle cx="'+EX+'" cy="'+EY+'" r="'+(ER+5)+'" fill="rgba(50,130,210,0.07)"/>'; // atmosphere halo
+  svg += '<circle cx="'+EX+'" cy="'+EY+'" r="'+ER+'" fill="url(#gEarth)"/>';
+  svg += '<circle cx="'+EX+'" cy="'+EY+'" r="'+(ER+1)+'" fill="none" stroke="rgba(80,160,240,0.20)" stroke-width="2.5"/>';
+
+  // Moon if RIGHT of Earth or side (solar-full, lunar-full, quarter)
+  if (mx >= EX - ER) svg += moonCircle(mx, my, phase);
+
+  // Sun (always drawn last among bodies — appears on top)
+  svg += '<circle cx="'+SX+'" cy="'+SY+'" r="'+(SR+16)+'" fill="url(#gSunHalo)"/>';
+  svg += '<circle cx="'+SX+'" cy="'+SY+'" r="'+SR+'" fill="url(#gSun)"/>';
+
+  /* ── ECLIPSE EFFECTS ── */
+  if (out === 'solar-eclipse') {
+    // Dark eclipse spot on Earth's sun-facing side
+    svg += '<circle cx="'+(EX-9)+'" cy="'+EY+'" r="'+(ER*0.56)+'" fill="rgba(4,4,16,0.82)"/>';
+    // Soft corona ring around Moon
+    svg += '<circle cx="'+mx+'" cy="'+my+'" r="'+(MR+5)+'" fill="none" stroke="rgba(255,200,80,0.22)" stroke-width="3.5"/>';
+  }
+  if (out === 'lunar-eclipse') {
+    // Blood moon: deep red tint over Moon
+    svg += '<circle cx="'+mx+'" cy="'+my+'" r="'+MR+'" fill="rgba(125,30,8,0.70)"/>';
+    svg += '<circle cx="'+mx+'" cy="'+my+'" r="'+MR+'" fill="none" stroke="rgba(90,20,5,0.35)" stroke-width="1.5"/>';
+  }
+
+  /* ── NODE MARKER ── */
+  // Small filled dot on the orbital plane at Moon's x when near node
+  if (height==='node' && (phase==='new'||phase==='full')) {
+    svg += '<circle cx="'+mx+'" cy="'+CY+'" r="4" fill="rgba(160,180,228,0.55)"/>';
+    svg += '<circle cx="'+mx+'" cy="'+CY+'" r="4" fill="none" stroke="rgba(160,180,228,0.75)" stroke-width="1.2"/>';
+  }
+
+  /* ── LABELS ── */
+  var labelFont = 'font-size="9.5" font-family="Nunito,sans-serif" font-weight="800"';
+  svg += '<text x="'+SX+'" y="'+(SY+SR+14)+'" text-anchor="middle" '+labelFont+' fill="rgba(245,200,66,.68)">SUN</text>';
+  svg += '<text x="'+EX+'" y="'+(EY+ER+14)+'" text-anchor="middle" '+labelFont+' fill="rgba(155,188,240,.68)">EARTH</text>';
+  // Moon label: place below Moon, but flip above if it would overlap Earth label
+  var mlY = my+MR+14;
+  if (Math.abs(mx-EX)<50 && my>EY) mlY = my-MR-5;
+  svg += '<text x="'+mx+'" y="'+mlY+'" text-anchor="middle" '+labelFont+' fill="rgba(178,184,200,.62)">MOON</text>';
+  // Umbra label for eclipse states
+  if (out==='solar-eclipse') {
+    svg += '<text x="'+(EX-10)+'" y="'+(EY+3.5)+'" text-anchor="middle" font-size="7" font-family="Nunito,sans-serif" font-weight="700" fill="rgba(200,210,240,.50)">UMBRA</text>';
+  }
+  if (out==='lunar-eclipse') {
+    var umx = Math.round((EX+ER+mx)/2);
+    svg += '<text x="'+umx+'" y="'+(EY+3.5)+'" text-anchor="middle" font-size="7" font-family="Nunito,sans-serif" font-weight="700" fill="rgba(200,210,240,.50)">UMBRA</text>';
+  }
+
+  svg += '</g></svg>';
+  return svg;
+}
+
+/* ── IDLE SVG ──────────────────────────────────────────── */
+function idleSVG() {
+  var W=640, H=240, CY=120, SX=60, SY=CY, SR=44, EX=420, EY=CY, ER=32;
+  return '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;opacity:.36;">' +
+    '<defs><radialGradient id="iS" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff7c0"/><stop offset="100%" stop-color="#c07820" stop-opacity=".85"/></radialGradient>' +
+    '<radialGradient id="iE" cx="34%" cy="30%" r="70%"><stop offset="0%" stop-color="#6abce8"/><stop offset="100%" stop-color="#0e1d38"/></radialGradient></defs>' +
+    '<line x1="0" y1="'+CY+'" x2="'+W+'" y2="'+CY+'" stroke="rgba(122,143,200,.16)" stroke-width="1" stroke-dasharray="8,6"/>' +
+    '<circle cx="'+SX+'" cy="'+SY+'" r="'+SR+'" fill="url(#iS)"/>' +
+    '<circle cx="'+EX+'" cy="'+EY+'" r="'+ER+'" fill="url(#iE)"/>' +
+    '<circle cx="'+EX+'" cy="'+EY+'" r="'+(ER+1)+'" fill="none" stroke="rgba(80,160,240,0.20)" stroke-width="2"/>' +
+    '<text x="320" y="'+(CY+6)+'" text-anchor="middle" font-size="12" fill="rgba(122,143,200,.28)" font-family="Nunito,sans-serif">Select all three controls to begin</text>' +
+    '</svg>';
+}
+
+/* ── ECLIPSE PAYOFF ─────────────────────────────────────── */
+var _lastPayoffState = null;
+
+function triggerPayoff(type) {
+  var el  = document.getElementById('eclipse-payoff');
+  var txt = document.getElementById('eclipse-payoff-text');
+  var res = document.getElementById('sim-result');
+  if (!el || !txt) return;
+  // Remove classes and force reflow so animation restarts cleanly
+  el.classList.remove('active', 'solar', 'lunar');
+  void el.offsetWidth;
+  txt.textContent = type === 'solar' ? 'Total Solar Eclipse' : 'Total Lunar Eclipse';
+  el.classList.add(type, 'active');
+  // Pulse the result strip
+  if (res) {
+    res.classList.remove('payoff-flash');
+    void res.offsetWidth;
+    res.classList.add('payoff-flash');
+    setTimeout(function(){ res.classList.remove('payoff-flash'); }, 700);
+  }
+  // Clean active flag after animation completes so it can retrigger
+  setTimeout(function(){ el.classList.remove('active'); }, 2000);
+}
+
+/* ── RENDER ────────────────────────────────────────────── */
+function renderSim() {
+  var stage  = document.getElementById('sim-stage');
+  var t = simState.eclipseType, p = simState.phase, h = simState.height;
+  if (!t || !p || !h) {
+    stage.innerHTML = idleSVG();
+    setFeedback(null, null, null);
+    _lastPayoffState = null;
+    return;
+  }
+  // Fade transition
+  stage.style.opacity = '0.2';
+  var svg = buildSVG(t, p, h);
+  setTimeout(function() {
+    stage.innerHTML = svg;
+    stage.style.opacity = '1';
+  }, 130);
+  setFeedback(t, p, h);
+
+  // Eclipse payoff — trigger only when transitioning INTO an eclipse state
+  var stateKey = t + '|' + p + '|' + h;
+  var isEclipse = (stateKey === 'solar|new|node' || stateKey === 'lunar|full|node');
+  if (isEclipse && stateKey !== _lastPayoffState) {
+    setTimeout(function(){ triggerPayoff(t); }, 170);
+  }
+  _lastPayoffState = stateKey;
+
+  checkChallenges();
+  saveState();
+}
+
+/* ── COUNTER ───────────────────────────────────────────── */
+function updateCounter() {
+  var n = (simState.ch1Solved ? 1 : 0) +
+          (simState.ch2Solved ? 1 : 0) +
+          (simState.ch3Solved ? 1 : 0);
+  var pill = document.getElementById('challenge-counter');
+  var text = document.getElementById('counter-text');
+  if (!pill || !text) return;
+  text.textContent = n + ' / 3 completed';
+  if (n >= 3) {
+    pill.classList.add('all-done');
+  } else {
+    pill.classList.remove('all-done');
+  }
+}
+
+/* ── CHALLENGE CHECKER ─────────────────────────────────── */
+function checkChallenges() {
+  var t=simState.eclipseType, p=simState.phase, h=simState.height;
+  // Ch 1 — Solar eclipse
+  if (!simState.ch1Solved && t==='solar' && p==='new' && h==='node') {
+    simState.ch1Solved = true;
+    document.getElementById('ch1-success').classList.add('show');
+    document.getElementById('ch1').classList.add('solved');
+    updateCounter();
+    setTimeout(function(){ toast('Challenge 1 complete \u2014 solar eclipse!', 'success'); }, 150);
+  }
+  // Ch 2 — Lunar eclipse
+  if (!simState.ch2Solved && t==='lunar' && p==='full' && h==='node') {
+    simState.ch2Solved = true;
+    document.getElementById('ch2-success').classList.add('show');
+    document.getElementById('ch2').classList.add('solved');
+    updateCounter();
+    setTimeout(function(){ toast('Challenge 2 complete \u2014 lunar eclipse!', 'success'); }, 150);
+  }
+  // Ch 3 — Correct phase + wrong height (shadow misses)
+  var solarMiss = (t==='solar' && p==='new' && (h==='above'||h==='below'));
+  var lunarMiss = (t==='lunar' && p==='full' && (h==='above'||h==='below'));
+  if (!simState.ch3Solved && (solarMiss||lunarMiss)) {
+    simState.ch3Solved = true;
+    document.getElementById('ch3-success').classList.add('show');
+    document.getElementById('ch3').classList.add('solved');
+    updateCounter();
+    setTimeout(function(){ toast('Challenge 3 complete \u2014 shadow misses!', 'success'); }, 150);
+  }
+}
+
+/* ── PERSISTENCE ───────────────────────────────────────── */
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      eclipseType: simState.eclipseType, phase: simState.phase, height: simState.height,
+      ch1Solved: simState.ch1Solved, ch2Solved: simState.ch2Solved, ch3Solved: simState.ch3Solved,
+      mode: simMode
+    }));
+  } catch(e) {}
+}
+
+function restoreState() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    var s = JSON.parse(raw);
+    // Restore solved states FIRST so checkChallenges won't re-fire toasts
+    if (s.ch1Solved) { simState.ch1Solved=true; document.getElementById('ch1-success').classList.add('show'); document.getElementById('ch1').classList.add('solved'); }
+    if (s.ch2Solved) { simState.ch2Solved=true; document.getElementById('ch2-success').classList.add('show'); document.getElementById('ch2').classList.add('solved'); }
+    if (s.ch3Solved) { simState.ch3Solved=true; document.getElementById('ch3-success').classList.add('show'); document.getElementById('ch3').classList.add('solved'); }
+    updateCounter();
+    if (s.mode==='classroom') setMode('classroom');
+    if (s.eclipseType) setEclipseType(s.eclipseType);
+    if (s.phase)       setPhase(s.phase);
+    if (s.height)      setHeight(s.height);
+    if (s.eclipseType || s.phase || s.height) {
+      setTimeout(function(){ toast('Your progress has been restored', 'info'); }, 200);
+    }
+  } catch(e) {}
+}
+
+restoreState();
+</script>
+
+<!-- Starfield -->
+<script>
+(function() {
+  var canvas = document.getElementById('stars');
+  var ctx    = canvas.getContext('2d');
+  var stars  = [];
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    stars = [];
+    var count = Math.floor((canvas.width * canvas.height) / 5500);
+    for (var i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.2 + 0.2,
+        a: Math.random() * 0.5 + 0.08,
+        speed: Math.random() * 0.25 + 0.04,
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+  function draw(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(function(s) {
+      var alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(190,210,240,' + alpha + ')';
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', function() {
+    clearTimeout(window._starResize);
+    window._starResize = setTimeout(resize, 200);
+  });
+  resize();
+  requestAnimationFrame(draw);
+})();
+</script>
+
+<!-- Toast utility -->
+<script>
+function toast(msg, type) {
+  type = type || 'info';
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(function() { el.remove(); }, 3000);
+}
+</script>
+
+<!-- Checkpoint quiz -->
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CHECKPOINT — Eclipse Alignment
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── SUBMISSION URLS ─────────────────────────────────────── */
+var CHECKPOINT_URLS = {
+  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+var CHECKPOINT_TAB = 'Eclipse Alignment';
+
+/* ── QUESTIONS ───────────────────────────────────────────── */
+var checkQuestions = [
+  {
+    // Q1 — Solar eclipse geometry — correct: B (index 1)
+    q: 'Which TWO conditions must both be true for a solar eclipse to occur?',
+    options: [
+      'Full moon AND the Moon is near a node',
+      'New moon AND the Moon is near a node',
+      'New moon AND the Moon is far from any node',
+      'Quarter moon AND the Moon is near a node'
+    ],
+    correct: 1,
+    explanation: 'A solar eclipse needs the Moon directly between the Sun and Earth — that is a new moon — AND the Moon must be near a node so its shadow lines up with Earth. Both must be true at the same time.'
+  },
+  {
+    // Q2 — Lunar eclipse geometry — correct: D (index 3)
+    q: 'What must be true for a lunar eclipse to occur?',
+    options: [
+      'The Moon must be between the Sun and Earth at new moon',
+      'The Moon must be above Earth\'s orbital plane at full moon',
+      'Earth must be far from the node so its shadow extends farther',
+      'The Moon must be full AND near a node so Earth\'s shadow falls on it'
+    ],
+    correct: 3,
+    explanation: 'A lunar eclipse requires the Moon on the far side of Earth from the Sun — a full moon — AND near a node so Earth\'s shadow actually reaches the Moon. Phase alone is not enough.'
+  },
+  {
+    // Q3 — Why not every month — correct: A (index 0)
+    q: 'The Moon reaches new moon and full moon every month. Why don\'t eclipses happen every month?',
+    options: [
+      'The Moon\'s orbit is tilted about 5 degrees, so its shadow usually passes above or below Earth',
+      'The Sun\'s gravity bends the Moon\'s shadow away from Earth most months',
+      'The Moon moves too quickly near the node for a shadow to form',
+      'Earth\'s atmosphere absorbs the Moon\'s shadow most months'
+    ],
+    correct: 0,
+    explanation: 'The Moon\'s orbit is tilted roughly 5 degrees relative to Earth\'s orbital plane. Most new and full moons the Moon sits above or below the plane, and the shadow misses entirely. A node alignment is what makes eclipses rare.'
+  },
+  {
+    // Q4 — Nodes — correct: C (index 2)
+    q: 'What is an orbital node?',
+    options: [
+      'The point in the Moon\'s orbit when it is closest to Earth',
+      'The center of Earth\'s shadow cone in space',
+      'One of two points where the Moon\'s orbit crosses Earth\'s orbital plane',
+      'The moment when the Moon is exactly halfway between new and full phase'
+    ],
+    correct: 2,
+    explanation: 'Nodes are the two crossing points where the Moon\'s tilted orbit intersects Earth\'s orbital plane. The Moon must be near a node for an eclipse to happen — otherwise the shadow passes above or below its target.'
+  },
+  {
+    // Q5 — Umbra vs Penumbra — correct: B (index 1)
+    q: 'An observer standing inside the umbra during a solar eclipse will see:',
+    options: [
+      'A partial eclipse, because the umbra is the outer edge of the shadow',
+      'A total eclipse, because the umbra is the darkest, innermost part of the shadow',
+      'No eclipse, because the umbra never reaches Earth\'s surface',
+      'A partial eclipse, because only the penumbra is dark enough to block the Sun'
+    ],
+    correct: 1,
+    explanation: 'The umbra is the innermost, darkest cone of shadow. Observers inside it see the Moon completely block the Sun — a total solar eclipse. The penumbra is the surrounding outer shadow, producing only a partial eclipse.'
+  }
+];
+
+/* ── STATE ───────────────────────────────────────────────── */
+var chkState = {
+  selected: [null, null, null, null, null],
+  submitted: false
+};
+var quizMode = 'practice';
+
+/* ── MODE TOGGLE ─────────────────────────────────────────── */
+function setQuizMode(mode) {
+  quizMode = mode;
+  simMode  = mode; // keep saveState consistent
+  var infoBox  = document.getElementById('quiz-info-box');
+  var btnP     = document.getElementById('btn-practice');
+  var btnC     = document.getElementById('btn-classroom');
+  var hintP    = document.getElementById('hint-practice');
+  var hintC    = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    if (infoBox) infoBox.style.display = 'none';
+    if (btnP)    { btnP.classList.add('active');    btnC.classList.remove('active'); }
+    if (hintP)   { hintP.classList.add('visible');  hintC.classList.remove('visible'); }
+  } else {
+    if (infoBox) infoBox.style.display = 'block';
+    if (btnC)    { btnC.classList.add('active');    btnP.classList.remove('active'); }
+    if (hintC)   { hintC.classList.add('visible');  hintP.classList.remove('visible'); }
+  }
+}
+
+/* ── URL PARAM ───────────────────────────────────────────── */
+(function() {
+  var p = new URLSearchParams(window.location.search);
+  if (p.get('mode') === 'classroom') setQuizMode('classroom');
+  else setQuizMode('practice');
+})();
+
+/* ── BUILD CHECKPOINT ────────────────────────────────────── */
+function buildCheckpoint() {
+  var container = document.getElementById('chk-questions');
+  container.innerHTML = '';
+  chkState.selected  = [null, null, null, null, null];
+  chkState.submitted = false;
+  document.getElementById('chk-submit-btn').disabled = true;
+  updateCheckProgress();
+  var letters = ['A','B','C','D'];
+  checkQuestions.forEach(function(q, qi) {
+    var optsHTML = q.options.map(function(opt, oi) {
+      return '<button class="quiz-option" onclick="selectCheckAnswer(' + qi + ',' + oi + ')" id="chk-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optsHTML + '</div>' +
+      '<div class="option-feedback" id="chk-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+/* ── SELECT ANSWER ───────────────────────────────────────── */
+function selectCheckAnswer(qi, oi) {
+  if (chkState.submitted) return;
+  var prev = chkState.selected[qi];
+  if (prev !== null) document.getElementById('chk-' + qi + '-' + prev).classList.remove('selected');
+  chkState.selected[qi] = oi;
+  document.getElementById('chk-' + qi + '-' + oi).classList.add('selected');
+  updateCheckProgress();
+  document.getElementById('chk-submit-btn').disabled = chkState.selected.some(function(s){ return s === null; });
+}
+
+/* ── PROGRESS BAR ────────────────────────────────────────── */
+function updateCheckProgress() {
+  var total    = checkQuestions.length;
+  var answered = chkState.selected.filter(function(s){ return s !== null; }).length;
+  document.getElementById('chk-progress-fill').style.width = (answered / total * 100) + '%';
+  document.getElementById('chk-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+/* ── VALIDATE STUDENT INFO ───────────────────────────────── */
+function validateCheckInfo() {
+  var name    = document.getElementById('quiz-student-name').value.trim();
+  var teacher = document.getElementById('quiz-teacher-select').value;
+  var block   = document.getElementById('quiz-block-select').value;
+  document.getElementById('quiz-err-name').classList.toggle('show', !name);
+  document.getElementById('quiz-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('quiz-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+
+/* ── SUBMIT CHECKPOINT ───────────────────────────────────── */
+function submitCheckpoint() {
+  if (chkState.submitted) return;
+  if (quizMode === 'classroom') {
+    var check = validateCheckInfo();
+    if (!check.valid) {
+      document.getElementById('quiz-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  chkState.submitted = true;
+  document.getElementById('chk-submit-btn').disabled = true;
+
+  var correct = 0;
+  checkQuestions.forEach(function(q, qi) {
+    var chosen    = chkState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    // Disable all options and reveal
+    q.options.forEach(function(_, oi) {
+      var btn = document.getElementById('chk-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('chk-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('chk-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '&#10003; Correct. ' : '&#10007; Not quite. ') + q.explanation;
+  });
+
+  var total = checkQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? 'Perfect score. You understand eclipse geometry cold.'
+    : pct >= 80 ? 'Strong work. Review any you missed and you\'ll have this locked in.'
+    : pct >= 60 ? 'Good effort. Go back through the lab and try again.'
+    : 'Keep exploring the lab. The answers are in the simulation.';
+
+  document.getElementById('chk-score-num').textContent = score;
+  document.getElementById('chk-score-msg').textContent = msg;
+  var sb = document.getElementById('chk-score-board');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  if (quizMode === 'practice') {
+    document.getElementById('chk-submit-status').innerHTML =
+      '<div class="score-practice-note">Practice mode &#8212; score not submitted</div>';
+    return;
+  }
+
+  var info = validateCheckInfo();
+  var teacherLabel = info.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var params = new URLSearchParams({
+    tab: CHECKPOINT_TAB,
+    studentName: info.name,
+    teacher: teacherLabel,
+    block: info.block,
+    score: score,
+    percent: pct + '%'
+  });
+  fetch(CHECKPOINT_URLS[info.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(function() {
+      document.getElementById('chk-submit-status').innerHTML =
+        '<div class="score-submitted">&#10003; Score submitted to ' + teacherLabel + '</div>';
+    })
+    .catch(function() {
+      document.getElementById('chk-submit-status').innerHTML =
+        '<div class="score-error">&#9888; Could not reach the server. Check your connection.</div>';
+    });
+}
+
+/* ── RESET ───────────────────────────────────────────────── */
+function resetCheckpoint() {
+  document.getElementById('chk-score-board').classList.remove('show');
+  document.getElementById('chk-submit-status').innerHTML = '';
+  buildCheckpoint();
+}
+
+/* ── INIT ────────────────────────────────────────────────── */
+buildCheckpoint();
+</script>
+
+</body>
+</html>

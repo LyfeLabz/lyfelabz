@@ -325,6 +325,8 @@ h2.section-title { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,4vw
 .cont-name { font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--text); }
 .cont-desc { font-size:.86rem; color:rgba(232,237,242,.82); line-height:1.6; flex:1; }
 .coming-soon-tag { display:inline-block; font-size:.7rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; padding:.2rem .7rem; border-radius:99px; border:1px solid rgba(122,143,166,.3); color:var(--text-muted); background:rgba(122,143,166,.06); margin-top:.2rem; }
+.cont-link { display:inline-block; font-size:.7rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; padding:.2rem .7rem; border-radius:99px; border:1px solid rgba(245,160,40,.35); color:#f5a028; background:rgba(245,160,40,.08); margin-top:.2rem; }
+.cont-card.sim:hover .cont-link { background:rgba(245,160,40,.16); border-color:rgba(245,160,40,.6); }
 footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:.5rem; }
 footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:.08em; color:var(--gold); margin-bottom:.35rem; }
 footer .footer-tagline { font-size:.83rem; color:rgba(240,228,200,.6); margin-bottom:.6rem; }
@@ -1117,12 +1119,12 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
     <h2 class="section-title">More Learning</h2>
     <p class="section-desc">Ready to push your eclipse knowledge deeper? These optional extensions are waiting for you.</p>
     <div class="cont-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 340px));">
-      <div class="cont-card sim">
-        <div class="cont-icon">&#127761;</div>
-        <div class="cont-name">Eclipse Simulator</div>
-        <div class="cont-desc">Control the orbital tilt and position of the Moon and watch where shadows fall on Earth across multiple orbits.</div>
-        <span class="coming-soon-tag">Coming Soon</span>
-      </div>
+      <a href="simulation_eclipse-alignment.html" class="cont-card sim">
+        <div class="cont-icon">&#127765;</div>
+        <div class="cont-name">Eclipse Alignment</div>
+        <div class="cont-desc">Manipulate moon phase, orbital tilt, and node alignment to discover why solar and lunar eclipses only happen sometimes.</div>
+        <span class="cont-link">Simulation</span>
+      </a>
 
     </div>
   </div>
