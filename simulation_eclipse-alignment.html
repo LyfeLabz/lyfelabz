@@ -298,6 +298,105 @@ section:nth-child(even) { background: var(--bg-secondary); }
 }
 .callout-card-body strong { color: var(--text-primary); font-weight: 800; }
 
+/* =========================================================
+   OBSERVATION CARD REVEAL SYSTEM — Floatlandia pattern
+   ========================================================= */
+
+/* Base state — dimmed, clickable */
+.observation-card {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.22s ease;
+}
+
+/* Hover on locked card — lift + per-theme glow */
+.observation-card.locked:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-light);
+  background: var(--bg-card-hover);
+}
+.callout-card.solar.locked:hover      { box-shadow: 0 2px 10px rgba(0,0,0,0.2), 0 0 14px rgba(245,180,40,0.12); }
+.callout-card.lunar.locked:hover      { box-shadow: 0 2px 10px rgba(0,0,0,0.2), 0 0 14px rgba(122,143,200,0.14); }
+.callout-card.no-eclipse.locked:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.2), 0 0 14px rgba(59,200,232,0.12); }
+
+/* Lock content scales on hover — Floatlandia exact */
+.observation-card.locked:hover .obs-lock-content { transform: scale(1.06); }
+.callout-card.solar.locked:hover      .obs-lock-content { color: var(--gold); }
+.callout-card.lunar.locked:hover      .obs-lock-content { color: var(--accent2); }
+.callout-card.no-eclipse.locked:hover .obs-lock-content { color: var(--teal); }
+
+/* Body text dimmed + blurred behind overlay */
+.observation-card.locked .callout-card-body {
+  filter: blur(1.6px);
+  opacity: 0.52;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+.observation-card.locked:hover .callout-card-body {
+  filter: blur(1.1px);
+  opacity: 0.62;
+}
+
+/* Lock overlay — Floatlandia structure */
+.obs-lock-overlay {
+  position: absolute; inset: 0;
+  background: rgba(18, 24, 36, 0.74);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 1; pointer-events: none;
+  transition: opacity 0.28s ease; z-index: 2;
+}
+.obs-lock-content {
+  display: flex; flex-direction: column; align-items: center; gap: 0.45rem;
+  color: var(--text-secondary);
+  transition: color 0.2s ease, transform 0.22s ease;
+}
+.obs-lock-icon {
+  width: 28px; height: 28px; stroke: currentColor;
+  stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; fill: none;
+}
+.obs-lock-text {
+  font-size: 0.7rem; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+
+/* Hide overlay once unlocked */
+.observation-card:not(.locked) .obs-lock-overlay { opacity: 0; pointer-events: none; }
+
+/* Revealed state */
+.observation-card:not(.locked) { cursor: default; }
+.observation-card:not(.locked) .callout-card-body { filter: none; opacity: 1; }
+.observation-card:not(.locked):hover { transform: none; box-shadow: none; }
+
+/* One-shot reveal animation */
+@keyframes obsReveal {
+  0%   { transform: scale(1.015); box-shadow: 0 0 0 2px rgba(122,143,200,0.22); }
+  100% { transform: scale(1);     box-shadow: none; }
+}
+.observation-card.obs-reveal-flash { animation: obsReveal 0.38s ease both; }
+
+/* =========================================================
+   LAB GATE
+   ========================================================= */
+#obs-gate-msg {
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  padding: 0.72rem 1.2rem; margin-bottom: 1.2rem;
+  background: rgba(122,143,200,0.06);
+  border: 1px solid rgba(122,143,200,0.2);
+  border-left: 3px solid rgba(122,143,200,0.4);
+  border-radius: 10px;
+  font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
+  transition: opacity 0.3s ease;
+}
+#obs-gate-msg.hidden { display: none; }
+#lab-controls-wrap { transition: opacity 0.4s ease; }
+#lab-controls-wrap.lab-controls-locked { opacity: 0.32; pointer-events: none; }
+
+/* Mobile */
+@media (max-width: 600px) {
+  .observation-card.locked:hover { transform: none; }
+  .obs-lock-text { font-size: 0.66rem; }
+}
+
 /* Bridge callout */
 .bridge-callout {
   margin-top: 0.5rem; padding: 1.2rem 1.6rem;
@@ -412,22 +511,31 @@ section:nth-child(even) { background: var(--bg-secondary); }
 .sim-result.lunar   { background: rgba(122,143,200,0.09); border: 1px solid rgba(122,143,200,0.40); color: rgba(160,185,240,1.0); }
 .sim-result-icon    { font-size: 1.5rem; flex-shrink: 0; }
 
-/* Moon Height controls — muted when height is irrelevant */
-.control-group.height-muted .control-group-label {
-  opacity: 0.38; transition: opacity 0.22s;
-}
+/* Moon Height controls — base transitions so dim/undim both animate */
+#height-control-group .control-group-label { transition: opacity 0.28s ease; }
+#height-control-group .ctrl-btn           { transition: opacity 0.28s ease, border-color 0.28s ease; }
+
+/* Muted state — slightly dimmed, still readable */
+.control-group.height-muted .control-group-label { opacity: 0.42; }
 .control-group.height-muted .ctrl-btn {
-  opacity: 0.28; cursor: not-allowed; pointer-events: none;
-  transition: opacity 0.22s;
+  opacity: 0.40; cursor: not-allowed; pointer-events: none;
 }
+
+/* Contextual note — Micropass 3 */
 .height-disabled-note {
-  display: none; margin-top: 0.45rem; max-width: 240px;
-  font-size: 0.74rem; line-height: 1.45; color: var(--text-muted);
-  background: rgba(122,143,200,0.07); border: 1px solid rgba(122,143,200,0.18);
-  border-radius: 9px; padding: 0.5rem 0.65rem; text-align: center;
-  margin-left: auto; margin-right: auto;
+  display: none; margin-top: 0.5rem;
+  font-size: 0.76rem; line-height: 1.5; color: var(--text-muted);
+  background: rgba(122,143,166,0.07);
+  border: 1px solid rgba(122,143,166,0.18);
+  border-left: 2.5px solid rgba(122,143,166,0.35);
+  border-radius: 0 9px 9px 0;
+  padding: 0.48rem 0.75rem;
 }
-.height-disabled-note.show { display: block; animation: fadeIn 0.25s ease both; }
+.height-disabled-note.show   { display: block; animation: fadeIn 0.25s ease both; }
+/* Note accent variants per case */
+.height-disabled-note.note-quarter    { border-left-color: rgba(122,143,200,0.45); }
+.height-disabled-note.note-solar-full { border-left-color: rgba(245,180,50,0.45); }
+.height-disabled-note.note-lunar-new  { border-left-color: rgba(160,180,228,0.45); }
 
 /* =========================================================
    CHALLENGE CARDS
@@ -474,7 +582,7 @@ section:nth-child(even) { background: var(--bg-secondary); }
 }
 .challenge-hint {
   font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;
-  min-height: 8.5rem;
+  min-height: 7rem;
 }
 
 .challenge-success {
@@ -792,6 +900,544 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
   .info-fields  { grid-template-columns: 1fr; }
   .quiz-options { padding-left: 0; }
 }
+
+/* =========================================================
+   CURRENT MISSION PANEL — Micropass 2
+   ========================================================= */
+.mission-panel {
+  padding: 0.85rem 1.25rem 0.85rem 1.2rem;
+  margin-bottom: 1.4rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent2);
+  background: rgba(122,143,200,0.04);
+  transition: border-left-color 0.4s ease, background 0.4s ease;
+  animation: missionFade 0.3s ease both;
+}
+@keyframes missionFade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+.mission-panel.stage-solar  { border-left-color: var(--gold);   background: rgba(245,200,66,0.04); }
+.mission-panel.stage-lunar  { border-left-color: var(--accent2); background: rgba(122,143,200,0.05); }
+.mission-panel.stage-nomiss { border-left-color: var(--teal);   background: rgba(59,200,232,0.04); }
+.mission-panel.stage-done   { border-left-color: var(--green);  background: rgba(46,204,113,0.04); }
+
+.mission-label {
+  font-size: 0.62rem; font-weight: 900; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;
+}
+.mission-done-row {
+  font-size: 0.78rem; color: var(--green); font-weight: 700;
+  margin-bottom: 0.18rem; display: flex; align-items: baseline; gap: 0.38rem;
+}
+.mission-done-check { font-size: 0.68rem; flex-shrink: 0; }
+.mission-goal {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.0rem; color: var(--text-primary);
+  margin-bottom: 0.42rem; line-height: 1.3;
+}
+.mission-prompts {
+  list-style: none; padding: 0; margin: 0;
+}
+.mission-prompts li {
+  font-size: 0.79rem; color: var(--text-muted); line-height: 1.5;
+  padding-left: 1rem; position: relative; margin-bottom: 0.06rem;
+}
+.mission-prompts li::before {
+  content: '\2014'; position: absolute; left: 0;
+  color: var(--text-muted); opacity: 0.45;
+}
+.mission-all-done {
+  font-size: 0.82rem; color: var(--green); font-weight: 700; margin-top: 0.38rem;
+}
+
+/* =========================================================
+   STAGE PROGRESS TRACKER — Micropass 1
+   ========================================================= */
+.stage-tracker {
+  display: flex; align-items: stretch;
+  margin-bottom: 1.8rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden;
+}
+.stage-step {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 0.52rem; padding: 0.68rem 0.9rem;
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted);
+  transition: all 0.35s ease;
+  border-right: 1px solid var(--border);
+  text-align: center; line-height: 1.25;
+}
+.stage-step:last-child { border-right: none; }
+.stage-step.current {
+  color: var(--accent2); background: rgba(122,143,200,0.07);
+  opacity: 1;
+}
+.stage-step.complete {
+  color: var(--green); background: rgba(46,204,113,0.05);
+  opacity: 0.85;
+}
+.stage-step.locked {
+  opacity: 0.3; cursor: default;
+}
+.stage-num {
+  width: 1.45rem; height: 1.45rem; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.66rem; font-weight: 900; flex-shrink: 0;
+  border: 1.5px solid currentColor;
+  background: rgba(255,255,255,0.04);
+  transition: background 0.3s, border-color 0.3s;
+}
+.stage-step.current .stage-num { background: rgba(122,143,200,0.18); }
+.stage-step.complete .stage-num { background: rgba(46,204,113,0.18); }
+
+@media (max-width: 600px) {
+  .stage-step { flex-direction: column; gap: 0.25rem; font-size: 0.62rem; padding: 0.55rem 0.5rem; }
+}
+
+/* Locked challenge card */
+.challenge-card.locked {
+  opacity: 0.42;
+  pointer-events: none;
+}
+.challenge-locked-badge {
+  position: absolute; top: 0.85rem; right: 0.85rem;
+  font-size: 0.6rem; font-weight: 900; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 0.16rem 0.6rem;
+  border-radius: 99px; color: var(--text-muted);
+  background: rgba(122,143,166,0.1); border: 1px solid rgba(122,143,166,0.2);
+}
+
+/* Unlock glow pulse */
+@keyframes unlockPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(122,143,200,0.55); border-color: rgba(122,143,200,0.6); }
+  60%  { box-shadow: 0 0 0 10px rgba(122,143,200,0); }
+  100% { box-shadow: 0 0 0 0 rgba(122,143,200,0); border-color: var(--border); }
+}
+.challenge-card.unlock-pulse { animation: unlockPulse 0.85s ease forwards; }
+/* =========================================================
+   PROGRESS BAR — Floatlandia pattern (Micropass 1)
+   ========================================================= */
+.progress-wrap { max-width: 960px; margin: 1rem auto 1.4rem; padding: 0 1.4rem; }
+.progress-steps {
+  display: flex; gap: 0; border-radius: var(--radius-sm); overflow: hidden;
+  border: 1px solid var(--border); background: var(--bg-secondary);
+}
+.progress-step {
+  flex: 1; padding: 0.62rem 0.3rem; text-align: center;
+  font-size: 0.72rem; font-weight: 800; color: #aeb8c2;
+  background: var(--bg-secondary); border-right: 1px solid var(--border);
+  transition: background 0.45s ease, color 0.45s ease, box-shadow 0.45s ease;
+  letter-spacing: 0.04em; cursor: default;
+}
+.progress-step:last-child { border-right: none; }
+.progress-step.active {
+  background: var(--accent-dim); color: var(--accent2);
+  border-right-color: rgba(122,143,200,0.25);
+  box-shadow: inset 0 -2px 0 var(--accent2);
+}
+.progress-step.done {
+  background: rgba(46,204,113,0.10); color: var(--green);
+  border-right-color: rgba(46,204,113,0.25);
+}
+@media (max-width: 520px) {
+  .progress-step { font-size: 0.64rem; padding: 0.55rem 0.2rem; }
+}
+
+/* =========================================================
+   PHASE LOCK SYSTEM — Floatlandia consistency pass (Micropass 3)
+   Unifies the lock language across Discovery, Deep Time, and Quiz.
+   ========================================================= */
+
+/* Section dim while locked — same opacity/desaturation everywhere. */
+.phase-locked {
+  opacity: 0.36;
+  pointer-events: none;
+  filter: saturate(0.55);
+  transition: opacity 0.65s ease, filter 0.65s ease;
+}
+
+/* The lock card itself (Floatlandia-style: icon + eyebrow + message).
+   Hidden by default; revealed only when the section is locked.            */
+.phase-lock-banner {
+  display: none;
+  margin: 0 auto 1.6rem;
+  max-width: 520px;
+  padding: 0.95rem 1.2rem;
+  background: rgba(122,143,200,0.07);
+  border: 1px solid rgba(122,143,200,0.28);
+  border-left: 3px solid rgba(122,143,200,0.5);
+  border-radius: var(--radius-sm);
+  gap: 0.9rem;
+  align-items: center;
+  text-align: left;
+  line-height: 1.45;
+}
+.phase-locked .phase-lock-banner,
+#discovery.discovery-locked .phase-lock-banner {
+  display: flex;
+  pointer-events: auto; /* always announce / surface the lock copy */
+}
+
+.phase-lock-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(122,143,200,0.14);
+  border: 1px solid rgba(122,143,200,0.42);
+  color: var(--accent2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.phase-lock-icon svg {
+  width: 16px; height: 16px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.phase-lock-text { min-width: 0; }
+.phase-lock-eyebrow {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 0.18rem;
+}
+.phase-lock-msg {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* One-shot reveal flash when a section unlocks — gentle lift + fade.       */
+@keyframes phaseReveal {
+  0%   { opacity: 0.55; transform: translateY(6px); }
+  100% { opacity: 1;    transform: translateY(0); }
+}
+.section-reveal-flash {
+  animation: phaseReveal 0.7s ease both;
+}
+
+/* Progress-bar step flash when its state changes (active or done).         */
+@keyframes stepFlash {
+  0%   { box-shadow: inset 0 -2px 0 transparent, 0 0 0 0 rgba(160,180,228,0.0); }
+  40%  { box-shadow: inset 0 -2px 0 var(--accent2), 0 0 0 4px rgba(160,180,228,0.18); }
+  100% { box-shadow: inset 0 -2px 0 transparent, 0 0 0 0 rgba(160,180,228,0.0); }
+}
+.progress-step.step-flash {
+  animation: stepFlash 0.7s ease both;
+}
+
+/* Mobile tweak */
+@media (max-width: 520px) {
+  .phase-lock-banner { padding: 0.85rem 1rem; gap: 0.75rem; }
+  .phase-lock-icon   { width: 32px; height: 32px; }
+  .phase-lock-msg    { font-size: 0.8rem; }
+}
+
+/* =========================================================
+   DEEP TIME CINEMA (Micropass 2)
+   ========================================================= */
+#deeptime .deeptime-cinema {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.4rem 1.6rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+/* Cinematic stage */
+.dt-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 600 / 320;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #04060c;
+  border: 1px solid var(--border);
+  box-shadow: inset 0 0 32px rgba(0,0,0,0.6);
+}
+.dt-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Top-right time pill */
+.dt-year-pill {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.8rem;
+  padding: 0.32rem 0.8rem;
+  border-radius: 99px;
+  background: rgba(13, 22, 38, 0.78);
+  border: 1px solid rgba(160,180,228,0.32);
+  color: var(--accent2);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(4px);
+  transition: color 0.5s ease, border-color 0.5s ease;
+}
+
+/* Bottom-right drift badge */
+.dt-drift-badge {
+  position: absolute;
+  bottom: 0.7rem;
+  right: 0.8rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 99px;
+  background: rgba(245,160,40,0.14);
+  border: 1px solid rgba(245,160,40,0.42);
+  color: var(--solar);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+.dt-drift-badge.show { opacity: 1; transform: translateY(0); }
+
+/* Completion overlay */
+.dt-completion {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 14, 24, 0.78);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.55s ease;
+}
+.dt-completion.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.dt-completion-inner {
+  text-align: center;
+  padding: 1.2rem 1.6rem;
+  max-width: 480px;
+}
+.dt-completion-check {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 0.7rem;
+  border-radius: 50%;
+  background: rgba(46,204,113,0.18);
+  border: 1.5px solid rgba(46,204,113,0.55);
+  color: var(--green);
+  font-size: 1.4rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgba(46,204,113,0.25);
+}
+.dt-completion-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  line-height: 1.2;
+}
+.dt-completion-sub {
+  font-size: 0.88rem;
+  color: rgba(232,237,242,0.78);
+  line-height: 1.6;
+}
+
+/* Timeline */
+.dt-timeline {
+  position: relative;
+  height: 4px;
+  background: rgba(122,143,200,0.14);
+  border-radius: 99px;
+  margin: 1rem 0 0.85rem;
+  overflow: hidden;
+}
+.dt-timeline-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent2), var(--solar));
+  border-radius: 99px;
+  transition: width 0.18s linear;
+}
+
+/* Scene text block */
+.dt-scene-meta {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.45rem;
+}
+.dt-scene-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  min-height: 1.6em;
+}
+.dt-scene-text {
+  font-size: 0.95rem;
+  color: rgba(232,237,242,0.82);
+  line-height: 1.7;
+  margin-bottom: 1.2rem;
+  min-height: 1.7em;
+}
+.dt-text-fadein {
+  animation: dtTextFade 0.5s ease both;
+}
+@keyframes dtTextFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Action buttons */
+.dt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+.dt-primary-btn,
+.dt-secondary-btn {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.72rem 1.5rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.dt-primary-btn {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #0a0f18;
+  border: none;
+  box-shadow: 0 4px 18px rgba(122,143,200,0.32);
+}
+.dt-primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(122,143,200,0.48);
+}
+.dt-primary-btn:active { transform: translateY(0); }
+.dt-secondary-btn {
+  background: transparent;
+  color: var(--accent2);
+  border: 1px solid rgba(122,143,200,0.42);
+}
+.dt-secondary-btn:hover {
+  background: rgba(122,143,200,0.10);
+  border-color: rgba(122,143,200,0.7);
+}
+.dt-primary-btn:focus-visible,
+.dt-secondary-btn:focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 3px;
+}
+[hidden] { display: none !important; }
+
+/* Mobile tweaks */
+@media (max-width: 560px) {
+  .dt-year-pill   { font-size: 0.62rem; padding: 0.26rem 0.65rem; }
+  .dt-drift-badge { font-size: 0.6rem;  padding: 0.26rem 0.6rem; }
+  .dt-completion-title { font-size: 1.1rem; }
+  .dt-completion-sub   { font-size: 0.82rem; }
+  .dt-scene-title { font-size: 1.1rem; }
+  .dt-scene-text  { font-size: 0.9rem; }
+  .dt-primary-btn, .dt-secondary-btn { font-size: 0.72rem; padding: 0.65rem 1.2rem; }
+}
+
+/* =========================================================
+   WONDER MOMENT — Scene 4 corona breath (Micropass 4)
+   A single, restrained brightening of the solar corona at the
+   moment the Moon settles too small to ever fully cover the Sun.
+   ========================================================= */
+@keyframes dtCoronaBreath {
+  0%   { filter: brightness(1.0); }
+  45%  { filter: brightness(1.7); }
+  100% { filter: brightness(1.0); }
+}
+.dt-corona-breath {
+  animation: dtCoronaBreath 2.4s ease-in-out;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* =========================================================
+   REDUCED-MOTION RESPECT (Micropass 4)
+   Suppresses decorative keyframe animations for users who
+   prefer reduced motion. Functional opacity/state transitions
+   are left intact so the page still communicates unlocks.
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .hero-corona,
+  .hero-float,
+  .section-reveal-flash,
+  .progress-step.step-flash,
+  .dt-text-fadein,
+  .dt-corona-breath,
+  .observation-card.obs-reveal-flash,
+  .discovery-grid.discovery-reveal-animate,
+  .challenge-card.unlock-pulse {
+    animation: none !important;
+  }
+}
+
+/* =========================================================
+   DISCOVERY SUMMARY — Micropass 5
+   ========================================================= */
+#discovery {
+  transition: opacity 0.65s ease, filter 0.65s ease;
+}
+#discovery.discovery-locked {
+  opacity: 0.36;
+  filter: saturate(0.55);
+}
+
+/* One-shot reveal animation — class added by JS only on live unlock */
+.discovery-grid.discovery-reveal-animate {
+  animation: discoveryReveal 0.65s ease both;
+}
+@keyframes discoveryReveal {
+  from { opacity: 0.35; transform: translateY(8px); }
+  to   { opacity: 1;    transform: none; }
+}
+
+/* Completion check badge on each discovery card */
+.discovery-check {
+  display: none;
+  position: absolute; top: 0.85rem; right: 0.85rem;
+  width: 1.5rem; height: 1.5rem; border-radius: 50%;
+  background: rgba(46,204,113,0.14);
+  border: 1.5px solid rgba(46,204,113,0.42);
+  color: var(--green); font-size: 0.68rem; font-weight: 900;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+#discovery.discovery-unlocked .discovery-check {
+  display: flex;
+  animation: fadeIn 0.4s ease 0.2s both;
+}
 </style>
 </head>
 <body>
@@ -807,6 +1453,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
     <li><a href="#lab">Lab</a></li>
     <li><a href="#challenges">Challenges</a></li>
     <li><a href="#discovery">Discovery</a></li>
+    <li><a href="#deeptime">Deep Time</a></li>
     <li><a href="#quiz">Check In</a></li>
   </ul>
   <a href="lesson_eclipses.html" class="nav-back">&#8592; Eclipses</a>
@@ -845,6 +1492,16 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
   </div>
 </div>
 
+<!-- ── PROGRESS BAR (Floatlandia pattern, Micropass 1) ─── -->
+<div class="progress-wrap" id="phase-progress">
+  <div class="progress-steps">
+    <div class="progress-step active" id="p-step-1">① Evidence</div>
+    <div class="progress-step"        id="p-step-2">② Align the System</div>
+    <div class="progress-step"        id="p-step-3">③ Deep Time</div>
+    <div class="progress-step"        id="p-step-4">④ Quiz</div>
+  </div>
+</div>
+
 <!-- ── MISSION BRIEFING ──────────────────────────────────── -->
 <section>
   <div class="sim-section">
@@ -853,21 +1510,39 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
     <p class="section-desc">Before you touch the controls, read these three facts. They are the rules of the simulation.</p>
 
     <div class="callout-grid">
-      <div class="callout-card solar">
+      <div class="callout-card solar observation-card locked" id="obs-solar" onclick="revealObservation(this)">
+        <div class="obs-lock-overlay" aria-hidden="true">
+          <div class="obs-lock-content">
+            <svg class="obs-lock-icon" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <div class="obs-lock-text">Click to unlock</div>
+          </div>
+        </div>
         <span class="callout-card-label">Solar Eclipse</span>
         <div class="callout-card-title">New Moon + Node</div>
         <div class="callout-card-body">
           The Moon must be <strong>between the Sun and Earth</strong> — that is a new moon. It also must be <strong>near a node</strong>, the point where its tilted orbit crosses Earth's orbital plane. Both must be true at the same time.
         </div>
       </div>
-      <div class="callout-card lunar">
+      <div class="callout-card lunar observation-card locked" id="obs-lunar" onclick="revealObservation(this)">
+        <div class="obs-lock-overlay" aria-hidden="true">
+          <div class="obs-lock-content">
+            <svg class="obs-lock-icon" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <div class="obs-lock-text">Click to unlock</div>
+          </div>
+        </div>
         <span class="callout-card-label">Lunar Eclipse</span>
         <div class="callout-card-title">Full Moon + Node</div>
         <div class="callout-card-body">
           Earth must be <strong>between the Sun and Moon</strong> — that is a full moon. The Moon must also be <strong>near a node</strong> so Earth's shadow actually reaches it. Phase alone is not enough.
         </div>
       </div>
-      <div class="callout-card no-eclipse">
+      <div class="callout-card no-eclipse observation-card locked" id="obs-nomiss" onclick="revealObservation(this)">
+        <div class="obs-lock-overlay" aria-hidden="true">
+          <div class="obs-lock-content">
+            <svg class="obs-lock-icon" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <div class="obs-lock-text">Click to unlock</div>
+          </div>
+        </div>
         <span class="callout-card-label">Most Months</span>
         <div class="callout-card-title">Shadow Misses</div>
         <div class="callout-card-body">
@@ -891,6 +1566,20 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
 
     <!-- Controls + Diagram -->
     <div class="lab-panel">
+
+      <!-- Current Mission Panel — Micropass 2 -->
+      <div id="mission-panel" class="mission-panel stage-solar">
+        <!-- Content injected by updateMissionPanel() -->
+      </div>
+
+      <!-- Lab gate message — hidden once all three obs cards are revealed -->
+      <div id="obs-gate-msg">
+        <span class="obs-gate-icon">&#128274;</span>
+        Unlock the three observation cards above to begin the lab.
+      </div>
+
+      <!-- Lab controls — gated until obs cards revealed -->
+      <div id="lab-controls-wrap" class="lab-controls-locked">
 
       <!-- Control row -->
       <div class="control-row">
@@ -923,6 +1612,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
         </div>
 
       </div><!-- /control-row -->
+      </div><!-- /lab-controls-wrap -->
 
       <!-- SVG diagram placeholder — replaced in Micropass 3 -->
       <div class="sim-stage-wrap">
@@ -969,6 +1659,21 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
     <p class="section-desc">Use the lab controls above to solve each challenge. Read the goal, set the controls, and watch the result. You can revise as many times as you like.</p>
 
     <div class="challenge-counter-wrap">
+      <!-- Stage Progress Tracker — Micropass 1 -->
+      <div class="stage-tracker" id="stage-tracker">
+        <div class="stage-step current" id="stage-step-1">
+          <div class="stage-num" id="stage-num-1">1</div>
+          <span>Solar Eclipse</span>
+        </div>
+        <div class="stage-step locked" id="stage-step-2">
+          <div class="stage-num" id="stage-num-2">2</div>
+          <span>Lunar Eclipse</span>
+        </div>
+        <div class="stage-step locked" id="stage-step-3">
+          <div class="stage-num" id="stage-num-3">3</div>
+          <span>Why Not Every Month?</span>
+        </div>
+      </div>
       <span class="challenge-counter" id="challenge-counter">
         <span class="counter-dot"></span>
         <span id="counter-text">0 / 3 completed</span>
@@ -991,8 +1696,9 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
       </div>
 
       <!-- Challenge 2 — Lunar Eclipse -->
-      <div class="challenge-card lunar-card" id="ch2">
+      <div class="challenge-card lunar-card locked" id="ch2">
         <span class="challenge-num">Challenge 2</span>
+        <span class="challenge-locked-badge">Locked</span>
         <div class="challenge-q">Create a lunar eclipse.</div>
         <div class="challenge-hint">
           This time Earth casts the shadow. Which phase puts the Moon on the far side of Earth from the Sun? What else has to be true?
@@ -1004,8 +1710,9 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
       </div>
 
       <!-- Challenge 3 — No Eclipse -->
-      <div class="challenge-card neutral-card" id="ch3">
+      <div class="challenge-card neutral-card locked" id="ch3">
         <span class="challenge-num">Challenge 3</span>
+        <span class="challenge-locked-badge">Locked</span>
         <div class="challenge-q">Create a month with no eclipse.</div>
         <div class="challenge-hint">
           The right phase is there — but the shadow still misses. Show what happens most months when the Moon is above or below the orbital plane.
@@ -1021,8 +1728,17 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
 </section>
 
 <!-- ── DISCOVERY SUMMARY ──────────────────────────────────── -->
-<section id="discovery" style="background: var(--bg-secondary);">
+<section id="discovery" class="discovery-locked" style="background: var(--bg-secondary);">
   <div class="sim-section">
+    <div class="phase-lock-banner" role="status">
+      <div class="phase-lock-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      </div>
+      <div class="phase-lock-text">
+        <div class="phase-lock-eyebrow">Locked</div>
+        <div class="phase-lock-msg">Solve all three challenges in the lab above to reveal what the simulation just showed you.</div>
+      </div>
+    </div>
     <span class="section-label">Discovery Summary</span>
     <h2 class="section-title">What You Found Out</h2>
     <p class="section-desc">Three things the lab just showed you. Each one connects to a challenge you solved.</p>
@@ -1030,7 +1746,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
     <div class="discovery-grid">
 
       <div class="discovery-card phase-card">
-        <div class="discovery-card-title">Phase Matters</div>
+        <div class="discovery-card-title">Phase Matters<span class="discovery-check">&#10003;</span></div>
         <div class="discovery-card-body">
           In Challenge 1 you needed a <strong>new moon</strong> — the only phase that puts the Moon between the Sun and Earth.<br>
           In Challenge 2 you needed a <strong>full moon</strong> — the only phase that puts Earth between the Sun and Moon.<br>
@@ -1039,7 +1755,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
       </div>
 
       <div class="discovery-card node-card">
-        <div class="discovery-card-title">Nodes Matter</div>
+        <div class="discovery-card-title">Nodes Matter<span class="discovery-check">&#10003;</span></div>
         <div class="discovery-card-body">
           In Challenge 3 the phase was correct — but the shadow still missed.<br>
           The Moon's orbit is tilted about <strong>5 degrees</strong>, so it usually passes above or below the orbital plane. The shadow misses Earth or the Moon entirely.<br>
@@ -1048,7 +1764,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
       </div>
 
       <div class="discovery-card shadow-card">
-        <div class="discovery-card-title">Shadow Zone Matters</div>
+        <div class="discovery-card-title">Shadow Zone Matters<span class="discovery-check">&#10003;</span></div>
         <div class="discovery-card-body">
           Even when an eclipse happens, not everyone sees the same thing.<br>
           The <strong>umbra</strong> is the darkest part of the shadow — observers inside it see a total eclipse.<br>
@@ -1065,9 +1781,154 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
   </div>
 </section>
 
-<!-- ── CHECK YOUR UNDERSTANDING ───────────────────────────── -->
-<section id="quiz" class="quiz-section" style="padding-top: 2.5rem;">
+<!-- ── PHASE 3: DEEP TIME (Micropass 1 placeholder) ──────── -->
+<section id="deeptime" class="phase-locked">
   <div class="sim-section">
+    <div class="phase-lock-banner" role="status">
+      <div class="phase-lock-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      </div>
+      <div class="phase-lock-text">
+        <div class="phase-lock-eyebrow">Locked</div>
+        <div class="phase-lock-msg">Complete the three eclipse alignment challenges to unlock the Deep Time cinematic.</div>
+      </div>
+    </div>
+    <span class="section-label">Phase 3</span>
+    <h2 class="section-title">Deep Time</h2>
+    <p class="section-desc">What looks permanent in the sky is only temporary on geologic time scales. The Moon is slowly drifting away from Earth — and that quietly changes what eclipses look like.</p>
+
+    <div class="deeptime-cinema" id="deeptime-cinema">
+
+      <!-- Cinematic stage -->
+      <div class="dt-stage" id="dt-stage">
+        <svg viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg" class="dt-svg"
+             preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+          <defs>
+            <radialGradient id="dt-sky-grad" cx="50%" cy="55%" r="72%">
+              <stop offset="0%"   stop-color="#0e1a2e"/>
+              <stop offset="60%"  stop-color="#080d18"/>
+              <stop offset="100%" stop-color="#04060c"/>
+            </radialGradient>
+            <radialGradient id="dt-corona-grad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stop-color="rgba(255,200,90,0)"/>
+              <stop offset="35%"  stop-color="rgba(255,200,90,0)"/>
+              <stop offset="42%"  stop-color="rgba(255,170,40,0.55)"/>
+              <stop offset="56%"  stop-color="rgba(245,130,30,0.22)"/>
+              <stop offset="78%"  stop-color="rgba(180,90,200,0.10)"/>
+              <stop offset="100%" stop-color="rgba(80,50,140,0)"/>
+            </radialGradient>
+            <radialGradient id="dt-sun-grad" cx="48%" cy="46%" r="58%">
+              <stop offset="0%"   stop-color="#fff6c8"/>
+              <stop offset="42%"  stop-color="#ffd76a"/>
+              <stop offset="85%"  stop-color="#f5a028"/>
+              <stop offset="100%" stop-color="#d8761a"/>
+            </radialGradient>
+            <radialGradient id="dt-moon-grad" cx="40%" cy="38%" r="65%">
+              <stop offset="0%"   stop-color="#2a2f3b"/>
+              <stop offset="78%"  stop-color="#0d111c"/>
+              <stop offset="100%" stop-color="#05080f"/>
+            </radialGradient>
+            <filter id="dt-bloom" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2.4" result="b"/>
+              <feMerge>
+                <feMergeNode in="b"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+
+          <rect x="0" y="0" width="600" height="320" fill="url(#dt-sky-grad)"/>
+
+          <!-- Static stars -->
+          <g id="dt-stars" opacity="0.6" fill="#cdd6e0">
+            <circle cx="38"  cy="44"  r="0.8"/>
+            <circle cx="112" cy="28"  r="0.5"/>
+            <circle cx="182" cy="62"  r="0.9"/>
+            <circle cx="76"  cy="120" r="0.6"/>
+            <circle cx="22"  cy="200" r="0.7"/>
+            <circle cx="156" cy="252" r="0.5"/>
+            <circle cx="248" cy="36"  r="0.6"/>
+            <circle cx="342" cy="22"  r="0.8"/>
+            <circle cx="408" cy="58"  r="0.5"/>
+            <circle cx="488" cy="32"  r="0.7"/>
+            <circle cx="552" cy="74"  r="0.6"/>
+            <circle cx="572" cy="148" r="0.8"/>
+            <circle cx="540" cy="232" r="0.5"/>
+            <circle cx="482" cy="276" r="0.6"/>
+            <circle cx="404" cy="292" r="0.7"/>
+            <circle cx="316" cy="288" r="0.5"/>
+            <circle cx="232" cy="294" r="0.6"/>
+            <circle cx="92"  cy="272" r="0.7"/>
+            <circle cx="32"  cy="142" r="0.5"/>
+            <circle cx="120" cy="192" r="0.4"/>
+            <circle cx="468" cy="124" r="0.4"/>
+            <circle cx="528" cy="184" r="0.5"/>
+            <circle cx="282" cy="64"  r="0.4"/>
+            <circle cx="208" cy="116" r="0.4"/>
+            <circle cx="388" cy="246" r="0.5"/>
+          </g>
+
+          <!-- Corona, Sun, Moon -->
+          <circle id="dt-corona" cx="300" cy="160" r="180" fill="url(#dt-corona-grad)"/>
+          <circle id="dt-sun"    cx="300" cy="160" r="70"  fill="url(#dt-sun-grad)" filter="url(#dt-bloom)"/>
+          <circle id="dt-moon"   cx="300" cy="160" r="70"  fill="url(#dt-moon-grad)"/>
+        </svg>
+
+        <!-- Time pill (top right) -->
+        <div class="dt-year-pill" id="dt-year-pill">
+          <span id="dt-time-label">Ready</span>
+        </div>
+
+        <!-- Drift badge (bottom right, reveals at Scene 2) -->
+        <div class="dt-drift-badge" id="dt-drift-badge" aria-hidden="true">
+          Moon drift &middot; about 3.8 cm / year
+        </div>
+
+        <!-- Completion overlay (revealed after Scene 4) -->
+        <div class="dt-completion" id="dt-completion" aria-hidden="true">
+          <div class="dt-completion-inner">
+            <div class="dt-completion-check" aria-hidden="true">&#10003;</div>
+            <div class="dt-completion-title">Deep Time complete</div>
+            <div class="dt-completion-sub">The Moon drifted far enough that total solar eclipses ended. You watched geologic time at work.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="dt-timeline" aria-hidden="true">
+        <div class="dt-timeline-fill" id="dt-timeline-fill"></div>
+      </div>
+
+      <!-- Scene meta + text -->
+      <div class="dt-scene-meta">
+        <span id="dt-scene-label">Ready to begin</span>
+      </div>
+      <h3 id="dt-scene-title" class="dt-scene-title">A 10-second journey through deep time</h3>
+      <p id="dt-scene-text" class="dt-scene-text">Watch how the Moon&rsquo;s slow outward drift quietly transforms what eclipses look like across millions of years.</p>
+
+      <!-- Action buttons -->
+      <div class="dt-actions">
+        <button id="dt-start-btn"    type="button" class="dt-primary-btn"   onclick="startDeepTimeAnimation()">Start Deep Time Animation</button>
+        <button id="dt-continue-btn" type="button" class="dt-primary-btn"   onclick="completeDeepTime()" hidden>Continue to Quiz</button>
+        <button id="dt-replay-btn"   type="button" class="dt-secondary-btn" onclick="replayDeepTimeAnimation()" hidden>Replay Animation</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── CHECK YOUR UNDERSTANDING ───────────────────────────── -->
+<section id="quiz" class="quiz-section phase-locked" style="padding-top: 2.5rem;">
+  <div class="sim-section">
+    <div class="phase-lock-banner" role="status">
+      <div class="phase-lock-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      </div>
+      <div class="phase-lock-text">
+        <div class="phase-lock-eyebrow">Locked</div>
+        <div class="phase-lock-msg">Finish the Deep Time animation and click Continue to Quiz to unlock the checkpoint.</div>
+      </div>
+    </div>
     <span class="section-label">Check Your Understanding</span>
     <h2 class="section-title">Checkpoint</h2>
     <p class="section-desc">5 questions about eclipse alignment, moon phase, orbital tilt, nodes, and shadows.</p>
@@ -1221,22 +2082,27 @@ function updateHeightControls() {
 
   if (relevant || (!t || !p)) {
     hGroup.classList.remove('height-muted');
-    hNote.classList.remove('show');
+    hNote.classList.remove('show', 'note-quarter', 'note-solar-full', 'note-lunar-new');
     hNote.textContent = '';
     return;
   }
 
-  // Height irrelevant — mute and explain why
+  // Height irrelevant — mute controls and show contextual note
   hGroup.classList.add('height-muted');
-  hNote.classList.add('show');
+  hNote.classList.remove('note-quarter', 'note-solar-full', 'note-lunar-new');
 
   if (p === 'quarter') {
-    hNote.textContent = 'Quarter moon geometry places the Moon off to the side, so no eclipse can happen.';
+    hNote.classList.add('note-quarter');
+    hNote.textContent = 'Quarter moon sits 90\u00b0 to the side of Earth \u2014 neither eclipse geometry is possible. Height does not change that.';
   } else if (t === 'solar' && p === 'full') {
-    hNote.textContent = 'A solar eclipse requires a new moon. During a full moon, the Moon is on the opposite side of Earth.';
+    hNote.classList.add('note-solar-full');
+    hNote.textContent = 'Solar eclipses require a new moon. A full moon is on the far side of Earth \u2014 the Moon\u2019s shadow points away from us.';
   } else if (t === 'lunar' && p === 'new') {
-    hNote.textContent = 'A lunar eclipse requires a full moon. During a new moon, the Moon is between the Sun and Earth.';
+    hNote.classList.add('note-lunar-new');
+    hNote.textContent = 'Lunar eclipses require a full moon. A new moon is between the Sun and Earth \u2014 it cannot enter Earth\u2019s shadow.';
   }
+
+  hNote.classList.add('show');
 }
 
 /* ── CONTROL SETTERS ───────────────────────────────────── */
@@ -1559,34 +2425,176 @@ function updateCounter() {
   }
 }
 
+/* ── PROGRESS TRACKER — Micropass 1 ─────────────────────── */
+
+/* Stage mission content — Micropass 2 */
+var STAGE_MISSIONS = [
+  {
+    stageClass: 'stage-solar',
+    done:  'Solar eclipse achieved.',
+    goal:  'Create a total solar eclipse.',
+    prompts: [
+      'Which phase puts the Moon between the Sun and Earth?',
+      'What must be true about the Moon\'s height for the shadow to connect?'
+    ]
+  },
+  {
+    stageClass: 'stage-lunar',
+    done:  'Lunar eclipse achieved.',
+    goal:  'Now create a lunar eclipse.',
+    prompts: [
+      'Earth casts the shadow this time \u2014 which phase puts the Moon on the far side?',
+      'Same height rule as before. Where does the Moon need to be?'
+    ]
+  },
+  {
+    stageClass: 'stage-nomiss',
+    done:  'No-eclipse month demonstrated.',
+    goal:  'Show a month where the shadow misses.',
+    prompts: [
+      'The right phase is set \u2014 but the geometry still fails. Why?',
+      'What is the Moon\'s height doing differently than in Stages 1 and 2?'
+    ]
+  }
+];
+
+function updateMissionPanel() {
+  var panel = document.getElementById('mission-panel');
+  if (!panel) return;
+
+  var allDone = simState.ch1Solved && simState.ch2Solved && simState.ch3Solved;
+
+  // Active stage index (0-based)
+  var current = 0;
+  if (simState.ch1Solved) current = 1;
+  if (simState.ch2Solved) current = 2;
+
+  // Panel accent class
+  panel.className = 'mission-panel ' + (allDone ? 'stage-done' : STAGE_MISSIONS[current].stageClass);
+
+  var html = '<div class="mission-label">Current Mission</div>';
+
+  // Completed rows (stages before current)
+  var completedCount = allDone ? 3 : current;
+  for (var i = 0; i < completedCount; i++) {
+    html += '<div class="mission-done-row"><span class="mission-done-check">&#10003;</span>' + STAGE_MISSIONS[i].done + '</div>';
+  }
+
+  if (allDone) {
+    html += '<div class="mission-all-done">All three stages complete \u2014 explore the Discovery Summary below.</div>';
+  } else {
+    var m = STAGE_MISSIONS[current];
+    html += '<div class="mission-goal">' + m.goal + '</div>';
+    html += '<ul class="mission-prompts">';
+    for (var j = 0; j < m.prompts.length; j++) {
+      html += '<li>' + m.prompts[j] + '</li>';
+    }
+    html += '</ul>';
+  }
+
+  panel.innerHTML = html;
+}
+
+function updateProgressTracker() {
+  var solved   = [simState.ch1Solved, simState.ch2Solved, simState.ch3Solved];
+  // Determine how many stages are unlocked (0-indexed)
+  var unlocked = 0;
+  if (simState.ch1Solved) unlocked = 1;
+  if (simState.ch2Solved) unlocked = 2;
+
+  for (var i = 0; i < 3; i++) {
+    var step = document.getElementById('stage-step-' + (i + 1));
+    var num  = document.getElementById('stage-num-'  + (i + 1));
+    if (!step || !num) continue;
+    step.classList.remove('current', 'complete', 'locked');
+    if (solved[i]) {
+      step.classList.add('complete');
+      num.textContent = '\u2713'; // checkmark
+    } else if (i <= unlocked) {
+      step.classList.add('current');
+      num.textContent = i + 1;
+    } else {
+      step.classList.add('locked');
+      num.textContent = i + 1;
+    }
+  }
+  // Keep mission panel in sync — Micropass 2
+  updateMissionPanel();
+}
+
+function unlockNextStage(justSolvedIndex) {
+  // justSolvedIndex: 1 = ch1 just solved, 2 = ch2 just solved
+  var nextId = 'ch' + (justSolvedIndex + 1);
+  var nextCard = document.getElementById(nextId);
+  if (!nextCard) return;
+  nextCard.classList.remove('locked');
+  nextCard.style.pointerEvents = '';
+  var badge = nextCard.querySelector('.challenge-locked-badge');
+  if (badge) badge.remove();
+  // Brief glow pulse
+  nextCard.classList.remove('unlock-pulse');
+  void nextCard.offsetWidth; // force reflow
+  nextCard.classList.add('unlock-pulse');
+  updateProgressTracker();
+  setTimeout(function() {
+    toast('Stage ' + (justSolvedIndex + 1) + ' unlocked', 'info');
+  }, 300);
+}
+
+/* ── DISCOVERY UNLOCK — Micropass 5 ─────────────────────── */
+function unlockDiscovery(silent) {
+  var sec = document.getElementById('discovery');
+  if (!sec || sec.classList.contains('discovery-unlocked')) return;
+  sec.classList.remove('discovery-locked');
+  sec.classList.add('discovery-unlocked');
+  if (!silent) {
+    // One-shot reveal animation on the grid — only fires on live unlock
+    var grid = sec.querySelector('.discovery-grid');
+    if (grid) {
+      grid.classList.remove('discovery-reveal-animate');
+      void grid.offsetWidth; // force reflow
+      grid.classList.add('discovery-reveal-animate');
+    }
+    setTimeout(function() { toast('All discoveries unlocked', 'success'); }, 500);
+  }
+}
+
 /* ── CHALLENGE CHECKER ─────────────────────────────────── */
 function checkChallenges() {
   var t=simState.eclipseType, p=simState.phase, h=simState.height;
-  // Ch 1 — Solar eclipse
+  // Ch 1 — Solar eclipse (always checkable)
   if (!simState.ch1Solved && t==='solar' && p==='new' && h==='node') {
     simState.ch1Solved = true;
     document.getElementById('ch1-success').classList.add('show');
     document.getElementById('ch1').classList.add('solved');
     updateCounter();
+    updateProgressTracker();
     setTimeout(function(){ toast('Challenge 1 complete \u2014 solar eclipse!', 'success'); }, 150);
+    unlockNextStage(1);
   }
-  // Ch 2 — Lunar eclipse
-  if (!simState.ch2Solved && t==='lunar' && p==='full' && h==='node') {
+  // Ch 2 — Lunar eclipse (only if ch1 solved)
+  if (simState.ch1Solved && !simState.ch2Solved && t==='lunar' && p==='full' && h==='node') {
     simState.ch2Solved = true;
     document.getElementById('ch2-success').classList.add('show');
     document.getElementById('ch2').classList.add('solved');
     updateCounter();
+    updateProgressTracker();
     setTimeout(function(){ toast('Challenge 2 complete \u2014 lunar eclipse!', 'success'); }, 150);
+    unlockNextStage(2);
   }
-  // Ch 3 — Correct phase + wrong height (shadow misses)
+  // Ch 3 — Shadow miss (only if ch2 solved)
   var solarMiss = (t==='solar' && p==='new' && (h==='above'||h==='below'));
   var lunarMiss = (t==='lunar' && p==='full' && (h==='above'||h==='below'));
-  if (!simState.ch3Solved && (solarMiss||lunarMiss)) {
+  if (simState.ch2Solved && !simState.ch3Solved && (solarMiss||lunarMiss)) {
     simState.ch3Solved = true;
     document.getElementById('ch3-success').classList.add('show');
     document.getElementById('ch3').classList.add('solved');
     updateCounter();
+    updateProgressTracker();
     setTimeout(function(){ toast('Challenge 3 complete \u2014 shadow misses!', 'success'); }, 150);
+    unlockDiscovery(false);
+    // Advance phase 2 → 3 (Micropass 1)
+    if (typeof setProgressPhase === 'function') setProgressPhase(3, { toastMsg: 'Phase 3 unlocked \u2014 deep time', toastDelay: 900 });
   }
 }
 
@@ -1611,6 +2619,8 @@ function restoreState() {
     if (s.ch2Solved) { simState.ch2Solved=true; document.getElementById('ch2-success').classList.add('show'); document.getElementById('ch2').classList.add('solved'); }
     if (s.ch3Solved) { simState.ch3Solved=true; document.getElementById('ch3-success').classList.add('show'); document.getElementById('ch3').classList.add('solved'); }
     updateCounter();
+    // Restore locked/unlocked state silently — no toasts
+    unlockFromRestore();
     if (s.mode==='classroom') setMode('classroom');
     if (s.eclipseType) setEclipseType(s.eclipseType);
     if (s.phase)       setPhase(s.phase);
@@ -1621,7 +2631,411 @@ function restoreState() {
   } catch(e) {}
 }
 
+/* Silent restore of unlock state — called by restoreState, no toasts */
+function unlockFromRestore() {
+  if (simState.ch1Solved) {
+    var ch2 = document.getElementById('ch2');
+    if (ch2) {
+      ch2.classList.remove('locked');
+      var b2 = ch2.querySelector('.challenge-locked-badge');
+      if (b2) b2.remove();
+    }
+  }
+  if (simState.ch2Solved) {
+    var ch3 = document.getElementById('ch3');
+    if (ch3) {
+      ch3.classList.remove('locked');
+      var b3 = ch3.querySelector('.challenge-locked-badge');
+      if (b3) b3.remove();
+    }
+  }
+  if (simState.ch3Solved) {
+    unlockDiscovery(true);
+  }
+  updateProgressTracker();
+}
+
+/* ──────────────────────────────────────────────────────────
+   PHASE PROGRESSION ENGINE — Micropass 1
+   Drives the 4-step progress bar and gates Deep Time + Quiz.
+   ────────────────────────────────────────────────────────── */
+var PHASE_KEY = 'eclipse_sim_phase_v1';
+var currentPhase = 1;
+
+function setProgressPhase(n, opts) {
+  opts = opts || {};
+  if (!opts.allowRegress && n < currentPhase) return;
+  var prev = currentPhase;
+  currentPhase = n;
+  // Update progress bar
+  for (var i = 1; i <= 4; i++) {
+    var step = document.getElementById('p-step-' + i);
+    if (!step) continue;
+    var wasActive = step.classList.contains('active');
+    var wasDone   = step.classList.contains('done');
+    step.classList.remove('active', 'done');
+    if (i < n)  step.classList.add('done');
+    if (i === n) step.classList.add('active');
+    // Micropass 3: one-shot flash on the steps that actually changed state,
+    // and only on live (non-silent) transitions so reloads stay quiet.
+    if (!opts.silent) {
+      var nowActive = (i === n);
+      var nowDone   = (i < n);
+      var changed   = (nowActive && !wasActive) || (nowDone && !wasDone);
+      if (changed) {
+        step.classList.remove('step-flash');
+        void step.offsetWidth; // restart animation
+        step.classList.add('step-flash');
+      }
+    }
+  }
+  // Gate Deep Time (phase 3+)
+  var dt = document.getElementById('deeptime');
+  if (dt) {
+    if (n >= 3) dt.classList.remove('phase-locked');
+    else        dt.classList.add('phase-locked');
+  }
+  // Gate Quiz (phase 4+)
+  var qz = document.getElementById('quiz');
+  if (qz) {
+    if (n >= 4) qz.classList.remove('phase-locked');
+    else        qz.classList.add('phase-locked');
+  }
+  // Micropass 3: smooth section reveal flash when a phase unlocks live.
+  if (!opts.silent && n > prev) {
+    if (n >= 3 && prev < 3 && dt) flashSectionReveal(dt);
+    if (n >= 4 && prev < 4 && qz) flashSectionReveal(qz);
+  }
+  // Persist
+  try { localStorage.setItem(PHASE_KEY, String(n)); } catch(e) {}
+  // Optional toast on live transitions
+  if (!opts.silent && opts.toastMsg) {
+    var delay = opts.toastDelay || 250;
+    setTimeout(function(){ toast(opts.toastMsg, 'success'); }, delay);
+  }
+}
+
+/* One-shot section-reveal animation helper (Micropass 3). */
+function flashSectionReveal(sec) {
+  if (!sec) return;
+  sec.classList.remove('section-reveal-flash');
+  void sec.offsetWidth;
+  sec.classList.add('section-reveal-flash');
+}
+
+/* ──────────────────────────────────────────────────────────
+   DEEP TIME ANIMATION ENGINE — Micropass 2
+   Required Phase-3 cinematic before the quiz unlocks.
+   ────────────────────────────────────────────────────────── */
+var DEEPTIME_KEY = 'eclipse_sim_deeptime_complete_v1';
+var DT_SUN_RADIUS = 70; // matches the SVG <circle id="dt-sun" r="70">
+
+var deepTimeState = {
+  completed: false,
+  running: false,
+  scene: -1,
+  rafId: null,
+  startTime: 0,
+  timers: []
+};
+
+var DT_SCENES = [
+  {
+    label: 'Scene 1 of 4',
+    time:  'Today',
+    duration: 2000,
+    title: 'Present-day total solar eclipse',
+    text:  'Today, the Moon and Sun appear nearly the same size in Earth\u2019s sky.',
+    moonStart: 1.00, moonEnd: 1.00
+  },
+  {
+    label: 'Scene 2 of 4',
+    time:  'Millions of years later',
+    duration: 3000,
+    title: 'The Moon drifts outward',
+    text:  'The Moon moves about 3.8 cm farther away each year.',
+    moonStart: 1.00, moonEnd: 0.85
+  },
+  {
+    label: 'Scene 3 of 4',
+    time:  '~600 million years from now',
+    duration: 2500,
+    title: 'A ring of sunlight appears',
+    text:  'In the future, the Moon will look smaller in the sky. Sunlight will form a ring around it.',
+    moonStart: 0.85, moonEnd: 0.72
+  },
+  {
+    label: 'Scene 4 of 4',
+    time:  'Far future',
+    duration: 2500,
+    title: 'Total eclipses end',
+    text:  'What feels permanent in the sky is only temporary on geologic time scales.',
+    moonStart: 0.72, moonEnd: 0.55
+  }
+];
+
+function dtEaseInOut(p) {
+  return p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+}
+
+function dtApplyMoonScale(scale) {
+  var moon = document.getElementById('dt-moon');
+  if (moon) moon.setAttribute('r', String(DT_SUN_RADIUS * scale));
+}
+
+function renderDeepTimeScene(idx) {
+  var s = DT_SCENES[idx];
+  if (!s) return;
+  var lbl   = document.getElementById('dt-scene-label');
+  var time  = document.getElementById('dt-time-label');
+  var title = document.getElementById('dt-scene-title');
+  var text  = document.getElementById('dt-scene-text');
+  var drift = document.getElementById('dt-drift-badge');
+
+  if (lbl)  lbl.textContent  = s.label;
+  if (time) time.textContent = s.time;
+
+  // Re-trigger fade-in for title + text
+  if (title) {
+    title.classList.remove('dt-text-fadein');
+    void title.offsetWidth;
+    title.textContent = s.title;
+    title.classList.add('dt-text-fadein');
+  }
+  if (text) {
+    text.classList.remove('dt-text-fadein');
+    void text.offsetWidth;
+    text.textContent = s.text;
+    text.classList.add('dt-text-fadein');
+  }
+  // Drift badge reveals at Scene 2 (idx >= 1) and stays
+  if (drift) {
+    if (idx >= 1) drift.classList.add('show');
+    else          drift.classList.remove('show');
+  }
+}
+
+function dtTotalDuration() {
+  var t = 0;
+  for (var i = 0; i < DT_SCENES.length; i++) t += DT_SCENES[i].duration;
+  return t;
+}
+
+/* Reduced-motion + wonder-moment helpers (Micropass 4) */
+function prefersReducedMotion() {
+  try {
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  } catch(e) { return false; }
+}
+function triggerWonderBreath() {
+  if (prefersReducedMotion()) return;
+  var corona = document.getElementById('dt-corona');
+  if (!corona) return;
+  corona.classList.remove('dt-corona-breath');
+  void corona.getBoundingClientRect(); // restart animation
+  corona.classList.add('dt-corona-breath');
+}
+
+function dtTick(now) {
+  if (!deepTimeState.running) return;
+  var elapsed = now - deepTimeState.startTime;
+  var total   = dtTotalDuration();
+
+  // Determine current scene and progress within it
+  var t = 0, sceneIdx = 0, sceneElapsed = 0;
+  for (var i = 0; i < DT_SCENES.length; i++) {
+    if (elapsed < t + DT_SCENES[i].duration) {
+      sceneIdx = i;
+      sceneElapsed = elapsed - t;
+      break;
+    }
+    t += DT_SCENES[i].duration;
+    sceneIdx = i + 1;
+  }
+
+  // Reached the end
+  if (sceneIdx >= DT_SCENES.length) {
+    finishDeepTimeAnimation();
+    return;
+  }
+
+  // Swap scene text on scene boundary
+  if (sceneIdx !== deepTimeState.scene) {
+    deepTimeState.scene = sceneIdx;
+    renderDeepTimeScene(sceneIdx);
+    // Wonder moment: a single restrained corona-brighten on Scene 4 entry.
+    if (sceneIdx === 3) triggerWonderBreath();
+  }
+
+  // Interpolate moon scale within the active scene
+  var scene = DT_SCENES[sceneIdx];
+  var p = scene.duration > 0 ? Math.min(1, sceneElapsed / scene.duration) : 1;
+  var eased = dtEaseInOut(p);
+  var scale = scene.moonStart + (scene.moonEnd - scene.moonStart) * eased;
+  dtApplyMoonScale(scale);
+
+  // Timeline fill
+  var fill = document.getElementById('dt-timeline-fill');
+  if (fill) fill.style.width = (Math.min(1, elapsed / total) * 100) + '%';
+
+  deepTimeState.rafId = requestAnimationFrame(dtTick);
+}
+
+function startDeepTimeAnimation() {
+  if (deepTimeState.running) return;
+  // Reset visuals
+  dtApplyMoonScale(DT_SCENES[0].moonStart);
+  var fill = document.getElementById('dt-timeline-fill');
+  if (fill) fill.style.width = '0%';
+  var completion = document.getElementById('dt-completion');
+  if (completion) completion.classList.remove('show');
+  var drift = document.getElementById('dt-drift-badge');
+  if (drift) drift.classList.remove('show');
+  // Clear any lingering wonder-moment class (Micropass 4)
+  var corona = document.getElementById('dt-corona');
+  if (corona) corona.classList.remove('dt-corona-breath');
+  // Hide all buttons during playback
+  var btnStart    = document.getElementById('dt-start-btn');
+  var btnContinue = document.getElementById('dt-continue-btn');
+  var btnReplay   = document.getElementById('dt-replay-btn');
+  if (btnStart)    btnStart.hidden    = true;
+  if (btnContinue) btnContinue.hidden = true;
+  if (btnReplay)   btnReplay.hidden   = true;
+  // Reduced-motion: skip the cinematic and jump straight to the completed
+  // state. Pedagogical content still arrives via the final scene text and
+  // the completion overlay. (Micropass 4)
+  if (prefersReducedMotion()) {
+    deepTimeState.scene = DT_SCENES.length - 1;
+    renderDeepTimeScene(DT_SCENES.length - 1);
+    finishDeepTimeAnimation();
+    return;
+  }
+  // Start the loop
+  deepTimeState.running   = true;
+  deepTimeState.scene     = -1;
+  deepTimeState.startTime = performance.now();
+  deepTimeState.rafId     = requestAnimationFrame(dtTick);
+}
+
+function replayDeepTimeAnimation() {
+  // Cancel any in-flight loop
+  if (deepTimeState.rafId) {
+    cancelAnimationFrame(deepTimeState.rafId);
+    deepTimeState.rafId = null;
+  }
+  deepTimeState.running   = false;
+  deepTimeState.scene     = -1;
+  // Important: do NOT touch deepTimeState.completed or PHASE_KEY — replay must
+  // not regress page progression if the quiz is already unlocked.
+  startDeepTimeAnimation();
+}
+
+function finishDeepTimeAnimation() {
+  deepTimeState.running = false;
+  deepTimeState.completed = true;
+  if (deepTimeState.rafId) {
+    cancelAnimationFrame(deepTimeState.rafId);
+    deepTimeState.rafId = null;
+  }
+  // Force final visual state
+  var lastScene = DT_SCENES[DT_SCENES.length - 1];
+  dtApplyMoonScale(lastScene.moonEnd);
+  renderDeepTimeScene(DT_SCENES.length - 1);
+  var fill = document.getElementById('dt-timeline-fill');
+  if (fill) fill.style.width = '100%';
+  // Reveal completion overlay + buttons
+  var completion = document.getElementById('dt-completion');
+  if (completion) completion.classList.add('show');
+  var btnContinue = document.getElementById('dt-continue-btn');
+  var btnReplay   = document.getElementById('dt-replay-btn');
+  if (btnContinue) btnContinue.hidden = false;
+  if (btnReplay)   btnReplay.hidden   = false;
+  // Persist completion
+  try { localStorage.setItem(DEEPTIME_KEY, '1'); } catch(e) {}
+  // Unlock toast (exact wording per spec)
+  setTimeout(function(){ toast('Deep time simulation complete', 'success'); }, 320);
+}
+
+function restoreDeepTimeState() {
+  var done = false;
+  try { done = localStorage.getItem(DEEPTIME_KEY) === '1'; } catch(e) {}
+  if (!done) return;
+  // Show the completed state silently — no toast, no animation, no scroll.
+  deepTimeState.completed = true;
+  var lastScene = DT_SCENES[DT_SCENES.length - 1];
+  dtApplyMoonScale(lastScene.moonEnd);
+  renderDeepTimeScene(DT_SCENES.length - 1);
+  var fill = document.getElementById('dt-timeline-fill');
+  if (fill) fill.style.width = '100%';
+  var completion = document.getElementById('dt-completion');
+  if (completion) completion.classList.add('show');
+  var btnStart    = document.getElementById('dt-start-btn');
+  var btnContinue = document.getElementById('dt-continue-btn');
+  var btnReplay   = document.getElementById('dt-replay-btn');
+  if (btnStart)    btnStart.hidden    = true;
+  if (btnContinue) btnContinue.hidden = false;
+  if (btnReplay)   btnReplay.hidden   = false;
+}
+
+function completeDeepTime() {
+  // Defensive guard: ignore stray calls before the animation actually finished.
+  // restoreDeepTimeState() already sets deepTimeState.completed = true for any
+  // returning user whose DEEPTIME_KEY is '1', so this never blocks a legitimate
+  // Continue-to-Quiz click. (Micropass 2.5)
+  if (!deepTimeState.completed) return;
+  // Advance progression only once; scroll runs every time the user clicks Continue.
+  if (currentPhase < 4) {
+    setProgressPhase(4, { toastMsg: 'Phase 4 unlocked \u2014 checkpoint quiz', toastDelay: 250 });
+  }
+  // Smooth-scroll to quiz once the gate fades
+  setTimeout(function() {
+    var quiz = document.getElementById('quiz');
+    if (!quiz) return;
+    var navEl = document.querySelector('nav');
+    var navH = navEl ? navEl.offsetHeight : 0;
+    window.scrollTo({ top: quiz.getBoundingClientRect().top + window.scrollY - navH - 14, behavior: 'smooth' });
+  }, 380);
+}
+
+function initPhase() {
+  var startPhase = 1;
+
+  // 1. Local list — no longer dependent on the IIFE-scoped OBS_IDS variable.
+  var obsIds = ['obs-solar', 'obs-lunar', 'obs-nomiss'];
+  var allObsRevealed = obsIds.every(function(id) {
+    var el = document.getElementById(id);
+    return el && !el.classList.contains('locked');
+  });
+  if (allObsRevealed) startPhase = 2;
+
+  // 2. Solving Challenge 3 advances to phase 3 (Deep Time available).
+  if (simState.ch3Solved) startPhase = 3;
+
+  // 3. Phase 4 may ONLY restore when Deep Time AND Continue-to-Quiz have both
+  //    happened. PHASE_KEY=4 is the Continue-to-Quiz signal; DEEPTIME_KEY=1
+  //    is the animation-complete signal. Both must be true to skip back into
+  //    the quiz-unlocked state on reload. (Micropass 2.5)
+  var deepTimeDone = false;
+  try { deepTimeDone = localStorage.getItem(DEEPTIME_KEY) === '1'; } catch(e) {}
+
+  var storedRaw = null;
+  try { storedRaw = localStorage.getItem(PHASE_KEY); } catch(e) {}
+  if (storedRaw) {
+    var stored = parseInt(storedRaw, 10);
+    if (!isNaN(stored) && stored > startPhase) {
+      startPhase = Math.min(4, stored);
+    }
+  }
+  // Cap at phase 3 if Deep Time has not actually been completed.
+  // (Removes the M1.5 legacy auto-unlock that bypassed the cinematic.)
+  if (startPhase === 4 && !deepTimeDone) startPhase = 3;
+
+  setProgressPhase(startPhase, { silent: true });
+}
+
 restoreState();
+// First-visit render — if no saved state, panel shows Stage 1 active immediately
+updateMissionPanel();
 </script>
 
 <!-- Starfield -->
@@ -1927,6 +3341,86 @@ function resetCheckpoint() {
 
 /* ── INIT ────────────────────────────────────────────────── */
 buildCheckpoint();
+</script>
+
+<!-- ── OBSERVATION CARD REVEAL SYSTEM ───────────────────── -->
+<script>
+(function() {
+  var OBS_KEY = 'lyfelabz-eclipse-observations';
+  var OBS_IDS = ['obs-solar', 'obs-lunar', 'obs-nomiss'];
+
+  /* ── Reveal a single card ─────────────────────────────── */
+  window.revealObservation = function(card) {
+    if (!card.classList.contains('locked')) return; // already revealed
+    card.classList.remove('locked');
+    card.removeAttribute('onclick'); // prevent re-fire
+    // One-shot reveal flash
+    card.classList.remove('obs-reveal-flash');
+    void card.offsetWidth;
+    card.classList.add('obs-reveal-flash');
+    persistObservations();
+    checkLabGate(false);
+  };
+
+  /* ── Gate check ───────────────────────────────────────── */
+  function checkLabGate(silent) {
+    var allRevealed = OBS_IDS.every(function(id) {
+      var el = document.getElementById(id);
+      return el && !el.classList.contains('locked');
+    });
+    var wrap = document.getElementById('lab-controls-wrap');
+    var msg  = document.getElementById('obs-gate-msg');
+    if (allRevealed) {
+      if (wrap) wrap.classList.remove('lab-controls-locked');
+      if (msg)  msg.classList.add('hidden');
+      if (!silent) {
+        setTimeout(function() { toast('Lab unlocked \u2014 begin the experiment.', 'info'); }, 150);
+      }
+      // Advance phase 1 → 2 (Micropass 1). Silent on restore.
+      if (typeof setProgressPhase === 'function') setProgressPhase(2, { silent: !!silent });
+    } else {
+      if (wrap) wrap.classList.add('lab-controls-locked');
+      if (msg)  msg.classList.remove('hidden');
+    }
+  }
+
+  /* ── Persist to localStorage ──────────────────────────── */
+  function persistObservations() {
+    try {
+      var revealed = OBS_IDS.filter(function(id) {
+        var el = document.getElementById(id);
+        return el && !el.classList.contains('locked');
+      });
+      localStorage.setItem(OBS_KEY, JSON.stringify(revealed));
+    } catch(e) {}
+  }
+
+  /* ── Restore on load ──────────────────────────────────── */
+  function restoreObservations() {
+    try {
+      var raw = localStorage.getItem(OBS_KEY);
+      if (!raw) { checkLabGate(true); return; }
+      var revealed = JSON.parse(raw);
+      revealed.forEach(function(id) {
+        var card = document.getElementById(id);
+        if (card && card.classList.contains('locked')) {
+          card.classList.remove('locked');
+          card.removeAttribute('onclick');
+        }
+      });
+    } catch(e) {}
+    checkLabGate(true);
+  }
+
+  restoreObservations();
+})();
+
+// Initialize phase progression AFTER both restoreState() and restoreObservations()
+// have populated simState and observation locks. (Micropass 1)
+if (typeof initPhase === 'function') initPhase();
+// Restore Deep Time completion state. Must run AFTER initPhase so PHASE_KEY
+// is authoritative for progression; this only restores cinema UI state. (Micropass 2)
+if (typeof restoreDeepTimeState === 'function') restoreDeepTimeState();
 </script>
 
 </body>
