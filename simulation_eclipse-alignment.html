@@ -546,7 +546,6 @@ section:nth-child(even) { background: var(--bg-secondary); }
 }
 @media (max-width: 820px) {
   .challenge-grid { grid-template-columns: 1fr; }
-  .challenge-hint { min-height: 0; }
 }
 
 .challenge-card {
@@ -582,21 +581,40 @@ section:nth-child(even) { background: var(--bg-secondary); }
 }
 .challenge-hint {
   font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;
-  min-height: 7rem;
 }
 
 .challenge-success {
-  display: none; margin-top: 1rem;
-  padding: 0.9rem 1.1rem; border-radius: var(--radius-sm);
+  display: none; margin-top: 0;
+  padding: 0; border-radius: 0;
+  background: transparent; border: 0;
 }
 .challenge-success.show { display: block; animation: fadeIn 0.3s ease both; }
-.solar-card   .challenge-success { background: var(--solar-dim);  border: 1px solid var(--solar-border); }
-.lunar-card   .challenge-success { background: var(--lunar-dim);  border: 1px solid var(--lunar-border); }
-.neutral-card .challenge-success { background: var(--accent-dim); border: 1px solid rgba(122,143,200,0.25); }
+.solar-card   .challenge-success,
+.lunar-card   .challenge-success,
+.neutral-card .challenge-success { background: transparent; border: 0; }
+
+/* Micropass 4.5B — solved card transforms into a Discovery Card */
+.challenge-card.solved {
+  border-color: rgba(46,204,113,0.4);
+  box-shadow: 0 0 14px rgba(46,204,113,0.08);
+  background: linear-gradient(180deg, rgba(46,204,113,0.05), rgba(46,204,113,0) 70%), var(--bg-card);
+}
+.challenge-card.solved .challenge-num,
+.challenge-card.solved .challenge-q,
+.challenge-card.solved .challenge-hint,
+.challenge-card.solved .challenge-locked-badge { display: none; }
 
 .success-head {
-  font-family: 'Fredoka One', cursive; font-size: 1.1rem;
-  margin-bottom: 0.35rem; color: var(--text-primary);
+  font-family: 'Fredoka One', cursive; font-size: 1.15rem;
+  margin-bottom: 0.5rem; color: var(--text-primary);
+  display: flex; align-items: baseline; gap: 0.5rem;
+}
+.success-head::before {
+  content: '\2713';
+  color: var(--green);
+  font-weight: 900;
+  font-family: 'Nunito', sans-serif;
+  flex-shrink: 0;
 }
 .success-why { font-size: 0.86rem; color: rgba(232,237,242,0.85); line-height: 1.65; }
 
@@ -623,6 +641,7 @@ section:nth-child(even) { background: var(--bg-secondary); }
 .discovery-card-title {
   font-family: 'Fredoka One', cursive; font-size: 1.2rem;
   color: var(--text-primary); margin-bottom: 0.65rem; line-height: 1.25;
+  display: flex; align-items: center; gap: 0.75rem;
 }
 .discovery-card-body {
   font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7;
@@ -633,7 +652,14 @@ section:nth-child(even) { background: var(--bg-secondary); }
    CHALLENGE COUNTER PILL
    ========================================================= */
 .challenge-counter-wrap {
-  display: flex; align-items: center; margin-bottom: 1.6rem;
+  display: flex; flex-direction: column; align-items: stretch;
+  gap: 0.9rem; margin-bottom: 1.6rem;
+}
+.challenge-counter-wrap .challenge-counter {
+  align-self: center;
+}
+.challenge-counter-wrap .stage-tracker {
+  width: 100%; margin-bottom: 0;
 }
 .challenge-counter {
   display: inline-flex; align-items: center; gap: 0.45rem;
@@ -1279,6 +1305,50 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
   transition: width 0.18s linear;
 }
 
+/* Milestone strip — Micropass 4.5D */
+.dt-milestones {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 0 0.85rem;
+}
+.dt-milestone {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 0.35rem;
+  color: rgba(122,143,200,0.5);
+  font-size: 0.66rem; font-weight: 800; letter-spacing: 0.07em;
+  text-transform: uppercase; text-align: center; line-height: 1.2;
+  transition: color 0.3s ease;
+}
+.dt-milestone-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(122,143,200,0.28);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+.dt-milestone.complete { color: rgba(46,204,113,0.75); }
+.dt-milestone.complete .dt-milestone-dot { background: var(--green); }
+.dt-milestone.current  { color: var(--accent2); }
+.dt-milestone.current .dt-milestone-dot {
+  background: var(--accent2);
+  box-shadow: 0 0 0 4px rgba(122,143,200,0.16);
+  transform: scale(1.18);
+}
+
+/* Model note — Micropass 4.5D */
+.dt-model-note {
+  font-size: 0.75rem;
+  color: rgba(232,237,242,0.5);
+  line-height: 1.6;
+  margin: 0 0 1.15rem;
+  font-style: italic;
+}
+
+/* Time label inside scene meta — Micropass 4.5D */
+.dt-time-label {
+  color: var(--accent2);
+  font-weight: 800;
+}
+.dt-time-divider { color: rgba(232,237,242,0.3); }
+
 /* Scene text block */
 .dt-scene-meta {
   font-size: 0.7rem;
@@ -1493,10 +1563,10 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
   to   { opacity: 1;    transform: none; }
 }
 
-/* Completion check badge on each discovery card */
+/* Completion check badge on each discovery card — inline in title header (Micropass 4.5C) */
 .discovery-check {
   display: none;
-  position: absolute; top: 0.85rem; right: 0.85rem;
+  margin-left: auto;
   width: 1.5rem; height: 1.5rem; border-radius: 50%;
   background: rgba(46,204,113,0.14);
   border: 1.5px solid rgba(46,204,113,0.42);
@@ -1742,6 +1812,10 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
     <p class="section-desc">Use the lab controls above to solve each challenge. Read the goal, set the controls, and watch the result. You can revise as many times as you like.</p>
 
     <div class="challenge-counter-wrap">
+      <span class="challenge-counter" id="challenge-counter">
+        <span class="counter-dot"></span>
+        <span id="counter-text">0 / 3 completed</span>
+      </span>
       <!-- Stage Progress Tracker — Micropass 1 -->
       <div class="stage-tracker" id="stage-tracker">
         <div class="stage-step current" id="stage-step-1">
@@ -1757,10 +1831,6 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
           <span>Why Not Every Month?</span>
         </div>
       </div>
-      <span class="challenge-counter" id="challenge-counter">
-        <span class="counter-dot"></span>
-        <span id="counter-text">0 / 3 completed</span>
-      </span>
     </div>
 
     <div class="challenge-grid">
@@ -1773,7 +1843,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
           Think carefully: which phase puts the Moon between the Sun and Earth? And where does the Moon need to be in its orbit for the shadow to actually connect?
         </div>
         <div class="challenge-success" id="ch1-success">
-          <div class="success-head">Solar eclipse achieved.</div>
+          <div class="success-head">Solar Eclipse Achieved</div>
           <div class="success-why">New moon + near a node = the Moon's shadow reaches Earth. Both conditions had to be true at the same time.</div>
         </div>
       </div>
@@ -1787,8 +1857,8 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
           This time Earth casts the shadow. Which phase puts the Moon on the far side of Earth from the Sun? What else has to be true?
         </div>
         <div class="challenge-success" id="ch2-success">
-          <div class="success-head">Lunar eclipse achieved.</div>
-          <div class="success-why">Full moon + near a node = Earth's shadow falls on the Moon. The Moon had to be on the right side of Earth and close to the orbital plane.</div>
+          <div class="success-head">Lunar Eclipse Achieved</div>
+          <div class="success-why">Full moon + near a node = Earth's shadow falls on the Moon. The Moon had to be on the far side of Earth and near the orbital plane.</div>
         </div>
       </div>
 
@@ -1801,8 +1871,8 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
           The right phase is there — but the shadow still misses. Show what happens most months when the Moon is above or below the orbital plane.
         </div>
         <div class="challenge-success" id="ch3-success">
-          <div class="success-head">Shadow misses. No eclipse this month.</div>
-          <div class="success-why">This is what happens most of the time. Even with the right phase, the Moon's tilt keeps the shadow from connecting. A node alignment is what makes eclipses rare.</div>
+          <div class="success-head">No Eclipse Month Achieved</div>
+          <div class="success-why">Even with the correct phase, the Moon's tilted orbit causes the shadow to miss. Most months work this way.</div>
         </div>
       </div>
 
@@ -1842,7 +1912,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
     <div class="discovery-grid">
 
       <div class="discovery-card phase-card">
-        <div class="discovery-card-title">Phase Matters<span class="discovery-check">&#10003;</span></div>
+        <div class="discovery-card-title">Moon Phase<span class="discovery-check">&#10003;</span></div>
         <div class="discovery-card-body">
           In Challenge 1 you needed a <strong>new moon</strong> — the only phase that puts the Moon between the Sun and Earth.<br>
           In Challenge 2 you needed a <strong>full moon</strong> — the only phase that puts Earth between the Sun and Moon.<br>
@@ -1851,7 +1921,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
       </div>
 
       <div class="discovery-card node-card">
-        <div class="discovery-card-title">Nodes Matter<span class="discovery-check">&#10003;</span></div>
+        <div class="discovery-card-title">Orbital Nodes<span class="discovery-check">&#10003;</span></div>
         <div class="discovery-card-body">
           In Challenge 3 the phase was correct — but the shadow still missed.<br>
           The Moon's orbit is tilted about <strong>5 degrees</strong>, so it usually passes above or below the orbital plane. The shadow misses Earth or the Moon entirely.<br>
@@ -1860,7 +1930,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
       </div>
 
       <div class="discovery-card shadow-card">
-        <div class="discovery-card-title">Shadow Zone Matters<span class="discovery-check">&#10003;</span></div>
+        <div class="discovery-card-title">Shadow Zones<span class="discovery-check">&#10003;</span></div>
         <div class="discovery-card-body">
           Even when an eclipse happens, not everyone sees the same thing.<br>
           The <strong>umbra</strong> is the darkest part of the shadow — observers inside it see a total eclipse.<br>
@@ -1995,9 +2065,32 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         <div class="dt-timeline-fill" id="dt-timeline-fill"></div>
       </div>
 
+      <!-- Milestone strip — Micropass 4.5D -->
+      <div class="dt-milestones" id="dt-milestones" aria-hidden="true">
+        <div class="dt-milestone" data-scene="0">
+          <span class="dt-milestone-dot"></span>
+          <span class="dt-milestone-label">Today</span>
+        </div>
+        <div class="dt-milestone" data-scene="1">
+          <span class="dt-milestone-dot"></span>
+          <span class="dt-milestone-label">600+ Myr</span>
+        </div>
+        <div class="dt-milestone" data-scene="2">
+          <span class="dt-milestone-dot"></span>
+          <span class="dt-milestone-label">~620 Myr</span>
+        </div>
+        <div class="dt-milestone" data-scene="3">
+          <span class="dt-milestone-dot"></span>
+          <span class="dt-milestone-label">~1.2 Byr</span>
+        </div>
+      </div>
+
+      <!-- Model note — Micropass 4.5D -->
+      <p class="dt-model-note">Model note: This animation compresses hundreds of millions of years into a few seconds. Dates are estimates based on the Moon moving away from Earth about 3.8&nbsp;cm per year.</p>
+
       <!-- Scene meta + text -->
       <div class="dt-scene-meta">
-        <span id="dt-scene-label">Ready to begin</span>
+        <span id="dt-scene-label">Ready to begin</span><span class="dt-time-divider" id="dt-time-divider" hidden> · </span><span class="dt-time-label" id="dt-time-label"></span>
       </div>
       <h3 id="dt-scene-title" class="dt-scene-title">A 10-second journey through deep time</h3>
       <p id="dt-scene-text" class="dt-scene-text">Watch how the Moon&rsquo;s slow outward drift quietly transforms what eclipses look like across millions of years.</p>
@@ -2862,26 +2955,26 @@ var DT_SCENES = [
   },
   {
     label: 'Scene 2 of 4',
-    time:  'Millions of years later',
+    time:  'About 600+ million years from now',
     duration: 3000,
     title: 'The Moon drifts outward',
-    text:  'The Moon moves about 3.8 cm farther away each year.',
+    text:  'The Moon moves about 3.8 cm farther away each year. Over hundreds of millions of years, it begins to look too small to completely cover the Sun.',
     moonStart: 1.00, moonEnd: 0.85
   },
   {
     label: 'Scene 3 of 4',
-    time:  '~600 million years from now',
+    time:  'Approximately 620 million years from now',
     duration: 2500,
     title: 'A ring of sunlight appears',
-    text:  'In the future, the Moon will look smaller in the sky. Sunlight will form a ring around it.',
+    text:  'Total solar eclipses become increasingly rare. Annular eclipses \u2014 where a ring of sunlight surrounds the Moon \u2014 become more common.',
     moonStart: 0.85, moonEnd: 0.72
   },
   {
     label: 'Scene 4 of 4',
-    time:  'Far future',
+    time:  'About 1.2 billion years from now',
     duration: 2500,
     title: 'Total eclipses end',
-    text:  'What feels permanent in the sky is only temporary on geologic time scales.',
+    text:  'Scientists estimate this is roughly when total solar eclipses end. Only annular and partial eclipses remain. What feels permanent in the sky is only temporary on geologic time scales.',
     moonStart: 0.72, moonEnd: 0.55
   }
 ];
@@ -2900,12 +2993,21 @@ function renderDeepTimeScene(idx) {
   if (!s) return;
   var lbl   = document.getElementById('dt-scene-label');
   var time  = document.getElementById('dt-time-label');
+  var divider = document.getElementById('dt-time-divider');
   var title = document.getElementById('dt-scene-title');
   var text  = document.getElementById('dt-scene-text');
   var drift = document.getElementById('dt-drift-badge');
 
   if (lbl)  lbl.textContent  = s.label;
   if (time) time.textContent = s.time;
+  if (divider) divider.hidden = !s.time;
+
+  // Milestone strip — Micropass 4.5D
+  var milestones = document.querySelectorAll('.dt-milestone');
+  for (var m = 0; m < milestones.length; m++) {
+    milestones[m].classList.toggle('current',  m === idx);
+    milestones[m].classList.toggle('complete', m <  idx);
+  }
 
   // Re-trigger fade-in for title + text
   if (title) {
