@@ -1404,6 +1404,76 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
 }
 
 /* =========================================================
+   TRUE FLOATLANDIA SCROLL GATES (Micropass 4.5)
+   Future sections do not occupy scrollable space until earned.
+   The page terminates at a gate card until progression advances.
+   ========================================================= */
+
+/* Default: every future section is absent from the page. */
+#lab,
+#challenges,
+#discovery,
+#deeptime,
+#quiz { display: none; }
+
+/* Phase 2+: Lab + Challenges materialize. */
+body[data-phase="2"] #lab,
+body[data-phase="2"] #challenges,
+body[data-phase="3"] #lab,
+body[data-phase="3"] #challenges,
+body[data-phase="4"] #lab,
+body[data-phase="4"] #challenges { display: block; }
+
+/* Phase 3+: Discovery + Deep Time materialize. */
+body[data-phase="3"] #discovery,
+body[data-phase="3"] #deeptime,
+body[data-phase="4"] #discovery,
+body[data-phase="4"] #deeptime { display: block; }
+
+/* Phase 4: Quiz materializes. */
+body[data-phase="4"] #quiz { display: block; }
+
+/* The end-of-page gate card. */
+.scroll-gate {
+  display: none;
+  max-width: 620px;
+  margin: 2.4rem auto 3.4rem;
+  padding: 0 1.4rem;
+}
+body[data-phase="1"] .scroll-gate[data-gate="1"],
+body[data-phase="2"] .scroll-gate[data-gate="2"],
+body[data-phase="3"] .scroll-gate[data-gate="3"] {
+  display: block;
+}
+
+.scroll-gate-inner {
+  padding: 1.3rem 1.5rem;
+  background: rgba(122,143,200,0.08);
+  border: 1px solid rgba(122,143,200,0.3);
+  border-left: 4px solid rgba(122,143,200,0.55);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  line-height: 1.45;
+  animation: phaseReveal 0.7s ease both;
+}
+.scroll-gate .phase-lock-icon {
+  background: rgba(122,143,200,0.16);
+  border-color: rgba(122,143,200,0.5);
+}
+
+@media (max-width: 520px) {
+  .scroll-gate { margin: 1.6rem auto 2.6rem; padding: 0 1rem; }
+  .scroll-gate-inner { padding: 1.1rem 1.15rem; gap: 0.75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-gate-inner { animation: none !important; }
+}
+
+
+/* =========================================================
    DISCOVERY SUMMARY — Micropass 5
    ========================================================= */
 #discovery {
@@ -1440,7 +1510,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
 }
 </style>
 </head>
-<body>
+<body data-phase="1">
 
 <!-- Starfield canvas -->
 <canvas id="stars"></canvas>
@@ -1556,6 +1626,19 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
     </div>
   </div>
 </section>
+
+<!-- ── PHASE 1 GATE (Micropass 4.5) ─────────────────────── -->
+<div class="scroll-gate" data-gate="1">
+  <div class="scroll-gate-inner">
+    <div class="phase-lock-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    </div>
+    <div class="phase-lock-text">
+      <div class="phase-lock-eyebrow">Locked</div>
+      <div class="phase-lock-msg">Unlock all three observations to begin the eclipse investigation.</div>
+    </div>
+  </div>
+</div>
 
 <!-- ── MAIN LAB ──────────────────────────────────────────── -->
 <section id="lab" style="background: var(--bg-secondary);">
@@ -1726,6 +1809,19 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
     </div><!-- /challenge-grid -->
   </div>
 </section>
+
+<!-- ── PHASE 2 GATE (Micropass 4.5) ─────────────────────── -->
+<div class="scroll-gate" data-gate="2">
+  <div class="scroll-gate-inner">
+    <div class="phase-lock-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    </div>
+    <div class="phase-lock-text">
+      <div class="phase-lock-eyebrow">Locked</div>
+      <div class="phase-lock-msg">Complete all investigation challenges to unlock the scientific explanation.</div>
+    </div>
+  </div>
+</div>
 
 <!-- ── DISCOVERY SUMMARY ──────────────────────────────────── -->
 <section id="discovery" class="discovery-locked" style="background: var(--bg-secondary);">
@@ -1916,6 +2012,19 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
     </div>
   </div>
 </section>
+
+<!-- ── PHASE 3 GATE (Micropass 4.5) ─────────────────────── -->
+<div class="scroll-gate" data-gate="3">
+  <div class="scroll-gate-inner">
+    <div class="phase-lock-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    </div>
+    <div class="phase-lock-text">
+      <div class="phase-lock-eyebrow">Locked</div>
+      <div class="phase-lock-msg">Complete the Deep Time animation to unlock the checkpoint quiz.</div>
+    </div>
+  </div>
+</div>
 
 <!-- ── CHECK YOUR UNDERSTANDING ───────────────────────────── -->
 <section id="quiz" class="quiz-section phase-locked" style="padding-top: 2.5rem;">
@@ -2667,6 +2776,9 @@ function setProgressPhase(n, opts) {
   if (!opts.allowRegress && n < currentPhase) return;
   var prev = currentPhase;
   currentPhase = n;
+  // Micropass 4.5: drive section visibility via body[data-phase]. This is the
+  // single switch that converts soft dims into true scroll gates.
+  if (document.body) document.body.dataset.phase = String(n);
   // Update progress bar
   for (var i = 1; i <= 4; i++) {
     var step = document.getElementById('p-step-' + i);
@@ -3421,6 +3533,35 @@ if (typeof initPhase === 'function') initPhase();
 // Restore Deep Time completion state. Must run AFTER initPhase so PHASE_KEY
 // is authoritative for progression; this only restores cinema UI state. (Micropass 2)
 if (typeof restoreDeepTimeState === 'function') restoreDeepTimeState();
+
+/* ──────────────────────────────────────────────────────────
+   LOCKED-NAV INTERCEPTION — Micropass 4.5
+   If a nav link or anchor jumps to a section that is currently
+   gated (display:none), redirect the scroll to the active gate
+   card instead of doing nothing.
+   ────────────────────────────────────────────────────────── */
+(function installLockedNavInterceptor() {
+  document.addEventListener('click', function(e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href === '#') return;
+    var target = document.getElementById(href.slice(1));
+    if (!target) return;
+    // If target is hidden (display:none from body[data-phase] gating)
+    var cs = window.getComputedStyle(target);
+    if (cs.display !== 'none') return;
+    e.preventDefault();
+    var gate = document.querySelector('.scroll-gate[data-gate="' + currentPhase + '"]');
+    if (!gate) return;
+    var navEl = document.querySelector('nav');
+    var navH  = navEl ? navEl.offsetHeight : 0;
+    window.scrollTo({
+      top: gate.getBoundingClientRect().top + window.scrollY - navH - 14,
+      behavior: 'smooth'
+    });
+  });
+})();
 </script>
 
 </body>
