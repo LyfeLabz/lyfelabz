@@ -1,0 +1,2974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="utf-8"/>
+<link href="favicon.ico" rel="icon" type="image/x-icon"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link rel="canonical" href="https://lyfelabz.com/investigation_amplitude-challenge.html">
+<meta name="description" content="Investigate how a wave's amplitude affects the energy it delivers. Collect data, build a model, and figure out how much energy is enough."/>
+<title>Amplitude Challenge | LyfeLabz</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+/* =========================================================
+   CSS VARIABLES & RESET
+   ========================================================= */
+:root {
+  --bg-primary:    #0d1117;
+  --bg-secondary:  #161b22;
+  --bg-card:       #1c2230;
+  --bg-card-hover: #222b3a;
+  --border:        #2a3447;
+  --border-light:  #3a4a5e;
+  --text-primary:  #e6edf3;
+  --text-secondary:#b8c1cc;
+  --text-muted:    #9aa4af;
+  --muted:         #9aa4af;
+  --teal:          #3bc8e8;
+  --teal-dim:      rgba(59,200,232,0.15);
+  --teal-glow:     rgba(59,200,232,0.35);
+  --orange:        #f87c3c;
+  --orange-dim:    rgba(248,124,60,0.15);
+  --orange-glow:   rgba(248,124,60,0.35);
+  --gold:          #f5c842;
+  --gold-dim:      rgba(245,200,66,0.15);
+  --green:         #2ecc71;
+  --green-dim:     rgba(46,204,113,0.15);
+  --red:           #e87070;
+  --red-dim:       rgba(232,112,112,0.15);
+  --radius:        14px;
+  --radius-sm:     10px;
+  --shadow:        0 4px 20px rgba(0,0,0,0.4);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 18px; scroll-behavior: smooth; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Nunito', sans-serif;
+  line-height: 1.75;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   NAV
+   ========================================================= */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(8,14,22,0.97);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.8rem 2.5rem;
+}
+.nav-logo { font-family:'Orbitron',sans-serif; font-size:1.35rem; font-weight:900; color:var(--gold); text-decoration:none; letter-spacing:0.06em; text-shadow:0 0 18px rgba(245,200,66,0.35); }
+.nav-back  { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--teal); background:rgba(59,200,232,0.1); border:1px solid rgba(59,200,232,0.35); padding:0.32rem 0.9rem; border-radius:99px; text-decoration:none; transition:all 0.2s; }
+.nav-back:hover { background:rgba(59,200,232,0.18); }
+.nav-toggles { display:flex; gap:0.5rem; align-items:center; }
+.nav-toggle { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; padding:0.3rem 0.75rem; border-radius:99px; background:transparent; border:1px solid var(--border-light); color:var(--text-muted); cursor:pointer; transition:all 0.2s; }
+.nav-toggle:hover { color:var(--text-primary); border-color:var(--text-muted); }
+.nav-toggle.active { background:rgba(46,204,113,0.12); border-color:var(--green); color:var(--green); }
+.nav-toggle.active.ls { background:rgba(59,200,232,0.12); border-color:var(--teal); color:var(--teal); }
+
+/* =========================================================
+   BADGE BARS
+   ========================================================= */
+.badge-bar { display:none; flex-wrap:wrap; gap:0.5rem; padding:0.6rem 1.4rem; background:var(--bg-secondary); border-bottom:1px solid var(--border); justify-content:center; }
+body.stem-active .badge-bar.stem-bar { display:flex; }
+body.ls-active   .badge-bar.ls-bar   { display:flex; }
+.badge { position:relative; display:inline-flex; align-items:center; gap:0.3rem; padding:0.25rem 0.7rem; border-radius:20px; font-size:0.72rem; font-weight:800; cursor:help; transition:filter 0.2s; }
+.badge:hover { filter:brightness(1.2); }
+.badge.green { background:var(--green-dim); color:var(--green); border:1px solid rgba(46,204,113,0.3); }
+.badge.teal  { background:var(--teal-dim);  color:var(--teal);  border:1px solid rgba(59,200,232,0.3); }
+.badge-tip { display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#1c2230; border:1px solid var(--border-light); border-radius:8px; padding:0.5rem 0.75rem; font-size:0.7rem; font-weight:600; color:#c9d1d9; width:240px; text-align:center; z-index:200; pointer-events:none; line-height:1.4; }
+.badge:hover .badge-tip { display:block; }
+
+/* =========================================================
+   HERO
+   ========================================================= */
+.hero {
+  background:
+    radial-gradient(circle at 15% 25%, rgba(248,124,60,0.18), transparent 28%),
+    radial-gradient(circle at 85% 15%, rgba(248,124,60,0.10), transparent 22%),
+    radial-gradient(ellipse at 50% 0%, rgba(59,200,232,0.08) 0%, transparent 55%),
+    linear-gradient(135deg, #0a1218 0%, #0c1922 50%, #080f15 100%);
+  padding: 4.1rem 2rem 3.35rem; text-align:center;
+  position:relative; overflow:hidden; border-bottom:1px solid rgba(248,124,60,0.22);
+}
+.hero::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(-32deg, transparent 0px, transparent 36px, rgba(248,124,60,0.018) 36px, rgba(248,124,60,0.018) 38px); pointer-events:none; }
+.hero::after  { content:''; position:absolute; inset:auto 0 0 0; height:90px; background:linear-gradient(180deg, transparent, rgba(8,14,22,0.7)); pointer-events:none; }
+.hero-badge { display:inline-block; background:rgba(248,124,60,0.12); border:1px solid rgba(248,124,60,0.45); color:var(--orange); padding:0.35rem 1.1rem; border-radius:99px; font-size:0.75rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:1.2rem; position:relative; box-shadow:0 0 18px rgba(248,124,60,0.18); }
+.hero h1 { font-family:'Fredoka One',cursive; font-size:clamp(2.3rem,5.6vw,3.9rem); line-height:1.06; margin-bottom:0.8rem; background:linear-gradient(135deg,#ffffff 20%,var(--orange) 65%,#ffd4b8 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; position:relative; }
+.hero p { font-size:1rem; color:#c9d1d9; max-width:700px; margin:0 auto; line-height:1.7; position:relative; }
+.hero-kicker { margin-top:1rem; font-size:0.8rem; font-weight:800; letter-spacing:0.06em; color:rgba(248,124,60,0.82); position:relative; }
+.hero-shell { max-width:1120px; margin:0 auto; position:relative; z-index:1; }
+.hero-canvas-wrap { position:absolute; inset:0; pointer-events:none; z-index:0; }
+.hero-canvas-wrap canvas { width:100%; height:100%; display:block; }
+
+/* =========================================================
+   BEFORE YOU BEGIN
+   ========================================================= */
+.byb-wrap { background:var(--bg-primary); border-bottom:2px solid rgba(248,124,60,0.16); padding:2.5rem 1.5rem; }
+.byb-inner { max-width:980px; margin:0 auto; }
+.byb-header { text-align:center; margin-bottom:2rem; }
+.byb-eyebrow { font-size:0.72rem; font-weight:900; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; display:block; }
+.byb-title { font-family:'Fredoka One',cursive; font-size:clamp(1.5rem,3vw,2.2rem); color:var(--text-primary); margin-bottom:0.4rem; }
+.byb-sub { font-size:0.9rem; color:#c9d1d9; line-height:1.6; }
+.byb-qa { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.byb-qa-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:1.2rem 1.4rem; }
+.byb-q { font-family:'Fredoka One',cursive; font-size:0.97rem; color:var(--gold); margin-bottom:0.55rem; line-height:1.3; }
+.byb-a { font-size:0.85rem; color:#c9d1d9; line-height:1.7; }
+.byb-a strong { color:var(--text-primary); font-weight:800; }
+.byb-a a { color:var(--teal); text-decoration:none; border-bottom:1px dashed rgba(59,200,232,0.4); }
+.byb-a a:hover { border-bottom-style:solid; }
+@media (max-width:720px){ .byb-qa { grid-template-columns:1fr; } }
+
+/* =========================================================
+   PROGRESS BAR
+   ========================================================= */
+.progress-wrap { max-width:900px; margin:1.4rem auto 1.5rem; padding:0 1.4rem; }
+.progress-steps { display:flex; gap:0; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border); background:var(--bg-secondary); }
+.progress-step { flex:1; padding:0.55rem 0.25rem; text-align:center; font-size:0.72rem; font-weight:800; color:#aeb8c2; background:var(--bg-secondary); border-right:1px solid var(--border); transition:background 0.4s ease, color 0.4s ease; cursor:default; letter-spacing:0.04em; }
+.progress-step:last-child { border-right:none; }
+.progress-step.active { background:var(--orange-dim); color:var(--orange); border-right-color:rgba(248,124,60,0.25); box-shadow:inset 0 -2px 0 var(--orange); }
+.progress-step.done   { background:rgba(46,204,113,0.1); color:var(--green); border-right-color:rgba(46,204,113,0.25); }
+
+/* =========================================================
+   SECTION WRAPPER
+   ========================================================= */
+.sim-section { max-width:900px; margin:0 auto 2.25rem; padding:0 1.4rem; }
+.section-label { font-size:0.72rem; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--orange); margin-bottom:0.4rem; }
+.section-title { font-family:'Fredoka One',sans-serif; font-size:clamp(1.5rem,3vw,2rem); line-height:1.15; color:var(--text-primary); margin-bottom:0.55rem; }
+.section-desc  { font-size:1rem; font-weight:600; color:#d6dee6; line-height:1.65; margin-bottom:1.2rem; max-width:900px; }
+
+/* "To unlock the next phase…" hint — sits under section-desc, updated by JS */
+.unlock-hint { display:flex; align-items:center; gap:0.55rem; font-size:0.82rem; font-weight:700; color:var(--text-secondary); background:rgba(248,124,60,0.06); border-left:3px solid rgba(248,124,60,0.55); padding:0.55rem 0.85rem; border-radius:6px; margin-top:-0.6rem; margin-bottom:1.1rem; transition:background 0.3s, border-color 0.3s, color 0.3s; }
+.unlock-hint::before { content:"NEXT"; font-size:0.6rem; font-weight:900; letter-spacing:0.14em; color:var(--orange); background:rgba(248,124,60,0.14); padding:0.15rem 0.5rem; border-radius:99px; flex-shrink:0; }
+.unlock-hint.ready { background:rgba(46,204,113,0.08); border-left-color:var(--green); color:#c5ecd2; }
+.unlock-hint.ready::before { content:"READY"; color:var(--green); background:rgba(46,204,113,0.16); }
+.unlock-hint strong { color:var(--text-primary); font-weight:800; }
+
+/* =========================================================
+   BUTTON SYSTEM
+   ========================================================= */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.65rem 1.3rem; border-radius:10px; font-family:'Nunito',sans-serif; font-size:0.88rem; font-weight:800; border:1px solid transparent; cursor:pointer; transition:all 0.2s ease; text-decoration:none; line-height:1; }
+.btn:disabled { opacity:0.4; cursor:not-allowed; }
+.btn-orange { background:var(--orange); color:#000; border-color:var(--orange); box-shadow:0 2px 0 rgba(0,0,0,0.15); }
+.btn-orange:hover:not(:disabled) { background:#ff9050; box-shadow:0 4px 14px rgba(248,124,60,0.4); transform:translateY(-1px); }
+.btn-ghost { background:transparent; color:var(--text-primary); border-color:var(--border-light); }
+.btn-ghost:hover:not(:disabled) { background:var(--bg-card); border-color:var(--orange); color:var(--orange); }
+.btn-teal { background:var(--teal); color:#000; border-color:var(--teal); }
+.btn-teal:hover:not(:disabled) { background:#5fd6ee; }
+
+/* =========================================================
+   PHASE CARD (interactive zone)
+   ========================================================= */
+.phase-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.4rem 1.4rem 1.6rem; box-shadow:var(--shadow); }
+.phase-card + .phase-card { margin-top:1rem; }
+.phase-canvas-wrap { background:#070b10; border:1px solid var(--border); border-radius:10px; padding:0.6rem; }
+.phase-canvas-wrap canvas { display:block; width:100%; height:auto; border-radius:6px; }
+.phase-controls { display:flex; flex-wrap:wrap; gap:1rem; align-items:center; margin-top:1rem; }
+.phase-controls .control { display:flex; flex-direction:column; gap:0.3rem; min-width:180px; flex:1; }
+.phase-controls label { font-size:0.72rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); }
+.phase-controls .control-row { display:flex; gap:0.6rem; align-items:center; }
+input[type=range] { -webkit-appearance:none; width:100%; height:5px; background:var(--border); border-radius:99px; outline:none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--orange); cursor:pointer; box-shadow:0 0 0 4px rgba(248,124,60,0.18); }
+input[type=range]::-moz-range-thumb { width:18px; height:18px; border-radius:50%; background:var(--orange); cursor:pointer; border:none; box-shadow:0 0 0 4px rgba(248,124,60,0.18); }
+.value-pill { display:inline-block; min-width:38px; text-align:center; padding:0.2rem 0.55rem; background:var(--orange-dim); border:1px solid rgba(248,124,60,0.35); border-radius:99px; color:var(--orange); font-weight:900; font-size:0.85rem; font-variant-numeric:tabular-nums; }
+
+/* =========================================================
+   PHASE 1 — DISCOVERY HOTSPOT TRACKER
+   ========================================================= */
+.discover-strip { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1rem; }
+.discover-pill { padding:0.35rem 0.85rem; border-radius:99px; background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-muted); font-size:0.78rem; font-weight:800; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:0.4rem; transition:all 0.3s; }
+.discover-pill.found { background:rgba(46,204,113,0.12); border-color:var(--green); color:var(--green); }
+.discover-pill .dot { width:8px; height:8px; border-radius:50%; background:currentColor; opacity:0.7; }
+.discover-prompt { margin-top:0.8rem; font-size:0.88rem; color:#c9d1d9; padding:0.7rem 0.95rem; background:var(--bg-secondary); border-left:3px solid var(--orange); border-radius:6px; }
+
+/* =========================================================
+   PREDICTION CARD
+   ========================================================= */
+.prediction-card { background:var(--bg-secondary); border:1.5px solid rgba(245,200,66,0.3); border-radius:var(--radius); padding:1.2rem 1.4rem; margin-top:1.1rem; }
+.prediction-card h4 { font-family:'Fredoka One',cursive; color:var(--gold); font-size:1.05rem; margin-bottom:0.3rem; }
+.prediction-card p { font-size:0.85rem; color:#c9d1d9; margin-bottom:0.85rem; }
+.prediction-options { display:grid; grid-template-columns:1fr 1fr; gap:0.55rem; }
+.prediction-options label { display:flex; align-items:center; gap:0.55rem; padding:0.55rem 0.8rem; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; font-size:0.85rem; cursor:pointer; transition:all 0.2s; }
+.prediction-options label:hover { border-color:var(--gold); }
+.prediction-options input[type=radio] { accent-color:var(--gold); }
+.prediction-options label.selected { background:rgba(245,200,66,0.1); border-color:var(--gold); }
+.prediction-saved { display:none; margin-top:0.7rem; font-size:0.78rem; font-weight:800; color:var(--green); letter-spacing:0.05em; }
+.prediction-saved.visible { display:block; }
+@media (max-width:560px){ .prediction-options { grid-template-columns:1fr; } }
+
+/* =========================================================
+   DATA TABLE (Phase 2)
+   ========================================================= */
+.data-table-wrap { margin-top:1.1rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius); padding:0.9rem 0.95rem 1rem; }
+.data-table-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; gap:0.75rem; flex-wrap:wrap; }
+.data-table-title { font-family:'Fredoka One',cursive; color:var(--orange); font-size:1rem; }
+.data-table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+.data-table th, .data-table td { padding:0.55rem 0.7rem; text-align:center; font-size:0.85rem; border-bottom:1px solid var(--border); }
+.data-table th { font-size:0.7rem; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); }
+.data-table th.col-trial { width:54px; }
+.data-table .trial-num { display:inline-flex; align-items:center; justify-content:center; min-width:1.8em; padding:0.1rem 0.45rem; background:var(--bg-card); border:1px solid var(--border-light); border-radius:99px; font-weight:900; color:var(--text-primary); font-size:0.78rem; }
+.data-table tbody tr { transition:background 0.45s ease; }
+.data-table tbody tr.fresh { animation: rowSlideIn 1.6s ease-out both; }
+.data-table tbody tr.row-max-energy { box-shadow:inset 3px 0 0 var(--orange); }
+.data-table tbody tr.row-min-amp    { box-shadow:inset 3px 0 0 var(--teal); }
+.data-table tbody tr.row-max-energy.row-min-amp { box-shadow:inset 3px 0 0 var(--orange), inset 0 -2px 0 var(--teal); }
+.data-table .empty-row td { color:var(--text-muted); font-style:italic; padding:1.4rem 0; }
+@keyframes rowSlideIn {
+  0%   { background:rgba(248,124,60,0.32); }
+  60%  { background:rgba(248,124,60,0.16); }
+  100% { background:transparent; }
+}
+
+/* Inline bar cells inside the data table */
+.bar-cell { display:flex; align-items:center; gap:0.6rem; justify-content:flex-start; min-width:120px; }
+.bar-num { font-weight:800; color:var(--text-primary); min-width:1.7em; text-align:right; font-size:0.92rem; }
+.data-bar { flex:1 1 auto; height:8px; background:rgba(154,164,175,0.13); border-radius:99px; overflow:hidden; position:relative; min-width:50px; max-width:120px; }
+.data-bar-fill { height:100%; width:0; border-radius:99px; transition:width 0.75s cubic-bezier(.2,.7,.2,1); }
+.data-bar.amp .data-bar-fill    { background:linear-gradient(90deg, rgba(59,200,232,0.5), var(--teal)); box-shadow:0 0 7px rgba(59,200,232,0.4); }
+.data-bar.energy .data-bar-fill { background:linear-gradient(90deg, rgba(248,124,60,0.55), var(--orange)); box-shadow:0 0 7px rgba(248,124,60,0.45); }
+
+/* Sufficiency strip — three indicators */
+.sufficiency-strip { display:flex; flex-wrap:wrap; gap:0.45rem; margin-top:0.95rem; align-items:center; }
+.suff-pill { display:inline-flex; align-items:center; gap:0.5rem; padding:0.4rem 0.85rem; background:var(--bg-card); border:1px solid var(--border); border-radius:99px; font-size:0.74rem; font-weight:800; color:var(--text-muted); letter-spacing:0.03em; transition:all 0.3s; }
+.suff-pill .suff-label { text-transform:uppercase; font-size:0.62rem; letter-spacing:0.1em; }
+.suff-pill .suff-progress { color:var(--text-primary); font-variant-numeric:tabular-nums; font-weight:900; }
+.suff-pill.met { background:rgba(46,204,113,0.1); border-color:rgba(46,204,113,0.55); color:var(--green); }
+.suff-pill.met .suff-progress { color:var(--green); }
+.suff-ready { display:none; margin-left:auto; font-size:0.74rem; font-weight:900; color:var(--green); letter-spacing:0.08em; text-transform:uppercase; padding:0.4rem 0.95rem; background:rgba(46,204,113,0.1); border:1px solid var(--green); border-radius:99px; }
+.suff-ready.visible { display:inline-flex; }
+
+/* Observation prompt — guides pattern noticing without revealing the answer */
+.observation-prompt { margin-top:0.95rem; padding:0.85rem 1.05rem; background:rgba(245,200,66,0.06); border:1px dashed rgba(245,200,66,0.4); border-radius:var(--radius); transition:all 0.4s; }
+.observation-prompt.update-flash { background:rgba(245,200,66,0.12); border-color:rgba(245,200,66,0.7); }
+.obs-eyebrow { font-size:0.65rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin-bottom:0.3rem; }
+.obs-text { font-size:0.88rem; color:#d6dee6; line-height:1.55; }
+.obs-text strong { color:var(--gold); font-weight:900; }
+
+/* Trial-recorded inline confirmation */
+.trial-confirm { font-size:0.78rem; font-weight:800; color:var(--green); letter-spacing:0.02em; min-height:1.2em; transition:opacity 0.45s; opacity:0; text-align:right; }
+.trial-confirm.visible { opacity:1; }
+.trial-confirm .repeat-note { color:var(--text-muted); font-weight:700; margin-left:0.35rem; font-style:italic; }
+
+/* =========================================================
+   ENERGY TARGETS (Phase 3)
+   ========================================================= */
+.targets-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:0.9rem; margin-top:1.1rem; }
+@media (max-width:720px){ .targets-grid { grid-template-columns:1fr; } }
+.target-card { background:var(--bg-secondary); border:1.5px solid var(--border); border-radius:var(--radius); padding:1rem 1.1rem; transition:all 0.3s; }
+.target-card.activated { border-color:var(--green); background:rgba(46,204,113,0.07); }
+.target-icon { font-family:'Fredoka One',cursive; font-size:1.5rem; color:var(--orange); margin-bottom:0.3rem; }
+.target-card.activated .target-icon { color:var(--green); }
+.target-name { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--text-primary); margin-bottom:0.2rem; }
+.target-need { font-size:0.78rem; color:var(--text-muted); font-weight:700; margin-bottom:0.7rem; }
+.target-row { display:flex; gap:0.4rem; align-items:center; margin-bottom:0.55rem; }
+.target-row input[type=number] { width:62px; padding:0.4rem 0.5rem; background:var(--bg-card); border:1px solid var(--border-light); border-radius:6px; color:var(--text-primary); font-family:'Nunito',sans-serif; font-weight:800; font-size:0.9rem; text-align:center; }
+.target-row input[type=number]:focus { outline:none; border-color:var(--orange); }
+.target-row button { flex:1; padding:0.4rem 0.7rem; font-size:0.78rem; }
+.target-result { font-size:0.78rem; font-weight:800; min-height:1.4em; }
+.target-result.success { color:var(--green); }
+.target-result.fail { color:var(--red); }
+.target-status { display:inline-block; padding:0.18rem 0.55rem; border-radius:99px; font-size:0.65rem; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; background:var(--border); color:var(--text-muted); }
+.target-card.activated .target-status { background:rgba(46,204,113,0.15); color:var(--green); }
+
+/* =========================================================
+   SCATTER PLOT (Phase 4)
+   ========================================================= */
+.plot-controls { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1rem; align-items:center; }
+.plot-toggle { padding:0.45rem 0.95rem; border-radius:99px; background:var(--bg-secondary); border:1px solid var(--border-light); color:var(--text-muted); font-weight:800; font-size:0.78rem; cursor:pointer; transition:all 0.2s; }
+.plot-toggle.linear.active { background:rgba(59,200,232,0.12); border-color:var(--teal); color:var(--teal); }
+.plot-toggle.square.active { background:rgba(245,200,66,0.12); border-color:var(--gold); color:var(--gold); }
+
+/* View mode pill toggle (Raw / Ratio) */
+.plot-view-toggle { display:inline-flex; margin-left:auto; background:var(--bg-secondary); border:1px solid var(--border); border-radius:99px; padding:0.2rem; gap:0.15rem; }
+.view-btn { padding:0.35rem 0.85rem; background:transparent; border:none; color:var(--text-muted); font-family:'Nunito',sans-serif; font-weight:800; font-size:0.74rem; letter-spacing:0.04em; cursor:pointer; border-radius:99px; transition:all 0.2s; }
+.view-btn.active { background:var(--orange); color:#000; }
+
+.plot-hint { font-size:0.78rem; color:var(--text-muted); margin-top:0.55rem; line-height:1.5; }
+.plot-hint strong { color:var(--text-primary); font-weight:800; }
+
+/* Analysis comparison cards */
+.analysis-cards { margin-top:1.25rem; }
+.analysis-eyebrow { font-size:0.7rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--orange); margin-bottom:0.55rem; }
+.analysis-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
+@media (max-width:680px){ .analysis-grid { grid-template-columns:1fr; } }
+.analysis-card { background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius); padding:0.95rem 1.05rem; display:flex; flex-direction:column; gap:0.45rem; }
+.ac-tag { font-size:0.62rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); }
+.ac-rows { display:grid; grid-template-columns:auto 1fr auto; gap:0.35rem 0.7rem; align-items:center; font-size:0.83rem; }
+.ac-rows .ac-tnum { display:inline-flex; align-items:center; justify-content:center; min-width:1.7em; padding:0.05rem 0.45rem; background:var(--bg-card); border:1px solid var(--border-light); border-radius:99px; font-weight:900; font-size:0.72rem; color:var(--text-primary); }
+.ac-rows .ac-amp    { color:var(--teal); font-weight:800; font-variant-numeric:tabular-nums; }
+.ac-rows .ac-energy { color:var(--orange); font-weight:800; font-variant-numeric:tabular-nums; text-align:right; }
+.ac-ratios { display:flex; flex-wrap:wrap; gap:0.55rem; margin-top:0.25rem; }
+.ac-ratio { font-size:0.74rem; font-weight:800; padding:0.25rem 0.6rem; border-radius:99px; background:var(--bg-card); border:1px solid var(--border-light); color:var(--text-secondary); letter-spacing:0.02em; }
+.ac-ratio.amp    { border-color:rgba(59,200,232,0.55); color:var(--teal); }
+.ac-ratio.energy { border-color:rgba(248,124,60,0.55); color:var(--orange); }
+.ac-question { font-size:0.82rem; color:#d6dee6; line-height:1.5; margin-top:0.15rem; }
+.ac-question strong { color:var(--gold); }
+.analysis-empty { padding:1rem; background:var(--bg-secondary); border:1px dashed var(--border-light); border-radius:var(--radius); font-size:0.85rem; color:var(--text-muted); text-align:center; }
+
+/* CER textareas */
+.cer-wrap { margin-top:1.25rem; display:grid; gap:0.75rem; }
+.cer-field { background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius); padding:0.9rem 1.05rem; }
+.cer-label { font-family:'Fredoka One',cursive; font-size:0.95rem; margin-bottom:0.15rem; }
+.cer-label.claim    { color:var(--orange); }
+.cer-label.evidence { color:var(--gold); }
+.cer-label.reasoning{ color:var(--teal); }
+.cer-hint { font-size:0.78rem; color:var(--text-muted); margin-bottom:0.5rem; }
+.cer-field textarea { width:100%; min-height:74px; padding:0.6rem 0.75rem; background:var(--bg-card); border:1px solid var(--border-light); border-radius:8px; color:var(--text-primary); font-family:'Nunito',sans-serif; font-size:0.88rem; line-height:1.5; resize:vertical; }
+.cer-field textarea:focus { outline:none; border-color:var(--orange); }
+.cer-counter { font-size:0.7rem; color:var(--text-muted); margin-top:0.3rem; text-align:right; font-weight:700; letter-spacing:0.05em; }
+.cer-counter.met { color:var(--green); }
+
+/* Dynamic CER scaffolds — data-aware hints */
+.cer-scaffold { margin-top:0.5rem; padding:0.55rem 0.75rem; background:rgba(46,204,113,0.06); border-left:3px solid rgba(46,204,113,0.5); border-radius:6px; font-size:0.78rem; color:#bcd9c8; line-height:1.55; transition:opacity 0.3s; }
+.cer-scaffold.dim { opacity:0.45; }
+.cer-scaffold .sc-label { display:inline-block; font-size:0.62rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--green); margin-right:0.35rem; }
+.cer-scaffold strong { color:var(--text-primary); font-weight:800; }
+
+.model-choice { margin-top:1rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius); padding:0.9rem 1.05rem; }
+.model-choice h4 { font-family:'Fredoka One',cursive; color:var(--text-primary); font-size:0.97rem; margin-bottom:0.55rem; }
+.model-choice-options { display:flex; gap:0.55rem; flex-wrap:wrap; }
+.model-choice-options label { flex:1; min-width:220px; display:flex; align-items:center; gap:0.55rem; padding:0.55rem 0.85rem; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:0.85rem; transition:all 0.2s; }
+.model-choice-options label.selected { background:rgba(248,124,60,0.1); border-color:var(--orange); }
+.model-choice-options input[type=radio] { accent-color:var(--orange); }
+
+.prediction-recall { display:none; margin-top:1rem; padding:0.85rem 1rem; background:rgba(245,200,66,0.08); border:1px dashed rgba(245,200,66,0.4); border-radius:var(--radius); font-size:0.85rem; color:#d6dee6; }
+.prediction-recall.visible { display:block; }
+.prediction-recall strong { color:var(--gold); }
+
+/* =========================================================
+   CHECKPOINT CARD
+   ========================================================= */
+.checkpoint-card { background:var(--bg-secondary); border:1.5px solid rgba(248,124,60,0.3); border-radius:var(--radius); padding:1.2rem 1.4rem; margin-top:1.4rem; display:none; }
+.checkpoint-card.visible { display:block; }
+.checkpoint-card .cp-eyebrow { font-size:0.7rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--orange); margin-bottom:0.45rem; }
+.checkpoint-card .cp-sub { font-size:0.74rem; font-weight:700; color:var(--text-muted); margin-bottom:0.65rem; letter-spacing:0.01em; }
+.checkpoint-card .cp-sub strong { color:var(--text-secondary); font-weight:800; }
+.checkpoint-card .cp-q { font-family:'Fredoka One',cursive; font-size:1.05rem; color:var(--text-primary); margin-bottom:0.85rem; line-height:1.35; }
+.checkpoint-options { display:grid; gap:0.45rem; }
+.checkpoint-options label { display:flex; align-items:center; gap:0.55rem; padding:0.55rem 0.85rem; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:0.88rem; transition:all 0.2s; }
+.checkpoint-options label:hover { border-color:var(--orange); }
+.checkpoint-options input[type=radio] { accent-color:var(--orange); }
+.checkpoint-options label.selected { background:rgba(248,124,60,0.1); border-color:var(--orange); }
+.checkpoint-options label.correct { background:rgba(46,204,113,0.1); border-color:var(--green); }
+.checkpoint-options label.wrong { background:rgba(232,112,112,0.1); border-color:var(--red); }
+.checkpoint-feedback { display:none; margin-top:0.75rem; padding:0.65rem 0.9rem; border-radius:8px; font-size:0.85rem; line-height:1.55; }
+.checkpoint-feedback.visible { display:block; }
+.checkpoint-feedback.ok   { background:rgba(46,204,113,0.1); border:1px solid rgba(46,204,113,0.3); color:#a8e6c4; }
+.checkpoint-feedback.no   { background:rgba(232,112,112,0.1); border:1px solid rgba(232,112,112,0.3); color:#ecb3b3; }
+.checkpoint-actions { display:flex; gap:0.55rem; margin-top:0.9rem; flex-wrap:wrap; }
+
+/* =========================================================
+   MODE GATE / TOGGLE
+   ========================================================= */
+.mode-toggle-bar { display:inline-flex; background:var(--bg-secondary); border:1px solid var(--border); border-radius:99px; padding:0.25rem; gap:0.2rem; }
+.mode-btn { padding:0.45rem 1.05rem; border-radius:99px; background:transparent; border:none; color:var(--text-muted); font-family:'Nunito',sans-serif; font-weight:800; font-size:0.8rem; cursor:pointer; letter-spacing:0.04em; transition:all 0.2s; }
+.mode-btn.active { background:var(--orange); color:#000; }
+.mode-hint { margin-top:0.65rem; font-size:0.82rem; color:var(--text-muted); }
+.mode-hint span { display:none; }
+.mode-hint span.visible { display:inline; }
+
+/* =========================================================
+   QUIZ
+   ========================================================= */
+.quiz-q { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.1rem 1.25rem; margin-bottom:0.85rem; }
+.quiz-q-prompt { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--text-primary); margin-bottom:0.7rem; line-height:1.4; }
+.quiz-q-prompt .num { color:var(--orange); margin-right:0.4rem; }
+.quiz-options { display:grid; gap:0.4rem; }
+.quiz-options label { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0.85rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:0.86rem; transition:all 0.2s; }
+.quiz-options label:hover { border-color:var(--orange); }
+.quiz-options input[type=radio] { accent-color:var(--orange); }
+.quiz-options label.selected { background:rgba(248,124,60,0.08); border-color:var(--orange); }
+.quiz-options.locked label.correct { background:rgba(46,204,113,0.12); border-color:var(--green); color:#c5ecd2; }
+.quiz-options.locked label.wrong   { background:rgba(232,112,112,0.12); border-color:var(--red); color:#ecbcbc; }
+.quiz-options.locked label { cursor:default; }
+.quiz-options.locked input { pointer-events:none; }
+.quiz-score-badge { display:inline-block; padding:0.5rem 1.1rem; background:var(--bg-secondary); border:1px solid var(--border-light); border-radius:99px; font-family:'Fredoka One',cursive; color:var(--orange); font-size:0.95rem; }
+#quizResultBanner { padding:0.85rem 1.1rem; border-radius:var(--radius); font-size:0.9rem; font-weight:800; margin-top:1rem; text-align:center; }
+#quizResultBanner.pass { background:rgba(46,204,113,0.12); border:1px solid rgba(46,204,113,0.35); color:#a8e6c4; }
+#quizResultBanner.fail { background:rgba(232,112,112,0.12); border:1px solid rgba(232,112,112,0.35); color:#ecbcbc; }
+
+/* =========================================================
+   CLASSROOM SUBMISSION PANEL
+   ========================================================= */
+.classroom-panel { margin-top:1.4rem; background:var(--bg-card); border:1.5px solid rgba(248,124,60,0.4); border-radius:var(--radius); padding:1.2rem 1.4rem; }
+.classroom-panel.hidden { display:none; }
+.classroom-panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem; flex-wrap:wrap; gap:0.6rem; }
+.classroom-section-title { font-family:'Fredoka One',cursive; color:var(--text-primary); font-size:1.1rem; }
+.mode-badge { background:var(--orange); color:#000; padding:0.25rem 0.7rem; border-radius:99px; font-size:0.7rem; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; }
+.student-fields { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
+.field-full { grid-column:1 / -1; }
+@media (max-width:540px){ .student-fields { grid-template-columns:1fr; } }
+.field-label { display:block; font-size:0.7rem; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.3rem; }
+.field-input, .field-select { width:100%; padding:0.55rem 0.8rem; background:var(--bg-secondary); border:1px solid var(--border-light); border-radius:8px; color:var(--text-primary); font-family:'Nunito',sans-serif; font-weight:700; font-size:0.9rem; }
+.field-input:focus, .field-select:focus { outline:none; border-color:var(--orange); }
+.submit-section { margin-top:1rem; }
+.submit-btn { width:100%; padding:0.85rem 1.2rem; font-size:0.95rem; background:var(--orange); color:#000; border:none; border-radius:10px; font-family:'Nunito',sans-serif; font-weight:900; letter-spacing:0.05em; text-transform:uppercase; cursor:pointer; transition:all 0.2s; }
+.submit-btn:hover:not(:disabled):not(.locked) { background:#ff9050; }
+.submit-btn.locked, .submit-btn:disabled { background:var(--border); color:var(--text-muted); cursor:not-allowed; }
+.submit-helper { margin-top:0.55rem; font-size:0.78rem; color:var(--text-muted); text-align:center; }
+.submit-success { display:none; margin-top:0.8rem; padding:0.7rem 0.95rem; background:rgba(46,204,113,0.12); border:1px solid rgba(46,204,113,0.35); border-radius:8px; color:#a8e6c4; font-weight:800; text-align:center; }
+.submit-success.visible { display:block; }
+.submit-error { display:none; margin-top:0.8rem; padding:0.7rem 0.95rem; background:rgba(232,112,112,0.12); border:1px solid rgba(232,112,112,0.35); border-radius:8px; color:#ecbcbc; font-weight:800; text-align:center; }
+.submit-error.visible { display:block; }
+
+/* =========================================================
+   RESTORE BANNER
+   ========================================================= */
+.restore-banner { max-width:900px; margin:1rem auto 0; padding:0.65rem 1rem; background:rgba(59,200,232,0.1); border:1px solid rgba(59,200,232,0.3); border-radius:99px; color:var(--teal); font-size:0.82rem; font-weight:800; text-align:center; display:none; }
+.restore-banner.visible { display:block; }
+
+/* =========================================================
+   GO FURTHER
+   ========================================================= */
+.go-further-section { max-width:1100px; margin:1.5rem auto 3rem; padding:0 1.4rem; }
+.go-further-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:1rem; margin-top:1rem; }
+.gf-card { display:block; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.1rem 1.2rem; text-decoration:none; color:var(--text-primary); transition:all 0.25s; box-shadow:var(--shadow); }
+.gf-card:hover { transform:translateY(-3px); border-color:var(--orange); background:var(--bg-card-hover); }
+.gf-card-label { font-size:0.7rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); margin-bottom:0.4rem; }
+.gf-card-title { font-family:'Fredoka One',cursive; font-size:1.05rem; color:var(--text-primary); margin-bottom:0.35rem; line-height:1.3; }
+.gf-card-desc { font-size:0.83rem; color:#c9d1d9; line-height:1.55; }
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+footer { background:#070b10; border-top:1px solid var(--border); padding:2rem 1.5rem; text-align:center; color:var(--text-muted); font-size:0.82rem; }
+footer .foot-logo { font-family:'Orbitron',sans-serif; color:var(--gold); font-weight:900; letter-spacing:0.08em; margin-bottom:0.4rem; display:block; }
+footer a { color:var(--teal); text-decoration:none; margin:0 0.5rem; }
+footer a:hover { text-decoration:underline; }
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+.toast { position:fixed; bottom:1.4rem; left:50%; transform:translateX(-50%) translateY(10px); background:var(--bg-card); border:1px solid var(--border-light); padding:0.7rem 1.2rem; border-radius:10px; box-shadow:var(--shadow); font-size:0.88rem; font-weight:800; color:var(--text-primary); opacity:0; transition:all 0.3s ease; z-index:300; pointer-events:none; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.success { border-color:var(--green); }
+.toast.info { border-color:var(--teal); }
+.toast.warn { border-color:var(--red); }
+
+/* =========================================================
+   PASS 5 — VISUAL POLISH (additive only)
+   Transitions, hover/focus states, reveal animations.
+   No structural or color-system changes.
+   ========================================================= */
+
+/* Reduce-motion respect: turn off non-essential animations */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .observation-prompt.update-flash { background:rgba(245,200,66,0.06); }
+}
+
+/* ---------- Phase reveal: full-section unlock ---------- */
+@keyframes phaseReveal {
+  from { opacity:0; transform: translateY(14px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.phase-reveal { animation: phaseReveal 0.65s cubic-bezier(.2,.7,.2,1) both; }
+
+/* ---------- Sub-element reveal (prediction card, etc.) ---------- */
+@keyframes subReveal {
+  from { opacity:0; transform: translateY(8px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.reveal-in { animation: subReveal 0.55s ease-out both; }
+
+/* ---------- Checkpoint card unlock animation ---------- */
+@keyframes checkpointReveal {
+  0%   { opacity:0; transform: translateY(10px); border-color: rgba(248,124,60,0.6); }
+  100% { opacity:1; transform: translateY(0);    border-color: rgba(248,124,60,0.3); }
+}
+.checkpoint-card.visible { animation: checkpointReveal 0.6s cubic-bezier(.2,.7,.2,1) both; }
+
+/* ---------- Ready-to-analyze attention pulse (Phase 2) ---------- */
+@keyframes readyPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(46,204,113,0); }
+  50%      { box-shadow: 0 0 0 7px rgba(46,204,113,0.18); }
+}
+.suff-ready.visible { animation: readyPulse 1.6s ease-out 3; }
+
+/* ---------- Target activation pulse (Phase 3) ---------- */
+@keyframes targetActivate {
+  0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(46,204,113,0); }
+  40%  { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(46,204,113,0.18); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46,204,113,0); }
+}
+.target-card.just-activated { animation: targetActivate 0.75s ease-out; }
+
+/* ---------- Progress-step "just completed" flash ---------- */
+@keyframes stepDoneFlash {
+  0%   { background: rgba(46,204,113,0.1); color: var(--green); }
+  35%  { background: rgba(46,204,113,0.45); color: #ffffff; }
+  100% { background: rgba(46,204,113,0.1); color: var(--green); }
+}
+.progress-step.just-done { animation: stepDoneFlash 0.95s ease-out; }
+.progress-step { cursor: default; user-select: none; }
+
+/* ---------- Trial number pulse on fresh row (Phase 2) ---------- */
+@keyframes trialNumPulse {
+  0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(248,124,60,0); }
+  30%  { transform: scale(1.16); box-shadow: 0 0 0 4px rgba(248,124,60,0.28); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(248,124,60,0); }
+}
+.data-table tbody tr.fresh .trial-num { animation: trialNumPulse 0.85s ease-out; }
+
+/* ---------- Discovery pill — pulse on first find (Phase 1) ---------- */
+@keyframes discFound {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.discover-pill.found.just-found { animation: discFound 0.6s ease-out; }
+.discover-pill { transition: all 0.3s ease; }
+
+/* ---------- Restore banner fade-in ---------- */
+.restore-banner.visible { animation: subReveal 0.5s ease-out; }
+
+/* ---------- Sufficiency pill state transition ---------- */
+.suff-pill { transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease; }
+
+/* ---------- Hover lifts ---------- */
+.byb-qa-card { transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
+.byb-qa-card:hover { transform: translateY(-2px); border-color: rgba(245,200,66,0.5); box-shadow: 0 4px 16px rgba(245,200,66,0.08); }
+
+.analysis-card { transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
+.analysis-card:hover { transform: translateY(-2px); border-color: var(--gold); box-shadow: 0 4px 18px rgba(245,200,66,0.12); }
+
+.target-card { transition: transform 0.25s ease, border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease; }
+.target-card:hover:not(.activated):not(.just-activated) { transform: translateY(-2px); border-color: rgba(248,124,60,0.55); }
+
+/* Plot view-toggle, plot-toggle, mode-btn, view-btn — consistent transitions */
+.plot-toggle, .view-btn, .mode-btn, .nav-toggle, .nav-back, .btn, .submit-btn,
+.plot-view-toggle { transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease; }
+
+/* ---------- Tactile :active feedback ---------- */
+.btn:active:not(:disabled),
+.plot-toggle:active,
+.view-btn:active,
+.mode-btn:active,
+.nav-toggle:active,
+.submit-btn:active:not(:disabled):not(.locked) {
+  transform: scale(0.97);
+}
+
+/* ---------- Focus rings (keyboard accessibility) ---------- */
+.btn:focus-visible,
+.plot-toggle:focus-visible,
+.view-btn:focus-visible,
+.mode-btn:focus-visible,
+.nav-toggle:focus-visible,
+.nav-back:focus-visible,
+.submit-btn:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
+/* Radio-label group focus highlight */
+.checkpoint-options label:focus-within,
+.quiz-options label:focus-within,
+.prediction-options label:focus-within,
+.model-choice-options label:focus-within {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(248,124,60,0.22);
+}
+.prediction-options label:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245,200,66,0.22); }
+
+/* Text inputs / select / textarea focus glow */
+.field-input:focus,
+.field-select:focus,
+input[type=number]:focus,
+.cer-field textarea:focus {
+  box-shadow: 0 0 0 3px rgba(248,124,60,0.18);
+}
+
+/* Slider thumb interactive feedback */
+input[type=range]::-webkit-slider-thumb { transition: box-shadow 0.18s ease, transform 0.15s ease; }
+input[type=range]::-moz-range-thumb     { transition: box-shadow 0.18s ease, transform 0.15s ease; }
+input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.1); box-shadow: 0 0 0 5px rgba(248,124,60,0.22); }
+input[type=range]:hover::-moz-range-thumb     { transform: scale(1.1); box-shadow: 0 0 0 5px rgba(248,124,60,0.22); }
+input[type=range]:active::-webkit-slider-thumb,
+input[type=range]:focus-visible::-webkit-slider-thumb { transform: scale(1.18); box-shadow: 0 0 0 6px rgba(248,124,60,0.32); }
+input[type=range]:active::-moz-range-thumb,
+input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); box-shadow: 0 0 0 6px rgba(248,124,60,0.32); }
+
+/* Canvas wrappers — subtle hover glow to suggest interactivity */
+.phase-canvas-wrap { transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+#phase4 .phase-canvas-wrap:hover { border-color: rgba(248,124,60,0.5); box-shadow: 0 0 24px rgba(248,124,60,0.08) inset; }
+#phase1 .phase-canvas-wrap:hover { border-color: rgba(245,200,66,0.45); }
+
+/* Run Trial busy state — wordmark + opacity */
+.btn[data-busy="1"] { opacity: 0.6; cursor: wait; }
+
+/* Plot toggles get a subtle background on hover when inactive */
+.plot-toggle:hover:not(.active) { background: var(--bg-card-hover); color: var(--text-primary); }
+.view-btn:hover:not(.active)    { background: rgba(248,124,60,0.08); color: var(--text-primary); }
+.mode-btn:hover:not(.active)    { color: var(--text-primary); }
+
+/* Quiz score badge shimmer when finalized */
+@keyframes scoreReveal {
+  0%   { transform: scale(0.94); opacity: 0; }
+  60%  { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+#quizScoreArea.scored .quiz-score-badge { animation: scoreReveal 0.55s ease-out; }
+
+/* Banner reveals */
+#quizResultBanner { transition: opacity 0.3s ease; }
+#quizResultBanner.pass, #quizResultBanner.fail { animation: subReveal 0.55s ease-out; }
+</style>
+</head>
+<body>
+
+<!-- ======================================================
+     NAV
+     ====================================================== -->
+<nav>
+  <a class="nav-logo" href="index.html">LYFELABZ</a>
+  <a class="nav-back" href="lesson_nature-of-waves.html">← Nature of Waves</a>
+</nav>
+
+<!-- STEM badge bar -->
+<div class="badge-bar stem-bar">
+  <span class="badge green">MS-PS4-1<span class="badge-tip">Use mathematical representations to describe a simple model for waves that includes how the amplitude of a wave is related to the energy of the wave.</span></span>
+  <span class="badge green">MS-PS4-2<span class="badge-tip">Develop and use a model to describe that waves are reflected, absorbed, or transmitted through various materials.</span></span>
+  <span class="badge green">SEP: Analyzing Data<span class="badge-tip">You will collect trial data and look for patterns between amplitude and energy.</span></span>
+  <span class="badge green">SEP: Using Math<span class="badge-tip">You will graph your data and decide which model — linear or squared — best fits.</span></span>
+  <span class="badge green">CCC: Energy & Matter<span class="badge-tip">Waves transfer energy without transferring matter.</span></span>
+  <span class="badge green">CCC: Scale & Proportion<span class="badge-tip">Doubling the amplitude does not simply double the energy.</span></span>
+</div>
+
+<!-- Learning Science badge bar -->
+<div class="badge-bar ls-bar">
+  <span class="badge teal">Predict → Test<span class="badge-tip">You commit to a prediction first, then test it against real data — a core scientific habit.</span></span>
+  <span class="badge teal">Productive Struggle<span class="badge-tip">Wrong predictions are not failures — they are data you can revise.</span></span>
+  <span class="badge teal">Claim · Evidence · Reasoning<span class="badge-tip">You will defend your model with your own collected evidence.</span></span>
+  <span class="badge teal">Worked-Out Discovery<span class="badge-tip">You uncover the amplitude–energy relationship from data, not from being told.</span></span>
+  <span class="badge teal">Spaced Retrieval<span class="badge-tip">Checkpoint quizzes between phases reinforce learning by retrieval, not re-reading.</span></span>
+</div>
+
+<!-- ======================================================
+     HERO
+     ====================================================== -->
+<section class="hero">
+  <div class="hero-canvas-wrap"><canvas id="heroCanvas"></canvas></div>
+  <div class="hero-shell">
+    <div class="hero-badge">Investigation</div>
+    <h1>Amplitude Challenge</h1>
+    <p>How much energy does a wave actually carry? Predict, test, gather data, build a model — then figure out how much amplitude is enough to get real work done.</p>
+    <div class="hero-kicker">Amplitude · Energy · Waves</div>
+  </div>
+</section>
+
+<!-- ======================================================
+     BEFORE YOU BEGIN
+     ====================================================== -->
+<div class="byb-wrap">
+  <div class="byb-inner">
+    <div class="byb-header">
+      <span class="byb-eyebrow">Before You Begin</span>
+      <div class="byb-title">Read this first, then investigate</div>
+      <p class="byb-sub">This is a four-phase investigation into how a wave's amplitude affects the energy it delivers. Complete each phase in order — each one builds on the last.</p>
+    </div>
+    <div class="byb-qa">
+      <div class="byb-qa-card">
+        <div class="byb-q">What is this investigation about?</div>
+        <p class="byb-a">You will discover how a wave's <strong>amplitude</strong> — the height of its crest — controls the <strong>energy</strong> it delivers. Bigger amplitude = more energy, but the relationship is not what most people guess.</p>
+      </div>
+      <div class="byb-qa-card">
+        <div class="byb-q">Why does this matter?</div>
+        <p class="byb-a">Amplitude is what makes a sound <strong>loud</strong>, an earthquake <strong>destructive</strong>, an ocean wave <strong>powerful</strong>, and a light <strong>bright</strong>. The same rule applies to every kind of wave.</p>
+      </div>
+      <div class="byb-qa-card">
+        <div class="byb-q">What will I actually do?</div>
+        <p class="byb-a">You will <strong>explore a wave</strong>, <strong>run amplitude trials</strong> and record data, <strong>hit energy targets</strong>, and finally <strong>build a model</strong> that explains your data — using your own evidence.</p>
+      </div>
+      <div class="byb-qa-card">
+        <div class="byb-q">How do I move through it?</div>
+        <p class="byb-a">Each phase <strong>unlocks automatically</strong> when you complete the one before it. You must answer a short checkpoint question to advance. Need a refresher? Revisit <a href="lesson_nature-of-waves.html">Nature of Waves</a> first.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- restore banner -->
+<div class="restore-banner" id="restoreBanner">Your progress has been restored.</div>
+
+<!-- ======================================================
+     PROGRESS BAR
+     ====================================================== -->
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="progress-step active" id="step1">① Wave Explorer</div>
+    <div class="progress-step"        id="step2">② Amplitude Lab</div>
+    <div class="progress-step"        id="step3">③ Energy Targets</div>
+    <div class="progress-step"        id="step4">④ Wave Model</div>
+    <div class="progress-step"        id="step5">⑤ Quiz</div>
+  </div>
+</div>
+
+<!-- ======================================================
+     PHASE 1 — WAVE EXPLORER
+     ====================================================== -->
+<section class="sim-section" id="phase1">
+  <div class="section-label">Phase 1</div>
+  <div class="section-title">Wave Explorer</div>
+  <div class="section-desc">Get familiar with a wave. Drag the sliders to change its shape, then click on the wave to identify its parts. Finally, predict how amplitude affects energy — you will test your prediction with real data later.</div>
+  <div class="unlock-hint" id="unlockHint1">Click all 3 wave parts on the canvas, then make a prediction. The checkpoint question will appear.</div>
+
+  <div class="phase-card">
+    <div class="phase-canvas-wrap">
+      <canvas id="p1Canvas" width="800" height="320"></canvas>
+    </div>
+    <div class="phase-controls">
+      <div class="control">
+        <label>Amplitude <span class="value-pill" id="p1AmpVal">5</span></label>
+        <input type="range" id="p1Amp" min="1" max="10" value="5" step="1">
+      </div>
+      <div class="control">
+        <label>Frequency <span class="value-pill" id="p1FreqVal">3</span></label>
+        <input type="range" id="p1Freq" min="1" max="5" value="3" step="1">
+      </div>
+    </div>
+
+    <div class="discover-prompt" id="p1Prompt">Click on the part of the wave labeled in the prompt above the canvas to identify it. Find all 3 parts to unlock your prediction.</div>
+    <div class="discover-strip">
+      <span class="discover-pill" id="discCrest"><span class="dot"></span>Crest</span>
+      <span class="discover-pill" id="discAmp"><span class="dot"></span>Amplitude</span>
+      <span class="discover-pill" id="discWave"><span class="dot"></span>Wavelength</span>
+    </div>
+
+    <div class="prediction-card" id="p1Prediction" style="display:none;">
+      <h4>Your Prediction</h4>
+      <p>Before you collect any data: if you <strong>doubled</strong> the amplitude of an ocean wave, what would happen to the energy it delivers?</p>
+      <div class="prediction-options" id="predictionOptions">
+        <label><input type="radio" name="pred" value="same"><span>It would stay about the same</span></label>
+        <label><input type="radio" name="pred" value="double"><span>It would double</span></label>
+        <label><input type="radio" name="pred" value="more"><span>It would more than double</span></label>
+        <label><input type="radio" name="pred" value="less"><span>It would be less than before</span></label>
+      </div>
+      <div class="prediction-saved" id="predictionSaved">Prediction saved — we will revisit it after you collect data.</div>
+    </div>
+  </div>
+
+  <!-- Phase 1 checkpoint -->
+  <div class="checkpoint-card" id="p1Checkpoint">
+    <div class="cp-eyebrow">Checkpoint · Phase 1</div>
+    <div class="cp-sub">Answer correctly to unlock <strong>Phase 2 — Amplitude Lab</strong>, where you'll collect real data.</div>
+    <div class="cp-q">Which measurement describes a wave's <em>amplitude</em>?</div>
+    <div class="checkpoint-options" id="cp1Opts">
+      <label><input type="radio" name="cp1" value="0"><span>The distance from one crest to the next</span></label>
+      <label><input type="radio" name="cp1" value="1"><span>The height from the rest line up to a crest</span></label>
+      <label><input type="radio" name="cp1" value="2"><span>How fast the wave moves forward</span></label>
+      <label><input type="radio" name="cp1" value="3"><span>The number of waves per second</span></label>
+    </div>
+    <div class="checkpoint-feedback" id="cp1Feedback"></div>
+    <div class="checkpoint-actions">
+      <button class="btn btn-orange" id="cp1Check">Check Answer</button>
+      <button class="btn btn-ghost"  id="cp1Retry" style="display:none;">Try Again</button>
+      <button class="btn btn-orange" id="cp1Continue" style="display:none;">Continue → Amplitude Lab</button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     PHASE 2 — AMPLITUDE LAB
+     ====================================================== -->
+<section class="sim-section" id="phase2" style="display:none;">
+  <div class="section-label">Phase 2</div>
+  <div class="section-title">Amplitude Lab</div>
+  <div class="section-desc">Time to collect data. Choose an amplitude, then click <strong>Run Trial</strong>. The detector on the right will measure how much energy the wave delivered. Run at least 6 trials across different amplitudes.</div>
+  <div class="unlock-hint" id="unlockHint2">Collect <strong>6+ trials</strong> across <strong>5+ different amplitudes</strong>. The checkpoint question will appear once your data is ready to analyze.</div>
+
+  <div class="phase-card">
+    <div class="phase-canvas-wrap">
+      <canvas id="p2Canvas" width="800" height="280"></canvas>
+    </div>
+    <div class="phase-controls">
+      <div class="control">
+        <label>Amplitude <span class="value-pill" id="p2AmpVal">3</span></label>
+        <input type="range" id="p2Amp" min="1" max="8" value="3" step="1">
+      </div>
+      <div class="control">
+        <label>&nbsp;</label>
+        <div class="control-row">
+          <button class="btn btn-orange" id="p2Run">Run Trial</button>
+          <button class="btn btn-ghost"  id="p2Clear">Clear Data</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-table-wrap">
+      <div class="data-table-header">
+        <div class="data-table-title">Trial Data</div>
+        <div class="trial-confirm" id="trialConfirm" aria-live="polite"></div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr><th class="col-trial">Trial</th><th>Amplitude (what you changed)</th><th>Energy Detected (what you measured)</th></tr>
+        </thead>
+        <tbody id="p2Tbody">
+          <tr class="empty-row"><td colspan="3">No trials yet — choose an amplitude and click Run Trial.</td></tr>
+        </tbody>
+      </table>
+      <div class="sufficiency-strip" id="suffStrip">
+        <div class="suff-pill" id="suffTrials"><span class="suff-label">Trials</span><span class="suff-progress">0 / 6</span></div>
+        <div class="suff-pill" id="suffDistinct"><span class="suff-label">Distinct amplitudes</span><span class="suff-progress">0 / 5</span></div>
+        <div class="suff-pill" id="suffRange"><span class="suff-label">Range</span><span class="suff-progress">test a low and a high</span></div>
+        <div class="suff-ready" id="suffReady">Ready to analyze</div>
+      </div>
+    </div>
+
+    <div class="observation-prompt" id="obsPrompt">
+      <div class="obs-eyebrow">Observation Prompt</div>
+      <div class="obs-text" id="obsText">Start with an extreme — try amplitude <strong>1</strong> or <strong>8</strong> first. Extremes reveal patterns fastest.</div>
+    </div>
+  </div>
+
+  <!-- Phase 2 checkpoint -->
+  <div class="checkpoint-card" id="p2Checkpoint">
+    <div class="cp-eyebrow">Checkpoint · Phase 2</div>
+    <div class="cp-sub">Answer correctly to unlock <strong>Phase 3 — Energy Targets</strong>, where you'll put your data to work.</div>
+    <div class="cp-q">Look at your data. As amplitude increases, what happens to the energy delivered?</div>
+    <div class="checkpoint-options" id="cp2Opts">
+      <label><input type="radio" name="cp2" value="0"><span>Energy stays about the same</span></label>
+      <label><input type="radio" name="cp2" value="1"><span>Energy decreases</span></label>
+      <label><input type="radio" name="cp2" value="2"><span>Energy increases — and it grows faster than amplitude does</span></label>
+      <label><input type="radio" name="cp2" value="3"><span>Energy increases at exactly the same rate as amplitude</span></label>
+    </div>
+    <div class="checkpoint-feedback" id="cp2Feedback"></div>
+    <div class="checkpoint-actions">
+      <button class="btn btn-orange" id="cp2Check">Check Answer</button>
+      <button class="btn btn-ghost"  id="cp2Retry" style="display:none;">Try Again</button>
+      <button class="btn btn-orange" id="cp2Continue" style="display:none;">Continue → Energy Targets</button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     PHASE 3 — ENERGY TARGETS
+     ====================================================== -->
+<section class="sim-section" id="phase3" style="display:none;">
+  <div class="section-label">Phase 3</div>
+  <div class="section-title">Energy Targets</div>
+  <div class="section-desc">Now apply what your data showed. Each target needs a minimum amount of energy to activate. Use your Phase 2 data as evidence — pick the smallest amplitude you think will do the job, then send the wave.</div>
+  <div class="unlock-hint" id="unlockHint3">Activate <strong>all 3 targets</strong>. The checkpoint question will appear once each one has received enough energy.</div>
+
+  <div class="phase-card">
+    <div class="targets-grid">
+      <div class="target-card" data-target="bell" data-need="5">
+        <div class="target-icon">♪</div>
+        <div class="target-name">Ring a Bell</div>
+        <div class="target-need">Needs ≥ 5 J</div>
+        <div class="target-row">
+          <input type="number" min="1" max="8" value="1" id="tBellAmp">
+          <button class="btn btn-orange" data-target-btn="bell">Send Wave</button>
+        </div>
+        <div class="target-result" id="tBellResult"></div>
+        <div style="margin-top:0.5rem;"><span class="target-status" id="tBellStatus">Inactive</span></div>
+      </div>
+      <div class="target-card" data-target="fan" data-need="20">
+        <div class="target-icon">✿</div>
+        <div class="target-name">Spin a Wheel</div>
+        <div class="target-need">Needs ≥ 20 J</div>
+        <div class="target-row">
+          <input type="number" min="1" max="8" value="1" id="tFanAmp">
+          <button class="btn btn-orange" data-target-btn="fan">Send Wave</button>
+        </div>
+        <div class="target-result" id="tFanResult"></div>
+        <div style="margin-top:0.5rem;"><span class="target-status" id="tFanStatus">Inactive</span></div>
+      </div>
+      <div class="target-card" data-target="weight" data-need="45">
+        <div class="target-icon">▲</div>
+        <div class="target-name">Lift a Weight</div>
+        <div class="target-need">Needs ≥ 45 J</div>
+        <div class="target-row">
+          <input type="number" min="1" max="8" value="1" id="tWeightAmp">
+          <button class="btn btn-orange" data-target-btn="weight">Send Wave</button>
+        </div>
+        <div class="target-result" id="tWeightResult"></div>
+        <div style="margin-top:0.5rem;"><span class="target-status" id="tWeightStatus">Inactive</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 3 checkpoint -->
+  <div class="checkpoint-card" id="p3Checkpoint">
+    <div class="cp-eyebrow">Checkpoint · Phase 3</div>
+    <div class="cp-sub">Answer correctly to unlock <strong>Phase 4 — Wave Energy Model</strong>, where you'll build a model from your data.</div>
+    <div class="cp-q">Why does <strong>doubling</strong> the amplitude do <em>more than</em> double the work the wave can do?</div>
+    <div class="checkpoint-options" id="cp3Opts">
+      <label><input type="radio" name="cp3" value="0"><span>Bigger waves travel faster, so they do more work</span></label>
+      <label><input type="radio" name="cp3" value="1"><span>Energy grows with the <em>square</em> of amplitude — so doubling amplitude means about four times the energy</span></label>
+      <label><input type="radio" name="cp3" value="2"><span>The detector becomes more sensitive at higher amplitudes</span></label>
+      <label><input type="radio" name="cp3" value="3"><span>It's actually a coincidence — there is no real pattern</span></label>
+    </div>
+    <div class="checkpoint-feedback" id="cp3Feedback"></div>
+    <div class="checkpoint-actions">
+      <button class="btn btn-orange" id="cp3Check">Check Answer</button>
+      <button class="btn btn-ghost"  id="cp3Retry" style="display:none;">Try Again</button>
+      <button class="btn btn-orange" id="cp3Continue" style="display:none;">Continue → Wave Energy Model</button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     PHASE 4 — WAVE ENERGY MODEL
+     ====================================================== -->
+<section class="sim-section" id="phase4" style="display:none;">
+  <div class="section-label">Phase 4</div>
+  <div class="section-title">Build the Wave Energy Model</div>
+  <div class="section-desc">Your data is now plotted below. Toggle the two model curves to see which one actually fits — then write a short Claim · Evidence · Reasoning explanation defending your choice.</div>
+  <div class="unlock-hint" id="unlockHint4">Pick a model (Linear or Squared), then write your <strong>Claim</strong>, <strong>Evidence</strong>, and <strong>Reasoning</strong>. The final checkpoint will appear once all four are complete.</div>
+
+  <div class="phase-card">
+    <div class="phase-canvas-wrap">
+      <canvas id="p4Canvas" width="800" height="420"></canvas>
+    </div>
+    <div class="plot-controls">
+      <button class="plot-toggle linear"  id="toggleLinear">Show Linear Model · E = k · A</button>
+      <button class="plot-toggle square"  id="toggleSquare">Show Square Model · E = k · A²</button>
+      <div class="plot-view-toggle" role="group" aria-label="Plot view mode">
+        <button class="view-btn active" id="viewRaw"    type="button">Raw Values</button>
+        <button class="view-btn"        id="viewRatios" type="button">Show as Ratios</button>
+      </div>
+    </div>
+    <div class="plot-hint" id="plotHint">Click a point to see its trial details. Toggle <strong>Show as Ratios</strong> to compare every trial to your lowest-amplitude trial.</div>
+
+    <!-- Analysis comparison cards — auto-generated from student data -->
+    <div class="analysis-cards">
+      <div class="analysis-eyebrow">Analyze Your Data — Compare Trial Pairs</div>
+      <div class="analysis-grid" id="analysisGrid"></div>
+    </div>
+
+    <div class="model-choice">
+      <h4>Which model fits your data?</h4>
+      <div class="model-choice-options" id="modelChoiceOpts">
+        <label><input type="radio" name="model" value="linear"><span>Linear &nbsp;·&nbsp; E = k · A</span></label>
+        <label><input type="radio" name="model" value="square"><span>Squared &nbsp;·&nbsp; E = k · A²</span></label>
+      </div>
+    </div>
+
+    <div class="cer-wrap">
+      <div class="cer-field">
+        <div class="cer-label claim">Claim</div>
+        <div class="cer-hint">In one sentence: which model describes the amplitude–energy relationship?</div>
+        <textarea id="cerClaim" placeholder="The relationship between amplitude and energy is…"></textarea>
+        <div class="cer-scaffold" id="claimScaffold"><span class="sc-label">Hint</span>Did your data look like a <strong>straight line</strong>, or did it <strong>curve upward</strong> faster than amplitude grew?</div>
+        <div class="cer-counter"><span id="cerClaimCount">0</span> / 25 minimum</div>
+      </div>
+      <div class="cer-field">
+        <div class="cer-label evidence">Evidence</div>
+        <div class="cer-hint">Point to specific numbers from your trial data that support your claim.</div>
+        <textarea id="cerEvidence" placeholder="When I changed the amplitude from __ to __, the energy went from __ J to __ J, which is…"></textarea>
+        <div class="cer-scaffold" id="evidenceScaffold"><span class="sc-label">Hint</span>Run more trials in Phase 2 first — your evidence will be stronger with real numbers to cite.</div>
+        <div class="cer-counter"><span id="cerEvidenceCount">0</span> / 30 minimum</div>
+      </div>
+      <div class="cer-field">
+        <div class="cer-label reasoning">Reasoning</div>
+        <div class="cer-hint">Explain <em>why</em> this pattern makes sense — what does it tell you about how waves carry energy?</div>
+        <textarea id="cerReasoning" placeholder="This pattern means that…"></textarea>
+        <div class="cer-scaffold" id="reasoningScaffold"><span class="sc-label">Hint</span>Amplitude is how far the wave displaces matter. A bigger wave has to push <strong>farther</strong> AND with more <strong>force</strong>. Connect those two ideas.</div>
+        <div class="cer-counter"><span id="cerReasoningCount">0</span> / 30 minimum</div>
+      </div>
+    </div>
+
+    <div class="prediction-recall" id="predictionRecall">
+      <strong>Your Phase 1 prediction:</strong> <span id="predictionRecallText"></span>
+    </div>
+  </div>
+
+  <!-- Phase 4 checkpoint -->
+  <div class="checkpoint-card" id="p4Checkpoint">
+    <div class="cp-eyebrow">Checkpoint · Phase 4</div>
+    <div class="cp-sub">Last checkpoint — answer correctly to finish the investigation and choose how to wrap up.</div>
+    <div class="cp-q">Two waves are identical in every way except amplitude. Wave B has <strong>three times</strong> the amplitude of Wave A. About how much more energy does Wave B carry?</div>
+    <div class="checkpoint-options" id="cp4Opts">
+      <label><input type="radio" name="cp4" value="0"><span>Three times as much</span></label>
+      <label><input type="radio" name="cp4" value="1"><span>About nine times as much</span></label>
+      <label><input type="radio" name="cp4" value="2"><span>The same amount — amplitude doesn't matter</span></label>
+      <label><input type="radio" name="cp4" value="3"><span>One-third as much</span></label>
+    </div>
+    <div class="checkpoint-feedback" id="cp4Feedback"></div>
+    <div class="checkpoint-actions">
+      <button class="btn btn-orange" id="cp4Check">Check Answer</button>
+      <button class="btn btn-ghost"  id="cp4Retry" style="display:none;">Try Again</button>
+      <button class="btn btn-orange" id="cp4Continue" style="display:none;">Continue → Choose Mode</button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     MODE GATE
+     ====================================================== -->
+<section class="sim-section" id="modeGate" style="display:none;">
+  <div class="section-label">Next Step</div>
+  <div class="section-title">Choose Your Mode</div>
+  <div class="section-desc">You've finished the investigation. Pick how you want to wrap up: <strong>Practice Mode</strong> if you're exploring on your own, or <strong>Classroom Mode</strong> if your teacher assigned this.</div>
+  <div class="mode-toggle-bar" style="margin-top:0.35rem;">
+    <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
+    <button class="mode-btn"        id="classroomModeBtn">Classroom Mode</button>
+  </div>
+  <div class="mode-hint">
+    <span id="modeHintPractice"  class="visible">Practice Mode shows the quiz so you can self-check — nothing will be sent to your teacher.</span>
+    <span id="modeHintClassroom">Classroom Mode adds a submission panel so your work is sent to your teacher.</span>
+  </div>
+</section>
+
+<!-- ======================================================
+     PHASE 5 — QUIZ + CLASSROOM SUBMISSION
+     ====================================================== -->
+<section class="sim-section" id="phase5" style="display:none;">
+  <div class="section-label">Phase 5</div>
+  <div class="section-title">Check Your Understanding</div>
+  <div class="section-desc">You explored a wave, ran amplitude trials, hit energy targets, and built a model. Answer these 5 questions, then click <strong>Score My Quiz</strong>. In <strong>Classroom Mode</strong>, fill in your name and teacher below to submit your work. In <strong>Practice Mode</strong>, scoring the quiz is the finish line — nothing is sent.</div>
+  <div id="quizContainer"></div>
+  <div id="quizScoreArea" style="display:none; margin-top:1rem; text-align:center;">
+    <div class="quiz-score-badge" id="quizScoreBadge">0 / 5 answered</div>
+  </div>
+  <div id="quizResultBanner" style="display:none;"></div>
+
+  <!-- Classroom submission panel -->
+  <div class="classroom-panel hidden" id="classroomPanel">
+    <div class="classroom-panel-header">
+      <span class="classroom-section-title">Submit Your Work</span>
+      <span class="mode-badge">Classroom Mode</span>
+    </div>
+    <div class="student-fields">
+      <div>
+        <label class="field-label" for="studentNameInput">Your Name</label>
+        <input class="field-input" id="studentNameInput" placeholder="First Last" type="text"/>
+      </div>
+      <div>
+        <label class="field-label" for="blockInput">Period / Block</label>
+        <input class="field-input" id="blockInput" placeholder="e.g. Period 3" type="text"/>
+      </div>
+      <div class="field-full">
+        <label class="field-label" for="teacherSelect">Teacher</label>
+        <select class="field-select" id="teacherSelect">
+          <option value="">Select your teacher</option>
+          <option value="Mr. Brown">Mr. Brown</option>
+          <option value="Ms. Gay">Ms. Gay</option>
+        </select>
+      </div>
+    </div>
+    <div class="submit-section">
+      <button class="submit-btn locked" disabled id="submitBtn">Submit Investigation</button>
+      <div class="submit-helper" id="submitHelper">Complete the quiz and fill in all fields to submit.</div>
+      <div class="submit-success" id="submitSuccess"></div>
+      <div class="submit-error"   id="submitError">Something went wrong. Please try again.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     GO FURTHER
+     ====================================================== -->
+<div class="go-further-section" id="goFurtherSection" style="display:none;">
+  <div class="section-label">Go Further</div>
+  <div class="section-title">Keep Exploring</div>
+  <div class="go-further-grid">
+    <a class="gf-card" href="lesson_nature-of-waves.html">
+      <div class="gf-card-label">Lesson</div>
+      <div class="gf-card-title">Nature of Waves</div>
+      <div class="gf-card-desc">Return to the home base — revisit wave anatomy, frequency, wavelength, and how energy travels through different media.</div>
+    </a>
+    <a class="gf-card" href="index.html">
+      <div class="gf-card-label">Library</div>
+      <div class="gf-card-title">Back to LyfeLabz</div>
+      <div class="gf-card-desc">Explore other simulations, investigations, lessons, and games across the LyfeLabz library.</div>
+    </a>
+    <a class="gf-card" href="investigation_cell-energy.html">
+      <div class="gf-card-label">Investigation</div>
+      <div class="gf-card-title">Cell Energy</div>
+      <div class="gf-card-desc">Another investigation where you uncover hidden patterns — this time inside living cells.</div>
+    </a>
+    <a class="gf-card" href="lesson_what-is-life.html">
+      <div class="gf-card-label">Lesson</div>
+      <div class="gf-card-title">What Is Life?</div>
+      <div class="gf-card-desc">Step back from the physical sciences and ask the big question — what makes something alive?</div>
+    </a>
+  </div>
+</div>
+
+<!-- ======================================================
+     FOOTER
+     ====================================================== -->
+<footer>
+  <span class="foot-logo">LYFELABZ</span>
+  Built for middle school science · Massachusetts STE-aligned ·
+  <a href="about_lyfelabz.html">About</a> ·
+  <a href="about_privacy.html">Privacy</a> ·
+  <a href="about_works-cited.html">Works Cited</a>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   STATE + LOCALSTORAGE
+   ===================================================================== */
+const STORE_KEY = 'lyfelabz-amplitude-challenge';
+const state = {
+  phaseUnlocked: 1,
+  discoveries: { crest:false, amp:false, wave:false },
+  prediction: null,
+  trials: [],
+  targets: { bell:false, fan:false, weight:false },
+  targetAttempts: [],
+  modelChoice: null,
+  cer: { claim:'', evidence:'', reasoning:'' },
+  quizAnswers: [null,null,null,null,null],
+  quizLocked: false,
+  quizScore: null,
+  mode: 'practice',
+  submitted: false,
+  toggles: { stem:false, ls:false }
+};
+
+function saveState(){
+  try { sessionStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){}
+}
+function loadState(){
+  try {
+    const raw = sessionStorage.getItem(STORE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    Object.assign(state, parsed);
+    return true;
+  } catch(e){ return false; }
+}
+
+/* =====================================================================
+   TOAST
+   ===================================================================== */
+let toastTimer = null;
+function toast(msg, kind='info'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + kind;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.className = 'toast ' + kind; }, 2400);
+}
+
+/* =====================================================================
+   PROGRESS BAR
+   ===================================================================== */
+function updateProgress(){
+  for (let i=1; i<=5; i++){
+    const el = document.getElementById('step'+i);
+    el.classList.remove('active','done');
+    if (i < state.phaseUnlocked) el.classList.add('done');
+    else if (i === state.phaseUnlocked) el.classList.add('active');
+  }
+  if (state.quizScore !== null) {
+    document.getElementById('step5').classList.remove('active');
+    document.getElementById('step5').classList.add('done');
+  }
+}
+
+/* =====================================================================
+   PHASE REVEAL + UNLOCK
+   ===================================================================== */
+function unlockPhase(n){
+  if (state.phaseUnlocked >= n) return;
+  state.phaseUnlocked = n;
+  saveState();
+  const target = document.getElementById('phase'+n);
+  if (target) {
+    target.style.display='block';
+    // Re-trigger animation if class was already on element
+    target.classList.remove('phase-reveal');
+    void target.offsetWidth;
+    target.classList.add('phase-reveal');
+    setTimeout(()=>target.scrollIntoView({behavior:'smooth', block:'start'}), 160);
+  }
+  // Celebratory flash on the step that just completed
+  const prev = document.getElementById('step' + (n-1));
+  if (prev) {
+    prev.classList.add('just-done');
+    setTimeout(() => prev.classList.remove('just-done'), 950);
+  }
+  updateProgress();
+  updateUnlockHints();
+}
+
+/* =====================================================================
+   UNLOCK HINTS — keeps each phase's "what unlocks next" line in sync
+   with the student's progress. Pure UX text; does not change gating.
+   ===================================================================== */
+function updateUnlockHints(){
+  // Phase 1
+  const h1 = document.getElementById('unlockHint1');
+  if (h1){
+    const found = Object.values(state.discoveries).filter(Boolean).length;
+    const hasPred = !!state.prediction;
+    if (state.phaseUnlocked >= 2){
+      h1.classList.add('ready');
+      h1.innerHTML = 'Phase 1 complete. Phase 2 is open below.';
+    } else if (found === 3 && hasPred){
+      h1.classList.add('ready');
+      h1.innerHTML = 'All set — answer the checkpoint question below to unlock Phase 2.';
+    } else if (found === 3 && !hasPred){
+      h1.classList.remove('ready');
+      h1.innerHTML = '<strong>1 step left:</strong> make your prediction below. Then the checkpoint will appear.';
+    } else {
+      h1.classList.remove('ready');
+      h1.innerHTML = `<strong>${found} of 3 wave parts found.</strong> Click the remaining part${found === 2 ? '' : 's'} on the canvas, then make your prediction.`;
+    }
+  }
+  // Phase 2
+  const h2 = document.getElementById('unlockHint2');
+  if (h2){
+    const n = state.trials.length;
+    const distinct = new Set(state.trials.map(t => t.amplitude)).size;
+    if (state.phaseUnlocked >= 3){
+      h2.classList.add('ready');
+      h2.innerHTML = 'Phase 2 complete. Phase 3 is open below.';
+    } else if (n >= 6 && distinct >= 5){
+      h2.classList.add('ready');
+      h2.innerHTML = 'Enough data collected — answer the checkpoint question below to unlock Phase 3.';
+    } else {
+      h2.classList.remove('ready');
+      const trialsLeft  = Math.max(0, 6 - n);
+      const distinctLeft = Math.max(0, 5 - distinct);
+      const parts = [];
+      if (trialsLeft   > 0) parts.push(`<strong>${trialsLeft}</strong> more trial${trialsLeft===1?'':'s'}`);
+      if (distinctLeft > 0) parts.push(`<strong>${distinctLeft}</strong> more distinct amplitude${distinctLeft===1?'':'s'}`);
+      h2.innerHTML = parts.length
+        ? 'Still need: ' + parts.join(' · ') + '. The checkpoint appears once your data is ready.'
+        : 'Almost ready — keep going.';
+    }
+  }
+  // Phase 3
+  const h3 = document.getElementById('unlockHint3');
+  if (h3){
+    const active = Object.values(state.targets).filter(Boolean).length;
+    if (state.phaseUnlocked >= 4){
+      h3.classList.add('ready');
+      h3.innerHTML = 'Phase 3 complete. Phase 4 is open below.';
+    } else if (active === 3){
+      h3.classList.add('ready');
+      h3.innerHTML = 'All 3 targets activated — answer the checkpoint question below to unlock Phase 4.';
+    } else {
+      h3.classList.remove('ready');
+      h3.innerHTML = `<strong>${active} of 3 targets activated.</strong> Send a wave with enough amplitude to power the remaining one${active === 2 ? '' : 's'}.`;
+    }
+  }
+  // Phase 4
+  const h4 = document.getElementById('unlockHint4');
+  if (h4){
+    const cerOk =
+      (state.cer.claim||'').length >= 25 &&
+      (state.cer.evidence||'').length >= 30 &&
+      (state.cer.reasoning||'').length >= 30;
+    const hasModel = !!state.modelChoice;
+    if (state.phaseUnlocked >= 5){
+      h4.classList.add('ready');
+      h4.innerHTML = 'Phase 4 complete. Choose your mode below.';
+    } else if (hasModel && cerOk){
+      h4.classList.add('ready');
+      h4.innerHTML = 'All set — answer the final checkpoint below to finish the investigation.';
+    } else {
+      h4.classList.remove('ready');
+      const todo = [];
+      if (!hasModel) todo.push('pick a model');
+      const mins = { claim:25, evidence:30, reasoning:30 };
+      const missing = [];
+      if ((state.cer.claim||'').length     < mins.claim)     missing.push('Claim');
+      if ((state.cer.evidence||'').length  < mins.evidence)  missing.push('Evidence');
+      if ((state.cer.reasoning||'').length < mins.reasoning) missing.push('Reasoning');
+      if (missing.length) todo.push('finish ' + missing.join(', '));
+      h4.innerHTML = 'Still need to: <strong>' + todo.join('</strong> and <strong>') + '</strong>.';
+    }
+  }
+}
+function revealVisiblePhases(){
+  for (let i=2; i<=5; i++){
+    const el = document.getElementById('phase'+i);
+    if (!el) continue;
+    el.style.display = (i <= state.phaseUnlocked) ? 'block' : 'none';
+  }
+  if (state.phaseUnlocked >= 5) {
+    document.getElementById('modeGate').style.display='block';
+    if (state.mode === 'classroom') document.getElementById('phase5').style.display='block';
+  } else if (state.phaseUnlocked === 5) {
+    document.getElementById('modeGate').style.display='block';
+  }
+}
+
+/* =====================================================================
+   CHECKPOINT HELPER (mirrors Cell Energy pattern)
+   ===================================================================== */
+function wireCheckpoint(idx, correctIdx, feedbackCorrect, feedbackWrong, onPass){
+  const card = document.getElementById('p'+idx+'Checkpoint');
+  const opts = document.getElementById('cp'+idx+'Opts');
+  const fb   = document.getElementById('cp'+idx+'Feedback');
+  const checkBtn   = document.getElementById('cp'+idx+'Check');
+  const retryBtn   = document.getElementById('cp'+idx+'Retry');
+  const contBtn    = document.getElementById('cp'+idx+'Continue');
+  opts.addEventListener('change', e => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+    e.target.closest('label').classList.add('selected');
+  });
+  checkBtn.addEventListener('click', () => {
+    const sel = opts.querySelector('input[type=radio]:checked');
+    if (!sel) { toast('Pick an answer first.', 'warn'); return; }
+    const val = parseInt(sel.value, 10);
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    if (val === correctIdx) {
+      sel.closest('label').classList.add('correct');
+      fb.className = 'checkpoint-feedback visible ok';
+      fb.textContent = feedbackCorrect;
+      checkBtn.style.display='none';
+      retryBtn.style.display='none';
+      contBtn.style.display='inline-flex';
+      [...opts.querySelectorAll('input')].forEach(i => i.disabled = true);
+      onPass && onPass();
+    } else {
+      sel.closest('label').classList.add('wrong');
+      fb.className = 'checkpoint-feedback visible no';
+      fb.textContent = feedbackWrong;
+      retryBtn.style.display='inline-flex';
+      checkBtn.style.display='none';
+    }
+  });
+  retryBtn.addEventListener('click', () => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    [...opts.querySelectorAll('input')].forEach(i => { i.disabled = false; i.checked = false; });
+    fb.className = 'checkpoint-feedback';
+    fb.textContent = '';
+    retryBtn.style.display='none';
+    checkBtn.style.display='inline-flex';
+  });
+  return contBtn;
+}
+
+/* =====================================================================
+   PHYSICS: E = round(A^2 + small noise)
+   ===================================================================== */
+function computeEnergy(amp){
+  const noise = (Math.random()*0.10 - 0.05) * amp * amp;
+  return Math.max(1, Math.round(amp*amp + noise));
+}
+
+/* =====================================================================
+   PHASE 1 — WAVE EXPLORER
+   ===================================================================== */
+let p1Ctx, p1RAF, p1T = 0;
+let p1Amp = 5, p1Freq = 3;
+
+function initPhase1(){
+  const cv = document.getElementById('p1Canvas');
+  p1Ctx = cv.getContext('2d');
+
+  const ampSlider  = document.getElementById('p1Amp');
+  const freqSlider = document.getElementById('p1Freq');
+  const ampVal     = document.getElementById('p1AmpVal');
+  const freqVal    = document.getElementById('p1FreqVal');
+
+  ampSlider.value  = p1Amp;
+  freqSlider.value = p1Freq;
+  ampVal.textContent  = p1Amp;
+  freqVal.textContent = p1Freq;
+
+  ampSlider.addEventListener('input', () => { p1Amp = +ampSlider.value; ampVal.textContent = p1Amp; });
+  freqSlider.addEventListener('input', () => { p1Freq = +freqSlider.value; freqVal.textContent = p1Freq; });
+
+  cv.addEventListener('click', e => {
+    const rect = cv.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (cv.width / rect.width);
+    const y = (e.clientY - rect.top)  * (cv.height / rect.height);
+    handleP1Click(x, y);
+  });
+
+  // Restore discoveries
+  if (state.discoveries.crest) document.getElementById('discCrest').classList.add('found');
+  if (state.discoveries.amp)   document.getElementById('discAmp').classList.add('found');
+  if (state.discoveries.wave)  document.getElementById('discWave').classList.add('found');
+  updateP1Prompt();
+
+  // Prediction wiring
+  const predOpts = document.getElementById('predictionOptions');
+  predOpts.addEventListener('change', e => {
+    state.prediction = e.target.value;
+    [...predOpts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+    e.target.closest('label').classList.add('selected');
+    document.getElementById('predictionSaved').classList.add('visible');
+    saveState();
+    maybeShowP1Checkpoint();
+  });
+
+  // Restore prediction
+  if (state.prediction){
+    const input = predOpts.querySelector('input[value="'+state.prediction+'"]');
+    if (input){
+      input.checked = true;
+      input.closest('label').classList.add('selected');
+      document.getElementById('predictionSaved').classList.add('visible');
+    }
+  }
+
+  // Loop
+  function loop(){
+    drawP1();
+    p1T += 0.06;
+    p1RAF = requestAnimationFrame(loop);
+  }
+  loop();
+
+  // Wire checkpoint
+  const cont = wireCheckpoint(1, 1,
+    'Correct. Amplitude is the height from the rest line up to a crest — it measures how strong the wave is.',
+    'Not quite — re-read the labels on the wave. Amplitude is a height measurement, not a distance or a count.',
+    () => { state.phaseUnlocked = Math.max(state.phaseUnlocked, 2); saveState(); unlockPhase(2); }
+  );
+  cont.addEventListener('click', () => unlockPhase(2));
+}
+
+function drawP1(){
+  const ctx = p1Ctx, w = 800, h = 320;
+  ctx.clearRect(0,0,w,h);
+  // background gradient
+  const g = ctx.createLinearGradient(0,0,0,h);
+  g.addColorStop(0,'#0a1119'); g.addColorStop(1,'#070b10');
+  ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+
+  const mid = h/2;
+  // rest line
+  ctx.strokeStyle='rgba(154,164,175,0.25)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(40,mid); ctx.lineTo(w-40,mid); ctx.stroke();
+
+  // wave
+  const A_px = p1Amp * 11; // pixels per amplitude unit
+  const k = p1Freq * 0.013;
+  ctx.strokeStyle='#f87c3c'; ctx.lineWidth=2.5;
+  ctx.shadowColor = 'rgba(248,124,60,0.55)'; ctx.shadowBlur = 8;
+  ctx.beginPath();
+  for (let x=40; x<=w-40; x++){
+    const y = mid - A_px * Math.sin(k*(x-40) - p1T);
+    if (x===40) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // labels with hotspots
+  // 1) Crest — find a crest position
+  let crestX = 40, crestY = mid - A_px;
+  for (let x=80; x<=w-100; x++){
+    const phase = k*(x-40) - p1T;
+    const dy = Math.cos(phase);
+    if (Math.abs(dy) < 0.04 && Math.sin(phase) > 0.92){ crestX = x; crestY = mid - A_px * Math.sin(phase); break; }
+  }
+  drawLabel(ctx, 'CREST', crestX, crestY - 22, state.discoveries.crest, '#f5c842');
+
+  // 2) Amplitude — vertical bracket on a crest near center
+  const ampX = 300;
+  const ampPhase = k*(ampX-40) - p1T;
+  const ampY = mid - A_px * Math.sin(ampPhase);
+  ctx.strokeStyle = state.discoveries.amp ? 'rgba(46,204,113,0.85)' : 'rgba(245,200,66,0.65)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(ampX, mid); ctx.lineTo(ampX, ampY); ctx.stroke();
+  ctx.setLineDash([]);
+  drawLabel(ctx, 'AMPLITUDE', ampX + 60, (mid + ampY)/2, state.discoveries.amp, '#f5c842');
+
+  // 3) Wavelength — between two crests
+  const wlStart = 480;
+  const wlEnd = wlStart + (2*Math.PI/k);
+  ctx.strokeStyle = state.discoveries.wave ? 'rgba(46,204,113,0.85)' : 'rgba(59,200,232,0.7)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(wlStart, mid+30); ctx.lineTo(wlEnd, mid+30); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(wlStart, mid+24); ctx.lineTo(wlStart, mid+36); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(wlEnd,   mid+24); ctx.lineTo(wlEnd,   mid+36); ctx.stroke();
+  ctx.setLineDash([]);
+  drawLabel(ctx, 'WAVELENGTH', (wlStart+wlEnd)/2, mid+52, state.discoveries.wave, '#3bc8e8');
+
+  // store hotspot positions for click detection
+  p1Hotspots = {
+    crest: { x:crestX, y:crestY, r:30 },
+    amp:   { x:ampX,   y:(mid+ampY)/2, r:30 },
+    wave:  { x:(wlStart+wlEnd)/2, y:mid+30, r:40 }
+  };
+}
+
+let p1Hotspots = {};
+
+function drawLabel(ctx, text, x, y, found, baseColor){
+  const w = ctx.measureText(text).width + 18;
+  ctx.fillStyle = found ? 'rgba(46,204,113,0.22)' : 'rgba(28,34,48,0.85)';
+  ctx.strokeStyle = found ? 'rgba(46,204,113,0.9)' : baseColor;
+  ctx.lineWidth = 1.2;
+  const lblW = Math.max(60, ctx.measureText(text).width + 16);
+  roundRect(ctx, x-lblW/2, y-9, lblW, 18, 6, true, true);
+  ctx.fillStyle = found ? '#2ecc71' : baseColor;
+  ctx.font = '800 9.5px Nunito, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y+0.5);
+}
+function roundRect(ctx, x, y, w, h, r, fill, stroke){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+  if (fill) ctx.fill();
+  if (stroke) ctx.stroke();
+}
+
+function handleP1Click(x, y){
+  if (!p1Hotspots.crest) return;
+  const order = ['crest','amp','wave'];
+  for (const key of order){
+    if (state.discoveries[key]) continue;
+    const h = p1Hotspots[key];
+    const dx = x-h.x, dy = y-h.y;
+    if (dx*dx + dy*dy < h.r*h.r){
+      state.discoveries[key] = true;
+      const pillId = key === 'crest' ? 'discCrest' : key === 'amp' ? 'discAmp' : 'discWave';
+      const pill = document.getElementById(pillId);
+      pill.classList.add('found');
+      pill.classList.add('just-found');
+      setTimeout(() => pill.classList.remove('just-found'), 700);
+      const name = key === 'crest' ? 'Crest' : key === 'amp' ? 'Amplitude' : 'Wavelength';
+      toast(name + ' identified.', 'success');
+      saveState();
+      updateP1Prompt();
+      return;
+    }
+  }
+}
+
+function updateP1Prompt(){
+  const promptEl = document.getElementById('p1Prompt');
+  const found = Object.values(state.discoveries).filter(Boolean).length;
+  const order = [
+    { key:'crest', name:'CREST', hint:'the highest point of the wave' },
+    { key:'amp',   name:'AMPLITUDE', hint:'the height from the rest line to a crest' },
+    { key:'wave',  name:'WAVELENGTH', hint:'the distance from one crest to the next' }
+  ];
+  const next = order.find(o => !state.discoveries[o.key]);
+  if (next){
+    promptEl.textContent = `Click on the ${next.name} on the wave — ${next.hint}. (${found} of 3 found)`;
+  } else {
+    promptEl.textContent = 'All 3 wave parts identified. Now make your prediction below to unlock the checkpoint.';
+    const pred = document.getElementById('p1Prediction');
+    const wasHidden = pred.style.display === 'none' || !pred.style.display;
+    pred.style.display = 'block';
+    if (wasHidden){
+      pred.classList.remove('reveal-in');
+      void pred.offsetWidth;
+      pred.classList.add('reveal-in');
+    }
+    maybeShowP1Checkpoint();
+  }
+  if (typeof updateUnlockHints === 'function') updateUnlockHints();
+}
+
+function maybeShowP1Checkpoint(){
+  const allFound = state.discoveries.crest && state.discoveries.amp && state.discoveries.wave;
+  if (allFound && state.prediction){
+    document.getElementById('p1Checkpoint').classList.add('visible');
+  }
+}
+
+/* =====================================================================
+   PHASE 2 — AMPLITUDE LAB
+   ===================================================================== */
+let p2Ctx, p2RAF, p2T = 0;
+let p2Amp = 3;
+let p2Pulse = null;  // { x, amplitude, energy, startedAt }
+
+function initPhase2(){
+  const cv = document.getElementById('p2Canvas');
+  p2Ctx = cv.getContext('2d');
+  const ampSlider = document.getElementById('p2Amp');
+  const ampVal    = document.getElementById('p2AmpVal');
+  ampSlider.addEventListener('input', () => { p2Amp = +ampSlider.value; ampVal.textContent = p2Amp; });
+
+  document.getElementById('p2Run').addEventListener('click', runTrial);
+  document.getElementById('p2Clear').addEventListener('click', () => {
+    if (state.trials.length === 0) return;
+    if (!confirm('Clear all trial data? This cannot be undone.')) return;
+    state.trials = [];
+    saveState();
+    renderTrialTable(null);
+    updateSufficiency();
+    updateObservationPrompt();
+    toast('Trial data cleared.', 'info');
+  });
+
+  // Restore table + indicators
+  renderTrialTable(null);
+  updateSufficiency();
+  updateObservationPrompt();
+  if (state.trials.length >= 6 && new Set(state.trials.map(t=>t.amplitude)).size >= 5){
+    document.getElementById('p2Checkpoint').classList.add('visible');
+  }
+
+  function loop(){
+    drawP2();
+    p2T += 1;
+    p2RAF = requestAnimationFrame(loop);
+  }
+  loop();
+
+  const cont = wireCheckpoint(2, 2,
+    'Yes. Your data shows energy rising faster than amplitude — each step in amplitude adds more energy than the last.',
+    'Look more carefully at your data. Compare amplitude = 2 vs amplitude = 4. Does energy double, or grow even more?',
+    () => { state.phaseUnlocked = Math.max(state.phaseUnlocked, 3); saveState(); unlockPhase(3); }
+  );
+  cont.addEventListener('click', () => unlockPhase(3));
+}
+
+function runTrial(){
+  if (p2Pulse) return; // already running
+  const amp = p2Amp;
+  const energy = computeEnergy(amp);
+  const wasRepeat = state.trials.some(t => t.amplitude === amp);
+  const btn = document.getElementById('p2Run');
+  const origText = btn.textContent;
+  btn.dataset.busy = '1';
+  btn.disabled = true;
+  btn.textContent = 'Wave running…';
+  p2Pulse = { x: 60, amp, energy, startedAt: performance.now() };
+  // After wave animation completes, record the trial
+  setTimeout(() => {
+    state.trials.push({ trial: state.trials.length+1, amplitude: amp, energy });
+    saveState();
+    renderTrialTable(state.trials.length-1);
+    updateSufficiency();
+    updateObservationPrompt({ flash:true });
+    showTrialConfirm(state.trials.length, amp, energy, wasRepeat);
+    p2Pulse = null;
+    btn.disabled = false;
+    btn.textContent = origText;
+    delete btn.dataset.busy;
+    // Show checkpoint when sufficient data is collected
+    const distinct = new Set(state.trials.map(t=>t.amplitude)).size;
+    if (state.trials.length >= 6 && distinct >= 5){
+      document.getElementById('p2Checkpoint').classList.add('visible');
+    }
+  }, 1700);
+}
+
+/* Render the trial data table with inline bars and row markers
+   so students can SEE the relationship before they articulate it. */
+function renderTrialTable(freshIdx){
+  const tbody = document.getElementById('p2Tbody');
+  if (state.trials.length === 0){
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="3">No trials yet — choose an amplitude and click Run Trial.</td></tr>';
+    return;
+  }
+  // Compute extremes for the row markers
+  const maxEnergy = Math.max(...state.trials.map(t => t.energy));
+  const minAmp    = Math.min(...state.trials.map(t => t.amplitude));
+  const ampMaxScale    = 8;
+  const energyMaxScale = Math.max(maxEnergy, 1);
+
+  // Track which trial indices match each "extreme" — only mark the FIRST occurrence
+  // so a tie doesn't mark every row.
+  const firstMaxEIdx = state.trials.findIndex(t => t.energy === maxEnergy);
+  const firstMinAIdx = state.trials.findIndex(t => t.amplitude === minAmp);
+
+  tbody.innerHTML = state.trials.map((t, i) => {
+    const ampPct    = Math.round((t.amplitude / ampMaxScale) * 100);
+    const energyPct = Math.round((t.energy    / energyMaxScale) * 100);
+    const rowClasses = [];
+    if (i === freshIdx) rowClasses.push('fresh');
+    if (i === firstMaxEIdx) rowClasses.push('row-max-energy');
+    if (i === firstMinAIdx) rowClasses.push('row-min-amp');
+    return `<tr class="${rowClasses.join(' ')}">
+      <td><span class="trial-num">${t.trial}</span></td>
+      <td>
+        <div class="bar-cell">
+          <span class="bar-num">${t.amplitude}</span>
+          <div class="data-bar amp"><div class="data-bar-fill" style="width:${ampPct}%"></div></div>
+        </div>
+      </td>
+      <td>
+        <div class="bar-cell">
+          <span class="bar-num">${t.energy} J</span>
+          <div class="data-bar energy"><div class="data-bar-fill" style="width:${energyPct}%"></div></div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Animate bar widths in on next paint (transition triggers from width 0 → target)
+  requestAnimationFrame(() => {
+    tbody.querySelectorAll('.data-bar-fill').forEach(el => {
+      const target = el.style.width;
+      el.style.width = '0%';
+      requestAnimationFrame(() => { el.style.width = target; });
+    });
+  });
+
+  // Strip .fresh after the entry animation completes
+  if (freshIdx !== null){
+    setTimeout(() => {
+      const row = tbody.querySelector('.fresh');
+      if (row) row.classList.remove('fresh');
+    }, 1700);
+  }
+}
+
+/* Update the three sufficiency indicators (Trials, Distinct, Range).
+   These are visual cues only — they do NOT change gating logic. */
+function updateSufficiency(){
+  const trials   = state.trials;
+  const n        = trials.length;
+  const distinct = new Set(trials.map(t => t.amplitude)).size;
+  const hasLow   = trials.some(t => t.amplitude <= 2);
+  const hasHigh  = trials.some(t => t.amplitude >= 7);
+  const rangeOK  = hasLow && hasHigh;
+
+  const trialsPill   = document.getElementById('suffTrials');
+  const distinctPill = document.getElementById('suffDistinct');
+  const rangePill    = document.getElementById('suffRange');
+  const ready        = document.getElementById('suffReady');
+  if (!trialsPill) return;
+
+  // Trials pill
+  trialsPill.querySelector('.suff-progress').textContent = `${Math.min(n,6)} / 6`;
+  trialsPill.classList.toggle('met', n >= 6);
+
+  // Distinct pill
+  distinctPill.querySelector('.suff-progress').textContent = `${Math.min(distinct,5)} / 5`;
+  distinctPill.classList.toggle('met', distinct >= 5);
+
+  // Range pill — needs one low (≤2) AND one high (≥7) amplitude tested
+  const rangeText =
+    rangeOK   ? 'low and high tested' :
+    hasLow    ? 'try a high amplitude (≥7)' :
+    hasHigh   ? 'try a low amplitude (≤2)' :
+                'test a low and a high';
+  rangePill.querySelector('.suff-progress').textContent = rangeText;
+  rangePill.classList.toggle('met', rangeOK);
+
+  // Ready badge
+  const allMet = n >= 6 && distinct >= 5 && rangeOK;
+  ready.classList.toggle('visible', allMet);
+
+  // Keep the per-phase unlock hint in sync with current data
+  if (typeof updateUnlockHints === 'function') updateUnlockHints();
+}
+
+/* Guided observation prompts — these never reveal the conclusion.
+   They ask questions, point students at comparisons, and grow with the data. */
+function updateObservationPrompt(opts){
+  const el = document.getElementById('obsText');
+  const card = document.getElementById('obsPrompt');
+  if (!el || !card) return;
+  const trials   = state.trials;
+  const n        = trials.length;
+  const distinct = new Set(trials.map(t => t.amplitude)).size;
+  const hasLow   = trials.some(t => t.amplitude <= 2);
+  const hasHigh  = trials.some(t => t.amplitude >= 7);
+  const sorted   = [...trials].sort((a,b) => a.amplitude - b.amplitude);
+
+  let msg;
+  if (n === 0){
+    msg = 'Start with an extreme — try amplitude <strong>1</strong> or <strong>8</strong> first. Extremes reveal patterns fastest.';
+  } else if (n === 1){
+    const t = trials[0];
+    msg = `Trial 1 used amplitude <strong>${t.amplitude}</strong> and delivered <strong>${t.energy} J</strong>. Now run a very different amplitude. What do you expect to happen?`;
+  } else if (n === 2){
+    const a = sorted[0], b = sorted[1];
+    const ampRatio = (b.amplitude / a.amplitude).toFixed(1);
+    const enRatio  = a.energy > 0 ? (b.energy / a.energy).toFixed(1) : '?';
+    msg = `You changed amplitude from <strong>${a.amplitude}</strong> to <strong>${b.amplitude}</strong> — about <strong>${ampRatio}×</strong>. Energy changed from <strong>${a.energy} J</strong> to <strong>${b.energy} J</strong> — about <strong>${enRatio}×</strong>. Is energy growing at the same rate as amplitude, or faster?`;
+  } else if (n < 5 && distinct < 4){
+    msg = 'Mix in <strong>more distinct amplitudes</strong>. The pattern is easier to see when your data spans many values.';
+  } else if (!hasLow || !hasHigh){
+    if (!hasLow && !hasHigh) msg = 'You haven\'t tested the <strong>extremes</strong> yet — try amplitude <strong>1</strong> and amplitude <strong>8</strong> for the clearest comparison.';
+    else if (!hasLow)        msg = 'Add a <strong>low</strong> amplitude trial (≤2) to see the bottom of the pattern.';
+    else                     msg = 'Add a <strong>high</strong> amplitude trial (≥7) to see the top of the pattern.';
+  } else if (n >= 5 && distinct >= 5){
+    msg = 'Look at the <strong>energy bars</strong> in your table. Doubling the amplitude doesn\'t double the bar length — it grows by more. Ready to test that pattern?';
+  } else {
+    msg = `Good progress — <strong>${n}</strong> trials across <strong>${distinct}</strong> amplitudes. A couple more distinct values will sharpen the pattern.`;
+  }
+
+  el.innerHTML = msg;
+  if (opts && opts.flash){
+    card.classList.add('update-flash');
+    setTimeout(() => card.classList.remove('update-flash'), 700);
+  }
+}
+
+/* Inline confirmation shown in the data-table header after a trial records.
+   Communicates: "yes, your data was captured" — no gamification. */
+let trialConfirmTimer = null;
+function showTrialConfirm(trialNum, amp, energy, wasRepeat){
+  const el = document.getElementById('trialConfirm');
+  if (!el) return;
+  const repeat = wasRepeat
+    ? '<span class="repeat-note">repeat — checking consistency</span>'
+    : '';
+  el.innerHTML = `Trial ${trialNum} recorded · amplitude ${amp} → ${energy} J ${repeat}`;
+  el.classList.add('visible');
+  clearTimeout(trialConfirmTimer);
+  trialConfirmTimer = setTimeout(() => el.classList.remove('visible'), 4500);
+}
+
+function drawP2(){
+  const ctx = p2Ctx, w = 800, h = 280;
+  ctx.clearRect(0,0,w,h);
+  const bg = ctx.createLinearGradient(0,0,0,h);
+  bg.addColorStop(0,'#0a1119'); bg.addColorStop(1,'#070b10');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,w,h);
+
+  const mid = h/2;
+  // rest line
+  ctx.strokeStyle='rgba(154,164,175,0.2)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(60,mid); ctx.lineTo(w-100,mid); ctx.stroke();
+
+  // wave generator (left)
+  ctx.fillStyle='#1c2230'; ctx.strokeStyle='#3a4a5e'; ctx.lineWidth=1.5;
+  roundRect(ctx, 20, mid-40, 36, 80, 8, true, true);
+  ctx.fillStyle='#f87c3c'; ctx.font='800 9px Nunito,sans-serif'; ctx.textAlign='center';
+  ctx.fillText('SOURCE', 38, mid+58);
+
+  // detector (right)
+  ctx.fillStyle='#1c2230'; ctx.strokeStyle='#3a4a5e';
+  roundRect(ctx, w-80, mid-50, 60, 100, 8, true, true);
+  ctx.fillStyle='#3bc8e8'; ctx.font='800 9px Nunito,sans-serif';
+  ctx.fillText('DETECTOR', w-50, mid+68);
+
+  // detector readout
+  let readout = '— J';
+  let readoutFill = 'rgba(59,200,232,0.4)';
+  if (p2Pulse){
+    const elapsed = performance.now() - p2Pulse.startedAt;
+    if (elapsed > 1400) {
+      readout = p2Pulse.energy + ' J';
+      readoutFill = 'rgba(248,124,60,1)';
+    }
+  } else if (state.trials.length > 0){
+    readout = state.trials[state.trials.length-1].energy + ' J';
+    readoutFill = 'rgba(59,200,232,0.95)';
+  }
+  ctx.fillStyle = readoutFill;
+  ctx.font='900 14px Nunito,sans-serif'; ctx.textAlign='center';
+  ctx.fillText(readout, w-50, mid+2);
+
+  // standing preview wave when idle (small)
+  if (!p2Pulse){
+    const A_px = p2Amp * 8;
+    const k = 0.025;
+    ctx.strokeStyle='rgba(248,124,60,0.45)'; ctx.lineWidth=1.5;
+    ctx.beginPath();
+    for (let x=60; x<=w-100; x++){
+      const y = mid - A_px * Math.sin(k*(x-60) - p2T*0.04);
+      if (x===60) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.fillStyle='rgba(154,164,175,0.5)'; ctx.font='700 10px Nunito,sans-serif'; ctx.textAlign='left';
+    ctx.fillText('Preview · click Run Trial to send a wave pulse', 70, h-14);
+  } else {
+    // travelling pulse
+    const elapsed = performance.now() - p2Pulse.startedAt;
+    const prog = Math.min(elapsed/1400, 1);
+    const pulseX = 60 + prog * (w-160);
+    const A_px = p2Pulse.amp * 9;
+    const k = 0.04;
+
+    // Source emission ring — first 350 ms communicates "wave just left here"
+    if (elapsed < 350){
+      const t = elapsed / 350;
+      const ringR = 8 + t * 28;
+      const ringA = (1 - t) * 0.85;
+      ctx.strokeStyle = `rgba(248,124,60,${ringA})`;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.arc(38, mid, ringR, 0, Math.PI*2); ctx.stroke();
+    }
+
+    // Gaussian envelope around pulseX
+    ctx.strokeStyle='#f87c3c'; ctx.lineWidth=2.5;
+    ctx.shadowColor='rgba(248,124,60,0.7)'; ctx.shadowBlur=10;
+    ctx.beginPath();
+    for (let x=60; x<=w-100; x++){
+      const env = Math.exp(-Math.pow((x-pulseX)/55, 2));
+      const y = mid - A_px * env * Math.sin(k*(x-60) - p2T*0.4);
+      if (x===60) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.shadowBlur=0;
+
+    // flash detector on arrival
+    if (elapsed > 1300 && elapsed < 1900){
+      const t = (elapsed - 1300) / 600;
+      const flashA = 1 - t;
+      ctx.fillStyle = `rgba(248,124,60,${flashA*0.45})`;
+      roundRect(ctx, w-80, mid-50, 60, 100, 8, true, false);
+      // Expanding ring around detector communicating "energy received"
+      ctx.strokeStyle = `rgba(248,124,60,${flashA*0.55})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(w-50, mid, 36 + t*14, 56 + t*18, 0, 0, Math.PI*2);
+      ctx.stroke();
+    }
+  }
+}
+
+/* =====================================================================
+   PHASE 3 — ENERGY TARGETS
+   ===================================================================== */
+function initPhase3(){
+  document.querySelectorAll('[data-target-btn]').forEach(btn => {
+    btn.addEventListener('click', () => fireTarget(btn.dataset.targetBtn));
+  });
+
+  // Restore activated targets
+  Object.keys(state.targets).forEach(k => {
+    if (state.targets[k]){
+      const card = document.querySelector(`[data-target="${k}"]`);
+      card.classList.add('activated');
+      document.getElementById('t'+cap(k)+'Status').textContent = 'Activated';
+    }
+  });
+  maybeShowP3Checkpoint();
+
+  const cont = wireCheckpoint(3, 1,
+    'Exactly. Energy grows with the square of amplitude — so doubling amplitude means about four times the energy, not just double.',
+    'Re-check your data. Compare an amplitude of 2 with an amplitude of 4. The energy did much more than double.',
+    () => { state.phaseUnlocked = Math.max(state.phaseUnlocked, 4); saveState(); unlockPhase(4); seedPhase4FromState(); }
+  );
+  cont.addEventListener('click', () => { unlockPhase(4); seedPhase4FromState(); });
+}
+function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function fireTarget(key){
+  const card = document.querySelector(`[data-target="${key}"]`);
+  const need = parseInt(card.dataset.need, 10);
+  const amp = parseInt(document.getElementById('t'+cap(key)+'Amp').value, 10);
+  if (!amp || amp < 1 || amp > 8){ toast('Enter an amplitude from 1 to 8.', 'warn'); return; }
+  const energy = computeEnergy(amp);
+  state.targetAttempts.push({ target:key, amplitude:amp, energy, need, success: energy>=need });
+  const resultEl = document.getElementById('t'+cap(key)+'Result');
+  if (energy >= need){
+    resultEl.className = 'target-result success';
+    resultEl.textContent = `Delivered ${energy} J — needed ${need} J. Activated.`;
+    const firstTime = !card.classList.contains('activated');
+    card.classList.add('activated');
+    if (firstTime){
+      card.classList.add('just-activated');
+      setTimeout(() => card.classList.remove('just-activated'), 800);
+    }
+    document.getElementById('t'+cap(key)+'Status').textContent = 'Activated';
+    state.targets[key] = true;
+  } else {
+    resultEl.className = 'target-result fail';
+    resultEl.textContent = `Delivered ${energy} J — needed ${need} J. Try a higher amplitude.`;
+  }
+  saveState();
+  maybeShowP3Checkpoint();
+}
+
+function maybeShowP3Checkpoint(){
+  if (state.targets.bell && state.targets.fan && state.targets.weight){
+    document.getElementById('p3Checkpoint').classList.add('visible');
+  }
+  if (typeof updateUnlockHints === 'function') updateUnlockHints();
+}
+
+/* =====================================================================
+   PHASE 4 — WAVE ENERGY MODEL
+   ===================================================================== */
+let p4Ctx;
+let showLinear = false, showSquare = false;
+let plotView = 'raw';            // 'raw' or 'ratio'
+let p4PointHits = [];            // hitboxes for click-to-inspect
+let p4HighlightIdx = null;       // currently highlighted trial index
+
+function initPhase4(){
+  const cv = document.getElementById('p4Canvas');
+  p4Ctx = cv.getContext('2d');
+
+  document.getElementById('toggleLinear').addEventListener('click', () => {
+    showLinear = !showLinear;
+    document.getElementById('toggleLinear').classList.toggle('active', showLinear);
+    drawP4();
+  });
+  document.getElementById('toggleSquare').addEventListener('click', () => {
+    showSquare = !showSquare;
+    document.getElementById('toggleSquare').classList.toggle('active', showSquare);
+    drawP4();
+  });
+
+  // View mode toggle: Raw / Ratios
+  const viewRaw    = document.getElementById('viewRaw');
+  const viewRatios = document.getElementById('viewRatios');
+  function applyView(v){
+    plotView = v;
+    viewRaw.classList.toggle('active',    v==='raw');
+    viewRatios.classList.toggle('active', v==='ratio');
+    updatePlotHint();
+    p4HighlightIdx = null;
+    drawP4();
+  }
+  viewRaw.addEventListener('click',    () => applyView('raw'));
+  viewRatios.addEventListener('click', () => applyView('ratio'));
+
+  // Canvas click → highlight nearest point
+  cv.addEventListener('click', e => {
+    const rect = cv.getBoundingClientRect();
+    const cx = (e.clientX - rect.left) * (cv.width / rect.width);
+    const cy = (e.clientY - rect.top)  * (cv.height / rect.height);
+    let best = null, bestD = 22*22;
+    p4PointHits.forEach(p => {
+      const dx = cx - p.x, dy = cy - p.y;
+      const d2 = dx*dx + dy*dy;
+      if (d2 < bestD){ bestD = d2; best = p; }
+    });
+    p4HighlightIdx = best ? best.idx : null;
+    drawP4();
+  });
+
+  // Model choice
+  const modelOpts = document.getElementById('modelChoiceOpts');
+  modelOpts.addEventListener('change', e => {
+    state.modelChoice = e.target.value;
+    [...modelOpts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+    e.target.closest('label').classList.add('selected');
+    saveState();
+    updateCERScaffolds();
+    maybeShowP4Checkpoint();
+  });
+  if (state.modelChoice){
+    const inp = modelOpts.querySelector('input[value="'+state.modelChoice+'"]');
+    if (inp){ inp.checked = true; inp.closest('label').classList.add('selected'); }
+  }
+
+  // CER textareas
+  ['Claim','Evidence','Reasoning'].forEach(field => {
+    const id = 'cer'+field;
+    const ta = document.getElementById(id);
+    const counter = document.getElementById(id+'Count');
+    const key = field.toLowerCase();
+    ta.value = state.cer[key] || '';
+    counter.textContent = ta.value.length;
+    updateCounterMet(counter, ta.value.length, field);
+    ta.addEventListener('input', () => {
+      state.cer[key] = ta.value;
+      counter.textContent = ta.value.length;
+      updateCounterMet(counter, ta.value.length, field);
+      saveState();
+      updateCERScaffolds();
+      maybeShowP4Checkpoint();
+    });
+  });
+
+  // Prediction recall
+  if (state.prediction){
+    const map = {
+      same:   'It would stay about the same.',
+      double: 'It would double.',
+      more:   'It would more than double.',
+      less:   'It would be less than before.'
+    };
+    document.getElementById('predictionRecallText').textContent = map[state.prediction] || '';
+    document.getElementById('predictionRecall').classList.add('visible');
+  }
+
+  renderAnalysisCards();
+  updateCERScaffolds();
+  updatePlotHint();
+  drawP4();
+  maybeShowP4Checkpoint();
+
+  const cont = wireCheckpoint(4, 1,
+    'Right. Three times the amplitude means about nine times the energy — because energy is proportional to amplitude squared.',
+    'Look at the square model on your graph. If amplitude triples, what happens to A² ? That is your factor.',
+    () => { state.phaseUnlocked = Math.max(state.phaseUnlocked, 5); saveState(); unlockPhase(5); document.getElementById('modeGate').style.display='block'; }
+  );
+  cont.addEventListener('click', () => {
+    unlockPhase(5);
+    document.getElementById('modeGate').style.display='block';
+    document.getElementById('modeGate').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+}
+
+function seedPhase4FromState(){
+  if (!p4Ctx) return;
+  renderAnalysisCards();
+  updateCERScaffolds();
+  // Reveal analysis grid with subtle fade-in on each card
+  const grid = document.getElementById('analysisGrid');
+  if (grid){
+    [...grid.querySelectorAll('.analysis-card')].forEach((c, i) => {
+      c.classList.remove('reveal-in');
+      c.style.animationDelay = (0.12 * i) + 's';
+      void c.offsetWidth;
+      c.classList.add('reveal-in');
+    });
+  }
+  startP4DrawIn();
+}
+
+/* Staggered draw-in for scatter points after Phase 4 unlocks */
+let p4AnimT = 1;
+let p4AnimRAF = null;
+function startP4DrawIn(){
+  if (!p4Ctx) return;
+  if (!state.trials.length){ p4AnimT = 1; drawP4(); return; }
+  p4AnimT = 0;
+  cancelAnimationFrame(p4AnimRAF);
+  const start = performance.now();
+  const duration = 850;
+  function step(now){
+    p4AnimT = Math.min((now - start) / duration, 1);
+    drawP4();
+    if (p4AnimT < 1) p4AnimRAF = requestAnimationFrame(step);
+  }
+  p4AnimRAF = requestAnimationFrame(step);
+}
+
+/* Mark counter green once minimum is hit so students see progress */
+function updateCounterMet(counter, len, field){
+  const mins = { Claim:25, Evidence:30, Reasoning:30 };
+  counter.classList.toggle('met', len >= mins[field]);
+}
+
+/* Update the helper line under the plot to match the active view mode */
+function updatePlotHint(){
+  const el = document.getElementById('plotHint');
+  if (!el) return;
+  if (plotView === 'raw'){
+    el.innerHTML = 'Click a point to see its trial details. Toggle <strong>Show as Ratios</strong> to compare every trial to your lowest-amplitude trial.';
+  } else {
+    el.innerHTML = 'Each point now shows <strong>how many times bigger</strong> than your smallest trial it is. If the dots land on the <span style="color:var(--teal)">teal line (y = x)</span>, energy grows linearly. If they land on the <span style="color:var(--gold)">gold curve (y = x²)</span>, energy grows with the square of amplitude.';
+  }
+}
+
+/* =====================================================================
+   ANALYSIS CARDS — auto-generated comparison prompts from real data
+   These ask questions; they never state the conclusion.
+   ===================================================================== */
+function renderAnalysisCards(){
+  const grid = document.getElementById('analysisGrid');
+  if (!grid) return;
+  const trials = state.trials;
+  if (trials.length < 2){
+    grid.innerHTML = '<div class="analysis-empty">Collect more trials in Phase 2 to unlock data comparisons.</div>';
+    return;
+  }
+
+  const cards = [];
+
+  // Card 1 — RANGE: lowest amplitude vs highest amplitude trial
+  const sorted = [...trials].sort((a,b) => a.amplitude - b.amplitude);
+  const lo = sorted[0], hi = sorted[sorted.length-1];
+  if (lo.amplitude !== hi.amplitude){
+    const ampRatio = (hi.amplitude / lo.amplitude);
+    const enRatio  = lo.energy > 0 ? (hi.energy / lo.energy) : null;
+    cards.push(makeCard('Range — Low vs. High', lo, hi, ampRatio, enRatio,
+      `Your amplitude grew by <strong>about ${formatRatio(ampRatio)}×</strong>. Your energy grew by <strong>about ${enRatio?formatRatio(enRatio):'?'}×</strong>. Are those the same number, or different?`
+    ));
+  }
+
+  // Card 2 — best DOUBLING pair (amp_B closest to 2 × amp_A)
+  const pair2 = findRatioPair(trials, 2);
+  if (pair2){
+    const [a, b] = pair2;
+    const ampRatio = b.amplitude / a.amplitude;
+    const enRatio  = a.energy > 0 ? b.energy / a.energy : null;
+    cards.push(makeCard('Doubling Pair', a, b, ampRatio, enRatio,
+      `When amplitude roughly doubled, energy went <strong>about ${enRatio?formatRatio(enRatio):'?'}×</strong>. If energy was simply linear with amplitude, what would you expect?`
+    ));
+  }
+
+  // Card 3 — best TRIPLING pair (only if we still have room and it's distinct from card 2)
+  if (cards.length < 2){
+    const pair3 = findRatioPair(trials, 3);
+    if (pair3){
+      const [a, b] = pair3;
+      const ampRatio = b.amplitude / a.amplitude;
+      const enRatio  = a.energy > 0 ? b.energy / a.energy : null;
+      cards.push(makeCard('Tripling Pair', a, b, ampRatio, enRatio,
+        `When amplitude roughly tripled, energy went <strong>about ${enRatio?formatRatio(enRatio):'?'}×</strong>. Is that closer to 3× or to 9×?`
+      ));
+    }
+  }
+
+  // If we only had room for one card so far, try to add a tripling pair alongside the range card
+  if (cards.length === 1 && !cards.some(c => c.includes('Doubling')) && !cards.some(c => c.includes('Tripling'))){
+    const pair3 = findRatioPair(trials, 3);
+    if (pair3){
+      const [a, b] = pair3;
+      const ampRatio = b.amplitude / a.amplitude;
+      const enRatio  = a.energy > 0 ? b.energy / a.energy : null;
+      cards.push(makeCard('Tripling Pair', a, b, ampRatio, enRatio,
+        `When amplitude roughly tripled, energy went <strong>about ${enRatio?formatRatio(enRatio):'?'}×</strong>. Is that closer to 3× or to 9×?`
+      ));
+    }
+  }
+
+  if (cards.length === 0){
+    grid.innerHTML = '<div class="analysis-empty">Trial data looks limited — run more trials at distinct amplitudes in Phase 2.</div>';
+  } else {
+    grid.innerHTML = cards.join('');
+  }
+}
+
+/* Build one analysis card HTML string */
+function makeCard(tag, a, b, ampRatio, enRatio, question){
+  const ratioRow = (enRatio === null)
+    ? ''
+    : `<div class="ac-ratios">
+        <span class="ac-ratio amp">amplitude × ${formatRatio(ampRatio)}</span>
+        <span class="ac-ratio energy">energy × ${formatRatio(enRatio)}</span>
+      </div>`;
+  return `<div class="analysis-card">
+    <div class="ac-tag">${tag}</div>
+    <div class="ac-rows">
+      <span class="ac-tnum">${a.trial}</span><span class="ac-amp">amp ${a.amplitude}</span><span class="ac-energy">${a.energy} J</span>
+      <span class="ac-tnum">${b.trial}</span><span class="ac-amp">amp ${b.amplitude}</span><span class="ac-energy">${b.energy} J</span>
+    </div>
+    ${ratioRow}
+    <div class="ac-question">${question}</div>
+  </div>`;
+}
+
+/* Find two trials whose amplitude ratio is closest to `target` (≥ 1.5 needed
+   to be a meaningful comparison). Returns [lower, higher] or null. */
+function findRatioPair(trials, target){
+  let best = null, bestErr = Infinity;
+  for (let i = 0; i < trials.length; i++){
+    for (let j = 0; j < trials.length; j++){
+      if (i === j) continue;
+      const a = trials[i], b = trials[j];
+      if (b.amplitude <= a.amplitude) continue;
+      const r = b.amplitude / a.amplitude;
+      if (r < 1.5) continue;
+      const err = Math.abs(r - target);
+      if (err < bestErr){ bestErr = err; best = [a, b]; }
+    }
+  }
+  // Require we're within 30% of target to use it
+  if (best && Math.abs(best[1].amplitude / best[0].amplitude - target) <= target * 0.3) return best;
+  return null;
+}
+
+function formatRatio(r){
+  if (Math.abs(r - Math.round(r)) < 0.05) return String(Math.round(r));
+  return r.toFixed(1);
+}
+
+/* =====================================================================
+   CER SCAFFOLDS — dynamic, data-aware hints that fade as students write
+   ===================================================================== */
+function updateCERScaffolds(){
+  const trials = state.trials;
+  const claim = document.getElementById('claimScaffold');
+  const evid  = document.getElementById('evidenceScaffold');
+  const reas  = document.getElementById('reasoningScaffold');
+  if (!claim || !evid || !reas) return;
+
+  // CLAIM scaffold — nudge toward model selection without naming it
+  if (state.modelChoice === 'linear'){
+    claim.innerHTML = '<span class="sc-label">Hint</span>You picked the <strong>linear</strong> model. Re-check: when amplitude doubled in your data, did energy also exactly double, or grow more?';
+  } else if (state.modelChoice === 'square'){
+    claim.innerHTML = '<span class="sc-label">Hint</span>You picked the <strong>squared</strong> model. Now state that clearly in your claim — name the relationship as plainly as you can.';
+  } else {
+    claim.innerHTML = '<span class="sc-label">Hint</span>Did your data look like a <strong>straight line</strong>, or did it <strong>curve upward</strong> faster than amplitude grew? That tells you which model to claim.';
+  }
+
+  // EVIDENCE scaffold — cite a real trial pair from the data
+  if (trials.length < 2){
+    evid.innerHTML = '<span class="sc-label">Hint</span>Run more trials in Phase 2 first — your evidence will be stronger with real numbers to cite.';
+  } else {
+    const sorted = [...trials].sort((x,y) => x.amplitude - y.amplitude);
+    const lo = sorted[0];
+    // prefer a doubling pair, else the range pair
+    const pair2 = findRatioPair(trials, 2);
+    const pair3 = findRatioPair(trials, 3);
+    const hi = sorted[sorted.length-1];
+    let a, b, label;
+    if (pair2){ [a,b] = pair2; label = 'doubling'; }
+    else if (pair3){ [a,b] = pair3; label = 'tripling'; }
+    else { a = lo; b = hi; label = 'biggest contrast'; }
+    evid.innerHTML = `<span class="sc-label">Cite this</span>Try referencing your <strong>${label}</strong> pair: <strong>Trial ${a.trial}</strong> (amp ${a.amplitude}, ${a.energy} J) and <strong>Trial ${b.trial}</strong> (amp ${b.amplitude}, ${b.energy} J). What changed, and by how much?`;
+  }
+
+  // REASONING scaffold — push toward physical explanation
+  reas.innerHTML = '<span class="sc-label">Hint</span>Amplitude is how far the wave displaces matter. A bigger wave has to push <strong>farther</strong> AND with more <strong>force</strong>. Connect those two ideas — what happens to total energy when both factors grow at once?';
+
+  // Dim the scaffold for any field that already has enough text — visual cue
+  const mins = { claim:25, evidence:30, reasoning:30 };
+  claim.classList.toggle('dim', (state.cer.claim||'').length >= mins.claim);
+  evid.classList.toggle('dim',  (state.cer.evidence||'').length >= mins.evidence);
+  reas.classList.toggle('dim',  (state.cer.reasoning||'').length >= mins.reasoning);
+}
+
+/* =====================================================================
+   PLOT — supports two view modes: 'raw' and 'ratio'
+   ===================================================================== */
+function drawP4(){
+  if (!p4Ctx) return;
+  const ctx = p4Ctx, w = 800, h = 420;
+  ctx.clearRect(0,0,w,h);
+  const bg = ctx.createLinearGradient(0,0,0,h);
+  bg.addColorStop(0,'#0a1119'); bg.addColorStop(1,'#070b10');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,w,h);
+
+  const padL = 70, padR = 40, padT = 40, padB = 60;
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
+
+  // -------- Choose coordinate system based on plotView --------
+  let xMin = 0, xMax = 9, yMax = 70;
+  let xLabel = 'Amplitude', yLabel = 'Energy Delivered (J)';
+  let refTrial = null;
+
+  const trials = state.trials;
+
+  if (plotView === 'ratio' && trials.length){
+    // Reference = trial with smallest amplitude (ties: pick earliest)
+    refTrial = trials.reduce((m, t) => (m && m.amplitude <= t.amplitude) ? m : t, null);
+    // x: amplitude ratio
+    const maxAmpRatio = Math.max(...trials.map(t => t.amplitude / refTrial.amplitude));
+    xMax = Math.max(2, Math.ceil(maxAmpRatio + 0.5));
+    // y: energy ratio (with headroom for x² curve)
+    const maxEnRatio  = refTrial.energy > 0 ? Math.max(...trials.map(t => t.energy / refTrial.energy)) : xMax*xMax;
+    yMax = Math.max(maxEnRatio * 1.1, xMax * xMax * 1.05);
+    xLabel = `Amplitude (× Trial ${refTrial.trial})`;
+    yLabel = `Energy (× Trial ${refTrial.trial})`;
+  } else {
+    const dataMax = trials.length ? Math.max(...trials.map(t => t.energy)) : 64;
+    yMax = Math.max(70, Math.ceil(dataMax/10)*10 + 10);
+  }
+
+  function X(x){ return padL + (x - xMin)/(xMax - xMin) * plotW; }
+  function Y(y){ return padT + plotH - (y / yMax) * plotH; }
+
+  // ---- Grid + axes ----
+  ctx.strokeStyle='rgba(58,74,94,0.5)'; ctx.lineWidth=1;
+  const xTickStep = plotView === 'ratio' ? 1 : 1;
+  for (let gx = xTickStep; gx <= xMax; gx += xTickStep){
+    ctx.beginPath(); ctx.moveTo(X(gx), padT); ctx.lineTo(X(gx), padT+plotH); ctx.stroke();
+  }
+  const yTickStep = Math.max(plotView === 'ratio' ? 5 : 10, Math.round(yMax/7));
+  for (let gy = 0; gy <= yMax; gy += yTickStep){
+    ctx.beginPath(); ctx.moveTo(padL, Y(gy)); ctx.lineTo(padL+plotW, Y(gy)); ctx.stroke();
+  }
+
+  ctx.strokeStyle='rgba(154,164,175,0.7)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+
+  // tick labels
+  ctx.fillStyle='rgba(184,193,204,0.85)'; ctx.font='700 11px Nunito,sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for (let gx = xTickStep; gx <= xMax; gx += xTickStep){
+    ctx.fillText(plotView === 'ratio' ? (gx + '×') : gx, X(gx), padT+plotH+8);
+  }
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for (let gy = 0; gy <= yMax; gy += yTickStep){
+    ctx.fillText(plotView === 'ratio' ? (gy + '×') : gy, padL-8, Y(gy));
+  }
+  // axis titles
+  ctx.fillStyle='#e6edf3';
+  ctx.font="800 12px 'Nunito', sans-serif"; ctx.textAlign='center';
+  ctx.fillText(xLabel, padL + plotW/2, h-12);
+  ctx.save();
+  ctx.translate(18, padT + plotH/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText(yLabel, 0, 0);
+  ctx.restore();
+
+  // ---- Model curves ----
+  if (plotView === 'ratio'){
+    // In ratio space: ALWAYS show both reference curves y = x and y = x²
+    // (they are the predicted curves for linear vs squared models)
+    // Linear reference y = x (teal dashed)
+    ctx.strokeStyle='rgba(59,200,232,0.85)'; ctx.lineWidth=2; ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    for (let x=0; x<=xMax; x+=0.05){
+      const y = x;
+      if (y > yMax) { break; }
+      const px = X(x), py = Y(y);
+      if (x===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+    // Squared reference y = x² (gold)
+    ctx.strokeStyle='rgba(245,200,66,0.95)'; ctx.lineWidth=2.4;
+    ctx.beginPath();
+    for (let x=0; x<=xMax; x+=0.05){
+      const y = x*x;
+      if (y > yMax) { break; }
+      const px = X(x), py = Y(y);
+      if (x===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    // legend labels
+    ctx.fillStyle='rgba(59,200,232,0.95)'; ctx.font="800 11px 'Nunito',sans-serif"; ctx.textAlign='left';
+    ctx.fillText('y = x  (linear)', padL + plotW - 160, padT + 18);
+    ctx.fillStyle='rgba(245,200,66,1)';
+    ctx.fillText('y = x²  (squared)', padL + plotW - 160, padT + 36);
+  } else {
+    // Raw view — best-fit k from least squares (Pass 2 behaviour)
+    let kLin = 1, kSq = 1;
+    if (trials.length){
+      let sumEA=0, sumAA=0, sumEAA=0, sumAAAA=0;
+      trials.forEach(t => {
+        sumEA += t.energy * t.amplitude;
+        sumAA += t.amplitude * t.amplitude;
+        sumEAA += t.energy * t.amplitude * t.amplitude;
+        sumAAAA += Math.pow(t.amplitude, 4);
+      });
+      if (sumAA > 0)    kLin = sumEA / sumAA;
+      if (sumAAAA > 0)  kSq  = sumEAA / sumAAAA;
+    }
+    if (showLinear){
+      ctx.strokeStyle='rgba(59,200,232,0.85)'; ctx.lineWidth=2.2; ctx.setLineDash([6,4]);
+      ctx.beginPath();
+      for (let x=0; x<=xMax; x+=0.1){
+        const y = kLin * x;
+        if (y > yMax) break;
+        const px = X(x), py = Y(y);
+        if (x===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle='rgba(59,200,232,0.95)'; ctx.font="800 11px 'Nunito',sans-serif"; ctx.textAlign='left';
+      ctx.fillText(`E = ${kLin.toFixed(2)} · A`, padL + plotW - 130, padT + 18);
+    }
+    if (showSquare){
+      ctx.strokeStyle='rgba(245,200,66,0.95)'; ctx.lineWidth=2.4;
+      ctx.beginPath();
+      for (let x=0; x<=xMax; x+=0.1){
+        const y = kSq * x * x;
+        if (y > yMax) break;
+        const px = X(x), py = Y(y);
+        if (x===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.stroke();
+      ctx.fillStyle='rgba(245,200,66,1)'; ctx.font="800 11px 'Nunito',sans-serif"; ctx.textAlign='left';
+      ctx.fillText(`E = ${kSq.toFixed(2)} · A²`, padL + plotW - 130, padT + 36);
+    }
+  }
+
+  // ---- Data points (with optional staggered draw-in) ----
+  p4PointHits = [];
+  const totalPts = trials.length || 1;
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  trials.forEach((t, i) => {
+    let px, py, xVal, yVal;
+    if (plotView === 'ratio' && refTrial){
+      xVal = t.amplitude / refTrial.amplitude;
+      yVal = refTrial.energy > 0 ? t.energy / refTrial.energy : 0;
+    } else {
+      xVal = t.amplitude;
+      yVal = t.energy;
+    }
+    px = X(xVal); py = Y(Math.min(yVal, yMax));
+    p4PointHits.push({ x:px, y:py, idx:i });
+
+    // Per-point animation progress (staggered): 0 → 1
+    let appearT = 1;
+    if (p4AnimT < 1){
+      const stagger = totalPts > 1 ? (i / (totalPts - 1)) * 0.45 : 0;
+      const local = (p4AnimT - stagger) / (1 - 0.45);
+      appearT = Math.max(0, Math.min(1, local));
+      if (appearT === 0) return; // not visible yet
+    }
+    const ea = easeOut(appearT);
+
+    const isHi = (p4HighlightIdx === i);
+    const baseR = isHi ? 8 : 5;
+    const r = baseR * ea;
+    if (r < 0.5) return;
+    ctx.fillStyle = `rgba(248,124,60,${0.92 * ea})`;
+    ctx.shadowColor='rgba(248,124,60,0.7)'; ctx.shadowBlur = (isHi ? 14 : 8) * ea;
+    ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.strokeStyle = `rgba(255,255,255,${(isHi ? 1 : 0.85) * ea})`; ctx.lineWidth = isHi ? 2 : 1;
+    ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI*2); ctx.stroke();
+    // Brief expanding ring at the moment of appearance (only during animation)
+    if (p4AnimT < 1 && appearT > 0 && appearT < 0.6){
+      const ringR = baseR + (1 - appearT) * 14;
+      const ringA = appearT * 0.5;
+      ctx.strokeStyle = `rgba(248,124,60,${ringA})`; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.arc(px, py, ringR, 0, Math.PI*2); ctx.stroke();
+    }
+    if (isHi && appearT >= 1){
+      // Outer ring for highlighted point
+      ctx.strokeStyle='rgba(245,200,66,0.85)'; ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.arc(px, py, baseR+5, 0, Math.PI*2); ctx.stroke();
+    }
+  });
+
+  // Mark the lowest-amplitude (reference) trial in ratio mode
+  if (plotView === 'ratio' && refTrial){
+    const rx = X(1), ry = Y(1);
+    ctx.strokeStyle='rgba(46,204,113,0.9)'; ctx.lineWidth=1.5; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.arc(rx, ry, 11, 0, Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(46,204,113,1)'; ctx.font="800 10px 'Nunito',sans-serif"; ctx.textAlign='left';
+    ctx.fillText(`Trial ${refTrial.trial} (reference)`, rx + 14, ry - 2);
+  }
+
+  // ---- Highlight tooltip ----
+  if (p4HighlightIdx !== null && trials[p4HighlightIdx]){
+    const t = trials[p4HighlightIdx];
+    const hit = p4PointHits[p4HighlightIdx];
+    if (hit){
+      const lines = [`Trial ${t.trial}`, `amp ${t.amplitude} · ${t.energy} J`];
+      if (plotView === 'ratio' && refTrial){
+        const ar = (t.amplitude / refTrial.amplitude);
+        const er = refTrial.energy > 0 ? (t.energy / refTrial.energy) : 0;
+        lines.push(`× ${formatRatio(ar)} amp · × ${formatRatio(er)} energy`);
+      }
+      ctx.font="800 11px 'Nunito',sans-serif";
+      const lineH = 16, padX = 10, padY = 8;
+      const tw = Math.max(...lines.map(l => ctx.measureText(l).width)) + padX*2;
+      const th = lines.length * lineH + padY*2;
+      let tx = hit.x + 14, ty = hit.y - th - 14;
+      if (tx + tw > padL + plotW) tx = hit.x - tw - 14;
+      if (ty < padT) ty = hit.y + 14;
+      ctx.fillStyle='rgba(28,34,48,0.96)';
+      ctx.strokeStyle='rgba(248,124,60,0.7)'; ctx.lineWidth=1;
+      roundRect(ctx, tx, ty, tw, th, 7, true, true);
+      ctx.fillStyle='#e6edf3'; ctx.textAlign='left'; ctx.textBaseline='top';
+      lines.forEach((l, k) => ctx.fillText(l, tx+padX, ty+padY+k*lineH));
+    }
+  }
+
+  // No-data hint
+  if (trials.length === 0){
+    ctx.fillStyle='rgba(154,164,175,0.6)';
+    ctx.font="700 13px 'Nunito',sans-serif"; ctx.textAlign='center';
+    ctx.fillText('No data yet — run trials in Phase 2 to fill this graph.', padL + plotW/2, padT + plotH/2);
+  }
+}
+
+function maybeShowP4Checkpoint(){
+  const cerOk =
+    (state.cer.claim||'').length >= 25 &&
+    (state.cer.evidence||'').length >= 30 &&
+    (state.cer.reasoning||'').length >= 30;
+  if (state.modelChoice && cerOk){
+    document.getElementById('p4Checkpoint').classList.add('visible');
+  }
+  if (typeof updateUnlockHints === 'function') updateUnlockHints();
+}
+
+/* =====================================================================
+   MODE GATE
+   ===================================================================== */
+function initModeGate(){
+  const pBtn = document.getElementById('practiceModeBtn');
+  const cBtn = document.getElementById('classroomModeBtn');
+  const hP = document.getElementById('modeHintPractice');
+  const hC = document.getElementById('modeHintClassroom');
+  function apply(){
+    pBtn.classList.toggle('active', state.mode==='practice');
+    cBtn.classList.toggle('active', state.mode==='classroom');
+    hP.classList.toggle('visible', state.mode==='practice');
+    hC.classList.toggle('visible', state.mode==='classroom');
+    if (state.mode==='classroom'){
+      document.getElementById('phase5').style.display='block';
+      document.getElementById('classroomPanel').classList.remove('hidden');
+    } else {
+      document.getElementById('classroomPanel').classList.add('hidden');
+      // Phase 5 still visible if unlocked, but submission hidden
+      if (state.phaseUnlocked >= 5) document.getElementById('phase5').style.display='block';
+    }
+    saveState();
+  }
+  pBtn.addEventListener('click', () => { state.mode='practice'; apply(); });
+  cBtn.addEventListener('click', () => { state.mode='classroom'; apply(); document.getElementById('phase5').scrollIntoView({behavior:'smooth'}); });
+  apply();
+}
+
+/* =====================================================================
+   PHASE 5 — QUIZ
+   ===================================================================== */
+const QUIZ = [
+  {
+    q: 'A wave\'s amplitude is best described as:',
+    options: [
+      'The number of waves passing a point each second',
+      'The distance the wave moves in one second',
+      'The height from the rest position up to a crest',
+      'The distance from one crest to the next'
+    ],
+    correct: 2
+  },
+  {
+    q: 'Two ocean waves are identical, but Wave 2 has twice the amplitude of Wave 1. Compared to Wave 1, Wave 2 carries about:',
+    options: [
+      'Half the energy',
+      'The same energy',
+      'Twice the energy',
+      'About four times the energy'
+    ],
+    correct: 3
+  },
+  {
+    q: 'During an earthquake, which wave is more destructive — and why?',
+    options: [
+      'The one with the higher frequency, because it shakes more often',
+      'The one with the larger amplitude, because energy grows with the square of amplitude',
+      'They cause equal damage as long as the wavelength is the same',
+      'The one that travels faster, regardless of amplitude'
+    ],
+    correct: 1
+  },
+  {
+    q: 'A speaker is turned up so the sound wave\'s amplitude triples. The sound\'s energy becomes about:',
+    options: [
+      '3 times larger',
+      '9 times larger',
+      'unchanged — only frequency affects loudness',
+      '1/3 as large'
+    ],
+    correct: 1
+  },
+  {
+    q: 'Why does a small amplitude wave fail to "lift the weight" in this investigation, even though a larger wave succeeds?',
+    options: [
+      'Smaller waves travel slower and never reach the target',
+      'The detector ignores small waves',
+      'Small amplitude waves carry too little energy to do the required work',
+      'Lifting a weight depends on wavelength, not amplitude'
+    ],
+    correct: 2
+  }
+];
+
+function renderQuiz(){
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = QUIZ.map((q, i) => {
+    const opts = q.options.map((opt, j) =>
+      `<label data-i="${i}" data-j="${j}"><input type="radio" name="qz${i}" value="${j}" ${state.quizAnswers[i]===j?'checked':''}><span>${opt}</span></label>`
+    ).join('');
+    return `<div class="quiz-q" id="qzWrap${i}">
+      <div class="quiz-q-prompt"><span class="num">${i+1}.</span>${q.q}</div>
+      <div class="quiz-options" id="qzOpts${i}">${opts}</div>
+    </div>`;
+  }).join('') + `
+    <div style="display:flex; gap:0.55rem; flex-wrap:wrap; margin-top:0.5rem;">
+      <button class="btn btn-orange" id="quizScoreBtn">Score My Quiz</button>
+      <button class="btn btn-ghost"  id="quizResetBtn" style="display:none;">Try Again</button>
+    </div>`;
+
+  // Wire selection styling
+  for (let i=0; i<QUIZ.length; i++){
+    const wrap = document.getElementById('qzOpts'+i);
+    wrap.addEventListener('change', e => {
+      [...wrap.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+      e.target.closest('label').classList.add('selected');
+      state.quizAnswers[i] = parseInt(e.target.value,10);
+      saveState();
+      updateQuizCount();
+    });
+    if (state.quizAnswers[i] !== null){
+      const lab = wrap.querySelector(`label[data-j="${state.quizAnswers[i]}"]`);
+      if (lab) lab.classList.add('selected');
+    }
+  }
+  document.getElementById('quizScoreBtn').addEventListener('click', scoreQuiz);
+  document.getElementById('quizResetBtn').addEventListener('click', resetQuiz);
+  updateQuizCount();
+  if (state.quizLocked) lockQuizDisplay();
+}
+
+function updateQuizCount(){
+  const answered = state.quizAnswers.filter(a => a !== null).length;
+  const area = document.getElementById('quizScoreArea');
+  area.style.display = 'block';
+  document.getElementById('quizScoreBadge').textContent = `${answered} / 5 answered`;
+  refreshSubmitState();
+}
+
+function scoreQuiz(){
+  if (state.quizAnswers.some(a => a===null)){ toast('Answer all 5 questions first.', 'warn'); return; }
+  let score = 0;
+  for (let i=0; i<QUIZ.length; i++){
+    if (state.quizAnswers[i] === QUIZ[i].correct) score++;
+  }
+  state.quizScore = score;
+  state.quizLocked = true;
+  saveState();
+  lockQuizDisplay();
+  const banner = document.getElementById('quizResultBanner');
+  banner.style.display='block';
+  if (score >= 4){ banner.className='pass'; banner.textContent = `${score} / 5 — strong work. The amplitude–energy relationship is clearly clicking.`; }
+  else if (score >= 3){ banner.className='pass'; banner.textContent = `${score} / 5 — solid. Review the missed items and try again to push higher.`; }
+  else { banner.className='fail'; banner.textContent = `${score} / 5 — re-read the explanations and try again.`; }
+  document.getElementById('quizScoreBadge').textContent = `Score: ${score} / 5`;
+  // Trigger score reveal animation
+  const scoreArea = document.getElementById('quizScoreArea');
+  scoreArea.classList.remove('scored');
+  void scoreArea.offsetWidth;
+  scoreArea.classList.add('scored');
+  document.getElementById('quizResetBtn').style.display='inline-flex';
+  const goFurther = document.getElementById('goFurtherSection');
+  goFurther.style.display='block';
+  goFurther.classList.remove('reveal-in');
+  void goFurther.offsetWidth;
+  goFurther.classList.add('reveal-in');
+  refreshSubmitState();
+  updateProgress();
+}
+
+function lockQuizDisplay(){
+  for (let i=0; i<QUIZ.length; i++){
+    const wrap = document.getElementById('qzOpts'+i);
+    if (!wrap) continue;
+    wrap.classList.add('locked');
+    const labels = wrap.querySelectorAll('label');
+    labels.forEach(l => {
+      const j = parseInt(l.dataset.j, 10);
+      if (j === QUIZ[i].correct) l.classList.add('correct');
+      else if (state.quizAnswers[i] === j) l.classList.add('wrong');
+    });
+  }
+  const btn = document.getElementById('quizScoreBtn');
+  if (btn) btn.style.display='none';
+}
+
+function resetQuiz(){
+  state.quizAnswers = [null,null,null,null,null];
+  state.quizLocked = false;
+  state.quizScore = null;
+  saveState();
+  document.getElementById('quizResultBanner').style.display='none';
+  renderQuiz();
+  refreshSubmitState();
+  updateProgress();
+}
+
+/* =====================================================================
+   CLASSROOM SUBMISSION
+   ===================================================================== */
+const TEACHER_URLS = {
+  'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+
+function refreshSubmitState(){
+  const btn = document.getElementById('submitBtn');
+  const helper = document.getElementById('submitHelper');
+  if (!btn) return;
+  const name = document.getElementById('studentNameInput')?.value.trim();
+  const block = document.getElementById('blockInput')?.value.trim();
+  const teacher = document.getElementById('teacherSelect')?.value;
+  const allQuizAnswered = state.quizAnswers.every(a => a !== null);
+  const allFields = name && block && teacher;
+  const ready = allQuizAnswered && state.quizLocked && allFields && !state.submitted;
+
+  if (state.submitted){
+    btn.disabled = true; btn.classList.add('locked');
+    btn.textContent = 'Submitted';
+    helper.textContent = 'Your investigation has been submitted to your teacher.';
+  } else if (ready){
+    btn.disabled = false; btn.classList.remove('locked');
+    btn.textContent = 'Submit Investigation';
+    helper.textContent = 'Ready to submit.';
+  } else {
+    btn.disabled = true; btn.classList.add('locked');
+    btn.textContent = 'Submit Investigation';
+    if (!state.quizLocked) helper.textContent = 'Score your quiz before submitting.';
+    else if (!allFields)    helper.textContent = 'Fill in your name, block, and teacher.';
+    else                    helper.textContent = 'Complete the quiz and fill in all fields to submit.';
+  }
+}
+
+function initClassroomFields(){
+  ['studentNameInput','blockInput','teacherSelect'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('input', refreshSubmitState);
+    el.addEventListener('change', refreshSubmitState);
+  });
+  document.getElementById('submitBtn').addEventListener('click', submitWork);
+}
+
+function submitWork(){
+  const btn = document.getElementById('submitBtn');
+  const succ = document.getElementById('submitSuccess');
+  const err  = document.getElementById('submitError');
+  succ.classList.remove('visible'); err.classList.remove('visible');
+  const teacher = document.getElementById('teacherSelect').value;
+  const url = TEACHER_URLS[teacher];
+  if (!url){ err.textContent='Please pick your teacher.'; err.classList.add('visible'); return; }
+
+  const params = new URLSearchParams({
+    activity:       'Amplitude Challenge',
+    studentName:    document.getElementById('studentNameInput').value.trim(),
+    block:          document.getElementById('blockInput').value.trim(),
+    teacher:        teacher,
+    prediction:     state.prediction || '',
+    trials:         JSON.stringify(state.trials),
+    targetAttempts: JSON.stringify(state.targetAttempts),
+    modelChoice:    state.modelChoice || '',
+    cerClaim:       state.cer.claim || '',
+    cerEvidence:    state.cer.evidence || '',
+    cerReasoning:   state.cer.reasoning || '',
+    quizAnswers:    JSON.stringify(state.quizAnswers),
+    quizScore:      state.quizScore !== null ? state.quizScore : '',
+    submittedAt:    new Date().toISOString()
+  });
+
+  btn.disabled = true; btn.classList.add('locked'); btn.textContent='Submitting…';
+
+  fetch(url + '?' + params.toString(), { method:'GET', mode:'no-cors' })
+    .then(() => {
+      state.submitted = true; saveState();
+      succ.textContent = 'Submitted to ' + teacher + '. Great work.';
+      succ.classList.add('visible');
+      // Clear local data per project convention
+      try { sessionStorage.removeItem(STORE_KEY); } catch(e){}
+      refreshSubmitState();
+    })
+    .catch(() => {
+      err.classList.add('visible');
+      btn.disabled = false; btn.classList.remove('locked'); btn.textContent='Submit Investigation';
+    });
+}
+
+/* =====================================================================
+   STEM / LS TOGGLES
+   ===================================================================== */
+function initToggles(){
+  // Header toggle buttons are no longer rendered on investigation pages —
+  // this page depends on the LyfeLabz index-page toggles, which persist via sessionStorage.
+  const stem = document.getElementById('lyfelabz-stem'); // may be null
+  const ls   = document.getElementById('lyfelabz-ls');   // may be null
+
+  function applyToggles(){
+    document.body.classList.toggle('stem-active', state.toggles.stem);
+    document.body.classList.toggle('ls-active',   state.toggles.ls);
+    if (stem) stem.classList.toggle('active', state.toggles.stem);
+    if (ls)   { ls.classList.toggle('active', state.toggles.ls); ls.classList.toggle('ls', true); }
+    // Mirror current state back into sessionStorage so the index page stays in sync.
+    try {
+      sessionStorage.setItem('lyfelabz-stem-on', state.toggles.stem ? '1' : '0');
+      sessionStorage.setItem('lyfelabz-ls-on',   state.toggles.ls   ? '1' : '0');
+    } catch(e){}
+  }
+  // Restore from the index-page sessionStorage settings.
+  try {
+    state.toggles.stem = sessionStorage.getItem('lyfelabz-stem-on') === '1';
+    state.toggles.ls   = sessionStorage.getItem('lyfelabz-ls-on')   === '1';
+  } catch(e){}
+  // Only attach click listeners if the local buttons exist.
+  if (stem) stem.addEventListener('click', () => { state.toggles.stem = !state.toggles.stem; applyToggles(); });
+  if (ls)   ls.addEventListener('click',   () => { state.toggles.ls   = !state.toggles.ls;   applyToggles(); });
+  applyToggles();
+}
+
+/* =====================================================================
+   HERO CANVAS — drifting wave motes
+   ===================================================================== */
+let hCtx, hW, hH, hT=0, hDPR;
+function initHeroCanvas(){
+  const el = document.getElementById('heroCanvas');
+  if (!el) return;
+  hCtx = el.getContext('2d');
+  hDPR = Math.min(window.devicePixelRatio||1, 2);
+  resizeHero(el);
+  window.addEventListener('resize', () => resizeHero(el));
+  requestAnimationFrame(heroLoop);
+}
+function resizeHero(el){
+  const rect = el.parentElement.getBoundingClientRect();
+  hW = rect.width; hH = rect.height;
+  if (hW < 1 || hH < 1) return;
+  el.width = hW*hDPR; el.height = hH*hDPR;
+  el.style.width = hW+'px'; el.style.height = hH+'px';
+  hCtx.setTransform(hDPR,0,0,hDPR,0,0);
+}
+const HERO_LINES = Array.from({length:5}, (_,i)=>({
+  ph: Math.random()*Math.PI*2,
+  amp: 12 + i*4,
+  k: 0.006 + i*0.001,
+  speed: 0.012 + i*0.003,
+  yF: 0.3 + i*0.12,
+  alpha: 0.06 + (i%2)*0.04
+}));
+function heroLoop(){
+  if (hCtx && hW > 0){
+    hCtx.clearRect(0,0,hW,hH);
+    HERO_LINES.forEach(L => {
+      hCtx.strokeStyle = `rgba(248,124,60,${L.alpha})`;
+      hCtx.lineWidth = 1.4;
+      hCtx.beginPath();
+      for (let x=0; x<=hW; x++){
+        const y = hH*L.yF + L.amp * Math.sin(L.k*x - hT*L.speed + L.ph);
+        if (x===0) hCtx.moveTo(x,y); else hCtx.lineTo(x,y);
+      }
+      hCtx.stroke();
+    });
+    hT++;
+  }
+  requestAnimationFrame(heroLoop);
+}
+
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+function boot(){
+  const restored = loadState();
+  if (restored) {
+    const banner = document.getElementById('restoreBanner');
+    const phaseNames = {
+      1: 'Phase 1 — Wave Explorer',
+      2: 'Phase 2 — Amplitude Lab',
+      3: 'Phase 3 — Energy Targets',
+      4: 'Phase 4 — Wave Energy Model',
+      5: 'Phase 5 — Quiz'
+    };
+    const where = phaseNames[state.phaseUnlocked] || 'where you left off';
+    banner.textContent = 'Your progress has been restored — continuing at ' + where + '.';
+    banner.classList.add('visible');
+  }
+  revealVisiblePhases();
+  updateProgress();
+  initToggles();
+  initHeroCanvas();
+  initPhase1();
+  initPhase2();
+  initPhase3();
+  initPhase4();
+  initModeGate();
+  renderQuiz();
+  initClassroomFields();
+  refreshSubmitState();
+  updateUnlockHints();
+
+  // If quiz already locked from restore
+  if (state.quizLocked) {
+    document.getElementById('quizResultBanner').style.display='block';
+    const banner = document.getElementById('quizResultBanner');
+    const score = state.quizScore || 0;
+    if (score >= 4){ banner.className='pass'; banner.textContent = `${score} / 5 — strong work. The amplitude–energy relationship is clearly clicking.`; }
+    else if (score >= 3){ banner.className='pass'; banner.textContent = `${score} / 5 — solid. Review the missed items and try again.`; }
+    else { banner.className='fail'; banner.textContent = `${score} / 5 — re-read the explanations and try again.`; }
+    document.getElementById('goFurtherSection').style.display='block';
+  }
+}
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>
