@@ -445,10 +445,15 @@ input[type=range]::-moz-range-thumb { width:18px; height:18px; border-radius:50%
 /* =========================================================
    FOOTER
    ========================================================= */
-footer { background:#070b10; border-top:1px solid var(--border); padding:2rem 1.5rem; text-align:center; color:var(--text-muted); font-size:0.82rem; }
-footer .foot-logo { font-family:'Orbitron',sans-serif; color:var(--gold); font-weight:900; letter-spacing:0.08em; margin-bottom:0.4rem; display:block; }
-footer a { color:var(--teal); text-decoration:none; margin:0 0.5rem; }
-footer a:hover { text-decoration:underline; }
+footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:0.5rem; }
+footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); font-weight:800; }
+footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); }
+footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
 
 /* =========================================================
    TOAST
@@ -1110,11 +1115,14 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
      FOOTER
      ====================================================== -->
 <footer>
-  <span class="foot-logo">LYFELABZ</span>
-  Built for middle school science · Massachusetts STE-aligned ·
-  <a href="about_lyfelabz.html">About</a> ·
-  <a href="about_privacy.html">Privacy</a> ·
-  <a href="about_works-cited.html">Works Cited</a>
+  <div class="footer-logo">LYFELABZ</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
 <div class="toast" id="toast"></div>
