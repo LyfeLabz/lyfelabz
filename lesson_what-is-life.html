@@ -716,11 +716,14 @@
     height: 3px;
   }
   .cont-card.ext  { background: rgba(155,89,182,0.12); border: 1px solid rgba(155,89,182,0.35); }
+  .cont-card.inv  { background: rgba(59,130,246,0.10); border: 1px solid rgba(59,130,246,0.35); }
   .cont-card.game { background: rgba(61,220,132,0.10); border: 1px solid rgba(61,220,132,0.35); }
   .cont-card.ext::before  { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+  .cont-card.inv::before  { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
   .cont-card.game::before { background: linear-gradient(90deg, #3ddc84, #1de9b6); }
   .cont-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
   .cont-card.ext:hover  { border-color: rgba(155,89,182,0.6); box-shadow: 0 14px 40px rgba(155,89,182,0.15); }
+  .cont-card.inv:hover  { border-color: rgba(59,130,246,0.6);  box-shadow: 0 14px 40px rgba(59,130,246,0.15);  }
   .cont-card.game:hover { border-color: rgba(61,220,132,0.6);  box-shadow: 0 14px 40px rgba(61,220,132,0.12);  }
   .cont-icon {
     width: 48px;
@@ -752,8 +755,10 @@
     margin-top: auto;
   }
   .cont-card.ext  .cont-link { background: rgba(180,127,255,0.12); border-color: rgba(180,127,255,0.3);  color: #b47fff; }
+  .cont-card.inv  .cont-link { background: rgba(59,130,246,0.12);  border-color: rgba(59,130,246,0.3);   color: #3B82F6; }
   .cont-card.game .cont-link { background: rgba(61,220,132,0.10);  border-color: rgba(61,220,132,0.3);   color: #3ddc84; }
   .cont-card.ext:hover  .cont-link { background: rgba(180,127,255,0.2); border-color: rgba(180,127,255,0.55); }
+  .cont-card.inv:hover  .cont-link { background: rgba(59,130,246,0.2);  border-color: rgba(59,130,246,0.55);  }
   .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55);  }
 
   /* ===== FOOTER ===== */
@@ -2303,11 +2308,11 @@ requestAnimationFrame(draw);
     <p class="section-desc">The lesson is just the beginning — push the definition further, test your skills, or explore the edge cases.</p>
     <div class="continue-grid">
 
-      <a href="extension_gray-zone.html" class="cont-card ext">
+      <a href="investigation_gray-zone.html" class="cont-card inv">
         <div class="cont-icon">🔍</div>
         <div class="cont-name">The Gray Zone</div>
         <div class="cont-desc">Viruses, prions, fire — things that blur the line between living and nonliving. Where does life actually begin?</div>
-        <span class="cont-link">Explore</span>
+        <span class="cont-link">Investigate</span>
       </a>
 
       <a href="extension_virus.html" class="cont-card ext">

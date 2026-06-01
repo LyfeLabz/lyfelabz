@@ -73,22 +73,6 @@
     letter-spacing: 0.06em;
     text-shadow: 0 0 18px var(--gold-glow);
   }
-  .nav-links {
-    display: flex;
-    gap: 1.5rem;
-    list-style: none;
-    flex-wrap: wrap;
-  }
-  .nav-links a {
-    color: var(--text-muted);
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 700;
-    transition: color 0.2s;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .nav-links a:hover { color: var(--green); }
   .nav-back {
     display: inline-flex;
     align-items: center;
@@ -592,7 +576,6 @@
   .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(230,126,34,0.4); }
 
   @media (max-width: 600px) {
-    .nav-links { display: none; }
     .quiz-options { padding-left: 0; }
     .option-feedback { padding-left: 1rem; }
   }
@@ -917,12 +900,6 @@ body.stem-active .stem-detail {
 <!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
-  <ul class="nav-links">
-    <li><a href="#pathway">Pathway</a></li>
-    <li><a href="#real-world">Real World</a></li>
-    <li><a href="#what-goes-wrong">What Goes Wrong</a></li>
-    <li><a href="#quiz">Quiz</a></li>
-  </ul>
   <a href="lesson_organelles.html" class="nav-back">← Cell Organelles</a>
 </nav>
 

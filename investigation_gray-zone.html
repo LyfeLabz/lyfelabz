@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="canonical" href="https://lyfelabz.com/investigation_gray-zone.html">
+<meta name="description" content="Investigate the gray zone between living and non-living. Analyze six real cases — fire, crystals, viruses, and more — and build scientific arguments about what it means to be alive.">
+<title>The Gray Zone Investigation | LyfeLabz</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+  html { font-size: 18px; }
+  :root {
+    --green: #2ecc71;
+    --green-dark: #27ae60;
+    --blue: #3498db;
+    --blue-dark: #2980b9;
+    --teal: #1abc9c;
+    --purple: #9b59b6;
+    --red: #e74c3c;
+    --orange: #e67e22;
+    --yellow: #f1c40f;
+    --gold: #f5c842;
+    --gold-glow: rgba(245,200,66,0.35);
+    --dark: #1a2535;
+    --dark2: #243447;
+    --card: #1e2f42;
+    --text: #e8f4f8;
+    --text-muted: #8aafca;
+    --border: rgba(52,152,219,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--green); background: rgba(46,204,113,0.1);
+    border: 1px solid rgba(46,204,113,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background:
+      radial-gradient(circle at 15% 25%, rgba(59,130,246,0.18), transparent 28%),
+      radial-gradient(circle at 85% 15%, rgba(59,130,246,0.10), transparent 22%),
+      radial-gradient(ellipse at 50% 0%, rgba(59,200,232,0.08) 0%, transparent 55%),
+      linear-gradient(135deg, #0a1218 0%, #0c1922 50%, #080f15 100%);
+    padding: 4.1rem 2rem 3.35rem; text-align: center; position: relative; overflow: hidden;
+    border-bottom: 1px solid rgba(59,130,246,0.22);
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(-32deg, transparent 0px, transparent 36px, rgba(59,130,246,0.018) 36px, rgba(59,130,246,0.018) 38px);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block; background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.4); color: #fff;
+    padding: 0.4rem 1.2rem; border-radius: 99px; font-size: 0.8rem;
+    font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, #BFDBFE);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.15rem; color: var(--text-muted); max-width: 720px;
+    margin: 0 auto 2.5rem; position: relative;
+  }
+  .nav-toggles { display:flex; gap:0.5rem; align-items:center; }
+  .nav-toggle { font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; padding:0.3rem 0.75rem; border-radius:99px; background:transparent; border:1px solid rgba(255,255,255,0.15); color:var(--text-muted); cursor:pointer; transition:all 0.2s; }
+  .nav-toggle:hover { color:var(--text); border-color:rgba(255,255,255,0.35); }
+  .nav-toggle.active { background:rgba(46,204,113,0.12); border-color:var(--green); color:var(--green); }
+  .nav-toggle.active.ls { background:rgba(27,188,156,0.12); border-color:var(--teal); color:var(--teal); }
+
+  .badge-bar { display:none; flex-wrap:wrap; gap:0.5rem; padding:0.6rem 1.4rem; background:var(--dark2); border-bottom:1px solid var(--border); justify-content:center; }
+  body.stem-active .badge-bar.stem-bar { display:flex; }
+  body.ls-active   .badge-bar.ls-bar   { display:flex; }
+  .badge { position:relative; display:inline-flex; align-items:center; gap:0.3rem; padding:0.25rem 0.7rem; border-radius:20px; font-size:0.72rem; font-weight:800; cursor:help; transition:filter 0.2s; }
+  .badge:hover { filter:brightness(1.2); }
+  .badge.green { background:rgba(46,204,113,0.15); color:var(--green); border:1px solid rgba(46,204,113,0.3); }
+  .badge.teal  { background:rgba(27,188,156,0.15); color:var(--teal);  border:1px solid rgba(27,188,156,0.3); }
+  .badge-tip { display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#1c2230; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:0.5rem 0.75rem; font-size:0.7rem; font-weight:600; color:#c9d1d9; width:240px; text-align:center; z-index:200; pointer-events:none; line-height:1.4; }
+  .badge:hover .badge-tip { display:block; }
+
+  .hero-cells {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-cells:nth-child(1) { top: 10%; left: 8%; animation-delay: 0s; }
+  .hero-cells:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-cells:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-cells:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5rem 2rem; }
+  #cases, #analyze, #cer, #quiz { scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: #3B82F6;
+    background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  .section-label-green {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--green);
+    background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: var(--text-muted); font-size: 1.05rem; max-width: 760px; margin-bottom: 3rem; }
+
+  /* ===== CASE CARDS ===== */
+  .case-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem; margin-top: 2rem;
+  }
+  .case-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.8rem; transition: all 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .case-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #93C5FD, #3B82F6);
+  }
+  .case-card:hover { transform: translateY(-4px); border-color: rgba(59,130,246,0.35); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
+  .case-icon { font-size: 2.4rem; margin-bottom: 0.8rem; display: block; }
+  .case-name { font-weight: 900; font-size: 1.1rem; color: #3B82F6; margin-bottom: 0.5rem; }
+  .case-desc { color: var(--text-muted); font-size: 0.93rem; }
+  .case-verdict {
+    display: inline-block; margin-top: 0.9rem;
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.25rem 0.75rem; border-radius: 99px;
+    background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); color: #3B82F6;
+  }
+
+  /* ===== ANALYSIS BLOCKS ===== */
+  .analysis-block {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 2.2rem; margin-bottom: 2rem;
+  }
+  .analysis-header {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+    padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+  }
+  .analysis-icon { font-size: 2.5rem; flex-shrink: 0; }
+  .analysis-title {
+    font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--text);
+  }
+  .analysis-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem; }
+
+  /* ===== CHECKLIST ===== */
+  .check-item {
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    padding: 0.9rem 1.2rem; border-radius: 14px;
+    border: 2px solid var(--border); background: rgba(255,255,255,0.02); margin-bottom: 0.7rem;
+  }
+  .check-left {
+    width: 40px; height: 40px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+    background: rgba(52,152,219,0.10); font-size: 1.2rem;
+  }
+  .check-title { font-weight: 900; font-size: 0.95rem; }
+  .check-note { color: var(--text-muted); font-size: 0.88rem; margin-top: 0.2rem; }
+  .pill-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  .pill {
+    font-size: 0.7rem; font-weight: 900; padding: 0.22rem 0.65rem;
+    border-radius: 99px; letter-spacing: 0.04em; text-transform: uppercase; border: 1px solid transparent;
+  }
+  .pill-yes { background: rgba(46,204,113,0.15); color: var(--green); border-color: rgba(46,204,113,0.3); }
+  .pill-no { background: rgba(231,76,60,0.10); color: #ff8a8a; border-color: rgba(231,76,60,0.25); }
+  .pill-partial  { background: rgba(241,196,15,0.10); color: #f1c40f; border-color: rgba(241,196,15,0.25); }
+  .pill-sometimes{ background: rgba(241,196,15,0.10); color: #f1c40f; border-color: rgba(241,196,15,0.25); }
+
+  .analysis-verdict {
+    display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem;
+    background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 14px; padding: 1rem 1.4rem;
+  }
+  .verdict-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: #3B82F6; margin-bottom: 0.25rem; }
+  .verdict-text { color: var(--text-muted); font-size: 0.92rem; }
+
+
+  /* ===== COLLAPSIBLE ANALYSIS CARDS ===== */
+  details.analysis-block {
+    padding: 0;
+    overflow: hidden;
+  }
+  details.analysis-block summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.5rem 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid transparent;
+  }
+  details.analysis-block summary::-webkit-details-marker {
+    display: none;
+  }
+  details.analysis-block[open] summary {
+    border-bottom-color: var(--border);
+  }
+  .analysis-summary-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .analysis-toggle {
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3B82F6;
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 99px;
+    padding: 0.25rem 0.75rem;
+    flex-shrink: 0;
+  }
+  details.analysis-block[open] .analysis-toggle {
+    color: var(--green);
+    background: rgba(46,204,113,0.08);
+    border-color: rgba(46,204,113,0.25);
+  }
+  details.analysis-block:not([open]) .analysis-toggle::before {
+    content: "Open ";
+  }
+  details.analysis-block[open] .analysis-toggle::before {
+    content: "Close ";
+  }
+  .analysis-content {
+    padding: 1.5rem 2.2rem 2.2rem;
+  }
+
+  /* ===== CER BUILDER ===== */
+  .cer-case {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 2rem; margin-bottom: 1.8rem;
+  }
+  .cer-case-header {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.6rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+  }
+  .cer-case-icon { font-size: 2.2rem; flex-shrink: 0; }
+  .cer-case-title { font-family: 'Fredoka One', cursive; font-size: 1.4rem; }
+  .cer-case-sub { color: var(--text-muted); font-size: 0.88rem; margin-top: 0.15rem; }
+  .cer-step { margin-bottom: 1.2rem; }
+  .cer-step-header {
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem;
+  }
+  .cer-step-letter {
+    font-family: 'Fredoka One', cursive; font-size: 1.5rem; line-height: 1;
+    color: #3B82F6; width: 2rem; flex-shrink: 0;
+  }
+  .cer-step-label { font-weight: 900; font-size: 0.95rem; }
+  .cer-step-prompt { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 0.8rem; padding-left: 2.75rem; }
+  .cer-options { display: flex; flex-direction: column; gap: 0.55rem; padding-left: 2.75rem; }
+  .cer-option {
+    display: flex; align-items: flex-start; gap: 0.7rem; padding: 0.85rem 1.1rem;
+    border-radius: 12px; border: 2px solid var(--border); cursor: pointer;
+    transition: all 0.2s; background: rgba(255,255,255,0.02);
+    font-size: 0.92rem; font-weight: 600; font-family: 'Nunito', sans-serif;
+    text-align: left; color: var(--text); width: 100%;
+  }
+  .cer-option:hover:not(.cer-disabled) { border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.04); }
+  .cer-option.cer-correct { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
+  .cer-option.cer-incorrect { border-color: var(--red) !important; background: rgba(231,76,60,0.08) !important; }
+  .cer-option.cer-revealed { border-color: rgba(46,204,113,0.35) !important; background: rgba(46,204,113,0.05) !important; }
+  .cer-option.cer-disabled { pointer-events: none; }
+  .cer-opt-letter { font-weight: 900; color: var(--text-muted); min-width: 1.1rem; font-size: 0.82rem; flex-shrink: 0; padding-top: 0.05rem; }
+  .cer-feedback {
+    display: none; font-size: 0.84rem; margin-top: 0.7rem; padding: 0.75rem 1rem;
+    border-radius: 10px; font-weight: 700; margin-left: 2.75rem;
+  }
+  .cer-feedback.cer-fb-correct { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+  .cer-feedback.cer-fb-incorrect { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .cer-locked {
+    padding: 1rem 1.2rem; margin-left: 2.75rem; border-radius: 12px;
+    background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.08);
+    color: var(--text-muted); font-size: 0.88rem; font-style: italic;
+  }
+  .cer-complete {
+    margin-top: 1.2rem; padding: 1rem 1.4rem; border-radius: 14px;
+    background: linear-gradient(135deg,rgba(46,204,113,0.1),rgba(26,188,156,0.05));
+    border: 1px solid rgba(46,204,113,0.3); text-align: center;
+    font-weight: 900; color: var(--green); font-size: 0.95rem; display: none;
+  }
+  .cer-complete.show { display: block; animation: fadeIn 0.4s ease; }
+
+  /* ===== MINI PANEL ===== */
+  .mini-panel {
+    background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.04));
+    border: 1px solid rgba(59,130,246,0.2); border-radius: 20px; padding: 2.2rem; margin-top: 2.5rem;
+  }
+  .mini-panel h3 { font-family: 'Fredoka One', cursive; font-size: 1.6rem; margin-bottom: 0.6rem; }
+  .mini-panel p { color: var(--text-muted); }
+
+  /* ===== QUIZ ===== */
+  .quiz-section { background: var(--dark2); }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.2rem; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num {
+    font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted);
+    width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .quiz-question-text { font-weight: 800; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option {
+    display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1.2rem;
+    border-radius: 12px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s;
+    background: rgba(255,255,255,0.02); font-size: 0.95rem; font-weight: 600;
+    font-family: 'Nunito', sans-serif; text-align: left; color: var(--text); width: 100%;
+  }
+  .quiz-option:hover:not(.selected):not(.disabled) { border-color: rgba(52,152,219,0.5); background: rgba(52,152,219,0.06); }
+  .quiz-option.correct { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red) !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(46,204,113,0.4) !important; background: rgba(46,204,113,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback {
+    display: none; font-size: 0.85rem; margin-top: 0.8rem; padding: 0.8rem 1.2rem;
+    border-radius: 10px; padding-left: 3rem; font-weight: 700;
+  }
+  .option-feedback.correct-fb { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #3B82F6, #2563EB); border-radius: 99px; transition: width 0.4s; width: 0%; }
+  .progress-text { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; min-width: 70px; text-align: right; }
+  .score-board {
+    display: none; background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.05));
+    border: 2px solid rgba(59,130,246,0.3); border-radius: 20px; padding: 2.5rem; text-align: center; margin-top: 1.5rem;
+  }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .score-board .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: #3B82F6; line-height: 1; margin-bottom: 0.5rem; }
+  .score-board p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .reset-btn {
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark)); color: #fff; border: none;
+    padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 1rem;
+    cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s;
+  }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+  @media (max-width: 600px) {
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+  }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background:#070f17;
+    border-top:1px solid var(--border, rgba(245,200,66,0.12));
+    padding:2rem 2rem;
+    text-align:center;
+    margin-top:0.5rem;
+  }
+  footer .footer-logo {
+    font-family:'Fredoka One',cursive;
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin-bottom:0.35rem;
+  }
+  footer .footer-tagline {
+    font-size:0.83rem;
+    color:rgba(240,228,200,0.6);
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links {
+    display:flex;
+    gap:0.5rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:0.6rem;
+  }
+  footer .footer-links a {
+    color:var(--gold);
+    text-decoration:none;
+    font-size:0.72rem;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:1px solid rgba(245,200,66,0.4);
+    background:rgba(245,200,66,0.08);
+    padding:0.25rem 0.75rem;
+    border-radius:99px;
+    transition:border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color:rgba(245,200,66,0.7);
+    text-decoration:none;
+  }
+  footer .footer-links a.nav-why {
+    color:#3bc8e8;
+    border:1px solid rgba(59,200,232,0.7);
+    background:rgba(59,200,232,0.12);
+    font-weight:800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background:rgba(59,200,232,0.22);
+    border-color:rgba(59,200,232,0.95);
+    color:#3bc8e8;
+  }
+  footer p {
+    font-size:0.72rem;
+    color:rgba(180,200,220,0.35);
+  }
+
+  /* ===== PHASE 1 — CRITERIA DISCOVERY ===== */
+  #phase1 { background: var(--dark); padding: 4rem 2rem 3rem; }
+  .inv-question {
+    background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.25);
+    border-left: 4px solid #3B82F6; border-radius: 0 12px 12px 0;
+    padding: 1rem 1.4rem; margin-bottom: 2rem;
+  }
+  .inv-q-label {
+    font-size: 0.68rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #3B82F6; margin-bottom: 0.35rem;
+  }
+  .inv-q-text { font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.5; }
+  .criteria-progress {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 1.8rem; flex-wrap: wrap;
+  }
+  .criteria-progress-bar-wrap {
+    flex: 1; min-width: 120px; height: 7px; background: rgba(255,255,255,0.07);
+    border-radius: 99px; overflow: hidden;
+  }
+  .criteria-progress-bar {
+    height: 100%; width: 0%; background: linear-gradient(90deg, #3B82F6, #2563EB);
+    border-radius: 99px; transition: width 0.5s cubic-bezier(0.22,1,0.36,1);
+  }
+  .criteria-progress-text {
+    font-size: 0.82rem; font-weight: 800; color: var(--text-muted); white-space: nowrap;
+  }
+  .criteria-progress-text.all-done { color: var(--green); }
+  .criteria-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.2rem; margin-bottom: 1.5rem;
+  }
+  .criteria-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem; position: relative; overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s, transform 0.25s;
+    display: flex; flex-direction: column;
+  }
+  .criteria-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #93C5FD, #3B82F6); border-radius: 16px 16px 0 0;
+  }
+  .criteria-card:hover { transform: translateY(-2px); border-color: rgba(59,130,246,0.4); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+  .criteria-card.reviewed { border-color: rgba(46,204,113,0.55); background: rgba(46,204,113,0.04); }
+  .criteria-card.reviewed::before { background: linear-gradient(90deg, #2ecc71, #27ae60); }
+  .criteria-card.reviewed:hover { border-color: rgba(46,204,113,0.8); transform: none; }
+  .cc-icon { font-size: 2rem; margin-bottom: 0.6rem; display: block; }
+  .cc-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #3B82F6; margin-bottom: 0.5rem; }
+  .criteria-card.reviewed .cc-title { color: var(--green); }
+  .cc-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 0.6rem; flex: 1; }
+  .cc-example {
+    font-size: 0.81rem; color: var(--text); line-height: 1.55; font-style: italic;
+    padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.03);
+    border-left: 2px solid rgba(59,130,246,0.4); border-radius: 0 8px 8px 0; margin-bottom: 1.1rem;
+  }
+  .criteria-card.reviewed .cc-example { border-left-color: rgba(46,204,113,0.5); }
+  .cc-btn {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.48rem 1.1rem; border-radius: 99px;
+    border: 1.5px solid rgba(59,130,246,0.5); background: rgba(59,130,246,0.08);
+    color: #3B82F6; font-family: 'Nunito', sans-serif;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.04em;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .cc-btn:hover:not(:disabled) { background: rgba(59,130,246,0.18); border-color: #3B82F6; transform: translateY(-1px); }
+  .cc-btn:disabled { border-color: rgba(46,204,113,0.55); background: rgba(46,204,113,0.12); color: var(--green); cursor: default; transform: none; }
+  .cc-btn:focus-visible { outline: 2px solid #3B82F6; outline-offset: 3px; }
+  .criteria-complete {
+    display: none; margin-top: 0.5rem;
+    background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.4);
+    border-radius: 12px; padding: 1rem 1.4rem;
+    font-size: 0.92rem; font-weight: 800; color: var(--green);
+    text-align: center;
+  }
+  .criteria-complete.show { display: block; animation: fadeIn 0.5s ease; }
+  .cases-lock-banner {
+    display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+    padding: 2rem 2rem; background: var(--dark2);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    font-size: 0.92rem; color: var(--text-muted); font-weight: 700;
+  }
+  .cases-lock-banner.hidden { display: none; }
+  .lock-icon { font-size: 1.4rem; }
+  @media (max-width: 640px) { .criteria-grid { grid-template-columns: 1fr; } }
+
+  /* ===== PHASE 2 — FIRST IMPRESSIONS ===== */
+  #phase2 { background: var(--dark2); padding: 4rem 2rem 3rem; }
+  .pred-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.2rem; margin-bottom: 1.5rem;
+  }
+  .pred-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.4rem; position: relative; overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .pred-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #93C5FD, #3B82F6); border-radius: 16px 16px 0 0;
+  }
+  .pred-card.pred-done { border-color: rgba(59,130,246,0.45); }
+  .pred-card.pred-done::before { background: linear-gradient(90deg, #3B82F6, #2563EB); }
+  .pred-card-top { display: flex; align-items: flex-start; gap: 0.85rem; margin-bottom: 1.1rem; }
+  .pred-icon { font-size: 1.8rem; flex-shrink: 0; line-height: 1; margin-top: 0.05rem; }
+  .pred-name { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.25rem; line-height: 1.2; }
+  .pred-teaser { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+  .pred-controls { border: none; padding: 0; margin: 0; min-width: 0; }
+  .pred-legend { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.65rem; display: block; }
+  .pred-options { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .pred-opt {
+    display: inline-flex; align-items: center; padding: 0.42rem 0.95rem;
+    border-radius: 99px; border: 1.5px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.03); font-size: 0.8rem; font-weight: 700;
+    cursor: pointer; color: var(--text-muted); transition: all 0.18s; user-select: none;
+  }
+  .pred-opt input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; margin: 0; }
+  .pred-opt:hover { border-color: rgba(59,130,246,0.45); color: var(--text); background: rgba(59,130,246,0.06); }
+  .pred-opt:focus-within { outline: 2px solid #3B82F6; outline-offset: 2px; }
+  .pred-opt.selected-alive     { border-color: rgba(46,204,113,0.7);  background: rgba(46,204,113,0.12); color: var(--green); }
+  .pred-opt.selected-not-alive { border-color: rgba(231,76,60,0.6);   background: rgba(231,76,60,0.1);   color: #ff8a8a; }
+  .pred-opt.selected-unsure    { border-color: rgba(59,130,246,0.7);  background: rgba(59,130,246,0.12); color: #93C5FD; }
+  .pred-progress { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.8rem; flex-wrap: wrap; }
+  .pred-progress-bar-wrap { flex: 1; min-width: 120px; height: 7px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .pred-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #3B82F6, #2563EB); border-radius: 99px; transition: width 0.5s cubic-bezier(0.22,1,0.36,1); }
+  .pred-progress-text { font-size: 0.82rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+  .pred-progress-text.all-done { color: var(--green); }
+  .pred-complete {
+    display: none; margin-top: 0.5rem;
+    background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.4);
+    border-radius: 12px; padding: 1rem 1.4rem;
+    font-size: 0.9rem; font-weight: 700; color: #93C5FD; line-height: 1.55;
+  }
+  .pred-complete.show { display: block; animation: fadeIn 0.5s ease; }
+  .inv-lock-banner {
+    display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+    padding: 2rem; background: var(--dark2);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    font-size: 0.92rem; color: var(--text-muted); font-weight: 700;
+  }
+  .inv-lock-banner.hidden { display: none; }
+  @media (max-width: 640px) { .pred-grid { grid-template-columns: 1fr; } }
+
+  /* ===== PHASE 3 — EVIDENCE COLLECTION ===== */
+  .ev-progress { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  .ev-progress-bar-wrap { flex: 1; min-width: 120px; height: 7px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .ev-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #3B82F6, #2563EB); border-radius: 99px; transition: width 0.5s cubic-bezier(0.22,1,0.36,1); }
+  .ev-progress-text { font-size: 0.82rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+  .ev-progress-text.all-done { color: var(--green); }
+  .ev-panel {
+    background: var(--card); border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 16px; padding: 1.4rem; margin-bottom: 0.75rem;
+    position: relative; overflow: hidden;
+  }
+  .ev-panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #93C5FD, #3B82F6); border-radius: 16px 16px 0 0; }
+  .ev-panel.ev-complete { border-color: rgba(46,204,113,0.5); }
+  .ev-panel.ev-complete::before { background: linear-gradient(90deg, #2ecc71, #27ae60); }
+  .ev-panel-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.2rem; }
+  .ev-header-left { display: flex; align-items: flex-start; gap: 0.75rem; }
+  .ev-icon { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
+  .ev-case-name { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.2rem; }
+  .ev-case-prompt { font-size: 0.78rem; color: var(--text-muted); }
+  .ev-status { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.22rem 0.65rem; border-radius: 99px; white-space: nowrap; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); }
+  .ev-status.in-progress { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.4); color: #3B82F6; }
+  .ev-status.ev-done { background: rgba(46,204,113,0.1); border-color: rgba(46,204,113,0.5); color: var(--green); }
+  .ev-char-grid { display: flex; flex-direction: column; gap: 0.6rem; }
+  .ev-char-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+  .ev-char-label { font-size: 0.82rem; font-weight: 700; color: var(--text); min-width: 185px; display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+  .ev-char-icon { font-size: 1rem; }
+  .ev-char-opts { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .ev-opt { display: inline-flex; align-items: center; padding: 0.3rem 0.8rem; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); font-size: 0.75rem; font-weight: 700; cursor: pointer; color: var(--text-muted); transition: all 0.15s; user-select: none; }
+  .ev-opt input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; margin: 0; }
+  .ev-opt:hover { border-color: rgba(59,130,246,0.4); color: var(--text); background: rgba(59,130,246,0.06); }
+  .ev-opt:focus-within { outline: 2px solid #3B82F6; outline-offset: 2px; }
+  .ev-opt.sel-present { border-color: rgba(46,204,113,0.7); background: rgba(46,204,113,0.12); color: var(--green); }
+  .ev-opt.sel-absent  { border-color: rgba(231,76,60,0.6);  background: rgba(231,76,60,0.1);   color: #ff8a8a; }
+  .ev-opt.sel-partial { border-color: rgba(59,130,246,0.7); background: rgba(59,130,246,0.12); color: #93C5FD; }
+  .ev-analysis-wrap { margin-bottom: 1.5rem; }
+  .ev-locked-msg { padding: 0.85rem 1.2rem; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.84rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; }
+  .ev-analysis-wrap.ev-revealed .ev-locked-msg { display: none; }
+  .ev-complete-banner { display: none; margin-top: 1.5rem; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.4); border-radius: 12px; padding: 1rem 1.4rem; font-size: 0.9rem; font-weight: 700; color: #93C5FD; line-height: 1.55; }
+  .ev-complete-banner.show { display: block; animation: fadeIn 0.5s ease; }
+  @media (max-width: 640px) {
+    .ev-char-row { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+    .ev-char-label { min-width: auto; }
+  }
+
+  /* ===== PHASE 6 — INVESTIGATION COMPLETE ===== */
+  .inv-complete-panel { margin-top: 2rem; background: var(--card); border: 1px solid rgba(59,130,246,0.35); border-radius: 20px; padding: 2rem 2rem 1.8rem; }
+  .inv-complete-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.2rem; }
+  .inv-complete-icon { font-size: 2.5rem; line-height: 1; flex-shrink: 0; }
+  .inv-complete-title { font-family: 'Fredoka One', cursive; font-size: clamp(1.4rem, 4vw, 2rem); color: var(--text); margin-bottom: 0.2rem; line-height: 1.2; }
+  .inv-complete-sub { font-size: 0.78rem; font-weight: 700; color: #3B82F6; letter-spacing: 0.06em; text-transform: uppercase; }
+  .inv-complete-msg { font-size: 0.95rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.8rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .inv-summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1.8rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .inv-summary-item { display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0.85rem; background: rgba(46,204,113,0.07); border: 1px solid rgba(46,204,113,0.3); border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: var(--text); }
+  .inv-summary-check { color: var(--green); font-size: 1rem; flex-shrink: 0; }
+  .inv-reflection { background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.2); border-radius: 14px; padding: 1.2rem 1.4rem; }
+  .inv-reflection-title { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: #3B82F6; margin-bottom: 0.5rem; }
+  .inv-reflection-prompt { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text); margin-bottom: 0.9rem; }
+  .inv-reflection-opts { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .inv-ref-opt { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.38rem 0.85rem; border-radius: 99px; border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); font-size: 0.82rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.18s; user-select: none; }
+  .inv-ref-opt input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; margin: 0; }
+  .inv-ref-opt:hover { border-color: rgba(59,130,246,0.45); color: var(--text); background: rgba(59,130,246,0.06); }
+  .inv-ref-opt:focus-within { outline: 2px solid #3B82F6; outline-offset: 2px; }
+  .inv-ref-opt.selected { border-color: rgba(59,130,246,0.7); background: rgba(59,130,246,0.12); color: #93C5FD; }
+  .inv-reflection-note { font-size: 0.74rem; color: var(--text-muted); font-style: italic; }
+  @media (max-width: 640px) {
+    .inv-summary-grid { grid-template-columns: 1fr; }
+    .inv-reflection-opts { flex-direction: column; }
+  }
+
+  /* ===== PHASE 4 — SCIENTIFIC NOTEBOOK ===== */
+  #phase4 { background: var(--dark2); padding: 4rem 2rem 3rem; }
+  .nb-intro { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2); border-left: 4px solid #3B82F6; border-radius: 0 12px 12px 0; padding: 1rem 1.4rem; margin-bottom: 2rem; }
+  .nb-intro-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: #3B82F6; margin-bottom: 0.35rem; }
+  .nb-intro-text { font-size: 0.9rem; color: var(--text); line-height: 1.65; }
+  .nb-table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem; }
+  .nb-table { width: 100%; border-collapse: collapse; }
+  .nb-table th { background: rgba(59,130,246,0.08); text-align: left; padding: 0.75rem 1rem; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: #3B82F6; border-bottom: 1px solid var(--border); }
+  .nb-table td { padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+  .nb-table tr:last-child td { border-bottom: none; }
+  .nb-case-cell { display: flex; align-items: center; gap: 0.6rem; }
+  .nb-case-icon { font-size: 1.4rem; }
+  .nb-case-name { font-family: 'Fredoka One', cursive; font-size: 0.95rem; color: var(--text); }
+  .nb-badge { display: inline-flex; align-items: center; padding: 0.22rem 0.65rem; border-radius: 99px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; white-space: nowrap; }
+  .nb-badge.alive     { background: rgba(46,204,113,0.12); border: 1px solid rgba(46,204,113,0.5);  color: var(--green); }
+  .nb-badge.not-alive { background: rgba(231,76,60,0.10);  border: 1px solid rgba(231,76,60,0.45);  color: #ff8a8a; }
+  .nb-badge.unsure    { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.5);  color: #93C5FD; }
+  .nb-badge.ready     { background: rgba(46,204,113,0.10); border: 1px solid rgba(46,204,113,0.4);  color: var(--green); }
+  .nb-badge.ev-complete { background: rgba(46,204,113,0.10); border: 1px solid rgba(46,204,113,0.4); color: var(--green); }
+  .nb-badge.needs     { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: var(--text-muted); }
+  .nb-reflection { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.2rem 1.4rem; margin-bottom: 1.5rem; }
+  .nb-reflection-title { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text); margin-bottom: 0.9rem; }
+  .nb-stats { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .nb-stat { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2); border-radius: 10px; padding: 0.65rem 1rem; flex: 1; min-width: 130px; }
+  .nb-stat-num { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: #3B82F6; line-height: 1; margin-bottom: 0.2rem; }
+  .nb-stat-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); line-height: 1.4; }
+  .nb-review-section { text-align: center; margin-top: 0.5rem; }
+  .nb-review-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 2rem; border-radius: 12px; background: linear-gradient(135deg, #3B82F6, #2563EB); color: #fff; border: none; font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800; cursor: pointer; letter-spacing: 0.04em; transition: all 0.2s; box-shadow: 0 4px 20px rgba(59,130,246,0.3); }
+  .nb-review-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(59,130,246,0.45); }
+  .nb-review-btn:disabled { opacity: 0.55; cursor: default; transform: none; box-shadow: none; }
+  .nb-review-btn:focus-visible { outline: 2px solid #3B82F6; outline-offset: 3px; }
+  .nb-complete { display: none; margin-top: 1rem; background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.4); border-radius: 12px; padding: 1rem 1.4rem; font-size: 0.9rem; font-weight: 700; color: var(--green); text-align: center; }
+  .nb-complete.show { display: block; animation: fadeIn 0.5s ease; }
+  @media (max-width: 640px) {
+    .nb-table th:nth-child(4), .nb-table td:nth-child(4) { display: none; }
+    .nb-stats { flex-direction: column; }
+  }
+</style>
+</head>
+
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <a href="lesson_characteristics.html" class="nav-back">← Characteristics of Life</a>
+  <div class="nav-toggles">
+    <button class="nav-toggle stem-toggle" onclick="toggleStem()">STEM</button>
+    <button class="nav-toggle ls-toggle" onclick="toggleLS()">LS</button>
+  </div>
+</nav>
+
+<div class="badge-bar stem-bar">
+  <span class="badge green">6.MS-LS1-1<span class="badge-tip">Provide evidence that all organisms are made of cells — the Gray Zone directly tests the boundary conditions of this standard.</span></span>
+  <span class="badge green">SEP 6: Constructing Explanations<span class="badge-tip">Students construct arguments using specific characteristics of life as evidence for each case.</span></span>
+  <span class="badge green">SEP 7: Argument from Evidence<span class="badge-tip">The CER builder explicitly structures claim, evidence, and reasoning for three contested cases.</span></span>
+  <span class="badge green">CCC: Patterns<span class="badge-tip">Students identify which characteristics edge cases do and do not meet, building pattern recognition across six cases.</span></span>
+</div>
+
+<div class="badge-bar ls-bar">
+  <span class="badge teal">Conceptual Change<span class="badge-tip">Prior misconceptions are directly confronted with evidence, prompting genuine revision of understanding. — Posner et al., 1982</span></span>
+  <span class="badge teal">Elaboration<span class="badge-tip">Students explain the 'why' behind each verdict, building deep causal understanding rather than surface recall. — Dunlosky et al., 2013</span></span>
+  <span class="badge teal">Metacognition<span class="badge-tip">Students reflect on their own reasoning while building CER arguments, developing self-regulation skills. — Dent &amp; Koenka, 2016</span></span>
+  <span class="badge teal">Curiosity Drive<span class="badge-tip">Surprising cases (virus, mule, dormant seed) activate intrinsic motivation and sustained engagement. — Lazowski &amp; Hulleman, 2016</span></span>
+</div>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-cells" aria-hidden="true">🔥</span>
+  <span class="hero-cells" aria-hidden="true">🤖</span>
+  <span class="hero-cells" aria-hidden="true">🌱</span>
+  <span class="hero-cells" aria-hidden="true">🔮</span>
+  <div class="hero-badge">Investigation</div>
+  <h1>The Gray Zone ⚠&#xFE0E;</h1>
+  <p>You know the six characteristics of life. Now apply them to things that don't fit neatly into <em>living</em> or <em>nonliving</em>. Use evidence — not instinct — to make your case.</p>
+  
+</header>
+
+<!-- ======================================================
+     PHASE 1 — CRITERIA DISCOVERY
+     ====================================================== -->
+<section id="phase1" style="background:var(--dark);">
+  <div class="container">
+    <span class="section-label">Phase 1 · Criteria Discovery</span>
+    <h2 class="section-title">What Makes Something Alive? 🔬</h2>
+    <p class="section-desc">Before you analyze the gray zone cases, review the six characteristics scientists use to define life. Read each card and click <strong>Mark Reviewed</strong> — all six must be reviewed to unlock the case analysis.</p>
+
+    <div class="inv-question">
+      <div class="inv-q-label">Investigation Question</div>
+      <div class="inv-q-text">What characteristics do scientists use when deciding whether something is alive?</div>
+    </div>
+
+    <div class="criteria-progress">
+      <div class="criteria-progress-bar-wrap">
+        <div class="criteria-progress-bar" id="criteriaBar"></div>
+      </div>
+      <div class="criteria-progress-text" id="criteriaText">0 of 6 characteristics reviewed</div>
+    </div>
+
+    <div class="criteria-grid">
+
+      <div class="criteria-card" id="cc-cells">
+        <span class="cc-icon">🦠</span>
+        <div class="cc-title">Made of Cells</div>
+        <div class="cc-body">Every living thing is built from at least one cell — the smallest unit of life. Cells carry out all life functions, from getting energy to reproducing.</div>
+        <div class="cc-example">Example: A single bacterium is one cell. Your body is made of about 37 trillion cells.</div>
+        <button class="cc-btn" onclick="reviewChar('cells')">Mark Reviewed</button>
+      </div>
+
+      <div class="criteria-card" id="cc-energy">
+        <span class="cc-icon">⚡</span>
+        <div class="cc-title">Uses Energy</div>
+        <div class="cc-body">Living things take in and use energy to power life processes. This is called metabolism — not just releasing energy, but actively processing it.</div>
+        <div class="cc-example">Example: Plants capture sunlight through photosynthesis. You break down food through cellular respiration.</div>
+        <button class="cc-btn" onclick="reviewChar('energy')">Mark Reviewed</button>
+      </div>
+
+      <div class="criteria-card" id="cc-grow">
+        <span class="cc-icon">🌱</span>
+        <div class="cc-title">Grows and Develops</div>
+        <div class="cc-body">Living things increase in size or complexity through biological processes — not just by passively adding material the way a crystal does.</div>
+        <div class="cc-example">Example: A seed grows into a full-sized tree. A caterpillar develops into a butterfly.</div>
+        <button class="cc-btn" onclick="reviewChar('grow')">Mark Reviewed</button>
+      </div>
+
+      <div class="criteria-card" id="cc-reproduce">
+        <span class="cc-icon">👶</span>
+        <div class="cc-title">Reproduces</div>
+        <div class="cc-body">Living things produce offspring and pass on genetic information to the next generation — either with a partner (sexual) or alone (asexual).</div>
+        <div class="cc-example">Example: A dog has puppies that inherit its traits. A bacterium splits into two identical copies.</div>
+        <button class="cc-btn" onclick="reviewChar('reproduce')">Mark Reviewed</button>
+      </div>
+
+      <div class="criteria-card" id="cc-respond">
+        <span class="cc-icon">👁️</span>
+        <div class="cc-title">Responds to Environment</div>
+        <div class="cc-body">Living things detect changes around them — called stimuli — and react to them biologically. This response comes from cells and organ systems, not from physics.</div>
+        <div class="cc-example">Example: You pull your hand away from a hot stove. A sunflower tracks the sun across the sky throughout the day.</div>
+        <button class="cc-btn" onclick="reviewChar('respond')">Mark Reviewed</button>
+      </div>
+
+      <div class="criteria-card" id="cc-homeostasis">
+        <span class="cc-icon">⚖️</span>
+        <div class="cc-title">Maintains Internal Balance</div>
+        <div class="cc-body">Living things keep their internal conditions stable — temperature, water, chemical levels — even when outside conditions change. Scientists call this homeostasis.</div>
+        <div class="cc-example">Example: You sweat when you're hot to cool down. Your kidneys filter your blood to keep its chemistry balanced.</div>
+        <button class="cc-btn" onclick="reviewChar('homeostasis')">Mark Reviewed</button>
+      </div>
+
+    </div>
+
+    <div class="criteria-complete" id="criteriaComplete">
+      ✓ All six characteristics reviewed — scroll down to record your first impressions!
+    </div>
+  </div>
+</section>
+
+<!-- Phase 2 lock banner: visible until Phase 1 complete -->
+<div class="cases-lock-banner" id="p2LockBanner">
+  <span class="lock-icon">🔒</span>
+  <span>Complete <strong>Criteria Discovery</strong> above to unlock First Impressions.</span>
+</div>
+
+<!-- ======================================================
+     PHASE 2 — FIRST IMPRESSIONS
+     hidden until Phase 1 complete
+     ====================================================== -->
+<section id="phase2" style="display:none; background:var(--dark2);">
+  <div class="container">
+    <span class="section-label">Phase 2 · First Impressions</span>
+    <h2 class="section-title">Make Your Prediction 🎯</h2>
+    <p class="section-desc">Before looking at any evidence, make your best guess about each case. Scientists often revise their thinking after gathering evidence — that's exactly the point.</p>
+
+    <div class="pred-progress">
+      <div class="pred-progress-bar-wrap">
+        <div class="pred-progress-bar" id="predBar"></div>
+      </div>
+      <div class="pred-progress-text" id="predText">0 of 6 predictions made</div>
+    </div>
+
+    <div class="pred-grid">
+
+      <div class="pred-card" id="pred-fire">
+        <div class="pred-card-top">
+          <span class="pred-icon">🔥</span>
+          <div>
+            <div class="pred-name">Fire</div>
+            <div class="pred-teaser">Grows, spreads, and uses energy — but has no cells.</div>
+          </div>
+        </div>
+        <fieldset class="pred-controls">
+          <legend class="pred-legend">Your first impression:</legend>
+          <div class="pred-options">
+            <label class="pred-opt" id="pred-opt-fire-alive"><input type="radio" name="pred-fire" value="alive" onchange="predSelect('fire','alive')">Alive</label>
+            <label class="pred-opt" id="pred-opt-fire-not-alive"><input type="radio" name="pred-fire" value="not-alive" onchange="predSelect('fire','not-alive')">Not Alive</label>
+            <label class="pred-opt" id="pred-opt-fire-unsure"><input type="radio" name="pred-fire" value="unsure" onchange="predSelect('fire','unsure')">Unsure</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="pred-card" id="pred-crystals">
+        <div class="pred-card-top">
+          <span class="pred-icon">🔮</span>
+          <div>
+            <div class="pred-name">Crystals</div>
+            <div class="pred-teaser">Grows in organized patterns and responds to conditions — but that's about it.</div>
+          </div>
+        </div>
+        <fieldset class="pred-controls">
+          <legend class="pred-legend">Your first impression:</legend>
+          <div class="pred-options">
+            <label class="pred-opt" id="pred-opt-crystals-alive"><input type="radio" name="pred-crystals" value="alive" onchange="predSelect('crystals','alive')">Alive</label>
+            <label class="pred-opt" id="pred-opt-crystals-not-alive"><input type="radio" name="pred-crystals" value="not-alive" onchange="predSelect('crystals','not-alive')">Not Alive</label>
+            <label class="pred-opt" id="pred-opt-crystals-unsure"><input type="radio" name="pred-crystals" value="unsure" onchange="predSelect('crystals','unsure')">Unsure</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="pred-card" id="pred-seed">
+        <div class="pred-card-top">
+          <span class="pred-icon">🌱</span>
+          <div>
+            <div class="pred-name">A Dormant Seed</div>
+            <div class="pred-teaser">Scientists agree it's alive — but it's currently doing absolutely nothing.</div>
+          </div>
+        </div>
+        <fieldset class="pred-controls">
+          <legend class="pred-legend">Your first impression:</legend>
+          <div class="pred-options">
+            <label class="pred-opt" id="pred-opt-seed-alive"><input type="radio" name="pred-seed" value="alive" onchange="predSelect('seed','alive')">Alive</label>
+            <label class="pred-opt" id="pred-opt-seed-not-alive"><input type="radio" name="pred-seed" value="not-alive" onchange="predSelect('seed','not-alive')">Not Alive</label>
+            <label class="pred-opt" id="pred-opt-seed-unsure"><input type="radio" name="pred-seed" value="unsure" onchange="predSelect('seed','unsure')">Unsure</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="pred-card" id="pred-mule">
+        <div class="pred-card-top">
+          <span class="pred-icon">🐴</span>
+          <div>
+            <div class="pred-name">A Mule</div>
+            <div class="pred-teaser">Healthy and strong, with nearly all the characteristics — except one.</div>
+          </div>
+        </div>
+        <fieldset class="pred-controls">
+          <legend class="pred-legend">Your first impression:</legend>
+          <div class="pred-options">
+            <label class="pred-opt" id="pred-opt-mule-alive"><input type="radio" name="pred-mule" value="alive" onchange="predSelect('mule','alive')">Alive</label>
+            <label class="pred-opt" id="pred-opt-mule-not-alive"><input type="radio" name="pred-mule" value="not-alive" onchange="predSelect('mule','not-alive')">Not Alive</label>
+            <label class="pred-opt" id="pred-opt-mule-unsure"><input type="radio" name="pred-mule" value="unsure" onchange="predSelect('mule','unsure')">Unsure</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="pred-card" id="pred-robot">
+        <div class="pred-card-top">
+          <span class="pred-icon">🤖</span>
+          <div>
+            <div class="pred-name">A Robot</div>
+            <div class="pred-teaser">Senses, moves, and responds to the environment — but was made, not born.</div>
+          </div>
+        </div>
+        <fieldset class="pred-controls">
+          <legend class="pred-legend">Your first impression:</legend>
+          <div class="pred-options">
+            <label class="pred-opt" id="pred-opt-robot-alive"><input type="radio" name="pred-robot" value="alive" onchange="predSelect('robot','alive')">Alive</label>
+            <label class="pred-opt" id="pred-opt-robot-not-alive"><input type="radio" name="pred-robot" value="not-alive" onchange="predSelect('robot','not-alive')">Not Alive</label>
+            <label class="pred-opt" id="pred-opt-robot-unsure"><input type="radio" name="pred-robot" value="unsure" onchange="predSelect('robot','unsure')">Unsure</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="pred-card" id="pred-virus">
+        <div class="pred-card-top">
+          <span class="pred-icon">🦠</span>
+          <div>
+            <div class="pred-name">A Virus</div>
+            <div class="pred-teaser">Carries genetic material and can multiply — but only inside a living host cell.</div>
+          </div>
+        </div>
+        <fieldset class="pred-controls">
+          <legend class="pred-legend">Your first impression:</legend>
+          <div class="pred-options">
+            <label class="pred-opt" id="pred-opt-virus-alive"><input type="radio" name="pred-virus" value="alive" onchange="predSelect('virus','alive')">Alive</label>
+            <label class="pred-opt" id="pred-opt-virus-not-alive"><input type="radio" name="pred-virus" value="not-alive" onchange="predSelect('virus','not-alive')">Not Alive</label>
+            <label class="pred-opt" id="pred-opt-virus-unsure"><input type="radio" name="pred-virus" value="unsure" onchange="predSelect('virus','unsure')">Unsure</label>
+          </div>
+        </fieldset>
+      </div>
+
+    </div>
+
+    <div class="pred-complete" id="predComplete">
+      Great — you've recorded your first impressions. Now it's time to investigate the evidence and see if your thinking changes.
+    </div>
+  </div>
+</section>
+
+<!-- Investigation lock banner: visible until Phase 2 complete -->
+<div class="inv-lock-banner" id="invLockBanner">
+  <span class="lock-icon">🔒</span>
+  <span>Complete your <strong>First Impressions</strong> above to unlock Case Analysis.</span>
+</div>
+
+<!-- Investigation content: hidden until Phase 2 complete -->
+<div id="investigation-content" style="display:none">
+
+<!-- THE FIVE CASES -->
+<section id="cases" style="background:var(--dark2);">
+  <div class="container">
+    <span class="section-label">Investigation Cases</span>
+    <h2 class="section-title">Six Things That Break the Rules ⚠️</h2>
+    <p class="section-desc">Each of these cases seems like it <em>might</em> be alive — or at least shows some signs of life. Scroll through them, then head to the analysis section to run each one through the six characteristics.</p>
+    <div class="case-grid">
+
+      <div class="case-card">
+        <span class="case-icon">🔥</span>
+        <div class="case-name">Fire</div>
+        <div class="case-desc">Fire grows larger, consumes fuel and oxygen, releases energy, and responds to wind and water. It can even "reproduce" by spreading to new material. Scientists have studied fire for centuries — and debate about its nature continues.</div>
+        <span class="case-verdict">Interesting Case</span>
+      </div>
+
+      <div class="case-card">
+        <span class="case-icon">🔮</span>
+        <div class="case-name">Crystals</div>
+        <div class="case-desc">Salt crystals and snowflakes grow by adding new layers of atoms in a perfectly organized pattern. They can even "repair" themselves. They form in response to conditions like temperature and salt concentration. But there's no cell in sight.</div>
+        <span class="case-verdict">Interesting Case</span>
+      </div>
+
+      <div class="case-card">
+        <span class="case-icon">🌱</span>
+        <div class="case-name">A Dormant Seed</div>
+        <div class="case-desc">A seed can sit dry in a drawer for years — not growing, not using energy, not responding to anything. Scientists agree seeds are alive. But if a living thing can do absolutely nothing for years, what does "alive" even mean?</div>
+        <span class="case-verdict">Interesting Case</span>
+      </div>
+
+      <div class="case-card">
+        <span class="case-icon">🐴</span>
+        <div class="case-name">A Mule</div>
+        <div class="case-desc">Mules are the offspring of a horse and a donkey. They are healthy, strong animals — they eat, grow, respond to their environment, and maintain homeostasis. There's just one problem: nearly all mules are sterile and cannot reproduce.</div>
+        <span class="case-verdict">Interesting Case</span>
+      </div>
+
+      <div class="case-card">
+        <span class="case-icon">🤖</span>
+        <div class="case-name">A Robot (or AI)</div>
+        <div class="case-desc">Modern robots move, sense their environment, respond to stimuli, and use energy. Some AI systems can even generate copies of themselves. They are made of materials manufactured by humans — no cells involved. Does that matter?</div>
+        <span class="case-verdict">Interesting Case</span>
+      </div>
+
+      <div class="case-card">
+        <span class="case-icon">🦠</span>
+        <div class="case-name">A Virus</div>
+        <div class="case-desc">Viruses carry genetic material (DNA or RNA) and can multiply — but only by hijacking a living host cell's machinery. Outside a host, a virus is an inert particle that does nothing. Scientists genuinely disagree about whether viruses are alive.</div>
+        <span class="case-verdict">Interesting Case</span>
+      </div>
+
+    </div>
+
+    <div class="mini-panel" style="margin-top:3rem;">
+      <h3>🤔 Remember the Rules</h3>
+      <p>To count as <strong style="color:var(--text);">alive</strong>, something must meet <strong style="color:var(--text);">all six</strong> characteristics of life. Finding one or two doesn't cut it. As you analyze each case below, ask yourself: <em>how many does it actually meet — and does it meet them independently?</em></p>
+    </div>
+  </div>
+</section>
+
+<!-- ANALYSIS -->
+<section id="analyze" style="background:var(--dark);">
+  <div class="container">
+    <span class="section-label">Phase 3 · Evidence Collection</span>
+    <h2 class="section-title">Collect the Evidence 🔍</h2>
+    <p class="section-desc">For each case, evaluate all six characteristics before reading the scientific analysis. Choose <strong>Present</strong>, <strong>Absent</strong>, or <strong>Partial</strong> for each one — then the expert analysis will reveal.</p>
+
+    <div class="ev-progress">
+      <div class="ev-progress-bar-wrap"><div class="ev-progress-bar" id="evBar"></div></div>
+      <div class="ev-progress-text" id="evText">0 of 6 cases investigated</div>
+    </div>
+
+    <!-- FIRE -->
+    <div class="ev-panel" id="ev-fire">
+      <div class="ev-panel-header">
+        <div class="ev-header-left"><span class="ev-icon">🔥</span><div><div class="ev-case-name">Fire</div><div class="ev-case-prompt">Evaluate each characteristic. Make your judgment before seeing the analysis.</div></div></div>
+        <span class="ev-status" id="ev-status-fire">Not Started</span>
+      </div>
+      <div class="ev-char-grid">
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🦠</span>Made of Cells</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-fire-cells-present"><input type="radio" name="ev-fire-cells" value="present" onchange="evidenceSelect('fire','cells','present')">Present</label><label class="ev-opt" id="ev-opt-fire-cells-absent"><input type="radio" name="ev-fire-cells" value="absent" onchange="evidenceSelect('fire','cells','absent')">Absent</label><label class="ev-opt" id="ev-opt-fire-cells-partial"><input type="radio" name="ev-fire-cells" value="partial" onchange="evidenceSelect('fire','cells','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚡</span>Uses Energy</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-fire-energy-present"><input type="radio" name="ev-fire-energy" value="present" onchange="evidenceSelect('fire','energy','present')">Present</label><label class="ev-opt" id="ev-opt-fire-energy-absent"><input type="radio" name="ev-fire-energy" value="absent" onchange="evidenceSelect('fire','energy','absent')">Absent</label><label class="ev-opt" id="ev-opt-fire-energy-partial"><input type="radio" name="ev-fire-energy" value="partial" onchange="evidenceSelect('fire','energy','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🌱</span>Grows and Develops</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-fire-grow-present"><input type="radio" name="ev-fire-grow" value="present" onchange="evidenceSelect('fire','grow','present')">Present</label><label class="ev-opt" id="ev-opt-fire-grow-absent"><input type="radio" name="ev-fire-grow" value="absent" onchange="evidenceSelect('fire','grow','absent')">Absent</label><label class="ev-opt" id="ev-opt-fire-grow-partial"><input type="radio" name="ev-fire-grow" value="partial" onchange="evidenceSelect('fire','grow','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👶</span>Reproduces</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-fire-reproduce-present"><input type="radio" name="ev-fire-reproduce" value="present" onchange="evidenceSelect('fire','reproduce','present')">Present</label><label class="ev-opt" id="ev-opt-fire-reproduce-absent"><input type="radio" name="ev-fire-reproduce" value="absent" onchange="evidenceSelect('fire','reproduce','absent')">Absent</label><label class="ev-opt" id="ev-opt-fire-reproduce-partial"><input type="radio" name="ev-fire-reproduce" value="partial" onchange="evidenceSelect('fire','reproduce','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👁️</span>Responds to Environment</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-fire-respond-present"><input type="radio" name="ev-fire-respond" value="present" onchange="evidenceSelect('fire','respond','present')">Present</label><label class="ev-opt" id="ev-opt-fire-respond-absent"><input type="radio" name="ev-fire-respond" value="absent" onchange="evidenceSelect('fire','respond','absent')">Absent</label><label class="ev-opt" id="ev-opt-fire-respond-partial"><input type="radio" name="ev-fire-respond" value="partial" onchange="evidenceSelect('fire','respond','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚖️</span>Maintains Internal Balance</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-fire-homeostasis-present"><input type="radio" name="ev-fire-homeostasis" value="present" onchange="evidenceSelect('fire','homeostasis','present')">Present</label><label class="ev-opt" id="ev-opt-fire-homeostasis-absent"><input type="radio" name="ev-fire-homeostasis" value="absent" onchange="evidenceSelect('fire','homeostasis','absent')">Absent</label><label class="ev-opt" id="ev-opt-fire-homeostasis-partial"><input type="radio" name="ev-fire-homeostasis" value="partial" onchange="evidenceSelect('fire','homeostasis','partial')">Partial</label></div></div>
+      </div>
+    </div>
+    <div class="ev-analysis-wrap" id="ev-wrap-fire">
+      <p class="ev-locked-msg">↑ Evaluate all six characteristics above to reveal the scientific analysis for this case.</p>
+    <details class="analysis-block">
+      <summary>
+        <div class="analysis-summary-left">
+          <div class="analysis-icon">🔥</div>
+          <div>
+            <div class="analysis-title">Fire</div>
+            <div class="analysis-subtitle">Looks alive. Grows, spreads, consumes fuel. But is it?</div>
+          </div>
+        </div>
+        <span class="analysis-toggle">Case</span>
+      </summary>
+      <div class="analysis-content">
+      <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Fire is a chemical reaction — the rapid oxidation of fuel. It has no cells, no membrane, no genetic material.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Fire releases energy through combustion. But "using" energy for life processes is different from burning fuel — fire just converts it to heat and light with no purpose.</div><div class="pill-row"><span class="pill pill-partial">Technically, but Differently</span></div></div></div>
+      <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Fire grows larger when more fuel is present. But this is not true biological growth — it's just expansion of a reaction.</div><div class="pill-row"><span class="pill pill-partial">Sort Of — Not Biological</span></div></div></div>
+      <div class="check-item"><div class="check-left">👶</div><div><div class="check-title">Reproduce</div><div class="check-note">Fire spreads to new material and seems to "reproduce." But it doesn't pass on genetic information or produce independent offspring — it just ignites nearby fuel.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">👁️</div><div><div class="check-title">Respond to Stimuli</div><div class="check-note">Fire changes based on wind, oxygen, and fuel. But this is physics — not a biological response from a sensing organism.</div><div class="pill-row"><span class="pill pill-partial">Responds, but Not Biologically</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚖️</div><div><div class="check-title">Maintain Homeostasis</div><div class="check-note">Fire does not regulate an internal environment. It simply burns until the fuel or oxygen runs out.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="analysis-verdict">
+        <div style="font-size:2rem;">🔥</div>
+        <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">Fire fails the most critical tests: no cells, no reproduction with genetic transfer, no homeostasis. Its "growth" and "response" are physical reactions, not biological processes. Most scientists agree — fire is <strong style="color:var(--text);">not alive</strong>.</div></div>
+      </div>
+      </div>
+    </details>
+
+    </div><!-- /ev-wrap-fire -->
+
+    <!-- CRYSTALS -->
+    <div class="ev-panel" id="ev-crystals">
+      <div class="ev-panel-header">
+        <div class="ev-header-left"><span class="ev-icon">🔮</span><div><div class="ev-case-name">Crystals</div><div class="ev-case-prompt">Evaluate each characteristic. Make your judgment before seeing the analysis.</div></div></div>
+        <span class="ev-status" id="ev-status-crystals">Not Started</span>
+      </div>
+      <div class="ev-char-grid">
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🦠</span>Made of Cells</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-crystals-cells-present"><input type="radio" name="ev-crystals-cells" value="present" onchange="evidenceSelect('crystals','cells','present')">Present</label><label class="ev-opt" id="ev-opt-crystals-cells-absent"><input type="radio" name="ev-crystals-cells" value="absent" onchange="evidenceSelect('crystals','cells','absent')">Absent</label><label class="ev-opt" id="ev-opt-crystals-cells-partial"><input type="radio" name="ev-crystals-cells" value="partial" onchange="evidenceSelect('crystals','cells','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚡</span>Uses Energy</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-crystals-energy-present"><input type="radio" name="ev-crystals-energy" value="present" onchange="evidenceSelect('crystals','energy','present')">Present</label><label class="ev-opt" id="ev-opt-crystals-energy-absent"><input type="radio" name="ev-crystals-energy" value="absent" onchange="evidenceSelect('crystals','energy','absent')">Absent</label><label class="ev-opt" id="ev-opt-crystals-energy-partial"><input type="radio" name="ev-crystals-energy" value="partial" onchange="evidenceSelect('crystals','energy','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🌱</span>Grows and Develops</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-crystals-grow-present"><input type="radio" name="ev-crystals-grow" value="present" onchange="evidenceSelect('crystals','grow','present')">Present</label><label class="ev-opt" id="ev-opt-crystals-grow-absent"><input type="radio" name="ev-crystals-grow" value="absent" onchange="evidenceSelect('crystals','grow','absent')">Absent</label><label class="ev-opt" id="ev-opt-crystals-grow-partial"><input type="radio" name="ev-crystals-grow" value="partial" onchange="evidenceSelect('crystals','grow','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👶</span>Reproduces</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-crystals-reproduce-present"><input type="radio" name="ev-crystals-reproduce" value="present" onchange="evidenceSelect('crystals','reproduce','present')">Present</label><label class="ev-opt" id="ev-opt-crystals-reproduce-absent"><input type="radio" name="ev-crystals-reproduce" value="absent" onchange="evidenceSelect('crystals','reproduce','absent')">Absent</label><label class="ev-opt" id="ev-opt-crystals-reproduce-partial"><input type="radio" name="ev-crystals-reproduce" value="partial" onchange="evidenceSelect('crystals','reproduce','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👁️</span>Responds to Environment</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-crystals-respond-present"><input type="radio" name="ev-crystals-respond" value="present" onchange="evidenceSelect('crystals','respond','present')">Present</label><label class="ev-opt" id="ev-opt-crystals-respond-absent"><input type="radio" name="ev-crystals-respond" value="absent" onchange="evidenceSelect('crystals','respond','absent')">Absent</label><label class="ev-opt" id="ev-opt-crystals-respond-partial"><input type="radio" name="ev-crystals-respond" value="partial" onchange="evidenceSelect('crystals','respond','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚖️</span>Maintains Internal Balance</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-crystals-homeostasis-present"><input type="radio" name="ev-crystals-homeostasis" value="present" onchange="evidenceSelect('crystals','homeostasis','present')">Present</label><label class="ev-opt" id="ev-opt-crystals-homeostasis-absent"><input type="radio" name="ev-crystals-homeostasis" value="absent" onchange="evidenceSelect('crystals','homeostasis','absent')">Absent</label><label class="ev-opt" id="ev-opt-crystals-homeostasis-partial"><input type="radio" name="ev-crystals-homeostasis" value="partial" onchange="evidenceSelect('crystals','homeostasis','partial')">Partial</label></div></div>
+      </div>
+    </div>
+    <div class="ev-analysis-wrap" id="ev-wrap-crystals">
+      <p class="ev-locked-msg">↑ Evaluate all six characteristics above to reveal the scientific analysis for this case.</p>
+    <details class="analysis-block">
+      <summary>
+        <div class="analysis-summary-left">
+          <div class="analysis-icon">🔮</div>
+          <div>
+            <div class="analysis-title">Crystals</div>
+            <div class="analysis-subtitle">They grow in organized patterns and respond to their environment — but that's about it.</div>
+          </div>
+        </div>
+        <span class="analysis-toggle">Case</span>
+      </summary>
+      <div class="analysis-content">
+      <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Crystals are made of repeating atomic or molecular patterns — not cells. There is no membrane, cytoplasm, or genetic material.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Crystals do not consume or process energy. They form through thermodynamic processes, not metabolism.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Crystals do grow — by adding layers of atoms to their surface. But this growth requires no cellular machinery or energy processing. A crystal growing in a solution is closer to construction than biology.</div><div class="pill-row"><span class="pill pill-partial">Grows, but Not Biologically</span></div></div></div>
+      <div class="check-item"><div class="check-left">👶</div><div><div class="check-title">Reproduce</div><div class="check-note">Crystals do not reproduce. A crystal can break into pieces, and those pieces can seed new crystals — but no genetic information is passed on.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">👁️</div><div><div class="check-title">Respond to Stimuli</div><div class="check-note">Crystals form differently based on temperature, pressure, and concentration. But they do not sense and respond — they just react to chemistry.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚖️</div><div><div class="check-title">Maintain Homeostasis</div><div class="check-note">Crystals have no internal environment to regulate. They simply stop growing when conditions change.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="analysis-verdict">
+        <div style="font-size:2rem;">🔮</div>
+        <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">Crystals' "growth" is the most life-like feature they have — but they fail five of six characteristics entirely. They are a good reminder that growth alone is not enough to qualify as life.</div></div>
+      </div>
+      </div>
+    </details>
+
+    </div><!-- /ev-wrap-crystals -->
+
+    <!-- DORMANT SEED -->
+    <div class="ev-panel" id="ev-seed">
+      <div class="ev-panel-header">
+        <div class="ev-header-left"><span class="ev-icon">🌱</span><div><div class="ev-case-name">A Dormant Seed</div><div class="ev-case-prompt">Evaluate each characteristic. Make your judgment before seeing the analysis.</div></div></div>
+        <span class="ev-status" id="ev-status-seed">Not Started</span>
+      </div>
+      <div class="ev-char-grid">
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🦠</span>Made of Cells</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-seed-cells-present"><input type="radio" name="ev-seed-cells" value="present" onchange="evidenceSelect('seed','cells','present')">Present</label><label class="ev-opt" id="ev-opt-seed-cells-absent"><input type="radio" name="ev-seed-cells" value="absent" onchange="evidenceSelect('seed','cells','absent')">Absent</label><label class="ev-opt" id="ev-opt-seed-cells-partial"><input type="radio" name="ev-seed-cells" value="partial" onchange="evidenceSelect('seed','cells','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚡</span>Uses Energy</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-seed-energy-present"><input type="radio" name="ev-seed-energy" value="present" onchange="evidenceSelect('seed','energy','present')">Present</label><label class="ev-opt" id="ev-opt-seed-energy-absent"><input type="radio" name="ev-seed-energy" value="absent" onchange="evidenceSelect('seed','energy','absent')">Absent</label><label class="ev-opt" id="ev-opt-seed-energy-partial"><input type="radio" name="ev-seed-energy" value="partial" onchange="evidenceSelect('seed','energy','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🌱</span>Grows and Develops</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-seed-grow-present"><input type="radio" name="ev-seed-grow" value="present" onchange="evidenceSelect('seed','grow','present')">Present</label><label class="ev-opt" id="ev-opt-seed-grow-absent"><input type="radio" name="ev-seed-grow" value="absent" onchange="evidenceSelect('seed','grow','absent')">Absent</label><label class="ev-opt" id="ev-opt-seed-grow-partial"><input type="radio" name="ev-seed-grow" value="partial" onchange="evidenceSelect('seed','grow','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👶</span>Reproduces</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-seed-reproduce-present"><input type="radio" name="ev-seed-reproduce" value="present" onchange="evidenceSelect('seed','reproduce','present')">Present</label><label class="ev-opt" id="ev-opt-seed-reproduce-absent"><input type="radio" name="ev-seed-reproduce" value="absent" onchange="evidenceSelect('seed','reproduce','absent')">Absent</label><label class="ev-opt" id="ev-opt-seed-reproduce-partial"><input type="radio" name="ev-seed-reproduce" value="partial" onchange="evidenceSelect('seed','reproduce','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👁️</span>Responds to Environment</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-seed-respond-present"><input type="radio" name="ev-seed-respond" value="present" onchange="evidenceSelect('seed','respond','present')">Present</label><label class="ev-opt" id="ev-opt-seed-respond-absent"><input type="radio" name="ev-seed-respond" value="absent" onchange="evidenceSelect('seed','respond','absent')">Absent</label><label class="ev-opt" id="ev-opt-seed-respond-partial"><input type="radio" name="ev-seed-respond" value="partial" onchange="evidenceSelect('seed','respond','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚖️</span>Maintains Internal Balance</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-seed-homeostasis-present"><input type="radio" name="ev-seed-homeostasis" value="present" onchange="evidenceSelect('seed','homeostasis','present')">Present</label><label class="ev-opt" id="ev-opt-seed-homeostasis-absent"><input type="radio" name="ev-seed-homeostasis" value="absent" onchange="evidenceSelect('seed','homeostasis','absent')">Absent</label><label class="ev-opt" id="ev-opt-seed-homeostasis-partial"><input type="radio" name="ev-seed-homeostasis" value="partial" onchange="evidenceSelect('seed','homeostasis','partial')">Partial</label></div></div>
+      </div>
+    </div>
+    <div class="ev-analysis-wrap" id="ev-wrap-seed">
+      <p class="ev-locked-msg">↑ Evaluate all six characteristics above to reveal the scientific analysis for this case.</p>
+    <details class="analysis-block">
+      <summary>
+        <div class="analysis-summary-left">
+          <div class="analysis-icon">🌱</div>
+          <div>
+            <div class="analysis-title">A Dormant Seed</div>
+            <div class="analysis-subtitle">Scientifically alive — but currently doing absolutely nothing.</div>
+          </div>
+        </div>
+        <span class="analysis-toggle">Case</span>
+      </summary>
+      <div class="analysis-content">
+      <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Yes — a seed contains a tiny embryonic plant made of living cells, even when dormant. The cells are there, just inactive.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">A dormant seed uses almost no energy — its metabolism is near zero. But the cells are still technically alive and capable of activating when conditions are right.</div><div class="pill-row"><span class="pill pill-partial">Meets — At Extremely Low Level</span></div></div></div>
+      <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Not right now. A dormant seed has paused its growth. It has the potential to grow when it germinates.</div><div class="pill-row"><span class="pill pill-partial">Paused — Potential Is There</span></div></div></div>
+      <div class="check-item"><div class="check-left">👶</div><div><div class="check-title">Reproduce</div><div class="check-note">The seed itself is a product of reproduction — it carries the genetic information needed to make a new plant when it germinates.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">👁️</div><div><div class="check-title">Respond to Stimuli</div><div class="check-note">When the seed detects the right conditions — moisture, warmth, light — it breaks dormancy and germinates. That's a response to stimuli.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚖️</div><div><div class="check-title">Maintain Homeostasis</div><div class="check-note">During dormancy, a seed's homeostasis is essentially suspended — but the structures needed to maintain it are preserved and intact.</div><div class="pill-row"><span class="pill pill-partial">Suspended — Not Eliminated</span></div></div></div>
+      <div class="analysis-verdict">
+        <div style="font-size:2rem;">🌱</div>
+        <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">This case reveals something important: being alive doesn't require constantly <em>doing</em> all six things. A dormant seed is <strong style="color:var(--text);">alive</strong> — it has the full biological machinery, just temporarily paused. Life is a capacity, not just a behavior.</div></div>
+      </div>
+      </div>
+    </details>
+
+    </div><!-- /ev-wrap-seed -->
+
+    <!-- MULE -->
+    <div class="ev-panel" id="ev-mule">
+      <div class="ev-panel-header">
+        <div class="ev-header-left"><span class="ev-icon">🐴</span><div><div class="ev-case-name">A Mule</div><div class="ev-case-prompt">Evaluate each characteristic. Make your judgment before seeing the analysis.</div></div></div>
+        <span class="ev-status" id="ev-status-mule">Not Started</span>
+      </div>
+      <div class="ev-char-grid">
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🦠</span>Made of Cells</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-mule-cells-present"><input type="radio" name="ev-mule-cells" value="present" onchange="evidenceSelect('mule','cells','present')">Present</label><label class="ev-opt" id="ev-opt-mule-cells-absent"><input type="radio" name="ev-mule-cells" value="absent" onchange="evidenceSelect('mule','cells','absent')">Absent</label><label class="ev-opt" id="ev-opt-mule-cells-partial"><input type="radio" name="ev-mule-cells" value="partial" onchange="evidenceSelect('mule','cells','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚡</span>Uses Energy</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-mule-energy-present"><input type="radio" name="ev-mule-energy" value="present" onchange="evidenceSelect('mule','energy','present')">Present</label><label class="ev-opt" id="ev-opt-mule-energy-absent"><input type="radio" name="ev-mule-energy" value="absent" onchange="evidenceSelect('mule','energy','absent')">Absent</label><label class="ev-opt" id="ev-opt-mule-energy-partial"><input type="radio" name="ev-mule-energy" value="partial" onchange="evidenceSelect('mule','energy','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🌱</span>Grows and Develops</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-mule-grow-present"><input type="radio" name="ev-mule-grow" value="present" onchange="evidenceSelect('mule','grow','present')">Present</label><label class="ev-opt" id="ev-opt-mule-grow-absent"><input type="radio" name="ev-mule-grow" value="absent" onchange="evidenceSelect('mule','grow','absent')">Absent</label><label class="ev-opt" id="ev-opt-mule-grow-partial"><input type="radio" name="ev-mule-grow" value="partial" onchange="evidenceSelect('mule','grow','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👶</span>Reproduces</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-mule-reproduce-present"><input type="radio" name="ev-mule-reproduce" value="present" onchange="evidenceSelect('mule','reproduce','present')">Present</label><label class="ev-opt" id="ev-opt-mule-reproduce-absent"><input type="radio" name="ev-mule-reproduce" value="absent" onchange="evidenceSelect('mule','reproduce','absent')">Absent</label><label class="ev-opt" id="ev-opt-mule-reproduce-partial"><input type="radio" name="ev-mule-reproduce" value="partial" onchange="evidenceSelect('mule','reproduce','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👁️</span>Responds to Environment</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-mule-respond-present"><input type="radio" name="ev-mule-respond" value="present" onchange="evidenceSelect('mule','respond','present')">Present</label><label class="ev-opt" id="ev-opt-mule-respond-absent"><input type="radio" name="ev-mule-respond" value="absent" onchange="evidenceSelect('mule','respond','absent')">Absent</label><label class="ev-opt" id="ev-opt-mule-respond-partial"><input type="radio" name="ev-mule-respond" value="partial" onchange="evidenceSelect('mule','respond','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚖️</span>Maintains Internal Balance</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-mule-homeostasis-present"><input type="radio" name="ev-mule-homeostasis" value="present" onchange="evidenceSelect('mule','homeostasis','present')">Present</label><label class="ev-opt" id="ev-opt-mule-homeostasis-absent"><input type="radio" name="ev-mule-homeostasis" value="absent" onchange="evidenceSelect('mule','homeostasis','absent')">Absent</label><label class="ev-opt" id="ev-opt-mule-homeostasis-partial"><input type="radio" name="ev-mule-homeostasis" value="partial" onchange="evidenceSelect('mule','homeostasis','partial')">Partial</label></div></div>
+      </div>
+    </div>
+    <div class="ev-analysis-wrap" id="ev-wrap-mule">
+      <p class="ev-locked-msg">↑ Evaluate all six characteristics above to reveal the scientific analysis for this case.</p>
+    <details class="analysis-block">
+      <summary>
+        <div class="analysis-summary-left">
+          <div class="analysis-icon">🐴</div>
+          <div>
+            <div class="analysis-title">A Mule</div>
+            <div class="analysis-subtitle">Meets five of six characteristics — but reproduction is where things get complicated.</div>
+          </div>
+        </div>
+        <span class="analysis-toggle">Case</span>
+      </summary>
+      <div class="analysis-content">
+      <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Absolutely — mules are complex multicellular organisms with trillions of specialized cells.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Mules eat, digest food, and use the energy to power all life processes.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Mules are born small and grow into large, strong adult animals over time.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">👶</div><div><div class="check-title">Reproduce</div><div class="check-note">This is the problem. Nearly all mules are sterile due to a chromosomal mismatch — horses have 64 chromosomes and donkeys have 62, so mule cells can't complete the division needed to make gametes.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">👁️</div><div><div class="check-title">Respond to Stimuli</div><div class="check-note">Mules are famously responsive — they sense danger, recognize their owners, and react to their environment like any animal.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚖️</div><div><div class="check-title">Maintain Homeostasis</div><div class="check-note">Mules regulate body temperature, blood chemistry, and internal systems continuously.</div><div class="pill-row"><span class="pill pill-yes">Meets</span></div></div></div>
+      <div class="analysis-verdict">
+        <div style="font-size:2rem;">🐴</div>
+        <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">This is the hardest case. A mule is clearly alive by any common-sense definition — it thinks, feels, works, and thrives. But if we apply the six characteristics strictly, it fails reproduction. This raises a real scientific question: <em>should a sterile individual be considered nonliving?</em> Most biologists say mules are absolutely <strong style="color:var(--text);">alive</strong>, which suggests the six characteristics describe life as a system, not a checklist every individual must fully satisfy.</div></div>
+      </div>
+      </div>
+    </details>
+
+    </div><!-- /ev-wrap-mule -->
+
+    <!-- ROBOT -->
+    <div class="ev-panel" id="ev-robot">
+      <div class="ev-panel-header">
+        <div class="ev-header-left"><span class="ev-icon">🤖</span><div><div class="ev-case-name">A Robot (or AI)</div><div class="ev-case-prompt">Evaluate each characteristic. Make your judgment before seeing the analysis.</div></div></div>
+        <span class="ev-status" id="ev-status-robot">Not Started</span>
+      </div>
+      <div class="ev-char-grid">
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🦠</span>Made of Cells</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-robot-cells-present"><input type="radio" name="ev-robot-cells" value="present" onchange="evidenceSelect('robot','cells','present')">Present</label><label class="ev-opt" id="ev-opt-robot-cells-absent"><input type="radio" name="ev-robot-cells" value="absent" onchange="evidenceSelect('robot','cells','absent')">Absent</label><label class="ev-opt" id="ev-opt-robot-cells-partial"><input type="radio" name="ev-robot-cells" value="partial" onchange="evidenceSelect('robot','cells','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚡</span>Uses Energy</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-robot-energy-present"><input type="radio" name="ev-robot-energy" value="present" onchange="evidenceSelect('robot','energy','present')">Present</label><label class="ev-opt" id="ev-opt-robot-energy-absent"><input type="radio" name="ev-robot-energy" value="absent" onchange="evidenceSelect('robot','energy','absent')">Absent</label><label class="ev-opt" id="ev-opt-robot-energy-partial"><input type="radio" name="ev-robot-energy" value="partial" onchange="evidenceSelect('robot','energy','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🌱</span>Grows and Develops</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-robot-grow-present"><input type="radio" name="ev-robot-grow" value="present" onchange="evidenceSelect('robot','grow','present')">Present</label><label class="ev-opt" id="ev-opt-robot-grow-absent"><input type="radio" name="ev-robot-grow" value="absent" onchange="evidenceSelect('robot','grow','absent')">Absent</label><label class="ev-opt" id="ev-opt-robot-grow-partial"><input type="radio" name="ev-robot-grow" value="partial" onchange="evidenceSelect('robot','grow','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👶</span>Reproduces</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-robot-reproduce-present"><input type="radio" name="ev-robot-reproduce" value="present" onchange="evidenceSelect('robot','reproduce','present')">Present</label><label class="ev-opt" id="ev-opt-robot-reproduce-absent"><input type="radio" name="ev-robot-reproduce" value="absent" onchange="evidenceSelect('robot','reproduce','absent')">Absent</label><label class="ev-opt" id="ev-opt-robot-reproduce-partial"><input type="radio" name="ev-robot-reproduce" value="partial" onchange="evidenceSelect('robot','reproduce','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👁️</span>Responds to Environment</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-robot-respond-present"><input type="radio" name="ev-robot-respond" value="present" onchange="evidenceSelect('robot','respond','present')">Present</label><label class="ev-opt" id="ev-opt-robot-respond-absent"><input type="radio" name="ev-robot-respond" value="absent" onchange="evidenceSelect('robot','respond','absent')">Absent</label><label class="ev-opt" id="ev-opt-robot-respond-partial"><input type="radio" name="ev-robot-respond" value="partial" onchange="evidenceSelect('robot','respond','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚖️</span>Maintains Internal Balance</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-robot-homeostasis-present"><input type="radio" name="ev-robot-homeostasis" value="present" onchange="evidenceSelect('robot','homeostasis','present')">Present</label><label class="ev-opt" id="ev-opt-robot-homeostasis-absent"><input type="radio" name="ev-robot-homeostasis" value="absent" onchange="evidenceSelect('robot','homeostasis','absent')">Absent</label><label class="ev-opt" id="ev-opt-robot-homeostasis-partial"><input type="radio" name="ev-robot-homeostasis" value="partial" onchange="evidenceSelect('robot','homeostasis','partial')">Partial</label></div></div>
+      </div>
+    </div>
+    <div class="ev-analysis-wrap" id="ev-wrap-robot">
+      <p class="ev-locked-msg">↑ Evaluate all six characteristics above to reveal the scientific analysis for this case.</p>
+    <details class="analysis-block">
+      <summary>
+        <div class="analysis-summary-left">
+          <div class="analysis-icon">🤖</div>
+          <div>
+            <div class="analysis-title">A Robot (or AI)</div>
+            <div class="analysis-subtitle">Gets surprisingly far — but stumbles on the most important ones.</div>
+          </div>
+        </div>
+        <span class="analysis-toggle">Case</span>
+      </summary>
+      <div class="analysis-content">
+      <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Robots are made of metal, plastic, silicon, and code. Not a single cell in sight.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Robots and AIs use electricity to power all of their functions. That's energy input and use — but not through metabolism.</div><div class="pill-row"><span class="pill pill-partial">Uses Energy — Not Through Metabolism</span></div></div></div>
+      <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Robots don't grow. Some AI systems can "learn" and improve over time — but that's software updating, not biological development.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">👶</div><div><div class="check-title">Reproduce</div><div class="check-note">A robot can't make another robot on its own. Some AI programs can generate copies of their code — but this requires human-built infrastructure and passes no genetic material.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">👁️</div><div><div class="check-title">Respond to Stimuli</div><div class="check-note">This is a robot's strongest case. Sensors, cameras, and AI processing allow robots to detect and respond to their environment in sophisticated ways.</div><div class="pill-row"><span class="pill pill-partial">Meets — But by Programming, Not Biology</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚖️</div><div><div class="check-title">Maintain Homeostasis</div><div class="check-note">Some robots regulate their internal temperature or battery charge. But this is engineering design, not a biological homeostatic system.</div><div class="pill-row"><span class="pill pill-partial">Sort Of — Through Engineering</span></div></div></div>
+      <div class="analysis-verdict">
+        <div style="font-size:2rem;">🤖</div>
+        <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">Robots are the most thought-provoking case because they get <em>closer</em> than crystals or fire — especially on energy and responding to stimuli. But they have no cells, no biological reproduction, and no metabolism. As AI continues to develop, this case will become even harder to dismiss. For now, robots are <strong style="color:var(--text);">not alive</strong> — but the conversation is worth having.</div></div>
+      </div>
+      </div>
+    </details>
+
+    </div><!-- /ev-wrap-robot -->
+
+    <!-- VIRUS -->
+    <div class="ev-panel" id="ev-virus">
+      <div class="ev-panel-header">
+        <div class="ev-header-left"><span class="ev-icon">🦠</span><div><div class="ev-case-name">A Virus</div><div class="ev-case-prompt">Evaluate each characteristic. Make your judgment before seeing the analysis.</div></div></div>
+        <span class="ev-status" id="ev-status-virus">Not Started</span>
+      </div>
+      <div class="ev-char-grid">
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🦠</span>Made of Cells</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-virus-cells-present"><input type="radio" name="ev-virus-cells" value="present" onchange="evidenceSelect('virus','cells','present')">Present</label><label class="ev-opt" id="ev-opt-virus-cells-absent"><input type="radio" name="ev-virus-cells" value="absent" onchange="evidenceSelect('virus','cells','absent')">Absent</label><label class="ev-opt" id="ev-opt-virus-cells-partial"><input type="radio" name="ev-virus-cells" value="partial" onchange="evidenceSelect('virus','cells','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚡</span>Uses Energy</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-virus-energy-present"><input type="radio" name="ev-virus-energy" value="present" onchange="evidenceSelect('virus','energy','present')">Present</label><label class="ev-opt" id="ev-opt-virus-energy-absent"><input type="radio" name="ev-virus-energy" value="absent" onchange="evidenceSelect('virus','energy','absent')">Absent</label><label class="ev-opt" id="ev-opt-virus-energy-partial"><input type="radio" name="ev-virus-energy" value="partial" onchange="evidenceSelect('virus','energy','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">🌱</span>Grows and Develops</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-virus-grow-present"><input type="radio" name="ev-virus-grow" value="present" onchange="evidenceSelect('virus','grow','present')">Present</label><label class="ev-opt" id="ev-opt-virus-grow-absent"><input type="radio" name="ev-virus-grow" value="absent" onchange="evidenceSelect('virus','grow','absent')">Absent</label><label class="ev-opt" id="ev-opt-virus-grow-partial"><input type="radio" name="ev-virus-grow" value="partial" onchange="evidenceSelect('virus','grow','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👶</span>Reproduces</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-virus-reproduce-present"><input type="radio" name="ev-virus-reproduce" value="present" onchange="evidenceSelect('virus','reproduce','present')">Present</label><label class="ev-opt" id="ev-opt-virus-reproduce-absent"><input type="radio" name="ev-virus-reproduce" value="absent" onchange="evidenceSelect('virus','reproduce','absent')">Absent</label><label class="ev-opt" id="ev-opt-virus-reproduce-partial"><input type="radio" name="ev-virus-reproduce" value="partial" onchange="evidenceSelect('virus','reproduce','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">👁️</span>Responds to Environment</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-virus-respond-present"><input type="radio" name="ev-virus-respond" value="present" onchange="evidenceSelect('virus','respond','present')">Present</label><label class="ev-opt" id="ev-opt-virus-respond-absent"><input type="radio" name="ev-virus-respond" value="absent" onchange="evidenceSelect('virus','respond','absent')">Absent</label><label class="ev-opt" id="ev-opt-virus-respond-partial"><input type="radio" name="ev-virus-respond" value="partial" onchange="evidenceSelect('virus','respond','partial')">Partial</label></div></div>
+        <div class="ev-char-row"><div class="ev-char-label"><span class="ev-char-icon">⚖️</span>Maintains Internal Balance</div><div class="ev-char-opts"><label class="ev-opt" id="ev-opt-virus-homeostasis-present"><input type="radio" name="ev-virus-homeostasis" value="present" onchange="evidenceSelect('virus','homeostasis','present')">Present</label><label class="ev-opt" id="ev-opt-virus-homeostasis-absent"><input type="radio" name="ev-virus-homeostasis" value="absent" onchange="evidenceSelect('virus','homeostasis','absent')">Absent</label><label class="ev-opt" id="ev-opt-virus-homeostasis-partial"><input type="radio" name="ev-virus-homeostasis" value="partial" onchange="evidenceSelect('virus','homeostasis','partial')">Partial</label></div></div>
+      </div>
+    </div>
+    <div class="ev-analysis-wrap" id="ev-wrap-virus">
+      <p class="ev-locked-msg">↑ Evaluate all six characteristics above to reveal the scientific analysis for this case.</p>
+    <details class="analysis-block">
+      <summary>
+        <div class="analysis-summary-left">
+          <div class="analysis-icon">🦠</div>
+          <div>
+            <div class="analysis-title">A Virus</div>
+            <div class="analysis-subtitle">Has DNA. Can multiply. But only inside a host — and never independently.</div>
+          </div>
+        </div>
+        <span class="analysis-toggle">Case</span>
+      </summary>
+      <div class="analysis-content">
+      <div class="check-item"><div class="check-left">🦠</div><div><div class="check-title">Made of Cells</div><div class="check-note">Viruses are not made of cells. They are genetic material (DNA or RNA) packed inside a protein coat called a capsid. No cytoplasm, no membrane, no organelles.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚡</div><div><div class="check-title">Obtain and Use Energy</div><div class="check-note">Viruses carry out no metabolism. They make no ATP and run no chemical reactions of their own — they rely entirely on the host cell's energy systems to do everything.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">🌱</div><div><div class="check-title">Grow and Develop</div><div class="check-note">Viruses don't grow by getting bigger. New virus particles are assembled inside a host cell — this is manufacturing, not biological growth or development.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="check-item"><div class="check-left">👶</div><div><div class="check-title">Reproduce</div><div class="check-note">Viruses can increase in number — but only by hijacking a living host cell's machinery. Without a host, a virus cannot replicate at all. This is the most debated characteristic.</div><div class="pill-row"><span class="pill pill-sometimes">Only With a Host</span></div></div></div>
+      <div class="check-item"><div class="check-left">👁️</div><div><div class="check-title">Respond to Stimuli</div><div class="check-note">Viruses bind to specific receptor proteins on host cells — a kind of chemical "recognition." But this is passive chemistry, not active sensing and responding the way a living cell does.</div><div class="pill-row"><span class="pill pill-sometimes">Limited Recognition Only</span></div></div></div>
+      <div class="check-item"><div class="check-left">⚖️</div><div><div class="check-title">Maintain Homeostasis</div><div class="check-note">Viruses have no internal environment to regulate. Outside a host, they are stable chemical particles — not living systems maintaining balance.</div><div class="pill-row"><span class="pill pill-no">Does Not Meet</span></div></div></div>
+      <div class="analysis-verdict">
+        <div style="font-size:2rem;">🦠</div>
+        <div><div class="verdict-label">Bottom Line</div><div class="verdict-text">Viruses are the most contested gray-zone case in science. They carry genetic material and can multiply — genuinely life-like features. But they fail most characteristics and cannot act independently. Most biologists say viruses are <strong style="color:var(--text);">not alive</strong> — but the scientific debate is real. Your evidence-based verdict is what matters here.</div></div>
+      </div>
+      </div>
+    </details>
+    </div><!-- /ev-wrap-virus -->
+
+    <div class="ev-complete-banner" id="evComplete">
+      You have now collected evidence from all six cases. It's time to construct scientific arguments using that evidence.
+    </div>
+
+  </div>
+</section>
+
+<!-- Notebook lock banner: visible until Phase 3 complete -->
+<div class="inv-lock-banner" id="notebookLockBanner">
+  <span class="lock-icon">🔒</span>
+  <span>Complete <strong>Evidence Collection</strong> above to unlock the Scientific Notebook.</span>
+</div>
+
+<!-- ======================================================
+     PHASE 4 — SCIENTIFIC NOTEBOOK
+     hidden until Phase 3 complete
+     ====================================================== -->
+<section id="phase4" style="display:none; background:var(--dark2);">
+  <div class="container">
+    <span class="section-label">Phase 4 · Scientific Notebook</span>
+    <h2 class="section-title">Review Your Evidence 📓</h2>
+    <p class="section-desc">Scientists organize their evidence before drawing conclusions. Review your first impressions and evidence before moving to argument construction.</p>
+
+    <div class="nb-intro">
+      <div class="nb-intro-label">Before You Argue</div>
+      <div class="nb-intro-text">Your first impressions were recorded in Phase 2 — before you saw any evidence. Your evidence was collected in Phase 3. Use this summary to reflect on how your thinking developed across all six cases.</div>
+    </div>
+
+    <div class="nb-table-wrap">
+      <table class="nb-table" aria-label="Investigation Summary">
+        <thead>
+          <tr>
+            <th scope="col">Case</th>
+            <th scope="col">First Impression</th>
+            <th scope="col">Evidence Collected</th>
+            <th scope="col">Current Status</th>
+          </tr>
+        </thead>
+        <tbody id="nbTableBody">
+          <!-- Populated by buildNotebook() -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="nb-reflection">
+      <div class="nb-reflection-title">Your Investigation at a Glance</div>
+      <div class="nb-stats" id="nbStats">
+        <!-- Populated by buildNotebook() -->
+      </div>
+    </div>
+
+    <div class="nb-review-section">
+      <button class="nb-review-btn" id="nbReviewBtn" onclick="notebookReview()">
+        Review Complete — Continue to Arguments ✓
+      </button>
+      <div class="nb-complete" id="nbComplete">
+        You've reviewed your evidence and predictions. You're now ready to construct scientific arguments.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CER lock banner: visible until notebook reviewed -->
+<div class="inv-lock-banner" id="cerLockBanner">
+  <span class="lock-icon">🔒</span>
+  <span>Complete your <strong>Scientific Notebook</strong> review above to unlock the CER Builder and Quiz.</span>
+</div>
+
+<!-- CER + Quiz: hidden until notebook reviewed -->
+<div id="cer-quiz-content" style="display:none">
+
+<!-- CER BUILDER -->
+<section id="cer" style="background:var(--dark2);">
+  <div class="container">
+    <span class="section-label">Phase 5 · Scientific Arguments</span>
+    <h2 class="section-title">Construct Scientific Arguments 🧠</h2>
+    <p class="section-desc">You have reviewed the characteristics of life, made predictions, collected evidence, and organized your thinking. Now use that evidence to construct scientific arguments.</p>
+
+    <div class="inv-question">
+      <div class="inv-q-label">How This Works</div>
+      <div class="inv-q-text">For each case, choose the best <strong>Claim</strong> first, then the strongest <strong>Evidence</strong>, then the best <strong>Reasoning</strong> — in that order. Each step unlocks after the previous one is correct. Think back to what you found in your investigation.</div>
+    </div>
+
+    <div class="ev-progress">
+      <div class="ev-progress-bar-wrap"><div class="ev-progress-bar" id="cerBar"></div></div>
+      <div class="ev-progress-text" id="cerProgressText">0 of 4 arguments completed</div>
+    </div>
+
+    <div id="cer-cases"></div>
+
+    <div class="ev-complete-banner" id="cerAllComplete">
+      You've practiced constructing scientific arguments. Complete the final challenge to see how well you can apply your understanding.
+    </div>
+  </div>
+</section>
+
+<!-- Quiz lock banner: visible until all CER arguments complete -->
+<div class="inv-lock-banner" id="quizLockBanner">
+  <span class="lock-icon">🔒</span>
+  <span>Complete all four scientific arguments above to unlock the final quiz.</span>
+</div>
+
+<!-- QUIZ — hidden until Phase 5 complete -->
+<section id="quiz" class="quiz-section" style="display:none">
+  <div class="container">
+    <span class="section-label">Phase 6 · Final Challenge</span>
+    <h2 class="section-title">Apply Your Understanding 🎯</h2>
+    <p class="section-desc">You've investigated unusual cases, gathered evidence, organized your thinking, and constructed scientific arguments. Now apply what you've learned to new questions about life and classification.</p>
+
+    <div class="inv-question">
+      <div class="inv-q-label">Final Challenge</div>
+      <div class="inv-q-text">Eight questions drawn from across the investigation. Click an answer to get immediate feedback. If you want to retry, use the Reset button after the quiz ends.</div>
+    </div>
+
+    <div class="quiz-progress">
+      <div class="progress-bar"><div class="progress-fill" id="q-progress"></div></div>
+      <div class="progress-text" id="q-progress-text">0 / 8</div>
+    </div>
+    <div id="quiz-questions"></div>
+    <div class="score-board" id="q-score">
+      <div class="big-score" id="q-score-num">0/8</div>
+      <p id="q-score-msg"></p>
+      <button class="reset-btn" onclick="resetQuiz()">🔄 Try Again</button>
+    </div>
+
+    <!-- Investigation completion panel — shown after quiz score -->
+    <div class="inv-complete-panel" id="inv-complete" style="display:none">
+      <div class="inv-complete-header">
+        <div class="inv-complete-icon">✅</div>
+        <div>
+          <div class="inv-complete-title">Investigation Complete</div>
+          <div class="inv-complete-sub">The Gray Zone · Life Science Investigation</div>
+        </div>
+      </div>
+      <p class="inv-complete-msg">
+        You explored the characteristics of life, evaluated six unusual cases, gathered evidence, and constructed scientific arguments.
+        Scientists continue to debate some of these questions today. The gray zone remains one of the most fascinating areas of biology.
+      </p>
+
+      <div class="inv-summary-grid" id="invSummaryGrid">
+        <!-- Populated by showInvComplete() -->
+      </div>
+
+      <div class="inv-reflection">
+        <div class="inv-reflection-title">Final Reflection (Optional)</div>
+        <div class="inv-reflection-prompt">Which case changed your thinking the most?</div>
+        <div class="inv-reflection-opts">
+          <label class="inv-ref-opt" id="ref-fire"><input type="radio" name="inv-reflection" value="fire" onchange="reflectionSelect('fire')">🔥 Fire</label>
+          <label class="inv-ref-opt" id="ref-crystals"><input type="radio" name="inv-reflection" value="crystals" onchange="reflectionSelect('crystals')">🔮 Crystals</label>
+          <label class="inv-ref-opt" id="ref-seed"><input type="radio" name="inv-reflection" value="seed" onchange="reflectionSelect('seed')">🌱 Dormant Seed</label>
+          <label class="inv-ref-opt" id="ref-mule"><input type="radio" name="inv-reflection" value="mule" onchange="reflectionSelect('mule')">🐴 Mule</label>
+          <label class="inv-ref-opt" id="ref-robot"><input type="radio" name="inv-reflection" value="robot" onchange="reflectionSelect('robot')">🤖 Robot</label>
+          <label class="inv-ref-opt" id="ref-virus"><input type="radio" name="inv-reflection" value="virus" onchange="reflectionSelect('virus')">🦠 Virus</label>
+        </div>
+        <div class="inv-reflection-note">Your selection is not scored or saved — this is purely for your own reflection.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /cer-quiz-content -->
+</div><!-- /investigation-content -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<script>
+// ── Guided CER Builder ────────────────────────────────────────────
+const cerCases = [
+  {
+    icon: '🔥', title: 'Fire', sub: 'Argue: Fire is NOT alive',
+    steps: [
+      {
+        letter: 'C', label: 'Claim',
+        prompt: 'Choose the strongest claim about whether fire is alive.',
+        options: [
+          'Fire is alive because it grows, uses energy, and spreads to new material.',
+          'Fire is not alive because it fails the majority of the six characteristics of life.',
+          'Fire might be alive — scientists are still debating cases like this one.'
+        ],
+        correct: 1,
+        correctFb: '✅ Strong claim! It takes a clear position and signals that evidence (the six characteristics) will follow.',
+        incorrectFb: '❌ Not the strongest choice. A good claim takes a definite position and hints at the evidence. Option B does this best.'
+      },
+      {
+        letter: 'E', label: 'Evidence',
+        prompt: 'Your claim is locked in. Now choose the evidence that best supports it.',
+        options: [
+          'Fire is hot and bright, which are not properties of living things.',
+          'Fire does not meet "Made of Cells" — it has no cells or genetic material — and it cannot reproduce by passing on heritable information.',
+          'Fire goes out when oxygen runs out, similar to how animals die without air.'
+        ],
+        correct: 1,
+        correctFb: '✅ Excellent evidence! It names two specific characteristics, explains what fire lacks, and avoids vague comparisons.',
+        incorrectFb: '❌ That\'s not strong scientific evidence. Good evidence names a specific characteristic and explains why fire fails it. Option B does both.'
+      },
+      {
+        letter: 'R', label: 'Reasoning',
+        prompt: 'Now connect your evidence to your claim. Choose the best reasoning.',
+        options: [
+          'This supports my claim because fire is dangerous, and we don\'t consider dangerous things alive.',
+          'This supports my claim because failing "Made of Cells" and "Reproduce" shows fire lacks the two most fundamental requirements for life — even though it does show some life-like behaviors.',
+          'This supports my claim because scientists have studied fire for centuries and never found cells in it.'
+        ],
+        correct: 1,
+        correctFb: '✅ Perfect reasoning! It connects the evidence back to the claim, explains WHY those characteristics matter, and even acknowledges fire\'s life-like qualities — the mark of a strong argument.',
+        incorrectFb: '❌ Reasoning should explain WHY the evidence supports the claim. Option B does this by connecting the failed characteristics to what life fundamentally requires.'
+      }
+    ]
+  },
+  {
+    icon: '🐴', title: 'A Mule', sub: 'Argue: A mule IS alive',
+    steps: [
+      {
+        letter: 'C', label: 'Claim',
+        prompt: 'Choose the strongest claim about whether a mule is alive.',
+        options: [
+          'A mule is not alive because it cannot reproduce, which is one of the six characteristics.',
+          'A mule is alive because it meets five of the six characteristics of life.',
+          'Whether a mule is alive depends on whether it can reproduce later in its life.'
+        ],
+        correct: 1,
+        correctFb: '✅ Strong claim! It takes a clear position and signals the evidence — the five characteristics — that will follow.',
+        incorrectFb: '❌ Not the strongest. The best claim takes a clear position and points toward the evidence. Option B does this without unnecessary hedging.'
+      },
+      {
+        letter: 'E', label: 'Evidence',
+        prompt: 'Choose the evidence that best supports the claim that a mule is alive.',
+        options: [
+          'Mules are strong working animals used by humans for centuries.',
+          'Mules eat, grow, maintain body temperature, and respond to their environment — meeting five of the six characteristics.',
+          'Mules were created by crossbreeding horses and donkeys, so they follow different biological rules.'
+        ],
+        correct: 1,
+        correctFb: '✅ Strong evidence! It names four specific characteristics and directly supports the claim that mules meet the criteria for life.',
+        incorrectFb: '❌ That\'s not scientific evidence. Good evidence names specific characteristics of life and shows how the mule meets them. Option B does this directly.'
+      },
+      {
+        letter: 'R', label: 'Reasoning',
+        prompt: 'Now connect your evidence to your claim. Choose the best reasoning.',
+        options: [
+          'This supports my claim because strong animals are always alive.',
+          'This supports my claim because mules can feel pain, which is a sign of life.',
+          'This supports my claim because meeting five characteristics — including having cells, using energy, maintaining homeostasis, and responding to stimuli — shows a mule has all the core biological systems of life. Sterility affects one characteristic but does not eliminate the others.'
+        ],
+        correct: 2,
+        correctFb: '✅ Excellent reasoning! It connects the evidence to the claim, explains why the five characteristics matter, and directly addresses the one characteristic a mule fails — that\'s what separates a good argument from a great one.',
+        incorrectFb: '❌ Reasoning must explain WHY the evidence supports the claim. Option C does this by explaining what the five characteristics reveal about mule biology and addressing the counterargument head-on.'
+      }
+    ]
+  },
+  {
+    icon: '🤖', title: 'A Robot', sub: 'Argue: A robot is NOT alive',
+    steps: [
+      {
+        letter: 'C', label: 'Claim',
+        prompt: 'Choose the strongest claim about whether a robot is alive.',
+        options: [
+          'A robot is alive because it uses energy and responds to stimuli just like living things do.',
+          'Whether a robot is alive depends on how advanced its AI is.',
+          'A robot is not alive because, despite some life-like behaviors, it fails the most fundamental characteristics of life.'
+        ],
+        correct: 2,
+        correctFb: '✅ Strong claim! It takes a clear position, acknowledges the life-like behaviors (showing awareness of the counterargument), and sets up the evidence.',
+        incorrectFb: '❌ Not the strongest. A good claim takes a definite position and acknowledges complexity without hedging. Option C does this best.'
+      },
+      {
+        letter: 'E', label: 'Evidence',
+        prompt: 'Choose the evidence that best supports the claim that a robot is not alive.',
+        options: [
+          'Robots are made in factories, not born, which means they cannot be alive.',
+          'Robots do not have feelings or emotions, which means they are not alive.',
+          'Robots have no cells and cannot reproduce biologically — they are built from metal and silicon with no genetic material to pass on.'
+        ],
+        correct: 2,
+        correctFb: '✅ Strong evidence! It targets two specific characteristics — "Made of Cells" and "Reproduce" — and explains exactly what robots lack.',
+        incorrectFb: '❌ That\'s not strong scientific evidence. Good evidence names specific characteristics of life and explains how robots fail them. Option C does both precisely.'
+      },
+      {
+        letter: 'R', label: 'Reasoning',
+        prompt: 'Now connect your evidence to your claim. Choose the best reasoning.',
+        options: [
+          'This supports my claim because "Made of Cells" is the most foundational characteristic — all known life is cellular. A robot\'s ability to use electricity or respond to sensors is engineered behavior, not biology, and cannot substitute for living cells.',
+          'This supports my claim because robots are too expensive and complex to be considered alive.',
+          'This supports my claim because anything built by humans cannot qualify as a living thing.'
+        ],
+        correct: 0,
+        correctFb: '✅ Perfect reasoning! It explains WHY "Made of Cells" matters above all, draws the critical distinction between engineered and biological behavior, and directly addresses why the robot\'s life-like features don\'t count.',
+        incorrectFb: '❌ Reasoning must explain WHY the evidence proves the claim. Option A does this by explaining the significance of cells and distinguishing engineered behavior from biological life.'
+      }
+    ]
+  },
+  {
+    icon: '🦠', title: 'A Virus', sub: 'Argue: A virus occupies the gray zone — it shares features with life but lacks others',
+    steps: [
+      {
+        letter: 'C', label: 'Claim',
+        prompt: 'Choose the strongest scientific claim about whether a virus is alive.',
+        options: [
+          'A virus is alive because it contains DNA and can reproduce inside a host cell.',
+          'A virus is not alive because it cannot carry out any life functions on its own.',
+          'A virus occupies a gray zone — it shares key features with living things but lacks others, making a definitive classification scientifically contested.'
+        ],
+        correct: 2,
+        correctFb: '✅ Strong claim! It avoids oversimplifying a genuinely debated question, takes a defensible position (gray zone), and signals that evidence from both sides will follow.',
+        incorrectFb: '❌ Options A and B each capture part of the truth, but both oversimplify. The strongest scientific claim acknowledges the genuine complexity. Option C does this best.'
+      },
+      {
+        letter: 'E', label: 'Evidence',
+        prompt: 'Your claim is locked in. Now choose the evidence that best supports a gray zone position.',
+        options: [
+          'Viruses contain DNA or RNA — genetic material — which is a core feature of all known life. However, they have no cells, carry out no metabolism, and cannot replicate without hijacking a host cell\'s machinery.',
+          'Viruses cause diseases like COVID-19 and the flu, which shows they can interact with living systems.',
+          'Viruses are so small they cannot be seen under a regular microscope, which is why scientists are unsure whether they are alive.'
+        ],
+        correct: 0,
+        correctFb: '✅ Excellent evidence! It identifies what viruses DO share with life (genetic material) and what they LACK (cells, metabolism, independent replication) — exactly the balanced, specific evidence a gray zone claim requires.',
+        incorrectFb: '❌ Strong scientific evidence names specific characteristics and explains both what a virus meets and what it fails. Option A does both precisely — the others are too vague.'
+      },
+      {
+        letter: 'R', label: 'Reasoning',
+        prompt: 'Now connect your evidence to your claim. Choose the best reasoning.',
+        options: [
+          'This supports my claim because the evidence shows viruses pass some tests for life (they carry genetic material and can increase in number) but fail others (no cells, no metabolism, no independent action). The six-characteristic framework was built for cellular life and may not be the right tool for classifying viruses — which is exactly why scientists continue to debate their status.',
+          'This supports my claim because viruses are dangerous, and living things are not usually described as dangerous.',
+          'This supports my claim because scientists have not yet agreed, which proves that viruses must be in a gray zone by definition.'
+        ],
+        correct: 0,
+        correctFb: '✅ Perfect reasoning! It connects specific evidence to the gray zone claim, explains WHY both sides of the evidence matter, and makes the deeper point that the classification framework itself may be incomplete — the hallmark of sophisticated scientific thinking.',
+        incorrectFb: '❌ Reasoning must explain WHY the evidence supports the claim. Option A does this by connecting specific characteristics to the gray zone position and acknowledging the limitations of the framework itself.'
+      }
+    ]
+  }
+];
+
+const cerState = cerCases.map(() => ({ step: 0, done: false }));
+
+function buildCER() {
+  const container = document.getElementById('cer-cases');
+  container.innerHTML = '';
+
+  cerCases.forEach((c, ci) => {
+    const el = document.createElement('div');
+    el.className = 'cer-case';
+    el.id = `cer-case-${ci}`;
+
+    const stepsHTML = c.steps.map((s, si) => buildStepHTML(ci, si, s, si === 0)).join('');
+
+    el.innerHTML = `
+      <div class="cer-case-header">
+        <div class="cer-case-icon">${c.icon}</div>
+        <div>
+          <div class="cer-case-title">${c.title}</div>
+          <div class="cer-case-sub">${c.sub}</div>
+        </div>
+      </div>
+      ${stepsHTML}
+      <div class="cer-complete" id="cer-complete-${ci}">🎯 Argument complete! Great scientific reasoning.</div>
+    `;
+    container.appendChild(el);
+  });
+}
+
+function buildStepHTML(ci, si, s, unlocked) {
+  const letters = ['A', 'B', 'C'];
+  const optionsHTML = s.options.map((opt, oi) => `
+    <button class="cer-option" id="cer-${ci}-${si}-${oi}" onclick="cerSelect(${ci},${si},${oi})">
+      <span class="cer-opt-letter">${letters[oi]}</span>
+      <span>${opt}</span>
+    </button>
+  `).join('');
+
+  return `
+    <div class="cer-step" id="cer-step-${ci}-${si}">
+      <div class="cer-step-header">
+        <div class="cer-step-letter">${s.letter}</div>
+        <div class="cer-step-label">${s.label}</div>
+      </div>
+      <div class="cer-step-prompt">${s.prompt}</div>
+      ${unlocked
+        ? `<div class="cer-options" id="cer-opts-${ci}-${si}">${optionsHTML}</div>
+           <div class="cer-feedback" id="cer-fb-${ci}-${si}"></div>`
+        : `<div class="cer-locked" id="cer-opts-${ci}-${si}">🔒 Complete the ${si === 1 ? 'Claim' : 'Evidence'} step first.</div>
+           <div class="cer-feedback" id="cer-fb-${ci}-${si}"></div>`
+      }
+    </div>
+  `;
+}
+
+function cerSelect(ci, si, chosen) {
+  const s = cerCases[ci].steps[si];
+  const isCorrect = chosen === s.correct;
+  const letters = ['A','B','C'];
+
+  // Disable all options in this step
+  s.options.forEach((_, oi) => {
+    const btn = document.getElementById(`cer-${ci}-${si}-${oi}`);
+    btn.classList.add('cer-disabled');
+    if (oi === s.correct) btn.classList.add('cer-revealed');
+  });
+  document.getElementById(`cer-${ci}-${si}-${chosen}`).classList.add(isCorrect ? 'cer-correct' : 'cer-incorrect');
+
+  // Show feedback
+  const fb = document.getElementById(`cer-fb-${ci}-${si}`);
+  fb.className = `cer-feedback ${isCorrect ? 'cer-fb-correct' : 'cer-fb-incorrect'}`;
+  fb.innerHTML = isCorrect ? s.correctFb : s.incorrectFb;
+
+  if (isCorrect) {
+    cerState[ci].step = si + 1;
+    if (si + 1 < cerCases[ci].steps.length) {
+      unlockStep(ci, si + 1);
+    } else {
+      cerState[ci].done = true;
+      document.getElementById(`cer-complete-${ci}`).classList.add('show');
+      // Phase 5 progress tracking
+      const cerDone  = cerState.filter(s => s.done).length;
+      const cerTotal = cerCases.length;
+      document.getElementById('cerBar').style.width = Math.round(cerDone / cerTotal * 100) + '%';
+      const cerPt = document.getElementById('cerProgressText');
+      cerPt.textContent = `${cerDone} of ${cerTotal} arguments completed`;
+      if (cerDone === cerTotal) {
+        cerPt.classList.add('all-done');
+        document.getElementById('cerAllComplete').classList.add('show');
+        document.getElementById('quizLockBanner').classList.add('hidden');
+        const quiz = document.getElementById('quiz');
+        quiz.style.display = '';
+        quiz.style.animation = 'fadeIn 0.6s ease both';
+      }
+    }
+  }
+}
+
+function unlockStep(ci, si) {
+  const s = cerCases[ci].steps[si];
+  const letters = ['A','B','C'];
+  const optsEl = document.getElementById(`cer-opts-${ci}-${si}`);
+  optsEl.innerHTML = s.options.map((opt, oi) => `
+    <button class="cer-option" id="cer-${ci}-${si}-${oi}" onclick="cerSelect(${ci},${si},${oi})">
+      <span class="cer-opt-letter">${letters[oi]}</span>
+      <span>${opt}</span>
+    </button>
+  `).join('');
+  optsEl.className = 'cer-options';
+
+  // Update prompt from locked to real prompt
+  const stepEl = document.getElementById(`cer-step-${ci}-${si}`);
+  const promptEl = stepEl.querySelector('.cer-step-prompt');
+  promptEl.textContent = s.prompt;
+
+  // Smooth scroll nudge
+  setTimeout(() => optsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+}
+
+buildCER();
+</script>
+
+<script>
+const quizData = {
+  total: 8,
+  questions: [
+    {
+      q: "Fire grows, consumes fuel, and even spreads to new material. Why do most scientists still say fire is NOT alive?",
+      options: [
+        "Fire is too hot to be considered alive",
+        "Fire fails the most important tests: it has no cells, no genetic material, and cannot reproduce with heritable information",
+        "Fire does not grow fast enough to be considered alive",
+        "Fire uses too much oxygen to qualify as a living thing"
+      ],
+      correct: 1,
+      explanation: "Even though fire shows some life-like behaviors, it has no cells and cannot pass on genetic information. Its 'growth' and 'spread' are chemistry, not biology."
+    },
+    {
+      q: "A crystal grows by adding layers of atoms in an organized pattern. Which characteristic of life does this MOST resemble — and why is it still not enough?",
+      options: [
+        "Reproduce — but crystals can't pass genetic information to offspring",
+        "Grow and develop — but crystal growth requires no cellular machinery, energy metabolism, or genetic instructions",
+        "Maintain homeostasis — but crystals have no internal environment to regulate",
+        "Respond to stimuli — but crystals don't have sensors"
+      ],
+      correct: 1,
+      explanation: "Crystal growth resembles 'Grow and develop,' but biological growth is driven by cells, DNA, and metabolism. Crystal growth is just atoms stacking up through chemistry — no biology involved."
+    },
+    {
+      q: "A seed can sit dormant in a drawer for years without growing, using energy, or responding to anything. Why do scientists still consider it alive?",
+      options: [
+        "Because seeds are made of cells and have the biological machinery to resume all life functions when conditions are right",
+        "Because seeds contain water and need oxygen",
+        "Because seeds are too small to be considered nonliving",
+        "Because dormancy counts as maintaining homeostasis"
+      ],
+      correct: 0,
+      explanation: "Life is a capacity, not just a set of constant behaviors. A dormant seed has living cells and intact biological machinery — it's just paused. Being alive doesn't require constantly demonstrating all six characteristics."
+    },
+    {
+      q: "A mule is healthy, responsive, grows, uses energy, and maintains homeostasis — but cannot reproduce. What does this case BEST reveal about the six characteristics of life?",
+      options: [
+        "Mules are not alive because they fail reproduction",
+        "The six characteristics must all be met simultaneously by every individual organism",
+        "The six characteristics describe life as a system — not a checklist every single individual must fully satisfy",
+        "Reproduction is the least important of the six characteristics"
+      ],
+      correct: 2,
+      explanation: "Mules are clearly alive despite being sterile. This shows the six characteristics describe what living things do as a group and a lineage — not a test that every individual must pass on all six counts simultaneously."
+    },
+    {
+      q: "A robot uses electricity, responds to sensors, and can be programmed to copy its own code. Which characteristic does it MOST struggle to meet — and why?",
+      options: [
+        "Respond to stimuli — robots have no senses",
+        "Obtain and use energy — robots don't use energy",
+        "Made of cells — robots are built from non-biological materials with no living cells",
+        "Grow and develop — robots can upgrade their own software"
+      ],
+      correct: 2,
+      explanation: "Being made of cells is fundamental to life as we know it. Robots are made of metal, silicon, and plastic — no cellular structures, no metabolism, no genetic material. 'Made of cells' is the clearest failure."
+    },
+    {
+      q: "Of the six Gray Zone cases, which is MOST clearly nonliving, because it fails nearly all six characteristics?",
+      options: [
+        "A dormant seed",
+        "A mule",
+        "A crystal",
+        "A robot"
+      ],
+      correct: 2,
+      explanation: "Crystals fail five of six characteristics completely. They have no cells, no energy metabolism, no reproduction, no homeostasis, and only a minimal chemical response to their environment. They're the clearest non-living case across all six."
+    },
+    {
+      q: "You are arguing that fire is NOT alive. Which piece of evidence is STRONGEST for your CER?",
+      options: [
+        "Fire is orange and living things are not usually orange",
+        "Fire does not have cells, does not reproduce with genetic information, and cannot maintain homeostasis",
+        "Fire goes out when there is no oxygen, and living things need oxygen",
+        "Fire moves quickly, and living things move slowly"
+      ],
+      correct: 1,
+      explanation: "Strong scientific evidence targets the most fundamental characteristics. Failing 'Made of cells,' 'Reproduce,' AND 'Maintain homeostasis' is a decisive three-part argument — much stronger than observations about color or speed."
+    },
+    {
+      q: "A classmate argues: 'Robots must be alive — they respond to stimuli AND use energy, just like we do.' What is the BEST counterargument?",
+      options: [
+        "Robots are too fast to be alive",
+        "Meeting two characteristics is not enough — living things must meet all six, and robots have no cells, no metabolism, and no biological reproduction",
+        "Robots don't respond to stimuli — they're just programmed",
+        "Using electricity is not the same as using energy at all"
+      ],
+      correct: 1,
+      explanation: "A strong counterargument acknowledges what the other side got right, then explains why it's still not enough. Meeting two characteristics doesn't qualify something as alive — all six must be present, and robots fundamentally lack cells and biological systems."
+    }
+  ]
+};
+
+const quizState = { answered: 0, correct: 0 };
+
+function buildQuiz() {
+  const container = document.getElementById('quiz-questions');
+  container.innerHTML = '';
+  quizState.answered = 0;
+  quizState.correct = 0;
+  updateProgress();
+
+  quizData.questions.forEach((q, qi) => {
+    const letters = ['A','B','C','D'];
+    const optionsHTML = q.options.map((opt, oi) => `
+      <button class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q-${qi}-${oi}">
+        <span class="option-letter">${letters[oi]}</span>
+        <span>${opt}</span>
+      </button>
+    `).join('');
+
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML = `
+      <div class="quiz-header">
+        <div class="quiz-num">${qi + 1}</div>
+        <div class="quiz-question-text">${q.q}</div>
+      </div>
+      <div class="quiz-options">${optionsHTML}</div>
+      <div class="option-feedback" id="q-feedback-${qi}"></div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function selectAnswer(qi, chosenIndex) {
+  const q = quizData.questions[qi];
+  const isCorrect = chosenIndex === q.correct;
+
+  q.options.forEach((_, oi) => {
+    const btn = document.getElementById(`q-${qi}-${oi}`);
+    btn.classList.add('disabled');
+    if (oi === q.correct) btn.classList.add('revealed-correct');
+  });
+
+  document.getElementById(`q-${qi}-${chosenIndex}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+
+  const feedback = document.getElementById(`q-feedback-${qi}`);
+  if (isCorrect) {
+    feedback.className = 'option-feedback correct-fb';
+    feedback.innerHTML = '✅ Correct! ' + q.explanation;
+    quizState.correct++;
+  } else {
+    feedback.className = 'option-feedback incorrect-fb';
+    feedback.innerHTML = '❌ Not quite. ' + q.explanation;
+  }
+
+  quizState.answered++;
+  updateProgress();
+  if (quizState.answered === quizData.total) showScore();
+}
+
+function updateProgress() {
+  const pct = (quizState.answered / quizData.total) * 100;
+  document.getElementById('q-progress').style.width = pct + '%';
+  document.getElementById('q-progress-text').textContent = `${quizState.answered} / ${quizData.total}`;
+}
+
+function showScore() {
+  const pct = Math.round((quizState.correct / quizData.total) * 100);
+  let msg = '';
+  if (pct === 100) msg = '🏆 Perfect! Your scientific reasoning is sharp.';
+  else if (pct >= 75) msg = '🌟 Great work! Review any you missed and you\'re set.';
+  else if (pct >= 50) msg = '📚 Solid start. Revisit the analysis section and try again.';
+  else msg = '💪 Keep going! Re-read the case analyses above, then retry.';
+
+  document.getElementById('q-score-num').textContent = `${quizState.correct}/${quizData.total}`;
+  document.getElementById('q-score-msg').textContent = msg;
+  document.getElementById('q-score').classList.add('show');
+  document.getElementById('q-score').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  showInvComplete();
+}
+
+function resetQuiz() {
+  document.getElementById('q-score').classList.remove('show');
+  buildQuiz();
+}
+
+buildQuiz();
+</script>
+
+<script>
+// ── Phase 6: Investigation Completion ────────────────────────
+function showInvComplete() {
+  const preds        = window.gzGetPredictions   ? window.gzGetPredictions()   : {};
+  const evDone       = window.gzGetCasesComplete ? window.gzGetCasesComplete() : new Set();
+  const cerDoneCount = (typeof cerState !== 'undefined')
+    ? cerState.filter(s => s.done).length : 0;
+
+  const items = [
+    '6 Characteristics Reviewed',
+    Object.keys(preds).length + ' First Impressions Recorded',
+    evDone.size + ' Cases Investigated',
+    cerDoneCount + ' Scientific Arguments Completed',
+    'Final Challenge Completed'
+  ];
+
+  const grid = document.getElementById('invSummaryGrid');
+  if (grid) {
+    grid.innerHTML = items.map(label =>
+      `<div class="inv-summary-item"><span class="inv-summary-check">✓</span><span>${label}</span></div>`
+    ).join('');
+  }
+
+  const panel = document.getElementById('inv-complete');
+  if (panel) {
+    panel.style.display = '';
+    panel.style.animation = 'fadeIn 0.6s ease both';
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300);
+  }
+}
+
+function reflectionSelect(value) {
+  document.querySelectorAll('.inv-ref-opt').forEach(function(el) {
+    el.classList.remove('selected');
+  });
+  var chosen = document.getElementById('ref-' + value);
+  if (chosen) chosen.classList.add('selected');
+}
+
+// ── Phase 4: Scientific Notebook ─────────────────────────────
+var NB_CASES = [
+  { id: 'fire',     icon: '🔥', name: 'Fire' },
+  { id: 'crystals', icon: '🔮', name: 'Crystals' },
+  { id: 'seed',     icon: '🌱', name: 'A Dormant Seed' },
+  { id: 'mule',     icon: '🐴', name: 'A Mule' },
+  { id: 'robot',    icon: '🤖', name: 'A Robot' },
+  { id: 'virus',    icon: '🦠', name: 'A Virus' }
+];
+var PRED_LABEL = { 'alive': 'Alive', 'not-alive': 'Not Alive', 'unsure': 'Unsure' };
+var PRED_CLASS = { 'alive': 'alive', 'not-alive': 'not-alive', 'unsure': 'unsure' };
+
+function buildNotebook() {
+  var preds  = window.gzGetPredictions  ? window.gzGetPredictions()  : {};
+  var evDone = window.gzGetCasesComplete ? window.gzGetCasesComplete() : new Set();
+  var tbody  = document.getElementById('nbTableBody');
+  if (!tbody) return;
+
+  var rows = '';
+  var predCount = 0;
+  var evCount   = 0;
+
+  NB_CASES.forEach(function(c) {
+    var pred   = preds[c.id];
+    var isDone = evDone.has(c.id);
+
+    var predCell = pred
+      ? '<span class="nb-badge ' + PRED_CLASS[pred] + '">' + PRED_LABEL[pred] + '</span>'
+      : '<span class="nb-badge needs">—</span>';
+
+    var evCell = isDone
+      ? '<span class="nb-badge ev-complete">✓ Complete</span>'
+      : '<span class="nb-badge needs">Pending</span>';
+
+    var statusCell = isDone
+      ? '<span class="nb-badge ready">Ready for Argument</span>'
+      : '<span class="nb-badge needs">Needs Evidence</span>';
+
+    if (pred)   predCount++;
+    if (isDone) evCount++;
+
+    rows += '<tr>' +
+      '<td><div class="nb-case-cell"><span class="nb-case-icon">' + c.icon + '</span>' +
+      '<span class="nb-case-name">' + c.name + '</span></div></td>' +
+      '<td>' + predCell + '</td>' +
+      '<td>' + evCell + '</td>' +
+      '<td>' + statusCell + '</td>' +
+      '</tr>';
+  });
+
+  tbody.innerHTML = rows;
+
+  var stats = document.getElementById('nbStats');
+  if (stats) {
+    stats.innerHTML =
+      '<div class="nb-stat"><div class="nb-stat-num">' + evCount + '</div>' +
+      '<div class="nb-stat-label">cases investigated</div></div>' +
+      '<div class="nb-stat"><div class="nb-stat-num">' + predCount + '</div>' +
+      '<div class="nb-stat-label">first impressions recorded</div></div>' +
+      '<div class="nb-stat"><div class="nb-stat-num">' + evCount + '</div>' +
+      '<div class="nb-stat-label">cases ready for argument</div></div>';
+  }
+}
+
+function notebookReview() {
+  var btn = document.getElementById('nbReviewBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '✓ Review Complete'; }
+  document.getElementById('nbComplete').classList.add('show');
+  document.getElementById('cerLockBanner').classList.add('hidden');
+  var cerQuiz = document.getElementById('cer-quiz-content');
+  cerQuiz.style.display = '';
+  cerQuiz.style.animation = 'fadeIn 0.6s ease both';
+}
+
+// ── Phase 3: Evidence Collection ─────────────────────────────
+(function() {
+  var charIds  = ['cells','energy','grow','reproduce','respond','homeostasis'];
+  var caseIds  = ['fire','crystals','seed','mule','robot','virus'];
+  var evState  = {};
+  caseIds.forEach(function(c) { evState[c] = {}; });
+  var casesComplete = new Set();
+
+  window.evidenceSelect = function(caseId, charId, value) {
+    // Clear previous selection styling for this case-characteristic
+    ['present','absent','partial'].forEach(function(v) {
+      var el = document.getElementById('ev-opt-' + caseId + '-' + charId + '-' + v);
+      if (el) el.classList.remove('sel-present','sel-absent','sel-partial');
+    });
+    var chosen = document.getElementById('ev-opt-' + caseId + '-' + charId + '-' + value);
+    if (chosen) chosen.classList.add('sel-' + value);
+
+    var wasNew = !Object.prototype.hasOwnProperty.call(evState[caseId], charId);
+    evState[caseId][charId] = value;
+
+    // Update status badge
+    var judged = Object.keys(evState[caseId]).length;
+    var statusEl = document.getElementById('ev-status-' + caseId);
+    if (statusEl) {
+      if (judged < charIds.length) {
+        statusEl.textContent = 'In Progress';
+        statusEl.className = 'ev-status in-progress';
+      } else {
+        statusEl.textContent = 'Evidence Collected';
+        statusEl.className = 'ev-status ev-done';
+      }
+    }
+
+    // When all 6 chars judged for this case, reveal analysis
+    if (judged === charIds.length && !casesComplete.has(caseId)) {
+      casesComplete.add(caseId);
+
+      var panel = document.getElementById('ev-' + caseId);
+      if (panel) panel.classList.add('ev-complete');
+
+      var wrap = document.getElementById('ev-wrap-' + caseId);
+      if (wrap) {
+        wrap.classList.add('ev-revealed');
+        wrap.style.animation = 'fadeIn 0.4s ease both';
+      }
+
+      // Update phase progress
+      if (wasNew) {
+        var count = casesComplete.size;
+        var total = caseIds.length;
+        document.getElementById('evBar').style.width = Math.round(count / total * 100) + '%';
+        var txt = document.getElementById('evText');
+        txt.textContent = count + ' of ' + total + ' cases investigated';
+
+        if (count === total) {
+          txt.classList.add('all-done');
+          document.getElementById('evComplete').classList.add('show');
+          document.getElementById('notebookLockBanner').classList.add('hidden');
+          var nb = document.getElementById('phase4');
+          nb.style.display = '';
+          nb.style.animation = 'fadeIn 0.6s ease both';
+          buildNotebook();
+        }
+      }
+    }
+  };
+  window.gzGetCasesComplete = function() { return casesComplete; };
+})();
+
+// ── Phase 2: First Impressions ───────────────────────────────
+(function() {
+  var caseIds = ['fire','crystals','seed','mule','robot','virus'];
+  var predictions = {};
+
+  window.predSelect = function(caseId, value) {
+    // Clear all three option labels for this case
+    ['alive','not-alive','unsure'].forEach(function(v) {
+      var el = document.getElementById('pred-opt-' + caseId + '-' + v);
+      if (el) el.classList.remove('selected-alive','selected-not-alive','selected-unsure');
+    });
+    // Apply selected style
+    var chosen = document.getElementById('pred-opt-' + caseId + '-' + value);
+    if (chosen) chosen.classList.add('selected-' + value);
+
+    // Mark card done (visually); allow value to change
+    var card = document.getElementById('pred-' + caseId);
+    if (card) card.classList.add('pred-done');
+
+    var wasNew = !Object.prototype.hasOwnProperty.call(predictions, caseId);
+    predictions[caseId] = value;
+
+    if (wasNew) {
+      var count = Object.keys(predictions).length;
+      var total  = caseIds.length;
+      document.getElementById('predBar').style.width = Math.round(count / total * 100) + '%';
+      var txt = document.getElementById('predText');
+      txt.textContent = count + ' of ' + total + ' predictions made';
+
+      if (count === total) {
+        txt.classList.add('all-done');
+        document.getElementById('predComplete').classList.add('show');
+        document.getElementById('invLockBanner').classList.add('hidden');
+        var content = document.getElementById('investigation-content');
+        content.style.display = '';
+        content.style.animation = 'fadeIn 0.6s ease both';
+      }
+    }
+  };
+  window.gzGetPredictions = function() { return predictions; };
+})();
+
+// ── Phase 1: Criteria Discovery ──────────────────────────────
+(function() {
+  var charIds = ['cells','energy','grow','reproduce','respond','homeostasis'];
+  var reviewed = new Set();
+
+  window.reviewChar = function(id) {
+    if (reviewed.has(id)) return;
+    reviewed.add(id);
+
+    var card = document.getElementById('cc-' + id);
+    card.classList.add('reviewed');
+    var btn = card.querySelector('.cc-btn');
+    btn.textContent = '✓ Reviewed';
+    btn.disabled = true;
+
+    var count = reviewed.size;
+    var total = charIds.length;
+
+    document.getElementById('criteriaBar').style.width = Math.round(count / total * 100) + '%';
+
+    var txt = document.getElementById('criteriaText');
+    txt.textContent = count + ' of ' + total + ' characteristics reviewed';
+
+    if (count === total) {
+      txt.classList.add('all-done');
+      document.getElementById('criteriaComplete').classList.add('show');
+      document.getElementById('p2LockBanner').classList.add('hidden');
+      var p2 = document.getElementById('phase2');
+      p2.style.display = '';
+      p2.style.animation = 'fadeIn 0.6s ease both';
+    }
+  };
+})();
+</script>
+
+<script>
+(function() {
+  const lsOn   = sessionStorage.getItem('lyfelabz-ls')   === 'on';
+  const stemOn = sessionStorage.getItem('lyfelabz-stem') === 'on';
+  if (lsOn)   document.body.classList.add('ls-active');
+  if (stemOn) document.body.classList.add('stem-active');
+  document.addEventListener('DOMContentLoaded', function() {
+    const lsBtn   = document.querySelector('.ls-toggle');
+    const stemBtn = document.querySelector('.stem-toggle');
+    if (lsBtn)   lsBtn.classList.toggle('active', lsOn);
+    if (stemBtn) stemBtn.classList.toggle('active', stemOn);
+  });
+})();
+function toggleStem() {
+  const on = document.body.classList.toggle('stem-active');
+  sessionStorage.setItem('lyfelabz-stem', on ? 'on' : 'off');
+  document.querySelector('.stem-toggle').classList.toggle('active', on);
+}
+function toggleLS() {
+  const on = document.body.classList.toggle('ls-active');
+  sessionStorage.setItem('lyfelabz-ls', on ? 'on' : 'off');
+  const btn = document.querySelector('.ls-toggle');
+  btn.classList.toggle('active', on);
+  btn.classList.toggle('ls', on);
+}
+</script>
+<script>
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = document.body.scrollHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / 5000);
+  for (let i = 0; i < count; i++) {
+    stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2, a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2 });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`; ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize(); requestAnimationFrame(draw);
+</script>
+</body>
+</html>
