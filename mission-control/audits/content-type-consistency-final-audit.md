@@ -1,7 +1,7 @@
 # LyfeLabz Content-Type Consistency Final Audit
 
 **Date:** 2026-06-01
-**Mode:** Read-only verification — no files were modified
+**Mode:** Read-only verification, no files were modified
 **Scope:** All 33 content pages after Micropasses 1–5
 **Prior reports referenced:** Original audit + M1–M5 reports
 
@@ -9,17 +9,17 @@
 
 ## Executive Summary
 
-The five-micropass content-type consistency initiative is substantially complete. Across 33 content pages, the canonical five-color identity system — **gold / orange / blue / green / purple** — is now consistently applied at the hero badge level for every single page. Hero title emojis are fully removed. The `page-eyebrow` pattern has been fully retired. Continuation card lesson coloring is corrected.
+The five-micropass content-type consistency initiative is substantially complete. Across 33 content pages, the canonical five-color identity system, **gold / orange / blue / green / purple**, is now consistently applied at the hero badge level for every single page. Hero title emojis are fully removed. The `page-eyebrow` pattern has been fully retired. Continuation card lesson coloring is corrected.
 
-Three minor residual inconsistencies were found — none involve incorrect type identity at the primary hero-badge level. Two are pre-existing color-shade variations, one is an out-of-scope cont-card color on a single file. All are cosmetic and sub-perceptual in normal use.
+Three minor residual inconsistencies were found, none involve incorrect type identity at the primary hero-badge level. Two are pre-existing color-shade variations, one is an out-of-scope cont-card color on a single file. All are cosmetic and sub-perceptual in normal use.
 
-**Verdict: A — Consistency Initiative Complete**, with three documented follow-up items for a future polish pass.
+**Verdict: A, Consistency Initiative Complete**, with three documented follow-up items for a future polish pass.
 
 ---
 
 ## Content-Type Identity Verification
 
-### Lessons (11 pages) — ✅ All Correct
+### Lessons (11 pages): ✅ All Correct
 
 | File | Hero Badge Color | Renders As | Correct? |
 |------|-----------------|------------|---------|
@@ -39,7 +39,7 @@ Three minor residual inconsistencies were found — none involve incorrect type 
 
 ---
 
-### Simulations (5 pages) — ✅ All Correct
+### Simulations (5 pages): ✅ All Correct
 
 | File | Hero Badge Color | Renders As | Correct? |
 |------|-----------------|------------|---------|
@@ -55,7 +55,7 @@ Note: `simulation_chernobyl-frogs.html` retains two `.hero-badge` CSS rules (lin
 
 ---
 
-### Investigations (3 pages) — ✅ All Correct
+### Investigations (3 pages): ✅ All Correct
 
 | File | Hero Badge Color | Renders As | Correct? |
 |------|-----------------|------------|---------|
@@ -63,13 +63,13 @@ Note: `simulation_chernobyl-frogs.html` retains two `.hero-badge` CSS rules (lin
 | `investigation_cell-energy.html` | `#3B82F6` | Blue | ✅ |
 | `investigation_gray-zone.html` | `#3B82F6` | Blue | ✅ |
 
-**3 of 3 investigations: blue hero badge.** Pre-M1, all three had blue backgrounds but orange or white text — zero were fully correct.
+**3 of 3 investigations: blue hero badge.** Pre-M1, all three had blue backgrounds but orange or white text, zero were fully correct.
 
 Note: `investigation_cell-energy.html` has a supplementary `.hero-badge { animation: heroBadgeGlow … }` rule in addition to the base and HTML element. This adds a glow animation; the color is unaffected and correct.
 
 ---
 
-### Games (8 pages) — ✅ All Correct with One Minor Note
+### Games (8 pages): ✅ All Correct with One Minor Note
 
 | File | Hero Indicator | Badge Color | Renders As | Correct? |
 |------|---------------|------------|------------|---------|
@@ -88,7 +88,7 @@ Note: `investigation_cell-energy.html` has a supplementary `.hero-badge { animat
 
 ---
 
-### Extensions (6 pages) — ✅ All Correct
+### Extensions (6 pages): ✅ All Correct
 
 | File | Hero Badge Color | Renders As | Correct? |
 |------|-----------------|------------|---------|
@@ -105,7 +105,7 @@ Note: `investigation_cell-energy.html` has a supplementary `.hero-badge { animat
 
 ## Hero Title Verification
 
-### Trailing Emoji Status — ✅ Fully Clean
+### Trailing Emoji Status: ✅ Fully Clean
 
 Full site-wide scan result:
 ```
@@ -115,7 +115,7 @@ grep -rn '&#xFE0E;' --include="*.html" . | grep '<h1'
 
 Zero `&#xFE0E;` variation selectors remain in any `<h1>` tag across the entire repo. All 33 pages have clean, readable hero titles.
 
-### Hero Titles — Current State
+### Hero Titles: Current State
 
 All titles are readable and unambiguous. No truncation, no encoding artifacts, no stray characters.
 
@@ -129,13 +129,13 @@ All titles are readable and unambiguous. No truncation, no encoding artifacts, n
 
 ### Decorative Emojis
 
-Decorative and functional emojis (floating hero elements, section icons, phase markers, game UI symbols, body system icons, etc.) were preserved throughout all pages. No content emoji was removed — only the `<h1>` trailing instances.
+Decorative and functional emojis (floating hero elements, section icons, phase markers, game UI symbols, body system icons, etc.) were preserved throughout all pages. No content emoji was removed (only the `<h1>` trailing instances.
 
 ---
 
 ## Continuation Card Verification
 
-### `.cont-card.lesson` — ✅ All Gold
+### `.cont-card.lesson`: ✅ All Gold
 
 | File | Color | Correct? |
 |------|-------|---------|
@@ -143,21 +143,21 @@ Decorative and functional emojis (floating hero elements, section icons, phase m
 | `lesson_continental-drift.html` | `rgba(245,200,66,…)` | ✅ |
 | `extension_moon-tonight.html` | `rgba(245,200,66,…)` | ✅ |
 
-### `.cont-card.ext` — ✅ All Purple (minor shade variation)
+### `.cont-card.ext`: ✅ All Purple (minor shade variation)
 
-All files use either `rgba(155,89,182,…)` or `rgba(180,127,255,…)` — both are the purple family. This pre-existing two-shade split was not in scope for any micropass and does not constitute a type-identity error. The rendered cards are visually consistent.
+All files use either `rgba(155,89,182,…)` or `rgba(180,127,255,…)`, both are the purple family. This pre-existing two-shade split was not in scope for any micropass and does not constitute a type-identity error. The rendered cards are visually consistent.
 
-### `.cont-card.sim` — ✅ All Orange, with One Outlier
+### `.cont-card.sim`: ✅ All Orange, with One Outlier
 
 All lesson files that define `.cont-card.sim` use `rgba(245,130,50,…)` or `rgba(245,160,40,…)` (orange). **One outlier:**
 
-`lesson_nature-of-waves.html` defines `.cont-card.sim` as `rgba(52,152,219,0.08)` — **blue**. This is a pre-existing issue not in scope for any of the five micropasses (Micropass 5 addressed only `.cont-card.lesson`). The nature-of-waves page links to `investigation_amplitude-challenge.html` via a sim card; the blue color may reflect the page's overall blue/physical-science theme. It is the only simulation card using a non-orange color anywhere in the site.
+`lesson_nature-of-waves.html` defines `.cont-card.sim` as `rgba(52,152,219,0.08)`, **blue**. This is a pre-existing issue not in scope for any of the five micropasses (Micropass 5 addressed only `.cont-card.lesson`). The nature-of-waves page links to `investigation_amplitude-challenge.html` via a sim card; the blue color may reflect the page's overall blue/physical-science theme. It is the only simulation card using a non-orange color anywhere in the site.
 
-### `.cont-card.inv` — ✅ All Blue
+### `.cont-card.inv`: ✅ All Blue
 
 Both files that define `.cont-card.inv` use `rgba(59,130,246,…)` blue. Correct.
 
-### `.cont-card.game` — ✅ All Green
+### `.cont-card.game`: ✅ All Green
 
 All files use `rgba(61,220,132,…)` green. Minor whitespace/formatting differences only. Correct.
 
@@ -167,7 +167,7 @@ All files use `rgba(61,220,132,…)` green. Minor whitespace/formatting differen
 
 ### `.hero-badge` Status
 
-- **Every content page** defines exactly one `.hero-badge` CSS rule (with one expected exception each for `investigation_cell-energy.html` and `simulation_chernobyl-frogs.html` which have a supplementary animation/override rule — both harmless and correctly orange/blue)
+- **Every content page** defines exactly one `.hero-badge` CSS rule (with one expected exception each for `investigation_cell-energy.html` and `simulation_chernobyl-frogs.html` which have a supplementary animation/override rule, both harmless and correctly orange/blue)
 - **Every content page** has exactly one `<div class="hero-badge">` HTML element
 - **Standard reference count: 2** (one CSS rule + one HTML div), confirmed across all 33 pages
 
@@ -184,23 +184,23 @@ The `page-eyebrow` pattern is fully retired from the LyfeLabz codebase. Zero liv
 
 ## Visual Design Consistency
 
-### Lessons — **Excellent**
+### Lessons: **Excellent**
 
-All 11 lessons display a gold pill badge reading "Lesson" above the h1, on a dark hero background. Badge padding, font weight, letter-spacing, and border-radius are consistent. The one minor variation is `lesson_nature-of-waves.html` using `var(--gold)` vs hardcoded hex on others — visually indistinguishable.
+All 11 lessons display a gold pill badge reading "Lesson" above the h1, on a dark hero background. Badge padding, font weight, letter-spacing, and border-radius are consistent. The one minor variation is `lesson_nature-of-waves.html` using `var(--gold)` vs hardcoded hex on others, visually indistinguishable.
 
-### Simulations — **Strong**
+### Simulations: **Strong**
 
 All 5 simulations display an orange pill badge reading "Simulation". Three files use `var(--orange)` (resolved to `#f5a028`) and two use the hardcoded value directly. The double-rule in `simulation_chernobyl-frogs.html` does not affect the rendered output.
 
-### Investigations — **Strong**
+### Investigations: **Strong**
 
-All 3 investigations display a blue pill badge reading "Investigation". The supplementary glow animation on `investigation_cell-energy.html` adds a subtle pulsing effect to the badge — an intentional design choice that doesn't break consistency.
+All 3 investigations display a blue pill badge reading "Investigation". The supplementary glow animation on `investigation_cell-energy.html` adds a subtle pulsing effect to the badge, an intentional design choice that doesn't break consistency.
 
-### Games — **Strong**
+### Games: **Strong**
 
 All 8 games display a green pill badge reading "Game" using `.hero-badge`. The hero-badge structure is now uniform across all games. One minor green shade discrepancy on `game_cell-explorer.html` (`#2ecc71` vs `#3ddc84`) is barely perceptible at normal viewing distances.
 
-### Extensions — **Excellent**
+### Extensions: **Excellent**
 
 All 6 extensions display a purple pill badge reading "Extension". Badge color is canonically hardcoded to `#b47fff` across all six, making this the most precisely consistent type after the micropass work.
 
@@ -210,27 +210,27 @@ All 6 extensions display a purple pill badge reading "Extension". Badge color is
 
 The following items were found during this verification pass. None are critical type-identity failures. All are flagged for a potential future polish pass.
 
-### 1. `game_cell-explorer.html` — Green shade discrepancy
+### 1. `game_cell-explorer.html`: Green shade discrepancy
 - **What:** Badge uses `var(--bio)` = `#2ecc71` instead of canonical `#3ddc84`
-- **Impact:** Cosmetic — both are mid-range greens, visually close
+- **Impact:** Cosmetic, both are mid-range greens, visually close
 - **Fix:** Change `--bio: #2ecc71` to `--bio: #3ddc84` in this file, or hardcode the badge color to `#3ddc84`
 
-### 2. `lesson_nature-of-waves.html` — `.cont-card.sim` uses blue instead of orange
+### 2. `lesson_nature-of-waves.html`: `.cont-card.sim` uses blue instead of orange
 - **What:** The continuation card for simulations in this file uses `rgba(52,152,219,…)` (blue) and a blue gradient `::before` stripe
-- **Impact:** A reader landing on the "Go Further" section and clicking a simulation card would see a blue card — inconsistent with every other simulation card on the site
+- **Impact:** A reader landing on the "Go Further" section and clicking a simulation card would see a blue card, inconsistent with every other simulation card on the site
 - **Fix:** Update `.cont-card.sim` in this file to use orange `rgba(245,160,40,…)`
 
-### 3. `.cont-card.ext` — Two purple shades in use across the site
+### 3. `.cont-card.ext`: Two purple shades in use across the site
 - **What:** Lesson files use `rgba(155,89,182,…)` for extension cont-card backgrounds; other files (continental-drift, eclipses, layers-of-time, moon-tonight) use `rgba(180,127,255,…)`. Both are purple; the canonical index value is `rgba(180,127,255,…)`.
 - **Impact:** Negligible at individual page level; visible as a slight tone variation if cards from different pages are compared side-by-side
 - **Fix:** Normalize all extension cont-card backgrounds to `rgba(180,127,255,…)` in a future token pass
 
-### 4. `simulation_chernobyl-frogs.html` — Double `.hero-badge` rule (cosmetic)
+### 4. `simulation_chernobyl-frogs.html`: Double `.hero-badge` rule (cosmetic)
 - **What:** Two CSS rules both specifying orange values (line 105 base rule, line 397 override)
-- **Impact:** None — cascade is consistent, rendered color is correct
+- **Impact:** None, cascade is consistent, rendered color is correct
 - **Fix:** Merge into a single rule in a future structural cleanup
 
-### 5. Variable vs. hardcoded values — minor
+### 5. Variable vs. hardcoded values: minor
 - **What:** Three simulation files use `var(--orange)` → `#f5a028`; `lesson_nature-of-waves.html` uses `var(--gold)`. All resolve correctly. No shared token file exists yet.
 - **Impact:** None on rendering; future refactoring would need to account for per-page variable definitions
 - **Fix:** Create a shared `content-type-tokens.css` in a future token pass
@@ -273,7 +273,7 @@ The following items were found during this verification pass. None are critical 
 **What:** Standardize all `.cont-card.ext` backgrounds from the mixed `rgba(155,89,182,…)` / `rgba(180,127,255,…)` split to the canonical `rgba(180,127,255,…)` value.
 **Why:** Small, one-pass fix that removes the only remaining two-shade inconsistency in the continuation card system.
 
-### 5. Structural Cleanup — `simulation_chernobyl-frogs.html` Double Rule (Low Effort)
+### 5. Structural Cleanup: `simulation_chernobyl-frogs.html` Double Rule (Low Effort)
 
 **What:** Merge the two `.hero-badge` CSS rules on lines 105 and 397 into a single rule.
 **Why:** Minor cleanliness; no visual impact.
@@ -282,7 +282,7 @@ The following items were found during this verification pass. None are critical 
 
 ## Final Recommendation
 
-### A — Consistency Initiative Complete
+### A: Consistency Initiative Complete
 
 **Justification:**
 
@@ -308,4 +308,4 @@ The recommended follow-up work (token file, shared badge/card stylesheets, one c
 
 ---
 
-*LyfeLabz Content-Type Consistency Initiative — Closed 2026-06-01*
+*LyfeLabz Content-Type Consistency Initiative, Closed 2026-06-01*

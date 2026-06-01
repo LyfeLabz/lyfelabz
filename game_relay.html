@@ -173,7 +173,7 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
-/* ── Visibility gate — hidden until body.ls-active is set ─────────
+/* ── Visibility gate - hidden until body.ls-active is set ─────────
    The session-check script (injected into every content page) adds
    body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
    Educators toggle this from the index or Learning Science page.
@@ -184,7 +184,7 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 }
 
 body.ls-active .ls-focus {
-  /* ── Centered card — sits between hero and first content section ── */
+  /* ── Centered card - sits between hero and first content section ── */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -440,18 +440,18 @@ body.stem-active .stem-detail {
   <span class="hero-float">⚡</span>
   <div class="hero-badge">Game</div>
   <h1>System Relay Race</h1>
-  <p>Guide a molecule through the body — one organ at a time. Answer each question correctly to keep your molecule moving. Wrong answers cost a life!</p>
+  <p>Guide a molecule through the body, one organ at a time. Answer each question correctly to keep your molecule moving. Wrong answers cost a life!</p>
 
 </div>
 
 <div class="main">
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. — Adesope et al., 2017">🧠 Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. — Dunlosky et al., 2013">💬 Elaboration</span>
-  <span class="ls-badge" data-tip="Students construct meaning themselves rather than passively receiving information from a teacher or screen. — Fiorella & Mayer, 2016">⚙️ Generative Learning</span>
-  <span class="ls-badge" data-tip="Students make decisions and take actions throughout — they drive the learning, not just receive it. — Freeman et al., 2014">🎯 Active Learning</span>
-  <span class="ls-badge" data-tip="Surprising or personally relevant questions activate intrinsic motivation, sustaining engagement longer. — Lazowski & Hulleman, 2016">✨ Curiosity Drive</span>
+  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. (Adesope et al., 2017)">🧠 Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. (Dunlosky et al., 2013)">💬 Elaboration</span>
+  <span class="ls-badge" data-tip="Students construct meaning themselves rather than passively receiving information from a teacher or screen. (Fiorella & Mayer, 2016)">⚙️ Generative Learning</span>
+  <span class="ls-badge" data-tip="Students make decisions and take actions throughout, they drive the learning, not just receive it. (Freeman et al., 2014)">🎯 Active Learning</span>
+  <span class="ls-badge" data-tip="Surprising or personally relevant questions activate intrinsic motivation, sustaining engagement longer. (Lazowski & Hulleman, 2016)">✨ Curiosity Drive</span>
 </div>
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
@@ -529,31 +529,31 @@ const JOURNEYS = [
       { organ:"Trachea", ico:"🌬️", sys:"Respiratory",
         question:"You travel down the trachea (windpipe). What keeps this tube from collapsing?",
         options:["Blood pressure","Bones from the spine","C-shaped rings of cartilage","Muscle contractions"],
-        correct:2, explanation:"C-shaped rings of cartilage in the trachea walls act like a flexible hose — they keep the airway open while still allowing the esophagus (behind it) to expand when you swallow." },
+        correct:2, explanation:"C-shaped rings of cartilage in the trachea walls act like a flexible hose; they keep the airway open while still allowing the esophagus (behind it) to expand when you swallow." },
       { organ:"Bronchioles", ico:"🌿", sys:"Respiratory",
         question:"You split into smaller and smaller tubes called bronchioles. Where are you heading?",
         options:["To the stomach","To the alveoli (tiny air sacs)","To the kidneys","To the heart"],
-        correct:1, explanation:"Bronchioles branch like an upside-down tree, getting smaller and smaller until they reach the alveoli — the microscopic air sacs where gas exchange happens." },
+        correct:1, explanation:"Bronchioles branch like an upside-down tree, getting smaller and smaller until they reach the alveoli, the microscopic air sacs where gas exchange happens." },
       { organ:"Alveoli", ico:"🔵", sys:"Respiratory",
         question:"You reach an alveolus! How do you cross from the air into the bloodstream?",
         options:["You are pumped across by the heart","You diffuse through the ultra-thin alveolus wall into a capillary","You are swallowed by a white blood cell","You wait for the lung to squeeze you through"],
-        correct:1, explanation:"The alveolus wall is only one cell thick — O₂ diffuses (moves from high to low concentration) directly through this membrane into the surrounding capillaries and binds to hemoglobin in red blood cells." },
+        correct:1, explanation:"The alveolus wall is only one cell thick, O₂ diffuses (moves from high to low concentration) directly through this membrane into the surrounding capillaries and binds to hemoglobin in red blood cells." },
       { organ:"Heart", ico:"🫀", sys:"Circulatory",
         question:"You're now in a red blood cell heading to the heart. Which side pumps you OUT to the body?",
-        options:["The right side (to the lungs)","The left side (to the body)","Both sides equally","Neither — the heart just stores blood"],
+        options:["The right side (to the lungs)","The left side (to the body)","Both sides equally","Neither, the heart just stores blood"],
         correct:1, explanation:"Oxygenated blood from the lungs arrives at the left side of the heart, which then pumps it out through the aorta to the rest of the body. The right side handles deoxygenated blood (sending it to the lungs)." },
       { organ:"Arteries", ico:"🩸", sys:"Circulatory",
         question:"You travel in an artery. What is special about arteries compared to veins?",
         options:["Arteries carry blood back to the heart","Arteries have thicker walls and carry blood AWAY from the heart","Arteries only carry deoxygenated blood","Arteries are inside bones"],
-        correct:1, explanation:"Arteries carry blood AWAY from the heart under high pressure — so they need thick, muscular walls. Veins carry blood back TO the heart at lower pressure and have thinner walls." },
+        correct:1, explanation:"Arteries carry blood AWAY from the heart under high pressure; so they need thick, muscular walls. Veins carry blood back TO the heart at lower pressure and have thinner walls." },
       { organ:"Capillary", ico:"🕸️", sys:"Circulatory",
         question:"You reach a tiny capillary next to a muscle cell. How do you leave the blood and enter the muscle?",
         options:["The heart pumps you out forcefully","You diffuse from the capillary (high O₂) into the muscle cell (low O₂)","The muscle pulls you in with a pump","You are carried by a white blood cell"],
-        correct:1, explanation:"Diffusion again! O₂ moves from high concentration (the blood) to low concentration (the muscle cell, which has been using O₂). Capillary walls are one cell thick — perfectly designed for this exchange." },
+        correct:1, explanation:"Diffusion again! O₂ moves from high concentration (the blood) to low concentration (the muscle cell, which has been using O₂). Capillary walls are one cell thick, perfectly designed for this exchange." },
       { organ:"Muscle Cell", ico:"💪", sys:"Muscular",
         question:"You've arrived at a muscle cell! What do you help the cell do?",
         options:["Produce antibodies","Make red blood cells","Release energy from glucose to power muscle contractions","Build bone tissue"],
-        correct:2, explanation:"O₂ is used in cellular respiration — the process where glucose + oxygen → energy (ATP) + CO₂ + water. The energy powers muscle contractions. CO₂ is then a waste product carried away by the blood." }
+        correct:2, explanation:"O₂ is used in cellular respiration, the process where glucose + oxygen → energy (ATP) + CO₂ + water. The energy powers muscle contractions. CO₂ is then a waste product carried away by the blood." }
     ]
   },
   {
@@ -567,35 +567,35 @@ const JOURNEYS = [
       { organ:"Mouth", ico:"👄", sys:"Digestive",
         question:"You're a glucose molecule in a piece of bread. What starts breaking down the starch in your mouth?",
         options:["Hydrochloric acid","Bile","Salivary amylase (enzyme in saliva)","Insulin"],
-        correct:2, explanation:"Saliva contains an enzyme called amylase that begins breaking down starch (long chains of glucose) into smaller sugar molecules — digestion starts the moment you chew!" },
+        correct:2, explanation:"Saliva contains an enzyme called amylase that begins breaking down starch (long chains of glucose) into smaller sugar molecules, digestion starts the moment you chew!" },
       { organ:"Esophagus", ico:"🟠", sys:"Digestive",
         question:"You travel down the esophagus. What muscle movement pushes food down (even upside down!)?",
-        options:["Gravity","Peristalsis — wave-like muscle contractions","The heart pumping","Breathing pressure"],
-        correct:1, explanation:"Peristalsis is a wave of muscle contractions that pushes food along the digestive tract. It's why you can swallow upside down — it's not gravity doing the work, it's your muscles!" },
+        options:["Gravity","Peristalsis, wave-like muscle contractions","The heart pumping","Breathing pressure"],
+        correct:1, explanation:"Peristalsis is a wave of muscle contractions that pushes food along the digestive tract. It's why you can swallow upside down, it's not gravity doing the work, it's your muscles!" },
       { organ:"Stomach", ico:"🫙", sys:"Digestive",
         question:"In the stomach, food is churned with acid. What is the main job of stomach acid (HCl)?",
         options:["Absorb glucose into the blood","Kill bacteria and break down proteins","Produce bile to digest fats","Store glucose as glycogen"],
         correct:1, explanation:"Stomach acid (hydrochloric acid, HCl) is strong enough to kill most bacteria that enter with food, and it activates enzymes that break down proteins. It turns food into a liquid called chyme." },
       { organ:"Small Intestine", ico:"🌀", sys:"Digestive",
-        question:"You reach the small intestine — the main absorption site. What structures massively increase surface area to absorb you?",
+        question:"You reach the small intestine, the main absorption site. What structures massively increase surface area to absorb you?",
         options:["Capillaries","Lymph nodes","Villi and microvilli","Stomach acids"],
-        correct:2, explanation:"The small intestine is lined with finger-like villi, and each villus is covered in even tinier microvilli. Together they create a surface area the size of a tennis court — perfect for absorbing nutrients like glucose." },
+        correct:2, explanation:"The small intestine is lined with finger-like villi, and each villus is covered in even tinier microvilli. Together they create a surface area the size of a tennis court, perfect for absorbing nutrients like glucose." },
       { organ:"Blood Vessel", ico:"🩸", sys:"Circulatory",
         question:"You cross from the small intestine into the bloodstream. Where does the blood take you first, before delivering you to the rest of the body?",
         options:["Directly to the brain","Directly to muscles","To the liver via the portal vein","To the heart first"],
-        correct:2, explanation:"All blood leaving the small intestine goes through the portal vein to the liver first. The liver acts as a processing centre — it regulates glucose levels, storing excess as glycogen or releasing it as needed." },
+        correct:2, explanation:"All blood leaving the small intestine goes through the portal vein to the liver first. The liver acts as a processing centre; it regulates glucose levels, storing excess as glycogen or releasing it as needed." },
       { organ:"Liver", ico:"🟫", sys:"Digestive",
         question:"The liver detects that blood glucose is normal. What does it do with the extra glucose?",
         options:["Sends it to the kidneys to be excreted","Converts it to glycogen and stores it","Converts it to red blood cells","Destroys it to prevent overload"],
-        correct:1, explanation:"The liver converts excess glucose to glycogen for storage — like a battery saving energy for later. When blood glucose drops (e.g. between meals), the liver converts glycogen back to glucose and releases it." },
+        correct:1, explanation:"The liver converts excess glucose to glycogen for storage, like a battery saving energy for later. When blood glucose drops (e.g. between meals), the liver converts glycogen back to glucose and releases it." },
       { organ:"Heart", ico:"🫀", sys:"Circulatory",
         question:"You're released from the liver and reach the heart. How many times does the heart beat per day to keep pumping you around?",
         options:["About 1,000 times","About 10,000 times","About 100,000 times","About 1,000,000 times"],
-        correct:2, explanation:"The heart beats about 100,000 times per day — pumping roughly 7,000 litres of blood. It never takes a break, working for your entire lifetime to keep glucose, oxygen, and nutrients circulating." },
+        correct:2, explanation:"The heart beats about 100,000 times per day, pumping roughly 7,000 litres of blood. It never takes a break, working for your entire lifetime to keep glucose, oxygen, and nutrients circulating." },
       { organ:"Body Cell", ico:"⚡", sys:"Circulatory",
         question:"You arrive at a body cell. Inside the cell, you are used in cellular respiration. What are the products when glucose is combined with oxygen?",
         options:["Protein and water","Carbon dioxide, water, and energy (ATP)","More glucose and oxygen","Glycogen and bile"],
-        correct:1, explanation:"Cellular respiration: glucose + oxygen → carbon dioxide + water + ATP (energy). The ATP powers everything the cell does. CO₂ and water are the waste products — CO₂ is exhaled by the lungs." }
+        correct:1, explanation:"Cellular respiration: glucose + oxygen → carbon dioxide + water + ATP (energy). The ATP powers everything the cell does. CO₂ and water are the waste products, CO₂ is exhaled by the lungs." }
     ]
   },
   {
@@ -609,27 +609,27 @@ const JOURNEYS = [
       { organ:"Bone Marrow", ico:"🔴", sys:"Skeletal",
         question:"You're a brand-new white blood cell born in bone marrow. Where exactly in the body is red bone marrow found?",
         options:["In the brain","In the liver","Inside large bones like the femur and sternum","In the lymph nodes"],
-        correct:2, explanation:"Red bone marrow is found inside large, spongy bones — like the femur (thigh bone), sternum (breastbone), and hip bones. It produces all blood cells — red cells, white cells, and platelets." },
+        correct:2, explanation:"Red bone marrow is found inside large, spongy bones, like the femur (thigh bone), sternum (breastbone), and hip bones. It produces all blood cells, red cells, white cells, and platelets." },
       { organ:"Bloodstream", ico:"🩸", sys:"Circulatory",
         question:"You enter the bloodstream to patrol the body. How many white blood cells does an average person have?",
         options:["About 10,000","About 1 million","About 2 trillion","About 25 billion"],
-        correct:2, explanation:"The human body has about 2 trillion white blood cells — roughly 4,000–11,000 per microlitre of blood. During an infection, this number can temporarily spike to 10× normal." },
+        correct:2, explanation:"The human body has about 2 trillion white blood cells, roughly 4,000–11,000 per microlitre of blood. During an infection, this number can temporarily spike to 10× normal." },
       { organ:"Lymph Node", ico:"🛡️", sys:"Immune",
         question:"You patrol through a lymph node. What is the main job of a lymph node?",
         options:["Produce red blood cells","Filter lymph fluid and trap pathogens for destruction","Produce digestive enzymes","Store glucose as glycogen"],
-        correct:1, explanation:"Lymph nodes are filtering stations packed with immune cells. As lymph fluid flows through, lymph nodes trap bacteria, viruses, and abnormal cells — and the immune cells inside destroy them." },
+        correct:1, explanation:"Lymph nodes are filtering stations packed with immune cells. As lymph fluid flows through, lymph nodes trap bacteria, viruses, and abnormal cells; and the immune cells inside destroy them." },
       { organ:"Tissue", ico:"🔬", sys:"Immune",
-        question:"You detect a chemical signal from an infected tissue — bacteria have invaded! What is this chemical alarm called?",
+        question:"You detect a chemical signal from an infected tissue, bacteria have invaded! What is this chemical alarm called?",
         options:["Adrenaline","Insulin","Cytokines (chemical messengers)","Hemoglobin"],
-        correct:2, explanation:"Infected and damaged cells release cytokines — chemical messengers that signal 'danger!' to nearby immune cells. Cytokines recruit white blood cells to the infection site, like an alarm calling backup." },
+        correct:2, explanation:"Infected and damaged cells release cytokines, chemical messengers that signal 'danger!' to nearby immune cells. Cytokines recruit white blood cells to the infection site, like an alarm calling backup." },
       { organ:"Infection Site", ico:"💥", sys:"Immune",
-        question:"You arrive at the bacteria. You are a neutrophil — what do you do to destroy the invader?",
+        question:"You arrive at the bacteria. You are a neutrophil, what do you do to destroy the invader?",
         options:["Produce antibodies to flag it","Engulf (eat) it in a process called phagocytosis","Ask B-cells to handle it","Produce more red blood cells"],
-        correct:1, explanation:"Neutrophils are phagocytes — they literally engulf and digest bacteria. One neutrophil can eat up to 20 bacteria before dying. The 'pus' you see in an infected wound is mostly dead neutrophils that died in battle." },
+        correct:1, explanation:"Neutrophils are phagocytes; they literally engulf and digest bacteria. One neutrophil can eat up to 20 bacteria before dying. The 'pus' you see in an infected wound is mostly dead neutrophils that died in battle." },
       { organ:"Thymus", ico:"🌿", sys:"Immune",
         question:"Meanwhile, T-cells are being trained in the thymus. What happens to T-cells that would attack the body's OWN cells?",
-        options:["They are sent to fight infections","They are allowed to circulate but monitored","They are destroyed — about 95% of T-cells are eliminated here","They become B-cells instead"],
-        correct:2, explanation:"The thymus ruthlessly destroys T-cells that react to the body's own proteins — about 95% of T-cells don't survive training! This prevents the immune system from attacking the body itself (autoimmune disease)." },
+        options:["They are sent to fight infections","They are allowed to circulate but monitored","They are destroyed, about 95% of T-cells are eliminated here","They become B-cells instead"],
+        correct:2, explanation:"The thymus ruthlessly destroys T-cells that react to the body's own proteins, about 95% of T-cells don't survive training! This prevents the immune system from attacking the body itself (autoimmune disease)." },
       { organ:"B-Cell / Antibodies", ico:"🔑", sys:"Immune",
         question:"A B-cell produces antibodies to mark the bacteria. What do antibodies do?",
         options:["Produce new white blood cells","Kill viruses directly by heating them","Bind to specific antigens on pathogens, flagging them for destruction","Store nutrients in the blood"],

@@ -33,7 +33,7 @@
   --text-secondary: #b8c8d8;
   --text-muted:     #7a8fa6;
 
-  /* Eclipse astronomy palette — matches lesson_eclipses.html */
+  /* Eclipse astronomy palette - matches lesson_eclipses.html */
   --accent:         #7a8fc8;
   --accent-dim:     rgba(122,143,200,0.15);
   --accent-glow:    rgba(122,143,200,0.30);
@@ -48,7 +48,7 @@
   --red:            #e87070;
   --red-dim:        rgba(232,112,112,0.15);
 
-  /* Simulation accent — orange (consistent with other sims) */
+  /* Simulation accent - orange (consistent with other sims) */
   --orange:         #f5a028;
   --orange-dim:     rgba(245,160,40,0.12);
   --orange-glow:    rgba(245,160,40,0.35);
@@ -124,7 +124,7 @@ nav {
 .nav-back:hover { background: rgba(122,143,200,0.25); border-color: rgba(122,143,200,0.7); }
 
 /* =========================================================
-   BADGE BARS — LS / STE
+   BADGE BARS, LS / STE
    ========================================================= */
 .badge-bar {
   display: none; flex-wrap: wrap; gap: 0.5rem;
@@ -302,17 +302,17 @@ section:nth-child(even) { background: var(--bg-secondary); }
 .callout-card-body strong { color: var(--text-primary); font-weight: 800; }
 
 /* =========================================================
-   OBSERVATION CARD REVEAL SYSTEM — Floatlandia pattern
+   OBSERVATION CARD REVEAL SYSTEM, Floatlandia pattern
    ========================================================= */
 
-/* Base state — dimmed, clickable */
+/* Base state - dimmed, clickable */
 .observation-card {
   cursor: pointer;
   user-select: none;
   transition: all 0.22s ease;
 }
 
-/* Hover on locked card — lift + per-theme glow */
+/* Hover on locked card - lift + per-theme glow */
 .observation-card.locked:hover {
   transform: translateY(-2px);
   border-color: var(--border-light);
@@ -322,7 +322,7 @@ section:nth-child(even) { background: var(--bg-secondary); }
 .callout-card.lunar.locked:hover      { box-shadow: 0 2px 10px rgba(0,0,0,0.2), 0 0 14px rgba(122,143,200,0.14); }
 .callout-card.no-eclipse.locked:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.2), 0 0 14px rgba(59,200,232,0.12); }
 
-/* Lock content scales on hover — Floatlandia exact */
+/* Lock content scales on hover - Floatlandia exact */
 .observation-card.locked:hover .obs-lock-content { transform: scale(1.06); }
 .callout-card.solar.locked:hover      .obs-lock-content { color: var(--gold); }
 .callout-card.lunar.locked:hover      .obs-lock-content { color: var(--accent2); }
@@ -339,7 +339,7 @@ section:nth-child(even) { background: var(--bg-secondary); }
   opacity: 0.62;
 }
 
-/* Lock overlay — Floatlandia structure */
+/* Lock overlay - Floatlandia structure */
 .obs-lock-overlay {
   position: absolute; inset: 0;
   background: rgba(18, 24, 36, 0.74);
@@ -445,7 +445,7 @@ section:nth-child(even) { background: var(--bg-secondary); }
 .mode-hint span.visible { display: inline; }
 
 /* =========================================================
-   LAB PANEL — placeholder shell
+   LAB PANEL, placeholder shell
    ========================================================= */
 .lab-panel {
   background: var(--bg-card); border: 1px solid var(--border);
@@ -514,17 +514,17 @@ section:nth-child(even) { background: var(--bg-secondary); }
 .sim-result.lunar   { background: rgba(122,143,200,0.09); border: 1px solid rgba(122,143,200,0.40); color: rgba(160,185,240,1.0); }
 .sim-result-icon    { font-size: 1.5rem; flex-shrink: 0; }
 
-/* Moon Height controls — base transitions so dim/undim both animate */
+/* Moon Height controls - base transitions so dim/undim both animate */
 #height-control-group .control-group-label { transition: opacity 0.28s ease; }
 #height-control-group .ctrl-btn           { transition: opacity 0.28s ease, border-color 0.28s ease; }
 
-/* Muted state — slightly dimmed, still readable */
+/* Muted state - slightly dimmed, still readable */
 .control-group.height-muted .control-group-label { opacity: 0.42; }
 .control-group.height-muted .ctrl-btn {
   opacity: 0.40; cursor: not-allowed; pointer-events: none;
 }
 
-/* Contextual note — Micropass 3 */
+/* Contextual note - Micropass 3 */
 .height-disabled-note {
   display: none; margin-top: 0.5rem;
   font-size: 0.76rem; line-height: 1.5; color: var(--text-muted);
@@ -596,7 +596,7 @@ section:nth-child(even) { background: var(--bg-secondary); }
 .lunar-card   .challenge-success,
 .neutral-card .challenge-success { background: transparent; border: 0; }
 
-/* Micropass 4.5B — solved card transforms into a Discovery Card */
+/* Micropass 4.5B - solved card transforms into a Discovery Card */
 .challenge-card.solved {
   border-color: rgba(46,204,113,0.4);
   box-shadow: 0 0 14px rgba(46,204,113,0.08);
@@ -931,7 +931,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
 }
 
 /* =========================================================
-   CURRENT MISSION PANEL — Micropass 2
+   CURRENT MISSION PANEL, Micropass 2
    ========================================================= */
 .mission-panel {
   padding: 0.85rem 1.25rem 0.85rem 1.2rem;
@@ -982,7 +982,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
 }
 
 /* =========================================================
-   STAGE PROGRESS TRACKER — Micropass 1
+   STAGE PROGRESS TRACKER, Micropass 1
    ========================================================= */
 .stage-tracker {
   display: flex; align-items: stretch;
@@ -1048,7 +1048,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
 }
 .challenge-card.unlock-pulse { animation: unlockPulse 0.85s ease forwards; }
 /* =========================================================
-   PROGRESS BAR — Floatlandia pattern (Micropass 1)
+   PROGRESS BAR, Floatlandia pattern (Micropass 1)
    ========================================================= */
 .progress-wrap { max-width: 960px; margin: 1rem auto 1.4rem; padding: 0 1.4rem; }
 .progress-steps {
@@ -1077,11 +1077,11 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
 }
 
 /* =========================================================
-   PHASE LOCK SYSTEM — Floatlandia consistency pass (Micropass 3)
+   PHASE LOCK SYSTEM, Floatlandia consistency pass (Micropass 3)
    Unifies the lock language across Discovery, Deep Time, and Quiz.
    ========================================================= */
 
-/* Section dim while locked — same opacity/desaturation everywhere. */
+/* Section dim while locked - same opacity/desaturation everywhere. */
 .phase-locked {
   opacity: 0.36;
   pointer-events: none;
@@ -1145,7 +1145,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
   color: var(--text-secondary);
 }
 
-/* One-shot reveal flash when a section unlocks — gentle lift + fade.       */
+/* One-shot reveal flash when a section unlocks - gentle lift + fade.       */
 @keyframes phaseReveal {
   0%   { opacity: 0.55; transform: translateY(6px); }
   100% { opacity: 1;    transform: translateY(0); }
@@ -1308,7 +1308,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
   transition: width 0.18s linear;
 }
 
-/* Milestone strip — Micropass 4.5D */
+/* Milestone strip - Micropass 4.5D */
 .dt-milestones {
   display: flex; justify-content: space-between; align-items: flex-start;
   gap: 0.5rem;
@@ -1336,7 +1336,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
   transform: scale(1.18);
 }
 
-/* Model note — Micropass 4.5D */
+/* Model note - Micropass 4.5D */
 .dt-model-note {
   font-size: 0.75rem;
   color: rgba(232,237,242,0.5);
@@ -1345,7 +1345,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
   font-style: italic;
 }
 
-/* Time label inside scene meta — Micropass 4.5D */
+/* Time label inside scene meta - Micropass 4.5D */
 .dt-time-label {
   color: var(--accent2);
   font-weight: 800;
@@ -1441,7 +1441,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
 }
 
 /* =========================================================
-   WONDER MOMENT — Scene 4 corona breath (Micropass 4)
+   WONDER MOMENT, Scene 4 corona breath (Micropass 4)
    A single, restrained brightening of the solar corona at the
    moment the Moon settles too small to ever fully cover the Sun.
    ========================================================= */
@@ -1547,7 +1547,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
 
 
 /* =========================================================
-   DISCOVERY SUMMARY — Micropass 5
+   DISCOVERY SUMMARY, Micropass 5
    ========================================================= */
 #discovery {
   transition: opacity 0.65s ease, filter 0.65s ease;
@@ -1557,7 +1557,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
   filter: saturate(0.55);
 }
 
-/* One-shot reveal animation — class added by JS only on live unlock */
+/* One-shot reveal animation - class added by JS only on live unlock */
 .discovery-grid.discovery-reveal-animate {
   animation: discoveryReveal 0.65s ease both;
 }
@@ -1566,7 +1566,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
   to   { opacity: 1;    transform: none; }
 }
 
-/* Completion check badge on each discovery card — inline in title header (Micropass 4.5C) */
+/* Completion check badge on each discovery card - inline in title header (Micropass 4.5C) */
 .discovery-check {
   display: none;
   margin-left: auto;
@@ -1604,14 +1604,14 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
 
 <!-- ── BADGE BARS ────────────────────────────────────────── -->
 <div class="badge-bar stem-bar">
-  <span class="badge green">MS-ESS1-1<span class="badge-tip">ESS1.B: Earth and the Solar System — scale, properties, and motions of objects in the solar system. Eclipses arise from the geometric relationship among the Sun, Earth, and Moon.</span></span>
-  <span class="badge green">SP2: Modelling<span class="badge-tip">Science Practice 2: Developing and using models — students manipulate a physical model of the Sun-Earth-Moon system to test conditions for solar and lunar eclipses.</span></span>
-  <span class="badge green">SP4: Analyzing Data<span class="badge-tip">Science Practice 4: Analyzing and interpreting data — students observe outcomes across multiple conditions and identify the pattern that produces an eclipse.</span></span>
+  <span class="badge green">MS-ESS1-1<span class="badge-tip">ESS1.B: Earth and the Solar System, scale, properties, and motions of objects in the solar system. Eclipses arise from the geometric relationship among the Sun, Earth, and Moon.</span></span>
+  <span class="badge green">SP2: Modelling<span class="badge-tip">Science Practice 2: Developing and using models, students manipulate a physical model of the Sun-Earth-Moon system to test conditions for solar and lunar eclipses.</span></span>
+  <span class="badge green">SP4: Analyzing Data<span class="badge-tip">Science Practice 4: Analyzing and interpreting data, students observe outcomes across multiple conditions and identify the pattern that produces an eclipse.</span></span>
 </div>
 <div class="badge-bar ls-bar">
-  <span class="badge teal">Spatial Reasoning<span class="badge-tip">Spatial manipulation of a 3D orbital geometry builds mental models that text alone cannot — direct manipulation of the SVG model activates visuospatial processing. (Hegarty &amp; Waller, 2005)</span></span>
-  <span class="badge teal">Productive Struggle<span class="badge-tip">Students who discover the eclipse condition through trial and error show deeper conceptual retention than those who are told the answer. (Kapur, 2016 — Productive Failure)</span></span>
-  <span class="badge teal">Guided Inquiry<span class="badge-tip">Structured challenges with feedback scaffold inquiry while keeping cognitive load manageable — key for middle school learners. (Kirschner et al., 2006)</span></span>
+  <span class="badge teal">Spatial Reasoning<span class="badge-tip">Spatial manipulation of a 3D orbital geometry builds mental models that text alone cannot, direct manipulation of the SVG model activates visuospatial processing. (Hegarty &amp; Waller, 2005)</span></span>
+  <span class="badge teal">Productive Struggle<span class="badge-tip">Students who discover the eclipse condition through trial and error show deeper conceptual retention than those who are told the answer. (Kapur, 2016, Productive Failure)</span></span>
+  <span class="badge teal">Guided Inquiry<span class="badge-tip">Structured challenges with feedback scaffold inquiry while keeping cognitive load manageable, key for middle school learners. (Kirschner et al., 2006)</span></span>
 </div>
 
 <!-- ── HERO ──────────────────────────────────────────────── -->
@@ -1663,7 +1663,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         <span class="callout-card-label">Solar Eclipse</span>
         <div class="callout-card-title">New Moon + Node</div>
         <div class="callout-card-body">
-          The Moon must be <strong>between the Sun and Earth</strong> — that is a new moon. It also must be <strong>near a node</strong>, the point where its tilted orbit crosses Earth's orbital plane. Both must be true at the same time.
+          The Moon must be <strong>between the Sun and Earth</strong>; that is a new moon. It also must be <strong>near a node</strong>, the point where its tilted orbit crosses Earth's orbital plane. Both must be true at the same time.
         </div>
       </div>
       <div class="callout-card lunar observation-card locked" id="obs-lunar" onclick="revealObservation(this)">
@@ -1676,7 +1676,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         <span class="callout-card-label">Lunar Eclipse</span>
         <div class="callout-card-title">Full Moon + Node</div>
         <div class="callout-card-body">
-          Earth must be <strong>between the Sun and Moon</strong> — that is a full moon. The Moon must also be <strong>near a node</strong> so Earth's shadow actually reaches it. Phase alone is not enough.
+          Earth must be <strong>between the Sun and Moon</strong>; that is a full moon. The Moon must also be <strong>near a node</strong> so Earth's shadow actually reaches it. Phase alone is not enough.
         </div>
       </div>
       <div class="callout-card no-eclipse observation-card locked" id="obs-nomiss" onclick="revealObservation(this)">
@@ -1689,7 +1689,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         <span class="callout-card-label">Most Months</span>
         <div class="callout-card-title">Shadow Misses</div>
         <div class="callout-card-body">
-          The Moon's orbit is tilted about <strong>5 degrees</strong> relative to Earth's orbital plane. Most new and full moons, the Moon is slightly above or below the plane — and the shadow passes without hitting.
+          The Moon's orbit is tilted about <strong>5 degrees</strong> relative to Earth's orbital plane. Most new and full moons, the Moon is slightly above or below the plane; and the shadow passes without hitting.
         </div>
       </div>
     </div>
@@ -1723,18 +1723,18 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
     <!-- Controls + Diagram -->
     <div class="lab-panel">
 
-      <!-- Current Mission Panel — Micropass 2 -->
+      <!-- Current Mission Panel - Micropass 2 -->
       <div id="mission-panel" class="mission-panel stage-solar">
         <!-- Content injected by updateMissionPanel() -->
       </div>
 
-      <!-- Lab gate message — hidden once all three obs cards are revealed -->
+      <!-- Lab gate message - hidden once all three obs cards are revealed -->
       <div id="obs-gate-msg">
         <span class="obs-gate-icon">&#128274;</span>
         Unlock the three observation cards above to begin the lab.
       </div>
 
-      <!-- Lab controls — gated until obs cards revealed -->
+      <!-- Lab controls - gated until obs cards revealed -->
       <div id="lab-controls-wrap" class="lab-controls-locked">
 
       <!-- Control row -->
@@ -1770,10 +1770,10 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
       </div><!-- /control-row -->
       </div><!-- /lab-controls-wrap -->
 
-      <!-- SVG diagram placeholder — replaced in Micropass 3 -->
+      <!-- SVG diagram placeholder - replaced in Micropass 3 -->
       <div class="sim-stage-wrap">
       <div class="sim-stage" id="sim-stage">
-        <!-- Idle placeholder SVG — full diagram built in Micropass 3 -->
+        <!-- Idle placeholder SVG - full diagram built in Micropass 3 -->
         <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:640px; opacity:0.35;">
           <defs>
             <radialGradient id="idS" cx="50%" cy="50%" r="50%">
@@ -1791,7 +1791,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
           <text x="320" y="117" text-anchor="middle" font-size="13" fill="rgba(122,143,200,.30)" font-family="Nunito,sans-serif">Select all three controls above to begin</text>
         </svg>
       </div><!-- /sim-stage -->
-      <!-- Eclipse payoff overlay — sibling of sim-stage so innerHTML wipes don't touch it -->
+      <!-- Eclipse payoff overlay - sibling of sim-stage so innerHTML wipes don't touch it -->
       <div id="eclipse-payoff" class="eclipse-payoff" aria-hidden="true">
         <div class="eclipse-payoff-badge" id="eclipse-payoff-text"></div>
       </div>
@@ -1819,7 +1819,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         <span class="counter-dot"></span>
         <span id="counter-text">0 / 3 completed</span>
       </span>
-      <!-- Stage Progress Tracker — Micropass 1 -->
+      <!-- Stage Progress Tracker - Micropass 1 -->
       <div class="stage-tracker" id="stage-tracker">
         <div class="stage-step current" id="stage-step-1">
           <div class="stage-num" id="stage-num-1">1</div>
@@ -1838,7 +1838,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
 
     <div class="challenge-grid">
 
-      <!-- Challenge 1 — Solar Eclipse -->
+      <!-- Challenge 1 - Solar Eclipse -->
       <div class="challenge-card solar-card" id="ch1">
         <span class="challenge-num">Challenge 1</span>
         <div class="challenge-q">Create a total solar eclipse.</div>
@@ -1851,7 +1851,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         </div>
       </div>
 
-      <!-- Challenge 2 — Lunar Eclipse -->
+      <!-- Challenge 2 - Lunar Eclipse -->
       <div class="challenge-card lunar-card locked" id="ch2">
         <span class="challenge-num">Challenge 2</span>
         <span class="challenge-locked-badge">Locked</span>
@@ -1865,13 +1865,13 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         </div>
       </div>
 
-      <!-- Challenge 3 — No Eclipse -->
+      <!-- Challenge 3 - No Eclipse -->
       <div class="challenge-card neutral-card locked" id="ch3">
         <span class="challenge-num">Challenge 3</span>
         <span class="challenge-locked-badge">Locked</span>
         <div class="challenge-q">Create a month with no eclipse.</div>
         <div class="challenge-hint">
-          The right phase is there — but the shadow still misses. Show what happens most months when the Moon is above or below the orbital plane.
+          The right phase is there; but the shadow still misses. Show what happens most months when the Moon is above or below the orbital plane.
         </div>
         <div class="challenge-success" id="ch3-success">
           <div class="success-head">No Eclipse Month Achieved</div>
@@ -1917,8 +1917,8 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
       <div class="discovery-card phase-card">
         <div class="discovery-card-title">Moon Phase<span class="discovery-check">&#10003;</span></div>
         <div class="discovery-card-body">
-          In Challenge 1 you needed a <strong>new moon</strong> — the only phase that puts the Moon between the Sun and Earth.<br>
-          In Challenge 2 you needed a <strong>full moon</strong> — the only phase that puts Earth between the Sun and Moon.<br>
+          In Challenge 1 you needed a <strong>new moon</strong>, the only phase that puts the Moon between the Sun and Earth.<br>
+          In Challenge 2 you needed a <strong>full moon</strong>, the only phase that puts Earth between the Sun and Moon.<br>
           Quarter moon failed both. The geometry has to be right from the start.
         </div>
       </div>
@@ -1926,9 +1926,9 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
       <div class="discovery-card node-card">
         <div class="discovery-card-title">Orbital Nodes<span class="discovery-check">&#10003;</span></div>
         <div class="discovery-card-body">
-          In Challenge 3 the phase was correct — but the shadow still missed.<br>
+          In Challenge 3 the phase was correct; but the shadow still missed.<br>
           The Moon's orbit is tilted about <strong>5 degrees</strong>, so it usually passes above or below the orbital plane. The shadow misses Earth or the Moon entirely.<br>
-          Eclipses only happen when the Moon is near a <strong>node</strong> — one of two places where its orbit crosses the plane.
+          Eclipses only happen when the Moon is near a <strong>node</strong>, one of two places where its orbit crosses the plane.
         </div>
       </div>
 
@@ -1936,8 +1936,8 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         <div class="discovery-card-title">Shadow Zones<span class="discovery-check">&#10003;</span></div>
         <div class="discovery-card-body">
           Even when an eclipse happens, not everyone sees the same thing.<br>
-          The <strong>umbra</strong> is the darkest part of the shadow — observers inside it see a total eclipse.<br>
-          The <strong>penumbra</strong> is the outer shadow — observers there see only a partial eclipse.<br>
+          The <strong>umbra</strong> is the darkest part of the shadow, observers inside it see a total eclipse.<br>
+          The <strong>penumbra</strong> is the outer shadow, observers there see only a partial eclipse.<br>
           Your location relative to the shadow determines what you experience.
         </div>
       </div>
@@ -1964,7 +1964,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
     </div>
     <span class="section-label">Phase 3</span>
     <h2 class="section-title">Deep Time</h2>
-    <p class="section-desc">What looks permanent in the sky is only temporary on geologic time scales. The Moon is slowly drifting away from Earth — and that quietly changes what eclipses look like.</p>
+    <p class="section-desc">What looks permanent in the sky is only temporary on geologic time scales. The Moon is slowly drifting away from Earth; and that quietly changes what eclipses look like.</p>
 
     <div class="deeptime-cinema" id="deeptime-cinema">
 
@@ -2068,7 +2068,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         <div class="dt-timeline-fill" id="dt-timeline-fill"></div>
       </div>
 
-      <!-- Milestone strip — Micropass 4.5D -->
+      <!-- Milestone strip - Micropass 4.5D -->
       <div class="dt-milestones" id="dt-milestones" aria-hidden="true">
         <div class="dt-milestone" data-scene="0">
           <span class="dt-milestone-dot"></span>
@@ -2088,7 +2088,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         </div>
       </div>
 
-      <!-- Model note — Micropass 4.5D -->
+      <!-- Model note - Micropass 4.5D -->
       <p class="dt-model-note">Model note: This animation compresses hundreds of millions of years into a few seconds. Dates are estimates based on the Moon moving away from Earth about 3.8&nbsp;cm per year.</p>
 
       <!-- Scene meta + text -->
@@ -2269,7 +2269,7 @@ function setMode(mode) {
 })();
 </script>
 
-<!-- Simulation engine — Micropass 3 -->
+<!-- Simulation engine - Micropass 3 -->
 <script>
 /* ── STATE ─────────────────────────────────────────────── */
 var simState = { eclipseType:null, phase:null, height:null, ch1Solved:false, ch2Solved:false, ch3Solved:false };
@@ -2292,7 +2292,7 @@ function updateHeightControls() {
     return;
   }
 
-  // Height irrelevant — mute controls and show contextual note
+  // Height irrelevant - mute controls and show contextual note
   hGroup.classList.add('height-muted');
   hNote.classList.remove('note-quarter', 'note-solar-full', 'note-lunar-new');
 
@@ -2470,20 +2470,20 @@ function buildSVG(type, phase, height) {
     // Earth's shadow goes right, Moon is inside it
     // Penumbra (wide, soft)
     svg += '<polygon points="'+(EX+ER)+','+(EY-38)+' '+W+','+(EY-24)+' '+W+','+(EY+24)+' '+(EX+ER)+','+(EY+38)+'" fill="rgba(55,55,100,0.10)"/>';
-    // Umbra (narrower, darker — Moon fits inside it)
+    // Umbra (narrower, darker - Moon fits inside it)
     svg += '<polygon points="'+(EX+ER)+','+(EY-22)+' '+(mx+MR+8)+','+(EY-9)+' '+(mx+MR+8)+','+(EY+9)+' '+(EX+ER)+','+(EY+22)+'" fill="rgba(8,8,35,0.62)"/>';
 
   } else if (out === 'lunar-miss') {
-    // Earth's shadow goes horizontally right — Moon above/below
+    // Earth's shadow goes horizontally right - Moon above/below
     // Penumbra
     svg += '<polygon points="'+(EX+ER)+','+(EY-38)+' '+W+','+(EY-24)+' '+W+','+(EY+24)+' '+(EX+ER)+','+(EY+38)+'" fill="rgba(55,55,100,0.10)"/>';
-    // Umbra (horizontal — does NOT reach Moon)
+    // Umbra (horizontal - does NOT reach Moon)
     svg += '<polygon points="'+(EX+ER)+','+(EY-22)+' '+(W-20)+','+(EY-9)+' '+(W-20)+','+(EY+9)+' '+(EX+ER)+','+(EY+22)+'" fill="rgba(8,8,35,0.55)"/>';
     // Dashed guide: Moon → orbital plane
     svg += '<line x1="'+mx+'" y1="'+my+'" x2="'+mx+'" y2="'+CY+'" stroke="rgba(255,195,70,0.40)" stroke-width="1.2" stroke-dasharray="4,3"/>';
 
   } else if (out === 'lunar-wrong-new') {
-    // Earth's shadow goes right — Moon is to the LEFT of Earth, not in shadow
+    // Earth's shadow goes right - Moon is to the LEFT of Earth, not in shadow
     svg += '<polygon points="'+(EX+ER)+','+(EY-22)+' '+(W-20)+','+(EY-9)+' '+(W-20)+','+(EY+9)+' '+(EX+ER)+','+(EY+22)+'" fill="rgba(8,8,35,0.45)"/>';
   }
 
@@ -2500,7 +2500,7 @@ function buildSVG(type, phase, height) {
   // Moon if RIGHT of Earth or side (solar-full, lunar-full, quarter)
   if (mx >= EX - ER) svg += moonCircle(mx, my, phase);
 
-  // Sun (always drawn last among bodies — appears on top)
+  // Sun (always drawn last among bodies - appears on top)
   svg += '<circle cx="'+SX+'" cy="'+SY+'" r="'+(SR+16)+'" fill="url(#gSunHalo)"/>';
   svg += '<circle cx="'+SX+'" cy="'+SY+'" r="'+SR+'" fill="url(#gSun)"/>';
 
@@ -2602,7 +2602,7 @@ function renderSim() {
   }, 130);
   setFeedback(t, p, h);
 
-  // Eclipse payoff — trigger only when transitioning INTO an eclipse state
+  // Eclipse payoff - trigger only when transitioning INTO an eclipse state
   var stateKey = t + '|' + p + '|' + h;
   var isEclipse = (stateKey === 'solar|new|node' || stateKey === 'lunar|full|node');
   if (isEclipse && stateKey !== _lastPayoffState) {
@@ -2630,9 +2630,9 @@ function updateCounter() {
   }
 }
 
-/* ── PROGRESS TRACKER — Micropass 1 ─────────────────────── */
+/* ── PROGRESS TRACKER - Micropass 1 ─────────────────────── */
 
-/* Stage mission content — Micropass 2 */
+/* Stage mission content - Micropass 2 */
 var STAGE_MISSIONS = [
   {
     stageClass: 'stage-solar',
@@ -2723,7 +2723,7 @@ function updateProgressTracker() {
       num.textContent = i + 1;
     }
   }
-  // Keep mission panel in sync — Micropass 2
+  // Keep mission panel in sync - Micropass 2
   updateMissionPanel();
 }
 
@@ -2746,14 +2746,14 @@ function unlockNextStage(justSolvedIndex) {
   }, 300);
 }
 
-/* ── DISCOVERY UNLOCK — Micropass 5 ─────────────────────── */
+/* ── DISCOVERY UNLOCK - Micropass 5 ─────────────────────── */
 function unlockDiscovery(silent) {
   var sec = document.getElementById('discovery');
   if (!sec || sec.classList.contains('discovery-unlocked')) return;
   sec.classList.remove('discovery-locked');
   sec.classList.add('discovery-unlocked');
   if (!silent) {
-    // One-shot reveal animation on the grid — only fires on live unlock
+    // One-shot reveal animation on the grid - only fires on live unlock
     var grid = sec.querySelector('.discovery-grid');
     if (grid) {
       grid.classList.remove('discovery-reveal-animate');
@@ -2767,7 +2767,7 @@ function unlockDiscovery(silent) {
 /* ── CHALLENGE CHECKER ─────────────────────────────────── */
 function checkChallenges() {
   var t=simState.eclipseType, p=simState.phase, h=simState.height;
-  // Ch 1 — Solar eclipse (always checkable)
+  // Ch 1 - Solar eclipse (always checkable)
   if (!simState.ch1Solved && t==='solar' && p==='new' && h==='node') {
     simState.ch1Solved = true;
     document.getElementById('ch1-success').classList.add('show');
@@ -2777,7 +2777,7 @@ function checkChallenges() {
     setTimeout(function(){ toast('Challenge 1 complete \u2014 solar eclipse!', 'success'); }, 150);
     unlockNextStage(1);
   }
-  // Ch 2 — Lunar eclipse (only if ch1 solved)
+  // Ch 2 - Lunar eclipse (only if ch1 solved)
   if (simState.ch1Solved && !simState.ch2Solved && t==='lunar' && p==='full' && h==='node') {
     simState.ch2Solved = true;
     document.getElementById('ch2-success').classList.add('show');
@@ -2787,7 +2787,7 @@ function checkChallenges() {
     setTimeout(function(){ toast('Challenge 2 complete \u2014 lunar eclipse!', 'success'); }, 150);
     unlockNextStage(2);
   }
-  // Ch 3 — Shadow miss (only if ch2 solved)
+  // Ch 3 - Shadow miss (only if ch2 solved)
   var solarMiss = (t==='solar' && p==='new' && (h==='above'||h==='below'));
   var lunarMiss = (t==='lunar' && p==='full' && (h==='above'||h==='below'));
   if (simState.ch2Solved && !simState.ch3Solved && (solarMiss||lunarMiss)) {
@@ -2824,7 +2824,7 @@ function restoreState() {
     if (s.ch2Solved) { simState.ch2Solved=true; document.getElementById('ch2-success').classList.add('show'); document.getElementById('ch2').classList.add('solved'); }
     if (s.ch3Solved) { simState.ch3Solved=true; document.getElementById('ch3-success').classList.add('show'); document.getElementById('ch3').classList.add('solved'); }
     updateCounter();
-    // Restore locked/unlocked state silently — no toasts
+    // Restore locked/unlocked state silently - no toasts
     unlockFromRestore();
     if (s.mode==='classroom') setMode('classroom');
     if (s.eclipseType) setEclipseType(s.eclipseType);
@@ -2836,7 +2836,7 @@ function restoreState() {
   } catch(e) {}
 }
 
-/* Silent restore of unlock state — called by restoreState, no toasts */
+/* Silent restore of unlock state - called by restoreState, no toasts */
 function unlockFromRestore() {
   if (simState.ch1Solved) {
     var ch2 = document.getElementById('ch2');
@@ -2861,7 +2861,7 @@ function unlockFromRestore() {
 }
 
 /* ──────────────────────────────────────────────────────────
-   PHASE PROGRESSION ENGINE — Micropass 1
+   PHASE PROGRESSION ENGINE, Micropass 1
    Drives the 4-step progress bar and gates Deep Time + Quiz.
    ────────────────────────────────────────────────────────── */
 var PHASE_KEY = 'eclipse_sim_phase_v1';
@@ -2932,7 +2932,7 @@ function flashSectionReveal(sec) {
 }
 
 /* ──────────────────────────────────────────────────────────
-   DEEP TIME ANIMATION ENGINE — Micropass 2
+   DEEP TIME ANIMATION ENGINE, Micropass 2
    Required Phase-3 cinematic before the quiz unlocks.
    ────────────────────────────────────────────────────────── */
 var DEEPTIME_KEY = 'eclipse_sim_deeptime_complete_v1';
@@ -3005,7 +3005,7 @@ function renderDeepTimeScene(idx) {
   if (time) time.textContent = s.time;
   if (divider) divider.hidden = !s.time;
 
-  // Milestone strip — Micropass 4.5D
+  // Milestone strip - Micropass 4.5D
   var milestones = document.querySelectorAll('.dt-milestone');
   for (var m = 0; m < milestones.length; m++) {
     milestones[m].classList.toggle('current',  m === idx);
@@ -3142,7 +3142,7 @@ function replayDeepTimeAnimation() {
   }
   deepTimeState.running   = false;
   deepTimeState.scene     = -1;
-  // Important: do NOT touch deepTimeState.completed or PHASE_KEY — replay must
+  // Important: do NOT touch deepTimeState.completed or PHASE_KEY - replay must
   // not regress page progression if the quiz is already unlocked.
   startDeepTimeAnimation();
 }
@@ -3177,7 +3177,7 @@ function restoreDeepTimeState() {
   var done = false;
   try { done = localStorage.getItem(DEEPTIME_KEY) === '1'; } catch(e) {}
   if (!done) return;
-  // Show the completed state silently — no toast, no animation, no scroll.
+  // Show the completed state silently - no toast, no animation, no scroll.
   deepTimeState.completed = true;
   var lastScene = DT_SCENES[DT_SCENES.length - 1];
   dtApplyMoonScale(lastScene.moonEnd);
@@ -3217,7 +3217,7 @@ function completeDeepTime() {
 function initPhase() {
   var startPhase = 1;
 
-  // 1. Local list — no longer dependent on the IIFE-scoped OBS_IDS variable.
+  // 1. Local list - no longer dependent on the IIFE-scoped OBS_IDS variable.
   var obsIds = ['obs-solar', 'obs-lunar', 'obs-nomiss'];
   var allObsRevealed = obsIds.every(function(id) {
     var el = document.getElementById(id);
@@ -3251,7 +3251,7 @@ function initPhase() {
 }
 
 restoreState();
-// First-visit render — if no saved state, panel shows Stage 1 active immediately
+// First-visit render - if no saved state, panel shows Stage 1 active immediately
 updateMissionPanel();
 </script>
 
@@ -3312,7 +3312,7 @@ function toast(msg, type) {
 <!-- Checkpoint quiz -->
 <script>
 /* ═══════════════════════════════════════════════════════════
-   CHECKPOINT — Eclipse Alignment
+   CHECKPOINT, Eclipse Alignment
    ═══════════════════════════════════════════════════════════ */
 
 /* ── SUBMISSION URLS ─────────────────────────────────────── */
@@ -3325,7 +3325,7 @@ var CHECKPOINT_TAB = 'Eclipse Alignment';
 /* ── QUESTIONS ───────────────────────────────────────────── */
 var checkQuestions = [
   {
-    // Q1 — Solar eclipse geometry — correct: B (index 1)
+    // Q1 - Solar eclipse geometry - correct: B (index 1)
     q: 'Which TWO conditions must both be true for a solar eclipse to occur?',
     options: [
       'Full moon AND the Moon is near a node',
@@ -3334,10 +3334,10 @@ var checkQuestions = [
       'Quarter moon AND the Moon is near a node'
     ],
     correct: 1,
-    explanation: 'A solar eclipse needs the Moon directly between the Sun and Earth — that is a new moon — AND the Moon must be near a node so its shadow lines up with Earth. Both must be true at the same time.'
+    explanation: 'A solar eclipse needs the Moon directly between the Sun and Earth (that is a new moon) AND the Moon must be near a node so its shadow lines up with Earth. Both must be true at the same time.'
   },
   {
-    // Q2 — Lunar eclipse geometry — correct: D (index 3)
+    // Q2 - Lunar eclipse geometry - correct: D (index 3)
     q: 'What must be true for a lunar eclipse to occur?',
     options: [
       'The Moon must be between the Sun and Earth at new moon',
@@ -3346,10 +3346,10 @@ var checkQuestions = [
       'The Moon must be full AND near a node so Earth\'s shadow falls on it'
     ],
     correct: 3,
-    explanation: 'A lunar eclipse requires the Moon on the far side of Earth from the Sun — a full moon — AND near a node so Earth\'s shadow actually reaches the Moon. Phase alone is not enough.'
+    explanation: 'A lunar eclipse requires the Moon on the far side of Earth from the Sun (a full moon) AND near a node so Earth\'s shadow actually reaches the Moon. Phase alone is not enough.'
   },
   {
-    // Q3 — Why not every month — correct: A (index 0)
+    // Q3 - Why not every month - correct: A (index 0)
     q: 'The Moon reaches new moon and full moon every month. Why don\'t eclipses happen every month?',
     options: [
       'The Moon\'s orbit is tilted about 5 degrees, so its shadow usually passes above or below Earth',
@@ -3361,7 +3361,7 @@ var checkQuestions = [
     explanation: 'The Moon\'s orbit is tilted roughly 5 degrees relative to Earth\'s orbital plane. Most new and full moons the Moon sits above or below the plane, and the shadow misses entirely. A node alignment is what makes eclipses rare.'
   },
   {
-    // Q4 — Nodes — correct: C (index 2)
+    // Q4 - Nodes - correct: C (index 2)
     q: 'What is an orbital node?',
     options: [
       'The point in the Moon\'s orbit when it is closest to Earth',
@@ -3370,10 +3370,10 @@ var checkQuestions = [
       'The moment when the Moon is exactly halfway between new and full phase'
     ],
     correct: 2,
-    explanation: 'Nodes are the two crossing points where the Moon\'s tilted orbit intersects Earth\'s orbital plane. The Moon must be near a node for an eclipse to happen — otherwise the shadow passes above or below its target.'
+    explanation: 'Nodes are the two crossing points where the Moon\'s tilted orbit intersects Earth\'s orbital plane. The Moon must be near a node for an eclipse to happen, otherwise the shadow passes above or below its target.'
   },
   {
-    // Q5 — Umbra vs Penumbra — correct: B (index 1)
+    // Q5 - Umbra vs Penumbra - correct: B (index 1)
     q: 'An observer standing inside the umbra during a solar eclipse will see:',
     options: [
       'A partial eclipse, because the umbra is the outer edge of the shadow',
@@ -3382,7 +3382,7 @@ var checkQuestions = [
       'A partial eclipse, because only the penumbra is dark enough to block the Sun'
     ],
     correct: 1,
-    explanation: 'The umbra is the innermost, darkest cone of shadow. Observers inside it see the Moon completely block the Sun — a total solar eclipse. The penumbra is the surrounding outer shadow, producing only a partial eclipse.'
+    explanation: 'The umbra is the innermost, darkest cone of shadow. Observers inside it see the Moon completely block the Sun, a total solar eclipse. The penumbra is the surrounding outer shadow, producing only a partial eclipse.'
   }
 ];
 
@@ -3640,7 +3640,7 @@ if (typeof initPhase === 'function') initPhase();
 if (typeof restoreDeepTimeState === 'function') restoreDeepTimeState();
 
 /* ──────────────────────────────────────────────────────────
-   LOCKED-NAV INTERCEPTION — Micropass 4.5
+   LOCKED-NAV INTERCEPTION, Micropass 4.5
    If a nav link or anchor jumps to a section that is currently
    gated (display:none), redirect the scroll to the active gate
    card instead of doing nothing.

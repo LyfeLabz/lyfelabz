@@ -61,7 +61,7 @@ const GENERAL_TERMS = [
 
 // Exclusion terms: -4 each
 // Strong indicators the post is outside LyfeLabz's scope.
-// A post with ANY exclusion term cannot qualify via the high-value override —
+// A post with ANY exclusion term cannot qualify via the high-value override -
 // it must reach MIN_SCORE on its own despite the penalty.
 const EXCLUSION_TERMS = [
   "college",

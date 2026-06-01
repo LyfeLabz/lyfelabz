@@ -1,4 +1,4 @@
-# Micropass 4 — Orphaned `.page-eyebrow` CSS Cleanup Report
+# Micropass 4: Orphaned `.page-eyebrow` CSS Cleanup Report
 
 **Date:** 2026-06-01
 **Scope:** Remove dead `.page-eyebrow` CSS rules that have no corresponding HTML elements
@@ -13,11 +13,11 @@ Full repo scan performed across all `.html` files.
 
 | File | `.page-eyebrow` CSS | HTML `class="page-eyebrow"` | Status |
 |------|--------------------|-----------------------------|--------|
-| `extension_neuron-explorer.html` | 1 rule (3 lines) | 0 elements | Orphaned — **removed** |
-| `game_cellular-showdown.html` | 1 rule (1 line) | 0 elements | Orphaned — **removed** |
-| `game_is-it-alive.html` | 1 rule (1 line) | 0 elements | Orphaned — **removed** |
+| `extension_neuron-explorer.html` | 1 rule (3 lines) | 0 elements | Orphaned, **removed** |
+| `game_cellular-showdown.html` | 1 rule (1 line) | 0 elements | Orphaned, **removed** |
+| `game_is-it-alive.html` | 1 rule (1 line) | 0 elements | Orphaned, **removed** |
 
-Note: `extension_neuron-explorer.html` was not flagged in the Micropass 3 report (which only scanned game files), but was discovered in this pass's repo-wide scan. It was orphaned for the same reason — the element had already been superseded by `.hero-badge`.
+Note: `extension_neuron-explorer.html` was not flagged in the Micropass 3 report (which only scanned game files), but was discovered in this pass's repo-wide scan. It was orphaned for the same reason, the element had already been superseded by `.hero-badge`.
 
 ---
 
@@ -104,6 +104,6 @@ Edits were limited to CSS rule deletion inside `<style>` blocks. No HTML structu
 
 ## Next Recommended Pass
 
-**Micropass 5 — Continuation Card `lesson` Color Fix**
+**Micropass 5, Continuation Card `lesson` Color Fix**
 
 Two lesson files (`lesson_sun-earth-moon.html`, `lesson_continental-drift.html`) define `.cont-card.lesson` using grey-blue (`rgba(122,143,166,…)`) instead of the canonical lesson gold. Update background, border, top-stripe gradient, and hover state to match.

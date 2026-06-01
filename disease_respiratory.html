@@ -13,7 +13,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="https://lyfelabz.com/disease_respiratory.html">
 <meta name="description" content="Explore respiratory system diseases like asthma, pneumonia, and COPD in this 6th grade science reference page aligned to Massachusetts STE standards.">
-<title>LyfeLabz | Respiratory System — Diseases &amp; Disorders</title>
+<title>LyfeLabz | Respiratory System: Diseases &amp; Disorders</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   html { font-size: 18px; }
@@ -273,7 +273,7 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
     <div>
       <div class="header-badge"><span class="pulse-dot"></span> Respiratory System · Diseases &amp; Disorders</div>
       <h1>What Can Go Wrong? 🫁</h1>
-      <p>Pick any part of the respiratory system to see what diseases can affect it — and how a breathing problem in one spot can ripple through your entire body.</p>
+      <p>Pick any part of the respiratory system to see what diseases can affect it; and how a breathing problem in one spot can ripple through your entire body.</p>
     </div>
   </div>
 </div>
@@ -281,15 +281,15 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
 <div class="explorer-wrap">
   <div class="ls-focus">
     <span class="ls-focus-label">🔬 Learning Science Focus</span>
-    <span class="ls-badge" data-tip="Students interact with the map and choose what to explore — they drive the learning. — Freeman et al., 2014">🎯 Active Learning</span>
-    <span class="ls-badge" data-tip="Each disease is shown at three levels — part, system, person — building causal reasoning step by step. — Dunlosky et al., 2013">💬 Elaboration</span>
-    <span class="ls-badge" data-tip="Visual map + text descriptions activate two memory channels simultaneously for richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
+    <span class="ls-badge" data-tip="Students interact with the map and choose what to explore, they drive the learning. (Freeman et al., 2014)">🎯 Active Learning</span>
+    <span class="ls-badge" data-tip="Each disease is shown at three levels, part, system, person, building causal reasoning step by step. (Dunlosky et al., 2013)">💬 Elaboration</span>
+    <span class="ls-badge" data-tip="Visual map + text descriptions activate two memory channels simultaneously for richer recall. (Noetel et al., 2022)">🖼️ Dual Coding</span>
     <span class="ls-badge" data-tip="Severity indicators and ripple framing make abstract concepts like disease progression concrete and memorable.">🔬 Concrete Examples</span>
   </div>
   <div class="stem-focus">
     <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
     <span class="stem-badge" data-tip="Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.">6.MS-LS1-3</span>
-    <span class="stem-badge" data-tip="Develop a model to describe how food is rearranged through chemical reactions — includes how oxygen is delivered via blood.">6.MS-LS1-7</span>
+    <span class="stem-badge" data-tip="Develop a model to describe how food is rearranged through chemical reactions, includes how oxygen is delivered via blood.">6.MS-LS1-7</span>
   </div>
 
   <div class="stat-pills">
@@ -302,7 +302,7 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
   <div class="panels">
     <div class="map-panel">
       <div class="map-panel-hd">
-        <span class="map-panel-title">THE RESPIRATORY SYSTEM MAP — CLICK ANY NODE TO EXPLORE</span>
+        <span class="map-panel-title">THE RESPIRATORY SYSTEM MAP, CLICK ANY NODE TO EXPLORE</span>
       </div>
       <div class="map-body">
         <canvas id="map-canvas"></canvas>
@@ -317,7 +317,7 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
       <div class="i-idle" id="idle-state">
         <span class="i-idle-icon">🫁</span>
         <div class="i-idle-title">Select a Node</div>
-        <div class="i-idle-desc">Click any organ or structure on the map to learn about its diseases — and how a problem there ripples through the whole body.</div>
+        <div class="i-idle-desc">Click any organ or structure on the map to learn about its diseases; and how a problem there ripples through the whole body.</div>
       </div>
       <div class="i-card" id="info-card">
         <div class="i-card-hd">
@@ -373,50 +373,50 @@ body.stem-active .stem-focus { display:flex; align-items:center; justify-content
 const DATA = {
   bronchi:{
     name:"Bronchi",
-    desc:"The airways that branch off the trachea and carry air into each lung — like the trunk of a tree splitting into two branches.",
-    quickfact:"Your bronchi keep branching into smaller and smaller tubes — eventually forming over 30,000 tiny airways called bronchioles inside your lungs!",
+    desc:"The airways that branch off the trachea and carry air into each lung, like the trunk of a tree splitting into two branches.",
+    quickfact:"Your bronchi keep branching into smaller and smaller tubes, eventually forming over 30,000 tiny airways called bronchioles inside your lungs!",
     diseases:[
       {name:"Asthma",sev:"med",
         l1:{t:"The Airways Swell Up and Fill with Mucus",b:"During an asthma attack, the bronchi become inflamed and fill with sticky mucus. The airway gets so narrow it feels like breathing through a thin straw."},
         l2:{t:"Less Air Reaches the Lungs",b:"With narrowed bronchi, the lungs can't fill completely. The body can't get enough oxygen, and the muscles that move air in and out start working overtime."},
         l3:{t:"Wheezing, Tight Chest, and Shortness of Breath",b:"You hear a whistling sound when breathing, your chest feels tight like something heavy is sitting on it, and you feel breathless. Triggers include exercise, cold air, pets, or smoke."}},
       {name:"Bronchitis",sev:"low",
-        l1:{t:"The Bronchi Get Inflamed and Irritated",b:"A viral or bacterial infection — or constant irritants like smoke — inflames the inner lining of the bronchi. The body makes extra mucus trying to flush out the irritant."},
+        l1:{t:"The Bronchi Get Inflamed and Irritated",b:"A viral or bacterial infection (or constant irritants like smoke) inflames the inner lining of the bronchi. The body makes extra mucus trying to flush out the irritant."},
         l2:{t:"Airflow is Blocked by Mucus",b:"Thick mucus builds up in the bronchi, reducing airflow to the lungs. The immune system is fighting the infection but the battle is happening right inside your airways."},
         l3:{t:"Persistent Cough Bringing Up Mucus",b:"A nagging cough that produces thick yellow or green mucus. Chest soreness from all the coughing. Usually clears up in 2–3 weeks but can become chronic in smokers."}}
     ]},
   nose:{
     name:"Nose &amp; Sinuses",
-    desc:"The body's air filter — warms, moistens, and traps particles before air reaches the lungs. The sinuses are hollow spaces in the skull connected to the nasal cavity.",
-    quickfact:"Your nose processes about 10,000–20,000 liters of air every day — that's like filling roughly 10,000 large soda bottles with air just from breathing!",
+    desc:"The body's air filter, warms, moistens, and traps particles before air reaches the lungs. The sinuses are hollow spaces in the skull connected to the nasal cavity.",
+    quickfact:"Your nose processes about 10,000–20,000 liters of air every day, that's like filling roughly 10,000 large soda bottles with air just from breathing!",
     diseases:[
       {name:"Sinusitis",sev:"low",
         l1:{t:"The Sinus Cavities Get Infected and Swollen",b:"Bacteria or viruses infect the hollow spaces in your skull (sinuses), causing the lining to swell. Mucus gets trapped because it can't drain through the swollen passages."},
-        l2:{t:"Blocked Sinuses Affect Breathing and Smell",b:"Clogged sinuses mean you breathe mostly through your mouth — the air that reaches your lungs is less filtered and less moistened. The infection can spread to nearby areas."},
+        l2:{t:"Blocked Sinuses Affect Breathing and Smell",b:"Clogged sinuses mean you breathe mostly through your mouth, the air that reaches your lungs is less filtered and less moistened. The infection can spread to nearby areas."},
         l3:{t:"Facial Pain, Stuffy Nose, and Pressure Headaches",b:"Pressure and pain around the eyes, forehead, and cheeks. You lose your sense of smell, your voice sounds nasal, and blowing your nose brings no relief."}},
       {name:"Allergic Rhinitis",sev:"low",
-        l1:{t:"The Immune System Overreacts to Pollen or Dust",b:"When allergens (pollen, pet dander, dust mites) enter the nose, the immune system mistakenly treats them as dangerous and releases histamine — a chemical that causes swelling and runny nose."},
+        l1:{t:"The Immune System Overreacts to Pollen or Dust",b:"When allergens (pollen, pet dander, dust mites) enter the nose, the immune system mistakenly treats them as dangerous and releases histamine, a chemical that causes swelling and runny nose."},
         l2:{t:"Inflamed Nasal Passages Disrupt Breathing",b:"The swollen nasal lining makes it hard to breathe through your nose. Constant sneezing and runny nose are the immune system's misguided attempt to flush out the 'threat.'"},
-        l3:{t:"Sneezing, Itchy Eyes, and a Constantly Running Nose",b:"Endless sneezing fits, itchy watery eyes, and a nose that won't stop running — especially during spring when pollen counts are high. Can make it hard to sleep or concentrate."}}
+        l3:{t:"Sneezing, Itchy Eyes, and a Constantly Running Nose",b:"Endless sneezing fits, itchy watery eyes, and a nose that won't stop running, especially during spring when pollen counts are high. Can make it hard to sleep or concentrate."}}
     ]},
   trachea:{
     name:"Trachea (Windpipe)",
-    desc:"The main airway connecting your throat to your bronchi — a tube about 4 inches long, ringed with C-shaped cartilage to keep it open at all times.",
-    quickfact:"The rings of cartilage in your trachea are C-shaped (not full circles!) so your esophagus — right behind it — has room to expand when you swallow food.",
+    desc:"The main airway connecting your throat to your bronchi, a tube about 4 inches long, ringed with C-shaped cartilage to keep it open at all times.",
+    quickfact:"The rings of cartilage in your trachea are C-shaped (not full circles!) so your esophagus (right behind it) has room to expand when you swallow food.",
     diseases:[
       {name:"Croup",sev:"med",
         l1:{t:"A Virus Inflames and Narrows the Windpipe",b:"A respiratory virus (usually parainfluenza) infects the lining of the trachea and the area just below it. The trachea swells inward, narrowing the airway, especially in young children whose airways are already small."},
         l2:{t:"Narrow Trachea Makes Every Breath Harder",b:"As air is forced through the tighter-than-normal windpipe, it creates turbulence. The lungs have to work harder to pull air in, putting strain on the breathing muscles."},
         l3:{t:"Barking Cough and Stridor (Squeaky Breathing)",b:"A distinctive bark-like cough that sounds like a seal, plus a high-pitched squeaking noise when breathing in (called stridor). Usually happens at night and can be scary for kids and parents."}},
       {name:"Tracheomalacia",sev:"med",
-        l1:{t:"The Windpipe Walls Are Too Soft and Collapse",b:"The cartilage rings in the trachea are too floppy — either from birth or due to injury/pressure. When you breathe in, the walls of the windpipe cave inward instead of staying open."},
+        l1:{t:"The Windpipe Walls Are Too Soft and Collapse",b:"The cartilage rings in the trachea are too floppy, either from birth or due to injury/pressure. When you breathe in, the walls of the windpipe cave inward instead of staying open."},
         l2:{t:"Collapsing Airway Reduces Air Getting to the Lungs",b:"Every breath partially collapses the trachea, so less air reaches the lungs than should. During illness the symptoms get worse, and lung infections become more frequent."},
         l3:{t:"Noisy Breathing, Recurring Infections, and Breathing Dips",b:"Loud wheezing or rattling with each breath. Frequent respiratory infections because the airways can't clear themselves properly. In severe cases can cause breathing to stop briefly."}}
     ]},
   pleura:{
     name:"Pleura",
-    desc:"Two thin layers of tissue that wrap around each lung like a protective bag — with a tiny amount of lubricating fluid between them so lungs can expand and contract smoothly.",
-    quickfact:"The fluid between the two layers of the pleura acts like oil in an engine — without it, your lungs would rub painfully against your chest wall with every single breath!",
+    desc:"Two thin layers of tissue that wrap around each lung like a protective bag: with a tiny amount of lubricating fluid between them so lungs can expand and contract smoothly.",
+    quickfact:"The fluid between the two layers of the pleura acts like oil in an engine; without it, your lungs would rub painfully against your chest wall with every single breath!",
     diseases:[
       {name:"Pleurisy",sev:"med",
         l1:{t:"The Pleura Layers Get Inflamed and Rub Together",b:"An infection or inflammation causes the two smooth pleural layers to become rough. Instead of sliding against each other silently, they scrape together with every breath like sandpaper."},
@@ -429,12 +429,12 @@ const DATA = {
     ]},
   leftlung:{
     name:"Left Lung",
-    desc:"The smaller of the two lungs — it has only two lobes (instead of three on the right) because it shares space with the heart on the left side of the chest.",
+    desc:"The smaller of the two lungs; it has only two lobes (instead of three on the right) because it shares space with the heart on the left side of the chest.",
     quickfact:"Your left lung is about 10% smaller than your right lung to make room for your heart! This is why the heart sits slightly left of center in your chest.",
     diseases:[
       {name:"Pneumonia",sev:"high",
-        l1:{t:"Infection Fills the Air Sacs with Fluid and Pus",b:"Bacteria, viruses, or fungi infect the lung tissue. The air sacs (alveoli) fill with thick fluid and immune cells fighting the infection — making oxygen transfer impossible in that area."},
-        l2:{t:"The Infected Area Can't Exchange Oxygen",b:"The fluid-filled sections of lung are essentially offline — blood passing through them picks up no oxygen. The rest of the lung and the heart have to compensate by working harder."},
+        l1:{t:"Infection Fills the Air Sacs with Fluid and Pus",b:"Bacteria, viruses, or fungi infect the lung tissue. The air sacs (alveoli) fill with thick fluid and immune cells fighting the infection, making oxygen transfer impossible in that area."},
+        l2:{t:"The Infected Area Can't Exchange Oxygen",b:"The fluid-filled sections of lung are essentially offline, blood passing through them picks up no oxygen. The rest of the lung and the heart have to compensate by working harder."},
         l3:{t:"High Fever, Severe Cough, and Breathing Difficulty",b:"Fever often above 102°F, a bad cough producing thick mucus or blood, chills, and breathing that feels very labored. Can be life-threatening in young children, elderly people, and immunocompromised patients."}},
       {name:"Lung Cancer",sev:"high",
         l1:{t:"Abnormal Cells Grow and Form a Tumor in the Lung",b:"Damaged cells in the lung tissue begin dividing out of control, forming a tumor. As it grows, it blocks airways, destroys healthy lung tissue, and can spread to other organs."},
@@ -443,40 +443,40 @@ const DATA = {
     ]},
   rightlung:{
     name:"Right Lung",
-    desc:"The larger of the two lungs — it has three lobes and handles slightly more breathing than the left. Its upper lobe is a common site for tuberculosis and certain cancers.",
-    quickfact:"The right lung has three lobes and is slightly larger than the left. Together your two lungs contain around 480 million tiny air sacs — if you spread them flat, they'd cover a tennis court!",
+    desc:"The larger of the two lungs; it has three lobes and handles slightly more breathing than the left. Its upper lobe is a common site for tuberculosis and certain cancers.",
+    quickfact:"The right lung has three lobes and is slightly larger than the left. Together your two lungs contain around 480 million tiny air sacs, if you spread them flat, they'd cover a tennis court!",
     diseases:[
       {name:"COPD",sev:"high",
-        l1:{t:"Lung Tissue Gets Permanently Damaged and Loses Elasticity",b:"Chronic Obstructive Pulmonary Disease (COPD) is usually caused by years of smoking. The lung tissue breaks down and loses its springiness — the tiny air sacs collapse and can't empty properly."},
+        l1:{t:"Lung Tissue Gets Permanently Damaged and Loses Elasticity",b:"Chronic Obstructive Pulmonary Disease (COPD) is usually caused by years of smoking. The lung tissue breaks down and loses its springiness, the tiny air sacs collapse and can't empty properly."},
         l2:{t:"Stale Air Gets Trapped, Reducing Oxygen Intake",b:"Because the lungs can't fully empty, stale carbon dioxide-rich air gets trapped. Fresh oxygen-rich air can only partially replace it. The body is constantly running low on oxygen."},
-        l3:{t:"Progressively Worse Breathlessness and Chronic Cough",b:"Breathlessness during activities that never caused problems before, a chronic cough with mucus, and frequent chest infections. There is no cure — the damage is permanent — but it can be slowed."}},
+        l3:{t:"Progressively Worse Breathlessness and Chronic Cough",b:"Breathlessness during activities that never caused problems before, a chronic cough with mucus, and frequent chest infections. There is no cure (the damage is permanent) but it can be slowed."}},
       {name:"Atelectasis",sev:"med",
-        l1:{t:"Part of the Lung Collapses and Deflates",b:"A section of the lung — from blockage, pressure outside, or failure to breathe deeply after surgery — collapses. The tiny air sacs in that section stick together and no air can reach them."},
-        l2:{t:"Blood Passes Through a Non-Working Lung Section",b:"The collapsed area receives blood from the heart but has no air to exchange with it. Blood leaves that section with no extra oxygen — the body detects low oxygen and speeds up breathing."},
+        l1:{t:"Part of the Lung Collapses and Deflates",b:"A section of the lung: from blockage, pressure outside, or failure to breathe deeply after surgery, collapses. The tiny air sacs in that section stick together and no air can reach them."},
+        l2:{t:"Blood Passes Through a Non-Working Lung Section",b:"The collapsed area receives blood from the heart but has no air to exchange with it. Blood leaves that section with no extra oxygen, the body detects low oxygen and speeds up breathing."},
         l3:{t:"Sudden Shortness of Breath, Rapid Breathing, Low Oxygen",b:"Rapid breathing, a drop in blood oxygen levels, and (in severe cases) bluish lips. After surgery, nurses encourage deep breathing and coughing specifically to prevent this complication."}}
     ]},
   alveoli:{
     name:"Alveoli",
-    desc:"Microscopic balloon-like air sacs at the very end of the airways — so thin that oxygen can pass straight through their walls into your bloodstream with every breath.",
-    quickfact:"You have about 480 million alveoli — each one is only 0.2mm wide (smaller than a grain of sand) — but together they create a surface area the size of a tennis court for gas exchange!",
+    desc:"Microscopic balloon-like air sacs at the very end of the airways; so thin that oxygen can pass straight through their walls into your bloodstream with every breath.",
+    quickfact:"You have about 480 million alveoli (each one is only 0.2mm wide (smaller than a grain of sand)) but together they create a surface area the size of a tennis court for gas exchange!",
     diseases:[
       {name:"Pulmonary Fibrosis",sev:"high",
-        l1:{t:"Alveoli Walls Scar Over and Thicken Permanently",b:"Lung tissue that should be thin and flexible becomes scarred and stiff — like a sponge turning to leather. Oxygen can no longer pass through the thick walls into the blood."},
+        l1:{t:"Alveoli Walls Scar Over and Thicken Permanently",b:"Lung tissue that should be thin and flexible becomes scarred and stiff, like a sponge turning to leather. Oxygen can no longer pass through the thick walls into the blood."},
         l2:{t:"Gas Exchange Fails Across the Entire Lung",b:"As scarring spreads, more and more alveoli become non-functional. The lungs can't fill completely because the stiff tissue resists expansion. Blood oxygen levels drop steadily over time."},
-        l3:{t:"Worsening Breathlessness and a Dry Persistent Cough",b:"Breathlessness that slowly gets worse over months or years, a chronic dry cough, and clubbed (widened) fingertips from chronic low oxygen. There is no cure — treatments can only slow the progression."}},
+        l3:{t:"Worsening Breathlessness and a Dry Persistent Cough",b:"Breathlessness that slowly gets worse over months or years, a chronic dry cough, and clubbed (widened) fingertips from chronic low oxygen. There is no cure, treatments can only slow the progression."}},
       {name:"ARDS",sev:"high",
         l1:{t:"Massive Inflammation Floods the Alveoli with Fluid",b:"In response to severe illness (sepsis, COVID-19, trauma), the immune system causes widespread inflammation. Fluid from blood vessels pours into the alveoli, filling them up and blocking all gas exchange."},
-        l2:{t:"Lungs Shut Down Rapidly — Ventilator Needed",b:"With fluid-filled alveoli, oxygen can't enter the blood from any area of the lung. Blood oxygen crashes within hours. ARDS is one of the most serious respiratory emergencies in medicine."},
+        l2:{t:"Lungs Shut Down Rapidly, Ventilator Needed",b:"With fluid-filled alveoli, oxygen can't enter the blood from any area of the lung. Blood oxygen crashes within hours. ARDS is one of the most serious respiratory emergencies in medicine."},
         l3:{t:"Severe Breathlessness, Blue Lips, ICU Admission",b:"Rapid breathing that doesn't help, bluish lips and fingertips, confusion from low oxygen. Almost all ARDS patients need a ventilator (breathing machine) in the ICU. Survival rates have improved with newer ventilator settings."}}
     ]},
   diaphragm:{
     name:"Diaphragm",
-    desc:"The dome-shaped muscle below the lungs that does most of the work of breathing — when it contracts and flattens, it creates a vacuum that pulls air into the lungs.",
-    quickfact:"Hiccups happen when your diaphragm suddenly spasms and sucks air in sharply — the 'hic' sound is your vocal cords snapping shut to stop the air. It's completely involuntary!",
+    desc:"The dome-shaped muscle below the lungs that does most of the work of breathing, when it contracts and flattens, it creates a vacuum that pulls air into the lungs.",
+    quickfact:"Hiccups happen when your diaphragm suddenly spasms and sucks air in sharply, the 'hic' sound is your vocal cords snapping shut to stop the air. It's completely involuntary!",
     diseases:[
       {name:"Diaphragmatic Hernia",sev:"high",
         l1:{t:"Abdominal Organs Squeeze Through a Hole in the Diaphragm",b:"A gap (present from birth or caused by injury) in the diaphragm allows stomach, intestines, or other organs to push up into the chest cavity. The lung on that side can't fully develop or expand."},
-        l2:{t:"The Lung Gets Compressed and Can't Develop",b:"With organs crowding the chest cavity, one or both lungs are compressed. In newborns, this can prevent the lungs from growing to full size before birth — a life-threatening emergency at delivery."},
+        l2:{t:"The Lung Gets Compressed and Can't Develop",b:"With organs crowding the chest cavity, one or both lungs are compressed. In newborns, this can prevent the lungs from growing to full size before birth, a life-threatening emergency at delivery."},
         l3:{t:"Severe Breathing Difficulty from Birth",b:"Newborns with diaphragmatic hernia cannot breathe properly at birth and need immediate surgery. Adults with traumatic hernias experience chest pain, breathing difficulty, and digestive problems from misplaced organs."}},
       {name:"Phrenic Nerve Damage",sev:"med",
         l1:{t:"The Nerve Controlling the Diaphragm Gets Damaged",b:"The phrenic nerve sends signals from the brain to the diaphragm telling it when to contract. If it's damaged (from surgery, injury, or cancer), one side of the diaphragm is paralyzed and can't do its job."},
@@ -744,7 +744,7 @@ function setPanel(organ, dIdx) {
       cx.lineWidth=iH?2.5:1.8; cx.setLineDash([6,4]); cx.stroke();
       cx.setLineDash([]); cx.restore();
 
-      // flowing dots — 2 per connection, staggered by index
+      // flowing dots - 2 per connection, staggered by index
       var offset=(ci*0.37)%1;
       for(var d=0;d<2;d++){
         var tVal=((dotT + offset + d*0.50)%1);

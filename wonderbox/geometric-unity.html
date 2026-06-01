@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Geometric Unity — Observerse Visualization</title>
+<title>Geometric Unity: Observerse Visualization</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Fira+Code:wght@300;400&family=Syne:wght@700;800&family=Syne+Mono&display=swap');
 
@@ -192,7 +192,7 @@
     font-style: italic;
   }
 
-  /* ===== CONTROLS — toggle switch style ===== */
+  /* ===== CONTROLS - toggle switch style ===== */
   #controls {
     position: fixed;
     top: 144px;
@@ -420,7 +420,7 @@
 <div id="equations">
   <div class="eq-intro">
     <strong>The Geometry of Everything</strong>
-    GU proposes that all of physics — every force, every particle — emerges from the geometry of one 14-dimensional space called the Observerse.
+    GU proposes that all of physics (every force, every particle) emerges from the geometry of one 14-dimensional space called the Observerse.
   </div>
 
   <div class="eq active" id="eq0">
@@ -449,11 +449,11 @@
   </div>
 
   <div class="eq-conclusion">
-    If Geometric Unity is right, every force in nature is a shadow of one shape — the Observerse.
+    If Geometric Unity is right, every force in nature is a shadow of one shape: the Observerse.
   </div>
 </div>
 
-<!-- ===== CONTROLS — toggle switches ===== -->
+<!-- ===== CONTROLS - toggle switches ===== -->
 <div id="controls">
   <div id="controls-header">Toggle layers on or off<br>to explore each component</div>
 
@@ -503,7 +503,7 @@
       <span class="learn-chevron">▾</span>
     </div>
     <div class="learn-body"><div class="learn-body-inner">
-      The Observerse (Y¹⁴) is the central idea of GU. It's a 14-dimensional space built on top of our familiar 4D spacetime. The extra 10 dimensions aren't random — they encode all possible ways spacetime can curve, which is exactly the information needed to describe gravity and all other forces.
+      The Observerse (Y¹⁴) is the central idea of GU. It's a 14-dimensional space built on top of our familiar 4D spacetime. The extra 10 dimensions aren't random; they encode all possible ways spacetime can curve, which is exactly the information needed to describe gravity and all other forces.
     </div></div>
   </div>
 
@@ -516,7 +516,7 @@
       <span class="learn-chevron">▾</span>
     </div>
     <div class="learn-body"><div class="learn-body-inner">
-      At every point in spacetime (X⁴), the Observerse attaches a 10-dimensional "fiber" — a space of all possible metric shapes. Together they form a fiber bundle: the total space Y¹⁴ projected down to X⁴ by the map π. The fibers you see here represent these extra dimensions hanging off each point.
+      At every point in spacetime (X⁴), the Observerse attaches a 10-dimensional "fiber": a space of all possible metric shapes. Together they form a fiber bundle: the total space Y¹⁴ projected down to X⁴ by the map π. The fibers you see here represent these extra dimensions hanging off each point.
     </div></div>
   </div>
 
@@ -542,7 +542,7 @@
       <span class="learn-chevron">▾</span>
     </div>
     <div class="learn-body"><div class="learn-body-inner">
-      Spinors are the mathematical objects that describe fermions — electrons, quarks, neutrinos. In GU, spinors arise naturally from the geometry of the Observerse rather than being added by hand. Each green particle represents a fermion emerging from the structure of spacetime itself.
+      Spinors are the mathematical objects that describe fermions: electrons, quarks, neutrinos. In GU, spinors arise naturally from the geometry of the Observerse rather than being added by hand. Each green particle represents a fermion emerging from the structure of spacetime itself.
     </div></div>
   </div>
 
@@ -555,7 +555,7 @@
       <span class="learn-chevron">▾</span>
     </div>
     <div class="learn-body"><div class="learn-body-inner">
-      The glowing grid is our familiar 4D spacetime (X⁴) — 3 dimensions of space plus 1 of time. The waves show spacetime curvature, which we experience as gravity. In GU, this is just the "base" of a much larger structure — the Observerse is built on top of it.
+      The glowing grid is our familiar 4D spacetime (X⁴): 3 dimensions of space plus 1 of time. The waves show spacetime curvature, which we experience as gravity. In GU, this is just the "base" of a much larger structure; the Observerse is built on top of it.
     </div></div>
   </div>
 </div>
@@ -589,7 +589,7 @@ let rotY = 0.3, rotX = 0.15;
 const baseGroup = new THREE.Group();
 scene.add(baseGroup);
 
-// Spacetime sheet — glowing grid plane
+// Spacetime sheet - glowing grid plane
 const gridMat = new THREE.MeshBasicMaterial({
   color: 0x00e5ff, wireframe: true, transparent: true, opacity: 0.12
 });
@@ -610,7 +610,7 @@ wave.position.y = -1.5;
 baseGroup.add(wave);
 
 // --- Central Observerse manifold (main body) ---
-// Represent as a beautiful torus knot — the "knotted" extra dimensions
+// Represent as a beautiful torus knot - the "knotted" extra dimensions
 const obsGeo = new THREE.TorusKnotGeometry(2, 0.38, 180, 20, 3, 5);
 const obsMat = new THREE.MeshPhongMaterial({
   color: 0xffd84c,

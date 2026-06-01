@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────────────────────────
    LyfeLabz · Learning Science Badges
-   Reusable stylesheet — link from any lesson, extension, or game.
+   Reusable stylesheet - link from any lesson, extension, or game.
    ─────────────────────────────────────────────────────────────────
 
    Usage
@@ -35,7 +35,7 @@
    ─────────────────────────────────────────────────────────────────
 */
 
-/* ── Visibility gate — hidden until body.ls-active is set ─────────
+/* ── Visibility gate - hidden until body.ls-active is set ─────────
    The session-check script (injected into every content page) adds
    body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
    Educators toggle this from the index or Learning Science page.
@@ -46,7 +46,7 @@
 }
 
 body.ls-active .ls-focus {
-  /* ── Centered card — sits between hero and first content section ── */
+  /* ── Centered card - sits between hero and first content section ── */
   display: flex;
   align-items: center;
   justify-content: center;

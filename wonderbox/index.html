@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wonder Box — by LyfeLabz</title>
+<title>Wonder Box by LyfeLabz</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Syne+Mono&family=Nunito:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
@@ -1263,7 +1263,7 @@ footer {
           <animate attributeName="r" values="26;36;26" dur="5s" repeatCount="indefinite"/>
         </circle>
 
-        <!-- Box — bottom face -->
+        <!-- Box - bottom face -->
         <polygon points="20,76 70,104 120,76 70,48"
           fill="rgba(0,245,212,0.04)" stroke="#00f5d4" stroke-width="1" stroke-opacity="0.3"/>
         <!-- left face -->
@@ -1380,7 +1380,7 @@ footer {
           <div class="exp-card-tag">COSMOLOGY · DARK MATTER · DARK ENERGY</div>
           <h3 class="exp-card-title">The Dark Universe</h3>
           <p class="exp-card-desc">
-            95% of the universe is invisible — no light, no signal, nothing we can detect directly. Dark matter holds galaxies together. Dark energy tears everything apart. Toggle each layer on and off to see what we can and can't explain.
+            95% of the universe is invisible: no light, no signal, nothing we can detect directly. Dark matter holds galaxies together. Dark energy tears everything apart. Toggle each layer on and off to see what we can and can't explain.
           </p>
           <div class="exp-card-meta">
             <span class="meta-chip chip-dim">95% Unseen</span>
@@ -1401,7 +1401,7 @@ footer {
           <div class="exp-card-tag">QUANTUM PHYSICS · PARTICLE PHYSICS</div>
           <h3 class="exp-card-title">The Standard Model</h3>
           <p class="exp-card-desc">
-            Everything you can touch is made of just 17 kinds of particles. Quarks. Leptons. Bosons. One of them — the Higgs — gives everything else its mass. This interactive table puts all 17 in your hands with real data on every single one.
+            Everything you can touch is made of just 17 kinds of particles. Quarks. Leptons. Bosons. One of them (the Higgs) gives everything else its mass. This interactive table puts all 17 in your hands with real data on every single one.
           </p>
           <div class="exp-card-meta">
             <span class="meta-chip chip-dim">17 Particles</span>
@@ -1422,7 +1422,7 @@ footer {
           <div class="exp-card-tag">THEORETICAL PHYSICS · BEYOND THE STANDARD MODEL</div>
           <h3 class="exp-card-title">Geometric Unity</h3>
           <p class="exp-card-desc">
-            What if every force in the universe — gravity, electromagnetism, even the nuclear forces — came from the shape of one giant 14-dimensional space? Eric Weinstein's Geometric Unity theory says maybe. Fly through the Observerse and see what that actually looks like.
+            What if every force in the universe (gravity, electromagnetism, even the nuclear forces) came from the shape of one giant 14-dimensional space? Eric Weinstein's Geometric Unity theory says maybe. Fly through the Observerse and see what that actually looks like.
           </p>
           <div class="exp-card-meta">
             <span class="meta-chip chip-dim">14 Dimensions</span>
@@ -1676,8 +1676,8 @@ async function submitQuestion() {
         page:      window.location.pathname
       })
     });
-    // no-cors means we can't read the response — treat as success
-    status.textContent = '✓ Question received — thank you!';
+    // no-cors means we can't read the response - treat as success
+    status.textContent = '✓ Question received, thank you!';
     status.className   = 'q-status ok';
     nameInput.value = '';
     blockSelect.value = '';
@@ -1685,7 +1685,7 @@ async function submitQuestion() {
     input.style.height = 'auto';
     setTimeout(() => toggleQForm(), 2400);
   } catch (err) {
-    status.textContent = 'Could not send — check your connection.';
+    status.textContent = 'Could not send. Check your connection.';
     status.className   = 'q-status err';
   } finally {
     btn.disabled = false;

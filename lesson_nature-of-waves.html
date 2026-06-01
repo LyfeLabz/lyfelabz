@@ -13,7 +13,7 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="https://lyfelabz.com/lesson_nature-of-waves.html">
-<meta name="description" content="What is actually moving when a wave travels? Investigate how waves transfer energy without moving matter — and discover the difference between mechanical and electromagnetic waves. Grade 6–8 physical science lesson aligned to Massachusetts STE standards.">
+<meta name="description" content="What is actually moving when a wave travels? Investigate how waves transfer energy without moving matter, and discover the difference between mechanical and electromagnetic waves. Grade 6–8 physical science lesson aligned to Massachusetts STE standards.">
 <title>LyfeLabz | Nature of Waves</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 
@@ -341,7 +341,7 @@
   .ct-blue   { color: #7cc8f8; background: rgba(41,140,212,0.1);   border-color: rgba(41,140,212,0.3);  }
   .ct-purple { color: #b47fff; background: rgba(180,127,255,0.08); border-color: rgba(180,127,255,0.3); }
 
-  /* pulse animation for vocab jump targets — same keyframes as What Is Life */
+  /* pulse animation for vocab jump targets - same keyframes as What Is Life */
   @keyframes termPulse {
     0%   { background: rgba(46,204,113,0);    box-shadow: none; }
     20%  { background: rgba(46,204,113,0.32); box-shadow: 0 0 0 6px rgba(46,204,113,0.18); }
@@ -608,7 +608,7 @@ body.stem-active .stem-detail {
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
-  <a href="index.html" class="nav-back">← Physical Science</a>
+  <a href="index.html#unit-nature-of-waves" class="nav-back">← Physical Science</a>
 </nav>
 
 <!-- HERO -->
@@ -619,7 +619,7 @@ body.stem-active .stem-detail {
   <span class="hero-float">💡</span>
   <div class="hero-badge">Lesson</div>
   <h1>Nature of Waves</h1>
-  <p class="hero-sub">Watch a wave roll across the ocean — what is actually moving? Let's investigate.</p>
+  <p class="hero-sub">Watch a wave roll across the ocean, what is actually moving? Let's investigate.</p>
   <div class="driving-question">
     <div class="dq-icon">🔍</div>
     <div class="dq-body">
@@ -632,11 +632,11 @@ body.stem-active .stem-detail {
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Light vs. sound, calm-day vs. storm wave, short vs. long wavelength — placing two examples side-by-side helps students see the structural difference faster than either example alone. — Schwartz &amp; Bransford, 1998">🔀 Contrasting Cases</span>
-  <span class="ls-badge" data-tip="Students predict whether astronauts can hear or see each other, then learn whether they were right. Committing to a prediction before the answer primes attention and strengthens memory. — Brod et al., 2018">🎯 Predict-Then-Reveal</span>
-  <span class="ls-badge" data-tip="Every concept pairs an interactive SVG with brief text — wave anatomy, the inverse-relationship slider, the EM spectrum. Pairing visuals with words activates two memory channels. — Noetel et al., 2022">🖼️ Dual Coding</span>
-  <span class="ls-badge" data-tip="The lesson chunks content into short sections with one idea each, and reveals vocabulary only after students have observed the phenomenon. — Sweller et al., 2019">⚖️ Load Management</span>
-  <span class="ls-badge" data-tip="The labeling self-check and the 10-question quiz both ask students to recall — recall strengthens long-term retention far more than re-reading. — Adesope et al., 2017">✅ Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Light vs. sound, calm-day vs. storm wave, short vs. long wavelength, placing two examples side-by-side helps students see the structural difference faster than either example alone. (Schwartz &amp; Bransford, 1998)">🔀 Contrasting Cases</span>
+  <span class="ls-badge" data-tip="Students predict whether astronauts can hear or see each other, then learn whether they were right. Committing to a prediction before the answer primes attention and strengthens memory. (Brod et al., 2018)">🎯 Predict-Then-Reveal</span>
+  <span class="ls-badge" data-tip="Every concept pairs an interactive SVG with brief text, wave anatomy, the inverse-relationship slider, the EM spectrum. Pairing visuals with words activates two memory channels. (Noetel et al., 2022)">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson chunks content into short sections with one idea each, and reveals vocabulary only after students have observed the phenomenon. (Sweller et al., 2019)">⚖️ Load Management</span>
+  <span class="ls-badge" data-tip="The labeling self-check and the 10-question quiz both ask students to recall, recall strengthens long-term retention far more than re-reading. (Adesope et al., 2017)">✅ Retrieval Practice</span>
 </div>
 
 <!-- MA STE STANDARDS BADGES -->
@@ -655,12 +655,12 @@ body.stem-active .stem-detail {
 </div>
 
 <!-- ════════════════════════════════════════════════════════════════════
-     SECTION STUBS — populated in subsequent micropasses.
+     SECTION STUBS, populated in subsequent micropasses.
      Each stub has its anchor ID so nav jump-links work during dev.
 ═══════════════════════════════════════════════════════════════════ -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 1 — OPENING MYSTERY  (Pass 1)
+     SECTION 1, OPENING MYSTERY  (Pass 1)
      Four phenomena. Each reveals the puzzle without resolving it.
 ═══════════════════════════════════════════════════════════════════════ -->
 <style>
@@ -729,13 +729,13 @@ body.stem-active .stem-detail {
 
 /* === ANIMATIONS (run only when card is revealed) === */
 
-/* Card 1 — Duck on water */
+/* Card 1 - Duck on water */
 .mystery-card.revealed .wave-slide   { animation: m1-wave 2.6s linear infinite; }
 .mystery-card.revealed .duck-bob     { animation: m1-bob  2.6s ease-in-out infinite; }
 @keyframes m1-wave { from { transform: translateX(0); }       to   { transform: translateX(-60px); } }
 @keyframes m1-bob  { 0%,100% { transform: translateY(0); }    50%  { transform: translateY(-9px); } }
 
-/* Card 2 — Stadium wave */
+/* Card 2 - Stadium wave */
 .mystery-card.revealed .fig {
   animation: m2-stand 2.6s ease-in-out infinite;
 }
@@ -745,7 +745,7 @@ body.stem-active .stem-detail {
   24%         { transform: translateY(0); }
 }
 
-/* Card 3 — Speaker → ear */
+/* Card 3 - Speaker → ear */
 .mystery-card.revealed .ring {
   animation: m3-ring 2.4s linear infinite;
   transform-box: fill-box;
@@ -765,7 +765,7 @@ body.stem-active .stem-detail {
   50%      { transform: translateX(1.8px); }
 }
 
-/* Card 4 — Sun → Earth */
+/* Card 4 - Sun → Earth */
 .mystery-card.revealed .beam { animation: m4-beam 1.8s linear infinite; }
 @keyframes m4-beam {
   0%   { transform: translateX(0);     opacity: 1; }
@@ -949,19 +949,19 @@ body.stem-active .stem-detail {
         </div>
 
         <div class="mystery-prompt">Click to look closer</div>
-        <div class="mystery-puzzle">Between the Sun and Earth there's <strong>nothing</strong> — no air, no water, no anything. So how does sunlight get here?</div>
+        <div class="mystery-puzzle">Between the Sun and Earth there's <strong>nothing</strong>, no air, no water, no anything. So how does sunlight get here?</div>
       </div>
 
     </div>
 
-    <!-- Bridge — preserves mystery, hands off to Section 2 WITHOUT resolving -->
+    <!-- Bridge - preserves mystery, hands off to Section 2 WITHOUT resolving -->
     <div class="bridge-callout">
-      Four scenes. Same puzzle in each one. <strong>Something</strong> is clearly traveling — across the water, around the stadium, through the room, even across empty space — but the matter isn't going along for the ride. So what <em>is</em> moving? Let's look closer.
+      Four scenes. Same puzzle in each one. <strong>Something</strong> is clearly traveling (across the water, around the stadium, through the room, even across empty space) but the matter isn't going along for the ride. So what <em>is</em> moving? Let's look closer.
     </div>
   </div>
 </section>
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 2 — WHAT IS A WAVE?  (Pass 2)
+     SECTION 2, WHAT IS A WAVE?  (Pass 2)
      Begin resolving the Opening Mystery. A pulse travels through particles that
      stay in place. Vocabulary (wave, disturbance) emerges to NAME what
      students just watched, not to introduce a new topic.
@@ -1009,7 +1009,7 @@ body.stem-active .stem-detail {
   letter-spacing: 0.04em;
 }
 
-/* Observation row — two side-by-side observations students should notice */
+/* Observation row - two side-by-side observations students should notice */
 .observe-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1035,7 +1035,7 @@ body.stem-active .stem-detail {
 }
 .observe-card strong { color: var(--teal); }
 
-/* The name-it reveal — formalize vocab AFTER the visual */
+/* The name-it reveal - formalize vocab AFTER the visual */
 .name-it {
   background: var(--card);
   border: 1px solid var(--border);
@@ -1083,7 +1083,7 @@ body.stem-active .stem-detail {
         <!-- resting line -->
         <line x1="20" y1="130" x2="700" y2="130" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
 
-        <!-- "starting position" markers — ghost dots showing where each particle began -->
+        <!-- "starting position" markers - ghost dots showing where each particle began -->
         <g id="ghost-row" opacity="0.18"></g>
 
         <!-- live particles -->
@@ -1105,11 +1105,11 @@ body.stem-active .stem-detail {
       </svg>
       <div class="pulse-controls">
         <button class="pulse-btn" onclick="firePulse()">▶ Send a Pulse</button>
-        <span class="pulse-caption">Watch the dots — what do they actually do?</span>
+        <span class="pulse-caption">Watch the dots, what do they actually do?</span>
       </div>
     </div>
 
-    <!-- ── OBSERVATIONS — these are what the animation shows ── -->
+    <!-- ── OBSERVATIONS - these are what the animation shows ── -->
     <div class="observe-row">
       <div class="observe-card">
         <span class="observe-icon">→</span>
@@ -1121,15 +1121,15 @@ body.stem-active .stem-detail {
       </div>
     </div>
 
-    <!-- ── NAME IT — vocabulary arrives only now ── -->
+    <!-- ── NAME IT - vocabulary arrives only now ── -->
     <div class="name-it">
       <div class="name-it-label">So what just traveled?</div>
-      <p>Not the particles. They each lifted up and dropped back down. What moved from one end to the other was <strong id="vocab-energy">energy</strong> — a <strong id="vocab-disturbance">disturbance</strong> passing through the row. Scientists call that traveling disturbance a <strong id="vocab-wave">wave</strong>.</p>
+      <p>Not the particles. They each lifted up and dropped back down. What moved from one end to the other was <strong id="vocab-energy">energy</strong>, a <strong id="vocab-disturbance">disturbance</strong> passing through the row. Scientists call that traveling disturbance a <strong id="vocab-wave">wave</strong>.</p>
     </div>
 
-    <!-- ── BRIDGE — opens the next puzzle without resolving ── -->
+    <!-- ── BRIDGE - opens the next puzzle without resolving ── -->
     <div class="bridge-callout teal">
-      Now we know: waves carry energy through stuff — through water, through a stadium, through air. But sunlight reaches Earth across <em>empty space</em>. There's no water, no people, no air between the Sun and us. <strong>So how does that wave travel?</strong>
+      Now we know: waves carry energy through stuff: through water, through a stadium, through air. But sunlight reaches Earth across <em>empty space</em>. There's no water, no people, no air between the Sun and us. <strong>So how does that wave travel?</strong>
     </div>
   </div>
 </section>
@@ -1145,7 +1145,7 @@ body.stem-active .stem-detail {
   const X_END     = 680;
   const Y_REST    = 130;
   const LIFT      = 38;
-  const SIGMA     = 36;        // pulse "width" — controls how wide the bump is
+  const SIGMA     = 36;        // pulse "width", controls how wide the bump is
   const SPEED     = 0.32;      // px / ms
   const PARTICLE_R = 6;
 
@@ -1197,7 +1197,7 @@ body.stem-active .stem-detail {
         const dx = p.x - pulseCenterX;
         const lift = LIFT * Math.exp(-(dx * dx) / (2 * SIGMA * SIGMA));
         p.el.setAttribute('cy', (Y_REST - lift).toFixed(2));
-        // glow effect — particle yellows when displaced
+        // glow effect - particle yellows when displaced
         const glow = lift / LIFT;
         const r = Math.round(59  + (245 - 59)  * glow);
         const g = Math.round(200 + (200 - 200) * glow);
@@ -1244,7 +1244,7 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 3 — ELECTROMAGNETIC WAVES  (Pass 3)
+     SECTION 3, ELECTROMAGNETIC WAVES  (Pass 3)
      Astronaut puzzle. Predict before explain. EM waves named only after
      students confront the can-see-but-can't-hear contradiction.
 ═══════════════════════════════════════════════════════════════════════ -->
@@ -1348,7 +1348,7 @@ body.stem-active .stem-detail {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* The contradiction callout — visible only after BOTH predictions made */
+/* The contradiction callout - visible only after BOTH predictions made */
 .contradiction {
   display: none;
   max-width: 760px;
@@ -1366,7 +1366,7 @@ body.stem-active .stem-detail {
 .contradiction.visible { display: block; }
 .contradiction strong { color: var(--gold); }
 
-/* Reveal — the answer arrives only when student requests it */
+/* Reveal - the answer arrives only when student requests it */
 .reveal-trigger {
   display: none;
   text-align: center;
@@ -1463,18 +1463,18 @@ body.stem-active .stem-detail {
           <ellipse cx="-32" cy="-2" rx="10" ry="22" fill="url(#suit-grad)" stroke="#7a8896" stroke-width="1.4" transform="rotate(30 -32 -2)"/>
         </g>
 
-        <!-- Speech attempt from left astronaut — "Hey!" floats above helmet -->
+        <!-- Speech attempt from left astronaut - "Hey!" floats above helmet -->
         <g transform="translate(292, 110)" opacity="0.85">
           <text x="0" y="-35" font-family="Nunito" font-size="14" font-weight="900" fill="rgba(255,255,255,0.85)">"Hey!"</text>
         </g>
 
-        <!-- silence indicator — beside "Hey!", same height -->
+        <!-- silence indicator - beside "Hey!", same height -->
         <g transform="translate(358, 75)" opacity="0.85">
           <circle r="11" fill="rgba(231,76,60,0.18)" stroke="#e74c3c" stroke-width="1.5"/>
           <text y="3.5" text-anchor="middle" font-family="Nunito" font-size="13" font-weight="900" fill="#e74c3c">🔇</text>
         </g>
 
-        <!-- Right astronaut clearly sees left one — eye-beam -->
+        <!-- Right astronaut clearly sees left one - eye-beam -->
         <g opacity="0.55">
           <line x1="460" y1="112" x2="275" y2="112" stroke="#3bc8e8" stroke-width="1.4" stroke-dasharray="4,3"/>
           <polygon points="275,112 281,108 281,116" fill="#3bc8e8"/>
@@ -1482,7 +1482,7 @@ body.stem-active .stem-detail {
         <text x="365" y="126" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="800" letter-spacing="1.5" fill="#3bc8e8" opacity="0.85">SEES CLEARLY</text>
 
         <!-- label -->
-        <text x="365" y="225" text-anchor="middle" font-family="Nunito" font-size="11" font-weight="800" letter-spacing="2" fill="rgba(255,255,255,0.4)">VACUUM OF SPACE — NO AIR, NO WATER, NOTHING</text>
+        <text x="365" y="225" text-anchor="middle" font-family="Nunito" font-size="11" font-weight="800" letter-spacing="2" fill="rgba(255,255,255,0.4)">VACUUM OF SPACE, NO AIR, NO WATER, NOTHING</text>
       </svg>
     </div>
 
@@ -1496,7 +1496,7 @@ body.stem-active .stem-detail {
           <button class="predict-btn" data-ans="no">No</button>
         </div>
         <div class="predict-feedback">
-          <strong>Yes — they can see each other clearly.</strong> Sunlight crosses 93 million miles of empty space to reach them. Light has no problem traveling through nothing.
+          <strong>Yes; they can see each other clearly.</strong> Sunlight crosses 93 million miles of empty space to reach them. Light has no problem traveling through nothing.
         </div>
       </div>
 
@@ -1507,7 +1507,7 @@ body.stem-active .stem-detail {
           <button class="predict-btn" data-ans="no">No</button>
         </div>
         <div class="predict-feedback">
-          <strong>No — total silence.</strong> They could shout at the top of their lungs and the other would hear nothing. Sound cannot cross the vacuum of space.
+          <strong>No, total silence.</strong> They could shout at the top of their lungs and the other would hear nothing. Sound cannot cross the vacuum of space.
         </div>
       </div>
 
@@ -1527,9 +1527,9 @@ body.stem-active .stem-detail {
     <div class="reveal-content" id="em-reveal-content">
       <div class="name-it">
         <div class="name-it-label">The Answer</div>
-        <p>Some waves need a <strong id="vocab-medium">medium</strong> — stuff to travel through, like water, air, or a row of particles. Sound is one of these.</p>
+        <p>Some waves need a <strong id="vocab-medium">medium</strong>, stuff to travel through, like water, air, or a row of particles. Sound is one of these.</p>
         <p style="margin-top: 0.8rem;">But light is different. Light is an <strong id="vocab-em">electromagnetic wave</strong>, and electromagnetic waves don't need anything at all. They can travel through completely empty space.</p>
-        <p style="margin-top: 0.8rem;">That's why sunlight reaches Earth in about 8 minutes — even though there's nothing between the Sun and us for it to travel through.</p>
+        <p style="margin-top: 0.8rem;">That's why sunlight reaches Earth in about 8 minutes, even though there's nothing between the Sun and us for it to travel through.</p>
       </div>
     </div>
 
@@ -1537,7 +1537,7 @@ body.stem-active .stem-detail {
 </section>
 
 <script>
-/* Section 3 — Astronaut puzzle: lock predictions, reveal contradiction, then explanation. */
+/* Section 3 - Astronaut puzzle: lock predictions, reveal contradiction, then explanation. */
 (function(){
   const cards = document.querySelectorAll('#em .predict-card');
   let answered = 0;
@@ -1571,13 +1571,13 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 4 — MECHANICAL WAVES  (Pass 4)
+     SECTION 4, MECHANICAL WAVES  (Pass 4)
      Close the Opening Mystery. Resolve why sound fails in vacuum. Reconnect to
      the Section 1 speaker phenomenon. Introduce: mechanical wave,
      medium, vibration. End with bridge to wave anatomy.
 ═══════════════════════════════════════════════════════════════════════ -->
 <style>
-/* Callback strip — small reminder of a Section 1 card */
+/* Callback strip - small reminder of a Section 1 card */
 .callback-strip {
   display: flex;
   align-items: center;
@@ -1656,7 +1656,7 @@ body.stem-active .stem-detail {
 .compare-card.success .compare-caption strong { color: var(--green); }
 .compare-card.failure .compare-caption strong { color: var(--red); }
 
-/* Vibration close-up — small inset showing a particle vibrating in place */
+/* Vibration close-up - small inset showing a particle vibrating in place */
 .vibration-stage {
   background: var(--card);
   border: 1px solid var(--border);
@@ -1685,7 +1685,7 @@ body.stem-active .stem-detail {
     <!-- ── CALLBACK TO SECTION 1 ── -->
     <div class="callback-strip">
       <span class="callback-icon">🔊</span>
-      <div>Remember the <strong>speaker</strong>? The sound reached your ear across the room — but the air didn't fly across with it. Let's finally see what was actually happening.</div>
+      <div>Remember the <strong>speaker</strong>? The sound reached your ear across the room; but the air didn't fly across with it. Let's finally see what was actually happening.</div>
     </div>
 
     <p class="section-desc" style="text-align: center; margin-left: auto; margin-right: auto;">Same speaker. Two different rooms. Watch carefully.</p>
@@ -1693,7 +1693,7 @@ body.stem-active .stem-detail {
     <!-- ── AIR vs VACUUM COMPARISON ── -->
     <div class="compare-grid">
 
-      <!-- AIR-FILLED ROOM — SOUND GETS THROUGH -->
+      <!-- AIR-FILLED ROOM - SOUND GETS THROUGH -->
       <div class="compare-card success">
         <div class="compare-header">
           <span class="compare-tag">Room with air</span>
@@ -1732,10 +1732,10 @@ body.stem-active .stem-detail {
           <text x="290" y="155" text-anchor="middle" font-family="Nunito" font-size="9"  font-weight="800" letter-spacing="1" fill="rgba(255,255,255,0.4)">EAR</text>
           <text x="160" y="155" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="800" letter-spacing="2" fill="rgba(46,204,113,0.7)">AIR MOLECULES</text>
         </svg>
-        <div class="compare-caption">Molecules jiggle in place — the vibration passes from one to the next, all the way to the ear. <strong>The wave gets through.</strong></div>
+        <div class="compare-caption">Molecules jiggle in place, the vibration passes from one to the next, all the way to the ear. <strong>The wave gets through.</strong></div>
       </div>
 
-      <!-- VACUUM — SOUND DOES NOT GET THROUGH -->
+      <!-- VACUUM - SOUND DOES NOT GET THROUGH -->
       <div class="compare-card failure">
         <div class="compare-header">
           <span class="compare-tag">Room with no air (vacuum)</span>
@@ -1768,7 +1768,7 @@ body.stem-active .stem-detail {
           <text x="280" y="155" text-anchor="middle" font-family="Nunito" font-size="9"  font-weight="800" letter-spacing="1" fill="rgba(255,255,255,0.4)">EAR</text>
           <text x="160" y="155" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="800" letter-spacing="2" fill="rgba(231,76,60,0.7)">NO MOLECULES</text>
         </svg>
-        <div class="compare-caption">The speaker still vibrates — but there's nothing to pass the vibration along. <strong>The wave goes nowhere.</strong></div>
+        <div class="compare-caption">The speaker still vibrates; but there's nothing to pass the vibration along. <strong>The wave goes nowhere.</strong></div>
       </div>
 
     </div>
@@ -1792,7 +1792,7 @@ body.stem-active .stem-detail {
           <marker id="vib-left"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#3bc8e8"/></marker>
           <marker id="vib-right" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#3bc8e8"/></marker>
         </g>
-        <text x="240" y="22" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="800" letter-spacing="2" fill="rgba(255,255,255,0.5)">ZOOMED IN — ONE PARTICLE</text>
+        <text x="240" y="22" text-anchor="middle" font-family="Nunito" font-size="10" font-weight="800" letter-spacing="2" fill="rgba(255,255,255,0.5)">ZOOMED IN, ONE PARTICLE</text>
         <text x="240" y="88" text-anchor="middle" font-family="Nunito" font-size="9"  font-weight="700" letter-spacing="1" fill="rgba(255,255,255,0.4)">it stays roughly here</text>
       </svg>
       <div class="vib-caption">The particle <strong>vibrates</strong> back and forth, but it doesn't travel across the room.</div>
@@ -1801,14 +1801,14 @@ body.stem-active .stem-detail {
     <!-- ── THE NAME-IT REVEAL ── -->
     <div class="name-it" style="max-width: 760px; margin: 0 auto;">
       <div class="name-it-label">The Answer</div>
-      <p>Sound is a <strong id="vocab-mechanical">mechanical wave</strong>. Mechanical waves need stuff to travel through — that stuff is called a <strong>medium</strong>. The wave moves forward by making particles <strong id="vocab-vibration">vibrate</strong> against the next particle, and the next, and the next.</p>
+      <p>Sound is a <strong id="vocab-mechanical">mechanical wave</strong>. Mechanical waves need stuff to travel through; that stuff is called a <strong>medium</strong>. The wave moves forward by making particles <strong id="vocab-vibration">vibrate</strong> against the next particle, and the next, and the next.</p>
       <p style="margin-top: 0.8rem;">No medium means no neighbors to pass the energy to. No neighbors means no wave. That's why space is silent.</p>
     </div>
 
     <!-- ── OPENING MYSTERY CLOSED + BRIDGE TO WAVE ANATOMY ── -->
     <div class="bridge-callout" style="margin-top: 2.2rem;">
-      <strong>Mystery solved.</strong> Waves carry energy from place to place. <strong>Mechanical waves</strong> like sound and ocean waves need a medium. <strong>Electromagnetic waves</strong> like light don't. Matter stays put — energy travels.<br><br>
-      But here's a new question. If energy is what's really moving — <strong>how do we measure it?</strong>
+      <strong>Mystery solved.</strong> Waves carry energy from place to place. <strong>Mechanical waves</strong> like sound and ocean waves need a medium. <strong>Electromagnetic waves</strong> like light don't. Matter stays put, energy travels.<br><br>
+      But here's a new question. If energy is what's really moving, <strong>how do we measure it?</strong>
     </div>
 
   </div>
@@ -1848,7 +1848,7 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 5 — PARTS OF A WAVE  (Pass 5)
+     SECTION 5, PARTS OF A WAVE  (Pass 5)
      Anatomy framed as scientists' measurement language. One strong
      visual. Three terms: crest, trough, resting position.
 ═══════════════════════════════════════════════════════════════════════ -->
@@ -1895,7 +1895,7 @@ body.stem-active .stem-detail {
   color: var(--gold);
 }
 
-/* Definition card under the SVG — updates as student clicks each chip */
+/* Definition card under the SVG - updates as student clicks each chip */
 .anatomy-def {
   margin: 1rem auto 0;
   max-width: 760px;
@@ -1919,7 +1919,7 @@ body.stem-active .stem-detail {
   font-size: 0.92rem;
 }
 
-/* Wave anatomy SVG — highlightable parts */
+/* Wave anatomy SVG - highlightable parts */
 .wave-curve {
   fill: none;
   stroke: #3bc8e8;
@@ -2039,12 +2039,12 @@ body.stem-active .stem-detail {
 </section>
 
 <script>
-/* Section 5 — anatomy chips */
+/* Section 5 - anatomy chips */
 (function(){
   const defs = {
-    crest:  { html: 'A <strong>crest</strong> is the highest point of a wave — the top of each peak.' },
-    trough: { html: 'A <strong>trough</strong> is the lowest point of a wave — the bottom of each dip.' },
-    rest:   { html: 'The <strong>resting position</strong> is the level the wave would sit at if it weren\'t moving — the calm middle line that the wave rises above and dips below.' }
+    crest:  { html: 'A <strong>crest</strong> is the highest point of a wave, the top of each peak.' },
+    trough: { html: 'A <strong>trough</strong> is the lowest point of a wave, the bottom of each dip.' },
+    rest:   { html: 'The <strong>resting position</strong> is the level the wave would sit at if it weren\'t moving, the calm middle line that the wave rises above and dips below.' }
   };
   const stage = document.getElementById('anatomy-stage');
   const defEl = document.getElementById('anatomy-def');
@@ -2064,7 +2064,7 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 6 — WAVELENGTH  (Pass 6)
+     SECTION 6, WAVELENGTH  (Pass 6)
      Two waves, same height, different peak spacing. Observation first,
      name second. Wavelength is presented as a HORIZONTAL measurement.
 ═══════════════════════════════════════════════════════════════════════ -->
@@ -2139,7 +2139,7 @@ body.stem-active .stem-detail {
 .wl-reveal-trigger button:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(245,200,66,0.45); }
 .wl-reveal-trigger.hidden { display: none; }
 
-/* Wavelength brackets — hidden initially, revealed after click */
+/* Wavelength brackets - hidden initially, revealed after click */
 .wl-bracket { opacity: 0; transition: opacity 0.4s; }
 .wl-card.revealed .wl-bracket { opacity: 1; }
 
@@ -2152,7 +2152,7 @@ body.stem-active .stem-detail {
 .wl-reveal-content.visible { display: block; animation: fadeUp 0.4s ease both; }
 .wl-reveal-content .name-it { margin-bottom: 0; }
 
-/* Anti-confusion footnote — make it visually distinct from definition */
+/* Anti-confusion footnote - make it visually distinct from definition */
 .anti-confuse {
   max-width: 760px;
   margin: 1.2rem auto 0;
@@ -2187,7 +2187,7 @@ body.stem-active .stem-detail {
     <h2 class="section-title">How Far Apart Are the Peaks?</h2>
     <p class="section-desc">Compare these two waves. Same height. Different something. What do you notice?</p>
 
-    <!-- ── TWO WAVES — same amplitude, different peak spacing ── -->
+    <!-- ── TWO WAVES - same amplitude, different peak spacing ── -->
     <div class="wl-compare">
 
       <!-- LONG wavelength -->
@@ -2196,7 +2196,7 @@ body.stem-active .stem-detail {
           <span class="wl-tag">Wave A</span>
           <span>peaks far apart</span>
         </div>
-        <svg viewBox="0 0 720 130" xmlns="http://www.w3.org/2000/svg" aria-label="Wave A — a wave with peaks spaced far apart.">
+        <svg viewBox="0 0 720 130" xmlns="http://www.w3.org/2000/svg" aria-label="Wave A, a wave with peaks spaced far apart.">
           <line x1="20" y1="65" x2="700" y2="65" stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="4,4"/>
           <!-- 2 cycles across 720 → wavelength = ~320 -->
           <path d="M 20 65 C 90 -15, 170 -15, 240 65 C 310 145, 390 145, 460 65 C 530 -15, 610 -15, 680 65 L 700 65"
@@ -2222,7 +2222,7 @@ body.stem-active .stem-detail {
           <span class="wl-tag">Wave B</span>
           <span>peaks close together</span>
         </div>
-        <svg viewBox="0 0 720 130" xmlns="http://www.w3.org/2000/svg" aria-label="Wave B — a wave with peaks spaced close together.">
+        <svg viewBox="0 0 720 130" xmlns="http://www.w3.org/2000/svg" aria-label="Wave B, a wave with peaks spaced close together.">
           <defs>
             <marker id="wl-arr-l" markerWidth="9" markerHeight="8" refX="3" refY="4" orient="auto"><polygon points="9 0, 0 4, 9 8" fill="var(--gold)"/></marker>
             <marker id="wl-arr-r" markerWidth="9" markerHeight="8" refX="6" refY="4" orient="auto"><polygon points="0 0, 9 4, 0 8" fill="var(--gold)"/></marker>
@@ -2244,7 +2244,7 @@ body.stem-active .stem-detail {
           <circle cx="233" cy="14" r="6" fill="var(--green)"/>
           <circle cx="403" cy="14" r="6" fill="var(--green)"/>
           <circle cx="573" cy="14" r="6" fill="var(--green)"/>
-          <!-- wavelength bracket (hidden until reveal) — between first two crests -->
+          <!-- wavelength bracket (hidden until reveal) - between first two crests -->
           <g class="wl-bracket">
             <line x1="63"  y1="-5" x2="63"  y2="14" stroke="var(--gold)" stroke-width="1.5"/>
             <line x1="233" y1="-5" x2="233" y2="14" stroke="var(--gold)" stroke-width="1.5"/>
@@ -2276,7 +2276,7 @@ body.stem-active .stem-detail {
       </div>
       <div class="anti-confuse">
         <span class="ac-label">Watch Out</span>
-        Wavelength is <strong>not how tall</strong> a wave is — it's <strong>how far apart</strong> the repeating parts are. Both waves above are the same height, but they have very different wavelengths.
+        Wavelength is <strong>not how tall</strong> a wave is, it's <strong>how far apart</strong> the repeating parts are. Both waves above are the same height, but they have very different wavelengths.
       </div>
     </div>
 
@@ -2284,7 +2284,7 @@ body.stem-active .stem-detail {
 </section>
 
 <script>
-/* Section 6 — wavelength reveal */
+/* Section 6 - wavelength reveal */
 window.revealWavelength = function() {
   document.getElementById('wl-long').classList.add('revealed');
   document.getElementById('wl-short').classList.add('revealed');
@@ -2295,7 +2295,7 @@ window.revealWavelength = function() {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 7 — FREQUENCY  (Pass 7)
+     SECTION 7, FREQUENCY  (Pass 7)
      Two waves travel past a fixed observation line. Live crest counters.
      Students count first, then learn the word. Wavelength relationship
      seeded at the end without being explained.
@@ -2446,7 +2446,7 @@ window.revealWavelength = function() {
 .freq-reveal-content.visible { display: block; animation: fadeUp 0.45s ease both; }
 .freq-reveal-content .name-it { margin-bottom: 0; }
 
-/* Seed callout — plants the inverse relationship without explaining it */
+/* Seed callout - plants the inverse relationship without explaining it */
 .seed-callout {
   max-width: 760px;
   margin: 1.2rem auto 0;
@@ -2483,7 +2483,7 @@ window.revealWavelength = function() {
     <!-- ── TWO ANIMATED WAVES ── -->
     <div class="freq-grid">
 
-      <!-- WAVE A — fewer crests per second -->
+      <!-- WAVE A - fewer crests per second -->
       <div class="freq-card">
         <div class="freq-card-header">
           <span class="freq-tag">Wave A</span>
@@ -2501,7 +2501,7 @@ window.revealWavelength = function() {
         </svg>
       </div>
 
-      <!-- WAVE B — more crests per second -->
+      <!-- WAVE B - more crests per second -->
       <div class="freq-card">
         <div class="freq-card-header">
           <span class="freq-tag">Wave B</span>
@@ -2541,7 +2541,7 @@ window.revealWavelength = function() {
       <!-- ── WAVELENGTH SEED ── -->
       <div class="seed-callout">
         <span class="seed-label">Notice Something?</span>
-        Wave B has the <strong>shorter wavelength</strong> — and Wave B also had <strong>more crests</strong> pass the line. Hold onto that. We'll come back to it.
+        Wave B has the <strong>shorter wavelength</strong>, and Wave B also had <strong>more crests</strong> pass the line. Hold onto that. We'll come back to it.
       </div>
     </div>
 
@@ -2549,7 +2549,7 @@ window.revealWavelength = function() {
 </section>
 
 <script>
-/* ─── Section 7 — Frequency animation + counting ───
+/* ─── Section 7, Frequency animation + counting ───
    Two scrolling sine waves. Both move at the same horizontal speed (px/s).
    Wave A: long wavelength → fewer crests per second past the gold line.
    Wave B: short wavelength → more crests per second past the gold line.
@@ -2562,7 +2562,7 @@ window.revealWavelength = function() {
   const BASE_Y   = 65;
   const AMP_PX   = 42;
   const W        = 720;
-  const FINAL_SPEED    = 360;   // px/s — same for both waves
+  const FINAL_SPEED    = 360;   // px/s, same for both waves
   const FINAL_LAMBDA_A = 180;   // → 2 crests/sec
   const FINAL_LAMBDA_B = 72;    // → 5 crests/sec
   const EXPECTED_A = 2;
@@ -2722,7 +2722,7 @@ window.revealWavelength = function() {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 8 — AMPLITUDE & ENERGY  (Pass 8)
+     SECTION 8, AMPLITUDE & ENERGY  (Pass 8)
      Same wavelength, different heights. Prediction about energy first,
      vocabulary second. The energy connection IS the learning target.
 ═══════════════════════════════════════════════════════════════════════ -->
@@ -2760,7 +2760,7 @@ window.revealWavelength = function() {
 }
 .amp-card svg { display: block; width: 100%; height: auto; }
 
-/* Energy meter — appears after reveal */
+/* Energy meter - appears after reveal */
 .energy-meter {
   display: flex;
   align-items: center;
@@ -2897,7 +2897,7 @@ window.revealWavelength = function() {
 .amp-reveal-content.visible { display: block; animation: fadeUp 0.45s ease both; }
 .amp-reveal-content .name-it { margin-bottom: 0; }
 
-/* Amplitude bracket — vertical, hidden until reveal */
+/* Amplitude bracket - vertical, hidden until reveal */
 .amp-bracket { opacity: 0; transition: opacity 0.5s; }
 .amp-card.revealed .amp-bracket { opacity: 1; }
 </style>
@@ -2908,10 +2908,10 @@ window.revealWavelength = function() {
     <h2 class="section-title">A Calm Day and a Storm</h2>
     <p class="section-desc">Two ocean waves. Same distance between peaks. One is much bigger than the other.</p>
 
-    <!-- ── TWO WAVES — same wavelength, different amplitudes ── -->
+    <!-- ── TWO WAVES - same wavelength, different amplitudes ── -->
     <div class="amp-compare">
 
-      <!-- SMALL amplitude — calm day -->
+      <!-- SMALL amplitude - calm day -->
       <div class="amp-card" id="amp-small">
         <div class="amp-card-header">
           <span class="amp-tag">Calm day 🌤️</span>
@@ -2930,7 +2930,7 @@ window.revealWavelength = function() {
           <rect x="0" y="90" width="720" height="80" fill="url(#water-small)"/>
           <!-- resting line -->
           <line x1="20" y1="90" x2="700" y2="90" stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="4,4"/>
-          <!-- wave path — same wavelength (LAMBDA=144) as big wave, amplitude=18 -->
+          <!-- wave path - same wavelength (LAMBDA=144) as big wave, amplitude=18 -->
           <path d="M 20 90 C 56 60, 92 60, 128 90 C 164 120, 200 120, 236 90 C 272 60, 308 60, 344 90 C 380 120, 416 120, 452 90 C 488 60, 524 60, 560 90 C 596 120, 632 120, 668 90 L 700 90"
                 fill="none" stroke="#3bc8e8" stroke-width="3" stroke-linecap="round"/>
           <!-- duck -->
@@ -2940,7 +2940,7 @@ window.revealWavelength = function() {
             <polygon points="14,-7 20,-5 14,-3"   fill="#e67e22"/>
             <circle  cx="11" cy="-9" r="1"        fill="#0d1f2d"/>
           </g>
-          <!-- amplitude bracket (gold, vertical) — hidden until reveal -->
+          <!-- amplitude bracket (gold, vertical) - hidden until reveal -->
           <g class="amp-bracket">
             <line x1="225" y1="90" x2="245" y2="90" stroke="var(--gold)" stroke-width="1.5"/>
             <line x1="225" y1="72" x2="245" y2="72" stroke="var(--gold)" stroke-width="1.5"/>
@@ -2957,7 +2957,7 @@ window.revealWavelength = function() {
         </div>
       </div>
 
-      <!-- LARGE amplitude — storm -->
+      <!-- LARGE amplitude - storm -->
       <div class="amp-card" id="amp-big">
         <div class="amp-card-header">
           <span class="amp-tag">Storm 🌊</span>
@@ -2972,7 +2972,7 @@ window.revealWavelength = function() {
           </defs>
           <rect x="0" y="90" width="720" height="80" fill="url(#water-big)"/>
           <line x1="20" y1="90" x2="700" y2="90" stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="4,4"/>
-          <!-- wave path — same wavelength (LAMBDA=144) as small wave, amplitude=55 -->
+          <!-- wave path - same wavelength (LAMBDA=144) as small wave, amplitude=55 -->
           <path d="M 20 90 C 56 35, 92 35, 128 90 C 164 145, 200 145, 236 90 C 272 35, 308 35, 344 90 C 380 145, 416 145, 452 90 C 488 35, 524 35, 560 90 C 596 145, 632 145, 668 90 L 700 90"
                 fill="none" stroke="#3bc8e8" stroke-width="3" stroke-linecap="round"/>
           <!-- duck (same x position, but bobbing on the bigger wave) -->
@@ -3009,7 +3009,7 @@ window.revealWavelength = function() {
         <button class="amp-predict-btn" data-ans="big"   onclick="amplitudePredict('big')">The storm's huge wave</button>
       </div>
       <div class="amp-feedback">
-        <strong>The big one — by a lot.</strong> A small wave nudges you. A storm wave can knock you over, move sand, even tear apart docks. The bigger the wave, the more energy it carries.
+        <strong>The big one, by a lot.</strong> A small wave nudges you. A storm wave can knock you over, move sand, even tear apart docks. The bigger the wave, the more energy it carries.
       </div>
     </div>
 
@@ -3023,7 +3023,7 @@ window.revealWavelength = function() {
       <div class="name-it">
         <div class="name-it-label">The Word For Wave Size</div>
         <p>The height of a wave from the resting line to the crest is called its <strong id="vocab-amplitude">amplitude</strong>. The bigger the amplitude, the more <strong>energy</strong> the wave carries.</p>
-        <p style="margin-top: 0.7rem;">A small amplitude wave gently bobs your boat. A huge amplitude wave can sink it. Same kind of wave — totally different amount of energy.</p>
+        <p style="margin-top: 0.7rem;">A small amplitude wave gently bobs your boat. A huge amplitude wave can sink it. Same kind of wave, totally different amount of energy.</p>
       </div>
     </div>
 
@@ -3031,7 +3031,7 @@ window.revealWavelength = function() {
 </section>
 
 <script>
-/* Section 8 — amplitude prediction, reveal, brackets, energy meters */
+/* Section 8 - amplitude prediction, reveal, brackets, energy meters */
 (function(){
   const predictCard = document.getElementById('amp-predict');
   const btns        = predictCard.querySelectorAll('.amp-predict-btn');
@@ -3060,16 +3060,16 @@ window.revealWavelength = function() {
     }, 200);
   };
 
-  // Gentle duck bobbing — same vertical motion on both waves so students
+  // Gentle duck bobbing - same vertical motion on both waves so students
   // intuit that the DUCK stays put while the wave's height differs.
   // (We re-use the principle established in Section 1.)
-  // Skipped to keep section calm — the static positions show amplitude difference clearly.
+  // Skipped to keep section calm - the static positions show amplitude difference clearly.
 })();
 </script>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 9 — THE INVERSE RELATIONSHIP + EM SPECTRUM  (Pass 9)
+     SECTION 9, THE INVERSE RELATIONSHIP + EM SPECTRUM  (Pass 9)
      The payoff. Try to make a short-wavelength low-frequency wave.
      Discover you can't. Then receive the rule. Then meet the EM spectrum.
 ═══════════════════════════════════════════════════════════════════════ -->
@@ -3224,7 +3224,7 @@ window.revealWavelength = function() {
   padding: 0 0.2rem;
 }
 
-/* Try-it nudge — appears while student is dragging */
+/* Try-it nudge - appears while student is dragging */
 .try-nudge {
   margin-top: 0.6rem;
   padding: 0.65rem 0.95rem;
@@ -3430,7 +3430,7 @@ window.revealWavelength = function() {
   <div class="container">
     <span class="section-label">The Big Connection</span>
     <h2 class="section-title">Wavelength, Frequency, Energy</h2>
-    <p class="section-desc">You've met all three. Now let's see how they fit together — by trying something.</p>
+    <p class="section-desc">You've met all three. Now let's see how they fit together, by trying something.</p>
 
     <!-- ── DISCOVERY CHALLENGE ── -->
     <div class="challenge-card">
@@ -3485,7 +3485,7 @@ window.revealWavelength = function() {
         <span>SHORT wavelength →</span>
       </div>
 
-      <!-- Nudge — appears once student has reached short wavelength -->
+      <!-- Nudge - appears once student has reached short wavelength -->
       <div class="try-nudge" id="try-nudge">
         <strong>Hmm.</strong> Every time you shorten the wavelength, the frequency jumps up too. It's like they're glued together.
       </div>
@@ -3502,8 +3502,8 @@ window.revealWavelength = function() {
       <!-- The rule -->
       <div class="name-it">
         <div class="name-it-label">The Rule</div>
-        <p>Wavelength and frequency are <strong>inversely linked</strong>. If the peaks get closer together, more of them pass a point each second — so frequency goes up. There's no way to shrink one without raising the other.</p>
-        <p style="margin-top: 0.7rem;">For <strong>electromagnetic waves</strong> like light, higher frequency is also associated with <strong>higher energy</strong>. (Amplitude still controls the energy of mechanical waves like sound — both rules are true; they just apply to different kinds of waves.)</p>
+        <p>Wavelength and frequency are <strong>inversely linked</strong>. If the peaks get closer together, more of them pass a point each second; so frequency goes up. There's no way to shrink one without raising the other.</p>
+        <p style="margin-top: 0.7rem;">For <strong>electromagnetic waves</strong> like light, higher frequency is also associated with <strong>higher energy</strong>. (Amplitude still controls the energy of mechanical waves like sound, both rules are true; they just apply to different kinds of waves.)</p>
       </div>
 
       <!-- Two-arrow rule visual -->
@@ -3537,17 +3537,17 @@ window.revealWavelength = function() {
       <!-- EM SPECTRUM PAYOFF -->
       <div class="spectrum-wrap">
         <div class="spectrum-intro">
-          This relationship is especially important for <strong>electromagnetic waves</strong> — radio, light, X-rays, gamma rays. Every one of them sits somewhere on this scale.
+          This relationship is especially important for <strong>electromagnetic waves</strong>, radio, light, X-rays, gamma rays. Every one of them sits somewhere on this scale.
         </div>
 
         <div class="spectrum-bar">
-          <div class="spectrum-band radio"   title="Radio waves — used for radios, TV, Wi-Fi"><span>RADIO</span></div>
-          <div class="spectrum-band micro"   title="Microwaves — used in microwave ovens and cell phones"><span>MICRO</span></div>
-          <div class="spectrum-band infra"   title="Infrared — heat radiation, TV remotes"><span>INFRA-<br>RED</span></div>
-          <div class="spectrum-band visible" title="Visible light — what your eyes can see"><span>VISIBLE</span></div>
-          <div class="spectrum-band uv"      title="Ultraviolet — causes sunburns"><span>UV</span></div>
-          <div class="spectrum-band xray"    title="X-rays — used to image bones"><span>X-RAY</span></div>
-          <div class="spectrum-band gamma"   title="Gamma rays — extremely high energy radiation"><span>GAMMA</span></div>
+          <div class="spectrum-band radio"   title="Radio waves, used for radios, TV, Wi-Fi"><span>RADIO</span></div>
+          <div class="spectrum-band micro"   title="Microwaves, used in microwave ovens and cell phones"><span>MICRO</span></div>
+          <div class="spectrum-band infra"   title="Infrared, heat radiation, TV remotes"><span>INFRA-<br>RED</span></div>
+          <div class="spectrum-band visible" title="Visible light, what your eyes can see"><span>VISIBLE</span></div>
+          <div class="spectrum-band uv"      title="Ultraviolet, causes sunburns"><span>UV</span></div>
+          <div class="spectrum-band xray"    title="X-rays, used to image bones"><span>X-RAY</span></div>
+          <div class="spectrum-band gamma"   title="Gamma rays, extremely high energy radiation"><span>GAMMA</span></div>
         </div>
 
         <div class="spectrum-axis-row">
@@ -3562,14 +3562,14 @@ window.revealWavelength = function() {
         </div>
 
         <div class="spectrum-summary">
-          <strong>A radio wave</strong> can be the length of a building — low frequency, gentle energy. <strong>A gamma ray</strong> is shorter than an atom — incredibly high frequency, dangerous energy. Same rule, the whole way across.
+          <strong>A radio wave</strong> can be the length of a building, low frequency, gentle energy. <strong>A gamma ray</strong> is shorter than an atom, incredibly high frequency, dangerous energy. Same rule, the whole way across.
         </div>
 
         <div class="spectrum-toggle">
           <button onclick="toggleSpectrumNumbers()" id="spec-num-btn">▸ Show the numbers (optional)</button>
         </div>
         <div class="spectrum-numbers" id="spec-num">
-          Scientists measure these wavelengths over an enormous range. <strong>Radio waves</strong> can be longer than a kilometer. <strong>Gamma rays</strong> can be a trillion times smaller than that — shorter than the width of an atom. You don't need to memorize the numbers. Just remember the pattern: as you move from radio to gamma, wavelength shrinks, and frequency and energy rise together.
+          Scientists measure these wavelengths over an enormous range. <strong>Radio waves</strong> can be longer than a kilometer. <strong>Gamma rays</strong> can be a trillion times smaller than that, shorter than the width of an atom. You don't need to memorize the numbers. Just remember the pattern: as you move from radio to gamma, wavelength shrinks, and frequency and energy rise together.
         </div>
       </div>
 
@@ -3579,7 +3579,7 @@ window.revealWavelength = function() {
 </section>
 
 <script>
-/* ── Section 9 — inverse-relationship slider ── */
+/* ── Section 9 - inverse-relationship slider ── */
 (function(){
   const W = 720, BASE = 65, AMP = 35;
   const path  = document.getElementById('inv-wave-path');
@@ -3658,7 +3658,7 @@ window.toggleSpectrumNumbers = function() {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 10 — SELF-CHECK LABELING  (Pass 10)
+     SECTION 10, SELF-CHECK LABELING  (Pass 10)
      Retrieval practice. New wave (different shape from any prior section).
      Five terms. Click-to-place via term-then-target pattern. Immediate
      feedback per click. No drag-and-drop.
@@ -3830,7 +3830,7 @@ window.toggleSpectrumNumbers = function() {
   <div class="container">
     <span class="section-label">Self-Check</span>
     <h2 class="section-title">Speak the Language</h2>
-    <p class="section-desc">A new wave. Five terms. Show what you know — pick a word, then click where it belongs on the wave.</p>
+    <p class="section-desc">A new wave. Five terms. Show what you know, pick a word, then click where it belongs on the wave.</p>
 
     <!-- ── LABELING STAGE ── -->
     <div class="label-stage" id="label-stage">
@@ -3845,7 +3845,7 @@ window.toggleSpectrumNumbers = function() {
         <!-- resting line -->
         <line x1="30" y1="115" x2="730" y2="115" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="5,4"/>
 
-        <!-- a wave students have not yet seen — 2.5 cycles, comfortable amplitude -->
+        <!-- a wave students have not yet seen - 2.5 cycles, comfortable amplitude -->
         <path d="M 30 115
                  C 80 30,  130 30,  180 115
                  C 230 200, 280 200, 330 115
@@ -3873,7 +3873,7 @@ window.toggleSpectrumNumbers = function() {
           </g>
         </g>
 
-        <!-- 3. RESTING POSITION (entire dashed line is clickable — concept, not localized point) -->
+        <!-- 3. RESTING POSITION (entire dashed line is clickable - concept, not localized point) -->
         <g class="label-hotspot" data-target="rest" data-cx="80" data-cy="115" onclick="placeAt('rest', this)">
           <!-- big invisible target spanning the full resting line -->
           <rect x="30" y="103" width="700" height="24" fill="rgba(245,200,66,0.001)"/>
@@ -3945,14 +3945,14 @@ window.toggleSpectrumNumbers = function() {
 
     <!-- ── COMPLETION CALLOUT ── -->
     <div class="label-complete" id="label-complete">
-      <strong>All five.</strong> You're speaking the language of waves now — crest, trough, resting position, wavelength, amplitude. Same words scientists use to describe everything from ocean swells to gamma rays.
+      <strong>All five.</strong> You're speaking the language of waves now, crest, trough, resting position, wavelength, amplitude. Same words scientists use to describe everything from ocean swells to gamma rays.
     </div>
 
   </div>
 </section>
 
 <script>
-/* ─── Section 10 — labeling logic ───
+/* ─── Section 10, labeling logic ───
    Pattern: tap a word, then tap a hotspot. If they match, lock both. */
 (function(){
   const stage   = document.getElementById('label-stage');
@@ -3998,14 +3998,14 @@ window.toggleSpectrumNumbers = function() {
       return;
     }
     if (target === selectedWord) {
-      // Correct — lock both
+      // Correct - lock both
       hotspot.classList.add('solved');
       const chip = document.querySelector(`#word-bank .word-chip[data-word="${selectedWord}"]`);
       chip.classList.add('placed');
       chip.classList.remove('selected');
       placedCount++;
       doneEl.textContent = placedCount;
-      setMsg(`✓ ${friendly[selectedWord]} — correct.`, 'right');
+      setMsg(`✓ ${friendly[selectedWord]}, correct.`, 'right');
       selectedWord = null;
       stage.classList.remove('selecting');
       if (placedCount === 5) {
@@ -4015,7 +4015,7 @@ window.toggleSpectrumNumbers = function() {
         }, 250);
       }
     } else {
-      setMsg(`Not quite — that spot isn't ${friendly[selectedWord]}. Look again.`, 'wrong');
+      setMsg(`Not quite; that spot isn't ${friendly[selectedWord]}. Look again.`, 'wrong');
     }
   };
 
@@ -4041,12 +4041,12 @@ window.toggleSpectrumNumbers = function() {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 11 — MYSTERY RESOLVED + VOCAB REFERENCE  (Pass 11)
+     SECTION 11, MYSTERY RESOLVED + VOCAB REFERENCE  (Pass 11)
      Resolve the driving question. Synthesize the discoveries. Vocabulary
      is the support, not the star.
 ═══════════════════════════════════════════════════════════════════════ -->
 <style>
-/* Driving question — answered */
+/* Driving question - answered */
 .dq-answered {
   max-width: 820px;
   margin: 0 auto 2rem;
@@ -4145,7 +4145,7 @@ window.toggleSpectrumNumbers = function() {
 }
 .discovery-text strong { color: var(--gold); }
 
-/* Vocab reference — secondary */
+/* Vocab reference - secondary */
 .vocab-ref-wrap {
   max-width: 820px;
   margin: 0 auto;
@@ -4192,7 +4192,7 @@ window.toggleSpectrumNumbers = function() {
   line-height: 1.5;
 }
 
-/* Jump pulse — triggered when student clicks a vocab card */
+/* Jump pulse - triggered when student clicks a vocab card */
 @keyframes section-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(245,200,66,0); }
   50%      { box-shadow: 0 0 0 8px rgba(245,200,66,0.4); }
@@ -4259,7 +4259,7 @@ window.toggleSpectrumNumbers = function() {
       </div>
       <div>
         <div class="dq-a-label">✓ Now we know</div>
-        <div class="dq-a-text">Waves carry <strong>energy</strong> through space — but the particles, the water, the air, the people all <strong>stay where they started</strong>.</div>
+        <div class="dq-a-text">Waves carry <strong>energy</strong> through space; but the particles, the water, the air, the people all <strong>stay where they started</strong>.</div>
       </div>
     </div>
 
@@ -4276,11 +4276,11 @@ window.toggleSpectrumNumbers = function() {
         </div>
         <div class="discovery-card">
           <div class="discovery-icon">🔊</div>
-          <div class="discovery-text"><strong>Mechanical waves</strong> — like sound and ocean waves — need a medium to travel through.</div>
+          <div class="discovery-text"><strong>Mechanical waves</strong> (like sound and ocean waves) need a medium to travel through.</div>
         </div>
         <div class="discovery-card">
           <div class="discovery-icon">☀️</div>
-          <div class="discovery-text"><strong>Electromagnetic waves</strong> — like light — can travel even through empty space.</div>
+          <div class="discovery-text"><strong>Electromagnetic waves</strong> (like light) can travel even through empty space.</div>
         </div>
         <div class="discovery-card">
           <div class="discovery-icon">📏</div>
@@ -4307,14 +4307,14 @@ window.toggleSpectrumNumbers = function() {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 12 — QUIZ  (Pass 12)
+     SECTION 12, QUIZ  (Pass 12)
      Identical architecture to What Is Life. 10 questions distributed:
-       2 — energy transfer / matter stays in place
-       2 — mechanical vs electromagnetic
-       2 — crest / trough / resting position
-       2 — wavelength and frequency
-       1 — amplitude and energy
-       1 — inverse relationship
+       2, energy transfer / matter stays in place
+       2, mechanical vs electromagnetic
+       2, crest / trough / resting position
+       2, wavelength and frequency
+       1, amplitude and energy
+       1, inverse relationship
 ═══════════════════════════════════════════════════════════════════════ -->
 <style>
 .quiz-section { background: var(--dark); }
@@ -4580,7 +4580,7 @@ window.toggleSpectrumNumbers = function() {
 }
 .score-board p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
 
-/* Mystery-loop completion callout — appears inside score board */
+/* Mystery-loop completion callout - appears inside score board */
 .mystery-loop {
   max-width: 540px;
   margin: 0.4rem auto 1.5rem;
@@ -4652,7 +4652,7 @@ window.toggleSpectrumNumbers = function() {
 </style>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     VOCABULARY  — pill navigation back to where each term was taught
+     VOCABULARY , pill navigation back to where each term was taught
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="vocab" style="background: var(--dark);">
   <div class="container">
@@ -4680,7 +4680,7 @@ window.toggleSpectrumNumbers = function() {
 </section>
 
 <script>
-/* vocabJump — smooth scroll to the exact term, with three smart behaviors:
+/* vocabJump, smooth scroll to the exact term, with three smart behaviors:
    1. If the term lives inside a "reveal-content" block that's hidden until
       a student clicks a trigger, auto-run the matching reveal function first.
    2. If the target itself is an interactive chip button (crest/trough/rest),
@@ -4754,7 +4754,7 @@ function vocabJump(targetId) {
         <div class="info-field">
           <label for="teacher-select">Teacher</label>
           <select id="teacher-select">
-            <option value="">— Select —</option>
+            <option value="">- Select -</option>
             <option value="MrBrown">Mr. Brown</option>
             <option value="MsGay">Ms. Gay</option>
           </select>
@@ -4763,7 +4763,7 @@ function vocabJump(targetId) {
         <div class="info-field">
           <label for="block-select">Block</label>
           <select id="block-select">
-            <option value="">— Select —</option>
+            <option value="">- Select -</option>
             <option value="A">A</option>
             <option value="B">B</option>
             <option value="C">C</option>
@@ -4801,7 +4801,7 @@ function vocabJump(targetId) {
       <p id="q1-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">🔍 The Mystery You Came In With</span>
-        You started this lesson trying to answer: <strong>"How can waves transfer energy without moving matter?"</strong> If you can explain that now — you've solved the mystery.
+        You started this lesson trying to answer: <strong>"How can waves transfer energy without moving matter?"</strong> If you can explain that now, you've solved the mystery.
       </div>
       <div id="submit-status"></div>
       <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
@@ -4827,7 +4827,7 @@ const SCRIPT_URLS = {
 //   Q10:   inverse relationship
 const quizQuestions = [
   {
-    // Q1 — energy transfer / matter — applied scenario
+    // Q1 - energy transfer / matter - applied scenario
     q: "A duck floats on a pond. A wave passes underneath. What happens to the duck?",
     options: [
       "The duck rides the wave to the other side of the pond",
@@ -4836,10 +4836,10 @@ const quizQuestions = [
       "The duck is pushed sideways by the moving water"
     ],
     correct: 1,
-    explanation: "The wave carries energy across the pond, but the water itself — and the duck on top of it — mostly stays put. The duck only rises and falls."
+    explanation: "The wave carries energy across the pond, but the water itself (and the duck on top of it) mostly stays put. The duck only rises and falls."
   },
   {
-    // Q2 — energy transfer / matter — central concept stated directly
+    // Q2 - energy transfer / matter - central concept stated directly
     q: "When a wave travels across the ocean, what is actually moving from one place to another?",
     options: [
       "Water molecules, traveling all the way to shore",
@@ -4851,19 +4851,19 @@ const quizQuestions = [
     explanation: "Waves transfer energy without transporting matter. The water particles vibrate up and down, but the energy is what travels across the ocean."
   },
   {
-    // Q3 — mechanical vs EM — applied to a famous scenario
+    // Q3 - mechanical vs EM - applied to a famous scenario
     q: "Two astronauts float in space inches apart. One shouts. Why can't the other one hear it?",
     options: [
       "Their helmets block all sound",
       "Sound is an electromagnetic wave and travels too slowly",
-      "Sound is a mechanical wave and needs a medium — there's no air in space",
+      "Sound is a mechanical wave and needs a medium, there's no air in space",
       "Sound only works for distances under a meter"
     ],
     correct: 2,
-    explanation: "Sound is a mechanical wave, so it needs a medium (like air) to travel through. Space is a vacuum — no medium, no sound."
+    explanation: "Sound is a mechanical wave, so it needs a medium (like air) to travel through. Space is a vacuum, no medium, no sound."
   },
   {
-    // Q4 — mechanical vs EM — categorize multiple examples
+    // Q4 - mechanical vs EM - categorize multiple examples
     q: "Which of the following can travel through completely empty space?",
     options: [
       "Sound waves from a speaker",
@@ -4872,10 +4872,10 @@ const quizQuestions = [
       "A stadium wave"
     ],
     correct: 2,
-    explanation: "Visible light is an electromagnetic wave — it doesn't need a medium. That's why sunlight can cross 93 million miles of empty space to reach Earth in about 8 minutes."
+    explanation: "Visible light is an electromagnetic wave; it doesn't need a medium. That's why sunlight can cross 93 million miles of empty space to reach Earth in about 8 minutes."
   },
   {
-    // Q5 — crest / trough / resting — diagram interpretation
+    // Q5 - crest / trough / resting - diagram interpretation
     q: "Look at the wave below. Which letter points to the <strong>trough</strong>?",
     visual: `<svg viewBox="0 0 460 170" xmlns="http://www.w3.org/2000/svg" aria-label="A wave with three labeled points: A at the highest peak, B on the resting line, C at the lowest dip, D on the wave between peak and dip.">
       <line x1="20" y1="85" x2="440" y2="85" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="5,4"/>
@@ -4895,16 +4895,16 @@ const quizQuestions = [
       <text x="400" y="34" text-anchor="middle" font-family="Fredoka One" font-size="18" fill="var(--gold)">D</text>
     </svg>`,
     options: [
-      "Point A — the highest part of the wave",
-      "Point B — the calm middle line",
-      "Point C — the lowest part of the wave",
-      "Point D — somewhere between the peak and the line"
+      "Point A, the highest part of the wave",
+      "Point B, the calm middle line",
+      "Point C, the lowest part of the wave",
+      "Point D, somewhere between the peak and the line"
     ],
     correct: 2,
-    explanation: "Point C is at the very bottom of a dip — that's the trough. Point A marks a crest (highest point), B sits on the resting line, and D is somewhere between."
+    explanation: "Point C is at the very bottom of a dip, that's the trough. Point A marks a crest (highest point), B sits on the resting line, and D is somewhere between."
   },
   {
-    // Q6 — crest / trough / resting — concept of resting position
+    // Q6 - crest / trough / resting - concept of resting position
     q: "What is the resting position of a wave?",
     options: [
       "The peak of the wave",
@@ -4916,7 +4916,7 @@ const quizQuestions = [
     explanation: "The resting position is the level the wave would sit at if it weren't moving. Crests rise above it, troughs dip below it."
   },
   {
-    // Q7 — wavelength — apply to comparison
+    // Q7 - wavelength - apply to comparison
     q: "Wave X has peaks that are very close together. Wave Y has peaks that are far apart. What can you say about their wavelengths?",
     options: [
       "Wave X has a longer wavelength than Wave Y",
@@ -4925,10 +4925,10 @@ const quizQuestions = [
       "You need to know the heights to compare wavelengths"
     ],
     correct: 1,
-    explanation: "Wavelength is the distance from one peak to the next. Peaks close together = short wavelength. Peaks far apart = long wavelength. The height (amplitude) doesn't matter — wavelength is measured side-to-side."
+    explanation: "Wavelength is the distance from one peak to the next. Peaks close together = short wavelength. Peaks far apart = long wavelength. The height (amplitude) doesn't matter, wavelength is measured side-to-side."
   },
   {
-    // Q8 — frequency — temporal concept, not shape
+    // Q8 - frequency - temporal concept, not shape
     q: "What does the frequency of a wave tell you?",
     options: [
       "How tall the wave is",
@@ -4937,10 +4937,10 @@ const quizQuestions = [
       "How fast the wave is moving"
     ],
     correct: 2,
-    explanation: "Frequency counts how many wave crests pass a fixed point in one second. It's measured in Hertz (Hz). It's about how often something happens — not how the wave looks."
+    explanation: "Frequency counts how many wave crests pass a fixed point in one second. It's measured in Hertz (Hz). It's about how often something happens, not how the wave looks."
   },
   {
-    // Q9 — amplitude and energy
+    // Q9 - amplitude and energy
     q: "Compare these two waves. Wave X and Wave Y have the same wavelength but different heights. What does that tell you?",
     visual: `<svg viewBox="0 0 460 200" xmlns="http://www.w3.org/2000/svg" aria-label="Two waves stacked. Wave X is small in height. Wave Y is much taller. Both have the same horizontal spacing between peaks.">
       <!-- Wave X (small amplitude) -->
@@ -4965,10 +4965,10 @@ const quizQuestions = [
       "Both waves carry the same amount of energy"
     ],
     correct: 2,
-    explanation: "Wave Y has a much larger amplitude — and larger amplitude means more energy. The wavelengths are identical, so frequency is the same; only the amplitude (and therefore the energy) differs."
+    explanation: "Wave Y has a much larger amplitude, and larger amplitude means more energy. The wavelengths are identical, so frequency is the same; only the amplitude (and therefore the energy) differs."
   },
   {
-    // Q10 — inverse relationship — apply, don't just recall
+    // Q10 - inverse relationship - apply, don't just recall
     q: "If an electromagnetic wave has a shorter wavelength than another, what else is true about it?",
     options: [
       "It has a lower frequency and less energy",
@@ -4977,7 +4977,7 @@ const quizQuestions = [
       "It has a smaller amplitude"
     ],
     correct: 1,
-    explanation: "Wavelength and frequency are inversely linked. Shorter wavelength means more crests pass each second — higher frequency. For EM waves, higher frequency also means more energy. That's why gamma rays (very short wavelength) carry far more energy than radio waves (very long wavelength)."
+    explanation: "Wavelength and frequency are inversely linked. Shorter wavelength means more crests pass each second, higher frequency. For EM waves, higher frequency also means more energy. That's why gamma rays (very short wavelength) carry far more energy than radio waves (very long wavelength)."
   }
 ];
 
@@ -5009,7 +5009,7 @@ function setQuizMode(mode) {
   }
 }
 
-// ── URL PARAM — auto-set mode on load ─────────────────────────────────
+// ── URL PARAM - auto-set mode on load ─────────────────────────────────
 (function () {
   const params = new URLSearchParams(window.location.search);
   if (params.get('mode') === 'classroom') setQuizMode('classroom');
@@ -5109,7 +5109,7 @@ function submitQuiz() {
   const msg   = pct === 100 ? '🏆 Perfect score! You understand the nature of waves cold.'
     : pct >= 80 ? '🌟 Great work! Review any you missed and you\'re ready for the next lesson.'
     : pct >= 60 ? '📚 Solid effort. Go back through the lesson and try again.'
-    : '💪 Keep going — review each section carefully and try again!';
+    : '💪 Keep going, review each section carefully and try again!';
   document.getElementById('q1-score-num').textContent = score;
   document.getElementById('q1-score-msg').textContent = msg;
   const sb = document.getElementById('q1-score');
@@ -5118,7 +5118,7 @@ function submitQuiz() {
 
   if (quizMode === 'practice') {
     document.getElementById('submit-status').innerHTML =
-      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode — score not submitted</div>';
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
     return;
   }
 
@@ -5152,7 +5152,7 @@ buildQuiz();
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 13 — GO FURTHER  (Pass 13)
+     SECTION 13, GO FURTHER  (Pass 13)
      Coming-soon cards using LyfeLabz category color system:
        Simulation   = Blue
        Investigation = Green
@@ -5269,7 +5269,7 @@ buildQuiz();
 
     <div class="continue-grid">
 
-      <!-- AMPLITUDE CHALLENGE — INVESTIGATION -->
+      <!-- AMPLITUDE CHALLENGE - INVESTIGATION -->
       <a class="cont-card inv" href="investigation_amplitude-challenge.html" aria-label="Amplitude Challenge investigation">
         <div class="cont-icon">⚡</div>
         <div class="cont-cat">Investigation</div>

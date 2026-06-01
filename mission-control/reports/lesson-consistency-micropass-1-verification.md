@@ -1,4 +1,4 @@
-# Lesson Consistency Micro-Pass 1 — Verification Report
+# Lesson Consistency Micro-Pass 1: Verification Report
 
 **Date:** 2026-05-24  
 **Verifying:** `lesson-consistency-micropass-1.md` changes  
@@ -20,7 +20,7 @@
 
 ---
 
-## Check 1 — Valid HTML Structure
+## Check 1: Valid HTML Structure
 
 All four files end with `</html>` as the final line, and every opened `<div>` in the edited regions is properly closed.
 
@@ -43,11 +43,11 @@ The `stem-detail` div structure in each file is correctly nested:
 ```
 Each row's `</div>`, the body's `</div>`, and the outer `</div>` are all present and balanced.
 
-**`lesson_what-is-life.html` — additional CSS check:** The new `/* ── Stem Detail Expand ── */` CSS block references `animation: stemFadeIn` (line 1016). The `@keyframes stemFadeIn` was already defined in this file at line 939 — in CSS the keyframe can be used before or after its definition; the browser reads the full stylesheet. No issue.
+**`lesson_what-is-life.html`, additional CSS check:** The new `/* ── Stem Detail Expand ── */` CSS block references `animation: stemFadeIn` (line 1016). The `@keyframes stemFadeIn` was already defined in this file at line 939, in CSS the keyframe can be used before or after its definition; the browser reads the full stylesheet. No issue.
 
 ---
 
-## Check 2 — stem-detail Toggle Button
+## Check 2: stem-detail Toggle Button
 
 | File | Button line | Text | Status |
 |---|---|---|---|
@@ -58,7 +58,7 @@ Each row's `</div>`, the body's `</div>`, and the outer `</div>` are all present
 
 ---
 
-## Check 3 — toggleStemDetail Function
+## Check 3: toggleStemDetail Function
 
 All four files have the function correctly structured in a `<script>` block that also handles the sessionStorage `ls-active` / `stem-active` gates.
 
@@ -79,13 +79,13 @@ function toggleStemDetail(id) {
 }
 ```
 
-The `continental-drift.html` version uses `var` and Unicode escapes (`▾`, `▸`) — this is the original pre-existing style and was not touched by the micro-pass.
+The `continental-drift.html` version uses `var` and Unicode escapes (`▾`, `▸`); this is the original pre-existing style and was not touched by the micro-pass.
 
 ---
 
-## Check 4 — No Duplicate toggleStemDetail Functions
+## Check 4: No Duplicate toggleStemDetail Functions
 
-`grep -c "toggleStemDetail"` returns exactly **2 per file** in all cases — one call site (the `onclick` attribute) and one function definition. No duplicates.
+`grep -c "toggleStemDetail"` returns exactly **2 per file** in all cases, one call site (the `onclick` attribute) and one function definition. No duplicates.
 
 ```
 lesson_what-is-life.html:   2
@@ -96,7 +96,7 @@ lesson_continental-drift.html: 2
 
 ---
 
-## Check 5 — Quiz / Reflection / Footer / Submission Code Unmodified
+## Check 5: Quiz / Reflection / Footer / Submission Code Unmodified
 
 The git diff for all four files contains **no changes** to the `submitQuiz()` function, quiz data arrays, footer HTML, or Google Sheets submission logic. The diff is strictly limited to:
 
@@ -109,13 +109,13 @@ Confirmed: `buildQuiz()`, `submitQuiz()`, `<footer>`, score submission handlers,
 
 ---
 
-## Check 6 — lesson_ragebaiting.html Not Modified
+## Check 6: lesson_ragebaiting.html Not Modified
 
 `git status lesson_ragebaiting.html` reports: **nothing to commit, working tree clean**. The file was not touched.
 
 ---
 
-## Check 7 — Learning Science Badge Emoji Consistency
+## Check 7: Learning Science Badge Emoji Consistency
 
 **Files targeted by micro-pass:** `lesson_what-is-life.html`, `lesson_continental-drift.html`
 
@@ -126,7 +126,7 @@ Both now have emoji-prefixed badges:
 | `what-is-life.html` | 🔬 Learning Science Focus | 🖼️ 🏗️ 🗂️ ✅ ⚖️ |
 | `continental-drift.html` | 🔬 Learning Science Focus | 🔍 🧠 🖼️ ✅ 📊 |
 
-`lesson_body-systems.html` and `lesson_organelles.html` already had emoji prefixes prior to this micro-pass — confirmed correct and unmodified.
+`lesson_body-systems.html` and `lesson_organelles.html` already had emoji prefixes prior to this micro-pass, confirmed correct and unmodified.
 
 **Pre-existing cross-file inconsistency (out of scope, not introduced by micro-pass):**  
 The "Retrieval Practice" badge uses `✅` in `what-is-life` and `continental-drift`, but `🧠` in `body-systems` and `organelles`. The micro-pass task specified only the two files above; the inconsistency in the non-targeted files predates this work. Flagged for a future pass.
@@ -137,10 +137,10 @@ The "Retrieval Practice" badge uses `✅` in `what-is-life` and `continental-dri
 
 These differences existed before the micro-pass and were not created by it:
 
-1. **`continental-drift.html` stem-show-btn uses `&#9656;`** vs literal `▸` in the three new blocks — harmless rendering difference, pre-existing.
-2. **`continental-drift.html` stem-focus-label has no `📋` prefix** — this file was in scope only for ls-badges, not stem-focus-label. Consistent with the task spec.
-3. **`continental-drift.html` toggleStemDetail uses `var` style** — original file coding style, not touched.
-4. **`🧠 Retrieval Practice` vs `✅ Retrieval Practice`** across the library — pre-existing emoji divergence noted above.
+1. **`continental-drift.html` stem-show-btn uses `&#9656;`** vs literal `▸` in the three new blocks, harmless rendering difference, pre-existing.
+2. **`continental-drift.html` stem-focus-label has no `📋` prefix**; this file was in scope only for ls-badges, not stem-focus-label. Consistent with the task spec.
+3. **`continental-drift.html` toggleStemDetail uses `var` style**, original file coding style, not touched.
+4. **`🧠 Retrieval Practice` vs `✅ Retrieval Practice`** across the library, pre-existing emoji divergence noted above.
 
 ---
 

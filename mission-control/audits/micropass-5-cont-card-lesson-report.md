@@ -1,4 +1,4 @@
-# Micropass 5 — Continuation Card `.lesson` Color Fix Report
+# Micropass 5: Continuation Card `.lesson` Color Fix Report
 
 **Date:** 2026-06-01
 **Scope:** Replace gray-blue `rgba(122,143,166,…)` with gold `rgba(245,200,66,…)` across all `.cont-card.lesson` rules in two files
@@ -15,14 +15,14 @@ Full repo scan for `.cont-card.lesson`:
 |------|--------------------------|-------------------|--------|
 | `lesson_sun-earth-moon.html` | Yes | Gray-blue `rgba(122,143,166,…)` | **Fixed** |
 | `lesson_continental-drift.html` | Yes | Gray-blue `rgba(122,143,166,…)` | **Fixed** |
-| `extension_moon-tonight.html` | Yes | Gold `rgba(245,200,66,…)` ✅ | **Reference — unchanged** |
-| All other lesson/extension files | No `.cont-card.lesson` defined | — | No action needed |
+| `extension_moon-tonight.html` | Yes | Gold `rgba(245,200,66,…)` ✅ | **Reference, unchanged** |
+| All other lesson/extension files | No `.cont-card.lesson` defined |, | No action needed |
 
 ---
 
 ## Files Changed
 
-### `lesson_sun-earth-moon.html` — 6 rules updated
+### `lesson_sun-earth-moon.html`: 6 rules updated
 
 | Rule | Before | After |
 |------|--------|-------|
@@ -33,7 +33,7 @@ Full repo scan for `.cont-card.lesson`:
 | `.cont-card.lesson .cont-link` | `rgba(122,143,166,0.12)` bg / `rgba(122,143,166,0.3)` border / `var(--accent2)` color | `rgba(245,200,66,0.10)` bg / `rgba(245,200,66,0.40)` border / `#f5c842` color |
 | `.cont-card.lesson:hover .cont-link` | `rgba(122,143,166,0.22)` bg / `rgba(122,143,166,0.55)` border | `rgba(245,200,66,0.20)` bg / `rgba(245,200,66,0.55)` border |
 
-### `lesson_continental-drift.html` — 5 rules updated
+### `lesson_continental-drift.html`: 5 rules updated
 
 | Rule | Before | After |
 |------|--------|-------|
@@ -43,11 +43,11 @@ Full repo scan for `.cont-card.lesson`:
 | `.cont-card.lesson .cont-icon` | `rgba(122,143,166,0.18)` | `rgba(245,200,66,0.18)` |
 | `.cont-card.lesson .cont-link` | `rgba(122,143,166,0.1)` bg / `rgba(122,143,166,0.3)` border / `#9fb8cc` color | `rgba(245,200,66,0.10)` bg / `rgba(245,200,66,0.40)` border / `#f5c842` color |
 
-Note: `lesson_continental-drift.html` does not define `.cont-card.lesson:hover .cont-link` — this is a pre-existing structural difference from `lesson_sun-earth-moon.html`, not introduced by this pass.
+Note: `lesson_continental-drift.html` does not define `.cont-card.lesson:hover .cont-link`; this is a pre-existing structural difference from `lesson_sun-earth-moon.html`, not introduced by this pass.
 
 ---
 
-## Reference Pattern (`extension_moon-tonight.html` — unchanged)
+## Reference Pattern (`extension_moon-tonight.html`: unchanged)
 
 The canonical gold `.cont-card.lesson` pattern already used in `extension_moon-tonight.html`:
 
@@ -89,7 +89,7 @@ None for this pass.
 
 ---
 
-## Continuation Card System — Final State
+## Continuation Card System: Final State
 
 All three `.cont-card.lesson` definitions now use gold. The complete site-wide `.cont-card` color system is now consistent:
 
@@ -105,7 +105,7 @@ All three `.cont-card.lesson` definitions now use gold. The complete site-wide `
 
 ## Next Recommended Pass
 
-**Micropass 6 — Final Verification Audit**
+**Micropass 6, Final Verification Audit**
 
 Re-run a site-wide scan to confirm:
 - All hero badges use canonical content-type colors

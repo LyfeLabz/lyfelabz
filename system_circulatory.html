@@ -345,7 +345,7 @@
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
-/* ── Visibility gate — hidden until body.ls-active is set ─────────
+/* ── Visibility gate - hidden until body.ls-active is set ─────────
    The session-check script (injected into every content page) adds
    body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
    Educators toggle this from the index or Learning Science page.
@@ -356,7 +356,7 @@
 }
 
 body.ls-active .ls-focus {
-  /* ── Centered card — sits between hero and first content section ── */
+  /* ── Centered card - sits between hero and first content section ── */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -610,7 +610,7 @@ body.stem-active .stem-detail {
     <div>
       <div class="header-badge"><div class="pulse-dot"></div>Circulatory System · Interactive Map</div>
       <h1>The Circulatory System 🫀</h1>
-      <p>The body's delivery network — transporting oxygen, nutrients, and waste to and from every cell, 24 hours a day.</p>
+      <p>The body's delivery network, transporting oxygen, nutrients, and waste to and from every cell, 24 hours a day.</p>
     <a href="#connection-quiz" class="quiz-header-pill">Connection Quiz ↓</a>
 
     </div>
@@ -620,10 +620,10 @@ body.stem-active .stem-detail {
 <div class="explorer-wrap">
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Students make decisions and take actions throughout — they drive the learning, not just receive it. — Freeman et al., 2014">🎯 Active Learning</span>
-  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
-  <span class="ls-badge" data-tip="Animated or spatial visuals make abstract processes concrete and directly perceivable. — Noetel et al., 2021">👁️ Visual Processing</span>
-  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. — Dunlosky et al., 2013">💬 Elaboration</span>
+  <span class="ls-badge" data-tip="Students make decisions and take actions throughout, they drive the learning, not just receive it. (Freeman et al., 2014)">🎯 Active Learning</span>
+  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. (Noetel et al., 2022)">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Animated or spatial visuals make abstract processes concrete and directly perceivable. (Noetel et al., 2021)">👁️ Visual Processing</span>
+  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. (Dunlosky et al., 2013)">💬 Elaboration</span>
 </div>
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
@@ -644,7 +644,7 @@ body.stem-active .stem-detail {
 
     <!-- MAP CANVAS -->
     <div class="map-panel">
-      <div class="map-panel-hd"><span class="map-panel-title">THE CIRCULATORY SYSTEM MAP — CLICK ANY NODE TO EXPLORE</span></div>
+      <div class="map-panel-hd"><span class="map-panel-title">THE CIRCULATORY SYSTEM MAP, CLICK ANY NODE TO EXPLORE</span></div>
       <div class="map-body"><canvas id="map-canvas"></canvas></div>
     </div>
 
@@ -654,7 +654,7 @@ body.stem-active .stem-detail {
         <div class="i-idle" id="i-idle">
           <span class="i-idle-icon">🫀</span>
           <div class="i-idle-title">Select a Node</div>
-          <div class="i-idle-desc">Click any organ or structure on the map to learn about its role in the circulatory system — plus a fun fact you won't forget!</div>
+          <div class="i-idle-desc">Click any organ or structure on the map to learn about its role in the circulatory system, plus a fun fact you won't forget!</div>
         </div>
         <div class="i-card" id="i-card">
           <div class="i-card-hd">
@@ -675,23 +675,23 @@ body.stem-active .stem-detail {
       </div>
 
       <div class="c-card" id="cc-resp">
-        <div class="c-card-hd"><span class="c-ico">🫁</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#3bc8e8">Respiratory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Respiratory" data-body="The circulatory and respiratory systems are inseparable partners. Blood travels from the heart to the lungs via pulmonary circulation to pick up oxygen and drop off carbon dioxide. Without the respiratory system loading oxygen into red blood cells, the circulatory system would be delivering empty packages.">🔊 Read Aloud</button></div>
+        <div class="c-card-hd"><span class="c-ico">🫁</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#3bc8e8">Respiratory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System: Respiratory" data-body="The circulatory and respiratory systems are inseparable partners. Blood travels from the heart to the lungs via pulmonary circulation to pick up oxygen and drop off carbon dioxide. Without the respiratory system loading oxygen into red blood cells, the circulatory system would be delivering empty packages.">🔊 Read Aloud</button></div>
         <p>The circulatory and respiratory systems are <strong>inseparable partners</strong>. Blood travels from the heart to the lungs via pulmonary circulation to pick up oxygen and drop off CO₂. Without the respiratory system loading oxygen into red blood cells, the circulatory system would be delivering empty packages.</p>
       </div>
       <div class="c-card" id="cc-dige">
-        <div class="c-card-hd"><span class="c-ico">🫄</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#ff9d45">Digestive System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Digestive" data-body="After the small intestine breaks down food, blood vessels lining the intestinal wall absorb glucose, amino acids, and fatty acids directly into the bloodstream and carry them to every cell in the body.">🔊 Read Aloud</button></div>
+        <div class="c-card-hd"><span class="c-ico">🫄</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#ff9d45">Digestive System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System: Digestive" data-body="After the small intestine breaks down food, blood vessels lining the intestinal wall absorb glucose, amino acids, and fatty acids directly into the bloodstream and carry them to every cell in the body.">🔊 Read Aloud</button></div>
         <p>After the small intestine breaks down food, blood vessels lining the intestinal wall absorb <strong>glucose, amino acids, and fatty acids</strong> directly into the bloodstream and carry them to every cell in the body.</p>
       </div>
       <div class="c-card" id="cc-excr">
-        <div class="c-card-hd"><span class="c-ico">🚽</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#69d97a">Excretory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Excretory" data-body="The excretory system removes waste from the blood in three ways: the kidneys filter liquid waste as urea into urine, the large intestine expels solid waste while returning absorbed water to the bloodstream, and the lungs expel gaseous carbon dioxide with every exhale.">🔊 Read Aloud</button></div>
+        <div class="c-card-hd"><span class="c-ico">🚽</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#69d97a">Excretory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System: Excretory" data-body="The excretory system removes waste from the blood in three ways: the kidneys filter liquid waste as urea into urine, the large intestine expels solid waste while returning absorbed water to the bloodstream, and the lungs expel gaseous carbon dioxide with every exhale.">🔊 Read Aloud</button></div>
         <p>The excretory system removes waste from the blood in three ways: the <strong>kidneys</strong> filter liquid waste (urea → urine), the <strong>large intestine</strong> expels solid waste while returning absorbed water to the bloodstream, and the <strong>lungs</strong> expel gaseous CO₂ with every exhale.</p>
       </div>
       <div class="c-card" id="cc-skel">
-        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Skeletal" data-body="Red bone marrow inside the femur and sternum manufactures all blood cells — red cells to carry oxygen and white cells to fight infection. Without the skeletal system, the circulatory system could not maintain its cellular supply.">🔊 Read Aloud</button></div>
-        <p>Red bone marrow inside the femur and sternum <strong>manufactures all blood cells</strong> — red cells to carry oxygen and white cells to fight infection. Without the skeletal system, the circulatory system could not maintain its cellular supply.</p>
+        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System: Skeletal" data-body="Red bone marrow inside the femur and sternum manufactures all blood cells: red cells to carry oxygen and white cells to fight infection. Without the skeletal system, the circulatory system could not maintain its cellular supply.">🔊 Read Aloud</button></div>
+        <p>Red bone marrow inside the femur and sternum <strong>manufactures all blood cells</strong>, red cells to carry oxygen and white cells to fight infection. Without the skeletal system, the circulatory system could not maintain its cellular supply.</p>
       </div>
       <div class="c-card" id="cc-immu">
-        <div class="c-card-hd"><span class="c-ico">🛡️</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#1de9b6">Immune System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Immune" data-body="The circulatory system is the immune system's highway network. White blood cells and antibodies travel through blood vessels to infection sites anywhere in the body. Lymph nodes filter pathogens out of the blood before they can spread.">🔊 Read Aloud</button></div>
+        <div class="c-card-hd"><span class="c-ico">🛡️</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#1de9b6">Immune System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System: Immune" data-body="The circulatory system is the immune system's highway network. White blood cells and antibodies travel through blood vessels to infection sites anywhere in the body. Lymph nodes filter pathogens out of the blood before they can spread.">🔊 Read Aloud</button></div>
         <p>The circulatory system is the immune system's <strong>highway network</strong>. White blood cells and antibodies travel through blood vessels to infection sites anywhere in the body. Lymph nodes filter pathogens out of the blood before they can spread.</p>
       </div>
     </div>
@@ -718,7 +718,7 @@ body.stem-active .stem-detail {
     <span class="q-ico">🔬</span>
     <div>
       <div class="q-title">Connection Quiz</div>
-      <div class="q-sub">Toggle each system pill above to find the answers — all 5 questions come from the connected system cards.</div>
+      <div class="q-sub">Toggle each system pill above to find the answers, all 5 questions come from the connected system cards.</div>
     </div>
   </div>
 
@@ -836,19 +836,19 @@ body.stem-active .stem-detail {
 // ─────────────────────────────────────────────
 const organData = {
   heart:      { ico:'🫀', name:'The Heart',          sys:'Circulatory', col:'#e74c3c',
-    role:'The heart is the engine of the circulatory system — a muscular pump that beats ~100,000 times every day. Its four chambers drive two loops simultaneously: pulmonary circulation (to the lungs for oxygen) and systemic circulation (out to the entire body).',
+    role:'The heart is the engine of the circulatory system, a muscular pump that beats ~100,000 times every day. Its four chambers drive two loops simultaneously: pulmonary circulation (to the lungs for oxygen) and systemic circulation (out to the entire body).',
     fact:'<strong>Fun Fact:</strong> Your heart beats about 3 billion times over a lifetime without ever taking a break. The "lub-dub" sound is your heart valves snapping shut.' },
   arteries:   { ico:'🩸', name:'Arteries',            sys:'Circulatory', col:'#e74c3c',
-    role:'Arteries carry oxygen-rich blood away from the heart at high pressure. The aorta — the body\'s largest artery — branches into smaller arteries that reach every organ and tissue. Their thick, muscular walls absorb the force of each heartbeat.',
+    role:'Arteries carry oxygen-rich blood away from the heart at high pressure. The aorta (the body\'s largest artery) branches into smaller arteries that reach every organ and tissue. Their thick, muscular walls absorb the force of each heartbeat.',
     fact:'<strong>Fun Fact:</strong> The aorta is about as wide as a garden hose (~1 inch). By the time blood reaches your fingertips it\'s flowing through capillaries thinner than a hair.' },
   veins:      { ico:'💉', name:'Veins',               sys:'Circulatory', col:'#3bc8e8',
     role:'Veins return oxygen-depleted blood back to the heart. The superior and inferior vena cava drain the upper and lower body into the right atrium. One-way valves inside veins prevent blood from flowing backward.',
-    fact:'<strong>Fun Fact:</strong> About 70% of your blood is in your veins at any moment — they act as a reservoir. Veins look blue through skin because of how light interacts with deoxygenated blood.' },
+    fact:'<strong>Fun Fact:</strong> About 70% of your blood is in your veins at any moment; they act as a reservoir. Veins look blue through skin because of how light interacts with deoxygenated blood.' },
   capillaries:{ ico:'🕸️', name:'Capillaries',         sys:'Circulatory', col:'#e74c3c',
     role:'Capillaries are the microscopic exchange points of the circulatory system. Their walls are just one cell thick, allowing oxygen and nutrients to pass into tissues while CO₂ and waste pass back in. Every cell in your body is within a few cell-widths of a capillary.',
-    fact:'<strong>Fun Fact:</strong> If all your capillaries were laid end to end, they would stretch ~40,000 km — enough to circle the Earth at the equator!' },
+    fact:'<strong>Fun Fact:</strong> If all your capillaries were laid end to end, they would stretch ~40,000 km, enough to circle the Earth at the equator!' },
   blood:      { ico:'🔴', name:'Blood',               sys:'Circulatory', col:'#f5c842',
-    role:'Blood is the cargo of the system — a liquid tissue containing red blood cells (carry O₂), white blood cells (fight infection), platelets (seal wounds), and plasma (transports nutrients, hormones, and waste products).',
+    role:'Blood is the cargo of the system, a liquid tissue containing red blood cells (carry O₂), white blood cells (fight infection), platelets (seal wounds), and plasma (transports nutrients, hormones, and waste products).',
     fact:'<strong>Fun Fact:</strong> A single drop of blood contains ~5 million red blood cells. Each one lives about 120 days and makes roughly 75,000 trips around your body.' },
   // Respiratory
   lungs:      { ico:'🫁', name:'Lungs',               sys:'Respiratory', col:'#3bc8e8',
@@ -857,22 +857,22 @@ const organData = {
   // Digestive
   smallintestine: { ico:'🫄', name:'Small Intestine', sys:'Digestive',   col:'#ff9d45',
     role:'The small intestine is where nutrients from digested food cross into the bloodstream. Tiny finger-like projections called villi line the walls and absorb glucose, amino acids, and fatty acids directly into blood vessels for the circulatory system to distribute.',
-    fact:'<strong>Fun Fact:</strong> The small intestine is about 20 feet (6 metres) long — far longer than the large intestine despite its name. It\'s tightly coiled to fit inside your abdomen.' },
+    fact:'<strong>Fun Fact:</strong> The small intestine is about 20 feet (6 metres) long, far longer than the large intestine despite its name. It\'s tightly coiled to fit inside your abdomen.' },
   // Excretory
   kidneys:    { ico:'🫘', name:'Kidneys',             sys:'Excretory',   col:'#69d97a',
     role:'The kidneys are the blood\'s filtration system. They continuously remove urea, excess salts, and water from the blood, returning clean, balanced blood to circulation. They also produce EPO, a hormone that tells bone marrow to make more red blood cells.',
-    fact:'<strong>Fun Fact:</strong> Your kidneys filter your entire blood supply about 40 times per day — processing ~180 litres of blood daily.' },
+    fact:'<strong>Fun Fact:</strong> Your kidneys filter your entire blood supply about 40 times per day, processing ~180 litres of blood daily.' },
   // Skeletal
   bonemarrow: { ico:'🦴', name:'Bone Marrow',         sys:'Skeletal',    col:'#c8d8e8',
-    role:'Red bone marrow inside the femur, sternum, and other large bones is the factory for all blood cells — producing red blood cells (oxygen carriers), white blood cells (immune fighters), and platelets (clotting agents).',
-    fact:'<strong>Fun Fact:</strong> Bone marrow produces about 2 million red blood cells every second — roughly 173 billion new cells per day — to replace worn-out ones.' },
+    role:'Red bone marrow inside the femur, sternum, and other large bones is the factory for all blood cells, producing red blood cells (oxygen carriers), white blood cells (immune fighters), and platelets (clotting agents).',
+    fact:'<strong>Fun Fact:</strong> Bone marrow produces about 2 million red blood cells every second (roughly 173 billion new cells per day) to replace worn-out ones.' },
   // Excretory extra
   largeintestine: { ico:'🟤', name:'Large Intestine', sys:'Excretory',   col:'#69d97a',
     role:'The large intestine absorbs water and electrolytes from waste matter and returns them to the bloodstream. It then compacts and expels solid waste. The circulatory system delivers blood to absorb those final nutrients from the colon wall.',
-    fact:'<strong>Fun Fact:</strong> The large intestine hosts trillions of bacteria — your gut microbiome — which produce vitamins like B12 and K that enter the bloodstream.' },
+    fact:'<strong>Fun Fact:</strong> The large intestine hosts trillions of bacteria (your gut microbiome) which produce vitamins like B12 and K that enter the bloodstream.' },
   // Immune
   lymphnodes: { ico:'🛡️', name:'Lymph Nodes',        sys:'Immune',      col:'#1de9b6',
-    role:'Lymph nodes filter lymph fluid — a liquid derived from blood plasma — trapping bacteria, viruses, and pathogens before they can re-enter the bloodstream. They house white blood cells that identify and destroy captured invaders.',
+    role:'Lymph nodes filter lymph fluid (a liquid derived from blood plasma) trapping bacteria, viruses, and pathogens before they can re-enter the bloodstream. They house white blood cells that identify and destroy captured invaders.',
     fact:'<strong>Fun Fact:</strong> You have ~600 lymph nodes in your body. When a doctor checks for "swollen glands," they\'re feeling whether lymph nodes are enlarged from fighting an infection.' },
 };
 
@@ -887,7 +887,7 @@ const NODE_DEFS = {
   veins:          { x:0.74, y:0.50, r:27, system:'circ' },  // far right
   blood:          { x:0.34, y:0.54, r:24, system:'circ' },  // mid centre, moved up
   capillaries:    { x:0.34, y:0.84, r:23, system:'circ' },  // bottom centre
-  // Overlay nodes — all pushed to edges, staggered so nothing sits on centre spine
+  // Overlay nodes - all pushed to edges, staggered so nothing sits on centre spine
   lungs:          { x:0.64, y:0.06, r:28, system:'resp' },  // very top
   smallintestine: { x:0.06, y:0.55, r:26, system:'dige' },  // far left mid
   kidneys:        { x:0.93, y:0.45, r:26, system:'excr' },  // far right mid
@@ -1086,7 +1086,7 @@ function draw() {
     // Arrowhead at destination
     drawArrow(from, { x:cx, y:cy }, to, col);
 
-    // Connection label — hover only
+    // Connection label - hover only
     if (hoveredConn === conn || hoveredNode === conn.from || hoveredNode === conn.to) {
       const t = 0.5;
       const lx = (1-t)*(1-t)*from.x + 2*(1-t)*t*cx + t*t*to.x;
@@ -1184,7 +1184,7 @@ function draw() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillText(data.name, x, y + r + 5);
-    // System tag — hover/select only
+    // System tag - hover/select only
     if (isSelected || isHovered) {
       ctx.font = `700 9px Nunito, sans-serif`;
       ctx.fillStyle = col;
@@ -1322,14 +1322,14 @@ resize();
 loop();
 </script>
 <script>
-/* Read Aloud — temporarily disabled */
+/* Read Aloud - temporarily disabled */
 window.toggleCardRead    = function() {};
 window.toggleGenericRead = function() {};
 </script>
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 <script>
 // ═══════════════════════════════════════════════════════════════
-// CONNECTION QUIZ — CIRCULATORY SYSTEM
+// CONNECTION QUIZ - CIRCULATORY SYSTEM
 // ═══════════════════════════════════════════════════════════════
 const QUIZ = [
   {
@@ -1343,7 +1343,7 @@ const QUIZ = [
       'Veins would carry blood in the wrong direction',
     ],
     correct: 0,
-    explanation: 'The respiratory system loads oxygen into red blood cells inside the lungs. Without this step, blood circulates but carries no oxygen — delivering "empty packages" to every cell in the body.',
+    explanation: 'The respiratory system loads oxygen into red blood cells inside the lungs. Without this step, blood circulates but carries no oxygen, delivering "empty packages" to every cell in the body.',
   },
   {
     pill: 'Digestive Connection',
@@ -1369,7 +1369,7 @@ const QUIZ = [
       'The lungs',
     ],
     correct: 3,
-    explanation: 'The lungs expel CO2 — a gaseous waste — with every exhale. The kidneys remove liquid waste (urea into urine) and the large intestine removes solid waste.',
+    explanation: 'The lungs expel CO2 (a gaseous waste) with every exhale. The kidneys remove liquid waste (urea into urine) and the large intestine removes solid waste.',
   },
   {
     pill: 'Skeletal Connection',
@@ -1395,7 +1395,7 @@ const QUIZ = [
       'White blood cells and antibodies',
     ],
     correct: 3,
-    explanation: 'White blood cells and antibodies travel through blood vessels — the circulatory system\'s highway — to reach infection sites anywhere in the body. Lymph nodes filter pathogens out of the blood before they can spread.',
+    explanation: 'White blood cells and antibodies travel through blood vessels (the circulatory system\'s highway) to reach infection sites anywhere in the body. Lymph nodes filter pathogens out of the blood before they can spread.',
   },
 ];
 
@@ -1426,7 +1426,7 @@ function updateQuizProgress() {
   if (n === total) {
     fill.classList.add('ready');
     btn.classList.add('ready');
-    hint.textContent = 'All questions answered — enter your name and generate your report!';
+    hint.textContent = 'All questions answered, enter your name and generate your report!';
     document.getElementById('quiz-notice').classList.remove('show');
     // Scroll name input into view
     document.getElementById('quiz-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1434,7 +1434,7 @@ function updateQuizProgress() {
     fill.classList.remove('ready');
     btn.classList.remove('ready');
     const rem = total - n;
-    hint.textContent = `${rem} question${rem !== 1 ? 's' : ''} remaining — toggle the connection pills above to find the answers.`;
+    hint.textContent = `${rem} question${rem !== 1 ? 's' : ''} remaining, toggle the connection pills above to find the answers.`;
   }
 }
 
@@ -1447,7 +1447,7 @@ function generateQuizReport() {
   const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
 
   if (!window.jspdf) {
-    alert('PDF library is still loading — please wait a moment and try again.');
+    alert('PDF library is still loading, please wait a moment and try again.');
     return;
   }
 
@@ -1469,7 +1469,7 @@ function generateQuizReport() {
   document.getElementById('quiz-notice').classList.remove('show');
 
   if (!window.jspdf) {
-    alert('PDF library is still loading — please wait a moment and try again.');
+    alert('PDF library is still loading, please wait a moment and try again.');
     return;
   }
 
@@ -1629,14 +1629,14 @@ function generateQuizReport() {
   checkPage(36); y+=6;
   const feedbackTitle = finalScore===QUIZ.length?'Perfect Score':finalScore===QUIZ.length-1?'Good Work':'Keep Studying';
   const feedbackMsg = finalScore===QUIZ.length
-    ? 'Outstanding — you understood every cross-system connection on the Circulatory System map.'
+    ? 'Outstanding, you understood every cross-system connection on the Circulatory System map.'
     : finalScore===QUIZ.length-1
     ? 'Strong work! You understood most connections. Review the one you missed above and re-read that connection card.'
     : 'Head back to the map, toggle each connection pill, and re-read the cards carefully before trying again.';
   
 
   f(C.teal10); s(C.teal); doc.setLineWidth(0.6); rr(ML,y,CW,30,5,'FD');
-  bold(13); t(C.tealDk); doc.text(feedbackTitle+'  —  Overall Feedback', ML+7, y+10);
+  bold(13); t(C.tealDk); doc.text(feedbackTitle+' ,  Overall Feedback', ML+7, y+10);
   normal(10.5); t(C.dgrey);
   var msgLines=doc.splitTextToSize(feedbackMsg,CW-14);
   doc.text(msgLines, ML+7, y+19, {lineHeightFactor:1.5});
@@ -1658,7 +1658,7 @@ function generateQuizReport() {
   window.open(doc.output('bloburl'), '_blank');
 }
 
-// ── Demo hotkey: Cmd+Shift+1 — randomly answers all unanswered questions ──
+// ── Demo hotkey: Cmd+Shift+1 - randomly answers all unanswered questions ──
 document.addEventListener('keydown', function(e) {
   if (e.metaKey && e.shiftKey && e.key === '1') {
     e.preventDefault();

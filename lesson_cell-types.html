@@ -10,7 +10,9 @@
   gtag('config', 'G-9QHB5G2B5B');
 </script>
 <meta charset="UTF-8">
+<meta name="description" content="If all living things are made of cells, why aren't all cells the same? Investigate unicellular vs. multicellular organisms, division of labor, and prokaryotic vs. eukaryotic cell designs. Grade 6 life science aligned to Massachusetts STE standards.">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="canonical" href="https://lyfelabz.com/lesson_cell-types.html">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LyfeLabz | Cell Types</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
@@ -42,7 +44,7 @@
     font-family: 'Nunito', sans-serif;
     background: var(--dark);
     color: var(--text);
-    line-height: 1.6;
+    line-height: 1.75;
     overflow-x: hidden;
   }
 
@@ -98,6 +100,11 @@
     padding: 0.35rem 0.9rem;
     border-radius: 99px;
     text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-back:hover {
+    background: rgba(46,204,113,0.18);
+    border-color: rgba(46,204,113,0.65);
   }
 
   /* ===== HERO ===== */
@@ -116,9 +123,9 @@
   }
   .hero-badge {
     display: inline-block;
-    background: rgba(46,204,113,0.15);
-    border: 1px solid rgba(46,204,113,0.4);
-    color: var(--green);
+    background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45);
+    color: #f5c842;
     padding: 0.4rem 1.2rem;
     border-radius: 99px;
     font-size: 0.8rem;
@@ -144,13 +151,6 @@
     color: var(--text-muted);
     max-width: 600px;
     margin: 0 auto 2.5rem;
-    position: relative;
-  }
-  .hero-btns {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
     position: relative;
   }
   .btn {
@@ -195,7 +195,7 @@
   }
 
   /* ===== SECTIONS ===== */
-  section { padding: 5rem 2rem; }
+  section { padding: 5rem 2rem; position: relative; }
   .container { max-width: 1100px; margin: 0 auto; }
 
   .section-label {
@@ -225,7 +225,6 @@
   }
 
   /* ===== CHARACTERISTICS GRID ===== */
-  #characteristics { background: var(--dark2); }
   .char-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -265,72 +264,6 @@
   }
   .char-desc { color: var(--text-muted); font-size: 0.95rem; }
 
-  /* ===== EXTENSION BANNER ===== */
-  .extension-banner {
-    margin-top: 3.5rem;
-    background: linear-gradient(135deg, rgba(155,89,182,0.12) 0%, rgba(52,152,219,0.08) 100%);
-    border: 2px solid rgba(155,89,182,0.35);
-    border-radius: 20px;
-    padding: 2.2rem 2.5rem;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-  .extension-banner-icon {
-    font-size: 3.5rem;
-    flex-shrink: 0;
-    animation: float 5s ease-in-out infinite;
-  }
-  .extension-banner-body { flex: 1; min-width: 200px; }
-  .extension-banner-tag {
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--purple);
-    background: rgba(155,89,182,0.15);
-    border: 1px solid rgba(155,89,182,0.35);
-    padding: 0.25rem 0.8rem;
-    border-radius: 99px;
-    margin-bottom: 0.6rem;
-  }
-  .extension-banner h3 {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.5rem;
-    margin-bottom: 0.4rem;
-    color: var(--text);
-  }
-  .extension-banner p { color: var(--text-muted); font-size: 0.95rem; }
-  .btn-extension {
-    background: linear-gradient(135deg, var(--purple), #7d3c98);
-    color: #fff;
-    box-shadow: 0 4px 20px rgba(155,89,182,0.35);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .btn-extension:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(155,89,182,0.5); }
-
-  /* ===== VIDEO ===== */
-  .video-wrapper {
-    position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 2px solid var(--border);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    max-width: 860px;
-    margin: 0 auto;
-  }
-  .video-wrapper iframe {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    border: none;
-  }
-
   /* ===== EU/PRO COMPARE ===== */
   .compare-table {
     width: 100%;
@@ -362,156 +295,206 @@
   .no  { color: #e57575 !important; font-weight: 800 !important; }
 
   /* ===== QUIZ ===== */
+  #one-cell, #specialization, #cell-designs, #detective, #reflection, #continue { scroll-margin-top: 10px; }
+  #quiz { scroll-margin-top: 45px; }
   .quiz-section { background: var(--dark2); }
-  .quiz-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 0.5rem;
+
+  .quiz-mode-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 0;
+    margin-bottom: 2rem;
+    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
+    border-radius: 14px; padding: 0.35rem; width: fit-content;
+    margin-left: auto; margin-right: auto;
+    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
   }
+  .mode-btn {
+    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+    letter-spacing: 0.04em; transition: all 0.22s;
+    color: rgba(122,143,166,0.55); background: transparent;
+  }
+  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+    color: #ddeaf5; border: 1px solid rgba(159,184,204,0.55);
+    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+    text-shadow: 0 0 12px rgba(159,184,204,0.6);
+  }
+  .mode-hint {
+    text-align: center; font-size: 0.82rem; font-weight: 700;
+    color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem; letter-spacing: 0.01em;
+  }
+  .mode-hint span         { display: none; }
+  .mode-hint span.visible { display: inline; }
+
+  .student-info-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 2rem 2.2rem; margin-bottom: 2.5rem;
+    border-top: 3px solid var(--green);
+  }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub   { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  .info-field label {
+    display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem;
+  }
+  .info-field input,
+  .info-field select {
+    width: 100%; padding: 0.7rem 1rem;
+    background: rgba(255,255,255,0.04); border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem; font-weight: 600; transition: border-color 0.2s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .info-field input:focus,
+  .info-field select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(46,204,113,0.15); }
+  .info-field select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238aafca' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem;
+  }
+  .info-field select option { background: #1e2f42; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+
+  .quiz-progress-sticky {
+    position: sticky; top: 60px; z-index: 100;
+    background: var(--dark2); padding: 0.85rem 0 0.75rem;
+    margin-bottom: 2rem; border-bottom: 1px solid var(--border);
+  }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar  { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--teal)); border-radius: 99px; transition: width 0.4s; width: 0%; }
+  .progress-text { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; min-width: 70px; text-align: right; }
+
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
   .quiz-num {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1rem;
-    color: var(--text-muted);
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted);
+    width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .quiz-question-text { font-weight: 800; font-size: 1rem; }
-  .quiz-options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    margin-top: 1rem;
-    padding-left: 3rem;
-  }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
   .quiz-option {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 0.9rem 1.2rem;
-    border-radius: 12px;
-    border: 2px solid var(--border);
-    cursor: pointer;
-    transition: all 0.2s;
-    background: rgba(255,255,255,0.02);
-    font-size: 0.95rem;
-    font-weight: 600;
-    font-family: 'Nunito', sans-serif;
-    text-align: left;
-    color: var(--text);
-    width: 100%;
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border);
+    cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02);
+    font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif;
+    text-align: left; color: var(--text); width: 100%;
   }
-  .quiz-option:hover:not(.selected):not(.disabled) {
-    border-color: rgba(52,152,219,0.5);
-    background: rgba(52,152,219,0.06);
-  }
-  .quiz-option.correct { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
-  .quiz-option.incorrect { border-color: var(--red) !important; background: rgba(231,76,60,0.08) !important; }
-  .quiz-option.disabled { pointer-events: none; }
+  .quiz-option:hover:not(.selected):not(.disabled) { border-color: rgba(52,152,219,0.5); background: rgba(52,152,219,0.06); }
+  .quiz-option.selected        { border-color: var(--green)  !important; background: rgba(46,204,113,0.1)  !important; }
+  .quiz-option.correct         { border-color: var(--green)  !important; background: rgba(46,204,113,0.1)  !important; }
+  .quiz-option.incorrect       { border-color: var(--red)    !important; background: rgba(231,76,60,0.08)  !important; }
+  .quiz-option.disabled        { pointer-events: none; }
   .quiz-option.revealed-correct { border-color: rgba(46,204,113,0.4) !important; background: rgba(46,204,113,0.05) !important; }
-  .option-letter {
-    font-weight: 900;
-    color: var(--text-muted);
-    min-width: 1.2rem;
-    font-size: 0.85rem;
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback { display: none; font-size: 0.85rem; margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700; }
+  .option-feedback.correct-fb  { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080;     background: rgba(231,76,60,0.08);  border-left: 3px solid var(--red);   }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.2rem; }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn {
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px;
+    font-weight: 900; font-size: 1.05rem; cursor: pointer;
+    font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em;
   }
-  .option-feedback {
-    display: none;
-    font-size: 0.85rem;
-    margin-top: 0.8rem;
-    padding: 0.8rem 1.2rem;
-    border-radius: 10px;
-    padding-left: 3rem;
-    font-weight: 700;
-  }
-  .option-feedback.correct-fb { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
-  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
-  .quiz-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.8rem;
-    margin-bottom: 1.2rem;
-  }
-  .quiz-progress {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  .progress-bar {
-    flex: 1;
-    height: 8px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 99px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--green), var(--teal));
-    border-radius: 99px;
-    transition: width 0.4s;
-    width: 0%;
-  }
-  .progress-text { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; min-width: 60px; text-align: right; }
+  .quiz-submit-btn:hover    { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(46,204,113,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
   .score-board {
     display: none;
     background: linear-gradient(135deg, rgba(46,204,113,0.1), rgba(26,188,156,0.05));
-    border: 2px solid rgba(46,204,113,0.3);
-    border-radius: 20px;
-    padding: 2.5rem;
-    text-align: center;
-    margin-top: 1.5rem;
+    border: 1px solid rgba(46,204,113,0.3); border-radius: 20px;
+    padding: 2.5rem; text-align: center; margin-top: 2rem;
   }
-  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
-  .score-board .big-score {
-    font-family: 'Fredoka One', cursive;
-    font-size: 4rem;
-    color: var(--green);
-    line-height: 1;
-    margin-bottom: 0.5rem;
-  }
+  .score-board.show { display: block; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--green); margin-bottom: 0.5rem; }
   .score-board p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   .reset-btn {
     background: linear-gradient(135deg, var(--blue), var(--blue-dark));
-    color: #fff;
-    border: none;
-    padding: 0.85rem 2.5rem;
-    border-radius: 12px;
-    font-weight: 800;
-    font-size: 1rem;
-    cursor: pointer;
-    font-family: 'Nunito', sans-serif;
-    transition: all 0.25s;
+    color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px;
+    font-weight: 800; font-size: 1rem; cursor: pointer;
+    font-family: 'Nunito', sans-serif; transition: all 0.25s;
   }
   .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+  .score-submitted {
+    display: block; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--green); background: rgba(46,204,113,0.1);
+    border: 1px solid rgba(46,204,113,0.3); padding: 0.4rem 1rem;
+    border-radius: 99px; margin-bottom: 1.5rem;
+  }
+  .score-error {
+    display: block; font-size: 0.8rem; font-weight: 800; color: #e87070;
+    background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3);
+    padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+  }
 
   /* ===== FOOTER ===== */
   footer {
-    background: #0d1720;
+    background: #070f17;
     border-top: 1px solid var(--border);
-    padding: 3rem 2rem;
+    padding: 2rem;
     text-align: center;
+    margin-top: 0.5rem;
   }
-  footer .logo { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--green); margin-bottom: 0.5rem; }
-  footer p { color: var(--text-muted); font-size: 0.9rem; }
+  footer .footer-logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    margin-bottom: 0.35rem;
+  }
+  footer .footer-tagline {
+    font-size: 0.83rem;
+    color: rgba(240,228,200,0.6);
+    margin-bottom: 0.6rem;
+  }
+  footer .footer-links {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 0.6rem;
+  }
+  footer .footer-links a {
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.4);
+    background: rgba(245,200,66,0.08);
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover { border-color: rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why {
+    color: #3bc8e8;
+    border-color: rgba(59,200,232,0.7);
+    background: rgba(59,200,232,0.12);
+  }
+  footer .footer-links a.nav-why:hover {
+    background: rgba(59,200,232,0.22);
+    border-color: rgba(59,200,232,0.95);
+  }
+  footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
 
+  @media (max-width: 640px) {
+    .info-fields { grid-template-columns: 1fr; }
+  }
   @media (max-width: 600px) {
-    .nav-links { display: none; }
-    .quiz-options { padding-left: 0; }
+    .nav-links       { display: none; }
+    .quiz-options    { padding-left: 0; }
     .option-feedback { padding-left: 1rem; }
   }
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
-/* ── Visibility gate — hidden until body.ls-active is set ─────────
+/* ── Visibility gate, hidden until body.ls-active is set ─────────
    The session-check script (injected into every content page) adds
    body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
    Educators toggle this from the index or Learning Science page.
@@ -522,7 +505,7 @@
 }
 
 body.ls-active .ls-focus {
-  /* ── Centered card — sits between hero and first content section ── */
+  /* ── Centered card - sits between hero and first content section ── */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -775,7 +758,7 @@ body.stem-active .stem-detail {
 .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
 
   /* ── CONTINUE ── */
-  #continue { background: var(--dark2); }
+  #continue { background: var(--dark); }
   .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
   .cont-card {
     border-radius: 18px; padding: 1.6rem; display: flex; flex-direction: column; gap: 0.7rem;
@@ -812,10 +795,14 @@ body.stem-active .stem-detail {
   .cont-card.ext  .cont-link { background: rgba(180,127,255,0.12); border-color: rgba(180,127,255,0.3);  color: #b47fff; }
   .cont-card.game .cont-link { background: rgba(61,220,132,0.1);   border-color: rgba(61,220,132,0.3);   color: #3ddc84; }
   .cont-card.map  .cont-link { background: rgba(59,200,232,0.12);  border-color: rgba(59,200,232,0.45);  color: #3bc8e8; }
+  .cont-card.inv  { background: rgba(59,130,246,0.10);  border: 1px solid rgba(59,130,246,0.35); }
+  .cont-card.inv::before  { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
+  .cont-card.inv:hover    { border-color: rgba(59,130,246,0.6);  box-shadow: 0 14px 40px rgba(59,130,246,0.15); }
+  .cont-card.inv  .cont-icon { background: rgba(59,130,246,0.15); }
+  .cont-card.inv  .cont-link { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.3);  color: #3B82F6; }
   .cont-card.ext:hover  .cont-link { background: rgba(180,127,255,0.2); border-color: rgba(180,127,255,0.55); }
-  .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55); }
-  .cont-card.map:hover  .cont-link { background: rgba(59,200,232,0.2);  border-color: rgba(59,200,232,0.6);  }
-.cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55);  color: #3ddc84; }
+  .cont-card.inv:hover  .cont-link { background: rgba(59,130,246,0.2);  border-color: rgba(59,130,246,0.55); }
+  .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55);  color: #3ddc84; }
   .cont-card.map:hover  .cont-link { background: rgba(59,200,232,0.2);  border-color: rgba(59,200,232,0.6);   color: #3bc8e8; }
 </style>
 </head>
@@ -825,9 +812,11 @@ body.stem-active .stem-detail {
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
-    <li><a href="#unicellular">Uni vs Multi</a></li>
-    <li><a href="#prokaryotic">Pro vs Euk</a></li>
-    <li><a href="#watch">Watch</a></li>
+    <li><a href="#one-cell">One Cell</a></li>
+    <li><a href="#specialization">Specialization</a></li>
+    <li><a href="#cell-designs">Cell Designs</a></li>
+    <li><a href="#detective">Detective</a></li>
+    <li><a href="#reflection">Reflect</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -840,320 +829,1264 @@ body.stem-active .stem-detail {
   <span class="hero-cells">🔬</span>
   <span class="hero-cells">🧫</span>
   <span class="hero-cells">🧬</span>
-  <div class="hero-badge">Life Science · Lesson 2</div>
-  <h1>Cell Types 🦠</h1>
-  <p>Unicellular vs. multicellular, prokaryotic vs. eukaryotic — understand the building blocks of all living things.</p>
+  <div class="hero-badge">Lesson</div>
+  <h1>Cell Types</h1>
+  <p>All living things are made of cells, yet a bacterium and a human brain cell couldn't look more different. Let's find out why.</p>
   <div class="driving-question">
     <div class="dq-icon">🔍</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">How can a single drop of pond water contain thousands of complete, fully-functioning living organisms?</div>
+      <div class="dq-text">If all living things are made of cells, why aren't all cells the same?</div>
     </div>
   </div>
 </header>
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
-  <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. — Schroeder et al., 2018">🗂️ Concept Formation</span>
-  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. — Adesope et al., 2017">🧠 Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Content is chunked and sequenced so working memory is never overwhelmed by too much at once. — Sweller et al., 2019">⚖️ Load Management</span>
+  <span class="ls-badge" data-tip="Content builds progressively on prior learning, this lesson explicitly extends What Is Life, reducing cognitive load. (Kirschner et al., 2006)">🏗️ Scaffolding</span>
+  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. (Noetel et al., 2022)">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. (Schroeder et al., 2018)">🗂️ Concept Formation</span>
+  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. (Adesope et al., 2017)">✅ Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Content is chunked and sequenced so working memory is never overwhelmed by too much at once. (Sweller et al., 2019)">⚖️ Load Management</span>
 </div>
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
   <span class="stem-badge" data-tip="Provide evidence that all organisms (unicellular and multicellular) are made of cells.">6.MS-LS1-1</span>
+  <span class="stem-badge" data-tip="Develop and use a model to describe the function of a cell as a whole and ways the parts of cells contribute to the function.">6.MS-LS1-2</span>
+</div>
+<div class="stem-detail" id="stem-detail-1">
+  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-1')">▸ Show standard descriptions</button>
+  <div class="stem-detail-body">
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-LS1-1</span>
+      <span class="stem-std-text">Provide evidence that all organisms (unicellular and multicellular) are made of cells.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-LS1-2</span>
+      <span class="stem-std-text">Develop and use a model to describe the function of a cell as a whole and ways the parts of cells contribute to the function.</span>
+    </div>
+  </div>
 </div>
 
-<!-- UNICELLULAR VS MULTICELLULAR -->
-<section id="unicellular" style="background:var(--dark2);">
+<!-- BRIDGE FROM WHAT IS LIFE -->
+<style>
+.bridge-callout {
+  margin-top: 2.5rem;
+  padding: 1.4rem 1.8rem;
+  background: rgba(59,200,232,0.06);
+  border: 1px solid rgba(59,200,232,0.22);
+  border-left: 4px solid #3bc8e8;
+  border-radius: 14px;
+  font-size: 1rem;
+  color: var(--text-muted);
+  max-width: 760px;
+}
+.bridge-callout strong { color: var(--text); }
+
+.bridge-contrast-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-bottom: 0;
+}
+@media (max-width: 580px) { .bridge-contrast-grid { grid-template-columns: 1fr; } }
+.bridge-stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.8rem 1.6rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.bridge-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.3);
+}
+.bridge-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.bridge-stat-card:first-child { border-color: rgba(46,204,113,0.25); }
+.bridge-stat-card:last-child  { border-color: rgba(52,152,219,0.25); }
+.bridge-stat-card:first-child::before { background: linear-gradient(90deg, var(--green), var(--teal)); }
+.bridge-stat-card:last-child::before  { background: linear-gradient(90deg, var(--blue), var(--teal)); }
+.bsc-icon   { font-size: 2rem; margin-bottom: 0.7rem; }
+.bsc-number {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2.4rem;
+  line-height: 1.05;
+  margin-bottom: 0.25rem;
+}
+.bridge-stat-card:first-child .bsc-number { color: var(--green); }
+.bridge-stat-card:last-child  .bsc-number { color: var(--blue);  }
+.bsc-label { font-weight: 900; font-size: 0.92rem; color: var(--text); margin-bottom: 0.7rem; }
+.bsc-desc  { font-size: 0.93rem; color: var(--text-muted); line-height: 1.65; }
+
+.char-grid-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 2.5rem 0 1.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.vocab { cursor: help; border-bottom: 1px dotted rgba(59,200,232,0.5); }
+
+/* ===== SPECIALIZATION FLOW ===== */
+.spec-flow {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex-wrap: wrap;
+  margin: 2.2rem 0 2.5rem;
+  justify-content: center;
+}
+.spec-step {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.4rem 1.2rem;
+  text-align: center;
+  flex: 1;
+  min-width: 130px;
+  max-width: 200px;
+  position: relative;
+  overflow: hidden;
+}
+.spec-step::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--blue));
+}
+.spec-step-icon  { font-size: 1.8rem; margin-bottom: 0.5rem; display: block; }
+.spec-step-name  { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text); margin-bottom: 0.35rem; }
+.spec-step-desc  { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+.spec-arrow {
+  color: var(--teal);
+  font-size: 1.5rem;
+  font-weight: 900;
+  padding: 0 0.6rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+@media (max-width: 620px) {
+  .spec-flow      { flex-direction: column; align-items: stretch; gap: 0.6rem; }
+  .spec-arrow     { justify-content: center; transform: rotate(90deg); }
+  .spec-step      { max-width: none; }
+}
+</style>
+
+<section id="one-cell" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">📖 Lesson Notes</span>
-    <h2 class="section-title">Unicellular vs. Multicellular 🦠</h2>
-    <p class="section-desc">All living things are made of cells — but some run the whole show with just one, while others are built from trillions working together.</p>
+    <span class="section-label">From the What Is Life Lesson</span>
+    <h2 class="section-title">Same Building Block. Different Strategies.</h2>
+    <p class="section-desc">You've established that all living things are made of cells. But that answer immediately raises a bigger question, if the building block is the same, why do living things look so different?</p>
+
+    <div class="bridge-contrast-grid">
+
+      <div class="bridge-stat-card">
+        <div class="bsc-icon">💧</div>
+        <div class="bsc-number">~1,000+</div>
+        <div class="bsc-label">complete living organisms in a single drop of pond water</div>
+        <div class="bsc-desc">Each one is a single cell that handles every life function (eating, moving, reproducing) entirely on its own. No backup. No division of labor. Just one cell doing everything.</div>
+      </div>
+
+      <div class="bridge-stat-card">
+        <div class="bsc-icon">🧠</div>
+        <div class="bsc-number">~37 trillion</div>
+        <div class="bsc-label">cells in a human body</div>
+        <div class="bsc-desc">Each specialized for one job. Muscle cells contract. Nerve cells transmit signals. Red blood cells carry oxygen. No single cell tries to do everything.</div>
+      </div>
+
+    </div>
+
+    <div class="bridge-callout">
+      <strong>Same building block. Completely different strategies.</strong> Both approaches have been extraordinarily successful for hundreds of millions of years. This lesson investigates why these strategies exist, and what tradeoffs each one involves.
+    </div>
+
+    <div class="char-grid-header">
+      <span class="section-label" style="margin-bottom:0;">One Cell. Every Job.</span>
+    </div>
+    <p style="color:var(--text-muted); font-size:1rem; margin-bottom:2rem; max-width:680px;">A unicellular organism isn't incomplete, it's independent. One cell must handle every life function without any support from neighboring cells. Here is the full job description.</p>
+
+    <div class="char-grid">
+
+      <div class="char-card">
+        <span class="char-number">01</span>
+        <span class="char-icon">🍽️</span>
+        <div class="char-name">Feed Itself</div>
+        <div class="char-desc">With no stomach or digestive system, the cell absorbs nutrients directly through its membrane. It must detect food, move toward it, and pull it inside, all on its own.</div>
+      </div>
+
+      <div class="char-card">
+        <span class="char-number">02</span>
+        <span class="char-icon">🧭</span>
+        <div class="char-name">Navigate the World</div>
+        <div class="char-desc">Many unicellular organisms use flagella, cilia, or pseudopods to move toward food or warmth, and away from toxins or threats. One cell is both the navigator and the vehicle.</div>
+      </div>
+
+      <div class="char-card">
+        <span class="char-number">03</span>
+        <span class="char-icon">👁️</span>
+        <div class="char-name">Sense and Respond</div>
+        <div class="char-desc">Without a nervous system, the cell must detect chemical signals, temperature changes, and light, and react directly. Detection and response happen inside the same cell.</div>
+      </div>
+
+      <div class="char-card">
+        <span class="char-number">04</span>
+        <span class="char-icon">🗑️</span>
+        <div class="char-name">Remove Waste</div>
+        <div class="char-desc">Metabolism produces byproducts. With no kidneys or liver, the cell handles its own waste removal through membrane transport and its internal machinery.</div>
+      </div>
+
+      <div class="char-card">
+        <span class="char-number">05</span>
+        <span class="char-icon">🔁</span>
+        <div class="char-name">Reproduce</div>
+        <div class="char-desc">When conditions are right, the cell copies its DNA and divides in two. No partner required. No reproductive system. One cell becomes two complete, independent organisms.</div>
+      </div>
+
+      <div class="char-card">
+        <span class="char-number">06</span>
+        <span class="char-icon">⚖️</span>
+        <div class="char-name">Maintain Balance</div>
+        <div class="char-desc">Without support from other cells, a single cell must regulate its own water levels, internal chemistry, and temperature response. Every aspect of homeostasis is handled from within.</div>
+      </div>
+
+    </div>
+
+    <div class="bridge-callout" style="border-left-color:var(--green); border-color:rgba(46,204,113,0.22); background:rgba(46,204,113,0.05);">
+      This isn't a limitation, it's independence. Unicellular organisms have dominated life on Earth for over <strong>3.5 billion years</strong>. They were here long before multicellular life evolved, and they still outnumber every other form of life on the planet. The strategy works.
+    </div>
+
+  </div>
+</section>
+
+<!-- DIVISION OF LABOR -->
+<section id="specialization" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Division of Labor</span>
+    <h2 class="section-title">When One Cell Isn't Enough</h2>
+    <p class="section-desc">One cell can handle every life function; but only up to a certain scale. As organisms grow larger and more complex, asking one cell to do every job becomes a problem of efficiency.</p>
+
+    <div class="bridge-callout" style="margin-top:0; margin-bottom:2.5rem;">
+      Think about a school. One person doesn't teach every class, cook lunch, drive every bus, and manage the building. Different people specialize in different roles, and together, the school works. <strong>Multicellular organisms use the same strategy.</strong>
+    </div>
+
+    <div class="spec-flow">
+      <div class="spec-step">
+        <span class="spec-step-icon">🦠</span>
+        <div class="spec-step-name">Specialized Cell</div>
+        <div class="spec-step-desc">One job, done well, muscle cell, nerve cell, red blood cell</div>
+      </div>
+      <div class="spec-arrow">→</div>
+      <div class="spec-step">
+        <span class="spec-step-icon">🧱</span>
+        <div class="spec-step-name">Tissue</div>
+        <div class="spec-step-desc">Groups of similar cells cooperating, muscle tissue, nerve tissue</div>
+      </div>
+      <div class="spec-arrow">→</div>
+      <div class="spec-step">
+        <span class="spec-step-icon">❤️</span>
+        <div class="spec-step-name">Organ</div>
+        <div class="spec-step-desc">Teams of tissues with a shared purpose, heart, brain, lung</div>
+      </div>
+      <div class="spec-arrow">→</div>
+      <div class="spec-step">
+        <span class="spec-step-icon">🧑</span>
+        <div class="spec-step-name">Organism</div>
+        <div class="spec-step-desc">All systems working in coordination, complex, organized, alive</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="border-left-color:var(--teal); border-color:rgba(26,188,156,0.24); background:rgba(26,188,156,0.055);">
+      <strong>Specialization enables complexity; but it comes with a cost.</strong> A multicellular organism must maintain coordination between trillions of cells. A muscle cell can contract, but it cannot feed itself; it depends on red blood cells for oxygen and other cells to remove waste. Every specialized cell gives up independence to be part of something larger. <strong>Specialization is a tradeoff, not an upgrade over unicellular life.</strong>
+    </div>
+
+  </div>
+</section>
+
+<!-- TWO CELL DESIGNS -->
+<section id="cell-designs" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Cell Designs</span>
+    <h2 class="section-title">Two Solutions to the Same Problem</h2>
+    <p class="section-desc">Every cell must store and use DNA, the instructions for building and running a living thing. Life has evolved two very different approaches to organizing that DNA, and those two approaches produce very different kinds of organisms.</p>
+
+    <div class="bridge-callout" style="margin-top:0; margin-bottom:2.5rem;">
+      You saw both cell types in the previous lesson. Here we go deeper: not just <em>what</em> the difference is; but <em>why</em> it matters, and what each design makes possible.
+    </div>
+
     <table class="compare-table">
       <thead>
-        <tr><th>Feature</th><th>Unicellular</th><th>Multicellular</th></tr>
+        <tr>
+          <th>Feature</th>
+          <th><span class="vocab" title="Prokaryotic: a cell with no membrane-bound nucleus (DNA floats freely in the cytoplasm) all bacteria are prokaryotic">Prokaryotic</span></th>
+          <th><span class="vocab" title="Eukaryotic: a cell that has a membrane-bound nucleus housing its DNA, found in plants, animals, fungi, and protists">Eukaryotic</span></th>
+        </tr>
       </thead>
       <tbody>
-        <tr><td>Number of cells</td><td>One cell only</td><td>Many cells</td></tr>
-        <tr><td>How it works</td><td>One cell does <strong>everything</strong> — eating, moving, reproducing</td><td>Cells <strong>specialize</strong> and work together in tissues and organs</td></tr>
-        <tr><td>Examples</td><td>Bacteria, amoeba, paramecium, yeast</td><td>Humans, dogs, trees, mushrooms, jellyfish</td></tr>
-        <tr><td>Cell type</td><td>Can be prokaryotic <em>or</em> eukaryotic</td><td>Always eukaryotic</td></tr>
-        <tr><td>Complexity</td><td>Simpler — single cell must handle all life functions</td><td>More complex — division of labor between cell types</td></tr>
-        <tr><td>Visible to naked eye?</td><td class="no">❌ Usually not</td><td class="yes">✅ Usually yes</td></tr>
+        <tr>
+          <td>DNA location</td>
+          <td>Floating freely in the <span class="vocab" title="Cytoplasm: the gel-like fluid that fills the cell and suspends its contents"><strong>cytoplasm</strong></span></td>
+          <td>Enclosed inside a membrane-bound <span class="vocab" title="Nucleus: the membrane-bound organelle that houses a cell's DNA and controls cell activity, only found in eukaryotic cells"><strong>nucleus</strong></span></td>
+        </tr>
+        <tr>
+          <td>Has a nucleus?</td>
+          <td class="no">No</td>
+          <td class="yes">Yes</td>
+        </tr>
+        <tr>
+          <td>Typical size</td>
+          <td>Generally smaller</td>
+          <td>Generally larger</td>
+        </tr>
+        <tr>
+          <td>Reproduction speed</td>
+          <td>Very fast, some bacteria divide in under 20 minutes</td>
+          <td>Generally slower</td>
+        </tr>
+        <tr>
+          <td>Can be multicellular?</td>
+          <td class="no">No, always unicellular</td>
+          <td class="yes">Yes, can be either</td>
+        </tr>
+        <tr>
+          <td>Examples</td>
+          <td>Bacteria</td>
+          <td>Plants, animals, fungi, protists (amoeba, paramecium)</td>
+        </tr>
+        <tr>
+          <td>Key strength</td>
+          <td>Speed, simplicity, and adaptability, can thrive where complex organisms cannot</td>
+          <td>Internal organization that allows greater cellular complexity and makes specialization possible</td>
+        </tr>
       </tbody>
     </table>
+
+    <div class="bridge-callout" style="margin-top:2.5rem; border-left-color:var(--gold); border-color:rgba(245,200,66,0.3); background:rgba(245,200,66,0.04);">
+      <strong>There is no best cell type.</strong> Prokaryotes succeed through speed and simplicity; they reproduce in minutes, survive in environments no other organism can tolerate, and adapt rapidly to change. Eukaryotes succeed through internal organization, membrane-bound compartments including the <span class="vocab" title="Nucleus: the membrane-bound organelle that houses a cell's DNA and controls cell activity, only found in eukaryotic cells">nucleus</span> allow greater complexity and make specialization possible in larger organisms. Both strategies have sustained life on this planet for billions of years.
+    </div>
+
   </div>
 </section>
 
-<!-- EUKARYOTIC VS PROKARYOTIC -->
-<section id="prokaryotic">
+<!-- CELL TYPE DETECTIVE -->
+<style>
+.detective-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+.evidence-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.3s;
+}
+.evidence-card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.ec-header {
+  padding: 1.3rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.ec-icon {
+  font-size: 2rem;
+  width: 50px; height: 50px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ec-name     { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); line-height: 1.1; }
+.ec-subtitle { font-size: 0.78rem; color: var(--text-muted); font-style: italic; margin-top: 0.15rem; }
+.ec-evidence {
+  padding: 1.2rem 1.5rem;
+  flex: 1;
+}
+.ec-evidence-label {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--teal); margin-bottom: 0.7rem;
+}
+.ec-evidence-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+.ec-evidence-list li {
+  font-size: 0.9rem; color: var(--text-muted);
+  padding-left: 1.1rem; position: relative; line-height: 1.55;
+}
+.ec-evidence-list li::before { content: '›'; position: absolute; left: 0; color: var(--teal); font-weight: 900; }
+.ec-predict {
+  padding: 1.2rem 1.5rem;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.08);
+}
+.ec-predict-label {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.6rem;
+}
+.ec-predict-group { display: flex; gap: 0.5rem; margin-bottom: 0.7rem; }
+.ec-predict-group:last-of-type { margin-bottom: 1rem; }
+.predict-btn {
+  flex: 1; padding: 0.6rem 0.4rem;
+  border-radius: 10px; border: 1.5px solid var(--border);
+  background: rgba(255,255,255,0.03); color: var(--text-muted);
+  font-family: 'Nunito', sans-serif; font-size: 0.84rem; font-weight: 800;
+  cursor: pointer; transition: all 0.18s; letter-spacing: 0.02em;
+}
+.predict-btn:hover:not(.selected):not(.det-disabled) {
+  border-color: rgba(59,200,232,0.45); color: var(--text); background: rgba(59,200,232,0.06);
+}
+.predict-btn.selected       { border-color: var(--blue); background: rgba(52,152,219,0.14); color: var(--text); }
+.predict-btn.correct-pred   { border-color: var(--green)  !important; background: rgba(46,204,113,0.12) !important; color: var(--green)  !important; }
+.predict-btn.wrong-pred     { border-color: rgba(231,76,60,0.4) !important; background: rgba(231,76,60,0.06) !important; color: #e87070 !important; }
+.predict-btn.shown-correct  { border-color: rgba(46,204,113,0.45) !important; background: rgba(46,204,113,0.07) !important; color: var(--green) !important; }
+.predict-btn.det-disabled   { pointer-events: none; }
+.reveal-btn {
+  width: 100%; padding: 0.75rem; border-radius: 12px; border: none;
+  background: linear-gradient(135deg, var(--teal), var(--blue));
+  color: #fff; font-family: 'Nunito', sans-serif; font-size: 0.9rem;
+  font-weight: 900; cursor: pointer; transition: all 0.25s;
+  letter-spacing: 0.04em; opacity: 0.4; pointer-events: none;
+}
+.reveal-btn.ready { opacity: 1; pointer-events: auto; }
+.reveal-btn.ready:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,188,156,0.35); }
+.reveal-btn.done {
+  opacity: 1; pointer-events: none;
+  background: rgba(255,255,255,0.07); color: var(--text-muted);
+}
+.ec-result { display: none; padding: 1.2rem 1.5rem; border-top: 1px solid var(--border); }
+.ec-result.show { display: block; }
+.ec-class-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.ec-class-badge {
+  font-size: 0.76rem; font-weight: 900; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 0.3rem 0.85rem;
+  border-radius: 99px; border: 1px solid;
+}
+.badge-green  { color: var(--green); background: rgba(46,204,113,0.1);  border-color: rgba(46,204,113,0.35); }
+.badge-blue   { color: #7cc8f8;     background: rgba(52,152,219,0.1);  border-color: rgba(52,152,219,0.35); }
+.badge-teal   { color: #3bc8e8;     background: rgba(59,200,232,0.1);  border-color: rgba(59,200,232,0.35); }
+.badge-purple { color: #b47fff;     background: rgba(155,89,182,0.1);  border-color: rgba(155,89,182,0.35); }
+.ec-explanation { font-size: 0.9rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 0.85rem; }
+.ec-reflection  { font-size: 0.78rem; font-weight: 800; color: rgba(59,200,232,0.6); font-style: italic; }
+</style>
+
+<section id="detective" style="background: var(--dark);">
   <div class="container">
-    <h2 class="section-title">Eukaryotic vs. Prokaryotic 🔬</h2>
-    <p class="section-desc">Two major types of cells — the key difference is where the DNA lives.</p>
-    <table class="compare-table">
-      <thead>
-        <tr><th>Feature</th><th>Eukaryotic</th><th>Prokaryotic</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>DNA location</td><td>Inside the <strong>nucleus</strong></td><td>Floating in the <strong>cytoplasm</strong></td></tr>
-        <tr><td>Has a nucleus?</td><td class="yes">✅ Yes</td><td class="no">❌ No</td></tr>
-        <tr><td>Examples</td><td>Plants, animals, fungi, protists</td><td>Bacteria</td></tr>
-        <tr><td>Unicellular or multicellular?</td><td>Both possible</td><td>Always unicellular</td></tr>
-      </tbody>
-    </table>
+    <span class="section-label">Evidence-Based Activity</span>
+    <h2 class="section-title">Cell Type Detective</h2>
+    <p class="section-desc" style="max-width:680px;">Six organisms. For each one, read the evidence, then predict its cell strategy before the classification is revealed. Use your reasoning, not just your memory.</p>
+
+    <div class="detective-grid" id="detective-grid"></div>
   </div>
 </section>
 
-<!-- EXTENSION BANNER -->
-<div style="background:var(--dark2); padding: 0 2rem 4rem;">
-  <div class="container">
-    <div class="extension-banner">
-      <div class="extension-banner-icon">🦠</div>
-      <div class="extension-banner-body">
-        <div class="extension-banner-tag">⭐ Extension Activity</div>
-        <h3>Are Viruses Alive? You Decide.</h3>
-        <p>Finished the basics? Challenge yourself — explore the science, check the evidence, and write your own argument using the CER framework.</p>
+<script>
+const detectiveOrganisms = [
+  {
+    name: 'Bacteria',
+    icon: '🦠',
+    subtitle: 'E. coli (a common bacterium)',
+    evidence: [
+      'Found in soil, water, and inside living organisms across the planet.',
+      'Can reproduce by splitting in two in as little as 20 minutes.',
+      'Has no membrane-bound organelles, its DNA floats freely in the cytoplasm.',
+      'Each cell is about 1–10 micrometers, invisible to the naked eye.'
+    ],
+    unicellular: true,
+    prokaryotic: true,
+    explanation: 'Bacteria are the defining example of a prokaryote, single-celled with no nucleus. Their simplicity is a strength: they reproduce rapidly and survive in environments no complex organism can tolerate.'
+  },
+  {
+    name: 'Human',
+    icon: '🧑',
+    subtitle: 'Homo sapiens',
+    evidence: [
+      'Built from approximately 37 trillion cells.',
+      'Has organs (heart, lungs, brain) each performing a specific function.',
+      'Cell types include muscle cells, nerve cells, and red blood cells, each specialized for one job.',
+      'Develops from a single fertilized cell that divides and differentiates over months.'
+    ],
+    unicellular: false,
+    prokaryotic: false,
+    explanation: 'Humans are multicellular eukaryotes. Trillions of specialized cells are organized into tissues, organs, and systems, no individual cell could survive alone.'
+  },
+  {
+    name: 'Oak Tree',
+    icon: '🌳',
+    subtitle: 'Quercus (oak genus)',
+    evidence: [
+      'Grows from a single acorn over decades into a towering plant.',
+      'Has distinct structures: roots absorb water, leaves capture sunlight, bark provides protection.',
+      'Each structure is built from different cell types doing different jobs.',
+      'Cells contain membrane-bound organelles including chloroplasts for photosynthesis.'
+    ],
+    unicellular: false,
+    prokaryotic: false,
+    explanation: 'Oak trees are multicellular eukaryotes. Plant cells contain a nucleus, and their own specialized organelles like chloroplasts that animal cells do not have.'
+  },
+  {
+    name: 'Amoeba',
+    icon: '🔬',
+    subtitle: 'Amoeba proteus',
+    evidence: [
+      'Visible only under a microscope, typically 250–750 micrometers in size.',
+      'Moves by extending and retracting its own cell membrane to ooze through water.',
+      'Engulfs food by surrounding it with its membrane, no mouth, no gut.',
+      'Contains a clearly visible nucleus when examined under a microscope.'
+    ],
+    unicellular: true,
+    prokaryotic: false,
+    explanation: 'An amoeba is a unicellular eukaryote, one cell doing every life function, but with a nucleus. Key reminder: unicellular and eukaryotic are not mutually exclusive.'
+  },
+  {
+    name: 'Mushroom',
+    icon: '🍄',
+    subtitle: 'A fungus (Kingdom Fungi)',
+    evidence: [
+      'What you see above ground is only the fruiting body, most of the organism is a vast underground network of thread-like structures.',
+      'Has distinct structures: cap, stalk, and gills, each with different functions.',
+      'Reproduces by releasing microscopic spores from underneath the cap.',
+      'Cells contain nuclei and other membrane-bound organelles.'
+    ],
+    unicellular: false,
+    prokaryotic: false,
+    explanation: 'Fungi are multicellular eukaryotes. Mushrooms share the same basic cell design as plants and animals, eukaryotic cells organized into distinct, cooperative structures.'
+  },
+  {
+    name: 'Paramecium',
+    icon: '💧',
+    subtitle: 'Paramecium caudatum',
+    evidence: [
+      'One of the organisms that fills a single drop of pond water; this lesson\'s starting image.',
+      'Covered in thousands of tiny hair-like cilia it uses to swim through water.',
+      'Has a specialized groove in its membrane for capturing food particles.',
+      'Contains a visible nucleus and other internal structures, all within a single cell.'
+    ],
+    unicellular: true,
+    prokaryotic: false,
+    explanation: 'A paramecium is a unicellular eukaryote, highly capable, all in one cell. It connects directly back to the driving question: this is one of thousands of complete living organisms in a single drop of pond water.'
+  }
+];
+
+const detState = detectiveOrganisms.map(() => ({ org: null, cell: null, revealed: false }));
+
+function buildDetectiveGrid() {
+  const grid = document.getElementById('detective-grid');
+  if (!grid) return;
+  detectiveOrganisms.forEach((org, i) => {
+    const card = document.createElement('div');
+    card.className = 'evidence-card';
+    card.innerHTML = `
+      <div class="ec-header">
+        <div class="ec-icon">${org.icon}</div>
+        <div>
+          <div class="ec-name">${org.name}</div>
+          <div class="ec-subtitle">${org.subtitle}</div>
+        </div>
       </div>
-      <a href="extensions_virus.html" class="btn btn-extension">Explore Extension 🔬</a>
-    </div>
-  </div>
-</div>
+      <div class="ec-evidence">
+        <div class="ec-evidence-label">Evidence Card</div>
+        <ul class="ec-evidence-list">${org.evidence.map(e => `<li>${e}</li>`).join('')}</ul>
+      </div>
+      <div class="ec-predict">
+        <div class="ec-predict-label">Predict the cell strategy</div>
+        <div class="ec-predict-group">
+          <button class="predict-btn" id="d${i}-uni"   onclick="detPredict(${i},'org','uni')">Unicellular</button>
+          <button class="predict-btn" id="d${i}-multi" onclick="detPredict(${i},'org','multi')">Multicellular</button>
+        </div>
+        <div class="ec-predict-group">
+          <button class="predict-btn" id="d${i}-pro"  onclick="detPredict(${i},'cell','pro')">Prokaryotic</button>
+          <button class="predict-btn" id="d${i}-euk"  onclick="detPredict(${i},'cell','euk')">Eukaryotic</button>
+        </div>
+        <button class="reveal-btn" id="d${i}-reveal" onclick="detReveal(${i})">Reveal Classification</button>
+      </div>
+      <div class="ec-result" id="d${i}-result">
+        <div class="ec-class-badges" id="d${i}-badges"></div>
+        <div class="ec-explanation" id="d${i}-exp"></div>
+        <div class="ec-reflection">What evidence helped you decide?</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
 
-<!-- VIDEO -->
-<section id="watch" style="background:var(--dark);">
+function detPredict(i, dim, val) {
+  const s = detState[i];
+  if (s.revealed) return;
+  if (dim === 'org') {
+    s.org = val;
+    document.getElementById(`d${i}-uni`).classList.toggle('selected', val === 'uni');
+    document.getElementById(`d${i}-multi`).classList.toggle('selected', val === 'multi');
+  } else {
+    s.cell = val;
+    document.getElementById(`d${i}-pro`).classList.toggle('selected', val === 'pro');
+    document.getElementById(`d${i}-euk`).classList.toggle('selected', val === 'euk');
+  }
+  if (s.org && s.cell) document.getElementById(`d${i}-reveal`).classList.add('ready');
+}
+
+function detReveal(i) {
+  const s = detState[i];
+  if (s.revealed || !s.org || !s.cell) return;
+  s.revealed = true;
+  const org = detectiveOrganisms[i];
+  const correctOrg  = org.unicellular ? 'uni'  : 'multi';
+  const correctCell = org.prokaryotic  ? 'pro'  : 'euk';
+  ['uni','multi','pro','euk'].forEach(v => {
+    const b = document.getElementById(`d${i}-${v}`);
+    b.classList.add('det-disabled');
+    b.classList.remove('selected');
+  });
+  document.getElementById(`d${i}-${s.org}`).classList.add(s.org   === correctOrg  ? 'correct-pred' : 'wrong-pred');
+  document.getElementById(`d${i}-${s.cell}`).classList.add(s.cell === correctCell ? 'correct-pred' : 'wrong-pred');
+  if (s.org  !== correctOrg)  document.getElementById(`d${i}-${correctOrg}`).classList.add('shown-correct');
+  if (s.cell !== correctCell) document.getElementById(`d${i}-${correctCell}`).classList.add('shown-correct');
+  const btn = document.getElementById(`d${i}-reveal`);
+  btn.classList.remove('ready');
+  btn.classList.add('done');
+  btn.textContent = 'Classified ✓';
+  const orgLabel  = org.unicellular ? 'Unicellular' : 'Multicellular';
+  const cellLabel = org.prokaryotic  ? 'Prokaryotic' : 'Eukaryotic';
+  const orgColor  = org.unicellular ? 'badge-green'  : 'badge-blue';
+  const cellColor = org.prokaryotic  ? 'badge-teal'   : 'badge-purple';
+  document.getElementById(`d${i}-badges`).innerHTML =
+    `<span class="ec-class-badge ${orgColor}">${orgLabel}</span><span class="ec-class-badge ${cellColor}">${cellLabel}</span>`;
+  document.getElementById(`d${i}-exp`).textContent = org.explanation;
+  document.getElementById(`d${i}-result`).classList.add('show');
+}
+
+buildDetectiveGrid();
+</script>
+
+<!-- REFLECTION -->
+<style>
+.reflect-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.8rem;
+  margin-bottom: 1.2rem;
+  position: relative;
+  overflow: hidden;
+}
+.reflect-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3bc8e8, var(--teal));
+}
+.reflect-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.reflect-num {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  color: var(--text-muted);
+  width: 2rem; height: 2rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.reflect-q { font-weight: 800; font-size: 1rem; line-height: 1.45; }
+.reflect-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-left: 3rem;
+}
+.reflect-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1.2rem;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.02);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: 'Nunito', sans-serif;
+  text-align: left;
+  color: var(--text);
+  width: 100%;
+}
+.reflect-opt:hover:not(.rf-disabled) {
+  border-color: rgba(59,200,232,0.45);
+  background: rgba(59,200,232,0.06);
+}
+.reflect-opt.rf-correct  { border-color: var(--green)  !important; background: rgba(46,204,113,0.10) !important; }
+.reflect-opt.rf-wrong    { border-color: rgba(230,126,34,0.5) !important; background: rgba(230,126,34,0.06) !important; }
+.reflect-opt.rf-shown    { border-color: rgba(46,204,113,0.4) !important; background: rgba(46,204,113,0.05) !important; }
+.reflect-opt.rf-disabled { pointer-events: none; }
+.reflect-opt-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+.reflect-feedback {
+  display: none;
+  font-size: 0.88rem;
+  margin-top: 0.8rem;
+  padding: 0.8rem 1.2rem 0.8rem 3rem;
+  border-radius: 10px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.reflect-feedback.rf-correct-fb { display: block; color: var(--green);  background: rgba(46,204,113,0.07); border-left: 3px solid var(--green); }
+.reflect-feedback.rf-wrong-fb   { display: block; color: var(--orange); background: rgba(230,126,34,0.07); border-left: 3px solid var(--orange); }
+.reflect-complete {
+  display: none;
+  margin-top: 2rem;
+  padding: 1.8rem 2rem;
+  background: linear-gradient(135deg, rgba(46,204,113,0.08), rgba(26,188,156,0.04));
+  border: 1px solid rgba(46,204,113,0.3);
+  border-left: 4px solid var(--green);
+  border-radius: 16px;
+  text-align: center;
+}
+.reflect-complete.show { display: block; }
+.reflect-complete-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.35rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+.reflect-complete-body {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  max-width: 580px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+@media (max-width: 600px) {
+  .reflect-opts     { padding-left: 0; }
+  .reflect-feedback { padding-left: 1rem; }
+}
+</style>
+
+<section id="reflection" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Watch — Cell Types</span>
-    <h2 class="section-title">Watch &amp; Learn 🎬</h2>
-    <p class="section-desc" style="margin-bottom:2rem;">Watch this video on unicellular vs. multicellular organisms and eukaryotic vs. prokaryotic cells to reinforce what you just studied!</p>
-    <div class="video-wrapper">
-      <iframe src="https://www.youtube.com/embed/kpk5wswBPPw" allowfullscreen></iframe>
+    <span class="section-label">Reflection</span>
+    <h2 class="section-title">Pulling It Together</h2>
+    <p class="section-desc">You've seen the evidence. Now answer the driving question: if all living things are made of cells, why aren't all cells the same?</p>
+
+    <div id="reflect-questions"></div>
+
+    <div class="reflect-complete" id="reflect-complete">
+      <div class="reflect-complete-title">Same Building Block. Different Strategies.</div>
+      <div class="reflect-complete-body">You've traced the full picture: from a single cell doing every job, to trillions of specialized cells working together, to two fundamental cell designs that life has used for billions of years. No hierarchy. Just different solutions to the same problem.</div>
     </div>
+
   </div>
 </section>
 
-<!-- GAME BANNER -->
-<div style="background:var(--dark2); padding: 4rem 2rem;">
-  <div class="container">
-    <div class="extension-banner" style="background:linear-gradient(135deg,rgba(52,152,219,0.1) 0%,rgba(26,188,156,0.07) 100%);border-color:rgba(52,152,219,0.35);">
-      <div class="extension-banner-icon">🎮</div>
-      <div class="extension-banner-body">
-        <div class="extension-banner-tag" style="color:var(--blue);background:rgba(52,152,219,0.12);border-color:rgba(52,152,219,0.3);">🎯 Game</div>
-        <h3>Cell Type Showdown</h3>
-        <p>Rapid-fire classification — decide if each clue describes a eukaryotic or prokaryotic cell. Stack your streak and build accuracy!</p>
+<script>
+const reflectData = [
+  {
+    q: "Why can a unicellular organism survive with only one cell?",
+    opts: [
+      "Because that one cell can perform every life function needed for survival.",
+      "Because unicellular organisms do not need energy.",
+      "Because unicellular organisms are not truly alive."
+    ],
+    correct: 0,
+    feedback: [
+      "That's right. Independence is the strategy, one cell handles eating, moving, sensing, reproducing, and maintaining balance, all on its own. It's worked for over 3.5 billion years.",
+      "All living things need energy, unicellular organisms included. What makes them remarkable is that one cell handles energy acquisition along with every other life function simultaneously.",
+      "Unicellular organisms are very much alive; they meet all six characteristics of life. In fact, they were the first form of life on Earth and still dominate it by numbers today."
+    ]
+  },
+  {
+    q: "Why do multicellular organisms need specialized cells?",
+    opts: [
+      "Because every cell in a multicellular organism does the exact same job.",
+      "Because different cells can become experts at different jobs, allowing the organism to become larger and more complex.",
+      "Because specialized cells are always better than unicellular organisms."
+    ],
+    correct: 1,
+    feedback: [
+      "Actually, the opposite is true. In multicellular organisms, cells specialize, each type does a different job. That division of labor is precisely what enables greater complexity.",
+      "Exactly. Division of labor makes complexity possible. No single cell tries to do everything, instead, specialized cells do one job extraordinarily well, and together they support a larger organism.",
+      "Specialized cells aren't 'better', they've traded independence for expertise. A muscle cell contracts efficiently but cannot feed itself. That's a tradeoff, not a ranking."
+    ]
+  },
+  {
+    q: "What is the best explanation for why different cell types exist?",
+    opts: [
+      "Eukaryotic cells are always better than prokaryotic cells.",
+      "Multicellular organisms are the final goal of evolution.",
+      "Different cell strategies solve different survival problems."
+    ],
+    correct: 2,
+    feedback: [
+      "Not quite. Prokaryotes have survived and thrived for over 3.5 billion years, they're not inferior. Eukaryotes and prokaryotes solve different problems with different approaches. Neither design is superior.",
+      "Evolution doesn't have a goal or endpoint. Prokaryotes aren't on the way to becoming eukaryotes, both are successful strategies. Life has evolved many solutions to the same challenge: surviving and reproducing.",
+      "Exactly, there is no best cell type. Prokaryotes succeed through speed and simplicity. Eukaryotes succeed through internal organization that makes complexity possible. Both strategies have sustained life for billions of years."
+    ]
+  }
+];
+
+const rfState = reflectData.map(() => ({ answered: false }));
+
+function buildReflection() {
+  const wrap = document.getElementById('reflect-questions');
+  if (!wrap) return;
+  reflectData.forEach((q, qi) => {
+    const letters = ['A','B','C'];
+    const card = document.createElement('div');
+    card.className = 'reflect-card';
+    card.innerHTML = `
+      <div class="reflect-header">
+        <div class="reflect-num">${qi + 1}</div>
+        <div class="reflect-q">${q.q}</div>
       </div>
-      <a href="game_cell-type-showdown.html" class="btn btn-primary">Play Now 🚀</a>
-    </div>
-  </div>
-</div>
+      <div class="reflect-opts">
+        ${q.opts.map((opt, oi) => `
+          <button class="reflect-opt" id="rf-${qi}-${oi}" onclick="rfSelect(${qi},${oi})">
+            <span class="reflect-opt-letter">${letters[oi]}</span>
+            <span>${opt}</span>
+          </button>`).join('')}
+      </div>
+      <div class="reflect-feedback" id="rf-fb-${qi}"></div>`;
+    wrap.appendChild(card);
+  });
+}
+
+function rfSelect(qi, chosen) {
+  if (rfState[qi].answered) return;
+  rfState[qi].answered = true;
+  const q = reflectData[qi];
+  const isCorrect = chosen === q.correct;
+  q.opts.forEach((_, oi) => {
+    const btn = document.getElementById(`rf-${qi}-${oi}`);
+    btn.classList.add('rf-disabled');
+    if (oi === q.correct && !isCorrect) btn.classList.add('rf-shown');
+  });
+  document.getElementById(`rf-${qi}-${chosen}`).classList.add(isCorrect ? 'rf-correct' : 'rf-wrong');
+  const fb = document.getElementById(`rf-fb-${qi}`);
+  fb.className = 'reflect-feedback ' + (isCorrect ? 'rf-correct-fb' : 'rf-wrong-fb');
+  fb.textContent = q.feedback[chosen];
+  if (rfState.every(s => s.answered)) {
+    const complete = document.getElementById('reflect-complete');
+    complete.classList.add('show');
+    complete.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+buildReflection();
+</script>
 
 <!-- QUIZ -->
-<section id="quiz" class="quiz-section">
+<section id="quiz" class="quiz-section" style="padding-top: 2.5rem;">
   <div class="container">
-    <span class="section-label">Quiz</span>
-    <h2 class="section-title">Cell Types Quiz 📝</h2>
-    <p class="section-desc">Test your knowledge on unicellular vs. multicellular and eukaryotic vs. prokaryotic cells! Click an answer to see instant feedback.</p>
-    <div class="quiz-progress">
-      <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
-      <div class="progress-text" id="q1-progress-text">0 / 10</div>
+    <span class="section-label">Check Your Understanding</span>
+    <h2 class="section-title">Cell Types Quiz</h2>
+    <p class="section-desc">10 questions on cell strategies, division of labor, and why different cell designs exist. Select your answer for every question, then submit.</p>
+
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="setQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="setQuizMode('classroom')">Classroom Mode</button>
     </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+
+    <div class="student-info-box" id="student-info-box">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="student-name">Your Name</label>
+          <input type="text" id="student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="teacher-select">Teacher</label>
+          <select id="teacher-select">
+            <option value="">- Select -</option>
+            <option value="MrBrown">Mr. Brown</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="block-select">Block</label>
+          <select id="block-select">
+            <option value="">- Select -</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
+        <div class="progress-text" id="q1-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
     <div id="quiz1-questions"></div>
-    <div class="score-board" id="q1-score">
-      <div class="big-score" id="q1-score-num">0/10</div>
-      <p id="q1-score-msg"></p>
-      <button class="reset-btn" onclick="resetQuiz(1)">🔄 Try Again</button>
+
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit Quiz</button>
     </div>
+
+    <div class="score-board" id="q1-score">
+      <div class="big-score" id="q1-score-num"></div>
+      <p id="q1-score-msg"></p>
+      <div id="submit-status"></div>
+      <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
+    </div>
+
   </div>
 </section>
 
 <!-- FOOTER -->
 
-<!-- CONTINUE LEARNING -->
+<!-- GO FURTHER -->
 <section id="continue">
   <div class="container">
-    <span class="section-label">🚀 Keep Going</span>
+    <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="section-desc" style="white-space:nowrap; max-width:none;">The lesson is just the beginning — go deeper, test your skills, or see how it all connects.</p>
-    <div class="continue-grid" style="text-align:left;">
-      <a href="extensions_virus.html" class="cont-card ext">
-        <div class="cont-icon">🔬</div>
-        <div class="cont-name">Are Viruses Alive?</div>
-        <div class="cont-desc">Dive into the gray area: viruses challenge every definition of life.</div>
-        <span class="cont-link">Explore</span>
-      </a>
-      <a href="game_cell-type-showdown.html" class="cont-card game">
+    <p class="section-desc">The lesson is just the beginning, test your classification speed, explore where cell theory gets complicated, or push the definition further.</p>
+    <div class="continue-grid">
+      <a href="game_cellular-showdown.html" class="cont-card game">
         <div class="cont-icon">🎮</div>
         <div class="cont-name">Cell Type Showdown</div>
-        <div class="cont-desc">Sort and match prokaryotes vs. eukaryotes in this fast-paced challenge.</div>
+        <div class="cont-desc">Rapid-fire classification, sort prokaryotes vs. eukaryotes under pressure and build accuracy through retrieval practice.</div>
         <span class="cont-link">Play</span>
+      </a>
+      <a href="investigation_cell-energy.html" class="cont-card inv">
+        <div class="cont-icon">⚡</div>
+        <div class="cont-name">Cell Energy</div>
+        <div class="cont-desc">Every cell needs energy to survive; but where does it come from? Investigate how cells obtain and use energy to power every life function.</div>
+        <span class="cont-link">Investigate</span>
       </a>
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="logo">🦠 LyfeLabz · Cell Types</div>
-  <p style="margin-bottom:0.5rem;">Part of the Life Science unit · Lesson 2</p>
-  <p style="margin-top:0.6rem; margin-bottom:0.6rem;"><a href="index.html" style="color:var(--gold);text-decoration:none;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(245,200,66,0.4);background:rgba(245,200,66,0.08);padding:0.3rem 0.9rem;border-radius:99px;">← Learning Hub</a></p>
-  <p>© 2026 LyfeLabz · Educational Use</p>
+  <div class="footer-logo">LYFELABZ</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
 <script>
-const quizData = {
-  1: {
-    total: 10,
-    questions: [
-      {
-        q: "Bacteria consist of a single cell. This makes them:",
-        options: ["Multicellular","Eukaryotic","Unicellular","Neither living nor nonliving"],
-        correct: 2,
-        explanation: "Unicellular means one cell. Bacteria are single-celled (unicellular) organisms — and they're prokaryotic, not eukaryotic."
-      },
-      {
-        q: "Which of the following organisms are eukaryotic? (Choose the BEST answer)",
-        options: ["Bacteria only","Bacteria and protists","Plants, animals, fungi, and protists","Viruses"],
-        correct: 2,
-        explanation: "Eukaryotic cells have DNA inside a nucleus. Plants, animals, fungi, and protists are all eukaryotic. Bacteria are prokaryotic."
-      },
-      {
-        q: "In prokaryotic cells, where is the DNA found?",
-        options: ["Inside the nucleus","In the mitochondria","Floating in the cytoplasm","In the cell wall"],
-        correct: 2,
-        explanation: "Prokaryotic cells do NOT have a nucleus — their DNA floats freely in the cytoplasm."
-      },
-      {
-        q: "If an organism is made of many cells that work together to form tissues and organs, it is called:",
-        options: ["Unicellular","Prokaryotic","Eukaryotic only","Multicellular"],
-        correct: 3,
-        explanation: "Multicellular means 'many cells.' Plants, animals, and fungi are multicellular — their cells work together in tissues and organs."
-      },
-      {
-        q: "A paramecium is a single-celled organism that moves, eats, and reproduces all on its own. Which statement about it is TRUE?",
-        options: ["It must be multicellular because it does so many things","It is unicellular — one cell handles all life functions","It is multicellular but very small","It cannot be alive because it only has one cell"],
-        correct: 1,
-        explanation: "A paramecium is unicellular — just one cell carries out every life function: movement, digestion, reproduction, and more!"
-      },
-      {
-        q: "Which of the following is an example of a multicellular organism?",
-        options: ["Amoeba","Bacteria","Oak tree","Yeast (single-celled form)"],
-        correct: 2,
-        explanation: "An oak tree is multicellular — billions of specialized cells organized into roots, stems, leaves, and more. The others listed are unicellular."
-      },
-      {
-        q: "In a multicellular organism, cells are organized into tissues. What does this mean?",
-        options: ["All cells are identical and do the same job","Groups of similar cells work together to perform a specific function","Each cell works alone to keep the organism alive","Cells are spread randomly with no organization"],
-        correct: 1,
-        explanation: "In multicellular organisms, similar cells group together into tissues to carry out a specific job — like muscle tissue for movement or nerve tissue for signals."
-      },
-      {
-        q: "Can a unicellular organism also be eukaryotic?",
-        options: ["No — all unicellular organisms are prokaryotic","Yes — for example, amoeba and paramecium are unicellular eukaryotes","No — eukaryotes must always be multicellular","Yes — but only if they have a cell wall"],
-        correct: 1,
-        explanation: "Unicellular and eukaryotic are not mutually exclusive! Amoeba, paramecium, and many protists are single-celled but still have a nucleus — making them unicellular eukaryotes."
-      },
-      {
-        q: "Which of the following is BOTH prokaryotic AND unicellular?",
-        options: ["Amoeba","Oak tree","Bacteria","Paramecium"],
-        correct: 2,
-        explanation: "Bacteria are the classic example — they are single-celled (unicellular) AND lack a nucleus (prokaryotic). Amoeba and paramecium are unicellular but eukaryotic."
-      },
-      {
-        q: "A student looks at a cell under a microscope and sees no nucleus — the DNA appears to be floating freely in the cell. What type of cell is this?",
-        options: ["Eukaryotic — it must have lost its nucleus","Prokaryotic — no nucleus is the defining feature","Multicellular — large cells don't always have nuclei","Unicellular — small cells never have nuclei"],
-        correct: 1,
-        explanation: "The absence of a membrane-bound nucleus is the defining feature of prokaryotic cells. Eukaryotic cells always have a nucleus enclosing their DNA."
-      }
-    ]
-  }
+// ── GOOGLE SHEET URLS ─────────────────────────────────────────────────
+const SCRIPT_URLS = {
+  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
 
-const quizState = { 1: { answered: 0, correct: 0 } };
-</script>
+// ── QUIZ QUESTIONS ────────────────────────────────────────────────────
+const quizQuestions = [
+  {
+    q: "A bacterium living in boiling hot springs can survive, reproduce, and respond to its environment, all with a single cell. What does this best demonstrate?",
+    options: [
+      "That bacteria are simple and unimportant organisms",
+      "That unicellular organisms can be highly capable and successful in challenging environments",
+      "That all unicellular organisms prefer extreme environments",
+      "That bacteria are the least complex form of life"
+    ],
+    correct: 1,
+    explanation: "Bacteria and other unicellular organisms have thrived in environments ranging from boiling springs to frozen tundra. One cell performing every life function is not a limitation; it is one of life's most successful strategies."
+  },
+  {
+    q: "A single-celled amoeba must eat, move, sense its environment, remove waste, and reproduce, all without help from other cells. This is because:",
+    options: [
+      "Amoebas have not yet evolved the ability to become multicellular",
+      "Single-celled organisms are too small to have any internal structures",
+      "In a unicellular organism, there are no other cells to share the work, one cell must handle every life function",
+      "Unicellular organisms only perform two or three life functions at most"
+    ],
+    correct: 2,
+    explanation: "In a unicellular organism, division of labor between cells is impossible, there is only one cell. That single cell must obtain energy, respond to its environment, remove waste, and reproduce using its own internal machinery."
+  },
+  {
+    q: "A human muscle cell contracts efficiently but cannot absorb nutrients or carry oxygen on its own. What does this best illustrate about multicellular organisms?",
+    options: [
+      "Human cells are less capable than unicellular organisms",
+      "Multicellular organisms trade a cell's independence for specialization, each cell becomes expert at one job and depends on other cells for the rest",
+      "Muscle cells are a less evolved type of cell",
+      "All human cells are identical and do the same job"
+    ],
+    correct: 1,
+    explanation: "Specialization means exchanging versatility for efficiency. A muscle cell is extraordinary at contracting but depends on red blood cells for oxygen and other cells to remove waste. This interdependence enables complexity but costs independence."
+  },
+  {
+    q: "In a multicellular organism, red blood cells carry oxygen, nerve cells transmit signals, and muscle cells contract. What biological principle does this represent?",
+    options: [
+      "Cell mutation",
+      "Cell theory",
+      "Division of labor, different cells specialize in different functions so the organism operates as a whole",
+      "Asexual reproduction"
+    ],
+    correct: 2,
+    explanation: "Division of labor assigns different tasks to different units. In multicellular organisms, cell types specialize in particular jobs (just as different people in a school or factory specialize in different roles) allowing coordination at a scale no single cell could achieve."
+  },
+  {
+    q: "Which of the following best explains why multicellular organisms can grow larger and more complex than unicellular ones?",
+    options: [
+      "Multicellular organisms evolved after unicellular ones, making them more advanced",
+      "When different cells specialize for different jobs, the organism can support tissues, organs, and systems that no single cell could maintain alone",
+      "Multicellular organisms always have more DNA than unicellular organisms",
+      "Unicellular organisms cannot perform any form of division of labor"
+    ],
+    correct: 1,
+    explanation: "Specialization allows multicellular organisms to build tissues, organs, and systems far beyond what one cell could sustain. A heart cell cannot also be a brain cell; but together, specialized cells create something far more capable than any single cell working alone."
+  },
+  {
+    q: "Bacteria were among the first living organisms on Earth and still outnumber all other life forms. What does this suggest about prokaryotic cell design?",
+    options: [
+      "Prokaryotes survived only because more complex life hadn't evolved yet",
+      "Prokaryotes will eventually evolve into eukaryotes",
+      "The simplicity of prokaryotic cells makes them inefficient",
+      "Prokaryotic simplicity (fast reproduction and high adaptability) is an extraordinarily successful strategy, not a limitation"
+    ],
+    correct: 3,
+    explanation: "Prokaryotes are not incomplete; they are extraordinarily successful. Bacteria alone have survived every mass extinction in Earth's history. Fast reproduction and high adaptability make the prokaryotic strategy one of the most durable designs life has ever produced."
+  },
+  {
+    q: "Eukaryotic cells have a nucleus and other membrane-bound compartments. How does this internal organization contribute to the survival of large, complex organisms?",
+    options: [
+      "It prevents prokaryotic cells from invading the organism",
+      "It guarantees all cells in an organism will divide at the same rate",
+      "It allows cells to manage complex internal functions independently, making greater specialization and coordination possible",
+      "It forces all eukaryotic cells to perform the same function"
+    ],
+    correct: 2,
+    explanation: "Internal organization (a membrane-bound nucleus and separate compartments) allows eukaryotic cells to manage complex operations and regulate gene expression more precisely, making the cellular differentiation needed for specialization possible in larger organisms."
+  },
+  {
+    q: "A student says: 'Eukaryotic cells are better than prokaryotic cells because they can form multicellular organisms.' What is the most accurate response?",
+    options: [
+      "The student is correct, eukaryotic cells are always superior to prokaryotic cells",
+      "The student is correct, multicellular organisms are the most successful form of life",
+      "The student is incorrect, prokaryotes cannot build any internal structures at all",
+      "The student is missing the point, prokaryotes and eukaryotes solve different survival problems, and both strategies have been extraordinarily successful"
+    ],
+    correct: 3,
+    explanation: "Prokaryotes reproduce in minutes, survive where no eukaryote can exist, and have been thriving for over 3.5 billion years. Both cell designs solve the same challenge (surviving and reproducing) with different tools. Neither is superior; they are different strategies."
+  },
+  {
+    q: "A scientist observes an organism that: (1) lives in a deep-ocean hydrothermal vent, (2) consists of a single cell with no nucleus, (3) reproduces very rapidly. Which classification best fits this organism?",
+    options: [
+      "Multicellular eukaryote",
+      "Unicellular eukaryote",
+      "Unicellular prokaryote",
+      "Multicellular prokaryote"
+    ],
+    correct: 2,
+    explanation: "No nucleus + single cell = unicellular prokaryote. All known prokaryotes are unicellular, and no known organisms are both multicellular and prokaryotic. The absence of a membrane-bound nucleus is the defining structural feature of prokaryotic cells."
+  },
+  {
+    q: "Which statement best answers the driving question: 'If all living things are made of cells, why aren't all cells the same?'",
+    options: [
+      "Cells became different because of random mutations with no survival benefit",
+      "Multicellular organisms evolved to replace unicellular ones",
+      "Different cell strategies evolved because different environments and challenges reward different solutions, there is no single best design",
+      "All cells are actually the same, visible differences are only cosmetic"
+    ],
+    correct: 2,
+    explanation: "Different cell strategies evolved because different challenges reward different solutions. Prokaryotes thrive through speed and simplicity. Eukaryotes thrive through internal organization. Unicellular organisms thrive through independence. Multicellular organisms thrive through coordination. The diversity of strategies reflects the diversity of life's challenges."
+  }
+];
 
-<script>
-function buildQuiz(num) {
-  const data = quizData[num];
-  const container = document.getElementById(`quiz${num}-questions`);
+// ── QUIZ STATE ────────────────────────────────────────────────────────
+const quizState = { selected: new Array(quizQuestions.length).fill(null), submitted: false };
+
+// ── QUIZ MODE ─────────────────────────────────────────────────────────
+let quizMode = 'practice';
+
+function setQuizMode(mode) {
+  quizMode = mode;
+  const infoBox      = document.getElementById('student-info-box');
+  const btnPractice  = document.getElementById('btn-practice');
+  const btnClassroom = document.getElementById('btn-classroom');
+  const hintPractice  = document.getElementById('hint-practice');
+  const hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible'); hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');   btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible'); hintPractice.classList.remove('visible');
+  }
+}
+
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') setQuizMode('classroom');
+  else setQuizMode('practice');
+})();
+
+// ── BUILD QUIZ ────────────────────────────────────────────────────────
+function buildQuiz() {
+  const container = document.getElementById('quiz1-questions');
   container.innerHTML = '';
-  quizState[num] = { answered: 0, correct: 0 };
-  updateProgress(num);
-
-  data.questions.forEach((q, qi) => {
+  quizState.selected  = new Array(quizQuestions.length).fill(null);
+  quizState.submitted = false;
+  document.getElementById('submit-btn').disabled = true;
+  updateProgress();
+  quizQuestions.forEach((q, qi) => {
     const letters = ['A','B','C','D'];
     const optionsHTML = q.options.map((opt, oi) => `
-      <button class="quiz-option" onclick="selectAnswer(${num}, ${qi}, ${oi})" id="q${num}-${qi}-${oi}">
-        <span class="option-letter">${letters[oi]}</span>
-        <span>${opt}</span>
-      </button>
-    `).join('');
-
+      <button class="quiz-option" onclick="selectAnswer(${qi},${oi})" id="q-${qi}-${oi}">
+        <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
+      </button>`).join('');
     const card = document.createElement('div');
     card.className = 'quiz-card';
-    card.id = `q${num}-card-${qi}`;
     card.innerHTML = `
       <div class="quiz-header">
         <div class="quiz-num">${qi + 1}</div>
         <div class="quiz-question-text">${q.q}</div>
       </div>
       <div class="quiz-options">${optionsHTML}</div>
-      <div class="option-feedback" id="q${num}-feedback-${qi}"></div>
-    `;
+      <div class="option-feedback" id="q-feedback-${qi}"></div>`;
     container.appendChild(card);
   });
 }
 
-function selectAnswer(quizNum, qi, chosenIndex) {
-  const q = quizData[quizNum].questions[qi];
-  const isCorrect = chosenIndex === q.correct;
-  q.options.forEach((_, oi) => {
-    const btn = document.getElementById(`q${quizNum}-${qi}-${oi}`);
-    btn.classList.add('disabled');
-    if (oi === q.correct) btn.classList.add('revealed-correct');
-  });
-  const chosenBtn = document.getElementById(`q${quizNum}-${qi}-${chosenIndex}`);
-  chosenBtn.classList.add(isCorrect ? 'correct' : 'incorrect');
-  const feedback = document.getElementById(`q${quizNum}-feedback-${qi}`);
-  if (isCorrect) {
-    feedback.className = 'option-feedback correct-fb';
-    feedback.innerHTML = '✅ Correct! ' + q.explanation;
-    quizState[quizNum].correct++;
-  } else {
-    feedback.className = 'option-feedback incorrect-fb';
-    feedback.innerHTML = '❌ Not quite. ' + q.explanation;
+// ── SELECT ANSWER ─────────────────────────────────────────────────────
+function selectAnswer(qi, chosenIndex) {
+  if (quizState.submitted) return;
+  const prev = quizState.selected[qi];
+  if (prev !== null) document.getElementById(`q-${qi}-${prev}`).classList.remove('selected');
+  quizState.selected[qi] = chosenIndex;
+  document.getElementById(`q-${qi}-${chosenIndex}`).classList.add('selected');
+  updateProgress();
+  document.getElementById('submit-btn').disabled = !quizState.selected.every(s => s !== null);
+}
+
+// ── PROGRESS BAR ──────────────────────────────────────────────────────
+function updateProgress() {
+  const total    = quizQuestions.length;
+  const answered = quizState.selected.filter(s => s !== null).length;
+  document.getElementById('q1-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('q1-progress-text').textContent = `${answered} / ${total} selected`;
+}
+
+// ── VALIDATE STUDENT INFO ─────────────────────────────────────────────
+function validateStudentInfo() {
+  const name    = document.getElementById('student-name').value.trim();
+  const teacher = document.getElementById('teacher-select').value;
+  const block   = document.getElementById('block-select').value;
+  document.getElementById('err-name').classList.toggle('show', !name);
+  document.getElementById('err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name, teacher, block };
+}
+
+// ── SUBMIT QUIZ ───────────────────────────────────────────────────────
+function submitQuiz() {
+  if (quizState.submitted) return;
+  if (quizMode === 'classroom') {
+    const { valid } = validateStudentInfo();
+    if (!valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
   }
-  quizState[quizNum].answered++;
-  updateProgress(quizNum);
-  if (quizState[quizNum].answered === quizData[quizNum].total) showScore(quizNum);
+  quizState.submitted = true;
+  document.getElementById('submit-btn').disabled = true;
+  let correct = 0;
+  quizQuestions.forEach((q, qi) => {
+    const chosen    = quizState.selected[qi];
+    const isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach((_, oi) => {
+      const btn = document.getElementById(`q-${qi}-${oi}`);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById(`q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+    const fb = document.getElementById(`q-feedback-${qi}`);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  const total = quizQuestions.length;
+  const pct   = Math.round(correct / total * 100);
+  const score = `${correct}/${total}`;
+  const msg   = pct === 100 ? '🏆 Perfect score! You understand every cell strategy.'
+    : pct >= 80 ? '🌟 Great work! You clearly understand the reasoning, review any you missed.'
+    : pct >= 60 ? '📚 Good effort! Go back over the lesson sections and try again.'
+    : '💪 Keep going, review each section carefully and try again!';
+  document.getElementById('q1-score-num').textContent = score;
+  document.getElementById('q1-score-msg').textContent = msg;
+  const sb = document.getElementById('q1-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  if (quizMode === 'practice') {
+    document.getElementById('submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
+    return;
+  }
+
+  const { name, teacher, block } = validateStudentInfo();
+  const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  const params = new URLSearchParams({
+    tab: 'Cell Types', studentName: name, teacher: teacherLabel,
+    block, score, percent: pct + '%'
+  });
+  fetch(SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(() => {
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+    })
+    .catch(() => {
+      document.getElementById('submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
 }
 
-function updateProgress(num) {
-  const total = quizData[num].total;
-  const answered = quizState[num].answered;
-  const pct = (answered / total) * 100;
-  document.getElementById(`q${num}-progress`).style.width = pct + '%';
-  document.getElementById(`q${num}-progress-text`).textContent = `${answered} / ${total}`;
+// ── RESET QUIZ ────────────────────────────────────────────────────────
+function resetQuiz() {
+  document.getElementById('q1-score').classList.remove('show');
+  document.getElementById('submit-status').innerHTML = '';
+  buildQuiz();
 }
 
-function showScore(num) {
-  const { correct, answered } = quizState[num];
-  const pct = Math.round((correct / answered) * 100);
-  let msg = '';
-  if (pct === 100) msg = '🏆 Perfect score! You are a biology superstar!';
-  else if (pct >= 80) msg = '🌟 Great work! You really know your stuff. Review any you missed.';
-  else if (pct >= 60) msg = '📚 Good effort! Go back over your notes and try again.';
-  else msg = "💪 Keep studying — you'll get there! Review the notes above and try again.";
-  document.getElementById(`q${num}-score-num`).textContent = `${correct}/${answered}`;
-  document.getElementById(`q${num}-score-msg`).textContent = msg;
-  document.getElementById(`q${num}-score`).classList.add('show');
-  document.getElementById(`q${num}-score`).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-function resetQuiz(num) {
-  document.getElementById(`q${num}-score`).classList.remove('show');
-  buildQuiz(num);
-}
-
-buildQuiz(1);
+// ── INIT ──────────────────────────────────────────────────────────────
+buildQuiz();
 </script>
-<script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
+function toggleStemDetail(id) {
+  const el  = document.getElementById(id);
+  el.classList.toggle('stem-open');
+  const btn = el.querySelector('.stem-show-btn');
+  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
+}
+</script>
 </body>
 </html>

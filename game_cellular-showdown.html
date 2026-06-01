@@ -240,7 +240,7 @@
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
-/* ── Visibility gate — hidden until body.ls-active is set ─────────
+/* ── Visibility gate - hidden until body.ls-active is set ─────────
    The session-check script (injected into every content page) adds
    body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
    Educators toggle this from the index or Learning Science page.
@@ -251,7 +251,7 @@
 }
 
 body.ls-active .ls-focus {
-  /* ── Centered card — sits between hero and first content section ── */
+  /* ── Centered card - sits between hero and first content section ── */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -502,7 +502,7 @@ body.stem-active .stem-detail {
 <div class="page-hero">
   <div class="hero-badge">Game</div>
   <h1>Cellular Showdown</h1>
-  <p>Rapid-fire classification — decide if each clue describes a <strong>eukaryotic</strong> or <strong>prokaryotic</strong> cell. Stack your streak and build accuracy!</p>
+  <p>Rapid-fire classification, decide if each clue describes a <strong>eukaryotic</strong> or <strong>prokaryotic</strong> cell. Stack your streak and build accuracy!</p>
 
 </div>
 
@@ -521,17 +521,17 @@ body.stem-active .stem-detail {
   </div>
   <div class="hud-item">
     <span class="hud-label">Accuracy</span>
-    <span class="hud-value" id="accVal">—</span>
+    <span class="hud-value" id="accVal">-</span>
   </div>
 </div>
 
 <div class="game-section">
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. — Adesope et al., 2017">🧠 Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Immediate explanations turn every error into a targeted learning event rather than an ignored mistake. — Wisniewski et al., 2020">✅ Feedback & Correction</span>
-  <span class="ls-badge" data-tip="Mixing question types forces the brain to discriminate and apply knowledge flexibly — not just recognise patterns.">🔀 Interleaving</span>
-  <span class="ls-badge" data-tip="Students make decisions and take actions throughout — they drive the learning, not just receive it. — Freeman et al., 2014">🎯 Active Learning</span>
+  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. (Adesope et al., 2017)">🧠 Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Immediate explanations turn every error into a targeted learning event rather than an ignored mistake. (Wisniewski et al., 2020)">✅ Feedback & Correction</span>
+  <span class="ls-badge" data-tip="Mixing question types forces the brain to discriminate and apply knowledge flexibly, not just recognise patterns.">🔀 Interleaving</span>
+  <span class="ls-badge" data-tip="Students make decisions and take actions throughout, they drive the learning, not just receive it. (Freeman et al., 2014)">🎯 Active Learning</span>
 </div>
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
@@ -617,34 +617,34 @@ resizeStars(); requestAnimationFrame(drawStars);
 const bank = [
   // NUCLEUS & DNA
   { clue:"This cell's DNA is protected inside a membrane-bound nucleus.", a:"euk", exp:"A membrane-bound nucleus is the defining feature of eukaryotic cells." },
-  { clue:"This cell's DNA floats freely in the cytoplasm — no nucleus at all.", a:"prok", exp:"Prokaryotes have no nucleus; their DNA is in a region called the nucleoid." },
-  { clue:"This cell uses nuclear pores to move RNA out of its nucleus.", a:"euk", exp:"Nuclear pores are found on the nuclear envelope — a eukaryotic feature." },
+  { clue:"This cell's DNA floats freely in the cytoplasm, no nucleus at all.", a:"prok", exp:"Prokaryotes have no nucleus; their DNA is in a region called the nucleoid." },
+  { clue:"This cell uses nuclear pores to move RNA out of its nucleus.", a:"euk", exp:"Nuclear pores are found on the nuclear envelope, a eukaryotic feature." },
   // ORGANELLES
   { clue:"This cell has membrane-bound organelles like mitochondria and an ER.", a:"euk", exp:"Membrane-bound organelles are exclusive to eukaryotic cells." },
   { clue:"This cell has ribosomes but NO other membrane-bound organelles.", a:"prok", exp:"Prokaryotes have ribosomes (smaller 70S type) but no membrane-bound organelles." },
-  { clue:"This cell contains a Golgi apparatus.", a:"euk", exp:"The Golgi apparatus is a eukaryotic organelle — prokaryotes don't have one." },
+  { clue:"This cell contains a Golgi apparatus.", a:"euk", exp:"The Golgi apparatus is a eukaryotic organelle, prokaryotes don't have one." },
   { clue:"This cell has mitochondria that produce ATP.", a:"euk", exp:"Mitochondria are membrane-bound organelles only found in eukaryotic cells." },
   // SIZE & COMPLEXITY
-  { clue:"This is a very small, simple cell — typically 1–10 micrometers.", a:"prok", exp:"Prokaryotic cells are generally smaller and simpler than eukaryotic cells." },
+  { clue:"This is a very small, simple cell, typically 1–10 micrometers.", a:"prok", exp:"Prokaryotic cells are generally smaller and simpler than eukaryotic cells." },
   { clue:"This cell is typically 10–100 micrometers and structurally complex.", a:"euk", exp:"Eukaryotic cells are larger and more structurally complex than prokaryotes." },
-  // EXAMPLES — organisms
-  { clue:"E. coli is living inside someone's digestive tract.", a:"prok", exp:"E. coli is a bacterium — bacteria are all prokaryotic." },
-  { clue:"A yeast cell is fermenting sugar to make bread rise.", a:"euk", exp:"Yeast is a fungus — fungi are eukaryotic organisms." },
-  { clue:"An amoeba is swimming through pond water.", a:"euk", exp:"Amoebas are protists — a eukaryotic group of unicellular organisms." },
-  { clue:"Archaea are surviving in a boiling hot spring.", a:"prok", exp:"Archaea are prokaryotes — no nucleus, simpler structure, though distinct from bacteria." },
-  { clue:"A cheek cell scraped from the inside of your mouth.", a:"euk", exp:"Human cells are eukaryotic — all animal cells are." },
+  // EXAMPLES - organisms
+  { clue:"E. coli is living inside someone's digestive tract.", a:"prok", exp:"E. coli is a bacterium, bacteria are all prokaryotic." },
+  { clue:"A yeast cell is fermenting sugar to make bread rise.", a:"euk", exp:"Yeast is a fungus, fungi are eukaryotic organisms." },
+  { clue:"An amoeba is swimming through pond water.", a:"euk", exp:"Amoebas are protists, a eukaryotic group of unicellular organisms." },
+  { clue:"Archaea are surviving in a boiling hot spring.", a:"prok", exp:"Archaea are prokaryotes, no nucleus, simpler structure, though distinct from bacteria." },
+  { clue:"A cheek cell scraped from the inside of your mouth.", a:"euk", exp:"Human cells are eukaryotic, all animal cells are." },
   { clue:"A Streptococcus bacterium causing a sore throat.", a:"prok", exp:"All bacteria, including Streptococcus, are prokaryotic." },
   // MULTICELLULARITY
   { clue:"This cell type can form tissues and organs in a multicellular body.", a:"euk", exp:"Only eukaryotic cells can organize into the tissues and organs of multicellular life." },
-  { clue:"Organisms made of this cell type are always single-celled.", a:"prok", exp:"All prokaryotes are unicellular — no prokaryote forms multicellular tissues." },
+  { clue:"Organisms made of this cell type are always single-celled.", a:"prok", exp:"All prokaryotes are unicellular, no prokaryote forms multicellular tissues." },
   { clue:"This cell type includes both unicellular and multicellular organisms.", a:"euk", exp:"Eukaryotes include single-celled protists AND multicellular plants, animals, and fungi." },
   // TRICKY / MISCONCEPTIONS
-  { clue:"This cell has a cell wall, but it is NOT a plant cell.", a:"prok", exp:"Many prokaryotes have cell walls (made of peptidoglycan), but so do fungi and plants. A cell wall alone doesn't tell you — but combined with no nucleus, it's prokaryotic." },
+  { clue:"This cell has a cell wall, but it is NOT a plant cell.", a:"prok", exp:"Many prokaryotes have cell walls (made of peptidoglycan), but so do fungi and plants. A cell wall alone doesn't tell you; but combined with no nucleus, it's prokaryotic." },
   { clue:"This cell reproduces by binary fission, splitting into two equal cells.", a:"prok", exp:"Binary fission is the typical reproduction method of prokaryotes. Eukaryotes use mitosis." },
-  { clue:"This cell's genome is a single circular chromosome — no histones.", a:"prok", exp:"Prokaryotes typically have one circular chromosome and lack the histone proteins eukaryotes use to package DNA." },
-  { clue:"A mushroom cell breaking down dead leaves on a forest floor.", a:"euk", exp:"Mushrooms are fungi — all fungi are eukaryotic." },
-  { clue:"Cyanobacteria performing photosynthesis in a lake.", a:"prok", exp:"Cyanobacteria are bacteria — they're prokaryotic despite being photosynthetic." },
-  { clue:"This cell transfers genetic material through a process called conjugation.", a:"prok", exp:"Conjugation — a form of genetic exchange through a pilus — is a prokaryotic process." },
+  { clue:"This cell's genome is a single circular chromosome, no histones.", a:"prok", exp:"Prokaryotes typically have one circular chromosome and lack the histone proteins eukaryotes use to package DNA." },
+  { clue:"A mushroom cell breaking down dead leaves on a forest floor.", a:"euk", exp:"Mushrooms are fungi, all fungi are eukaryotic." },
+  { clue:"Cyanobacteria performing photosynthesis in a lake.", a:"prok", exp:"Cyanobacteria are bacteria, they're prokaryotic despite being photosynthetic." },
+  { clue:"This cell transfers genetic material through a process called conjugation.", a:"prok", exp:"Conjugation (a form of genetic exchange through a pilus) is a prokaryotic process." },
 ];
 
 // ── STATE ─────────────────────────────────────────────
@@ -657,7 +657,7 @@ function shuffle(arr){
   return a;
 }
 
-function pct(){ return attempted===0?'—':Math.round(correct/attempted*100)+'%'; }
+function pct(){ return attempted===0?'-':Math.round(correct/attempted*100)+'%'; }
 
 function buildDots(){
   const d=document.getElementById('dots'); d.innerHTML='';
@@ -745,9 +745,9 @@ function next(){
 function showWin(){
   const pctNum=Math.round(correct/Math.max(attempted,1)*100);
   document.getElementById('modalScore').textContent=score+' pts';
-  const grade=pctNum>=90?`${pctNum}% · A+ — Cell Biology Expert!`
-    :pctNum>=75?`${pctNum}% · B — Strong Work!`
-    :pctNum>=60?`${pctNum}% · C — Keep Practicing!`
+  const grade=pctNum>=90?`${pctNum}% · A+, Cell Biology Expert!`
+    :pctNum>=75?`${pctNum}% · B, Strong Work!`
+    :pctNum>=60?`${pctNum}% · C, Keep Practicing!`
     :`${pctNum}% · Review the notes and try again!`;
   document.getElementById('modalGrade').textContent=grade;
   document.getElementById('winModal').classList.add('show');
@@ -758,7 +758,7 @@ function restart(){
   i=0; streak=0; score=0; correct=0; attempted=0; results=[];
   document.getElementById('scoreVal').textContent=0;
   document.getElementById('streakVal').textContent=0;
-  document.getElementById('accVal').textContent='—';
+  document.getElementById('accVal').textContent='-';
   document.getElementById('winModal').classList.remove('show');
   buildDots();
   setQuestion();

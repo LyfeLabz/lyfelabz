@@ -1,7 +1,7 @@
-# Micropass 1 — Hero Badge Standardization Report
+# Micropass 1: Hero Badge Standardization Report
 
 **Date:** 2026-06-01
-**Scope:** Hero badge color standardization only — no layouts, titles, emojis, cont-cards, or index.html changed
+**Scope:** Hero badge color standardization only, no layouts, titles, emojis, cont-cards, or index.html changed
 **Files changed:** 27
 
 ---
@@ -35,7 +35,7 @@
 | `lesson_sun-earth-moon.html` | grey `var(--accent-dim)` / `rgba(122,143,166,…)` | gold `rgba(245,200,66,…) / #f5c842` |
 | `lesson_ragebaiting.html` | purple `rgba(168,85,247,…)` | gold `rgba(245,200,66,…) / #f5c842` |
 
-**Not changed:** `lesson_nature-of-waves.html` — was already using `var(--gold)` = `#f5c842`. Correct and unchanged.
+**Not changed:** `lesson_nature-of-waves.html`, was already using `var(--gold)` = `#f5c842`. Correct and unchanged.
 
 ---
 
@@ -71,8 +71,8 @@
 | `simulation_gravity-wells.html` | Badge using purple `rgba(180,127,255,…) / var(--purple)` | Changed to orange `rgba(245,160,40,…) / #f5a028` |
 
 **Not changed:**
-- `simulation_beetle-island.html` — already correct orange (`var(--orange)` = `#f5a028`)
-- `simulation_eclipse-alignment.html` — already correct orange (`var(--orange)` = `#f5a028`)
+- `simulation_beetle-island.html`, already correct orange (`var(--orange)` = `#f5a028`)
+- `simulation_eclipse-alignment.html`, already correct orange (`var(--orange)` = `#f5a028`)
 
 ---
 
@@ -87,9 +87,9 @@
 | `game_layer-detective.html` | `.page-eyebrow` | Off-shade green `rgba(67,240,125,…)` / `var(--green)` = `#43f07d` | Changed to canonical green `rgba(61,220,132,…) / #3ddc84` |
 
 **Not changed:**
-- `game_is-it-alive.html` — `.hero-badge` already correct (`var(--bio)` = `#3ddc84`)
-- `game_cellular-showdown.html` — `.hero-badge` already correct (`#3ddc84`). Note: this page also has a `.page-eyebrow` element using `var(--phys)` (blue), but that element is a **topic/HUD label inside the game UI**, not the page-type indicator. The type indicator is the `.hero-badge`. Left untouched.
-- `game_cell-explorer.html` — `.page-eyebrow` already correct (`var(--bio)` = `#3ddc84`)
+- `game_is-it-alive.html`, `.hero-badge` already correct (`var(--bio)` = `#3ddc84`)
+- `game_cellular-showdown.html`, `.hero-badge` already correct (`#3ddc84`). Note: this page also has a `.page-eyebrow` element using `var(--phys)` (blue), but that element is a **topic/HUD label inside the game UI**, not the page-type indicator. The type indicator is the `.hero-badge`. Left untouched.
+- `game_cell-explorer.html`, `.page-eyebrow` already correct (`var(--bio)` = `#3ddc84`)
 
 ---
 
@@ -97,7 +97,7 @@
 
 None that affect the visible content-type signal. Two minor stylistic notes:
 
-1. **Variable vs. hardcoded values:** Several pages that were already correct (`lesson_nature-of-waves`, `simulation_beetle-island`, `simulation_eclipse-alignment`, `game_is-it-alive`, `game_cell-explorer`) still use local CSS variables (`var(--gold)`, `var(--orange)`, `var(--bio)`) that resolve to the canonical hex values. The rendered color is correct. Future Pass 5 (token consolidation) can standardize these to a shared custom property if desired — out of scope for this pass.
+1. **Variable vs. hardcoded values:** Several pages that were already correct (`lesson_nature-of-waves`, `simulation_beetle-island`, `simulation_eclipse-alignment`, `game_is-it-alive`, `game_cell-explorer`) still use local CSS variables (`var(--gold)`, `var(--orange)`, `var(--bio)`) that resolve to the canonical hex values. The rendered color is correct. Future Pass 5 (token consolidation) can standardize these to a shared custom property if desired, out of scope for this pass.
 
 2. **`simulation_chernobyl-frogs.html` double rule:** This file has two `.hero-badge` declarations (base + override from a dark-theme section). Both now specify orange values, so the cascade is consistent. No visual issue. A future structural pass could collapse them into one rule.
 
@@ -127,8 +127,8 @@ The following pages have structural differences from the standard `.hero-badge` 
 | `game_fossil-hunt.html` | `.page-eyebrow` div | `.hero-badge` div | Low |
 | `game_layer-detective.html` | `.page-eyebrow` div | `.hero-badge` div | Low |
 | `game_cell-explorer.html` | `.page-eyebrow` div | `.hero-badge` div | Low |
-| `lesson_nature-of-waves.html` | Uses `var(--gold)` variable | Hardcoded `#f5c842` | None — no visual issue |
-| `simulation_chernobyl-frogs.html` | Two `.hero-badge` rules | Single rule | Low — no visual conflict |
+| `lesson_nature-of-waves.html` | Uses `var(--gold)` variable | Hardcoded `#f5c842` | None, no visual issue |
+| `simulation_chernobyl-frogs.html` | Two `.hero-badge` rules | Single rule | Low, no visual conflict |
 
 The four game files using `.page-eyebrow` may benefit from a future structural alignment pass (Micropass 5 or later) that replaces the eyebrow element with the standard `.hero-badge` class. The type color is already correct so this is cosmetic HTML structure normalization only.
 
@@ -150,8 +150,8 @@ Per scope constraints, the following were untouched in this pass:
 
 ## Next Recommended Pass
 
-**Micropass 2 — Hero Title Emoji Removal**
+**Micropass 2, Hero Title Emoji Removal**
 
-Remove trailing emojis from 13 hero `<h1>` tags (see emoji table in the audit). Each emoji also appears elsewhere on its page in a decorative role — only the `<h1>` appended instance should be removed.
+Remove trailing emojis from 13 hero `<h1>` tags (see emoji table in the audit). Each emoji also appears elsewhere on its page in a decorative role (only the `<h1>` appended instance should be removed.
 
 Files: `lesson_biological-evolution`, `lesson_layers-of-time`, `extension_biological-evolution`, `extension_body-systems`, `extension_neuron-explorer`, `extension_organelles`, `extension_virus`, `investigation_gray-zone`, `game_cell-explorer`, `game_cellular-showdown`, `game_exercise`, `game_is-it-alive`, `game_relay`.

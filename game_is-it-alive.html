@@ -269,7 +269,7 @@
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
-/* ── Visibility gate — hidden until body.ls-active is set ─────────
+/* ── Visibility gate - hidden until body.ls-active is set ─────────
    The session-check script (injected into every content page) adds
    body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
    Educators toggle this from the index or Learning Science page.
@@ -280,7 +280,7 @@
 }
 
 body.ls-active .ls-focus {
-  /* ── Centered card — sits between hero and first content section ── */
+  /* ── Centered card - sits between hero and first content section ── */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -531,7 +531,7 @@ body.stem-active .stem-detail {
 <div class="page-hero">
   <div class="hero-badge">Game</div>
   <h1>Is It Alive?</h1>
-  <p>A scientist drops a mystery thing on your lab bench. Check which of the <strong>6 characteristics of life</strong> it shows — then hit Verdict to find out if you're right!</p>
+  <p>A scientist drops a mystery thing on your lab bench. Check which of the <strong>6 characteristics of life</strong> it shows, then hit Verdict to find out if you're right!</p>
 
 </div>
 
@@ -550,17 +550,17 @@ body.stem-active .stem-detail {
   </div>
   <div class="hud-item">
     <span class="hud-label">Accuracy</span>
-    <span class="hud-value" id="accVal">—</span>
+    <span class="hud-value" id="accVal">-</span>
   </div>
 </div>
 
 <div class="game-section">
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. — Schroeder et al., 2018">🗂️ Concept Formation</span>
-  <span class="ls-badge" data-tip="Students make decisions and take actions throughout — they drive the learning, not just receive it. — Freeman et al., 2014">🎯 Active Learning</span>
-  <span class="ls-badge" data-tip="Immediate explanations turn every error into a targeted learning event rather than an ignored mistake. — Wisniewski et al., 2020">✅ Feedback & Correction</span>
-  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. — Dunlosky et al., 2013">💬 Elaboration</span>
+  <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. (Schroeder et al., 2018)">🗂️ Concept Formation</span>
+  <span class="ls-badge" data-tip="Students make decisions and take actions throughout, they drive the learning, not just receive it. (Freeman et al., 2014)">🎯 Active Learning</span>
+  <span class="ls-badge" data-tip="Immediate explanations turn every error into a targeted learning event rather than an ignored mistake. (Wisniewski et al., 2020)">✅ Feedback & Correction</span>
+  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. (Dunlosky et al., 2013)">💬 Elaboration</span>
 </div>
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
@@ -638,7 +638,7 @@ body.stem-active .stem-detail {
   <div class="modal-box">
     <div class="modal-trophy">🏆</div>
     <h2>Lab Complete!</h2>
-    <p>You've assessed every specimen. Check your accuracy — anything under 80% means those tricky ones are worth a second look!</p>
+    <p>You've assessed every specimen. Check your accuracy, anything under 80% means those tricky ones are worth a second look!</p>
     <div class="modal-score" id="modalScore">0 pts</div>
     <div class="modal-grade" id="modalGrade"></div>
     <button class="modal-restart" onclick="restartGame()">🔄 Play Again</button>
@@ -678,16 +678,16 @@ const characteristics = [
 const rounds = [
   { emoji:'🌻', title:'Sunflower', prompt:'A sunflower turns toward the light and grows taller over time.',
     truth:{cells:true,energy:true,grow:true,repro:true,stimuli:true,homeo:true},
-    explain:'Plants show all 6 characteristics — they are made of cells, use energy from sunlight, grow, reproduce by seed, respond to stimuli like light, and maintain internal water balance.' },
+    explain:'Plants show all 6 characteristics; they are made of cells, use energy from sunlight, grow, reproduce by seed, respond to stimuli like light, and maintain internal water balance.' },
   { emoji:'🔥', title:'Fire', prompt:'A flame spreads across paper and gives off heat and light.',
     truth:{cells:false,energy:true,grow:false,repro:false,stimuli:false,homeo:false},
-    explain:'Fire is a chemical reaction — it releases energy (combustion) but has no cells, doesn\'t grow biologically, can\'t reproduce, and doesn\'t maintain homeostasis.' },
+    explain:'Fire is a chemical reaction; it releases energy (combustion) but has no cells, doesn\'t grow biologically, can\'t reproduce, and doesn\'t maintain homeostasis.' },
   { emoji:'🧊', title:'Ice Crystal', prompt:'An ice crystal forms a six-sided pattern and can grow larger in the freezer.',
     truth:{cells:false,energy:false,grow:false,repro:false,stimuli:false,homeo:false},
-    explain:'Crystals can increase in size, but this is a physical process — not biological growth. Ice has no cells, uses no energy, and shows none of the other life characteristics.' },
+    explain:'Crystals can increase in size, but this is a physical process, not biological growth. Ice has no cells, uses no energy, and shows none of the other life characteristics.' },
   { emoji:'🦠', title:'Bacterium', prompt:'A bacterium absorbs nutrients from its environment and divides into two identical cells.',
     truth:{cells:true,energy:true,grow:true,repro:true,stimuli:true,homeo:true},
-    explain:'Bacteria are living, unicellular prokaryotes that show all 6 characteristics of life — including responding to chemical signals in their environment and maintaining internal pH.' },
+    explain:'Bacteria are living, unicellular prokaryotes that show all 6 characteristics of life: including responding to chemical signals in their environment and maintaining internal pH.' },
   { emoji:'🦠', title:'Virus', prompt:'A virus injects its DNA into a cell and hijacks the cell\'s machinery to make copies of itself.',
     truth:{cells:false,energy:false,grow:false,repro:true,stimuli:false,homeo:false},
     explain:'Viruses are the classic debate case! They can replicate (using a host cell), but they have no cells of their own, don\'t use energy independently, and can\'t maintain homeostasis. Most scientists consider them nonliving.' },
@@ -696,10 +696,10 @@ const rounds = [
     explain:'Robots can use energy and respond to stimuli, but they are not made of cells, don\'t grow biologically, can\'t reproduce on their own, and don\'t maintain homeostasis the way living things do.' },
   { emoji:'🍄', title:'Mushroom', prompt:'A mushroom grows from the ground, absorbs nutrients from soil, and releases spores into the air.',
     truth:{cells:true,energy:true,grow:true,repro:true,stimuli:true,homeo:true},
-    explain:'Fungi are living organisms — they are made of cells, obtain energy by decomposing matter, grow over time, reproduce via spores, respond to environmental conditions, and maintain homeostasis.' },
+    explain:'Fungi are living organisms; they are made of cells, obtain energy by decomposing matter, grow over time, reproduce via spores, respond to environmental conditions, and maintain homeostasis.' },
   { emoji:'🌿', title:'Leaf Cutting', prompt:'A cutting from a plant is placed in water and slowly grows new roots, eventually becoming a full plant.',
     truth:{cells:true,energy:true,grow:true,repro:true,stimuli:true,homeo:true},
-    explain:'This is asexual reproduction in plants. The cutting is still living — it shows all 6 characteristics, including responding to gravity (roots grow down) and maintaining water balance.' },
+    explain:'This is asexual reproduction in plants. The cutting is still living; it shows all 6 characteristics, including responding to gravity (roots grow down) and maintaining water balance.' },
   { emoji:'🧫', title:'Yeast', prompt:'Yeast consumes sugar, releases CO₂ gas that makes bread rise, and reproduces by budding off new cells.',
     truth:{cells:true,energy:true,grow:true,repro:true,stimuli:true,homeo:true},
     explain:'Yeast is a unicellular fungus (eukaryotic) that shows all 6 characteristics of life. It\'s a great reminder that not all fungi are mushrooms!' },
@@ -708,17 +708,17 @@ const rounds = [
     explain:'Dormant does NOT mean nonliving. The seed\'s cells are alive but metabolically slow. When conditions are right, it responds to stimuli (water, warmth) and resumes all life processes.' },
   { emoji:'🪨', title:'Rock', prompt:'A rock sits in a river, slowly wearing away and changing shape over thousands of years.',
     truth:{cells:false,energy:false,grow:false,repro:false,stimuli:false,homeo:false},
-    explain:'Rocks change shape through erosion, but this is a physical/chemical process — not a biological one. Rocks have no cells and show none of the characteristics of life.' },
+    explain:'Rocks change shape through erosion, but this is a physical/chemical process, not a biological one. Rocks have no cells and show none of the characteristics of life.' },
   { emoji:'🐣', title:'Egg (fertilized)', prompt:'A fertilized chicken egg is kept warm and after 21 days a chick hatches.',
     truth:{cells:true,energy:true,grow:true,repro:true,stimuli:true,homeo:true},
-    explain:'A fertilized egg is definitely living — it is made of cells that are actively dividing, uses stored energy (yolk), grows and develops, and the embryo responds to temperature.' },
+    explain:'A fertilized egg is definitely living; it is made of cells that are actively dividing, uses stored energy (yolk), grows and develops, and the embryo responds to temperature.' },
 ];
 
 // ── STATE ──────────────────────────────────────────────
 let order=[],idx=0,totalScore=0,correctRounds=0,attemptedRounds=0,streak=0;
 
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function pct(){return attemptedRounds===0?'—':Math.round(correctRounds/attemptedRounds*100)+'%';}
+function pct(){return attemptedRounds===0?'-':Math.round(correctRounds/attemptedRounds*100)+'%';}
 
 function buildChecks(){
   const wrap=document.getElementById('checksWrap'); wrap.innerHTML='';
@@ -820,7 +820,7 @@ function checkVerdict(){
   document.getElementById('fbText').textContent=s.explain;
   document.getElementById('fbSmall').textContent=allCorrect
     ?`+${100+Math.min(streak*15,60)} pts · Streak: ${streak} 🔥`
-    :`${wrongCount} box${wrongCount===1?'':'es'} wrong — check the highlighted boxes above.`;
+    :`${wrongCount} box${wrongCount===1?'':'es'} wrong, check the highlighted boxes above.`;
 
   document.getElementById('verdictBtn').disabled=true;
   document.getElementById('nextBtn').disabled=false;
@@ -835,9 +835,9 @@ function nextRound(){
 function showFinal(){
   const pctNum=Math.round(correctRounds/Math.max(attemptedRounds,1)*100);
   document.getElementById('modalScore').textContent=totalScore+' pts';
-  const grade=pctNum>=90?`${pctNum}% · A+ — Life Science Expert!`
-    :pctNum>=75?`${pctNum}% · B — Great Work!`
-    :pctNum>=60?`${pctNum}% · C — Keep Practicing!`
+  const grade=pctNum>=90?`${pctNum}% · A+, Life Science Expert!`
+    :pctNum>=75?`${pctNum}% · B, Great Work!`
+    :pctNum>=60?`${pctNum}% · C, Keep Practicing!`
     :`${pctNum}% · Review the notes and try again!`;
   document.getElementById('modalGrade').textContent=grade;
   document.getElementById('winModal').classList.add('show');
@@ -848,7 +848,7 @@ function restartGame(){
   idx=0; totalScore=0; correctRounds=0; attemptedRounds=0; streak=0;
   document.getElementById('scoreVal').textContent=0;
   document.getElementById('streakVal').textContent=0;
-  document.getElementById('accVal').textContent='—';
+  document.getElementById('accVal').textContent='-';
   document.getElementById('winModal').classList.remove('show');
   buildDots();
   setRound(order[idx]);

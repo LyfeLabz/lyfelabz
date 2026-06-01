@@ -173,7 +173,7 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
-/* ── Visibility gate — hidden until body.ls-active is set ─────────
+/* ── Visibility gate - hidden until body.ls-active is set ─────────
    The session-check script (injected into every content page) adds
    body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
    Educators toggle this from the index or Learning Science page.
@@ -184,7 +184,7 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 }
 
 body.ls-active .ls-focus {
-  /* ── Centered card — sits between hero and first content section ── */
+  /* ── Centered card - sits between hero and first content section ── */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -556,7 +556,7 @@ body.stem-active .stem-detail {
     <div>
       <div class="header-badge"><div class="pulse-dot"></div>The Digestive System · Interactive Map</div>
       <h1>The Digestive System 🫄</h1>
-      <p>The body's food processing plant — breaking down everything you eat into fuel your cells can actually use.</p>
+      <p>The body's food processing plant, breaking down everything you eat into fuel your cells can actually use.</p>
     <a href="#connection-quiz" class="quiz-header-pill">Connection Quiz ↓</a>
 
     </div>
@@ -564,11 +564,11 @@ body.stem-active .stem-detail {
 </div>
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Students make decisions and take actions throughout — they drive the learning, not just receive it. — Freeman et al., 2014">🎯 Active Learning</span>
-  <span class="ls-badge" data-tip="Students construct meaning themselves rather than passively receiving information from a teacher or screen. — Fiorella & Mayer, 2016">⚙️ Generative Learning</span>
-  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
-  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. — Dunlosky et al., 2013">💬 Elaboration</span>
-  <span class="ls-badge" data-tip="Animated or spatial visuals make abstract processes concrete and directly perceivable. — Noetel et al., 2021">👁️ Visual Processing</span>
+  <span class="ls-badge" data-tip="Students make decisions and take actions throughout, they drive the learning, not just receive it. (Freeman et al., 2014)">🎯 Active Learning</span>
+  <span class="ls-badge" data-tip="Students construct meaning themselves rather than passively receiving information from a teacher or screen. (Fiorella & Mayer, 2016)">⚙️ Generative Learning</span>
+  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. (Noetel et al., 2022)">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. (Dunlosky et al., 2013)">💬 Elaboration</span>
+  <span class="ls-badge" data-tip="Animated or spatial visuals make abstract processes concrete and directly perceivable. (Noetel et al., 2021)">👁️ Visual Processing</span>
 </div>
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
@@ -584,7 +584,7 @@ body.stem-active .stem-detail {
   </div>
   <div class="panels">
     <div class="map-panel">
-      <div class="map-panel-hd"><span class="map-panel-title">THE DIGESTIVE SYSTEM MAP — CLICK ANY NODE TO EXPLORE</span></div>
+      <div class="map-panel-hd"><span class="map-panel-title">THE DIGESTIVE SYSTEM MAP, CLICK ANY NODE TO EXPLORE</span></div>
       <div class="map-body"><canvas id="map-canvas"></canvas></div>
     </div>
     <div class="info-panel">
@@ -592,7 +592,7 @@ body.stem-active .stem-detail {
         <div class="i-idle" id="i-idle">
           <span class="i-idle-icon">🫄</span>
           <div class="i-idle-title">Select a Node</div>
-          <div class="i-idle-desc">Click any organ or structure on the map to learn about its role — plus a fun fact you won't forget!</div>
+          <div class="i-idle-desc">Click any organ or structure on the map to learn about its role, plus a fun fact you won't forget!</div>
         </div>
         <div class="i-card" id="i-card">
           <div class="i-card-hd">
@@ -609,12 +609,12 @@ body.stem-active .stem-detail {
         </div>
       </div>
       <div class="c-card" id="cc-circ">
-        <div class="c-card-hd"><span class="c-ico">🫀</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#e74c6f">Circulatory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Circulatory" data-body="After the small intestine breaks down food, blood vessels absorb glucose, amino acids, and fatty acids directly into the bloodstream. The liver processes these nutrients before they reach general circulation.">🔊 Read Aloud</button></div>
+        <div class="c-card-hd"><span class="c-ico">🫀</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#e74c6f">Circulatory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System: Circulatory" data-body="After the small intestine breaks down food, blood vessels absorb glucose, amino acids, and fatty acids directly into the bloodstream. The liver processes these nutrients before they reach general circulation.">🔊 Read Aloud</button></div>
         <p>After the small intestine breaks down food, blood vessels absorb <strong>glucose, amino acids, and fatty acids</strong> directly into the bloodstream. The liver processes these before they reach general circulation.</p>
       </div>
       <div class="c-card" id="cc-nerv">
-        <div class="c-card-hd"><span class="c-ico">🧠</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#b388ff">Nervous System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Nervous" data-body="The enteric nervous system — 500 million neurons in your gut — controls digestion independently. It coordinates peristalsis and communicates with the brain via the vagus nerve, earning the nickname second brain.">🔊 Read Aloud</button></div>
-        <p>The <strong>enteric nervous system</strong> — 500 million neurons in your gut — controls digestion independently. It coordinates peristalsis and communicates with the brain via the vagus nerve, earning the nickname 'second brain.'</p>
+        <div class="c-card-hd"><span class="c-ico">🧠</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#b388ff">Nervous System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System: Nervous" data-body="The enteric nervous system: 500 million neurons in your gut: controls digestion independently. It coordinates peristalsis and communicates with the brain via the vagus nerve, earning the nickname second brain.">🔊 Read Aloud</button></div>
+        <p>The <strong>enteric nervous system</strong> (500 million neurons in your gut) controls digestion independently. It coordinates peristalsis and communicates with the brain via the vagus nerve, earning the nickname 'second brain.'</p>
       </div>
     </div>
   </div>
@@ -637,7 +637,7 @@ body.stem-active .stem-detail {
     <span class="q-ico">🔬</span>
     <div>
       <div class="q-title">Connection Quiz</div>
-      <div class="q-sub">Toggle each system pill above — all 5 questions come from the connected system cards and node information.</div>
+      <div class="q-sub">Toggle each system pill above, all 5 questions come from the connected system cards and node information.</div>
     </div>
   </div>
   <div class="quiz-body">
@@ -733,16 +733,16 @@ body.stem-active .stem-detail {
 </footer>
 <script>
 var organData={
-  mouth:{ico:'👄',name:'Mouth',sys:'Digestive',col:'#ff9d45',role:'Digestion begins here. Teeth mechanically break down food while saliva — containing amylase — begins chemically breaking down carbohydrates. The tongue forms food into a bolus for swallowing.',fact:'<strong>Fun Fact:</strong> You produce about 1.7 litres of saliva every day — enough to fill almost 3 soda cans!'},
-  esophagus:{ico:'🟠',name:'Esophagus',sys:'Digestive',col:'#ff9d45',role:'A muscular tube connecting the mouth to the stomach. Waves of muscle contractions called peristalsis push food downward — meaning you can actually swallow upside down!',fact:'<strong>Fun Fact:</strong> Food takes only 4–8 seconds to travel down your esophagus. Liquids can make it in under 1 second.'},
+  mouth:{ico:'👄',name:'Mouth',sys:'Digestive',col:'#ff9d45',role:'Digestion begins here. Teeth mechanically break down food while saliva (containing amylase) begins chemically breaking down carbohydrates. The tongue forms food into a bolus for swallowing.',fact:'<strong>Fun Fact:</strong> You produce about 1.7 litres of saliva every day, enough to fill almost 3 soda cans!'},
+  esophagus:{ico:'🟠',name:'Esophagus',sys:'Digestive',col:'#ff9d45',role:'A muscular tube connecting the mouth to the stomach. Waves of muscle contractions called peristalsis push food downward, meaning you can actually swallow upside down!',fact:'<strong>Fun Fact:</strong> Food takes only 4–8 seconds to travel down your esophagus. Liquids can make it in under 1 second.'},
   stomach:{ico:'🫙',name:'Stomach',sys:'Digestive',col:'#ff9d45',role:'The stomach churns food with hydrochloric acid and digestive enzymes, turning it into a liquid called chyme. It also kills most bacteria that enter with food.',fact:'<strong>Fun Fact:</strong> Your stomach acid is strong enough to dissolve metal. The lining replaces itself every 3–4 days to avoid digesting itself!'},
   smallintestine:{ico:'🌀',name:'Small Intestine',sys:'Digestive',col:'#ff9d45',role:'Where 95% of nutrient absorption happens. Finger-like villi massively increase surface area, absorbing glucose, amino acids, and fatty acids into the bloodstream. At 20 feet long, it does the heavy lifting of digestion.',fact:'<strong>Fun Fact:</strong> If you unfolded all the villi in your small intestine, the surface area would be roughly the size of a tennis court!'},
   largeintestine:{ico:'🟤',name:'Large Intestine',sys:'Digestive',col:'#ff9d45',role:'Absorbs water and electrolytes from remaining indigestible matter, compacting it into waste. It hosts trillions of gut bacteria that produce vitamins.',fact:'<strong>Fun Fact:</strong> The large intestine hosts over 1,000 species of bacteria. Your gut microbiome weighs about 2 kg and influences digestion, immunity, and even mood!'},
-  liver:{ico:'🟫',name:'Liver',sys:'Digestive',col:'#e8a838',role:'The body\'s chemical factory — processing absorbed nutrients, producing bile to digest fats, detoxifying the blood, and storing glycogen as energy. It performs over 500 known functions.',fact:'<strong>Fun Fact:</strong> The liver is the only internal organ that can fully regenerate. You can lose up to 75% of it and it will grow back!'},
-  pancreas:{ico:'🫀',name:'Pancreas',sys:'Digestive',col:'#e8a838',role:'Produces digestive enzymes (amylase, lipase, protease) that break down carbohydrates, fats, and proteins in the small intestine. Also produces insulin and glucagon to regulate blood sugar.',fact:'<strong>Fun Fact:</strong> The pancreas produces about 1.5 litres of digestive juice every day — enough to break down a full day of food.'},
-  circulatory:{ico:'🫀',name:'Circulatory System',sys:'Circulatory',col:'#e74c6f',role:'Carries absorbed nutrients — glucose, amino acids, fatty acids — from the small intestine to every cell via the bloodstream. The liver processes these before they enter general circulation.',fact:'<strong>Fun Fact:</strong> After a meal, blood flow to your digestive system increases by up to 30% to help absorb nutrients more efficiently.'},
-  nervous:{ico:'🧠',name:'Nervous System',sys:'Nervous',col:'#b388ff',role:'The enteric nervous system — 500 million neurons embedded in the gut wall — controls digestion semi-independently. It coordinates peristalsis and communicates with the brain via the vagus nerve.',fact:'<strong>Fun Fact:</strong> Your gut has more neurons than your spinal cord — scientists sometimes call it the "second brain."'},
-  nervous:{ico:'🧠',name:'Nervous System',sys:'Nervous',col:'#b388ff',role:'The enteric nervous system — 500 million neurons lining the gut — controls digestion independently. It coordinates peristalsis, enzyme release, and gut communication. Scientists call it the second brain.',fact:'<strong>Fun Fact:</strong> Your gut produces about 95% of your body\'s serotonin. Your gut and brain communicate constantly via the vagus nerve.'}
+  liver:{ico:'🟫',name:'Liver',sys:'Digestive',col:'#e8a838',role:'The body\'s chemical factory, processing absorbed nutrients, producing bile to digest fats, detoxifying the blood, and storing glycogen as energy. It performs over 500 known functions.',fact:'<strong>Fun Fact:</strong> The liver is the only internal organ that can fully regenerate. You can lose up to 75% of it and it will grow back!'},
+  pancreas:{ico:'🫀',name:'Pancreas',sys:'Digestive',col:'#e8a838',role:'Produces digestive enzymes (amylase, lipase, protease) that break down carbohydrates, fats, and proteins in the small intestine. Also produces insulin and glucagon to regulate blood sugar.',fact:'<strong>Fun Fact:</strong> The pancreas produces about 1.5 litres of digestive juice every day, enough to break down a full day of food.'},
+  circulatory:{ico:'🫀',name:'Circulatory System',sys:'Circulatory',col:'#e74c6f',role:'Carries absorbed nutrients (glucose, amino acids, fatty acids) from the small intestine to every cell via the bloodstream. The liver processes these before they enter general circulation.',fact:'<strong>Fun Fact:</strong> After a meal, blood flow to your digestive system increases by up to 30% to help absorb nutrients more efficiently.'},
+  nervous:{ico:'🧠',name:'Nervous System',sys:'Nervous',col:'#b388ff',role:'The enteric nervous system (500 million neurons embedded in the gut wall) controls digestion semi-independently. It coordinates peristalsis and communicates with the brain via the vagus nerve.',fact:'<strong>Fun Fact:</strong> Your gut has more neurons than your spinal cord, scientists sometimes call it the "second brain."'},
+  nervous:{ico:'🧠',name:'Nervous System',sys:'Nervous',col:'#b388ff',role:'The enteric nervous system (500 million neurons lining the gut) controls digestion independently. It coordinates peristalsis, enzyme release, and gut communication. Scientists call it the second brain.',fact:'<strong>Fun Fact:</strong> Your gut produces about 95% of your body\'s serotonin. Your gut and brain communicate constantly via the vagus nerve.'}
 };
 var NODE_DEFS={
   mouth:{x:0.5,y:0.05,r:26,system:'dige'},
@@ -810,18 +810,18 @@ resize();loop();
 
 </script>
 <script>
-/* Read Aloud — temporarily disabled */
+/* Read Aloud - temporarily disabled */
 window.toggleCardRead    = function() {};
 window.toggleGenericRead = function() {};
 </script>
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 <script>
 // ═══════════════════════════════════════════════════════════════
-// CONNECTION QUIZ — DIGESTIVE SYSTEM
+// CONNECTION QUIZ - DIGESTIVE SYSTEM
 // ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
-// CONNECTION QUIZ — DIGESTIVE SYSTEM
+// CONNECTION QUIZ - DIGESTIVE SYSTEM
 // ═══════════════════════════════════════════════════════════════
 const QUIZ = [
   {pill:'Circulatory Connection',pillColor:'#e74c3c',text:'The Circulatory connection says the liver processes nutrients before they reach general circulation. Which three nutrients are absorbed from the small intestine directly into the bloodstream?',options:['Glucose, red blood cells, and water', 'Glucose, amino acids, and fatty acids', 'Proteins, carbon dioxide, and iron', 'Vitamins, plasma, and urea'],correct:1,explanation:'Blood vessels lining the intestinal wall absorb glucose, amino acids, and fatty acids. The liver then processes these nutrients before they enter general circulation and reach the rest of the body.'},
@@ -858,7 +858,7 @@ function updateQuizProgress() {
   if (n === total) {
     fill.classList.add('ready');
     btn.classList.add('ready');
-    hint.textContent = 'All questions answered — enter your name and generate your report!';
+    hint.textContent = 'All questions answered, enter your name and generate your report!';
     document.getElementById('quiz-notice').classList.remove('show');
     // Scroll name input into view
     document.getElementById('quiz-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -866,7 +866,7 @@ function updateQuizProgress() {
     fill.classList.remove('ready');
     btn.classList.remove('ready');
     const rem = total - n;
-    hint.textContent = `${rem} question${rem !== 1 ? 's' : ''} remaining — toggle the connection pills above to find the answers.`;
+    hint.textContent = `${rem} question${rem !== 1 ? 's' : ''} remaining, toggle the connection pills above to find the answers.`;
   }
 }
 
@@ -879,7 +879,7 @@ function generateQuizReport() {
   const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
 
   if (!window.jspdf) {
-    alert('PDF library is still loading — please wait a moment and try again.');
+    alert('PDF library is still loading, please wait a moment and try again.');
     return;
   }
 
@@ -901,7 +901,7 @@ function generateQuizReport() {
   document.getElementById('quiz-notice').classList.remove('show');
 
   if (!window.jspdf) {
-    alert('PDF library is still loading — please wait a moment and try again.');
+    alert('PDF library is still loading, please wait a moment and try again.');
     return;
   }
 
@@ -1061,14 +1061,14 @@ function generateQuizReport() {
   checkPage(36); y+=6;
   const feedbackTitle = finalScore===QUIZ.length?'Perfect Score':finalScore===QUIZ.length-1?'Good Work':'Keep Studying';
   const feedbackMsg = finalScore===QUIZ.length
-    ? 'Outstanding — you understood every cross-system connection on the Digestive System map.'
+    ? 'Outstanding, you understood every cross-system connection on the Digestive System map.'
     : finalScore===QUIZ.length-1
     ? 'Strong work! You understood most connections. Review the one you missed above and re-read that connection card.'
     : 'Head back to the map, toggle each connection pill, and re-read the cards carefully before trying again.';
   
 
   f(C.teal10); s(C.teal); doc.setLineWidth(0.6); rr(ML,y,CW,30,5,'FD');
-  bold(13); t(C.tealDk); doc.text(feedbackTitle+'  —  Overall Feedback', ML+7, y+10);
+  bold(13); t(C.tealDk); doc.text(feedbackTitle+' ,  Overall Feedback', ML+7, y+10);
   normal(10.5); t(C.dgrey);
   var msgLines=doc.splitTextToSize(feedbackMsg,CW-14);
   doc.text(msgLines, ML+7, y+19, {lineHeightFactor:1.5});
@@ -1090,7 +1090,7 @@ function generateQuizReport() {
   window.open(doc.output('bloburl'), '_blank');
 }
 
-// ── Demo hotkey: Cmd+Shift+1 — randomly answers all unanswered questions ──
+// ── Demo hotkey: Cmd+Shift+1 - randomly answers all unanswered questions ──
 document.addEventListener('keydown', function(e) {
   if (e.metaKey && e.shiftKey && e.key === '1') {
     e.preventDefault();

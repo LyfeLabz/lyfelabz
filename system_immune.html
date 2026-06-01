@@ -173,7 +173,7 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
-/* ── Visibility gate — hidden until body.ls-active is set ─────────
+/* ── Visibility gate - hidden until body.ls-active is set ─────────
    The session-check script (injected into every content page) adds
    body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
    Educators toggle this from the index or Learning Science page.
@@ -184,7 +184,7 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 }
 
 body.ls-active .ls-focus {
-  /* ── Centered card — sits between hero and first content section ── */
+  /* ── Centered card - sits between hero and first content section ── */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -556,7 +556,7 @@ body.stem-active .stem-detail {
     <div>
       <div class="header-badge"><div class="pulse-dot"></div>The Immune System · Interactive Map</div>
       <h1>The Immune System 🛡️</h1>
-      <p>The body's defense force — an army of cells, proteins, and organs that identify and eliminate pathogens, foreign substances, and cancer cells.</p>
+      <p>The body's defense force, an army of cells, proteins, and organs that identify and eliminate pathogens, foreign substances, and cancer cells.</p>
     <a href="#connection-quiz" class="quiz-header-pill">Connection Quiz ↓</a>
 
     </div>
@@ -564,10 +564,10 @@ body.stem-active .stem-detail {
 </div>
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. — Schroeder et al., 2018">🗂️ Concept Formation</span>
-  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
-  <span class="ls-badge" data-tip="Students make decisions and take actions throughout — they drive the learning, not just receive it. — Freeman et al., 2014">🎯 Active Learning</span>
-  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. — Dunlosky et al., 2013">💬 Elaboration</span>
+  <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. (Schroeder et al., 2018)">🗂️ Concept Formation</span>
+  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. (Noetel et al., 2022)">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Students make decisions and take actions throughout, they drive the learning, not just receive it. (Freeman et al., 2014)">🎯 Active Learning</span>
+  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. (Dunlosky et al., 2013)">💬 Elaboration</span>
 </div>
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
@@ -583,7 +583,7 @@ body.stem-active .stem-detail {
   </div>
   <div class="panels">
     <div class="map-panel">
-      <div class="map-panel-hd"><span class="map-panel-title">THE IMMUNE SYSTEM MAP — CLICK ANY NODE TO EXPLORE</span></div>
+      <div class="map-panel-hd"><span class="map-panel-title">THE IMMUNE SYSTEM MAP, CLICK ANY NODE TO EXPLORE</span></div>
       <div class="map-body"><canvas id="map-canvas"></canvas></div>
     </div>
     <div class="info-panel">
@@ -591,7 +591,7 @@ body.stem-active .stem-detail {
         <div class="i-idle" id="i-idle">
           <span class="i-idle-icon">🛡️</span>
           <div class="i-idle-title">Select a Node</div>
-          <div class="i-idle-desc">Click any organ or structure on the map to learn about its role — plus a fun fact you won't forget!</div>
+          <div class="i-idle-desc">Click any organ or structure on the map to learn about its role, plus a fun fact you won't forget!</div>
         </div>
         <div class="i-card" id="i-card">
           <div class="i-card-hd">
@@ -608,12 +608,12 @@ body.stem-active .stem-detail {
         </div>
       </div>
       <div class="c-card" id="cc-circ">
-        <div class="c-card-hd"><span class="c-ico">🫀</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#e74c6f">Circulatory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Circulatory" data-body="The circulatory system is the immune system's rapid transit network — white blood cells and antibodies travel through blood vessels to reach any infection site in the body within minutes.">🔊 Read Aloud</button></div>
-        <p>The circulatory system is the immune system's <strong>rapid transit network</strong> — white blood cells and antibodies travel through blood vessels to reach any infection site in the body within minutes.</p>
+        <div class="c-card-hd"><span class="c-ico">🫀</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#e74c6f">Circulatory System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System: Circulatory" data-body="The circulatory system is the immune system's rapid transit network: white blood cells and antibodies travel through blood vessels to reach any infection site in the body within minutes.">🔊 Read Aloud</button></div>
+        <p>The circulatory system is the immune system's <strong>rapid transit network</strong>, white blood cells and antibodies travel through blood vessels to reach any infection site in the body within minutes.</p>
       </div>
       <div class="c-card" id="cc-skel">
-        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System — Skeletal" data-body="All immune cells originate in bone marrow. Every B-cell, T-cell, and macrophage begins as a stem cell in the red marrow of large bones — the skeletal system is the immune system's manufacturing plant.">🔊 Read Aloud</button></div>
-        <p><strong>All immune cells originate in bone marrow</strong>. Every B-cell, T-cell, and macrophage begins as a stem cell in the red marrow of large bones — the skeletal system is the immune system's manufacturing plant.</p>
+        <div class="c-card-hd"><span class="c-ico">🦴</span><div><div class="c-lbl">Connected System</div><div class="c-name" style="color:#c8d8e8">Skeletal System</div></div><button class="read-aloud-btn" onclick="toggleGenericRead(this)" data-title="Connected System: Skeletal" data-body="All immune cells originate in bone marrow. Every B-cell, T-cell, and macrophage begins as a stem cell in the red marrow of large bones: the skeletal system is the immune system's manufacturing plant.">🔊 Read Aloud</button></div>
+        <p><strong>All immune cells originate in bone marrow</strong>. Every B-cell, T-cell, and macrophage begins as a stem cell in the red marrow of large bones, the skeletal system is the immune system's manufacturing plant.</p>
       </div>
     </div>
   </div>
@@ -636,7 +636,7 @@ body.stem-active .stem-detail {
     <span class="q-ico">🔬</span>
     <div>
       <div class="q-title">Connection Quiz</div>
-      <div class="q-sub">Toggle each system pill above — all 5 questions come from the connected system cards and node information.</div>
+      <div class="q-sub">Toggle each system pill above, all 5 questions come from the connected system cards and node information.</div>
     </div>
   </div>
   <div class="quiz-body">
@@ -733,12 +733,12 @@ body.stem-active .stem-detail {
 <script>
 var organData={
   whitecells:{ico:'⚪',name:'White Blood Cells',sys:'Immune',col:'#1de9b6',role:'The soldiers of the immune system. Neutrophils engulf bacteria; lymphocytes produce antibodies and target infected cells; macrophages devour pathogens and dead cells. About 2 trillion circulate at any time.',fact:'<strong>Fun Fact:</strong> A single neutrophil can engulf up to 20 bacteria before it dies. Pus is simply a collection of dead neutrophils and bacteria from a battle your immune system won.'},
-  lymphnodes:{ico:'🛡️',name:'Lymph Nodes',sys:'Immune',col:'#1de9b6',role:'Filtering stations scattered throughout the body. They trap bacteria, viruses, and abnormal cells from lymph fluid, allowing white blood cells inside to destroy them. Swollen nodes mean active infection fighting nearby.',fact:'<strong>Fun Fact:</strong> You have about 600 lymph nodes — concentrated in your neck, armpits, and groin. During infection, they can swell from pea-sized to grape-sized.'},
-  thymus:{ico:'🌿',name:'Thymus',sys:'Immune',col:'#1de9b6',role:'Where T-cells mature — they arrive as immature cells from bone marrow and graduate as trained immune cells capable of targeting specific pathogens. Most active in childhood and gradually shrinks after puberty.',fact:'<strong>Fun Fact:</strong> The thymus destroys about 95% of T-cells that enter — those that react to the body\'s own tissues. This prevents autoimmune disease.'},
-  spleen:{ico:'💜',name:'Spleen',sys:'Immune',col:'#22ddb0',role:'The largest lymphatic organ — filtering blood, removing old or damaged red blood cells, and housing immune cells ready to respond to blood-borne infections. Also acts as a blood reservoir.',fact:'<strong>Fun Fact:</strong> You can live without a spleen, but you become more vulnerable to certain bacterial infections, particularly pneumonia.'},
-  antibodies:{ico:'🔑',name:'Antibodies',sys:'Immune',col:'#1de9b6',role:'Y-shaped proteins produced by B-cells that bind specifically to one pathogen antigen. They neutralise pathogens directly, flag them for destruction, and activate complement proteins. Memory B-cells remain for faster future responses.',fact:'<strong>Fun Fact:</strong> Your immune system can produce over 1 billion different antibody types — each recognising a unique molecular shape. Vaccination trains this system without actual infection.'},
-  circulatory:{ico:'🫀',name:'Circulatory System',sys:'↔ Circulatory',col:'#e74c6f',role:'The immune system\'s highway — white blood cells and antibodies travel through blood vessels to reach infection sites anywhere in the body within minutes. Lymph vessels run parallel to blood vessels throughout.',fact:'<strong>Fun Fact:</strong> During a serious infection, bone marrow can produce white blood cells at 10x the normal rate — the surge of cells causes the aching you feel when sick.'},
-  skeletal:{ico:'🦴',name:'Skeletal System',sys:'↔ Skeletal',col:'#c8d8e8',role:'Red bone marrow is the birthplace of all immune cells — every white blood cell, whether B-cell, T-cell, or macrophage, begins as a stem cell in bone marrow before maturing elsewhere.',fact:'<strong>Fun Fact:</strong> Bone marrow transplants can rebuild a destroyed immune system — the new marrow\'s stem cells repopulate the body with a completely new set of immune cells.'}
+  lymphnodes:{ico:'🛡️',name:'Lymph Nodes',sys:'Immune',col:'#1de9b6',role:'Filtering stations scattered throughout the body. They trap bacteria, viruses, and abnormal cells from lymph fluid, allowing white blood cells inside to destroy them. Swollen nodes mean active infection fighting nearby.',fact:'<strong>Fun Fact:</strong> You have about 600 lymph nodes, concentrated in your neck, armpits, and groin. During infection, they can swell from pea-sized to grape-sized.'},
+  thymus:{ico:'🌿',name:'Thymus',sys:'Immune',col:'#1de9b6',role:'Where T-cells mature; they arrive as immature cells from bone marrow and graduate as trained immune cells capable of targeting specific pathogens. Most active in childhood and gradually shrinks after puberty.',fact:'<strong>Fun Fact:</strong> The thymus destroys about 95% of T-cells that enter, those that react to the body\'s own tissues. This prevents autoimmune disease.'},
+  spleen:{ico:'💜',name:'Spleen',sys:'Immune',col:'#22ddb0',role:'The largest lymphatic organ, filtering blood, removing old or damaged red blood cells, and housing immune cells ready to respond to blood-borne infections. Also acts as a blood reservoir.',fact:'<strong>Fun Fact:</strong> You can live without a spleen, but you become more vulnerable to certain bacterial infections, particularly pneumonia.'},
+  antibodies:{ico:'🔑',name:'Antibodies',sys:'Immune',col:'#1de9b6',role:'Y-shaped proteins produced by B-cells that bind specifically to one pathogen antigen. They neutralise pathogens directly, flag them for destruction, and activate complement proteins. Memory B-cells remain for faster future responses.',fact:'<strong>Fun Fact:</strong> Your immune system can produce over 1 billion different antibody types, each recognising a unique molecular shape. Vaccination trains this system without actual infection.'},
+  circulatory:{ico:'🫀',name:'Circulatory System',sys:'↔ Circulatory',col:'#e74c6f',role:'The immune system\'s highway, white blood cells and antibodies travel through blood vessels to reach infection sites anywhere in the body within minutes. Lymph vessels run parallel to blood vessels throughout.',fact:'<strong>Fun Fact:</strong> During a serious infection, bone marrow can produce white blood cells at 10x the normal rate, the surge of cells causes the aching you feel when sick.'},
+  skeletal:{ico:'🦴',name:'Skeletal System',sys:'↔ Skeletal',col:'#c8d8e8',role:'Red bone marrow is the birthplace of all immune cells, every white blood cell, whether B-cell, T-cell, or macrophage, begins as a stem cell in bone marrow before maturing elsewhere.',fact:'<strong>Fun Fact:</strong> Bone marrow transplants can rebuild a destroyed immune system, the new marrow\'s stem cells repopulate the body with a completely new set of immune cells.'}
 };
 var NODE_DEFS={
   whitecells:{x:0.5,y:0.1,r:30,system:'immu'},
@@ -802,22 +802,22 @@ resize();loop();
 
 </script>
 <script>
-/* Read Aloud — temporarily disabled */
+/* Read Aloud - temporarily disabled */
 window.toggleCardRead    = function() {};
 window.toggleGenericRead = function() {};
 </script>
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 <script>
 // ═══════════════════════════════════════════════════════════════
-// CONNECTION QUIZ — IMMUNE SYSTEM
+// CONNECTION QUIZ - IMMUNE SYSTEM
 // ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
-// CONNECTION QUIZ — IMMUNE SYSTEM
+// CONNECTION QUIZ - IMMUNE SYSTEM
 // ═══════════════════════════════════════════════════════════════
 const QUIZ = [
   {pill:'Circulatory Connection',pillColor:'#e74c3c',text:'The Circulatory connection calls blood vessels the immune system\'s "rapid transit network." How quickly can white blood cells and antibodies reach an infection site?',options:['Within hours', 'Within days', 'Within minutes', 'Within seconds, faster than nerve signals'],correct:2,explanation:'White blood cells and antibodies travel through blood vessels to reach any infection site in the body within minutes. The circulatory system acts as the immune system\'s transportation network, ensuring a rapid response anywhere in the body.'},
-  {pill:'Skeletal Connection',pillColor:'#c8d8e8',text:'The Skeletal connection reveals where every immune cell originates. What is the birthplace of B-cells, T-cells, and macrophages?',options:['The thymus gland', 'The spleen', 'The lymph nodes', 'Red bone marrow'],correct:3,explanation:'All immune cells — every B-cell, T-cell, and macrophage — begin as stem cells in the red marrow of large bones. The skeletal system is the immune system\'s manufacturing plant, making bone marrow production essential to immunity.'},
+  {pill:'Skeletal Connection',pillColor:'#c8d8e8',text:'The Skeletal connection reveals where every immune cell originates. What is the birthplace of B-cells, T-cells, and macrophages?',options:['The thymus gland', 'The spleen', 'The lymph nodes', 'Red bone marrow'],correct:3,explanation:'All immune cells (every B-cell, T-cell, and macrophage) begin as stem cells in the red marrow of large bones. The skeletal system is the immune system\'s manufacturing plant, making bone marrow production essential to immunity.'},
   {pill:'Thymus Node',pillColor:'#1de9b6',text:'The Thymus node explains what T-cells do when they arrive at the thymus. Where do they come from, and what do they become?',options:['They arrive from the spleen and become antibodies', 'They arrive as immature cells from bone marrow and graduate as trained immune cells', 'They arrive from lymph nodes and transform into macrophages', 'They arrive from the bloodstream and become white blood cells'],correct:1,explanation:'T-cells arrive at the thymus as immature cells from bone marrow. The thymus trains them to recognize specific pathogens and they graduate as specialized immune cells. The thymus is most active in childhood and gradually shrinks after puberty.'},
   {pill:'Spleen Node',pillColor:'#1de9b6',text:'The Spleen node lists three jobs of the spleen. Which option correctly captures all three?',options:['Produces hormones, filters air, and stores glucose', 'Filters blood, removes old red blood cells, and houses immune cells', 'Produces antibodies, filters lymph, and destroys pathogens directly', 'Stores white blood cells, pumps lymph fluid, and repairs DNA'],correct:1,explanation:'The spleen is the largest lymphatic organ and performs three key roles: filtering blood to remove old or damaged red blood cells, housing immune cells ready to respond to blood-borne infections, and acting as a blood reservoir for emergencies.'},
   {pill:'Antibodies Node',pillColor:'#1de9b6',text:'The Antibodies node describes their shape and what makes each antibody unique. What is true about antibody specificity?',options:['Each antibody attacks any pathogen it encounters randomly', 'Each antibody binds specifically to one pathogen antigen', 'Antibodies change shape to match whatever pathogen is present', 'All antibodies are identical; only their quantity matters'],correct:1,explanation:'Antibodies are Y-shaped proteins produced by B-cells that bind specifically to one pathogen antigen. This lock-and-key specificity neutralizes pathogens directly, flags them for destruction, and activates complement proteins. Memory B-cells retain this knowledge for future infections.'},
@@ -850,7 +850,7 @@ function updateQuizProgress() {
   if (n === total) {
     fill.classList.add('ready');
     btn.classList.add('ready');
-    hint.textContent = 'All questions answered — enter your name and generate your report!';
+    hint.textContent = 'All questions answered, enter your name and generate your report!';
     document.getElementById('quiz-notice').classList.remove('show');
     // Scroll name input into view
     document.getElementById('quiz-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -858,7 +858,7 @@ function updateQuizProgress() {
     fill.classList.remove('ready');
     btn.classList.remove('ready');
     const rem = total - n;
-    hint.textContent = `${rem} question${rem !== 1 ? 's' : ''} remaining — toggle the connection pills above to find the answers.`;
+    hint.textContent = `${rem} question${rem !== 1 ? 's' : ''} remaining, toggle the connection pills above to find the answers.`;
   }
 }
 
@@ -871,7 +871,7 @@ function generateQuizReport() {
   const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
 
   if (!window.jspdf) {
-    alert('PDF library is still loading — please wait a moment and try again.');
+    alert('PDF library is still loading, please wait a moment and try again.');
     return;
   }
 
@@ -893,7 +893,7 @@ function generateQuizReport() {
   document.getElementById('quiz-notice').classList.remove('show');
 
   if (!window.jspdf) {
-    alert('PDF library is still loading — please wait a moment and try again.');
+    alert('PDF library is still loading, please wait a moment and try again.');
     return;
   }
 
@@ -1053,14 +1053,14 @@ function generateQuizReport() {
   checkPage(36); y+=6;
   const feedbackTitle = finalScore===QUIZ.length?'Perfect Score':finalScore===QUIZ.length-1?'Good Work':'Keep Studying';
   const feedbackMsg = finalScore===QUIZ.length
-    ? 'Outstanding — you understood every cross-system connection on the Immune System map.'
+    ? 'Outstanding, you understood every cross-system connection on the Immune System map.'
     : finalScore===QUIZ.length-1
     ? 'Strong work! You understood most connections. Review the one you missed above and re-read that connection card.'
     : 'Head back to the map, toggle each connection pill, and re-read the cards carefully before trying again.';
   
 
   f(C.teal10); s(C.teal); doc.setLineWidth(0.6); rr(ML,y,CW,30,5,'FD');
-  bold(13); t(C.tealDk); doc.text(feedbackTitle+'  —  Overall Feedback', ML+7, y+10);
+  bold(13); t(C.tealDk); doc.text(feedbackTitle+' ,  Overall Feedback', ML+7, y+10);
   normal(10.5); t(C.dgrey);
   var msgLines=doc.splitTextToSize(feedbackMsg,CW-14);
   doc.text(msgLines, ML+7, y+19, {lineHeightFactor:1.5});
@@ -1082,7 +1082,7 @@ function generateQuizReport() {
   window.open(doc.output('bloburl'), '_blank');
 }
 
-// ── Demo hotkey: Cmd+Shift+1 — randomly answers all unanswered questions ──
+// ── Demo hotkey: Cmd+Shift+1 - randomly answers all unanswered questions ──
 document.addEventListener('keydown', function(e) {
   if (e.metaKey && e.shiftKey && e.key === '1') {
     e.preventDefault();

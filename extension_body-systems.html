@@ -200,7 +200,7 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
-/* ── Visibility gate — hidden until body.ls-active is set ─────────
+/* ── Visibility gate - hidden until body.ls-active is set ─────────
    The session-check script (injected into every content page) adds
    body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
    Educators toggle this from the index or Learning Science page.
@@ -211,7 +211,7 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 }
 
 body.ls-active .ls-focus {
-  /* ── Centered card — sits between hero and first content section ── */
+  /* ── Centered card - sits between hero and first content section ── */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -467,7 +467,7 @@ body.stem-active .stem-detail {
   <span class="hero-float">💊</span>
   <div class="hero-badge">Extension</div>
   <h1>Solving Medical Mysteries</h1>
-  <p>Five real-world patient files. Read the symptoms, study the vitals, and use your knowledge of body systems to answer the doctor's questions — then unlock the diagnosis.</p>
+  <p>Five real-world patient files. Read the symptoms, study the vitals, and use your knowledge of body systems to answer the doctor's questions, then unlock the diagnosis.</p>
 
   <div class="how-it-works">
     <div class="hw-step"><span class="ico">📁</span><span class="lbl">Open the file</span></div>
@@ -480,11 +480,11 @@ body.stem-active .stem-detail {
 <div class="main">
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. — Dunlosky et al., 2013">💬 Elaboration</span>
-  <span class="ls-badge" data-tip="Mixing question types forces the brain to discriminate and apply knowledge flexibly — not just recognise patterns.">🔀 Interleaving</span>
-  <span class="ls-badge" data-tip="Students construct meaning themselves rather than passively receiving information from a teacher or screen. — Fiorella & Mayer, 2016">⚙️ Generative Learning</span>
-  <span class="ls-badge" data-tip="Immediate explanations turn every error into a targeted learning event rather than an ignored mistake. — Wisniewski et al., 2020">✅ Feedback & Correction</span>
-  <span class="ls-badge" data-tip="Students make decisions and take actions throughout — they drive the learning, not just receive it. — Freeman et al., 2014">🎯 Active Learning</span>
+  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. (Dunlosky et al., 2013)">💬 Elaboration</span>
+  <span class="ls-badge" data-tip="Mixing question types forces the brain to discriminate and apply knowledge flexibly, not just recognise patterns.">🔀 Interleaving</span>
+  <span class="ls-badge" data-tip="Students construct meaning themselves rather than passively receiving information from a teacher or screen. (Fiorella & Mayer, 2016)">⚙️ Generative Learning</span>
+  <span class="ls-badge" data-tip="Immediate explanations turn every error into a targeted learning event rather than an ignored mistake. (Wisniewski et al., 2020)">✅ Feedback & Correction</span>
+  <span class="ls-badge" data-tip="Students make decisions and take actions throughout, they drive the learning, not just receive it. (Freeman et al., 2014)">🎯 Active Learning</span>
 </div>
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
@@ -561,12 +561,12 @@ const CASES = [
     diagnosis: {
       name: "Asthma",
       systems: [{name:"Respiratory",col:"#3bc8e8"},{name:"Circulatory",col:"#e74c6f"},{name:"Nervous",col:"#b388ff"}],
-      explanation: "Asthma is a condition where the airways (bronchi and bronchioles) become inflamed and narrow, making it hard to breathe. The Respiratory System is the primary system affected. The Circulatory System compensates with a faster heart rate, trying to deliver more oxygen despite lower intake. The Nervous System is also involved — asthma attacks can be triggered by stress and are controlled in part by the autonomic nervous system."
+      explanation: "Asthma is a condition where the airways (bronchi and bronchioles) become inflamed and narrow, making it hard to breathe. The Respiratory System is the primary system affected. The Circulatory System compensates with a faster heart rate, trying to deliver more oxygen despite lower intake. The Nervous System is also involved, asthma attacks can be triggered by stress and are controlled in part by the autonomic nervous system."
     },
     questions: [
       { text: "Maya's airways are narrowing and inflamed. Which system is directly affected?", options: ["Excretory System","Circulatory System","Respiratory System","Skeletal System"], correct: 2, explanation: "The Respiratory System includes the airways (bronchi, bronchioles) and lungs. Asthma causes these airways to swell and narrow, making it hard to get air in and out." },
-      { text: "Maya's heart rate is 112 bpm — higher than normal (60–100 bpm). Why is her Circulatory System speeding up?", options: ["To fight off the virus causing the wheeze","To compensate for lower oxygen by pumping blood faster","To digest food and release more energy","To reduce swelling in the lungs"], correct: 1, explanation: "When less oxygen enters through the lungs, the heart pumps faster to deliver whatever oxygen IS available more quickly. This compensation is the Circulatory System responding to the Respiratory System's struggle." },
-      { text: "Her O₂ saturation is 91% — lower than the normal 95–100%. What does this tell us about what is entering her Circulatory System?", options: ["Too much CO₂ is being produced","Not enough glucose is reaching the lungs","Less oxygen than normal is crossing from the lungs into the blood","The kidneys are not filtering blood properly"], correct: 2, explanation: "O₂ saturation measures how much of the blood's hemoglobin is carrying oxygen. At 91%, less oxygen is crossing through the alveoli into the bloodstream — a direct sign the Respiratory System isn't exchanging gases efficiently." }
+      { text: "Maya's heart rate is 112 bpm, higher than normal (60–100 bpm). Why is her Circulatory System speeding up?", options: ["To fight off the virus causing the wheeze","To compensate for lower oxygen by pumping blood faster","To digest food and release more energy","To reduce swelling in the lungs"], correct: 1, explanation: "When less oxygen enters through the lungs, the heart pumps faster to deliver whatever oxygen IS available more quickly. This compensation is the Circulatory System responding to the Respiratory System's struggle." },
+      { text: "Her O₂ saturation is 91%, lower than the normal 95–100%. What does this tell us about what is entering her Circulatory System?", options: ["Too much CO₂ is being produced","Not enough glucose is reaching the lungs","Less oxygen than normal is crossing from the lungs into the blood","The kidneys are not filtering blood properly"], correct: 2, explanation: "O₂ saturation measures how much of the blood's hemoglobin is carrying oxygen. At 91%, less oxygen is crossing through the alveoli into the bloodstream, a direct sign the Respiratory System isn't exchanging gases efficiently." }
     ]
   },
   {
@@ -583,12 +583,12 @@ const CASES = [
     diagnosis: {
       name: "Iron-Deficiency Anemia",
       systems: [{name:"Circulatory",col:"#e74c6f"},{name:"Digestive",col:"#ff9d45"},{name:"Skeletal",col:"#c8d8e8"}],
-      explanation: "Anemia means not enough healthy red blood cells to carry oxygen. Iron is essential for making hemoglobin — the protein in red blood cells that carries O₂. Jordan's vegetarian diet lacks heme iron (from meat), so the Digestive System absorbs less iron overall. Bone marrow (Skeletal System) can't make enough hemoglobin-rich red blood cells. The Circulatory System then can't deliver enough oxygen — causing fatigue, paleness, and cold feelings."
+      explanation: "Anemia means not enough healthy red blood cells to carry oxygen. Iron is essential for making hemoglobin, the protein in red blood cells that carries O₂. Jordan's vegetarian diet lacks heme iron (from meat), so the Digestive System absorbs less iron overall. Bone marrow (Skeletal System) can't make enough hemoglobin-rich red blood cells. The Circulatory System then can't deliver enough oxygen, causing fatigue, paleness, and cold feelings."
     },
     questions: [
-      { text: "Jordan's hemoglobin is very low. Hemoglobin is found in red blood cells and carries oxygen. Which system is most directly failing?", options: ["Immune System","Nervous System","Circulatory System","Excretory System"], correct: 2, explanation: "Red blood cells and hemoglobin are part of the Circulatory System. Low hemoglobin means less oxygen is being delivered to the body's cells — directly impairing the circulatory system's core job." },
-      { text: "Jordan needs more iron to make red blood cells. Iron comes from food — which system is not absorbing enough of it?", options: ["Respiratory System","Muscular System","Skeletal System","Digestive System"], correct: 3, explanation: "The Digestive System absorbs nutrients from food, including iron. A diet low in iron means the digestive tract isn't absorbing enough to supply what the body needs for red blood cell production." },
-      { text: "Red blood cells are made in bone marrow. Without enough iron, the bone marrow can't do its job. Which system does bone marrow belong to?", options: ["Circulatory System","Immune System","Skeletal System","Muscular System"], correct: 2, explanation: "Bone marrow lives inside bones — making it part of the Skeletal System. It produces red blood cells, white blood cells, and platelets. When iron is scarce, the marrow can't produce enough healthy red blood cells." }
+      { text: "Jordan's hemoglobin is very low. Hemoglobin is found in red blood cells and carries oxygen. Which system is most directly failing?", options: ["Immune System","Nervous System","Circulatory System","Excretory System"], correct: 2, explanation: "Red blood cells and hemoglobin are part of the Circulatory System. Low hemoglobin means less oxygen is being delivered to the body's cells, directly impairing the circulatory system's core job." },
+      { text: "Jordan needs more iron to make red blood cells. Iron comes from food, which system is not absorbing enough of it?", options: ["Respiratory System","Muscular System","Skeletal System","Digestive System"], correct: 3, explanation: "The Digestive System absorbs nutrients from food, including iron. A diet low in iron means the digestive tract isn't absorbing enough to supply what the body needs for red blood cell production." },
+      { text: "Red blood cells are made in bone marrow. Without enough iron, the bone marrow can't do its job. Which system does bone marrow belong to?", options: ["Circulatory System","Immune System","Skeletal System","Muscular System"], correct: 2, explanation: "Bone marrow lives inside bones, making it part of the Skeletal System. It produces red blood cells, white blood cells, and platelets. When iron is scarce, the marrow can't produce enough healthy red blood cells." }
     ]
   },
   {
@@ -601,16 +601,16 @@ const CASES = [
       { label: "Temperature", value: "37.1°C", abnormal: false }
     ],
     symptoms: ["Confusion and difficulty concentrating","Shaking and trembling","Sweating heavily","Feeling weak and dizzy","Sudden irritability"],
-    background: "River has Type 1 diabetes — their pancreas does not produce insulin, so they take daily insulin injections. Today they took their insulin but skipped breakfast before gym class. After 30 minutes of exercise, a classmate noticed River looked confused and was sweating. The school nurse checked River's blood glucose and found it dangerously low.",
+    background: "River has Type 1 diabetes, their pancreas does not produce insulin, so they take daily insulin injections. Today they took their insulin but skipped breakfast before gym class. After 30 minutes of exercise, a classmate noticed River looked confused and was sweating. The school nurse checked River's blood glucose and found it dangerously low.",
     diagnosis: {
       name: "Hypoglycemia (Low Blood Sugar)",
       systems: [{name:"Nervous",col:"#b388ff"},{name:"Circulatory",col:"#e74c6f"},{name:"Muscular",col:"#ff6b6b"}],
-      explanation: "Blood glucose (sugar) is the brain's primary fuel. When blood glucose drops too low (hypoglycemia), the Nervous System is the first to malfunction — causing confusion, mood changes, and slow reactions. The Circulatory System is affected as the heart beats faster trying to deliver whatever glucose is available. The Muscular System shows shaking and weakness because muscles also rely on glucose for energy."
+      explanation: "Blood glucose (sugar) is the brain's primary fuel. When blood glucose drops too low (hypoglycemia), the Nervous System is the first to malfunction, causing confusion, mood changes, and slow reactions. The Circulatory System is affected as the heart beats faster trying to deliver whatever glucose is available. The Muscular System shows shaking and weakness because muscles also rely on glucose for energy."
     },
     questions: [
-      { text: "River is confused, irritable, and has slow reactions. The brain runs almost entirely on glucose. Which system is being starved of fuel first?", options: ["Digestive System","Skeletal System","Excretory System","Nervous System"], correct: 3, explanation: "The brain — the command center of the Nervous System — is the most glucose-dependent organ in the body. When blood sugar drops, the Nervous System malfunctions first, causing confusion, irritability, and slow thinking." },
-      { text: "River's heart rate is 106 bpm. When blood glucose is low, the body releases adrenaline which speeds up the heart. Why does the heart speed up?", options: ["To produce more insulin","To warm the body up","To deliver the limited glucose to vital organs faster","To slow digestion so glucose stays in the blood longer"], correct: 2, explanation: "When glucose is scarce, the Circulatory System compensates by pumping faster — trying to rush what little glucose is available to critical organs like the brain. This is why a racing heart is a symptom of low blood sugar." },
-      { text: "River is shaking and feels weak in their muscles. Muscles use glucose for energy. Which system is directly showing the effects of low fuel?", options: ["Immune System","Respiratory System","Muscular System","Skeletal System"], correct: 2, explanation: "The Muscular System requires glucose for energy to contract. When blood glucose is critically low, muscles can't function properly — causing trembling, weakness, and the shaky appearance that is a telltale sign of hypoglycemia." }
+      { text: "River is confused, irritable, and has slow reactions. The brain runs almost entirely on glucose. Which system is being starved of fuel first?", options: ["Digestive System","Skeletal System","Excretory System","Nervous System"], correct: 3, explanation: "The brain (the command center of the Nervous System) is the most glucose-dependent organ in the body. When blood sugar drops, the Nervous System malfunctions first, causing confusion, irritability, and slow thinking." },
+      { text: "River's heart rate is 106 bpm. When blood glucose is low, the body releases adrenaline which speeds up the heart. Why does the heart speed up?", options: ["To produce more insulin","To warm the body up","To deliver the limited glucose to vital organs faster","To slow digestion so glucose stays in the blood longer"], correct: 2, explanation: "When glucose is scarce, the Circulatory System compensates by pumping faster, trying to rush what little glucose is available to critical organs like the brain. This is why a racing heart is a symptom of low blood sugar." },
+      { text: "River is shaking and feels weak in their muscles. Muscles use glucose for energy. Which system is directly showing the effects of low fuel?", options: ["Immune System","Respiratory System","Muscular System","Skeletal System"], correct: 2, explanation: "The Muscular System requires glucose for energy to contract. When blood glucose is critically low, muscles can't function properly, causing trembling, weakness, and the shaky appearance that is a telltale sign of hypoglycemia." }
     ]
   },
   {
@@ -623,16 +623,16 @@ const CASES = [
       { label: "Temperature", value: "37.4°C", abnormal: false }
     ],
     symptoms: ["Severe sneezing and runny nose","Swollen, itchy throat","Chest tightness","Hives (raised red bumps on skin)","Difficulty swallowing"],
-    background: "Jamie went hiking in spring and came home with escalating symptoms. Starting with a runny nose and itchy eyes, the reaction worsened quickly — the throat began to swell and Jamie's chest tightened. A doctor confirms this is a severe seasonal allergy response (anaphylaxis-like reaction). Breathing through an inhaler gave partial relief but the throat swelling is concerning.",
+    background: "Jamie went hiking in spring and came home with escalating symptoms. Starting with a runny nose and itchy eyes, the reaction worsened quickly, the throat began to swell and Jamie's chest tightened. A doctor confirms this is a severe seasonal allergy response (anaphylaxis-like reaction). Breathing through an inhaler gave partial relief but the throat swelling is concerning.",
     diagnosis: {
       name: "Severe Allergic Reaction (Anaphylaxis)",
       systems: [{name:"Immune",col:"#1de9b6"},{name:"Respiratory",col:"#3bc8e8"},{name:"Circulatory",col:"#e74c6f"}],
-      explanation: "Severe allergies happen when the Immune System massively overreacts to harmless triggers (like pollen), flooding the body with histamine and other chemicals. The Respiratory System is directly impacted — the airways swell and narrow, making breathing difficult. If the throat swells severely (anaphylaxis), the Circulatory System is also at risk: less oxygen enters the blood, and blood pressure can drop dangerously. This is why anaphylaxis is a medical emergency."
+      explanation: "Severe allergies happen when the Immune System massively overreacts to harmless triggers (like pollen), flooding the body with histamine and other chemicals. The Respiratory System is directly impacted, the airways swell and narrow, making breathing difficult. If the throat swells severely (anaphylaxis), the Circulatory System is also at risk: less oxygen enters the blood, and blood pressure can drop dangerously. This is why anaphylaxis is a medical emergency."
     },
     questions: [
       { text: "Jamie's body is overreacting to pollen. Which system is responsible for triggering this reaction?", options: ["Digestive System","Muscular System","Immune System","Excretory System"], correct: 2, explanation: "Allergies are caused by the Immune System mistakenly identifying harmless substances (like pollen) as dangerous threats. It releases histamines, causing the swelling, sneezing, itching, and hives that Jamie is experiencing." },
-      { text: "Jamie's airways are tightening and the throat is swelling. Which system is being directly blocked?", options: ["Circulatory System","Skeletal System","Nervous System","Respiratory System"], correct: 3, explanation: "The airway — nose, throat, trachea, bronchi — is all part of the Respiratory System. When the immune response causes these tissues to swell, the Respiratory System can no longer move air in and out properly." },
-      { text: "Swelling in the throat can block airflow entirely. If no oxygen enters the lungs, which other system is immediately put at risk?", options: ["Skeletal System","Digestive System","Circulatory System","Muscular System"], correct: 2, explanation: "Without oxygen entering from the Respiratory System, the Circulatory System can't deliver oxygen to organs. Blood oxygen levels crash rapidly, putting the heart, brain, and all other systems in danger — this is why anaphylaxis can be fatal without treatment." }
+      { text: "Jamie's airways are tightening and the throat is swelling. Which system is being directly blocked?", options: ["Circulatory System","Skeletal System","Nervous System","Respiratory System"], correct: 3, explanation: "The airway (nose, throat, trachea, bronchi) is all part of the Respiratory System. When the immune response causes these tissues to swell, the Respiratory System can no longer move air in and out properly." },
+      { text: "Swelling in the throat can block airflow entirely. If no oxygen enters the lungs, which other system is immediately put at risk?", options: ["Skeletal System","Digestive System","Circulatory System","Muscular System"], correct: 2, explanation: "Without oxygen entering from the Respiratory System, the Circulatory System can't deliver oxygen to organs. Blood oxygen levels crash rapidly, putting the heart, brain, and all other systems in danger; this is why anaphylaxis can be fatal without treatment." }
     ]
   },
   {
@@ -645,16 +645,16 @@ const CASES = [
       { label: "Urine Color", value: "Dark orange", abnormal: true }
     ],
     symptoms: ["Extreme dizziness and nausea","Muscle cramps in legs","Racing heart","Confusion and disorientation","No sweat despite extreme heat"],
-    background: "Alex, an experienced hiker, set out on a 10-mile summer trail without enough water. Midway through, it was 95°F (35°C). Alex started sweating heavily early on, then stopped sweating entirely — which actually felt like a relief at the time. By mile 7, Alex was confused and dizzy. A passing hiker called for help. The lack of sweating combined with a temperature of 39.8°C indicated heatstroke, not just dehydration.",
+    background: "Alex, an experienced hiker, set out on a 10-mile summer trail without enough water. Midway through, it was 95°F (35°C). Alex started sweating heavily early on, then stopped sweating entirely, which actually felt like a relief at the time. By mile 7, Alex was confused and dizzy. A passing hiker called for help. The lack of sweating combined with a temperature of 39.8°C indicated heatstroke, not just dehydration.",
     diagnosis: {
       name: "Heatstroke & Severe Dehydration",
       systems: [{name:"Excretory",col:"#69d97a"},{name:"Circulatory",col:"#e74c6f"},{name:"Muscular",col:"#ff6b6b"},{name:"Nervous",col:"#b388ff"}],
-      explanation: "Heatstroke occurs when the body's cooling system fails. The Excretory System (skin/sweat glands) normally removes heat through sweat — but when severely dehydrated, there's no water left to sweat. Without cooling, core temperature rises dangerously. The Circulatory System loses blood volume (less fluid = lower blood pressure, faster heart rate). Muscles cramp without electrolytes. The Nervous System is affected last — confusion and disorientation are warning signs that the brain is overheating."
+      explanation: "Heatstroke occurs when the body's cooling system fails. The Excretory System (skin/sweat glands) normally removes heat through sweat; but when severely dehydrated, there's no water left to sweat. Without cooling, core temperature rises dangerously. The Circulatory System loses blood volume (less fluid = lower blood pressure, faster heart rate). Muscles cramp without electrolytes. The Nervous System is affected last, confusion and disorientation are warning signs that the brain is overheating."
     },
     questions: [
-      { text: "Alex stopped sweating — which seems like a relief but is actually dangerous. Sweating is the body's main cooling method. Which system is responsible for producing sweat?", options: ["Skeletal System","Respiratory System","Excretory System","Immune System"], correct: 2, explanation: "Sweat glands are part of the Excretory System (specifically the skin). Sweating removes body heat through evaporation. When dehydration depletes water reserves, sweating stops — and body temperature rises dangerously without this cooling mechanism." },
-      { text: "Alex's blood pressure is dangerously low (88/58 mmHg — normal is ~120/80). Dehydration reduces blood volume. How does the Circulatory System try to compensate?", options: ["It slows down to conserve energy","It pumps harder and faster to maintain blood flow to vital organs","It diverts blood to the digestive system","It stops circulating blood to the legs"], correct: 1, explanation: "When blood volume drops (due to fluid loss), the heart beats faster and harder to try to maintain blood flow to the brain and vital organs. This is why Alex's heart rate is 118 bpm — the Circulatory System is working overtime." },
-      { text: "Alex is confused and disoriented — a sign that the brain is being affected. The brain is extremely sensitive to overheating. Which system does this symptom primarily belong to?", options: ["Digestive System","Excretory System","Muscular System","Nervous System"], correct: 3, explanation: "The brain is the control center of the Nervous System. High body temperature disrupts the electrical signals neurons use to communicate. Confusion, disorientation, and even seizures can occur when body temperature exceeds safe limits — these are Nervous System warning signs of heatstroke." }
+      { text: "Alex stopped sweating, which seems like a relief but is actually dangerous. Sweating is the body's main cooling method. Which system is responsible for producing sweat?", options: ["Skeletal System","Respiratory System","Excretory System","Immune System"], correct: 2, explanation: "Sweat glands are part of the Excretory System (specifically the skin). Sweating removes body heat through evaporation. When dehydration depletes water reserves, sweating stops; and body temperature rises dangerously without this cooling mechanism." },
+      { text: "Alex's blood pressure is dangerously low (88/58 mmHg, normal is ~120/80). Dehydration reduces blood volume. How does the Circulatory System try to compensate?", options: ["It slows down to conserve energy","It pumps harder and faster to maintain blood flow to vital organs","It diverts blood to the digestive system","It stops circulating blood to the legs"], correct: 1, explanation: "When blood volume drops (due to fluid loss), the heart beats faster and harder to try to maintain blood flow to the brain and vital organs. This is why Alex's heart rate is 118 bpm, the Circulatory System is working overtime." },
+      { text: "Alex is confused and disoriented, a sign that the brain is being affected. The brain is extremely sensitive to overheating. Which system does this symptom primarily belong to?", options: ["Digestive System","Excretory System","Muscular System","Nervous System"], correct: 3, explanation: "The brain is the control center of the Nervous System. High body temperature disrupts the electrical signals neurons use to communicate. Confusion, disorientation, and even seizures can occur when body temperature exceeds safe limits, these are Nervous System warning signs of heatstroke." }
     ]
   }
 ];
@@ -724,7 +724,7 @@ function answerCase(cid, qi, chosen) {
   });
   document.getElementById(`copt-${cid}-${qi}-${chosen}`).classList.add('selected');
 
-  // Record silently for PDF (correct-fb / incorrect-fb — never shown on page)
+  // Record silently for PDF (correct-fb / incorrect-fb - never shown on page)
   const isCorrect = chosen === q.correct;
   const fb = document.getElementById(`cfb-${cid}-${qi}`);
   fb.className = `feedback ${isCorrect ? 'correct-fb' : 'incorrect-fb'}`;
@@ -753,14 +753,14 @@ function updateScore() {
   if (allDone) {
     bar.classList.add('ready');
     btn.classList.add('ready');
-    hint.textContent = 'All questions answered — enter your name and click Turn In!';
+    hint.textContent = 'All questions answered, enter your name and click Turn In!';
     document.getElementById('turnin-notice').classList.remove('show');
     document.getElementById('student-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
   } else {
     bar.classList.remove('ready');
     btn.classList.remove('ready');
     const remaining = totalQuestions - totalAnswered;
-    hint.textContent = `${remaining} question${remaining !== 1 ? 's' : ''} remaining — answer all ${totalQuestions} to unlock your report card.`;
+    hint.textContent = `${remaining} question${remaining !== 1 ? 's' : ''} remaining, answer all ${totalQuestions} to unlock your report card.`;
   }
 }
 
@@ -769,7 +769,7 @@ function resetAll() {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ── Demo hotkey: Cmd+Shift+1 — randomly answers all unanswered questions ──
+// ── Demo hotkey: Cmd+Shift+1 - randomly answers all unanswered questions ──
 document.addEventListener('keydown', function(e) {
   if (e.metaKey && e.shiftKey && e.key === '1') {
     e.preventDefault();
@@ -797,7 +797,7 @@ function generateReport() {
   const date = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
 
   if (!window.jspdf) {
-    alert('PDF library is still loading — please wait a moment and try again.');
+    alert('PDF library is still loading, please wait a moment and try again.');
     return;
   }
 
@@ -811,7 +811,7 @@ function generateReport() {
         .filter(qi => !caseQAnswered[c.id] || !caseQAnswered[c.id].has(qi));
       if (missing.length > 0) {
         const li = document.createElement('li');
-        li.textContent = `Case ${idx+1}: ${c.title.replace(/[^\x00-\x7F]/g,'')} — ${missing.map(qi=>`Q${qi+1}`).join(', ')} not answered`;
+        li.textContent = `Case ${idx+1}: ${c.title.replace(/[^\x00-\x7F]/g,'')}, ${missing.map(qi=>`Q${qi+1}`).join(', ')} not answered`;
         list.appendChild(li);
       }
     });
@@ -949,7 +949,7 @@ function generateReport() {
   y+=15;
 
   // ══════════════════════════════════════════════════════════════
-  // CASE CARDS — flow continuously
+  // CASE CARDS - flow continuously
   // ══════════════════════════════════════════════════════════════
   CASES.forEach(function(c, cIdx) {
     var accent = CASE_ACCENTS[c.id] || C.teal;
@@ -1083,7 +1083,7 @@ function generateReport() {
     ?'Perfect score! Every case solved correctly. You think like a real doctor.'
     :finalScore>=13?'Excellent diagnostic skills! You clearly understand how body systems connect.'
     :finalScore>=11?'Good effort! Review the case explanations above to strengthen your understanding.'
-    :'Keep studying — re-read each diagnosis explanation carefully and try again.';
+    :'Keep studying, re-read each diagnosis explanation carefully and try again.';
   var feedbackTitle=finalScore===15?'Perfect Score':finalScore>=13?'Excellent Work':finalScore>=11?'Good Effort':'Keep Studying';
 
   f(C.teal10); s(C.teal); doc.setLineWidth(0.6); rr(ML,y,CW,30,5,'FD');

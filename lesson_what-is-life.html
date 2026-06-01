@@ -279,7 +279,7 @@
   .char-name  { font-weight: 900; font-size: 1.1rem; color: var(--green); margin-bottom: 0.5rem; }
   .char-desc  { color: var(--text-muted); font-size: 0.97rem; }
 
-  /* ===== CELL THEORY CARDS (Section 2) — reuse char-card with teal accent ===== */
+  /* ===== CELL THEORY CARDS (Section 2) - reuse char-card with teal accent ===== */
   .theory-card::before {
     background: linear-gradient(90deg, #3bc8e8, var(--teal));
   }
@@ -1084,7 +1084,7 @@ body.stem-active .stem-detail {
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
-  <a href="index.html" class="nav-back">← Life Science</a>
+  <a href="index.html#unit-what-is-life" class="nav-back">← Life Science</a>
 </nav>
 
 <!-- HERO -->
@@ -1100,7 +1100,7 @@ body.stem-active .stem-detail {
     <div class="dq-icon">🔍</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">If a virus can replicate, respond to its environment, and even evolve — what's missing that keeps it from being truly alive?</div>
+      <div class="dq-text">If a virus can replicate, respond to its environment, and even evolve, what's missing that keeps it from being truly alive?</div>
     </div>
   </div>
 </header>
@@ -1108,11 +1108,11 @@ body.stem-active .stem-detail {
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
-  <span class="ls-badge" data-tip="Content builds progressively — each new idea is scaffolded by the one before it, reducing cognitive strain. — Kirschner et al., 2006">🏗️ Scaffolding</span>
-  <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. — Schroeder et al., 2018">🗂️ Concept Formation</span>
-  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. — Adesope et al., 2017">✅ Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Content is chunked and sequenced so working memory is never overwhelmed by too much at once. — Sweller et al., 2019">⚖️ Load Management</span>
+  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. (Noetel et al., 2022)">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Content builds progressively, each new idea is scaffolded by the one before it, reducing cognitive strain. (Kirschner et al., 2006)">🏗️ Scaffolding</span>
+  <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. (Schroeder et al., 2018)">🗂️ Concept Formation</span>
+  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. (Adesope et al., 2017)">✅ Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Content is chunked and sequenced so working memory is never overwhelmed by too much at once. (Sweller et al., 2019)">⚖️ Load Management</span>
 </div>
 
 <!-- MA STE STANDARDS BADGES -->
@@ -1206,7 +1206,7 @@ body.stem-active .stem-detail {
   <div class="container">
     <span class="section-label">Investigation</span>
     <h2 class="section-title">What Makes Something Alive?</h2>
-    <p class="section-desc">Here are five things. Some are alive. Some are not. One is genuinely debated by scientists. Click each card — what do you think?</p>
+    <p class="section-desc">Here are five things. Some are alive. Some are not. One is genuinely debated by scientists. Click each card, what do you think?</p>
 
     <!-- ALIVE OR NOT? CHALLENGE -->
     <div class="challenge-grid">
@@ -1216,7 +1216,7 @@ body.stem-active .stem-detail {
         <div class="challenge-name">Fire</div>
         <div class="challenge-prompt">Alive?</div>
         <div class="challenge-verdict not-alive">Not Alive</div>
-        <div class="challenge-reason">Grows and uses energy — but has no cells, can't reproduce, and doesn't maintain homeostasis. Just chemistry.</div>
+        <div class="challenge-reason">Grows and uses energy; but has no cells, can't reproduce, and doesn't maintain homeostasis. Just chemistry.</div>
       </div>
 
       <div class="challenge-card debated" onclick="this.classList.add('revealed')">
@@ -1224,7 +1224,7 @@ body.stem-active .stem-detail {
         <div class="challenge-name">Virus</div>
         <div class="challenge-prompt">Alive?</div>
         <div class="challenge-verdict debated">Debated</div>
-        <div class="challenge-reason">Can replicate and evolve — but only by hijacking another cell. Has no cells of its own.</div>
+        <div class="challenge-reason">Can replicate and evolve; but only by hijacking another cell. Has no cells of its own.</div>
       </div>
 
       <div class="challenge-card not-alive" onclick="this.classList.add('revealed')">
@@ -1240,7 +1240,7 @@ body.stem-active .stem-detail {
         <div class="challenge-name">Seed</div>
         <div class="challenge-prompt">Alive?</div>
         <div class="challenge-verdict alive">Alive</div>
-        <div class="challenge-reason">Looks dormant — but it's made of cells and can grow, reproduce, and respond to its environment.</div>
+        <div class="challenge-reason">Looks dormant; but it's made of cells and can grow, reproduce, and respond to its environment.</div>
       </div>
 
       <div class="challenge-card alive" onclick="this.classList.add('revealed')">
@@ -1248,13 +1248,13 @@ body.stem-active .stem-detail {
         <div class="challenge-name">Bacterium</div>
         <div class="challenge-prompt">Alive?</div>
         <div class="challenge-verdict alive">Alive</div>
-        <div class="challenge-reason">One cell. Eats, grows, responds, reproduces. All six characteristics — check.</div>
+        <div class="challenge-reason">One cell. Eats, grows, responds, reproduces. All six characteristics, check.</div>
       </div>
 
     </div>
 
     <div class="bridge-callout" style="margin-top:1.8rem; border-left-color:var(--green); border-color:rgba(46,204,113,0.22); background:rgba(46,204,113,0.05);">
-      Scientists ran into the same problem. To solve it, they identified <strong>six characteristics</strong> that every living thing shares. If something meets all six — it's alive. Miss even one, and it doesn't qualify.
+      Scientists ran into the same problem. To solve it, they identified <strong>six characteristics</strong> that every living thing shares. If something meets all six, it's alive. Miss even one, and it doesn't qualify.
     </div>
 
     <!-- THE SIX CHARACTERISTICS -->
@@ -1282,7 +1282,7 @@ body.stem-active .stem-detail {
         <span class="char-number">03</span>
         <span class="char-icon">🌱</span>
         <div class="char-name">Grow and Develop</div>
-        <div class="char-desc">Organisms increase in size and change in form over their lifetime — from a tiny seed into a towering tree, or from a single fertilized cell into a full human body.</div>
+        <div class="char-desc">Organisms increase in size and change in form over their lifetime: from a tiny seed into a towering tree, or from a single fertilized cell into a full human body.</div>
       </div>
 
       <div class="char-card" id="char-reproduce">
@@ -1303,7 +1303,7 @@ body.stem-active .stem-detail {
         <span class="char-number">06</span>
         <span class="char-icon">⚖️</span>
         <div class="char-name">Maintain Homeostasis</div>
-        <div class="char-desc">Living things constantly regulate their internal conditions to stay stable — your body shivers to generate heat and sweats to cool down. This internal balancing act is called <strong>homeostasis</strong>.</div>
+        <div class="char-desc">Living things constantly regulate their internal conditions to stay stable, your body shivers to generate heat and sweats to cool down. This internal balancing act is called <strong>homeostasis</strong>.</div>
       </div>
 
     </div>
@@ -1317,11 +1317,11 @@ body.stem-active .stem-detail {
     <h2 class="section-title">The Discovery of Cells</h2>
     <p class="section-desc">Once scientists agreed on the six characteristics, a deeper question emerged: <em>what are living things actually made of?</em> Scientists eventually discovered the answer through centuries of microscope observations, forming the foundation of modern biology.</p>
 
-    <p style="font-size:0.97rem; color:var(--text-muted); margin-bottom:1.8rem;">For most of human history, cells were completely invisible — too small to detect without magnification. The invention of the microscope in the 1600s changed that, and with it, our entire understanding of what life actually is.</p>
+    <p style="font-size:0.97rem; color:var(--text-muted); margin-bottom:1.8rem;">For most of human history, cells were completely invisible, too small to detect without magnification. The invention of the microscope in the 1600s changed that, and with it, our entire understanding of what life actually is.</p>
 
-    <!-- CELL THEORY VISUAL — convergence diagram -->
+    <!-- CELL THEORY VISUAL - convergence diagram -->
     <div style="margin: 0 0 2.5rem;">
-      <svg viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:680px;display:block;margin:0 auto;border-radius:16px;" role="img" aria-label="All living things — from bacteria to humans — are made of cells">
+      <svg viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:680px;display:block;margin:0 auto;border-radius:16px;" role="img" aria-label="All living things (from bacteria to humans) are made of cells">
         <defs>
           <marker id="ct-arr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
             <polygon points="0 0, 9 3.5, 0 7" fill="#3bc8e8"/>
@@ -1332,9 +1332,9 @@ body.stem-active .stem-detail {
         <rect width="640" height="200" rx="16" fill="#1e2f42" stroke="rgba(59,200,232,0.25)" stroke-width="1.5"/>
 
         <!-- header label -->
-        <text x="320" y="22" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="900" letter-spacing="1.5" fill="#8aafca">NO MATTER HOW DIFFERENT THEY LOOK —</text>
+        <text x="320" y="22" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="900" letter-spacing="1.5" fill="#8aafca">NO MATTER HOW DIFFERENT THEY LOOK,</text>
 
-        <!-- organism pills — left column -->
+        <!-- organism pills - left column -->
         <rect x="16" y="34" width="232" height="28" rx="8" fill="#243447" stroke="#2b5575" stroke-width="1"/>
         <text x="132" y="53" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="700" fill="#e8f4f8">Bacterium</text>
 
@@ -1385,20 +1385,20 @@ body.stem-active .stem-detail {
         <span class="theory-num">II</span>
         <span class="char-icon">🧱</span>
         <div class="theory-name">The cell is the basic unit of life</div>
-        <div class="char-desc">A cell is the smallest unit that can carry out all the processes of life on its own — taking in energy, responding to the environment, and reproducing.</div>
+        <div class="char-desc">A cell is the smallest unit that can carry out all the processes of life on its own, taking in energy, responding to the environment, and reproducing.</div>
       </div>
 
       <div class="char-card theory-card">
         <span class="theory-num">III</span>
         <span class="char-icon">🔁</span>
         <div class="theory-name">All cells come from existing cells</div>
-        <div class="char-desc">Cells don't appear from nothing. Every new cell is produced when an existing cell divides — connecting every living thing to an unbroken chain of life stretching back billions of years.</div>
+        <div class="char-desc">Cells don't appear from nothing. Every new cell is produced when an existing cell divides, connecting every living thing to an unbroken chain of life stretching back billions of years.</div>
       </div>
 
     </div>
 
     <div class="bridge-callout">
-      These three statements make up <strong>Cell Theory</strong> — one of the most important frameworks in all of science. Understanding cells means understanding life. The next question scientists asked: are all cells the same?
+      These three statements make up <strong>Cell Theory</strong>, one of the most important frameworks in all of science. Understanding cells means understanding life. The next question scientists asked: are all cells the same?
     </div>
   </div>
 </section>
@@ -1603,7 +1603,7 @@ body.stem-active .stem-detail {
     </div>
 
     <div class="bridge-callout" style="margin: -0.6rem auto 2.2rem; border-left-color: var(--teal); border-color: rgba(26,188,156,0.24); background: rgba(26,188,156,0.055); max-width: 820px;">
-      <strong>Big idea:</strong> Multicellular organisms survive because different cells specialize for different jobs. This is called <strong>division of labor</strong> — instead of one cell doing everything, many cells share the work.
+      <strong>Big idea:</strong> Multicellular organisms survive because different cells specialize for different jobs. This is called <strong>division of labor</strong>, instead of one cell doing everything, many cells share the work.
     </div>
 
     <table class="compare-table">
@@ -1618,11 +1618,11 @@ body.stem-active .stem-detail {
         <tr>
           <td>Number of cells</td>
           <td>One cell only</td>
-          <td>Many cells — sometimes trillions</td>
+          <td>Many cells, sometimes trillions</td>
         </tr>
         <tr>
           <td>How it works</td>
-          <td>One cell handles <strong>everything</strong> — eating, moving, reproducing</td>
+          <td>One cell handles <strong>everything</strong>, eating, moving, reproducing</td>
           <td>Cells <strong>specialize</strong> and work together in tissues and organs</td>
         </tr>
         <tr>
@@ -1637,8 +1637,8 @@ body.stem-active .stem-detail {
         </tr>
         <tr>
           <td>Complexity</td>
-          <td>Simpler — one cell carries every life function</td>
-          <td>More complex — division of labor between specialized cell types</td>
+          <td>Simpler, one cell carries every life function</td>
+          <td>More complex, division of labor between specialized cell types</td>
         </tr>
         <tr>
           <td>Visible to naked eye?</td>
@@ -1649,7 +1649,7 @@ body.stem-active .stem-detail {
     </table>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
-      A single amoeba eats, moves, senses its environment, and reproduces — all with one cell. This raises the next question: if cells can be so different in number, are they also different in <strong>structure</strong>?
+      A single amoeba eats, moves, senses its environment, and reproduces, all with one cell. This raises the next question: if cells can be so different in number, are they also different in <strong>structure</strong>?
     </div>
   </div>
 </section>
@@ -1659,10 +1659,10 @@ body.stem-active .stem-detail {
   <div class="container">
     <span class="section-label">Cell Types</span>
     <h2 class="section-title">Two Major Cell Types</h2>
-    <p class="section-desc">Not all cells are built the same way. Scientists discovered that the single biggest structural difference — the one that separates all of life into two camps — is where a cell stores its instruction manual.</p>
+    <p class="section-desc">Not all cells are built the same way. Scientists discovered that the single biggest structural difference (the one that separates all of life into two camps) is where a cell stores its instruction manual.</p>
 
     <div class="bridge-callout" style="margin-bottom: 2.5rem; margin-top: 0;">
-      Every cell carries DNA — the instructions for how to build and run a living thing. But <strong>where</strong> that DNA is stored is what makes all the difference.
+      Every cell carries DNA, the instructions for how to build and run a living thing. But <strong>where</strong> that DNA is stored is what makes all the difference.
     </div>
 
     <!-- DNA LOCATION VISUAL -->
@@ -1708,7 +1708,7 @@ body.stem-active .stem-detail {
         <!-- ── PROKARYOTIC (RIGHT) ── -->
         <text x="480" y="54" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" letter-spacing="1.5" fill="#2ecc71">PROKARYOTIC</text>
 
-        <!-- outer cell membrane — smaller cell -->
+        <!-- outer cell membrane - smaller cell -->
         <ellipse cx="480" cy="152" rx="104" ry="76" fill="rgba(46,204,113,0.05)" stroke="#2ecc71" stroke-width="2"/>
 
         <!-- cytoplasm label -->
@@ -1737,15 +1737,15 @@ body.stem-active .stem-detail {
       <thead>
         <tr>
           <th>Feature</th>
-          <th><span class="vocab" title="Eukaryotic: a cell that has a membrane-bound nucleus housing its DNA — found in plants, animals, fungi, and protists">Eukaryotic</span></th>
-          <th><span class="vocab" title="Prokaryotic: a cell with no membrane-bound nucleus — DNA floats freely in the cytoplasm — all bacteria are prokaryotic">Prokaryotic</span></th>
+          <th><span class="vocab" title="Eukaryotic: a cell that has a membrane-bound nucleus housing its DNA, found in plants, animals, fungi, and protists">Eukaryotic</span></th>
+          <th><span class="vocab" title="Prokaryotic: a cell with no membrane-bound nucleus (DNA floats freely in the cytoplasm) all bacteria are prokaryotic">Prokaryotic</span></th>
         </tr>
       </thead>
       <tbody>
         <tr id="dna-location-row">
           <td>DNA location</td>
-          <td>Enclosed inside a membrane-bound <span class="vocab" title="Nucleus: the membrane-bound organelle that houses a cell's DNA and controls cell activity — only found in eukaryotic cells"><strong>nucleus</strong></span></td>
-          <td>Floating freely in the <span class="vocab" title="Cytoplasm: the gel-like fluid that fills the cell and suspends its contents — present in all cells"><strong>cytoplasm</strong></span> — no nucleus</td>
+          <td>Enclosed inside a membrane-bound <span class="vocab" title="Nucleus: the membrane-bound organelle that houses a cell's DNA and controls cell activity, only found in eukaryotic cells"><strong>nucleus</strong></span></td>
+          <td>Floating freely in the <span class="vocab" title="Cytoplasm: the gel-like fluid that fills the cell and suspends its contents (present in all cells"><strong>cytoplasm</strong></span>) no nucleus</td>
         </tr>
         <tr>
           <td>Has a nucleus?</td>
@@ -1834,26 +1834,26 @@ body.stem-active .stem-detail {
   <div class="container">
     <span class="section-label">Scientific Debate</span>
     <h2 class="section-title">Back to Viruses</h2>
-    <p class="section-desc">This lesson began with a question about viruses. Now you have the framework — the six characteristics and the cell requirement. Let's apply it.</p>
+    <p class="section-desc">This lesson began with a question about viruses. Now you have the framework, the six characteristics and the cell requirement. Let's apply it.</p>
 
     <div class="virus-grid">
       <div class="virus-col can">
         <div class="virus-col-label">Viruses CAN...</div>
         <div class="virus-item"><span class="virus-item-dot">●</span><span>Carry genetic material (DNA or RNA)</span></div>
-        <div class="virus-item"><span class="virus-item-dot">●</span><span>Replicate — inside a host cell</span></div>
+        <div class="virus-item"><span class="virus-item-dot">●</span><span>Replicate, inside a host cell</span></div>
         <div class="virus-item"><span class="virus-item-dot">●</span><span>Evolve over time through mutation</span></div>
         <div class="virus-item"><span class="virus-item-dot">●</span><span>Respond to host cell chemistry</span></div>
       </div>
       <div class="virus-col cant">
         <div class="virus-col-label">Viruses CANNOT...</div>
         <div class="virus-item"><span class="virus-item-dot">●</span><span>Build or maintain cells of their own</span></div>
-        <div class="virus-item"><span class="virus-item-dot">●</span><span>Reproduce independently — they need a host</span></div>
+        <div class="virus-item"><span class="virus-item-dot">●</span><span>Reproduce independently; they need a host</span></div>
         <div class="virus-item"><span class="virus-item-dot">●</span><span>Carry out life processes without hijacking another cell</span></div>
         <div class="virus-item"><span class="virus-item-dot">●</span><span>Maintain homeostasis</span></div>
       </div>
     </div>
 
-    <p style="text-align:center; font-size:1.05rem; font-weight:800; color:var(--text); margin-bottom:0.3rem;">So — are viruses alive?</p>
+    <p style="text-align:center; font-size:1.05rem; font-weight:800; color:var(--text); margin-bottom:0.3rem;">So, are viruses alive?</p>
     <p style="text-align:center; font-size:0.88rem; color:var(--text-muted); margin-bottom:0;">Scientists have debated this question for decades. Where do you stand?</p>
 
     <div class="virus-vote">
@@ -1862,10 +1862,10 @@ body.stem-active .stem-detail {
     </div>
 
     <div class="virus-response alive-resp" id="virus-resp-alive">
-      You're in good company — some scientists argue viruses should qualify as a form of life, given that they carry genetic material, replicate, and evolve. But most biologists currently classify viruses as nonliving, primarily because <strong>they have no cells of their own</strong>. Without a host cell to hijack, a virus can't carry out any life processes independently. For most scientists, the cell is the minimum unit of life — and viruses don't meet that threshold.
+      You're in good company, some scientists argue viruses should qualify as a form of life, given that they carry genetic material, replicate, and evolve. But most biologists currently classify viruses as nonliving, primarily because <strong>they have no cells of their own</strong>. Without a host cell to hijack, a virus can't carry out any life processes independently. For most scientists, the cell is the minimum unit of life, and viruses don't meet that threshold.
     </div>
     <div class="virus-response not-alive-resp" id="virus-resp-not-alive">
-      That's where most scientists currently land — and the central reason is cells. <strong>Viruses have no cells of their own.</strong> They can only replicate by hijacking the machinery of a living cell. On their own, they can't obtain energy, grow, respond, or maintain homeostasis. The debate isn't completely closed, but the dominant view in biology is clear: without cells, something cannot be considered truly alive.
+      That's where most scientists currently land, and the central reason is cells. <strong>Viruses have no cells of their own.</strong> They can only replicate by hijacking the machinery of a living cell. On their own, they can't obtain energy, grow, respond, or maintain homeostasis. The debate isn't completely closed, but the dominant view in biology is clear: without cells, something cannot be considered truly alive.
     </div>
 
   </div>
@@ -1938,7 +1938,7 @@ function virusVote(choice) {
         <div class="info-field">
           <label for="teacher-select">Teacher</label>
           <select id="teacher-select">
-            <option value="">— Select —</option>
+            <option value="">- Select -</option>
             <option value="MrBrown">Mr. Brown</option>
             <option value="MsGay">Ms. Gay</option>
           </select>
@@ -1947,7 +1947,7 @@ function virusVote(choice) {
         <div class="info-field">
           <label for="block-select">Block</label>
           <select id="block-select">
-            <option value="">— Select —</option>
+            <option value="">- Select -</option>
             <option value="A">A</option>
             <option value="B">B</option>
             <option value="C">C</option>
@@ -2004,38 +2004,38 @@ const quizQuestions = [
     q: "Which of the following is NOT one of the six characteristics of life?",
     options: ["Have a backbone", "Reproduce", "Made of cells", "Maintain homeostasis"],
     correct: 0,
-    explanation: "Having a backbone is NOT a characteristic of life — many living things like worms, insects, and plants have no backbone at all!"
+    explanation: "Having a backbone is NOT a characteristic of life, many living things like worms, insects, and plants have no backbone at all!"
   },
   {
     // Q2 → correct: C (2)
     q: "A sunflower turns its face to follow sunlight throughout the day. Which characteristic of life does this demonstrate?",
     options: ["Obtain and use energy", "Grow and develop", "Respond to stimuli", "Reproduce"],
     correct: 2,
-    explanation: "Turning toward light (phototropism) is a response to a stimulus — the stimulus is light!"
+    explanation: "Turning toward light (phototropism) is a response to a stimulus, the stimulus is light!"
   },
   {
     // Q3 → correct: B (1)
     q: "Your body shivers when you're cold and sweats when you're hot. This is an example of:",
     options: ["Obtaining energy", "Maintaining homeostasis", "Reproducing", "Growing and developing"],
     correct: 1,
-    explanation: "Shivering and sweating are ways your body regulates its internal temperature — that's homeostasis in action!"
+    explanation: "Shivering and sweating are ways your body regulates its internal temperature, that's homeostasis in action!"
   },
   {
-    // Q4 → correct: D (3) — keep as-is
-    q: "Which characteristic of life requires that ALL living things — from bacteria to blue whales — have at least one cell?",
+    // Q4 → correct: D (3) - keep as-is
+    q: "Which characteristic of life requires that ALL living things (from bacteria to blue whales) have at least one cell?",
     options: ["Respond to stimuli", "Obtain and use energy", "Reproduce", "Made of cells"],
     correct: 3,
-    explanation: "Cell Theory states that all living things are made of cells. This is characteristic #1 — no exceptions!"
+    explanation: "Cell Theory states that all living things are made of cells. This is characteristic #1, no exceptions!"
   },
   {
     // Q5 → correct: A (0)
     q: "A fire can grow, consume oxygen, and release energy. Is a fire alive? Why or why not?",
-    options: ["No — it cannot reproduce or maintain homeostasis", "Yes — it uses energy and grows", "Yes — it responds to oxygen as a stimulus", "No — it is not made of cells, but otherwise qualifies"],
+    options: ["No (it cannot reproduce or maintain homeostasis", "Yes) it uses energy and grows", "Yes (it responds to oxygen as a stimulus", "No) it is not made of cells, but otherwise qualifies"],
     correct: 0,
     explanation: "Fire fails multiple characteristics: it cannot reproduce, is not made of cells, and doesn't maintain homeostasis. ALL six must be met to be considered alive."
   },
   {
-    // Q6 → correct: C (2) — virus question aligned with reflection tone
+    // Q6 → correct: C (2) - virus question aligned with reflection tone
     q: "What is the main reason viruses are usually classified as nonliving?",
     options: ["They evolve too slowly to be considered alive", "They are too small to be seen under most microscopes", "They have no cells of their own", "They cannot carry genetic material"],
     correct: 2,
@@ -2046,26 +2046,26 @@ const quizQuestions = [
     q: "Bacteria consist of a single cell. This makes them:",
     options: ["Eukaryotic", "Neither living nor nonliving", "Multicellular", "Unicellular"],
     correct: 3,
-    explanation: "Unicellular means one cell. Bacteria are single-celled (unicellular) organisms — and they are prokaryotic, not eukaryotic."
+    explanation: "Unicellular means one cell. Bacteria are single-celled (unicellular) organisms, and they are prokaryotic, not eukaryotic."
   },
   {
     // Q8 → correct: B (1)
     q: "In prokaryotic cells, where is the DNA found?",
     options: ["In the mitochondria", "Floating in the cytoplasm", "Inside the nucleus", "In the cell wall"],
     correct: 1,
-    explanation: "Prokaryotic cells do NOT have a nucleus — their DNA floats freely in the cytoplasm."
+    explanation: "Prokaryotic cells do NOT have a nucleus, their DNA floats freely in the cytoplasm."
   },
   {
     // Q9 → correct: A (0)
     q: "Can a unicellular organism also be eukaryotic?",
-    options: ["Yes — for example, amoeba and paramecium are unicellular eukaryotes", "No — all unicellular organisms are prokaryotic", "No — eukaryotes must always be multicellular", "Yes — but only if they have a cell wall"],
+    options: ["Yes (for example, amoeba and paramecium are unicellular eukaryotes", "No) all unicellular organisms are prokaryotic", "No (eukaryotes must always be multicellular", "Yes) but only if they have a cell wall"],
     correct: 0,
-    explanation: "Unicellular and eukaryotic are not mutually exclusive! Amoeba, paramecium, and many protists are single-celled but still have a nucleus — making them unicellular eukaryotes."
+    explanation: "Unicellular and eukaryotic are not mutually exclusive! Amoeba, paramecium, and many protists are single-celled but still have a nucleus, making them unicellular eukaryotes."
   },
   {
-    // Q10 → correct: B (1) — keep as-is
-    q: "A student looks at a cell under a microscope and sees no nucleus — the DNA appears to be floating freely in the cell. What type of cell is this?",
-    options: ["Eukaryotic — it must have lost its nucleus", "Prokaryotic — no nucleus is the defining feature", "Multicellular — large cells don't always have nuclei", "Unicellular — small cells never have nuclei"],
+    // Q10 → correct: B (1) - keep as-is
+    q: "A student looks at a cell under a microscope and sees no nucleus, the DNA appears to be floating freely in the cell. What type of cell is this?",
+    options: ["Eukaryotic (it must have lost its nucleus", "Prokaryotic) no nucleus is the defining feature", "Multicellular (large cells don't always have nuclei", "Unicellular) small cells never have nuclei"],
     correct: 1,
     explanation: "The absence of a membrane-bound nucleus is the defining feature of prokaryotic cells. Eukaryotic cells always have a nucleus enclosing their DNA."
   }
@@ -2099,7 +2099,7 @@ function setQuizMode(mode) {
   }
 }
 
-// ── URL PARAM — auto-set mode on load ─────────────────────────────────
+// ── URL PARAM - auto-set mode on load ─────────────────────────────────
 (function () {
   const params = new URLSearchParams(window.location.search);
   if (params.get('mode') === 'classroom') setQuizMode('classroom');
@@ -2195,9 +2195,9 @@ function submitQuiz() {
   const pct   = Math.round(correct / total * 100);
   const score = `${correct}/${total}`;
   const msg   = pct === 100 ? '🏆 Perfect score! You know your characteristics and cell types cold!'
-    : pct >= 80 ? '🌟 Great work! You clearly studied — review any you missed.'
+    : pct >= 80 ? '🌟 Great work! You clearly studied, review any you missed.'
     : pct >= 60 ? '📚 Good effort! Go back over the lesson sections and try again.'
-    : '💪 Keep going — review each section carefully and try again!';
+    : '💪 Keep going, review each section carefully and try again!';
   document.getElementById('q1-score-num').textContent = score;
   document.getElementById('q1-score-msg').textContent = msg;
   const sb = document.getElementById('q1-score');
@@ -2206,7 +2206,7 @@ function submitQuiz() {
 
   if (quizMode === 'practice') {
     document.getElementById('submit-status').innerHTML =
-      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode — score not submitted</div>';
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
     return;
   }
 
@@ -2305,20 +2305,20 @@ requestAnimationFrame(draw);
   <div class="container">
     <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="section-desc">The lesson is just the beginning — push the definition further, test your skills, or explore the edge cases.</p>
+    <p class="section-desc">The lesson is just the beginning, push the definition further, test your skills, or explore the edge cases.</p>
     <div class="continue-grid">
 
       <a href="investigation_gray-zone.html" class="cont-card inv">
         <div class="cont-icon">🔍</div>
         <div class="cont-name">The Gray Zone</div>
-        <div class="cont-desc">Viruses, prions, fire — things that blur the line between living and nonliving. Where does life actually begin?</div>
+        <div class="cont-desc">Viruses, prions, fire, things that blur the line between living and nonliving. Where does life actually begin?</div>
         <span class="cont-link">Investigate</span>
       </a>
 
       <a href="extension_virus.html" class="cont-card ext">
         <div class="cont-icon">🦠</div>
         <div class="cont-name">Are Viruses Alive?</div>
-        <div class="cont-desc">Dive deep into the case of viruses — they replicate, evolve, and infect, but fail the cell test. Are they alive?</div>
+        <div class="cont-desc">Dive deep into the case of viruses; they replicate, evolve, and infect, but fail the cell test. Are they alive?</div>
         <span class="cont-link">Explore</span>
       </a>
 
@@ -2332,7 +2332,7 @@ requestAnimationFrame(draw);
       <a href="game_cellular-showdown.html" class="cont-card game">
         <div class="cont-icon">🔬</div>
         <div class="cont-name">Cellular Showdown</div>
-        <div class="cont-desc">Sort and match prokaryotes vs. eukaryotes under pressure — how fast can you classify?</div>
+        <div class="cont-desc">Sort and match prokaryotes vs. eukaryotes under pressure, how fast can you classify?</div>
         <span class="cont-link">Play</span>
       </a>
 

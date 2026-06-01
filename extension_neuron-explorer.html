@@ -251,7 +251,7 @@
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
-/* ── Visibility gate — hidden until body.ls-active is set ─────────
+/* ── Visibility gate - hidden until body.ls-active is set ─────────
    The session-check script (injected into every content page) adds
    body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
    Educators toggle this from the index or Learning Science page.
@@ -262,7 +262,7 @@
 }
 
 body.ls-active .ls-focus {
-  /* ── Centered card — sits between hero and first content section ── */
+  /* ── Centered card - sits between hero and first content section ── */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -527,11 +527,11 @@ body.stem-active .stem-detail {
 <div class="mode-bar">
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Students make decisions and take actions throughout — they drive the learning, not just receive it. — Freeman et al., 2014">🎯 Active Learning</span>
-  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
-  <span class="ls-badge" data-tip="Animated or spatial visuals make abstract processes concrete and directly perceivable. — Noetel et al., 2021">👁️ Visual Processing</span>
-  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. — Adesope et al., 2017">🧠 Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Students construct meaning themselves rather than passively receiving information from a teacher or screen. — Fiorella & Mayer, 2016">⚙️ Generative Learning</span>
+  <span class="ls-badge" data-tip="Students make decisions and take actions throughout, they drive the learning, not just receive it. (Freeman et al., 2014)">🎯 Active Learning</span>
+  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. (Noetel et al., 2022)">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Animated or spatial visuals make abstract processes concrete and directly perceivable. (Noetel et al., 2021)">👁️ Visual Processing</span>
+  <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. (Adesope et al., 2017)">🧠 Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Students construct meaning themselves rather than passively receiving information from a teacher or screen. (Fiorella & Mayer, 2016)">⚙️ Generative Learning</span>
 </div>
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
@@ -550,7 +550,7 @@ body.stem-active .stem-detail {
       <div class="neuron-frame">
         <svg id="neuronSvg" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" aria-label="Neuron diagram">
           <defs>
-            <!-- Soma gradient — rich blue-navy sphere feel -->
+            <!-- Soma gradient - rich blue-navy sphere feel -->
             <radialGradient id="somaGrad" cx="38%" cy="35%" r="68%">
               <stop offset="0%"   stop-color="#1e3868" stop-opacity="0.98"/>
               <stop offset="60%"  stop-color="#112050" stop-opacity="0.99"/>
@@ -567,7 +567,7 @@ body.stem-active .stem-detail {
               <stop offset="60%"  stop-color="rgba(130,110,255,0.65)"/>
               <stop offset="100%" stop-color="rgba(41,212,245,0.55)"/>
             </linearGradient>
-            <!-- Myelin segment gradient — creamy wrap look -->
+            <!-- Myelin segment gradient - creamy wrap look -->
             <linearGradient id="myelinGrad1" x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%"   stop-color="rgba(210,185,255,0.22)"/>
               <stop offset="50%"  stop-color="rgba(180,127,255,0.14)"/>
@@ -590,12 +590,12 @@ body.stem-active .stem-detail {
           </defs>
 
           <!-- ═══════════════════════════════════════════ -->
-          <!-- DENDRITES — branching tree with spines      -->
+          <!-- DENDRITES - branching tree with spines      -->
           <!-- ═══════════════════════════════════════════ -->
           <g class="hot" data-id="dendrites"
              onmouseenter="tip(event,'Dendrites')" onmouseleave="tipOff()" onclick="pick('dendrites')">
 
-            <!-- Primary dendrite 1 — upper left branch -->
+            <!-- Primary dendrite 1 - upper left branch -->
             <path d="M175,218 C145,192 120,172 82,148" fill="none" stroke="rgba(180,127,255,0.65)" stroke-width="9" stroke-linecap="round"/>
             <!-- Secondary branches off dendrite 1 -->
             <path d="M140,188 C125,168 108,158 88,148" fill="none" stroke="rgba(180,127,255,0.48)" stroke-width="5.5" stroke-linecap="round"/>
@@ -603,25 +603,25 @@ body.stem-active .stem-detail {
             <path d="M82,148  C68,138  55,128  42,118"  fill="none" stroke="rgba(180,127,255,0.38)" stroke-width="4"   stroke-linecap="round"/>
             <path d="M82,148  C75,162  68,170  58,178"  fill="none" stroke="rgba(180,127,255,0.32)" stroke-width="3.5" stroke-linecap="round"/>
 
-            <!-- Primary dendrite 2 — middle left -->
+            <!-- Primary dendrite 2 - middle left -->
             <path d="M162,258 C128,255 100,260 60,270" fill="none" stroke="rgba(180,127,255,0.60)" stroke-width="8.5" stroke-linecap="round"/>
             <path d="M112,258 C98,240 84,228 62,220"   fill="none" stroke="rgba(180,127,255,0.42)" stroke-width="5"   stroke-linecap="round"/>
             <path d="M60,270  C46,258 35,250 22,248"   fill="none" stroke="rgba(180,127,255,0.36)" stroke-width="4"   stroke-linecap="round"/>
             <path d="M60,270  C48,282 38,292 24,298"   fill="none" stroke="rgba(180,127,255,0.32)" stroke-width="3.5" stroke-linecap="round"/>
 
-            <!-- Primary dendrite 3 — lower left branch -->
+            <!-- Primary dendrite 3 - lower left branch -->
             <path d="M180,310 C148,345 118,372 72,398"  fill="none" stroke="rgba(180,127,255,0.58)" stroke-width="8"   stroke-linecap="round"/>
             <path d="M148,345 C134,365 118,378 98,382"  fill="none" stroke="rgba(180,127,255,0.42)" stroke-width="5"   stroke-linecap="round"/>
             <path d="M72,398  C56,388 42,378 28,372"    fill="none" stroke="rgba(180,127,255,0.35)" stroke-width="4"   stroke-linecap="round"/>
             <path d="M72,398  C60,412 50,428 38,438"    fill="none" stroke="rgba(180,127,255,0.30)" stroke-width="3.5" stroke-linecap="round"/>
 
-            <!-- Primary dendrite 4 — upper-most -->
+            <!-- Primary dendrite 4 - upper-most -->
             <path d="M200,188 C175,152 155,128 118,98"  fill="none" stroke="rgba(180,127,255,0.52)" stroke-width="7.5" stroke-linecap="round"/>
             <path d="M155,128 C140,112 128,100 114,88"  fill="none" stroke="rgba(180,127,255,0.38)" stroke-width="4.5" stroke-linecap="round"/>
             <path d="M155,128 C162,112 165,98 168,82"   fill="none" stroke="rgba(180,127,255,0.32)" stroke-width="3.5" stroke-linecap="round"/>
             <path d="M118,98  C104,85  90,76  75,68"    fill="none" stroke="rgba(180,127,255,0.30)" stroke-width="3"   stroke-linecap="round"/>
 
-            <!-- Primary dendrite 5 — lower-most -->
+            <!-- Primary dendrite 5 - lower-most -->
             <path d="M195,330 C168,372 140,405 98,438"  fill="none" stroke="rgba(180,127,255,0.48)" stroke-width="7"   stroke-linecap="round"/>
             <path d="M155,388 C138,402 122,412 104,418" fill="none" stroke="rgba(180,127,255,0.36)" stroke-width="4"   stroke-linecap="round"/>
             <path d="M98,438  C82,448  68,455  52,458"  fill="none" stroke="rgba(180,127,255,0.30)" stroke-width="3.5" stroke-linecap="round"/>
@@ -641,7 +641,7 @@ body.stem-active .stem-detail {
           </g>
 
           <!-- ═══════════════════════════════════════════ -->
-          <!-- SOMA (Cell Body) — rich layered sphere      -->
+          <!-- SOMA (Cell Body) - rich layered sphere      -->
           <!-- ═══════════════════════════════════════════ -->
           <g class="hot" data-id="soma"
              onmouseenter="tip(event,'Soma (Cell Body)')" onmouseleave="tipOff()" onclick="pick('soma')">
@@ -658,7 +658,7 @@ body.stem-active .stem-detail {
           </g>
 
           <!-- ═══════════════════════════════════════════ -->
-          <!-- NUCLEUS — with nucleolus visible inside     -->
+          <!-- NUCLEUS - with nucleolus visible inside     -->
           <!-- ═══════════════════════════════════════════ -->
           <g class="hot" data-id="nucleus"
              onmouseenter="tip(event,'Nucleus')" onmouseleave="tipOff()" onclick="pickStop('nucleus',event)">
@@ -679,7 +679,7 @@ body.stem-active .stem-detail {
           </g>
 
           <!-- ═══════════════════════════════════════════ -->
-          <!-- NA/K PUMP — visible protein channel         -->
+          <!-- NA/K PUMP - visible protein channel         -->
           <!-- ═══════════════════════════════════════════ -->
           <g class="hot" data-id="nakpump"
              onmouseenter="tip(event,'Sodium-Potassium Pump')" onmouseleave="tipOff()" onclick="pick('nakpump')">
@@ -700,7 +700,7 @@ body.stem-active .stem-detail {
           </g>
 
           <!-- ═══════════════════════════════════════════ -->
-          <!-- AXON HILLOCK — tapered cone from soma       -->
+          <!-- AXON HILLOCK - tapered cone from soma       -->
           <!-- ═══════════════════════════════════════════ -->
           <g class="hot" data-id="axon-hillock"
              onmouseenter="tip(event,'Axon Hillock')" onmouseleave="tipOff()" onclick="pick('axon-hillock')">
@@ -717,7 +717,7 @@ body.stem-active .stem-detail {
           </g>
 
           <!-- ═══════════════════════════════════════════ -->
-          <!-- AXON — single clean tube, center y=265      -->
+          <!-- AXON - single clean tube, center y=265      -->
           <!-- ═══════════════════════════════════════════ -->
           <g class="hot" data-id="axon"
              onmouseenter="tip(event,'Axon')" onmouseleave="tipOff()" onclick="pick('axon')">
@@ -733,7 +733,7 @@ body.stem-active .stem-detail {
           </g>
 
           <!-- ═══════════════════════════════════════════ -->
-          <!-- MYELIN SHEATH — realistic wrapped segments  -->
+          <!-- MYELIN SHEATH - realistic wrapped segments  -->
           <!-- ═══════════════════════════════════════════ -->
           <g id="myelinGroup" class="hot" data-id="myelin"
              onmouseenter="tip(event,'Myelin Sheath')" onmouseleave="tipOff()" onclick="pick('myelin')">
@@ -769,7 +769,7 @@ body.stem-active .stem-detail {
           </g>
 
           <!-- ═══════════════════════════════════════════ -->
-          <!-- NODES OF RANVIER — exposed axon gaps        -->
+          <!-- NODES OF RANVIER - exposed axon gaps        -->
           <!-- ═══════════════════════════════════════════ -->
           <g class="hot" data-id="nodes"
              onmouseenter="tip(event,'Nodes of Ranvier')" onmouseleave="tipOff()" onclick="pick('nodes')">
@@ -785,7 +785,7 @@ body.stem-active .stem-detail {
           </g>
 
           <!-- ═══════════════════════════════════════════ -->
-          <!-- AXON TERMINAL — bulbous bouton              -->
+          <!-- AXON TERMINAL - bulbous bouton              -->
           <!-- ═══════════════════════════════════════════ -->
           <g class="hot" data-id="axon-terminal"
              onmouseenter="tip(event,'Axon Terminal')" onmouseleave="tipOff()" onclick="pick('axon-terminal')">
@@ -800,7 +800,7 @@ body.stem-active .stem-detail {
           </g>
 
           <!-- ═══════════════════════════════════════════ -->
-          <!-- SYNAPTIC VESICLES — clustered pods          -->
+          <!-- SYNAPTIC VESICLES - clustered pods          -->
           <!-- ═══════════════════════════════════════════ -->
           <g class="hot" data-id="vesicles"
              onmouseenter="tip(event,'Synaptic Vesicles')" onmouseleave="tipOff()" onclick="pick('vesicles')">
@@ -879,7 +879,7 @@ body.stem-active .stem-detail {
         </div>
         <div style="margin-top:0.75rem; color:var(--muted); font-size:0.82rem; line-height:1.55;">
           Sequence: resting → threshold → spike → travel → neurotransmitter release.<br>
-          <span style="color:var(--neuro); font-weight:700;">Toggle myelin on/off</span> and run the signal both ways — notice how much faster saltatory conduction is!
+          <span style="color:var(--neuro); font-weight:700;">Toggle myelin on/off</span> and run the signal both ways, notice how much faster saltatory conduction is!
         </div>
       </div>
 
@@ -1147,8 +1147,8 @@ body.stem-active .stem-detail {
     resetSignal();
 
     // ── Timing constants ──────────────────────────────────────
-    // Myelinated:   total ~1.8s  — signal jumps node-to-node fast (saltatory)
-    // Unmyelinated: total ~4.5s  — signal crawls continuously, ~2.5× slower
+    // Myelinated:   total ~1.8s  - signal jumps node-to-node fast (saltatory)
+    // Unmyelinated: total ~4.5s  - signal crawls continuously, ~2.5× slower
     const T = myelinOn
       ? { threshold:0, spike:350, n1:550, n2:800, n3:1050, release:1250, nt:1550, rest:2000 }
       : { threshold:0, spike:700, n1:1300, n2:2100, n3:2900, release:3300, nt:3800, rest:4600 };
@@ -1258,7 +1258,7 @@ body.stem-active .stem-detail {
   function showWinFromQuiz(){
     const pct = Math.round((quizCorrect / Math.max(quizDone,1))*100);
     document.getElementById('modalScore').textContent = score + ' pts';
-    const grade = pct>=90 ? `${pct}% · A+ — Neuro Master!` : pct>=75 ? `${pct}% · B — Strong Work!` : pct>=60 ? `${pct}% · C — Keep Practicing!` : `${pct}% · Keep Exploring!`;
+    const grade = pct>=90 ? `${pct}% · A+ (Neuro Master!` : pct>=75 ? `${pct}% · B) Strong Work!` : pct>=60 ? `${pct}% · C, Keep Practicing!` : `${pct}% · Keep Exploring!`;
     document.getElementById('modalGrade').textContent = grade;
     document.getElementById('winModal').classList.add('show');
   }

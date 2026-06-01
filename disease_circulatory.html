@@ -13,7 +13,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="https://lyfelabz.com/disease_circulatory.html">
 <meta name="description" content="Learn about circulatory system diseases including heart disease, hypertension, and stroke. Middle school science content aligned to MA STE standards.">
-<title>LyfeLabz | Circulatory System — Diseases &amp; Disorders</title>
+<title>LyfeLabz | Circulatory System: Diseases &amp; Disorders</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   html { font-size: 18px; }
@@ -208,7 +208,7 @@
 <style>
 /* ── Learning Science Badges ─────────────────────────────────────────
    Hidden by default; shown when body.ls-active is set via sessionStorage.
-   Educators toggle this from the index page — resets when tab is closed.
+   Educators toggle this from the index page, resets when tab is closed.
 ──────────────────────────────────────────────────────────────────── */
 .ls-focus { display:none; }
 body.ls-active .ls-focus {
@@ -374,7 +374,7 @@ body.stem-active .stem-focus {
     <div>
       <div class="header-badge"><span class="pulse-dot"></span> Circulatory System · Diseases &amp; Disorders</div>
       <h1>What Can Go Wrong? 🩺</h1>
-      <p>Pick any part of the circulatory system to see what diseases can affect it — and how a problem in one small spot can ripple all the way to how a person feels every day.</p>
+      <p>Pick any part of the circulatory system to see what diseases can affect it; and how a problem in one small spot can ripple all the way to how a person feels every day.</p>
     </div>
   </div>
 </div>
@@ -384,9 +384,9 @@ body.stem-active .stem-focus {
   <!-- Educator Mode: Learning Science badges (visible when ls-active) -->
   <div class="ls-focus">
     <span class="ls-focus-label">🔬 Learning Science Focus</span>
-    <span class="ls-badge" data-tip="Students interact with the map and choose what to explore — they drive the learning. — Freeman et al., 2014">🎯 Active Learning</span>
-    <span class="ls-badge" data-tip="Each disease is shown at three levels — part, system, person — building causal reasoning step by step. — Dunlosky et al., 2013">💬 Elaboration</span>
-    <span class="ls-badge" data-tip="Visual map + text descriptions activate two memory channels simultaneously for richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
+    <span class="ls-badge" data-tip="Students interact with the map and choose what to explore, they drive the learning. (Freeman et al., 2014)">🎯 Active Learning</span>
+    <span class="ls-badge" data-tip="Each disease is shown at three levels, part, system, person, building causal reasoning step by step. (Dunlosky et al., 2013)">💬 Elaboration</span>
+    <span class="ls-badge" data-tip="Visual map + text descriptions activate two memory channels simultaneously for richer recall. (Noetel et al., 2022)">🖼️ Dual Coding</span>
     <span class="ls-badge" data-tip="Severity indicators and ripple framing make abstract concepts like disease progression concrete and memorable.">🔬 Concrete Examples</span>
   </div>
 
@@ -394,7 +394,7 @@ body.stem-active .stem-focus {
   <div class="stem-focus">
     <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
     <span class="stem-badge" data-tip="Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.">6.MS-LS1-3</span>
-    <span class="stem-badge" data-tip="Develop a model to describe how food is rearranged through chemical reactions — includes how nutrients and oxygen are delivered via blood.">6.MS-LS1-7</span>
+    <span class="stem-badge" data-tip="Develop a model to describe how food is rearranged through chemical reactions, includes how nutrients and oxygen are delivered via blood.">6.MS-LS1-7</span>
   </div>
 
   <div class="stat-pills">
@@ -409,7 +409,7 @@ body.stem-active .stem-focus {
     <!-- MAP -->
     <div class="map-panel">
       <div class="map-panel-hd">
-        <span class="map-panel-title">THE CIRCULATORY SYSTEM MAP — CLICK ANY NODE TO EXPLORE</span>
+        <span class="map-panel-title">THE CIRCULATORY SYSTEM MAP, CLICK ANY NODE TO EXPLORE</span>
       </div>
       <div class="map-body">
         <canvas id="map-canvas"></canvas>
@@ -423,14 +423,14 @@ body.stem-active .stem-focus {
     <!-- INFO PANEL -->
     <div class="info-panel">
 
-      <!-- IDLE STATE — shown until student clicks a node -->
+      <!-- IDLE STATE - shown until student clicks a node -->
       <div class="i-idle" id="idle-state">
         <span class="i-idle-icon">🫀</span>
         <div class="i-idle-title">Select a Node</div>
-        <div class="i-idle-desc">Click any organ or structure on the map to learn about its diseases — and how a problem there ripples through the whole body.</div>
+        <div class="i-idle-desc">Click any organ or structure on the map to learn about its diseases; and how a problem there ripples through the whole body.</div>
       </div>
 
-      <!-- INFO CARD — revealed on click -->
+      <!-- INFO CARD - revealed on click -->
       <div class="i-card" id="info-card">
         <div class="i-card-hd">
           <div class="i-card-sys"><span class="pulse-dot"></span> Circulatory System</div>
@@ -489,7 +489,7 @@ body.stem-active .stem-focus {
 
 <script>
 /* ─────────────────────────────────────────────────────────────────────────
-   DATA — all descriptions written at 6th-grade reading level
+   DATA, all descriptions written at 6th-grade reading level
    Each organ has: name, desc, quickfact, diseases[]
    Each disease has: name, sev (high/med/low), l1/l2/l3 {t, b}
    l1 = What Goes Wrong (the part itself)
@@ -500,34 +500,34 @@ const DATA = {
 
   heart:{
     name:"Heart",
-    desc:"The body's pump — it beats about 100,000 times a day to push blood to every cell in your body.",
-    quickfact:"Your heart is about the size of your fist and beats around 100,000 times every single day — that's over 35 million times a year!",
+    desc:"The body's pump; it beats about 100,000 times a day to push blood to every cell in your body.",
+    quickfact:"Your heart is about the size of your fist and beats around 100,000 times every single day, that's over 35 million times a year!",
     diseases:[
       {name:"Heart Failure",sev:"high",
-        l1:{t:"The Heart Pump Gets Weak",b:"The heart muscle becomes too weak to squeeze hard enough. Think of it like a pump with a dying battery — it's still working, but barely moving blood with each beat."},
+        l1:{t:"The Heart Pump Gets Weak",b:"The heart muscle becomes too weak to squeeze hard enough. Think of it like a pump with a dying battery, it's still working, but barely moving blood with each beat."},
         l2:{t:"Blood Backs Up in the Body",b:"Because the heart can't pump fast enough, blood starts backing up into the lungs and body like a traffic jam. The lungs can fill with fluid and other organs don't get enough oxygen."},
         l3:{t:"Always Tired & Out of Breath",b:"You feel exhausted all the time, even doing small things. Climbing stairs feels impossible, and your legs and ankles can swell up with extra fluid."}},
       {name:"Heart Attack",sev:"high",
-        l1:{t:"Part of the Heart Loses Its Blood Supply",b:"A blood clot completely blocks one of the small arteries that feeds the heart muscle. Without blood, that section of the heart starts to die — like a plant wilting without water."},
+        l1:{t:"Part of the Heart Loses Its Blood Supply",b:"A blood clot completely blocks one of the small arteries that feeds the heart muscle. Without blood, that section of the heart starts to die, like a plant wilting without water."},
         l2:{t:"The Damaged Area Stops Helping",b:"The dead section can't contract anymore, so the rest of the heart has to work extra hard. That extra strain can cause dangerous irregular rhythms and even more damage."},
         l3:{t:"Crushing Chest Pain & Emergency",b:"Classic signs include severe chest pain (often described as someone sitting on your chest), pain in the arm or jaw, sweating, and feeling faint. This is always a 911 emergency."}},
       {name:"Arrhythmia",sev:"med",
-        l1:{t:"The Heart's Electrical System Gets Scrambled",b:"Your heart beats because of electrical signals. When those signals get out of order, the heart may beat too fast, too slow, or in a completely random pattern — it loses its rhythm."},
+        l1:{t:"The Heart's Electrical System Gets Scrambled",b:"Your heart beats because of electrical signals. When those signals get out of order, the heart may beat too fast, too slow, or in a completely random pattern; it loses its rhythm."},
         l2:{t:"Blood Pumping Becomes Less Efficient",b:"When the heart doesn't beat in the right rhythm, it doesn't fill and empty properly. In some types, blood can pool inside the heart and form dangerous clots."},
         l3:{t:"Fluttering, Dizziness & Fainting",b:"You might feel your heart fluttering, skipping beats, or pounding. You could feel dizzy or even pass out. Some arrhythmias can increase the risk of stroke."}},
     ]},
 
   lungs:{
     name:"Pulmonary Circulation",
-    desc:"The short blood pathway from the heart to the lungs and back — this is where blood picks up oxygen and drops off carbon dioxide.",
-    quickfact:"Blood makes the entire trip from your heart to your lungs and back in less than one second — it's one of the fastest parts of the whole blood circuit!",
+    desc:"The short blood pathway from the heart to the lungs and back; this is where blood picks up oxygen and drops off carbon dioxide.",
+    quickfact:"Blood makes the entire trip from your heart to your lungs and back in less than one second, it's one of the fastest parts of the whole blood circuit!",
     diseases:[
       {name:"Pulmonary Hypertension",sev:"high",
         l1:{t:"Blood Vessels in the Lungs Get Too Narrow",b:"The small blood vessels inside the lungs slowly get stiff and narrow, making it really hard for blood to flow through. It's like trying to squeeze water through a crimped garden hose."},
         l2:{t:"The Right Side of the Heart Gets Overworked",b:"The right side of the heart has to push much harder to force blood through the narrow lung vessels. Over time, all that extra work causes the right side of the heart to weaken and eventually fail."},
         l3:{t:"Breathless Even at Rest",b:"Even gentle walking causes severe shortness of breath. Lips and fingertips may turn bluish from lack of oxygen. This condition seriously limits what a person can do each day."}},
       {name:"Pulmonary Embolism",sev:"high",
-        l1:{t:"A Blood Clot Gets Stuck in the Lung",b:"A blood clot — usually formed in a leg vein — breaks loose, travels through the bloodstream, and gets lodged inside a blood vessel in the lung. That section of the lung is cut off."},
+        l1:{t:"A Blood Clot Gets Stuck in the Lung",b:"A blood clot (usually formed in a leg vein) breaks loose, travels through the bloodstream, and gets lodged inside a blood vessel in the lung. That section of the lung is cut off."},
         l2:{t:"The Blocked Lung Area Can't Exchange Oxygen",b:"The blocked area receives air but no blood, so no oxygen can be absorbed. The heart has to strain hard to push blood through, and blood pressure can crash suddenly."},
         l3:{t:"Sudden Sharp Chest Pain & Emergency",b:"Symptoms hit fast: sharp chest pain, very rapid breathing, coughing up blood, and a racing heart. A large PE can cause a person to collapse. This is always a medical emergency."}}
     ]},
@@ -535,31 +535,31 @@ const DATA = {
   arteries:{
     name:"Arteries & Aorta",
     desc:"Thick, strong blood vessels that carry oxygen-rich blood away from the heart to every part of your body.",
-    quickfact:"If you laid all your arteries end to end, they would stretch over 25,000 miles — nearly enough to circle the Earth!",
+    quickfact:"If you laid all your arteries end to end, they would stretch over 25,000 miles, nearly enough to circle the Earth!",
     diseases:[
       {name:"Atherosclerosis",sev:"high",
-        l1:{t:"Fatty Deposits Clog the Artery Walls",b:"Over time, fatty substances called plaques build up inside the artery walls, making them narrow and stiff — like gunk building up inside a pipe. Blood has less room to flow through."},
+        l1:{t:"Fatty Deposits Clog the Artery Walls",b:"Over time, fatty substances called plaques build up inside the artery walls, making them narrow and stiff, like gunk building up inside a pipe. Blood has less room to flow through."},
         l2:{t:"Organs Downstream Get Less Blood",b:"With less blood getting through, organs and muscles don't receive enough oxygen. If a plaque breaks open, a clot can form instantly and completely block the artery."},
         l3:{t:"Heart Attack, Stroke, or Leg Pain",b:"Depending on which artery is clogged: a heart attack (heart arteries), a stroke (brain arteries), or painful cramping in the legs that doesn't heal. Atherosclerosis is the leading cause of death worldwide."}},
       {name:"Hypertension",sev:"med",
-        l1:{t:"Too Much Pressure Inside the Arteries",b:"Blood pressure stays dangerously high all the time — like water pressure that's turned up way too strong. This slowly damages the inside walls of arteries throughout the whole body."},
-        l2:{t:"Heart and Kidneys Have to Work Harder",b:"The heart has to pump against that high pressure, causing the heart wall to thicken. The kidneys — which help control blood pressure — get damaged too, making the problem even worse."},
-        l3:{t:"Usually No Warning — Until Something Breaks",b:"Hypertension almost never causes symptoms, which is why it's called the 'silent killer.' It can go unnoticed for years until it causes a stroke, heart attack, or kidney failure."}},
+        l1:{t:"Too Much Pressure Inside the Arteries",b:"Blood pressure stays dangerously high all the time, like water pressure that's turned up way too strong. This slowly damages the inside walls of arteries throughout the whole body."},
+        l2:{t:"Heart and Kidneys Have to Work Harder",b:"The heart has to pump against that high pressure, causing the heart wall to thicken. The kidneys (which help control blood pressure) get damaged too, making the problem even worse."},
+        l3:{t:"Usually No Warning, Until Something Breaks",b:"Hypertension almost never causes symptoms, which is why it's called the 'silent killer.' It can go unnoticed for years until it causes a stroke, heart attack, or kidney failure."}},
       {name:"Aortic Aneurysm",sev:"high",
         l1:{t:"A Section of the Main Artery Balloons Outward",b:"A weak spot in the aorta (the body's biggest artery) slowly stretches and bulges outward like an overfilled balloon. It can grow for years without causing any pain."},
         l2:{t:"If It Bursts, Blood Pressure Instantly Collapses",b:"A rupture causes massive internal bleeding in seconds. Blood pressure drops to near zero almost instantly and every organ in the body loses its blood supply all at once."},
-        l3:{t:"Silent — Until a Life-Threatening Rupture",b:"Most people have no symptoms at all — until it ruptures, which is almost always fatal without emergency surgery. This is why doctors screen for it in high-risk patients."}}
+        l3:{t:"Silent, Until a Life-Threatening Rupture",b:"Most people have no symptoms at all, until it ruptures, which is almost always fatal without emergency surgery. This is why doctors screen for it in high-risk patients."}}
     ]},
 
   veins:{
     name:"Veins & Venous System",
     desc:"Blood vessels that carry used blood back to the heart. Veins have tiny one-way valves to keep blood moving in the right direction.",
-    quickfact:"Veins have tiny flap-like valves inside them — like a turnstile — that keep blood from flowing backwards. Without them, gravity would pull all your blood down to your feet!",
+    quickfact:"Veins have tiny flap-like valves inside them (like a turnstile) that keep blood from flowing backwards. Without them, gravity would pull all your blood down to your feet!",
     diseases:[
       {name:"Deep Vein Thrombosis (DVT)",sev:"med",
         l1:{t:"A Blood Clot Forms Deep in a Leg Vein",b:"A clot develops inside one of the large veins deep in the leg, usually because blood is moving too slowly or the vein wall got injured. It blocks blood from returning to the heart normally."},
-        l2:{t:"The Clot Can Break Off and Travel to the Lungs",b:"If the clot breaks loose, it can ride through the bloodstream straight to the lungs — causing a pulmonary embolism, which can be immediately life-threatening."},
-        l3:{t:"Swollen, Red, Painful Leg",b:"One leg becomes swollen, warm, and painful — especially when walking. DVT is treated as a medical emergency because of the lung clot risk, even though the leg symptoms might seem mild."}},
+        l2:{t:"The Clot Can Break Off and Travel to the Lungs",b:"If the clot breaks loose, it can ride through the bloodstream straight to the lungs, causing a pulmonary embolism, which can be immediately life-threatening."},
+        l3:{t:"Swollen, Red, Painful Leg",b:"One leg becomes swollen, warm, and painful, especially when walking. DVT is treated as a medical emergency because of the lung clot risk, even though the leg symptoms might seem mild."}},
       {name:"Chronic Venous Insufficiency",sev:"low",
         l1:{t:"Vein Valves Stop Working Properly",b:"The one-way valves inside leg veins weaken and stop keeping blood moving upward. Blood starts pooling in the lower legs under the pull of gravity."},
         l2:{t:"Pressure Builds Up in the Leg Veins",b:"The backed-up blood causes higher pressure in the leg veins. Fluid leaks out into the surrounding tissue over time, causing swelling and damage to the skin."},
@@ -568,12 +568,12 @@ const DATA = {
 
   capillaries:{
     name:"Capillaries",
-    desc:"Tiny microscopic blood vessels — so narrow only one red blood cell can pass at a time. This is where oxygen and nutrients are actually delivered to cells.",
+    desc:"Tiny microscopic blood vessels; so narrow only one red blood cell can pass at a time. This is where oxygen and nutrients are actually delivered to cells.",
     quickfact:"Capillaries are so incredibly thin that red blood cells must squeeze through them single-file! If you unraveled all the capillaries in your body, they'd stretch about 25,000 miles.",
     diseases:[
       {name:"Diabetic Microangiopathy",sev:"high",
         l1:{t:"High Blood Sugar Slowly Damages Tiny Vessels",b:"In people with diabetes, having too much sugar in the blood for too long slowly destroys the walls of capillaries. The damaged walls become thicker but let things leak through that shouldn't."},
-        l2:{t:"Critical Organs Stop Getting Enough Oxygen",b:"The damaged capillaries can't deliver enough oxygen. This happens all over the body at once — in the eyes, kidneys, and nerves — causing problems in all three places at the same time."},
+        l2:{t:"Critical Organs Stop Getting Enough Oxygen",b:"The damaged capillaries can't deliver enough oxygen. This happens all over the body at once (in the eyes, kidneys, and nerves) causing problems in all three places at the same time."},
         l3:{t:"Blindness, Kidney Failure & Nerve Damage",b:"Damaged eye capillaries can cause blindness (diabetic retinopathy). Kidney capillaries failing leads to kidney failure. Nerve damage causes painful numbness in the hands and feet."}},
       {name:"Capillary Leak Syndrome",sev:"high",
         l1:{t:"Capillary Walls Suddenly Become Leaky",b:"Without warning, capillary walls throughout the body become extremely leaky, allowing fluid and proteins to pour out of the bloodstream into the surrounding tissues."},
@@ -583,11 +583,11 @@ const DATA = {
 
   blood:{
     name:"Blood",
-    desc:"The body's transport liquid — it carries oxygen, nutrients, and hormones to cells, and picks up waste products to be cleaned out.",
+    desc:"The body's transport liquid; it carries oxygen, nutrients, and hormones to cells, and picks up waste products to be cleaned out.",
     quickfact:"Your body has about 5 liters of blood (roughly a large soda bottle's worth), and it completes a full circuit through your entire body in about 60 seconds!",
     diseases:[
       {name:"Anemia",sev:"med",
-        l1:{t:"Not Enough Red Blood Cells to Carry Oxygen",b:"Red blood cells are the body's oxygen delivery trucks. Anemia happens when there aren't enough of them — from low iron, blood loss, or the cells breaking down too fast. Less oxygen gets delivered."},
+        l1:{t:"Not Enough Red Blood Cells to Carry Oxygen",b:"Red blood cells are the body's oxygen delivery trucks. Anemia happens when there aren't enough of them: from low iron, blood loss, or the cells breaking down too fast. Less oxygen gets delivered."},
         l2:{t:"The Heart Works Overtime to Compensate",b:"The heart beats faster and harder trying to get enough oxygen to the body despite having fewer red blood cells. This extra strain on the heart can eventually cause serious problems."},
         l3:{t:"Exhausted, Pale & Out of Breath",b:"You feel constantly tired, look pale, have trouble concentrating at school, and get short of breath during even easy activities like walking across a room. Everything feels harder than it should."}},
       {name:"Sickle Cell Disease",sev:"high",
@@ -595,7 +595,7 @@ const DATA = {
         l2:{t:"Stuck Cells Block Blood Flow & Break Down Early",b:"Sickle-shaped cells clog tiny blood vessels, cutting off oxygen to tissues and causing severe pain. They also wear out and break down much faster than normal cells, causing chronic anemia."},
         l3:{t:"Severe Pain Crises, Stroke Risk & Organ Damage",b:"Episodes of intense pain (called pain crises) can last for days. Risk of stroke is much higher than normal. Over time, organs like the kidneys, spleen, and liver are slowly damaged."}},
       {name:"Polycythemia",sev:"med",
-        l1:{t:"Too Many Red Blood Cells — Blood Gets Too Thick",b:"The body produces way too many red blood cells, making the blood as thick as syrup instead of its normal watery consistency. Thick blood moves much more slowly through vessels."},
+        l1:{t:"Too Many Red Blood Cells, Blood Gets Too Thick",b:"The body produces way too many red blood cells, making the blood as thick as syrup instead of its normal watery consistency. Thick blood moves much more slowly through vessels."},
         l2:{t:"Clots Form More Easily & the Heart Strains",b:"Slow, thick blood is far more likely to form dangerous clots that can block arteries. The heart also has to push much harder to move thick blood, increasing its workload significantly."},
         l3:{t:"Flushed Face, Headaches & Clot Risk",b:"The face looks permanently reddish-flushed. Frequent headaches, itchy skin (especially after bathing), and a high risk of stroke and dangerous blood clots that require ongoing medical management."}}
     ]},
@@ -603,31 +603,31 @@ const DATA = {
   coronary:{
     name:"Coronary Vessels",
     desc:"Small but critical arteries that wrap around the outside of the heart and supply the heart muscle itself with the blood it needs to keep beating.",
-    quickfact:"The coronary arteries are only about as wide as a drinking straw — but they're responsible for keeping the hardest-working muscle in your entire body alive and pumping!",
+    quickfact:"The coronary arteries are only about as wide as a drinking straw; but they're responsible for keeping the hardest-working muscle in your entire body alive and pumping!",
     diseases:[
       {name:"Coronary Artery Disease",sev:"high",
         l1:{t:"Plaques Slowly Narrow the Heart's Own Arteries",b:"Fatty plaques build up inside the small arteries that feed the heart muscle, making them narrower over years. The heart muscle gets less blood, especially when it needs more during exercise."},
-        l2:{t:"The Heart Muscle Gets Starved During Exercise",b:"When you exercise, your heart needs more blood — but the narrowed coronary arteries can't deliver it. The oxygen-starved heart muscle struggles to contract properly during exertion."},
+        l2:{t:"The Heart Muscle Gets Starved During Exercise",b:"When you exercise, your heart needs more blood; but the narrowed coronary arteries can't deliver it. The oxygen-starved heart muscle struggles to contract properly during exertion."},
         l3:{t:"Chest Tightness During Exercise & Heart Attack Risk",b:"Chest tightness or pressure during physical activity (called angina) that goes away with rest. If a plaque suddenly ruptures, a full heart attack can happen. CAD is the #1 cause of death worldwide."}},
       {name:"Coronary Vasospasm",sev:"med",
-        l1:{t:"A Heart Artery Suddenly Squeezes Itself Shut",b:"Without any blockage, a coronary artery temporarily clamps shut on its own, cutting off blood to part of the heart. This can happen during rest or sleep — even in young, healthy people."},
+        l1:{t:"A Heart Artery Suddenly Squeezes Itself Shut",b:"Without any blockage, a coronary artery temporarily clamps shut on its own, cutting off blood to part of the heart. This can happen during rest or sleep, even in young, healthy people."},
         l2:{t:"Temporary Oxygen Shortage Can Trigger Dangerous Rhythms",b:"The sudden blockage starves the heart muscle of oxygen, just like a blockage from a clot would. This can trigger life-threatening irregular heartbeats during the spasm."},
-        l3:{t:"Chest Pain at Rest & Risk of Cardiac Arrest",b:"Chest pain that hits while sitting still or sleeping — not during exercise. Can cause cardiac arrest in young people who appear completely healthy. It often goes undetected by standard tests."}}
+        l3:{t:"Chest Pain at Rest & Risk of Cardiac Arrest",b:"Chest pain that hits while sitting still or sleeping, not during exercise. Can cause cardiac arrest in young people who appear completely healthy. It often goes undetected by standard tests."}}
     ]},
 
   plasma:{
     name:"Plasma",
-    desc:"The pale yellow liquid part of blood — it makes up over half of your blood's volume and carries proteins, hormones, and nutrients.",
-    quickfact:"Plasma is about 92% water — but that watery liquid is what carries all the proteins, hormones, nutrients, and clotting factors that keep your body running!",
+    desc:"The pale yellow liquid part of blood; it makes up over half of your blood's volume and carries proteins, hormones, and nutrients.",
+    quickfact:"Plasma is about 92% water; but that watery liquid is what carries all the proteins, hormones, nutrients, and clotting factors that keep your body running!",
     diseases:[
       {name:"Hypoproteinemia",sev:"med",
         l1:{t:"Not Enough Proteins in the Blood",b:"Plasma normally contains proteins (especially albumin) that act like sponges, keeping fluid inside the blood vessels. When protein levels drop too low, that fluid leaks out into surrounding tissues."},
         l2:{t:"Fluid Leaves the Blood and Builds Up in Tissues",b:"Without enough proteins to hold fluid in, blood volume drops. Circulation weakens and the heart has less to pump. Meanwhile, the escaped fluid causes swelling throughout the body."},
         l3:{t:"Swollen Body, Weakness & Frequent Infections",b:"Swelling appears in the belly, legs, and even the lungs. The person feels weak, gets sick more often (because immune proteins are also low), and wounds heal very slowly."}},
       {name:"DIC (Blood Clotting Emergency)",sev:"high",
-        l1:{t:"Clotting Factors Get Used Up All at Once",b:"A serious illness causes the blood to start clotting everywhere throughout the whole body at once. This uses up all the clotting factors — so now the blood can't clot anywhere it actually needs to."},
+        l1:{t:"Clotting Factors Get Used Up All at Once",b:"A serious illness causes the blood to start clotting everywhere throughout the whole body at once. This uses up all the clotting factors; so now the blood can't clot anywhere it actually needs to."},
         l2:{t:"Tiny Clots Block Organs While Blood Pours Out",b:"Microscopic clots block blood flow in vessels throughout every organ. At the same time, the lack of clotting factors means the person bleeds uncontrollably from every wound and IV site."},
-        l3:{t:"Multi-Organ Failure — One of the Most Dangerous Conditions",b:"Patients bleed from their IV sites, gums, and internally, while kidneys, lungs, and liver start shutting down simultaneously. DIC requires emergency intensive care and has a very high mortality rate."}},
+        l3:{t:"Multi-Organ Failure, One of the Most Dangerous Conditions",b:"Patients bleed from their IV sites, gums, and internally, while kidneys, lungs, and liver start shutting down simultaneously. DIC requires emergency intensive care and has a very high mortality rate."}},
     ]}
 
 };
@@ -658,7 +658,7 @@ function setPanel(organ, dIdx) {
   else if (dis.sev === 'med') { sev.className = 'sev-badge sev-med'; sev.textContent = '🟡 Moderate Condition'; }
   else { sev.className = 'sev-badge sev-low'; sev.textContent = '🟢 Manageable Condition'; }
 
-  // Ripple blocks — reset then animate in
+  // Ripple blocks - reset then animate in
   ['r1', 'r2', 'r3'].forEach(id => document.getElementById(id).classList.remove('show'));
   const dyk = document.getElementById('dyk-card');
   dyk.classList.remove('show');
@@ -670,7 +670,7 @@ function setPanel(organ, dIdx) {
   document.getElementById('r3-title').textContent = dis.l3.t;
   document.getElementById('r3-text').textContent  = dis.l3.b;
 
-  // Did You Know fact — from organ (same for all diseases of that organ)
+  // Did You Know fact - from organ (same for all diseases of that organ)
   document.getElementById('dyk-text').textContent = d.quickfact;
 
   requestAnimationFrame(() => {
@@ -910,7 +910,7 @@ function setPanel(organ, dIdx) {
       cx.lineWidth=iH?2.5:1.8; cx.setLineDash([6,4]); cx.stroke();
       cx.setLineDash([]); cx.restore();
 
-      // flowing dots — 2 per connection, staggered by index
+      // flowing dots - 2 per connection, staggered by index
       var offset=(ci*0.37)%1;
       for(var d=0;d<2;d++){
         var tVal=((dotT + offset + d*0.50)%1);

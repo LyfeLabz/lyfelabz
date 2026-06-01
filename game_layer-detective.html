@@ -230,7 +230,7 @@
           #5c4a3a 22%,
           #4a3829 100%
         );
-      /* Subtle scene lighting — overhead light source */
+      /* Subtle scene lighting - overhead light source */
       border:1px solid rgba(255,255,255,.08);
       box-shadow:
         inset 0 0 90px rgba(0,0,0,.32),          /* vignette */
@@ -239,7 +239,7 @@
         0 4px 20px rgba(0,0,0,.4);                /* outer depth */
       transition: outline .15s ease;
     }
-    /* Lighting overlay — soft overhead illumination */
+    /* Lighting overlay - soft overhead illumination */
     .cross-wrap::before{
       content:"";
       position:absolute; inset:0; pointer-events:none; z-index:1; border-radius:24px;
@@ -261,7 +261,7 @@
           transparent 100%
         );
     }
-    /* Ground surface strip — more defined dirt/rock interface */
+    /* Ground surface strip - more defined dirt/rock interface */
     .ground-top{
       position:absolute; top:17%; left:0; right:0; height:3%; z-index:2;
       background:linear-gradient(180deg, #9a8060 0%, #6e5540 40%, #4a3829 100%);
@@ -272,7 +272,7 @@
       /* Depth: outer border + crisp top-edge highlight + subtle bottom shadow */
       border:1px solid rgba(0,0,0,.55);
       border-top-color: rgba(255,255,255,.18);
-      /* Inner depth — top highlight strip, bottom shadow strip */
+      /* Inner depth - top highlight strip, bottom shadow strip */
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,.22),
         inset 0 -2px 4px rgba(0,0,0,.28),
@@ -368,7 +368,7 @@
       position:absolute; pointer-events:none;
     }
 
-    /* Dike — igneous intrusion with a warmer mineralic tone */
+    /* Dike - igneous intrusion with a warmer mineralic tone */
     .dike{
       background:
         linear-gradient(
@@ -388,7 +388,7 @@
         inset -1px 0 0 rgba(0,0,0,.3);
       z-index:8;
     }
-    /* Lava flow — glowing orange-grey cooled lava band */
+    /* Lava flow - glowing orange-grey cooled lava band */
     .lava-flow{
       height:22px;
       background:
@@ -411,7 +411,7 @@
     .metamorph-zone{
       border:2px dotted rgba(255,255,255,.28); border-radius:999px; opacity:.8; z-index:7;
     }
-    /* ── Rock pattern classes — texture-ready ─────────────────────────
+    /* ── Rock pattern classes - texture-ready ─────────────────────────
        Each class sets a base background-color + a CSS pattern overlay.
        background-size and background-position are inherited from .rock-layer
        so dropping in a background-image later will work automatically.
@@ -962,7 +962,7 @@
         <div class="section-title">Cross-Section View</div>
         <p class="subtext" id="levelPrompt">Read the rock relationships carefully. Build the timeline from oldest to youngest.</p>
         <p class="subtext" style="margin-top:5px;color:rgba(36,232,255,.75);font-size:.84rem;font-weight:700;">
-          Drag layers from the rock formation into the timeline — or click a layer, then click a slot.
+          Drag layers from the rock formation into the timeline, or click a layer, then click a slot.
         </p>
 
         <div class="toolbar">
@@ -1029,7 +1029,7 @@
       <!-- Puzzle completion status -->
       <div class="classroom-section">
         <div class="classroom-section-title" style="color:var(--cyan);">
-          Step 1 — Complete All 5 Puzzles
+          Step 1, Complete All 5 Puzzles
         </div>
         <div class="puzzle-grid" id="puzzleGrid"></div>
         <div class="classroom-progress-bar">
@@ -1044,7 +1044,7 @@
       <!-- Quiz section -->
       <div class="classroom-section" id="classroomQuizSection">
         <div class="classroom-section-title" style="color:var(--yellow);">
-          Step 2 — Answer the Quiz
+          Step 2, Answer the Quiz
         </div>
         <div id="quizContent">
           <!-- Locked overlay shown until all 5 puzzles done -->
@@ -1063,7 +1063,7 @@
       <!-- Submit section -->
       <div class="classroom-section">
         <div class="classroom-section-title" style="color:var(--green);">
-          Step 3 — Submit Your Work
+          Step 3, Submit Your Work
         </div>
 
         <!-- Student info fields (Classroom Mode only) -->
@@ -1116,17 +1116,17 @@
   <div class="badge-section">
     <div class="ls-focus">
       <span class="ls-focus-label">Learning Science Focus</span>
-      <span class="ls-badge" data-tip="Progressive level design builds schema one rule at a time, reducing extraneous cognitive load before introducing new complexity. — Sweller, 1988">Scaffolded Complexity</span>
-      <span class="ls-badge" data-tip="Drag-and-drop spatial manipulation creates embodied engagement — students physically construct the timeline, deepening procedural understanding. — Barsalou, 2008">Embodied Cognition</span>
-      <span class="ls-badge" data-tip="Students receive immediate corrective feedback after each check attempt, allowing them to revise reasoning in the moment — a hallmark of formative assessment. — Black & Wiliam, 1998">Immediate Feedback</span>
-      <span class="ls-badge" data-tip="The level journey creates visible progress and mastery goals — students regulate their own learning as they unlock more complex challenges. — Zimmerman, 2002">Self-Regulated Learning</span>
+      <span class="ls-badge" data-tip="Progressive level design builds schema one rule at a time, reducing extraneous cognitive load before introducing new complexity. (Sweller, 1988)">Scaffolded Complexity</span>
+      <span class="ls-badge" data-tip="Drag-and-drop spatial manipulation creates embodied engagement, students physically construct the timeline, deepening procedural understanding. (Barsalou, 2008)">Embodied Cognition</span>
+      <span class="ls-badge" data-tip="Students receive immediate corrective feedback after each check attempt, allowing them to revise reasoning in the moment, a hallmark of formative assessment. (Black & Wiliam, 1998)">Immediate Feedback</span>
+      <span class="ls-badge" data-tip="The level journey creates visible progress and mastery goals, students regulate their own learning as they unlock more complex challenges. (Zimmerman, 2002)">Self-Regulated Learning</span>
     </div>
     <div class="stem-focus">
       <span class="stem-focus-label">MA STE Standards · Grade 6–8</span>
-      <span class="stem-badge" data-tip="ESS1.C: The History of Planet Earth — rock strata and other geologic evidence support scientific explanations of Earth's history.">MS-ESS1-4</span>
-      <span class="stem-badge" data-tip="Science Practice 4: Analyzing and Interpreting Data — students analyze visual rock section evidence to construct a relative-age sequence.">SP4: Data Analysis</span>
-      <span class="stem-badge" data-tip="Science Practice 6: Constructing Explanations — students use cross-cutting relationships as evidence for ordered geologic explanations.">SP6: Explanation</span>
-      <span class="stem-badge" data-tip="Crosscutting Concept 1: Patterns — students identify patterns in rock strata position and feature relationships to determine geologic sequence.">CCC1: Patterns</span>
+      <span class="stem-badge" data-tip="ESS1.C: The History of Planet Earth, rock strata and other geologic evidence support scientific explanations of Earth's history.">MS-ESS1-4</span>
+      <span class="stem-badge" data-tip="Science Practice 4: Analyzing and Interpreting Data, students analyze visual rock section evidence to construct a relative-age sequence.">SP4: Data Analysis</span>
+      <span class="stem-badge" data-tip="Science Practice 6: Constructing Explanations, students use cross-cutting relationships as evidence for ordered geologic explanations.">SP6: Explanation</span>
+      <span class="stem-badge" data-tip="Crosscutting Concept 1: Patterns, students identify patterns in rock strata position and feature relationships to determine geologic sequence.">CCC1: Patterns</span>
     </div>
   </div>
 
@@ -1245,7 +1245,7 @@
         correct:['A','B','C','D','I','E'],
         hints:[
           'The magma intrusion cuts through older layers, so it must be younger than them.',
-          'Look at where the intrusion stops — it did not reach the top layer.',
+          'Look at where the intrusion stops; it did not reach the top layer.',
           'If a younger layer lies above the intrusion without being cut, it formed after the magma cooled.'
         ],
         story:[
@@ -1269,8 +1269,8 @@
       /* ── Level 4: Full Intrusion ─────────────────────────────────── */
       {
         id:4, name:'Full Intrusion', focus:'Cross-Cutting',
-        prompt:'In Level 4, a magma intrusion cuts through every single rock layer — all the way to the top. When an intrusion slices through everything, it must be younger than everything.',
-        lookFor:'The magma intrusion cuts through layers A, B, C, D, and E. There is no layer above it that escaped being cut. That means the intrusion is the youngest event — nothing formed after it.',
+        prompt:'In Level 4, a magma intrusion cuts through every single rock layer, all the way to the top. When an intrusion slices through everything, it must be younger than everything.',
+        lookFor:'The magma intrusion cuts through layers A, B, C, D, and E. There is no layer above it that escaped being cut. That means the intrusion is the youngest event, nothing formed after it.',
         goal:'Order all five sedimentary layers and the magma intrusion from oldest to youngest. The intrusion cuts everything, so it goes last.',
         parts:[
           { id:'A', title:'A', subtitle:'Lower shale' },
@@ -1283,12 +1283,12 @@
         correct:['A','B','C','D','E','I'],
         hints:[
           'Start with the sedimentary layers. Which is at the bottom? That one is oldest.',
-          'Now look at the intrusion — trace it from bottom to top. Does it cut through every layer, including E?',
+          'Now look at the intrusion, trace it from bottom to top. Does it cut through every layer, including E?',
           'An intrusion is always younger than every layer it cuts. If it cuts all five layers, where does it belong in the timeline?'
         ],
         story:[
           'A through E were deposited in order, one on top of the other, from oldest at the bottom to youngest at the top.',
-          'After all five layers existed, magma forced its way upward through every single one of them — A, B, C, D, and E.',
+          'After all five layers existed, magma forced its way upward through every single one of them, A, B, C, D, and E.',
           'Because intrusion I cuts all five layers, it must have happened after all of them formed. That makes I the youngest event in this rock section.'
         ],
         renderCrossSection(el){
@@ -1307,7 +1307,7 @@
       /* ── Level 5: Fault + Post-fault sediment ────────────────────── */
       {
         id:5, name:'Fault Line', focus:'Faulting',
-        prompt:'Level 5 introduces a fault that slices through older rock layers — and reveals a clue about what happened next.',
+        prompt:'Level 5 introduces a fault that slices through older rock layers; and reveals a clue about what happened next.',
         lookFor:'The fault cuts through layers A–E on both sides, so it must be younger than all of them. But look at the right side only: layer G sits above the fault zone and is not cut by it. That means G formed after the faulting was already done.',
         goal:'Order all layers and the fault event from oldest to youngest, including the post-fault sediment layer G.',
         parts:[
@@ -1322,20 +1322,20 @@
         correct:['A','B','C','D','E','F','G'],
         hints:[
           'The fault cuts through layers A–E, so F must come after all five of those layers.',
-          'Layer G only appears on the right side and is not cut by the fault — what does that tell you about when it formed?',
+          'Layer G only appears on the right side and is not cut by the fault, what does that tell you about when it formed?',
           'G was deposited on top of the already-faulted terrain. Because the fault never cut G, G must be the very youngest event.'
         ],
         story:[
           'A through E were deposited in sequence from oldest at the bottom to youngest at the top.',
           'Fault F then cut through all five existing layers, displacing the right block upward. The fault is younger than every layer it crosses.',
-          'G was deposited on top of the faulted terrain on the right side only. Because G is not cut by the fault, it must have formed after the faulting — making G the youngest event of all.'
+          'G was deposited on top of the faulted terrain on the right side only. Because G is not cut by the fault, it must have formed after the faulting, making G the youngest event of all.'
         ],
         renderCrossSection(el){
           makeBase(el);
 
           /* ── FAULT PLANE GEOMETRY ───────────────────────────────────
              The fault runs diagonally from the ground surface down to
-             the base of the section, dipping slightly to the right —
+             the base of the section, dipping slightly to the right -
              a standard normal-fault cross-section orientation.
              All coordinates are percentages of the container.
 
@@ -1348,11 +1348,11 @@
           const FBX = 61, FBY = 92;   // fault bottom
           const DISP = 11;            // vertical displacement (right block drops)
 
-          /* ── LEFT BLOCK — footwall ──────────────────────────────────
+          /* ── LEFT BLOCK - footwall ──────────────────────────────────
              Full-size transparent overlay. clip-path trims it to
              everything left of the fault plane, so each layer visually
              terminates cleanly against the fault.
-             No rotation — the strata remain geologically stable.      */
+             No rotation, the strata remain geologically stable.      */
           const leftWrap = document.createElement('div');
           leftWrap.style.cssText =
             'position:absolute;inset:0;pointer-events:none;' +
@@ -1375,11 +1375,11 @@
             leftWrap.appendChild(lyr);
           });
 
-          /* ── RIGHT BLOCK — hanging wall (displaced DOWN by DISP) ────
+          /* ── RIGHT BLOCK - hanging wall (displaced DOWN by DISP) ────
              Same clip-path approach: everything to the right of the
              fault plane. Layers share the same rock types as the left
              block but are shifted downward by DISP to show the offset.
-             No rotation — both blocks appear as solid, horizontal
+             No rotation, both blocks appear as solid, horizontal
              geologic sections separated by the fault.                 */
           const rightWrap = document.createElement('div');
           rightWrap.style.cssText =
@@ -1417,7 +1417,7 @@
           rightWrap.appendChild(gLyr);
 
           /* ── FAULT PLANE SHADOW ─────────────────────────────────────
-             No drawn line — the fault plane is represented by the
+             No drawn line, the fault plane is represented by the
              natural separation between the two clip-path blocks.
              A soft SVG shadow traces the boundary to make it readable
              as a fault plane without adding stripes or bold graphics.  */
@@ -1441,7 +1441,7 @@
           const pillAnchorY = 27;
           const pillAnchorX = FTX + ((pillAnchorY - FTY) / (FBY - FTY)) * (FBX - FTX);
 
-          /* ── BADGES & LABELS (directly on el — unclipped) ──────────
+          /* ── BADGES & LABELS (directly on el - unclipped) ──────────
              All interactive drag/click elements live on el so their
              event handling is never affected by the clip-path wrappers. */
           addEventBadge(el, 'A', 10, 79);
@@ -1520,7 +1520,7 @@
         options: [
           "G formed before the fault, which is why the fault did not reach it",
           "G formed at the same time as the fault",
-          "G formed after the fault — it was deposited on top of the already-faulted terrain",
+          "G formed after the fault; it was deposited on top of the already-faulted terrain",
           "G is older than layers A through E"
         ],
         correct: 2
@@ -1731,7 +1731,7 @@
           qDiv.dataset.qid = q.id;
           const selected   = state.quizAnswers[q.id];
           qDiv.innerHTML   = `
-            <span class="quiz-question-num">Question ${q.id} — ${q.topic}</span>
+            <span class="quiz-question-num">Question ${q.id}, ${q.topic}</span>
             <div class="quiz-question-text">${q.text}</div>
             <div class="quiz-options">
               ${q.options.map((opt, i) => `
@@ -2055,7 +2055,7 @@
       refs.levelPrompt.textContent    = level().prompt;
     }
 
-    /* ─── LEVEL JOURNEY — single row of 6 ───────────────────────── */
+    /* ─── LEVEL JOURNEY - single row of 6 ───────────────────────── */
     function renderLevelGrid(){
       const container = refs.levelGrid;
       container.innerHTML = '';
@@ -2186,7 +2186,7 @@
       let score = 0;
       state.placements.forEach((id, idx) => { if(id === level().correct[idx]) score++; });
       if(score === level().correct.length){
-        refs.feedbackText.innerHTML = `<span class="ok">Correct.</span> You solved Level ${level().id} — every piece is in the right relative-age order.`;
+        refs.feedbackText.innerHTML = `<span class="ok">Correct.</span> You solved Level ${level().id}, every piece is in the right relative-age order.`;
         refs.timeline.querySelectorAll('.timeline-slot').forEach(slot => {
           slot.classList.add('slot-solved');
         });
@@ -2206,7 +2206,7 @@
       if(ids.includes('I')){
         const iPos = ids.indexOf('I'), aPos = ids.indexOf('A');
         if(aPos !== -1 && iPos !== -1 && iPos < aPos)
-          bits.push('The magma intrusion cuts through older rock layers, so it must come after them — not before.');
+          bits.push('The magma intrusion cuts through older rock layers, so it must come after them, not before.');
       }
       if(ids.includes('F') && level().parts.some(p => p.id === 'F' && p.subtitle.toLowerCase().includes('fault'))){
         const fPos = ids.indexOf('F'), cf = level().correct.indexOf('F');
@@ -2216,7 +2216,7 @@
         const gPos = ids.indexOf('G'), fPos = ids.indexOf('F');
         const gCorrect = level().correct.indexOf('G');
         if(fPos !== -1 && gPos !== -1 && gPos < fPos){
-          bits.push('Layer G is not cut by the fault — that means G formed after the fault already existed, not before. Move G to come after F.');
+          bits.push('Layer G is not cut by the fault; that means G formed after the fault already existed, not before. Move G to come after F.');
         } else if(gPos !== gCorrect){
           bits.push('Layer G sits on top of the faulted terrain and is not cut by the fault. It must be the very last event in the sequence.');
         }
@@ -2280,7 +2280,7 @@
         state.currentLevel += 1;
         startLevel();
       }
-      // On last level: button is disabled — this function should not be reachable,
+      // On last level: button is disabled - this function should not be reachable,
       // but guard here so no redirect ever occurs.
     }
 
@@ -2364,7 +2364,7 @@
         refs.submitSuccess.innerHTML = `Your work has been submitted! Great job, geologic detective.<br><span class="quiz-score-badge" style="margin-top:10px;">Your quiz score: ${computeQuizScore()}</span>`;
         refs.submitSuccess.style.display     = 'block';
       } catch(err) {
-        // Network failure or non-2xx response — restore button so student can retry
+        // Network failure or non-2xx response - restore button so student can retry
         refs.classroomSubmitBtn.disabled    = false;
         refs.classroomSubmitBtn.className   = 'submit-btn ready';
         refs.classroomSubmitBtn.textContent = 'Submit to Teacher';
@@ -2389,7 +2389,7 @@
     });
 
     /* ─── TEACHER / TESTING HOTKEYS ──────────────────────────────── */
-    /* Ctrl + Cmd + 1–5 (macOS) — not shown anywhere in the UI        */
+    /* Ctrl + Cmd + 1–5 (macOS) - not shown anywhere in the UI        */
     document.addEventListener('keydown', e => {
       if(!e.ctrlKey || !e.metaKey) return;
       const n = parseInt(e.key, 10);

@@ -1,4 +1,4 @@
-# Micropass 3 — Game Hero Indicator Standardization Report
+# Micropass 3: Game Hero Indicator Standardization Report
 
 **Date:** 2026-06-01
 **Scope:** Rename `.page-eyebrow` → `.hero-badge` in the four game pages identified in the audit
@@ -20,11 +20,11 @@
 
 ## Eyebrow Elements Replaced
 
-For each file, exactly two occurrences of `page-eyebrow` existed — one in CSS, one in HTML. Both were renamed to `hero-badge`. No other uses of `page-eyebrow` existed in any of these files.
+For each file, exactly two occurrences of `page-eyebrow` existed, one in CSS, one in HTML. Both were renamed to `hero-badge`. No other uses of `page-eyebrow` existed in any of these files.
 
 ### `game_cell-explorer.html`
 
-**CSS — before:**
+**CSS, before:**
 ```css
 .page-eyebrow {
   display:inline-flex; align-items:center; gap:0.5rem;
@@ -33,7 +33,7 @@ For each file, exactly two occurrences of `page-eyebrow` existed — one in CSS,
 }
 ```
 
-**CSS — after:**
+**CSS, after:**
 ```css
 .hero-badge {
   display:inline-flex; align-items:center; gap:0.5rem;
@@ -43,44 +43,44 @@ For each file, exactly two occurrences of `page-eyebrow` existed — one in CSS,
 ```
 *(Alpha values tightened from 0.1/0.3 → 0.12/0.42 to match the canonical game badge standard set in Micropass 1.)*
 
-**HTML — before:** `<div class="page-eyebrow">Game</div>`
-**HTML — after:** `<div class="hero-badge">Game</div>`
+**HTML, before:** `<div class="page-eyebrow">Game</div>`
+**HTML, after:** `<div class="hero-badge">Game</div>`
 
 ---
 
 ### `game_evolution-clicker.html`
 
-**CSS — before:** `.page-eyebrow{ … rgba(61,220,132,0.12) / #3ddc84 }`
-**CSS — after:** `.hero-badge{ … rgba(61,220,132,0.12) / #3ddc84 }`
+**CSS, before:** `.page-eyebrow{ … rgba(61,220,132,0.12) / #3ddc84 }`
+**CSS, after:** `.hero-badge{ … rgba(61,220,132,0.12) / #3ddc84 }`
 
-**HTML — before:** `<div class="page-eyebrow">Game</div>`
-**HTML — after:** `<div class="hero-badge">Game</div>`
+**HTML, before:** `<div class="page-eyebrow">Game</div>`
+**HTML, after:** `<div class="hero-badge">Game</div>`
 
 ---
 
 ### `game_fossil-hunt.html`
 
-**CSS — before:** `.page-eyebrow { … rgba(61,220,132,.12) / #3ddc84 }`
-**CSS — after:** `.hero-badge { … rgba(61,220,132,.12) / #3ddc84 }`
+**CSS, before:** `.page-eyebrow { … rgba(61,220,132,.12) / #3ddc84 }`
+**CSS, after:** `.hero-badge { … rgba(61,220,132,.12) / #3ddc84 }`
 
-**HTML — before:** `<div class="page-eyebrow">Game</div>`
-**HTML — after:** `<div class="hero-badge">Game</div>`
+**HTML, before:** `<div class="page-eyebrow">Game</div>`
+**HTML, after:** `<div class="hero-badge">Game</div>`
 
 ---
 
 ### `game_layer-detective.html`
 
-**CSS — before:** `.page-eyebrow{ … rgba(61,220,132,.12) / #3ddc84 }`
-**CSS — after:** `.hero-badge{ … rgba(61,220,132,.12) / #3ddc84 }`
+**CSS, before:** `.page-eyebrow{ … rgba(61,220,132,.12) / #3ddc84 }`
+**CSS, after:** `.hero-badge{ … rgba(61,220,132,.12) / #3ddc84 }`
 
-**HTML — before:** `<div class="page-eyebrow">Game</div>`
-**HTML — after:** `<div class="hero-badge">Game</div>`
+**HTML, before:** `<div class="page-eyebrow">Game</div>`
+**HTML, after:** `<div class="hero-badge">Game</div>`
 
 ---
 
 ## Hero Badge Elements Added
 
-No new elements were created. The existing `<div>` element was reclassified from `page-eyebrow` to `hero-badge` in all four files. The element, its text content ("Game"), its position in the DOM (directly above `<h1>`), and all visual styling were preserved — only the class name changed.
+No new elements were created. The existing `<div>` element was reclassified from `page-eyebrow` to `hero-badge` in all four files. The element, its text content ("Game"), its position in the DOM (directly above `<h1>`), and all visual styling were preserved (only the class name changed.
 
 ---
 
@@ -113,10 +113,10 @@ All 8 game pages now use the standard `.hero-badge` pattern:
 
 **None** affecting the hero type indicator.
 
-**Note — orphaned `.page-eyebrow` CSS rules in two files:**
+**Note, orphaned `.page-eyebrow` CSS rules in two files:**
 
-- `game_cellular-showdown.html` — line 89 contains a `.page-eyebrow` CSS rule (teal, `var(--phys)`) with **no corresponding HTML element**. It is dead/unused CSS, a remnant from an earlier build. The actual hero indicator is `.hero-badge` (green, correct). Out of scope for this pass.
-- `game_is-it-alive.html` — line 89 contains a `.page-eyebrow` CSS rule (green, `var(--bio)`) with **no corresponding HTML element**. Same situation — dead CSS. The actual hero indicator is `.hero-badge` (green, correct).
+- `game_cellular-showdown.html`, line 89 contains a `.page-eyebrow` CSS rule (teal, `var(--phys)`) with **no corresponding HTML element**. It is dead/unused CSS, a remnant from an earlier build. The actual hero indicator is `.hero-badge` (green, correct). Out of scope for this pass.
+- `game_is-it-alive.html`, line 89 contains a `.page-eyebrow` CSS rule (green, `var(--bio)`) with **no corresponding HTML element**. Same situation, dead CSS. The actual hero indicator is `.hero-badge` (green, correct).
 
 These orphaned rules are harmless and can be cleaned up in a future CSS housekeeping pass.
 
@@ -125,9 +125,9 @@ These orphaned rules are harmless and can be cleaned up in a future CSS housekee
 ## Accessibility
 
 No regressions introduced:
-- The renamed `<div class="hero-badge">` carries the same visible text ("Game") as before — screen readers read the text content directly, not the class name
+- The renamed `<div class="hero-badge">` carries the same visible text ("Game") as before, screen readers read the text content directly, not the class name
 - No `role`, `aria-*`, or `tabindex` attributes were present on any `page-eyebrow` element; none were added or removed
-- Keyboard navigation is unaffected — these are non-interactive display-only elements
+- Keyboard navigation is unaffected, these are non-interactive display-only elements
 
 ---
 
@@ -141,6 +141,6 @@ No regressions introduced:
 
 ## Next Recommended Pass
 
-**Micropass 4 — Continuation Card `lesson` Color Fix**
+**Micropass 4, Continuation Card `lesson` Color Fix**
 
 Two lesson files (`lesson_sun-earth-moon.html`, `lesson_continental-drift.html`) define `.cont-card.lesson` using grey-blue (`rgba(122,143,166,…)`) instead of the canonical lesson gold. Update background, border, top-stripe gradient, and hover state to match the gold standard.

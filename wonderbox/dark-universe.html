@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Dark Universe — Wonder Box</title>
+<title>The Dark Universe: Wonder Box</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Fira+Code:wght@300;400&family=Syne:wght@700;800&family=Syne+Mono&display=swap');
 
@@ -64,10 +64,10 @@
     --void:       #020408;
     --white:      #f0f4ff;
     --cyan:       #00e5ff;
-    --dark-mat:   #c084fc;   /* vivid purple — dark matter */
-    --dark-en:    #fb923c;   /* vivid orange — dark energy */
-    --bary:       #4ade80;   /* vivid green  — baryonic/visible matter */
-    --expand:     #f43f5e;   /* vivid red-pink — expansion */
+    --dark-mat:   #c084fc;   /* vivid purple - dark matter */
+    --dark-en:    #fb923c;   /* vivid orange - dark energy */
+    --bary:       #4ade80;   /* vivid green  - baryonic/visible matter */
+    --expand:     #f43f5e;   /* vivid red-pink - expansion */
     --gold:       #ffd166;
   }
 
@@ -193,7 +193,7 @@
     font-style: italic;
   }
 
-  /* ===== CONTROLS — pill + toggle switch ===== */
+  /* ===== CONTROLS - pill + toggle switch ===== */
   #controls {
     position: fixed;
     top: 144px;
@@ -297,7 +297,7 @@
     box-shadow: 0 0 6px #facc15;
   }
 
-  /* expansion note — below controls on right */
+  /* expansion note - below controls on right */
   #expansion-note {
     position: fixed;
     right: 20px;
@@ -320,7 +320,7 @@
     line-height: 1.6;
   }
 
-  /* ===== LEARN PANEL — left column in bottom-left ===== */
+  /* ===== LEARN PANEL - left column in bottom-left ===== */
   #learn-panel {
     width: 240px;
     display: flex;
@@ -420,7 +420,7 @@
     height: 190px;
   }
 
-  /* ===== INFO CARDS — hidden ===== */
+  /* ===== INFO CARDS - hidden ===== */
   #info { display: none; }
 
 </style>
@@ -462,7 +462,7 @@
 <div id="equations">
   <div class="eq-intro">
     <strong>The Cosmic Budget</strong>
-    The universe has a total energy "budget" that adds up to 1 (or 100%). These equations describe how it's divided — and how it moves.
+    The universe has a total energy "budget" that adds up to 1 (or 100%). These equations describe how it's divided, and how it moves.
   </div>
 
   <div class="eq active" id="eq0">
@@ -495,7 +495,7 @@
   </div>
 
   <div class="eq-conclusion">
-    95% of the universe is invisible to us. The math describes it — but we still don't know what it's made of.
+    95% of the universe is invisible to us. The math describes it, but we still don't know what it's made of.
   </div>
 </div>
 
@@ -544,10 +544,10 @@
   </div>
 </div>
 
-<!-- expansion note sits below controls — position set dynamically -->
+<!-- expansion note sits below controls - position set dynamically -->
 <div id="expansion-note">
   <div class="note-label">↔ Space is expanding</div>
-  <div class="note-text">The arrows show galaxies moving apart — not through space, but because space itself is stretching.</div>
+  <div class="note-text">The arrows show galaxies moving apart, not through space, but because space itself is stretching.</div>
 </div>
 
 <!-- ===== BOTTOM LEFT: learn accordions + pie ===== -->
@@ -564,7 +564,7 @@
         <span class="learn-chevron">▾</span>
       </div>
       <div class="learn-body"><div class="learn-body-inner">
-        Invisible — no light, no radio waves, nothing. But we know it's there because galaxies spin faster than visible matter alone can explain. It makes up ~27% of everything.
+        Invisible: no light, no radio waves, nothing. But we know it's there because galaxies spin faster than visible matter alone can explain. It makes up ~27% of everything.
       </div></div>
     </div>
 
@@ -577,7 +577,7 @@
         <span class="learn-chevron">▾</span>
       </div>
       <div class="learn-body"><div class="learn-body-inner">
-        The universe isn't just expanding — it's speeding up. Something is pushing space apart faster and faster. We call it dark energy. Nobody knows what it is. ~68% of everything.
+        The universe isn't just expanding; it's speeding up. Something is pushing space apart faster and faster. We call it dark energy. Nobody knows what it is. ~68% of everything.
       </div></div>
     </div>
 
@@ -603,7 +603,7 @@
         <span class="learn-chevron">▾</span>
       </div>
       <div class="learn-body"><div class="learn-body-inner">
-        Galaxies aren't flying through space — space itself is growing. Like dots on an inflating balloon: every dot moves away from every other dot.
+        Galaxies aren't flying through space; space itself is growing. Like dots on an inflating balloon: every dot moves away from every other dot.
       </div></div>
     </div>
 
@@ -866,7 +866,7 @@ function draw() {
       const gx = cx + Math.cos(g.angle) * g.radius;
       const gy = cy + Math.sin(g.angle) * g.radius * 0.55;
 
-      // galaxy glow — brighter radius
+      // galaxy glow - brighter radius
       const gGlow = ctx.createRadialGradient(gx, gy, 0, gx, gy, g.size * 7);
       gGlow.addColorStop(0, g.color.replace('hsl', 'hsla').replace(')', `, ${g.alpha * 0.9})`));
       gGlow.addColorStop(0.5, g.color.replace('hsl', 'hsla').replace(')', `, ${g.alpha * 0.3})`));
@@ -876,7 +876,7 @@ function draw() {
       ctx.arc(gx, gy, g.size * 7, 0, Math.PI * 2);
       ctx.fill();
 
-      // spiral arms — brighter dots
+      // spiral arms - brighter dots
       for (let arm = 0; arm < g.arms; arm++) {
         const armAngle = g.phase + (arm / g.arms) * Math.PI * 2;
         for (let s = 0; s < 14; s++) {
@@ -1041,7 +1041,7 @@ canvas.addEventListener('mousemove', e => {
     if (d < minD) { minD = d; closest = g; }
   });
   if (closest && show.bary) {
-    tip.textContent = 'Baryonic galaxy — stars, gas, and dust. Makes up ~5% of the universe.';
+    tip.textContent = 'Baryonic galaxy: stars, gas, and dust. Makes up ~5% of the universe.';
     tip.style.left  = (e.clientX + 14) + 'px';
     tip.style.top   = (e.clientY - 20) + 'px';
     tip.classList.add('show');

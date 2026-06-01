@@ -491,7 +491,7 @@
   .cosmic-fill{ height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg,var(--purple),var(--yellow)); transition:width .3s ease; }
   .cosmic-evo-val{ font-size:13px; font-weight:900; color:var(--purple); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
 
-  /* Next evo bar — cosmic mode */
+  /* Next evo bar - cosmic mode */
   .next-evo-area.cosmic-mode .bar-label{ color:var(--purple); }
 
   /* ── FOOTER ─────────────────────────────────────────── */
@@ -697,7 +697,7 @@
         <div class="progress-bar"><div class="progress-fill" id="discoveryProgressFill"></div></div>
       </div>
 
-      <!-- Cosmic Path — visible only after Transcendence -->
+      <!-- Cosmic Path - visible only after Transcendence -->
       <div class="cosmic-path-section" id="cosmicPathSection">
         <div class="cosmic-section-title">✨ Cosmic Path</div>
         <div class="card" style="border-color:rgba(154,92,255,.25);background:linear-gradient(180deg,rgba(14,8,32,.9),rgba(8,4,20,.85));">
@@ -734,13 +734,13 @@
     <div class="question-stem" style="text-align:center;font-size:17px;">Your intelligence has transcended biological limits. The cosmos is now your environment.</div>
     <div class="transcendence-reward">
       Cosmic minds see patterns others cannot.<br><strong>Knowledge Power +2.0x permanently unlocked.</strong><br>
-      <span style="font-size:12px;color:rgba(205,174,255,.6);margin-top:6px;display:block;">New cosmic forms await beyond UFO — score-only, no gates needed.</span>
+      <span style="font-size:12px;color:rgba(205,174,255,.6);margin-top:6px;display:block;">New cosmic forms await beyond UFO, score-only, no gates needed.</span>
     </div>
-    <button class="trial-continue show" id="transcendenceOkBtn" style="border-color:rgba(154,92,255,.5);background:rgba(154,92,255,.08);color:var(--purple);">Continue Evolving — The Cosmos Awaits →</button>
+    <button class="trial-continue show" id="transcendenceOkBtn" style="border-color:rgba(154,92,255,.5);background:rgba(154,92,255,.08);color:var(--purple);">Continue Evolving, The Cosmos Awaits →</button>
   </div>
 </div>
 
-<!-- ── EVOLUTION GATE MODAL ── (no close button — must answer to proceed) -->
+<!-- ── EVOLUTION GATE MODAL ── (no close button - must answer to proceed) -->
 <div class="modal-backdrop" id="evoGateModal">
   <div class="modal">
     <div class="modal-header">
@@ -815,8 +815,8 @@
     <div class="question-stem" style="font-size:19px;">Reset this run and gain permanent Evolution Power?</div>
     <div class="mini-note" id="prestigeExplain" style="margin-bottom:16px;"></div>
     <div class="answer-grid">
-      <button class="answer-btn" id="confirmPrestige">Yes — reset and gain power</button>
-      <button class="answer-btn" data-close="prestigeModal">Not yet — keep evolving</button>
+      <button class="answer-btn" id="confirmPrestige">Yes: reset and gain power</button>
+      <button class="answer-btn" data-close="prestigeModal">Not yet: keep evolving</button>
     </div>
   </div>
 </div>
@@ -869,7 +869,7 @@
         "Only the strongest animals surviving"
       ],
       correct:2,
-      explanation:"Biological evolution describes populations — not individuals — changing over many generations. A single organism cannot evolve; evolution is a shift in how often certain traits appear across an entire population over time."
+      explanation:"Biological evolution describes populations (not individuals) changing over many generations. A single organism cannot evolve; evolution is a shift in how often certain traits appear across an entire population over time."
     },
     // Gate 1 → Fish
     {
@@ -881,7 +881,7 @@
         "Those that look most different"
       ],
       correct:1,
-      explanation:"Natural selection favors organisms whose traits best match the environment — they survive longer and reproduce more, passing those helpful traits to the next generation."
+      explanation:"Natural selection favors organisms whose traits best match the environment; they survive longer and reproduce more, passing those helpful traits to the next generation."
     },
     // Gate 2 → Frog
     {
@@ -917,7 +917,7 @@
         "A homologous fossil"
       ],
       correct:1,
-      explanation:"Ambulocetus is a transitional fossil — it shows characteristics from two different groups (land animals and ocean mammals), bridging an evolutionary gap and providing evidence that whales evolved from land-walking ancestors."
+      explanation:"Ambulocetus is a transitional fossil; it shows characteristics from two different groups (land animals and ocean mammals), bridging an evolutionary gap and providing evidence that whales evolved from land-walking ancestors."
     },
     // Gate 5 → Primate
     {
@@ -929,7 +929,7 @@
         "These limbs perform the same function"
       ],
       correct:1,
-      explanation:"Homologous structures — the same bone arrangement in very different limbs — suggest these species inherited their limb structure from a shared ancestor, even though the limbs now serve different purposes."
+      explanation:"Homologous structures (the same bone arrangement in very different limbs) suggest these species inherited their limb structure from a shared ancestor, even though the limbs now serve different purposes."
     },
     // Gate 6 → Human
     {
@@ -953,7 +953,7 @@
         "An analogous structure"
       ],
       correct:2,
-      explanation:"The coccyx is a vestigial structure — a body part that was useful in an ancestor (for a tail) but has been reduced or lost its function in modern humans. It is evidence that we share ancestry with animals that had tails."
+      explanation:"The coccyx is a vestigial structure, a body part that was useful in an ancestor (for a tail) but has been reduced or lost its function in modern humans. It is evidence that we share ancestry with animals that had tails."
     },
     // Gate 8 → UFO
     {
@@ -965,7 +965,7 @@
         "Chimps and humans share a recent common ancestor"
       ],
       correct:3,
-      explanation:"The more DNA two species share, the more recently they diverged from a common ancestor. 98% similarity means humans and chimps branched from a shared ancestor relatively recently in evolutionary time — they did not evolve from each other."
+      explanation:"The more DNA two species share, the more recently they diverged from a common ancestor. 98% similarity means humans and chimps branched from a shared ancestor relatively recently in evolutionary time; they did not evolve from each other."
     }
   ];
   const discoveries = [
@@ -1027,7 +1027,7 @@
       stem:"Which statement best describes how evolution works over time?",
       answers:["Only extinct organisms change","Every organism changes identically","Organisms never change once they exist","Populations change as helpful traits spread through reproduction"],
       correct:3,
-      explanation:"Evolution describes change in populations over time — not instant change in one individual.",
+      explanation:"Evolution describes change in populations over time, not instant change in one individual.",
       reward:{ type:"passive", amount:18, unlock:"Per Second +18" }
     },
     {
@@ -1052,7 +1052,7 @@
       reward:{ type:"passive", amount:25, unlock:"Per Second +25" }
     },
     {
-      stem:"Why is evolution described as a change in a POPULATION — not a change in an individual?",
+      stem:"Why is evolution described as a change in a POPULATION, not a change in an individual?",
       answers:["Only the strongest individuals evolve","Individuals change their DNA based on needs","Populations only evolve when they move","Evolution works through reproduction across generations, not individual change"],
       correct:3,
       explanation:"An individual's DNA does not change in response to the environment. Evolution works through reproduction: helpful traits become more common over generations.",
@@ -1069,7 +1069,7 @@
       stem:"Darwin observed that finches on different Galapagos islands had differently shaped beaks. What best explains this?",
       answers:["The birds chose to change their beaks","Beaks changed randomly without selection pressure","Different food sources on each island selected for different beak shapes","All island birds share exactly the same beak"],
       correct:2,
-      explanation:"Different food sources (seeds vs. insects vs. fruit) on each island favored birds with beak shapes best suited to that food — a classic example of natural selection driving adaptation.",
+      explanation:"Different food sources (seeds vs. insects vs. fruit) on each island favored birds with beak shapes best suited to that food, a classic example of natural selection driving adaptation.",
       reward:{ type:"multiplier", amount:0.25, unlock:"Knowledge Power +0.25x" }
     },
     {
@@ -1083,14 +1083,14 @@
       stem:"A stick insect looks almost exactly like a twig. This camouflage helps it hide from predators. What type of adaptation is this?",
       answers:["A learned behavior","A structural adaptation shaped by natural selection","A vestigial trait no longer used","A homologous structure from an ancestor"],
       correct:1,
-      explanation:"Camouflage that mimics the environment is a structural adaptation — a physical feature that evolved because it improved survival and reproduction.",
+      explanation:"Camouflage that mimics the environment is a structural adaptation, a physical feature that evolved because it improved survival and reproduction.",
       reward:{ type:"click", amount:50, unlock:"Per Click +50" }
     },
     {
       stem:"What is an adaptation?",
       answers:["Any change an organism makes during its life","A trait that hurts an organism's survival","A heritable trait that improves survival and reproduction in a given environment","A structure that was useful in an ancestor but not today"],
       correct:2,
-      explanation:"An adaptation is a heritable (genetic) trait that increases an organism's ability to survive and reproduce in its environment — the result of natural selection acting over many generations.",
+      explanation:"An adaptation is a heritable (genetic) trait that increases an organism's ability to survive and reproduce in its environment, the result of natural selection acting over many generations.",
       reward:{ type:"multiplier", amount:0.15, unlock:"Knowledge Power +0.15x" }
     },
     {
@@ -1116,7 +1116,7 @@
     },
     {
       stem:"Two unrelated species both evolved eyes. This is an example of:",
-      answers:["Convergent evolution — similar traits from different origins","Divergent evolution — same ancestor, different traits","Homologous structures — same origin, same function","Vestigial evolution — loss of an unused trait"],
+      answers:["Convergent evolution (similar traits from different origins","Divergent evolution) same ancestor, different traits","Homologous structures (same origin, same function","Vestigial evolution) loss of an unused trait"],
       correct:0,
       explanation:"Convergent evolution occurs when unrelated species independently evolve similar traits because they face similar environmental pressures. Eyes have evolved separately many times.",
       reward:{ type:"passive", amount:50, unlock:"Per Second +50" }
@@ -1125,7 +1125,7 @@
       stem:"A scientist discovers a new fossil with features of both a dinosaur and a bird. What type of fossil is this most likely?",
       answers:["An index fossil","A vestigial fossil","A transitional fossil","An analogous fossil"],
       correct:2,
-      explanation:"A transitional fossil shows characteristics of two different groups, bridging an evolutionary gap. Archaeopteryx — with feathers and dinosaur-like claws — is a famous example of a dinosaur-to-bird transitional fossil.",
+      explanation:"A transitional fossil shows characteristics of two different groups, bridging an evolutionary gap. Archaeopteryx (with feathers and dinosaur-like claws) is a famous example of a dinosaur-to-bird transitional fossil.",
       reward:{ type:"multiplier", amount:0.25, unlock:"Knowledge Power +0.25x" }
     }
   ];
@@ -1177,7 +1177,7 @@
 
   /* ── COMBO SYSTEM ── */
   let comboCount = 1;
-  let lastPushedScore   = -1;          // tracks last score we successfully pushed — skip if unchanged
+  let lastPushedScore   = -1;          // tracks last score we successfully pushed, skip if unchanged
   let leaderboardPollId = null;        // interval ID for live leaderboard refresh
   let bestPushTimeout   = null;        // debounce handle for immediate best-score push
   let comboTimer = null;
@@ -1214,7 +1214,7 @@
   }
 
   /* ── LOAD / SAVE ──
-     Game progress uses sessionStorage — clears automatically when the tab is closed.
+     Game progress uses sessionStorage, clears automatically when the tab is closed.
      Leaderboard fallback uses localStorage (separate key, untouched below). */
   function loadState(){
     try{
@@ -1238,7 +1238,7 @@
   }
   function saveState(){ sessionStorage.setItem("evolution-clicker-v6", JSON.stringify(state)); }
 
-  /* Safety cleanup — belt-and-suspenders: clear game state when the tab unloads.
+  /* Safety cleanup - belt-and-suspenders: clear game state when the tab unloads.
      sessionStorage already resets on tab close, but this ensures any edge-case
      mid-session browser crash or hard refresh from another tab doesn't carry forward. */
   window.addEventListener("pagehide", () => {
@@ -1404,7 +1404,7 @@
     const curCosmicIdx = cosmicForms2.findLastIndex ? cosmicForms2.findLastIndex(f => state.bestScore >= f.unlock) : -1;
 
     if(curCosmicIdx >= cosmicForms2.length - 1 && state.bestScore >= cosmicForms2[cosmicForms2.length-1].unlock){
-      if(refs.cosmicEvoVal) refs.cosmicEvoVal.textContent = "MAX — Infinite Intelligence!";
+      if(refs.cosmicEvoVal) refs.cosmicEvoVal.textContent = "MAX, Infinite Intelligence!";
       if(refs.cosmicProgressFill) refs.cosmicProgressFill.style.width = "100%";
     } else {
       const nextCosmicIdx = curCosmicIdx + 1;
@@ -1414,19 +1414,19 @@
         const pct = Math.min(100, Math.max(0, ((state.bestScore - prevThreshold) / (nextCosmic.unlock - prevThreshold)) * 100));
         const need = Math.max(0, nextCosmic.unlock - state.bestScore);
         if(refs.cosmicProgressFill) refs.cosmicProgressFill.style.width = pct + "%";
-        if(refs.cosmicEvoVal) refs.cosmicEvoVal.textContent = nextCosmic.emoji + " " + nextCosmic.name + " — " + formatNumber(need) + " away";
+        if(refs.cosmicEvoVal) refs.cosmicEvoVal.textContent = nextCosmic.emoji + " " + nextCosmic.name + ", " + formatNumber(need) + " away";
       }
     }
   }
 
   // Check for gate triggers before showing evolution celebration
   function maybeUnlockForms(){
-    if(activeGate) return; // A gate modal is already open — don't interrupt
+    if(activeGate) return; // A gate modal is already open, don't interrupt
 
     // ── TRANSCENDENCE CHECK ── fires once per run when bestScore hits UFO threshold
     if(!state.transcended && state.bestScore >= 2000000){
       triggerTranscendence();
-      // Don't return — still process gate/form checks below
+      // Don't return - still process gate/form checks below
     }
 
     // Check every form: if threshold crossed and gate not yet passed, show gate
@@ -1437,7 +1437,7 @@
       }
     }
 
-    // No pending gate — check for normal evolution celebration
+    // No pending gate - check for normal evolution celebration
     const cur = getCurrentForm();
     if(state.currentForm !== cur.id){
       state.currentForm = cur.id;
@@ -1459,7 +1459,7 @@
     // Apply persistent visual state
     document.body.classList.add("transcended");
 
-    // Flash effect — brief cosmic burst (1.2 seconds total)
+    // Flash effect - brief cosmic burst (1.2 seconds total)
     refs.cosmicFlash.classList.add("show");
     setTimeout(() => {
       refs.cosmicFlash.style.transition = "opacity .55s ease";
@@ -1564,7 +1564,7 @@
       const next = evolutionForms[idx + 1];
       const gatePending = next.gate !== null && state.bestScore >= next.unlock && !state.passedGates.includes(next.id);
       if(gatePending && !activeGate){
-        refs.nextEvoVal.textContent = next.emoji + " " + next.name + " — Answer the Evolution Gate!";
+        refs.nextEvoVal.textContent = next.emoji + " " + next.name + ", Answer the Evolution Gate!";
         refs.nextEvoVal.style.color = "var(--danger)";
         refs.evoProgressFill.style.width = "100%";
         refs.evoProgressFill.style.background = "linear-gradient(90deg,var(--danger),var(--orange))";
@@ -1580,7 +1580,7 @@
       refs.evoProgressFill.style.background = "linear-gradient(90deg,var(--purple),var(--yellow))";
 
       if(idx >= evolutionForms.length - 1){
-        refs.nextEvoVal.textContent = "MAX — Infinite Intelligence reached!";
+        refs.nextEvoVal.textContent = "MAX, Infinite Intelligence reached!";
         refs.evoProgressFill.style.width = "100%";
         return;
       }
@@ -1588,7 +1588,7 @@
       const pct  = Math.min(100, Math.max(0, ((state.total - cur.unlock) / (next.unlock - cur.unlock)) * 100));
       const need = Math.max(0, next.unlock - state.total);
       refs.evoProgressFill.style.width = pct + "%";
-      refs.nextEvoVal.textContent = next.emoji + " " + next.name + " — " + formatNumber(need) + " away";
+      refs.nextEvoVal.textContent = next.emoji + " " + next.name + ", " + formatNumber(need) + " away";
       return;
     }
 
@@ -1598,13 +1598,13 @@
     refs.evoProgressFill.style.background = "linear-gradient(90deg, var(--yellow), var(--orange))";
 
     if(idx >= COSMIC_START_IDX - 1 && state.passedGates.includes("ufo")){
-      refs.nextEvoVal.textContent = "UFO reached — Transcendence awaits!";
+      refs.nextEvoVal.textContent = "UFO reached, Transcendence awaits!";
       refs.evoProgressFill.style.width = "100%";
       return;
     }
 
     if(idx >= evolutionForms.length - 1){
-      refs.nextEvoVal.textContent = "MAX — Infinite Intelligence reached!";
+      refs.nextEvoVal.textContent = "MAX, Infinite Intelligence reached!";
       refs.evoProgressFill.style.width = "100%";
       return;
     }
@@ -1613,7 +1613,7 @@
     const pct  = Math.min(100, Math.max(0, ((state.total - cur.unlock) / (next.unlock - cur.unlock)) * 100));
     const need = Math.max(0, next.unlock - state.total);
     refs.evoProgressFill.style.width = pct + "%";
-    refs.nextEvoVal.textContent = next.emoji + " " + next.name + " — " + formatNumber(need) + " away";
+    refs.nextEvoVal.textContent = next.emoji + " " + next.name + ", " + formatNumber(need) + " away";
   }
 
   function updateDiscoveries(){
@@ -1644,7 +1644,7 @@
     refs.bestScoreDisplay.textContent    = formatNumber(state.bestScore);
     refs.prestigeDisplay.textContent     = formatNumber(state.prestige);
     refs.evoEmoji.textContent            = currentDisplayEmoji();
-    // NOTE: Profile input values are NOT restored here — only on loadState/init
+    // NOTE: Profile input values are NOT restored here - only on loadState/init
     // to prevent overwriting mid-type (name input bug fix)
     renderPath();
     renderCosmicPath();
@@ -1652,7 +1652,7 @@
     renderUpgradeList();
     updateDiscoveries();
     updateNextEvoBar();
-    refs.prestigeExplain.textContent = "Prestige " + state.prestige + " active. Resetting gives +1 prestige and a permanent 25% boost to all future runs. Evolution Gates will reset — answer them again to prove your knowledge.";
+    refs.prestigeExplain.textContent = "Prestige " + state.prestige + " active. Resetting gives +1 prestige and a permanent 25% boost to all future runs. Evolution Gates will reset, answer them again to prove your knowledge.";
     saveState();
   }
 
@@ -1666,7 +1666,7 @@
     }
   }
 
-  /* ── RENDER SCHEDULER — batches rapid clicks into one rAF render ── */
+  /* ── RENDER SCHEDULER - batches rapid clicks into one rAF render ── */
   let _renderScheduled = false;
   function scheduleRender(){
     if(_renderScheduled) return;
@@ -1760,7 +1760,7 @@
     const q    = gateQuestions[form.gate];
     activeGate = formId;
 
-    refs.gateTitle.textContent = "Evolution Gate — " + form.emoji + " " + form.name;
+    refs.gateTitle.textContent = "Evolution Gate, " + form.emoji + " " + form.name;
     refs.gateIntro.textContent = "Your organism has reached the " + form.name + " threshold. Before you can evolve, prove you understand the science behind it. Answer correctly to unlock this form.";
     refs.gateStem.textContent  = q.stem;
     refs.gateFeedback.className = "trial-fb";
@@ -1770,7 +1770,7 @@
     buildGateAnswers(formId);
     openModal("evoGateModal");
     playTone(520, .07, "triangle", .03);
-    showToast("Evolution Gate triggered — " + form.name + " awaits!", "var(--danger)");
+    showToast("Evolution Gate triggered, " + form.name + " awaits!", "var(--danger)");
   }
 
   function buildGateAnswers(formId){
@@ -1796,7 +1796,7 @@
     buttons[q.correct].classList.add("correct");
 
     if(chosen === q.correct){
-      if(chosen !== q.correct) {} // (type narrowing — always correct here)
+      if(chosen !== q.correct) {} // (type narrowing, always correct here)
       buttons[chosen].classList.add("correct");
       refs.gateFeedback.className   = "trial-fb fb-correct";
       refs.gateFeedback.textContent = "Correct! " + q.explanation + " Knowledge Power +0.10x unlocked.";
@@ -1824,7 +1824,7 @@
   }
 
   function resolveGate(){
-    // Student answered correctly — mark gate passed, award bonus, close modal
+    // Student answered correctly - mark gate passed, award bonus, close modal
     const formId = activeGate;
     const form   = evolutionForms.find(f => f.id === formId);
     state.passedGates.push(formId);
@@ -1836,7 +1836,7 @@
     setTimeout(() => playTone(980, .08, "triangle", .04), 115);
     setTimeout(() => playTone(1180, .07, "triangle", .035), 240);
     saveState();
-    // Trigger displays — this will now recognize the new form as unlocked
+    // Trigger displays - this will now recognize the new form as unlocked
     state.currentForm = formId; // pre-set to avoid duplicate evolution toast
     updateDisplays();
   }
@@ -1844,7 +1844,7 @@
   /* ── TRIAL ── */
   function openTrial(){
     if(state.unlockedTrials === 0){
-      showToast("Keep clicking — Mutation Trials unlock soon!", "var(--yellow)");
+      showToast("Keep clicking, Mutation Trials unlock soon!", "var(--yellow)");
       return;
     }
     currentTrial = trialQuestions[Math.floor(Math.random() * trialQuestions.length)];
@@ -1886,7 +1886,7 @@
       state.streak = 0;
       refs.feedbackText.className = "trial-fb fb-wrong";
       refs.feedbackText.innerHTML = "<strong>Not quite.</strong> " + currentTrial.explanation;
-      showToast("Incorrect — read the explanation below.", "var(--danger)");
+      showToast("Incorrect, read the explanation below.", "var(--danger)");
       playTone(220, .1, "square", .025);
     }
     currentTrial = null;
@@ -1970,7 +1970,7 @@
     local.sort((a,b) => (b.score || 0) - (a.score || 0));
     setLocalScores(local.slice(0, 50));
 
-    // Push to Google Sheets via GET + URLSearchParams (no-cors — fire-and-forget)
+    // Push to Google Sheets via GET + URLSearchParams (no-cors - fire-and-forget)
     if(APPS_SCRIPT_URL){
       try{
         const params = new URLSearchParams({
@@ -2012,12 +2012,12 @@
     return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
   }
 
-  /* Render rows from an already-fetched scores array — used by both initial render and live polling */
+  /* Render rows from an already-fetched scores array - used by both initial render and live polling */
   function renderLeaderboardRows(scores){
     const sorted = scores.slice().sort((a,b) => (b.score || 0) - (a.score || 0)).slice(0, 20);
     refs.leaderboardBody.innerHTML = "";
     if(!sorted.length){
-      refs.leaderboardBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px;">No scores yet — save a profile and start clicking.</td></tr>';
+      refs.leaderboardBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px;">No scores yet, save a profile and start clicking.</td></tr>';
       return;
     }
     sorted.forEach((row, i) => {
@@ -2043,7 +2043,7 @@
     renderLeaderboardRows(scores);
   }
 
-  /* Debounced immediate push when a new best score is hit — 800ms grace period
+  /* Debounced immediate push when a new best score is hit - 800ms grace period
      so rapid clicks only fire one network request, not one per click */
   function scheduleBestPush(){
     if(bestPushTimeout) return;           // already scheduled
@@ -2095,7 +2095,7 @@
     // Transcendence OK
     refs.transcendenceOkBtn.addEventListener("click", () => {
       closeModal("transcendenceModal");
-      showToast("Transcendence complete! Knowledge Power +" + (2.0).toFixed(1) + "x — Cosmic forms unlocked.", "var(--purple)");
+      showToast("Transcendence complete! Knowledge Power +" + (2.0).toFixed(1) + "x, Cosmic forms unlocked.", "var(--purple)");
     });
     // Close buttons (evoGateModal intentionally has none)
     document.querySelectorAll("[data-close]").forEach(btn => btn.addEventListener("click", () => closeModal(btn.dataset.close)));
@@ -2131,7 +2131,7 @@
     toggleSound(); toggleSound(); // restore saved sound state
     refs.saveStatusPill.textContent = APPS_SCRIPT_URL ? "Storage: cloud ready" : "Storage: local only";
     setInterval(passiveTick, 1000);
-    setInterval(autosaveLoop, 4000);  // 4 s — push only when score improved
+    setInterval(autosaveLoop, 4000);  // 4 s, push only when score improved
   }
 
   init();

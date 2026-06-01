@@ -151,7 +151,7 @@ body.ls-active   .badge-bar.ls-bar   { display:flex; }
 .section-title { font-family:'Fredoka One',sans-serif; font-size:clamp(1.5rem,3vw,2rem); line-height:1.15; color:var(--text-primary); margin-bottom:0.55rem; }
 .section-desc  { font-size:1rem; font-weight:600; color:#d6dee6; line-height:1.65; margin-bottom:1.2rem; max-width:900px; }
 
-/* "To unlock the next phase…" hint — sits under section-desc, updated by JS */
+/* "To unlock the next phase…" hint - sits under section-desc, updated by JS */
 .unlock-hint { display:flex; align-items:center; gap:0.55rem; font-size:0.82rem; font-weight:700; color:var(--text-secondary); background:rgba(59,130,246,0.06); border-left:3px solid rgba(59,130,246,0.55); padding:0.55rem 0.85rem; border-radius:6px; margin-top:-0.6rem; margin-bottom:1.1rem; transition:background 0.3s, border-color 0.3s, color 0.3s; }
 .unlock-hint::before { content:"NEXT"; font-size:0.6rem; font-weight:900; letter-spacing:0.14em; color:var(--orange); background:rgba(59,130,246,0.14); padding:0.15rem 0.5rem; border-radius:99px; flex-shrink:0; }
 .unlock-hint.ready { background:rgba(46,204,113,0.08); border-left-color:var(--green); color:#c5ecd2; }
@@ -187,7 +187,7 @@ input[type=range]::-moz-range-thumb { width:18px; height:18px; border-radius:50%
 .value-pill { display:inline-block; min-width:38px; text-align:center; padding:0.2rem 0.55rem; background:var(--orange-dim); border:1px solid rgba(59,130,246,0.35); border-radius:99px; color:var(--orange); font-weight:900; font-size:0.85rem; font-variant-numeric:tabular-nums; }
 
 /* =========================================================
-   PHASE 1 — DISCOVERY HOTSPOT TRACKER
+   PHASE 1, DISCOVERY HOTSPOT TRACKER
    ========================================================= */
 .discover-strip { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1rem; }
 .discover-pill { padding:0.35rem 0.85rem; border-radius:99px; background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-muted); font-size:0.78rem; font-weight:800; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:0.4rem; transition:all 0.3s; }
@@ -241,7 +241,7 @@ input[type=range]::-moz-range-thumb { width:18px; height:18px; border-radius:50%
 .data-bar.amp .data-bar-fill    { background:linear-gradient(90deg, rgba(59,200,232,0.5), var(--teal)); box-shadow:0 0 7px rgba(59,200,232,0.4); }
 .data-bar.energy .data-bar-fill { background:linear-gradient(90deg, rgba(59,130,246,0.55), var(--orange)); box-shadow:0 0 7px rgba(59,130,246,0.45); }
 
-/* Sufficiency strip — three indicators */
+/* Sufficiency strip - three indicators */
 .sufficiency-strip { display:flex; flex-wrap:wrap; gap:0.45rem; margin-top:0.95rem; align-items:center; }
 .suff-pill { display:inline-flex; align-items:center; gap:0.5rem; padding:0.4rem 0.85rem; background:var(--bg-card); border:1px solid var(--border); border-radius:99px; font-size:0.74rem; font-weight:800; color:var(--text-muted); letter-spacing:0.03em; transition:all 0.3s; }
 .suff-pill .suff-label { text-transform:uppercase; font-size:0.62rem; letter-spacing:0.1em; }
@@ -251,7 +251,7 @@ input[type=range]::-moz-range-thumb { width:18px; height:18px; border-radius:50%
 .suff-ready { display:none; margin-left:auto; font-size:0.74rem; font-weight:900; color:var(--green); letter-spacing:0.08em; text-transform:uppercase; padding:0.4rem 0.95rem; background:rgba(46,204,113,0.1); border:1px solid var(--green); border-radius:99px; }
 .suff-ready.visible { display:inline-flex; }
 
-/* Observation prompt — guides pattern noticing without revealing the answer */
+/* Observation prompt - guides pattern noticing without revealing the answer */
 .observation-prompt { margin-top:0.95rem; padding:0.85rem 1.05rem; background:rgba(245,200,66,0.06); border:1px dashed rgba(245,200,66,0.4); border-radius:var(--radius); transition:all 0.4s; }
 .observation-prompt.update-flash { background:rgba(245,200,66,0.12); border-color:rgba(245,200,66,0.7); }
 .obs-eyebrow { font-size:0.65rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin-bottom:0.3rem; }
@@ -332,7 +332,7 @@ input[type=range]::-moz-range-thumb { width:18px; height:18px; border-radius:50%
 .cer-counter { font-size:0.7rem; color:var(--text-muted); margin-top:0.3rem; text-align:right; font-weight:700; letter-spacing:0.05em; }
 .cer-counter.met { color:var(--green); }
 
-/* Dynamic CER scaffolds — data-aware hints */
+/* Dynamic CER scaffolds - data-aware hints */
 .cer-scaffold { margin-top:0.5rem; padding:0.55rem 0.75rem; background:rgba(46,204,113,0.06); border-left:3px solid rgba(46,204,113,0.5); border-radius:6px; font-size:0.78rem; color:#bcd9c8; line-height:1.55; transition:opacity 0.3s; }
 .cer-scaffold.dim { opacity:0.45; }
 .cer-scaffold .sc-label { display:inline-block; font-size:0.62rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--green); margin-right:0.35rem; }
@@ -465,7 +465,7 @@ footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
 .toast.warn { border-color:var(--red); }
 
 /* =========================================================
-   PASS 5 — VISUAL POLISH (additive only)
+   PASS 5, VISUAL POLISH (additive only)
    Transitions, hover/focus states, reveal animations.
    No structural or color-system changes.
    ========================================================= */
@@ -533,7 +533,7 @@ footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
 }
 .data-table tbody tr.fresh .trial-num { animation: trialNumPulse 0.85s ease-out; }
 
-/* ---------- Discovery pill — pulse on first find (Phase 1) ---------- */
+/* ---------- Discovery pill - pulse on first find (Phase 1) ---------- */
 @keyframes discFound {
   0%   { transform: scale(1); }
   35%  { transform: scale(1.12); }
@@ -558,7 +558,7 @@ footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
 .target-card { transition: transform 0.25s ease, border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease; }
 .target-card:hover:not(.activated):not(.just-activated) { transform: translateY(-2px); border-color: rgba(59,130,246,0.55); }
 
-/* Plot view-toggle, plot-toggle, mode-btn, view-btn — consistent transitions */
+/* Plot view-toggle, plot-toggle, mode-btn, view-btn - consistent transitions */
 .plot-toggle, .view-btn, .mode-btn, .nav-toggle, .nav-back, .btn, .submit-btn,
 .plot-view-toggle { transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease; }
 
@@ -612,12 +612,12 @@ input[type=range]:focus-visible::-webkit-slider-thumb { transform: scale(1.18); 
 input[type=range]:active::-moz-range-thumb,
 input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); box-shadow: 0 0 0 6px rgba(59,130,246,0.32); }
 
-/* Canvas wrappers — subtle hover glow to suggest interactivity */
+/* Canvas wrappers - subtle hover glow to suggest interactivity */
 .phase-canvas-wrap { transition: border-color 0.3s ease, box-shadow 0.3s ease; }
 #phase4 .phase-canvas-wrap:hover { border-color: rgba(59,130,246,0.5); box-shadow: 0 0 24px rgba(59,130,246,0.08) inset; }
 #phase1 .phase-canvas-wrap:hover { border-color: rgba(245,200,66,0.45); }
 
-/* Run Trial busy state — wordmark + opacity */
+/* Run Trial busy state - wordmark + opacity */
 .btn[data-busy="1"] { opacity: 0.6; cursor: wait; }
 
 /* Plot toggles get a subtle background on hover when inactive */
@@ -653,15 +653,15 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
   <span class="badge green">MS-PS4-1<span class="badge-tip">Use mathematical representations to describe a simple model for waves that includes how the amplitude of a wave is related to the energy of the wave.</span></span>
   <span class="badge green">MS-PS4-2<span class="badge-tip">Develop and use a model to describe that waves are reflected, absorbed, or transmitted through various materials.</span></span>
   <span class="badge green">SEP: Analyzing Data<span class="badge-tip">You will collect trial data and look for patterns between amplitude and energy.</span></span>
-  <span class="badge green">SEP: Using Math<span class="badge-tip">You will graph your data and decide which model — linear or squared — best fits.</span></span>
+  <span class="badge green">SEP: Using Math<span class="badge-tip">You will graph your data and decide which model (linear or squared) best fits.</span></span>
   <span class="badge green">CCC: Energy & Matter<span class="badge-tip">Waves transfer energy without transferring matter.</span></span>
   <span class="badge green">CCC: Scale & Proportion<span class="badge-tip">Doubling the amplitude does not simply double the energy.</span></span>
 </div>
 
 <!-- Learning Science badge bar -->
 <div class="badge-bar ls-bar">
-  <span class="badge teal">Predict → Test<span class="badge-tip">You commit to a prediction first, then test it against real data — a core scientific habit.</span></span>
-  <span class="badge teal">Productive Struggle<span class="badge-tip">Wrong predictions are not failures — they are data you can revise.</span></span>
+  <span class="badge teal">Predict → Test<span class="badge-tip">You commit to a prediction first, then test it against real data, a core scientific habit.</span></span>
+  <span class="badge teal">Productive Struggle<span class="badge-tip">Wrong predictions are not failures; they are data you can revise.</span></span>
   <span class="badge teal">Claim · Evidence · Reasoning<span class="badge-tip">You will defend your model with your own collected evidence.</span></span>
   <span class="badge teal">Worked-Out Discovery<span class="badge-tip">You uncover the amplitude–energy relationship from data, not from being told.</span></span>
   <span class="badge teal">Spaced Retrieval<span class="badge-tip">Checkpoint quizzes between phases reinforce learning by retrieval, not re-reading.</span></span>
@@ -675,7 +675,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
   <div class="hero-shell">
     <div class="hero-badge">Investigation</div>
     <h1>Amplitude Challenge</h1>
-    <p>How much energy does a wave actually carry? Predict, test, gather data, build a model — then figure out how much amplitude is enough to get real work done.</p>
+    <p>How much energy does a wave actually carry? Predict, test, gather data, build a model, then figure out how much amplitude is enough to get real work done.</p>
     <div class="hero-kicker">Amplitude · Energy · Waves</div>
   </div>
 </section>
@@ -688,12 +688,12 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
     <div class="byb-header">
       <span class="byb-eyebrow">Before You Begin</span>
       <div class="byb-title">Read this first, then investigate</div>
-      <p class="byb-sub">This is a four-phase investigation into how a wave's amplitude affects the energy it delivers. Complete each phase in order — each one builds on the last.</p>
+      <p class="byb-sub">This is a four-phase investigation into how a wave's amplitude affects the energy it delivers. Complete each phase in order, each one builds on the last.</p>
     </div>
     <div class="byb-qa">
       <div class="byb-qa-card">
         <div class="byb-q">What is this investigation about?</div>
-        <p class="byb-a">You will discover how a wave's <strong>amplitude</strong> — the height of its crest — controls the <strong>energy</strong> it delivers. Bigger amplitude = more energy, but the relationship is not what most people guess.</p>
+        <p class="byb-a">You will discover how a wave's <strong>amplitude</strong> (the height of its crest) controls the <strong>energy</strong> it delivers. Bigger amplitude = more energy, but the relationship is not what most people guess.</p>
       </div>
       <div class="byb-qa-card">
         <div class="byb-q">Why does this matter?</div>
@@ -701,7 +701,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
       </div>
       <div class="byb-qa-card">
         <div class="byb-q">What will I actually do?</div>
-        <p class="byb-a">You will <strong>explore a wave</strong>, <strong>run amplitude trials</strong> and record data, <strong>hit energy targets</strong>, and finally <strong>build a model</strong> that explains your data — using your own evidence.</p>
+        <p class="byb-a">You will <strong>explore a wave</strong>, <strong>run amplitude trials</strong> and record data, <strong>hit energy targets</strong>, and finally <strong>build a model</strong> that explains your data: using your own evidence.</p>
       </div>
       <div class="byb-qa-card">
         <div class="byb-q">How do I move through it?</div>
@@ -728,12 +728,12 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
 </div>
 
 <!-- ======================================================
-     PHASE 1 — WAVE EXPLORER
+     PHASE 1, WAVE EXPLORER
      ====================================================== -->
 <section class="sim-section" id="phase1">
   <div class="section-label">Phase 1</div>
   <div class="section-title">Wave Explorer</div>
-  <div class="section-desc">Get familiar with a wave. Drag the sliders to change its shape, then click on the wave to identify its parts. Finally, predict how amplitude affects energy — you will test your prediction with real data later.</div>
+  <div class="section-desc">Get familiar with a wave. Drag the sliders to change its shape, then click on the wave to identify its parts. Finally, predict how amplitude affects energy, you will test your prediction with real data later.</div>
   <div class="unlock-hint" id="unlockHint1">Click all 3 wave parts on the canvas, then make a prediction. The checkpoint question will appear.</div>
 
   <div class="phase-card">
@@ -767,14 +767,14 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
         <label><input type="radio" name="pred" value="more"><span>It would more than double</span></label>
         <label><input type="radio" name="pred" value="less"><span>It would be less than before</span></label>
       </div>
-      <div class="prediction-saved" id="predictionSaved">Prediction saved — we will revisit it after you collect data.</div>
+      <div class="prediction-saved" id="predictionSaved">Prediction saved, we will revisit it after you collect data.</div>
     </div>
   </div>
 
   <!-- Phase 1 checkpoint -->
   <div class="checkpoint-card" id="p1Checkpoint">
     <div class="cp-eyebrow">Checkpoint · Phase 1</div>
-    <div class="cp-sub">Answer correctly to unlock <strong>Phase 2 — Amplitude Lab</strong>, where you'll collect real data.</div>
+    <div class="cp-sub">Answer correctly to unlock <strong>Phase 2, Amplitude Lab</strong>, where you'll collect real data.</div>
     <div class="cp-q">Which measurement describes a wave's <em>amplitude</em>?</div>
     <div class="checkpoint-options" id="cp1Opts">
       <label><input type="radio" name="cp1" value="0"><span>The distance from one crest to the next</span></label>
@@ -791,7 +791,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
 </section>
 
 <!-- ======================================================
-     PHASE 2 — AMPLITUDE LAB
+     PHASE 2, AMPLITUDE LAB
      ====================================================== -->
 <section class="sim-section" id="phase2" style="display:none;">
   <div class="section-label">Phase 2</div>
@@ -827,7 +827,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
           <tr><th class="col-trial">Trial</th><th>Amplitude (what you changed)</th><th>Energy Detected (what you measured)</th></tr>
         </thead>
         <tbody id="p2Tbody">
-          <tr class="empty-row"><td colspan="3">No trials yet — choose an amplitude and click Run Trial.</td></tr>
+          <tr class="empty-row"><td colspan="3">No trials yet, choose an amplitude and click Run Trial.</td></tr>
         </tbody>
       </table>
       <div class="sufficiency-strip" id="suffStrip">
@@ -840,19 +840,19 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
 
     <div class="observation-prompt" id="obsPrompt">
       <div class="obs-eyebrow">Observation Prompt</div>
-      <div class="obs-text" id="obsText">Start with an extreme — try amplitude <strong>1</strong> or <strong>8</strong> first. Extremes reveal patterns fastest.</div>
+      <div class="obs-text" id="obsText">Start with an extreme, try amplitude <strong>1</strong> or <strong>8</strong> first. Extremes reveal patterns fastest.</div>
     </div>
   </div>
 
   <!-- Phase 2 checkpoint -->
   <div class="checkpoint-card" id="p2Checkpoint">
     <div class="cp-eyebrow">Checkpoint · Phase 2</div>
-    <div class="cp-sub">Answer correctly to unlock <strong>Phase 3 — Energy Targets</strong>, where you'll put your data to work.</div>
+    <div class="cp-sub">Answer correctly to unlock <strong>Phase 3, Energy Targets</strong>, where you'll put your data to work.</div>
     <div class="cp-q">Look at your data. As amplitude increases, what happens to the energy delivered?</div>
     <div class="checkpoint-options" id="cp2Opts">
       <label><input type="radio" name="cp2" value="0"><span>Energy stays about the same</span></label>
       <label><input type="radio" name="cp2" value="1"><span>Energy decreases</span></label>
-      <label><input type="radio" name="cp2" value="2"><span>Energy increases — and it grows faster than amplitude does</span></label>
+      <label><input type="radio" name="cp2" value="2"><span>Energy increases; and it grows faster than amplitude does</span></label>
       <label><input type="radio" name="cp2" value="3"><span>Energy increases at exactly the same rate as amplitude</span></label>
     </div>
     <div class="checkpoint-feedback" id="cp2Feedback"></div>
@@ -865,12 +865,12 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
 </section>
 
 <!-- ======================================================
-     PHASE 3 — ENERGY TARGETS
+     PHASE 3, ENERGY TARGETS
      ====================================================== -->
 <section class="sim-section" id="phase3" style="display:none;">
   <div class="section-label">Phase 3</div>
   <div class="section-title">Energy Targets</div>
-  <div class="section-desc">Now apply what your data showed. Each target needs a minimum amount of energy to activate. Use your Phase 2 data as evidence — pick the smallest amplitude you think will do the job, then send the wave.</div>
+  <div class="section-desc">Now apply what your data showed. Each target needs a minimum amount of energy to activate. Use your Phase 2 data as evidence, pick the smallest amplitude you think will do the job, then send the wave.</div>
   <div class="unlock-hint" id="unlockHint3">Activate <strong>all 3 targets</strong>. The checkpoint question will appear once each one has received enough energy.</div>
 
   <div class="phase-card">
@@ -914,13 +914,13 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
   <!-- Phase 3 checkpoint -->
   <div class="checkpoint-card" id="p3Checkpoint">
     <div class="cp-eyebrow">Checkpoint · Phase 3</div>
-    <div class="cp-sub">Answer correctly to unlock <strong>Phase 4 — Wave Energy Model</strong>, where you'll build a model from your data.</div>
+    <div class="cp-sub">Answer correctly to unlock <strong>Phase 4, Wave Energy Model</strong>, where you'll build a model from your data.</div>
     <div class="cp-q">Why does <strong>doubling</strong> the amplitude do <em>more than</em> double the work the wave can do?</div>
     <div class="checkpoint-options" id="cp3Opts">
       <label><input type="radio" name="cp3" value="0"><span>Bigger waves travel faster, so they do more work</span></label>
-      <label><input type="radio" name="cp3" value="1"><span>Energy grows with the <em>square</em> of amplitude — so doubling amplitude means about four times the energy</span></label>
+      <label><input type="radio" name="cp3" value="1"><span>Energy grows with the <em>square</em> of amplitude; so doubling amplitude means about four times the energy</span></label>
       <label><input type="radio" name="cp3" value="2"><span>The detector becomes more sensitive at higher amplitudes</span></label>
-      <label><input type="radio" name="cp3" value="3"><span>It's actually a coincidence — there is no real pattern</span></label>
+      <label><input type="radio" name="cp3" value="3"><span>It's actually a coincidence, there is no real pattern</span></label>
     </div>
     <div class="checkpoint-feedback" id="cp3Feedback"></div>
     <div class="checkpoint-actions">
@@ -932,12 +932,12 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
 </section>
 
 <!-- ======================================================
-     PHASE 4 — WAVE ENERGY MODEL
+     PHASE 4, WAVE ENERGY MODEL
      ====================================================== -->
 <section class="sim-section" id="phase4" style="display:none;">
   <div class="section-label">Phase 4</div>
   <div class="section-title">Build the Wave Energy Model</div>
-  <div class="section-desc">Your data is now plotted below. Toggle the two model curves to see which one actually fits — then write a short Claim · Evidence · Reasoning explanation defending your choice.</div>
+  <div class="section-desc">Your data is now plotted below. Toggle the two model curves to see which one actually fits, then write a short Claim · Evidence · Reasoning explanation defending your choice.</div>
   <div class="unlock-hint" id="unlockHint4">Pick a model (Linear or Squared), then write your <strong>Claim</strong>, <strong>Evidence</strong>, and <strong>Reasoning</strong>. The final checkpoint will appear once all four are complete.</div>
 
   <div class="phase-card">
@@ -954,9 +954,9 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
     </div>
     <div class="plot-hint" id="plotHint">Click a point to see its trial details. Toggle <strong>Show as Ratios</strong> to compare every trial to your lowest-amplitude trial.</div>
 
-    <!-- Analysis comparison cards — auto-generated from student data -->
+    <!-- Analysis comparison cards - auto-generated from student data -->
     <div class="analysis-cards">
-      <div class="analysis-eyebrow">Analyze Your Data — Compare Trial Pairs</div>
+      <div class="analysis-eyebrow">Analyze Your Data, Compare Trial Pairs</div>
       <div class="analysis-grid" id="analysisGrid"></div>
     </div>
 
@@ -980,12 +980,12 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
         <div class="cer-label evidence">Evidence</div>
         <div class="cer-hint">Point to specific numbers from your trial data that support your claim.</div>
         <textarea id="cerEvidence" placeholder="When I changed the amplitude from __ to __, the energy went from __ J to __ J, which is…"></textarea>
-        <div class="cer-scaffold" id="evidenceScaffold"><span class="sc-label">Hint</span>Run more trials in Phase 2 first — your evidence will be stronger with real numbers to cite.</div>
+        <div class="cer-scaffold" id="evidenceScaffold"><span class="sc-label">Hint</span>Run more trials in Phase 2 first, your evidence will be stronger with real numbers to cite.</div>
         <div class="cer-counter"><span id="cerEvidenceCount">0</span> / 30 minimum</div>
       </div>
       <div class="cer-field">
         <div class="cer-label reasoning">Reasoning</div>
-        <div class="cer-hint">Explain <em>why</em> this pattern makes sense — what does it tell you about how waves carry energy?</div>
+        <div class="cer-hint">Explain <em>why</em> this pattern makes sense, what does it tell you about how waves carry energy?</div>
         <textarea id="cerReasoning" placeholder="This pattern means that…"></textarea>
         <div class="cer-scaffold" id="reasoningScaffold"><span class="sc-label">Hint</span>Amplitude is how far the wave displaces matter. A bigger wave has to push <strong>farther</strong> AND with more <strong>force</strong>. Connect those two ideas.</div>
         <div class="cer-counter"><span id="cerReasoningCount">0</span> / 30 minimum</div>
@@ -1000,12 +1000,12 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
   <!-- Phase 4 checkpoint -->
   <div class="checkpoint-card" id="p4Checkpoint">
     <div class="cp-eyebrow">Checkpoint · Phase 4</div>
-    <div class="cp-sub">Last checkpoint — answer correctly to finish the investigation and choose how to wrap up.</div>
+    <div class="cp-sub">Last checkpoint, answer correctly to finish the investigation and choose how to wrap up.</div>
     <div class="cp-q">Two waves are identical in every way except amplitude. Wave B has <strong>three times</strong> the amplitude of Wave A. About how much more energy does Wave B carry?</div>
     <div class="checkpoint-options" id="cp4Opts">
       <label><input type="radio" name="cp4" value="0"><span>Three times as much</span></label>
       <label><input type="radio" name="cp4" value="1"><span>About nine times as much</span></label>
-      <label><input type="radio" name="cp4" value="2"><span>The same amount — amplitude doesn't matter</span></label>
+      <label><input type="radio" name="cp4" value="2"><span>The same amount, amplitude doesn't matter</span></label>
       <label><input type="radio" name="cp4" value="3"><span>One-third as much</span></label>
     </div>
     <div class="checkpoint-feedback" id="cp4Feedback"></div>
@@ -1029,18 +1029,18 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
     <button class="mode-btn"        id="classroomModeBtn">Classroom Mode</button>
   </div>
   <div class="mode-hint">
-    <span id="modeHintPractice"  class="visible">Practice Mode shows the quiz so you can self-check — nothing will be sent to your teacher.</span>
+    <span id="modeHintPractice"  class="visible">Practice Mode shows the quiz so you can self-check, nothing will be sent to your teacher.</span>
     <span id="modeHintClassroom">Classroom Mode adds a submission panel so your work is sent to your teacher.</span>
   </div>
 </section>
 
 <!-- ======================================================
-     PHASE 5 — QUIZ + CLASSROOM SUBMISSION
+     PHASE 5, QUIZ + CLASSROOM SUBMISSION
      ====================================================== -->
 <section class="sim-section" id="phase5" style="display:none;">
   <div class="section-label">Phase 5</div>
   <div class="section-title">Check Your Understanding</div>
-  <div class="section-desc">You explored a wave, ran amplitude trials, hit energy targets, and built a model. Answer these 5 questions, then click <strong>Score My Quiz</strong>. In <strong>Classroom Mode</strong>, fill in your name and teacher below to submit your work. In <strong>Practice Mode</strong>, scoring the quiz is the finish line — nothing is sent.</div>
+  <div class="section-desc">You explored a wave, ran amplitude trials, hit energy targets, and built a model. Answer these 5 questions, then click <strong>Score My Quiz</strong>. In <strong>Classroom Mode</strong>, fill in your name and teacher below to submit your work. In <strong>Practice Mode</strong>, scoring the quiz is the finish line, nothing is sent.</div>
   <div id="quizContainer"></div>
   <div id="quizScoreArea" style="display:none; margin-top:1rem; text-align:center;">
     <div class="quiz-score-badge" id="quizScoreBadge">0 / 5 answered</div>
@@ -1090,7 +1090,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
     <a class="gf-card" href="lesson_nature-of-waves.html">
       <div class="gf-card-label">Lesson</div>
       <div class="gf-card-title">Nature of Waves</div>
-      <div class="gf-card-desc">Return to the home base — revisit wave anatomy, frequency, wavelength, and how energy travels through different media.</div>
+      <div class="gf-card-desc">Return to the home base, revisit wave anatomy, frequency, wavelength, and how energy travels through different media.</div>
     </a>
     <a class="gf-card" href="index.html">
       <div class="gf-card-label">Library</div>
@@ -1100,12 +1100,12 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
     <a class="gf-card" href="investigation_cell-energy.html">
       <div class="gf-card-label">Investigation</div>
       <div class="gf-card-title">Cell Energy</div>
-      <div class="gf-card-desc">Another investigation where you uncover hidden patterns — this time inside living cells.</div>
+      <div class="gf-card-desc">Another investigation where you uncover hidden patterns; this time inside living cells.</div>
     </a>
     <a class="gf-card" href="lesson_what-is-life.html">
       <div class="gf-card-label">Lesson</div>
       <div class="gf-card-title">What Is Life?</div>
-      <div class="gf-card-desc">Step back from the physical sciences and ask the big question — what makes something alive?</div>
+      <div class="gf-card-desc">Step back from the physical sciences and ask the big question, what makes something alive?</div>
     </a>
   </div>
 </div>
@@ -1216,7 +1216,7 @@ function unlockPhase(n){
 }
 
 /* =====================================================================
-   UNLOCK HINTS — keeps each phase's "what unlocks next" line in sync
+   UNLOCK HINTS, keeps each phase's "what unlocks next" line in sync
    with the student's progress. Pure UX text; does not change gating.
    ===================================================================== */
 function updateUnlockHints(){
@@ -1230,7 +1230,7 @@ function updateUnlockHints(){
       h1.innerHTML = 'Phase 1 complete. Phase 2 is open below.';
     } else if (found === 3 && hasPred){
       h1.classList.add('ready');
-      h1.innerHTML = 'All set — answer the checkpoint question below to unlock Phase 2.';
+      h1.innerHTML = 'All set, answer the checkpoint question below to unlock Phase 2.';
     } else if (found === 3 && !hasPred){
       h1.classList.remove('ready');
       h1.innerHTML = '<strong>1 step left:</strong> make your prediction below. Then the checkpoint will appear.';
@@ -1249,7 +1249,7 @@ function updateUnlockHints(){
       h2.innerHTML = 'Phase 2 complete. Phase 3 is open below.';
     } else if (n >= 6 && distinct >= 5){
       h2.classList.add('ready');
-      h2.innerHTML = 'Enough data collected — answer the checkpoint question below to unlock Phase 3.';
+      h2.innerHTML = 'Enough data collected, answer the checkpoint question below to unlock Phase 3.';
     } else {
       h2.classList.remove('ready');
       const trialsLeft  = Math.max(0, 6 - n);
@@ -1259,7 +1259,7 @@ function updateUnlockHints(){
       if (distinctLeft > 0) parts.push(`<strong>${distinctLeft}</strong> more distinct amplitude${distinctLeft===1?'':'s'}`);
       h2.innerHTML = parts.length
         ? 'Still need: ' + parts.join(' · ') + '. The checkpoint appears once your data is ready.'
-        : 'Almost ready — keep going.';
+        : 'Almost ready, keep going.';
     }
   }
   // Phase 3
@@ -1271,7 +1271,7 @@ function updateUnlockHints(){
       h3.innerHTML = 'Phase 3 complete. Phase 4 is open below.';
     } else if (active === 3){
       h3.classList.add('ready');
-      h3.innerHTML = 'All 3 targets activated — answer the checkpoint question below to unlock Phase 4.';
+      h3.innerHTML = 'All 3 targets activated, answer the checkpoint question below to unlock Phase 4.';
     } else {
       h3.classList.remove('ready');
       h3.innerHTML = `<strong>${active} of 3 targets activated.</strong> Send a wave with enough amplitude to power the remaining one${active === 2 ? '' : 's'}.`;
@@ -1290,7 +1290,7 @@ function updateUnlockHints(){
       h4.innerHTML = 'Phase 4 complete. Choose your mode below.';
     } else if (hasModel && cerOk){
       h4.classList.add('ready');
-      h4.innerHTML = 'All set — answer the final checkpoint below to finish the investigation.';
+      h4.innerHTML = 'All set, answer the final checkpoint below to finish the investigation.';
     } else {
       h4.classList.remove('ready');
       const todo = [];
@@ -1375,7 +1375,7 @@ function computeEnergy(amp){
 }
 
 /* =====================================================================
-   PHASE 1 — WAVE EXPLORER
+   PHASE 1, WAVE EXPLORER
    ===================================================================== */
 let p1Ctx, p1RAF, p1T = 0;
 let p1Amp = 5, p1Freq = 3;
@@ -1441,8 +1441,8 @@ function initPhase1(){
 
   // Wire checkpoint
   wireCheckpoint(1, 1,
-    'Correct. Amplitude is the height from the rest line up to a crest — it measures how strong the wave is.',
-    'Not quite — re-read the labels on the wave. Amplitude is a height measurement, not a distance or a count.',
+    'Correct. Amplitude is the height from the rest line up to a crest; it measures how strong the wave is.',
+    'Not quite, re-read the labels on the wave. Amplitude is a height measurement, not a distance or a count.',
     () => { unlockPhase(2); }
   );
 }
@@ -1474,7 +1474,7 @@ function drawP1(){
   ctx.shadowBlur = 0;
 
   // labels with hotspots
-  // 1) Crest — find a crest position
+  // 1) Crest - find a crest position
   let crestX = 40, crestY = mid - A_px;
   for (let x=80; x<=w-100; x++){
     const phase = k*(x-40) - p1T;
@@ -1483,7 +1483,7 @@ function drawP1(){
   }
   drawLabel(ctx, 'CREST', crestX, crestY - 22, state.discoveries.crest, '#f5c842');
 
-  // 2) Amplitude — vertical bracket on a crest near center
+  // 2) Amplitude - vertical bracket on a crest near center
   const ampX = 300;
   const ampPhase = k*(ampX-40) - p1T;
   const ampY = mid - A_px * Math.sin(ampPhase);
@@ -1494,7 +1494,7 @@ function drawP1(){
   ctx.setLineDash([]);
   drawLabel(ctx, 'AMPLITUDE', ampX + 60, (mid + ampY)/2, state.discoveries.amp, '#f5c842');
 
-  // 3) Wavelength — between two crests
+  // 3) Wavelength - between two crests
   const wlStart = 480;
   const wlEnd = wlStart + (2*Math.PI/k);
   ctx.strokeStyle = state.discoveries.wave ? 'rgba(46,204,113,0.85)' : 'rgba(59,200,232,0.7)';
@@ -1574,7 +1574,7 @@ function updateP1Prompt(){
   ];
   const next = order.find(o => !state.discoveries[o.key]);
   if (next){
-    promptEl.textContent = `Click on the ${next.name} on the wave — ${next.hint}. (${found} of 3 found)`;
+    promptEl.textContent = `Click on the ${next.name} on the wave, ${next.hint}. (${found} of 3 found)`;
   } else {
     promptEl.textContent = 'All 3 wave parts identified. Now make your prediction below to unlock the checkpoint.';
     const pred = document.getElementById('p1Prediction');
@@ -1598,7 +1598,7 @@ function maybeShowP1Checkpoint(){
 }
 
 /* =====================================================================
-   PHASE 2 — AMPLITUDE LAB
+   PHASE 2, AMPLITUDE LAB
    ===================================================================== */
 let p2Ctx, p2RAF, p2T = 0;
 let p2Amp = 3;
@@ -1639,7 +1639,7 @@ function initPhase2(){
   loop();
 
   const cont = wireCheckpoint(2, 2,
-    'Yes. Your data shows energy rising faster than amplitude — each step in amplitude adds more energy than the last.',
+    'Yes. Your data shows energy rising faster than amplitude, each step in amplitude adds more energy than the last.',
     'Look more carefully at your data. Compare amplitude = 2 vs amplitude = 4. Does energy double, or grow even more?',
     () => { unlockPhase(3); }
   );
@@ -1682,7 +1682,7 @@ function runTrial(){
 function renderTrialTable(freshIdx){
   const tbody = document.getElementById('p2Tbody');
   if (state.trials.length === 0){
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="3">No trials yet — choose an amplitude and click Run Trial.</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="3">No trials yet, choose an amplitude and click Run Trial.</td></tr>';
     return;
   }
   // Compute extremes for the row markers
@@ -1691,7 +1691,7 @@ function renderTrialTable(freshIdx){
   const ampMaxScale    = 8;
   const energyMaxScale = Math.max(maxEnergy, 1);
 
-  // Track which trial indices match each "extreme" — only mark the FIRST occurrence
+  // Track which trial indices match each "extreme" - only mark the FIRST occurrence
   // so a tie doesn't mark every row.
   const firstMaxEIdx = state.trials.findIndex(t => t.energy === maxEnergy);
   const firstMinAIdx = state.trials.findIndex(t => t.amplitude === minAmp);
@@ -1739,7 +1739,7 @@ function renderTrialTable(freshIdx){
 }
 
 /* Update the three sufficiency indicators (Trials, Distinct, Range).
-   These are visual cues only — they do NOT change gating logic. */
+   These are visual cues only; they do NOT change gating logic. */
 function updateSufficiency(){
   const trials   = state.trials;
   const n        = trials.length;
@@ -1762,7 +1762,7 @@ function updateSufficiency(){
   distinctPill.querySelector('.suff-progress').textContent = `${Math.min(distinct,5)} / 5`;
   distinctPill.classList.toggle('met', distinct >= 5);
 
-  // Range pill — needs one low (≤2) AND one high (≥7) amplitude tested
+  // Range pill - needs one low (≤2) AND one high (≥7) amplitude tested
   const rangeText =
     rangeOK   ? 'low and high tested' :
     hasLow    ? 'try a high amplitude (≥7)' :
@@ -1779,7 +1779,7 @@ function updateSufficiency(){
   if (typeof updateUnlockHints === 'function') updateUnlockHints();
 }
 
-/* Guided observation prompts — these never reveal the conclusion.
+/* Guided observation prompts - these never reveal the conclusion.
    They ask questions, point students at comparisons, and grow with the data. */
 function updateObservationPrompt(opts){
   const el = document.getElementById('obsText');
@@ -1794,7 +1794,7 @@ function updateObservationPrompt(opts){
 
   let msg;
   if (n === 0){
-    msg = 'Start with an extreme — try amplitude <strong>1</strong> or <strong>8</strong> first. Extremes reveal patterns fastest.';
+    msg = 'Start with an extreme, try amplitude <strong>1</strong> or <strong>8</strong> first. Extremes reveal patterns fastest.';
   } else if (n === 1){
     const t = trials[0];
     msg = `Trial 1 used amplitude <strong>${t.amplitude}</strong> and delivered <strong>${t.energy} J</strong>. Now run a very different amplitude. What do you expect to happen?`;
@@ -1802,17 +1802,17 @@ function updateObservationPrompt(opts){
     const a = sorted[0], b = sorted[1];
     const ampRatio = (b.amplitude / a.amplitude).toFixed(1);
     const enRatio  = a.energy > 0 ? (b.energy / a.energy).toFixed(1) : '?';
-    msg = `You changed amplitude from <strong>${a.amplitude}</strong> to <strong>${b.amplitude}</strong> — about <strong>${ampRatio}×</strong>. Energy changed from <strong>${a.energy} J</strong> to <strong>${b.energy} J</strong> — about <strong>${enRatio}×</strong>. Is energy growing at the same rate as amplitude, or faster?`;
+    msg = `You changed amplitude from <strong>${a.amplitude}</strong> to <strong>${b.amplitude}</strong>, about <strong>${ampRatio}×</strong>. Energy changed from <strong>${a.energy} J</strong> to <strong>${b.energy} J</strong>, about <strong>${enRatio}×</strong>. Is energy growing at the same rate as amplitude, or faster?`;
   } else if (n < 5 && distinct < 4){
     msg = 'Mix in <strong>more distinct amplitudes</strong>. The pattern is easier to see when your data spans many values.';
   } else if (!hasLow || !hasHigh){
-    if (!hasLow && !hasHigh) msg = 'You haven\'t tested the <strong>extremes</strong> yet — try amplitude <strong>1</strong> and amplitude <strong>8</strong> for the clearest comparison.';
+    if (!hasLow && !hasHigh) msg = 'You haven\'t tested the <strong>extremes</strong> yet, try amplitude <strong>1</strong> and amplitude <strong>8</strong> for the clearest comparison.';
     else if (!hasLow)        msg = 'Add a <strong>low</strong> amplitude trial (≤2) to see the bottom of the pattern.';
     else                     msg = 'Add a <strong>high</strong> amplitude trial (≥7) to see the top of the pattern.';
   } else if (n >= 5 && distinct >= 5){
-    msg = 'Look at the <strong>energy bars</strong> in your table. Doubling the amplitude doesn\'t double the bar length — it grows by more. Ready to test that pattern?';
+    msg = 'Look at the <strong>energy bars</strong> in your table. Doubling the amplitude doesn\'t double the bar length; it grows by more. Ready to test that pattern?';
   } else {
-    msg = `Good progress — <strong>${n}</strong> trials across <strong>${distinct}</strong> amplitudes. A couple more distinct values will sharpen the pattern.`;
+    msg = `Good progress, <strong>${n}</strong> trials across <strong>${distinct}</strong> amplitudes. A couple more distinct values will sharpen the pattern.`;
   }
 
   el.innerHTML = msg;
@@ -1823,13 +1823,13 @@ function updateObservationPrompt(opts){
 }
 
 /* Inline confirmation shown in the data-table header after a trial records.
-   Communicates: "yes, your data was captured" — no gamification. */
+   Communicates: "yes, your data was captured", no gamification. */
 let trialConfirmTimer = null;
 function showTrialConfirm(trialNum, amp, energy, wasRepeat){
   const el = document.getElementById('trialConfirm');
   if (!el) return;
   const repeat = wasRepeat
-    ? '<span class="repeat-note">repeat — checking consistency</span>'
+    ? '<span class="repeat-note">repeat, checking consistency</span>'
     : '';
   el.innerHTML = `Trial ${trialNum} recorded · amplitude ${amp} → ${energy} J ${repeat}`;
   el.classList.add('visible');
@@ -1862,7 +1862,7 @@ function drawP2(){
   ctx.fillText('DETECTOR', w-50, mid+68);
 
   // detector readout
-  let readout = '— J';
+  let readout = '- J';
   let readoutFill = 'rgba(59,200,232,0.4)';
   if (p2Pulse){
     const elapsed = performance.now() - p2Pulse.startedAt;
@@ -1899,7 +1899,7 @@ function drawP2(){
     const A_px = p2Pulse.amp * 9;
     const k = 0.04;
 
-    // Source emission ring — first 350 ms communicates "wave just left here"
+    // Source emission ring - first 350 ms communicates "wave just left here"
     if (elapsed < 350){
       const t = elapsed / 350;
       const ringR = 8 + t * 28;
@@ -1938,7 +1938,7 @@ function drawP2(){
 }
 
 /* =====================================================================
-   PHASE 3 — ENERGY TARGETS
+   PHASE 3, ENERGY TARGETS
    ===================================================================== */
 function initPhase3(){
   document.querySelectorAll('[data-target-btn]').forEach(btn => {
@@ -1956,7 +1956,7 @@ function initPhase3(){
   maybeShowP3Checkpoint();
 
   const cont = wireCheckpoint(3, 1,
-    'Exactly. Energy grows with the square of amplitude — so doubling amplitude means about four times the energy, not just double.',
+    'Exactly. Energy grows with the square of amplitude; so doubling amplitude means about four times the energy, not just double.',
     'Re-check your data. Compare an amplitude of 2 with an amplitude of 4. The energy did much more than double.',
     () => { unlockPhase(4); seedPhase4FromState(); }
   );
@@ -1974,7 +1974,7 @@ function fireTarget(key){
   const resultEl = document.getElementById('t'+cap(key)+'Result');
   if (energy >= need){
     resultEl.className = 'target-result success';
-    resultEl.textContent = `Delivered ${energy} J — needed ${need} J. Activated.`;
+    resultEl.textContent = `Delivered ${energy} J, needed ${need} J. Activated.`;
     const firstTime = !card.classList.contains('activated');
     card.classList.add('activated');
     if (firstTime){
@@ -1985,7 +1985,7 @@ function fireTarget(key){
     state.targets[key] = true;
   } else {
     resultEl.className = 'target-result fail';
-    resultEl.textContent = `Delivered ${energy} J — needed ${need} J. Try a higher amplitude.`;
+    resultEl.textContent = `Delivered ${energy} J, needed ${need} J. Try a higher amplitude.`;
   }
   saveState();
   maybeShowP3Checkpoint();
@@ -1999,7 +1999,7 @@ function maybeShowP3Checkpoint(){
 }
 
 /* =====================================================================
-   PHASE 4 — WAVE ENERGY MODEL
+   PHASE 4, WAVE ENERGY MODEL
    ===================================================================== */
 let p4Ctx;
 let showLinear = false, showSquare = false;
@@ -2104,7 +2104,7 @@ function initPhase4(){
   maybeShowP4Checkpoint();
 
   const cont = wireCheckpoint(4, 1,
-    'Right. Three times the amplitude means about nine times the energy — because energy is proportional to amplitude squared.',
+    'Right. Three times the amplitude means about nine times the energy; because energy is proportional to amplitude squared.',
     'Look at the square model on your graph. If amplitude triples, what happens to A² ? That is your factor.',
     () => { unlockPhase(5); document.getElementById('modeGate').style.display='block'; }
   );
@@ -2167,7 +2167,7 @@ function updatePlotHint(){
 }
 
 /* =====================================================================
-   ANALYSIS CARDS — auto-generated comparison prompts from real data
+   ANALYSIS CARDS, auto-generated comparison prompts from real data
    These ask questions; they never state the conclusion.
    ===================================================================== */
 function renderAnalysisCards(){
@@ -2181,18 +2181,18 @@ function renderAnalysisCards(){
 
   const cards = [];
 
-  // Card 1 — RANGE: lowest amplitude vs highest amplitude trial
+  // Card 1 - RANGE: lowest amplitude vs highest amplitude trial
   const sorted = [...trials].sort((a,b) => a.amplitude - b.amplitude);
   const lo = sorted[0], hi = sorted[sorted.length-1];
   if (lo.amplitude !== hi.amplitude){
     const ampRatio = (hi.amplitude / lo.amplitude);
     const enRatio  = lo.energy > 0 ? (hi.energy / lo.energy) : null;
-    cards.push(makeCard('Range — Low vs. High', lo, hi, ampRatio, enRatio,
+    cards.push(makeCard('Range, Low vs. High', lo, hi, ampRatio, enRatio,
       `Your amplitude grew by <strong>about ${formatRatio(ampRatio)}×</strong>. Your energy grew by <strong>about ${enRatio?formatRatio(enRatio):'?'}×</strong>. Are those the same number, or different?`
     ));
   }
 
-  // Card 2 — best DOUBLING pair (amp_B closest to 2 × amp_A)
+  // Card 2 - best DOUBLING pair (amp_B closest to 2 × amp_A)
   const pair2 = findRatioPair(trials, 2);
   if (pair2){
     const [a, b] = pair2;
@@ -2203,7 +2203,7 @@ function renderAnalysisCards(){
     ));
   }
 
-  // Card 3 — best TRIPLING pair (only if we still have room and it's distinct from card 2)
+  // Card 3 - best TRIPLING pair (only if we still have room and it's distinct from card 2)
   if (cards.length < 2){
     const pair3 = findRatioPair(trials, 3);
     if (pair3){
@@ -2230,7 +2230,7 @@ function renderAnalysisCards(){
   }
 
   if (cards.length === 0){
-    grid.innerHTML = '<div class="analysis-empty">Trial data looks limited — run more trials at distinct amplitudes in Phase 2.</div>';
+    grid.innerHTML = '<div class="analysis-empty">Trial data looks limited, run more trials at distinct amplitudes in Phase 2.</div>';
   } else {
     grid.innerHTML = cards.join('');
   }
@@ -2281,7 +2281,7 @@ function formatRatio(r){
 }
 
 /* =====================================================================
-   CER SCAFFOLDS — dynamic, data-aware hints that fade as students write
+   CER SCAFFOLDS, dynamic, data-aware hints that fade as students write
    ===================================================================== */
 function updateCERScaffolds(){
   const trials = state.trials;
@@ -2290,18 +2290,18 @@ function updateCERScaffolds(){
   const reas  = document.getElementById('reasoningScaffold');
   if (!claim || !evid || !reas) return;
 
-  // CLAIM scaffold — nudge toward model selection without naming it
+  // CLAIM scaffold - nudge toward model selection without naming it
   if (state.modelChoice === 'linear'){
     claim.innerHTML = '<span class="sc-label">Hint</span>You picked the <strong>linear</strong> model. Re-check: when amplitude doubled in your data, did energy also exactly double, or grow more?';
   } else if (state.modelChoice === 'square'){
-    claim.innerHTML = '<span class="sc-label">Hint</span>You picked the <strong>squared</strong> model. Now state that clearly in your claim — name the relationship as plainly as you can.';
+    claim.innerHTML = '<span class="sc-label">Hint</span>You picked the <strong>squared</strong> model. Now state that clearly in your claim, name the relationship as plainly as you can.';
   } else {
     claim.innerHTML = '<span class="sc-label">Hint</span>Did your data look like a <strong>straight line</strong>, or did it <strong>curve upward</strong> faster than amplitude grew? That tells you which model to claim.';
   }
 
-  // EVIDENCE scaffold — cite a real trial pair from the data
+  // EVIDENCE scaffold - cite a real trial pair from the data
   if (trials.length < 2){
-    evid.innerHTML = '<span class="sc-label">Hint</span>Run more trials in Phase 2 first — your evidence will be stronger with real numbers to cite.';
+    evid.innerHTML = '<span class="sc-label">Hint</span>Run more trials in Phase 2 first, your evidence will be stronger with real numbers to cite.';
   } else {
     const sorted = [...trials].sort((x,y) => x.amplitude - y.amplitude);
     const lo = sorted[0];
@@ -2316,10 +2316,10 @@ function updateCERScaffolds(){
     evid.innerHTML = `<span class="sc-label">Cite this</span>Try referencing your <strong>${label}</strong> pair: <strong>Trial ${a.trial}</strong> (amp ${a.amplitude}, ${a.energy} J) and <strong>Trial ${b.trial}</strong> (amp ${b.amplitude}, ${b.energy} J). What changed, and by how much?`;
   }
 
-  // REASONING scaffold — push toward physical explanation
-  reas.innerHTML = '<span class="sc-label">Hint</span>Amplitude is how far the wave displaces matter. A bigger wave has to push <strong>farther</strong> AND with more <strong>force</strong>. Connect those two ideas — what happens to total energy when both factors grow at once?';
+  // REASONING scaffold - push toward physical explanation
+  reas.innerHTML = '<span class="sc-label">Hint</span>Amplitude is how far the wave displaces matter. A bigger wave has to push <strong>farther</strong> AND with more <strong>force</strong>. Connect those two ideas, what happens to total energy when both factors grow at once?';
 
-  // Dim the scaffold for any field that already has enough text — visual cue
+  // Dim the scaffold for any field that already has enough text - visual cue
   const mins = { claim:25, evidence:30, reasoning:30 };
   claim.classList.toggle('dim', (state.cer.claim||'').length >= mins.claim);
   evid.classList.toggle('dim',  (state.cer.evidence||'').length >= mins.evidence);
@@ -2327,7 +2327,7 @@ function updateCERScaffolds(){
 }
 
 /* =====================================================================
-   PLOT — supports two view modes: 'raw' and 'ratio'
+   PLOT, supports two view modes: 'raw' and 'ratio'
    ===================================================================== */
 function drawP4(){
   if (!p4Ctx) return;
@@ -2431,7 +2431,7 @@ function drawP4(){
     ctx.fillStyle='rgba(245,200,66,1)';
     ctx.fillText('y = x²  (squared)', padL + plotW - 160, padT + 36);
   } else {
-    // Raw view — best-fit k from least squares (Pass 2 behaviour)
+    // Raw view - best-fit k from least squares (Pass 2 behaviour)
     let kLin = 1, kSq = 1;
     if (trials.length){
       let sumEA=0, sumAA=0, sumEAA=0, sumAAAA=0;
@@ -2562,7 +2562,7 @@ function drawP4(){
   if (trials.length === 0){
     ctx.fillStyle='rgba(154,164,175,0.6)';
     ctx.font="700 13px 'Nunito',sans-serif"; ctx.textAlign='center';
-    ctx.fillText('No data yet — run trials in Phase 2 to fill this graph.', padL + plotW/2, padT + plotH/2);
+    ctx.fillText('No data yet, run trials in Phase 2 to fill this graph.', padL + plotW/2, padT + plotH/2);
   }
 }
 
@@ -2606,7 +2606,7 @@ function initModeGate(){
 }
 
 /* =====================================================================
-   PHASE 5 — QUIZ
+   PHASE 5, QUIZ
    ===================================================================== */
 const QUIZ = [
   {
@@ -2630,7 +2630,7 @@ const QUIZ = [
     correct: 3
   },
   {
-    q: 'During an earthquake, which wave is more destructive — and why?',
+    q: 'During an earthquake, which wave is more destructive; and why?',
     options: [
       'The one with the higher frequency, because it shakes more often',
       'The one with the larger amplitude, because energy grows with the square of amplitude',
@@ -2644,7 +2644,7 @@ const QUIZ = [
     options: [
       '3 times larger',
       '9 times larger',
-      'unchanged — only frequency affects loudness',
+      'unchanged, only frequency affects loudness',
       '1/3 as large'
     ],
     correct: 1
@@ -2718,9 +2718,9 @@ function scoreQuiz(){
   lockQuizDisplay();
   const banner = document.getElementById('quizResultBanner');
   banner.style.display='block';
-  if (score >= 4){ banner.className='pass'; banner.textContent = `${score} / 5 — strong work. The amplitude–energy relationship is clearly clicking.`; }
-  else if (score >= 3){ banner.className='pass'; banner.textContent = `${score} / 5 — solid. Review the missed items and try again to push higher.`; }
-  else { banner.className='fail'; banner.textContent = `${score} / 5 — re-read the explanations and try again.`; }
+  if (score >= 4){ banner.className='pass'; banner.textContent = `${score} / 5, strong work. The amplitude–energy relationship is clearly clicking.`; }
+  else if (score >= 3){ banner.className='pass'; banner.textContent = `${score} / 5, solid. Review the missed items and try again to push higher.`; }
+  else { banner.className='fail'; banner.textContent = `${score} / 5, re-read the explanations and try again.`; }
   document.getElementById('quizScoreBadge').textContent = `Score: ${score} / 5`;
   // Trigger score reveal animation
   const scoreArea = document.getElementById('quizScoreArea');
@@ -2856,7 +2856,7 @@ function submitWork(){
    STEM / LS TOGGLES
    ===================================================================== */
 function initToggles(){
-  // Header toggle buttons are no longer rendered on investigation pages —
+  // Header toggle buttons are no longer rendered on investigation pages -
   // this page depends on the LyfeLabz index-page toggles, which persist via sessionStorage.
   const stem = document.getElementById('lyfelabz-stem'); // may be null
   const ls   = document.getElementById('lyfelabz-ls');   // may be null
@@ -2884,7 +2884,7 @@ function initToggles(){
 }
 
 /* =====================================================================
-   HERO CANVAS — drifting wave motes
+   HERO CANVAS, drifting wave motes
    ===================================================================== */
 let hCtx, hW, hH, hT=0, hDPR;
 function initHeroCanvas(){
@@ -2938,14 +2938,14 @@ function boot(){
   if (restored) {
     const banner = document.getElementById('restoreBanner');
     const phaseNames = {
-      1: 'Phase 1 — Wave Explorer',
-      2: 'Phase 2 — Amplitude Lab',
-      3: 'Phase 3 — Energy Targets',
-      4: 'Phase 4 — Wave Energy Model',
-      5: 'Phase 5 — Quiz'
+      1: 'Phase 1, Wave Explorer',
+      2: 'Phase 2, Amplitude Lab',
+      3: 'Phase 3, Energy Targets',
+      4: 'Phase 4, Wave Energy Model',
+      5: 'Phase 5, Quiz'
     };
     const where = phaseNames[state.phaseUnlocked] || 'where you left off';
-    banner.textContent = 'Your progress has been restored — continuing at ' + where + '.';
+    banner.textContent = 'Your progress has been restored, continuing at ' + where + '.';
     banner.classList.add('visible');
   }
   revealVisiblePhases();
@@ -2967,9 +2967,9 @@ function boot(){
     document.getElementById('quizResultBanner').style.display='block';
     const banner = document.getElementById('quizResultBanner');
     const score = state.quizScore || 0;
-    if (score >= 4){ banner.className='pass'; banner.textContent = `${score} / 5 — strong work. The amplitude–energy relationship is clearly clicking.`; }
-    else if (score >= 3){ banner.className='pass'; banner.textContent = `${score} / 5 — solid. Review the missed items and try again.`; }
-    else { banner.className='fail'; banner.textContent = `${score} / 5 — re-read the explanations and try again.`; }
+    if (score >= 4){ banner.className='pass'; banner.textContent = `${score} / 5, strong work. The amplitude–energy relationship is clearly clicking.`; }
+    else if (score >= 3){ banner.className='pass'; banner.textContent = `${score} / 5, solid. Review the missed items and try again.`; }
+    else { banner.className='fail'; banner.textContent = `${score} / 5, re-read the explanations and try again.`; }
     document.getElementById('goFurtherSection').style.display='block';
   }
 }

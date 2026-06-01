@@ -1,7 +1,7 @@
-# Micropass 2 — Hero Title Emoji Removal Report
+# Micropass 2: Hero Title Emoji Removal Report
 
 **Date:** 2026-06-01
-**Scope:** Remove trailing emojis from primary hero `<h1>` titles only — no badges, layouts, cont-cards, or metadata changed
+**Scope:** Remove trailing emojis from primary hero `<h1>` titles only, no badges, layouts, cont-cards, or metadata changed
 **Files changed:** 13
 
 ---
@@ -56,7 +56,7 @@ Each title had its trailing emoji + `&#xFE0E;` (variation selector-15, text-mode
 
 ## Decorative Emojis Preserved
 
-The following emoji instances were **not touched** — they appear in decorative, structural, or UI roles elsewhere on their pages:
+The following emoji instances were **not touched**; they appear in decorative, structural, or UI roles elsewhere on their pages:
 
 | Emoji | Pages | Preserved Location |
 |-------|-------|--------------------|
@@ -83,7 +83,7 @@ The following emoji instances were **not touched** — they appear in decorative
 Scan command result:
 ```
 grep -rn '&#xFE0E;' *.html | grep '<h1'
-(empty — no matches)
+(empty, no matches)
 ```
 
 ---
@@ -106,12 +106,12 @@ Live DOM queries via preview server confirmed clean h1 content:
 
 None for this pass. All 13 targeted titles are clean. No edge cases remain.
 
-One note for future reference: the `&#xFE0E;` variation selector was appended to every emoji in these h1 tags to force text-mode (non-pictographic) rendering in browsers that support it. With the emoji removed, the entity is gone too — no orphaned selectors remain.
+One note for future reference: the `&#xFE0E;` variation selector was appended to every emoji in these h1 tags to force text-mode (non-pictographic) rendering in browsers that support it. With the emoji removed, the entity is gone too, no orphaned selectors remain.
 
 ---
 
 ## Next Recommended Pass
 
-**Micropass 3 — Continuation Card `lesson` Color Fix**
+**Micropass 3, Continuation Card `lesson` Color Fix**
 
 Two lesson files (`lesson_sun-earth-moon.html`, `lesson_continental-drift.html`) define `.cont-card.lesson` using grey-blue (`rgba(122,143,166,…)`) instead of gold. Update to match the canonical lesson standard (`rgba(245,200,66,…)` background, gold gradient top stripe).

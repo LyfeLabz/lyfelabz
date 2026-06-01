@@ -172,7 +172,7 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 </style>
 <style>
 /* ── Learning Science Badges (inline) ── */
-/* ── Visibility gate — hidden until body.ls-active is set ─────────
+/* ── Visibility gate - hidden until body.ls-active is set ─────────
    The session-check script (injected into every content page) adds
    body.ls-active when sessionStorage key 'lyfelabz-ls' === 'on'.
    Educators toggle this from the index or Learning Science page.
@@ -183,7 +183,7 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 }
 
 body.ls-active .ls-focus {
-  /* ── Centered card — sits between hero and first content section ── */
+  /* ── Centered card - sits between hero and first content section ── */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -439,18 +439,18 @@ body.stem-active .stem-detail {
   <span class="hero-float">💪</span>
   <div class="hero-badge">Game</div>
   <h1>Exercise Simulator</h1>
-  <p>Crank up the intensity and watch every body system respond in real time. Then prove you know WHY — answer the quiz to score points!</p>
+  <p>Crank up the intensity and watch every body system respond in real time. Then prove you know WHY, answer the quiz to score points!</p>
 
 </div>
 
 <div class="main">
 <div class="ls-focus">
   <span class="ls-focus-label">🔬 Learning Science Focus</span>
-  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. — Dunlosky et al., 2013">💬 Elaboration</span>
-  <span class="ls-badge" data-tip="Students make decisions and take actions throughout — they drive the learning, not just receive it. — Freeman et al., 2014">🎯 Active Learning</span>
-  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. — Noetel et al., 2022">🖼️ Dual Coding</span>
-  <span class="ls-badge" data-tip="Surprising or personally relevant questions activate intrinsic motivation, sustaining engagement longer. — Lazowski & Hulleman, 2016">✨ Curiosity Drive</span>
-  <span class="ls-badge" data-tip="Immediate explanations turn every error into a targeted learning event rather than an ignored mistake. — Wisniewski et al., 2020">✅ Feedback & Correction</span>
+  <span class="ls-badge" data-tip="Students explain the &#39;why&#39; behind facts, building deep causal understanding rather than surface recall. (Dunlosky et al., 2013)">💬 Elaboration</span>
+  <span class="ls-badge" data-tip="Students make decisions and take actions throughout, they drive the learning, not just receive it. (Freeman et al., 2014)">🎯 Active Learning</span>
+  <span class="ls-badge" data-tip="Pairing visuals with words activates two memory channels simultaneously, building richer recall. (Noetel et al., 2022)">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Surprising or personally relevant questions activate intrinsic motivation, sustaining engagement longer. (Lazowski & Hulleman, 2016)">✨ Curiosity Drive</span>
+  <span class="ls-badge" data-tip="Immediate explanations turn every error into a targeted learning event rather than an ignored mistake. (Wisniewski et al., 2020)">✅ Feedback & Correction</span>
 </div>
 <div class="stem-focus">
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
@@ -464,7 +464,7 @@ body.stem-active .stem-detail {
   <div class="intensity-panel">
     <div class="ip-top">
       <div class="ip-title">🎚️ Choose Your Intensity Level</div>
-      <div class="ip-hint">Select a level — all systems update instantly</div>
+      <div class="ip-hint">Select a level, all systems update instantly</div>
     </div>
     <div class="intensity-levels" id="intensity-levels"></div>
   </div>
@@ -483,7 +483,7 @@ body.stem-active .stem-detail {
   <div class="systems-grid" id="systems-grid"></div>
   <div class="quiz-panel">
     <div class="qp-header">
-      <div class="qp-title">🧠 Quiz — Prove You Know Why!</div>
+      <div class="qp-title">🧠 Quiz, Prove You Know Why!</div>
       <div class="qp-badge">10 Questions · Score Tracking</div>
     </div>
     <div id="quiz-container"></div>
@@ -528,9 +528,9 @@ const SYSTEMS = [
     facts:[
       "At rest, your heart beats about 68 times per minute.",
       "During a brisk walk, heart rate rises to ~100 bpm to deliver more oxygen.",
-      "Jogging pushes the heart to ~140 bpm — nearly double resting rate!",
+      "Jogging pushes the heart to ~140 bpm, nearly double resting rate!",
       "At high intensity, blood flow to muscles increases <strong>4×</strong> compared to rest.",
-      "Sprinting pushes the heart near its maximum — about 200 bpm for most teens."
+      "Sprinting pushes the heart near its maximum, about 200 bpm for most teens."
     ]
   },
   {
@@ -541,7 +541,7 @@ const SYSTEMS = [
       { label:"CO₂ Output",     unit:"L/min",values:[0.25,0.9,1.8,3.5,5.5], normal:0.25 }
     ],
     facts:[
-      "At rest, you breathe about 15 times per minute — mostly on autopilot.",
+      "At rest, you breathe about 15 times per minute, mostly on autopilot.",
       "Walking raises your breathing rate as muscles demand slightly more oxygen.",
       "Jogging can triple your breathing rate as CO₂ builds up in the blood.",
       "At high intensity, you can inhale up to 4 litres of O₂ every minute.",
@@ -556,11 +556,11 @@ const SYSTEMS = [
       { label:"Glucose Use", unit:"×rest", values:[1,2,6,12,18],   normal:1 }
     ],
     facts:[
-      "At rest, muscles are quiet — using just enough energy to maintain tone.",
+      "At rest, muscles are quiet: using just enough energy to maintain tone.",
       "Even walking activates leg muscles, which demand more glucose and oxygen.",
       "Jogging muscles can consume <strong>8×</strong> more oxygen than at rest!",
       "At high intensity, muscles produce so much heat the body sweats to cool down.",
-      "Sprinting uses fast-twitch muscle fibres that produce energy without oxygen — but tire quickly."
+      "Sprinting uses fast-twitch muscle fibres that produce energy without oxygen; but tire quickly."
     ]
   },
   {
@@ -571,11 +571,11 @@ const SYSTEMS = [
       { label:"Urine Volume",unit:"×rest",  values:[1,0.9,0.7,0.5,0.3],    normal:1   }
     ],
     facts:[
-      "At rest, sweat production is very low — just a small trickle to maintain temperature.",
+      "At rest, sweat production is very low, just a small trickle to maintain temperature.",
       "Walking raises body temperature slightly, activating sweat glands.",
       "Jogging produces enough sweat to lose up to 600 mL of fluid per hour.",
-      "Intense exercise ramps up CO₂ output — the lungs become a key excretory organ.",
-      "At max effort, you can sweat nearly 2 litres per hour — replacing fluids is critical!"
+      "Intense exercise ramps up CO₂ output, the lungs become a key excretory organ.",
+      "At max effort, you can sweat nearly 2 litres per hour, replacing fluids is critical!"
     ]
   },
   {
@@ -586,10 +586,10 @@ const SYSTEMS = [
       { label:"Coordination",   unit:"×rest",values:[1,2,4,8,12],           normal:1   }
     ],
     facts:[
-      "At rest, the nervous system quietly monitors body state — heartbeat, breathing, balance.",
+      "At rest, the nervous system quietly monitors body state, heartbeat, breathing, balance.",
       "Walking requires the motor cortex to fire continuous signals to leg muscles.",
       "Jogging increases motor neuron activity <strong>5×</strong> as balance and rhythm must be maintained.",
-      "High-intensity exercise actually <strong>sharpens</strong> reaction time — adrenaline speeds neural signals.",
+      "High-intensity exercise actually <strong>sharpens</strong> reaction time, adrenaline speeds neural signals.",
       "At max effort, the cerebellum is working intensely to coordinate 200+ muscles simultaneously."
     ]
   },
@@ -601,25 +601,25 @@ const SYSTEMS = [
       { label:"Anti-pathogen",    unit:"×rest",values:[1,1.1,1.3,1.5,1.8],normal:1 }
     ],
     facts:[
-      "At rest, the immune system does its normal surveillance — monitoring for threats.",
-      "Light exercise slightly boosts immune activity — white blood cells circulate faster.",
-      "Moderate jogging is excellent for immunity — it's one of the best things you can do!",
-      "Intense exercise temporarily <strong>suppresses</strong> immunity for a few hours after — the 'open window' effect.",
+      "At rest, the immune system does its normal surveillance, monitoring for threats.",
+      "Light exercise slightly boosts immune activity, white blood cells circulate faster.",
+      "Moderate jogging is excellent for immunity, it's one of the best things you can do!",
+      "Intense exercise temporarily <strong>suppresses</strong> immunity for a few hours after, the 'open window' effect.",
       "After sprinting, the body needs recovery time before the immune system returns to full strength."
     ]
   }
 ];
 
 const QUIZ = [
-  { text:"When you start running, your heart rate increases. This is the Circulatory System responding. Why?", options:["To make the lungs bigger","To pump more oxygen-carrying blood to working muscles","To slow digestion so energy goes to muscles","To reduce body temperature"], correct:1, explanation:"Working muscles need more oxygen. The heart pumps faster to deliver oxygen-rich blood faster — more beats per minute means more oxygen delivered per minute." },
-  { text:"Your breathing rate triples when jogging. Which waste product is the MAIN trigger that signals your body to breathe faster?", options:["Oxygen","Glucose","Carbon dioxide (CO₂)","Nitrogen"], correct:2, explanation:"Rising CO₂ in the blood is the main signal to the brain to breathe faster. The body is less sensitive to falling O₂ levels — it's the CO₂ buildup that really sounds the alarm." },
+  { text:"When you start running, your heart rate increases. This is the Circulatory System responding. Why?", options:["To make the lungs bigger","To pump more oxygen-carrying blood to working muscles","To slow digestion so energy goes to muscles","To reduce body temperature"], correct:1, explanation:"Working muscles need more oxygen. The heart pumps faster to deliver oxygen-rich blood faster, more beats per minute means more oxygen delivered per minute." },
+  { text:"Your breathing rate triples when jogging. Which waste product is the MAIN trigger that signals your body to breathe faster?", options:["Oxygen","Glucose","Carbon dioxide (CO₂)","Nitrogen"], correct:2, explanation:"Rising CO₂ in the blood is the main signal to the brain to breathe faster. The body is less sensitive to falling O₂ levels, it's the CO₂ buildup that really sounds the alarm." },
   { text:"Muscles use up to 20× more oxygen during sprinting than at rest. Which system delivers that oxygen to them?", options:["Excretory System","Nervous System","Digestive System","Circulatory System"], correct:3, explanation:"The Circulatory System carries oxygen (bound to hemoglobin in red blood cells) from the lungs to the muscles. Higher demand = faster heart rate = more oxygen delivered." },
-  { text:"You sweat heavily during intense exercise. Sweating is mainly the job of which system?", options:["Respiratory System","Nervous System","Excretory System","Immune System"], correct:2, explanation:"Sweat glands are part of the Excretory System (skin). Sweating removes heat and also excretes small amounts of water, salt, and waste — helping maintain homeostasis." },
+  { text:"You sweat heavily during intense exercise. Sweating is mainly the job of which system?", options:["Respiratory System","Nervous System","Excretory System","Immune System"], correct:2, explanation:"Sweat glands are part of the Excretory System (skin). Sweating removes heat and also excretes small amounts of water, salt, and waste, helping maintain homeostasis." },
   { text:"The nervous system sends more signals to muscles during exercise. What is the name of the nerve cells that carry movement commands from the brain to muscles?", options:["Sensory neurons","Motor neurons","Blood vessels","Capillaries"], correct:1, explanation:"Motor neurons carry electrical signals from the brain and spinal cord to muscles, telling them to contract. The more intense the exercise, the more motor neurons fire." },
-  { text:"During high-intensity exercise, the Circulatory System diverts blood AWAY from some organs toward working muscles. Which organ gets less blood during intense exercise?", options:["The heart","The brain","The digestive system","Working leg muscles"], correct:2, explanation:"Blood is actively diverted from the digestive system during intense exercise — this is why eating right before hard exercise can cause cramps. Muscles and the brain take priority." },
-  { text:"After intense exercise, your immune system is temporarily weakened. This is called the 'open window' effect. What does this mean for athletes?", options:["They cannot get sick after exercise","They should exercise harder to strengthen immunity","They are more vulnerable to infections for a few hours post-exercise","Their white blood cells stop working permanently"], correct:2, explanation:"Intense exercise temporarily suppresses immunity — white blood cell activity drops for a few hours. This 'open window' is why athletes are advised to avoid sick people right after hard training." },
-  { text:"Muscles produce heat as a waste product of energy use. Which system REMOVES this excess heat from the body?", options:["Skeletal System","Immune System","Excretory System (via sweat)","Digestive System"], correct:2, explanation:"The Excretory System removes heat through sweat. Water evaporating from skin carries heat away from the body — the most effective cooling system humans have." },
-  { text:"Your reaction time actually IMPROVES slightly during moderate exercise. Which chemical does the Nervous System release during exercise that speeds up brain signals?", options:["Insulin","Adrenaline (epinephrine)","Bile","Hemoglobin"], correct:1, explanation:"Adrenaline (epinephrine) is released by the adrenal glands during exercise. It speeds up heart rate, sharpens focus, and accelerates neural signal processing — making reactions faster." },
+  { text:"During high-intensity exercise, the Circulatory System diverts blood AWAY from some organs toward working muscles. Which organ gets less blood during intense exercise?", options:["The heart","The brain","The digestive system","Working leg muscles"], correct:2, explanation:"Blood is actively diverted from the digestive system during intense exercise; this is why eating right before hard exercise can cause cramps. Muscles and the brain take priority." },
+  { text:"After intense exercise, your immune system is temporarily weakened. This is called the 'open window' effect. What does this mean for athletes?", options:["They cannot get sick after exercise","They should exercise harder to strengthen immunity","They are more vulnerable to infections for a few hours post-exercise","Their white blood cells stop working permanently"], correct:2, explanation:"Intense exercise temporarily suppresses immunity, white blood cell activity drops for a few hours. This 'open window' is why athletes are advised to avoid sick people right after hard training." },
+  { text:"Muscles produce heat as a waste product of energy use. Which system REMOVES this excess heat from the body?", options:["Skeletal System","Immune System","Excretory System (via sweat)","Digestive System"], correct:2, explanation:"The Excretory System removes heat through sweat. Water evaporating from skin carries heat away from the body, the most effective cooling system humans have." },
+  { text:"Your reaction time actually IMPROVES slightly during moderate exercise. Which chemical does the Nervous System release during exercise that speeds up brain signals?", options:["Insulin","Adrenaline (epinephrine)","Bile","Hemoglobin"], correct:1, explanation:"Adrenaline (epinephrine) is released by the adrenal glands during exercise. It speeds up heart rate, sharpens focus, and accelerates neural signal processing, making reactions faster." },
   { text:"Which TWO systems are MOST directly responsible for delivering oxygen to working muscles during exercise?", options:["Respiratory + Circulatory","Digestive + Excretory","Skeletal + Muscular","Nervous + Immune"], correct:0, explanation:"The Respiratory System brings oxygen in through the lungs, and the Circulatory System carries that oxygen to muscles via red blood cells. These two are the core delivery partnership during exercise." }
 ];
 
@@ -723,7 +723,7 @@ function updateScore() {
 function showFinal() {
   const pct = Math.round((score/total)*100);
   const icon = pct===100?'🏆':pct>=80?'🌟':pct>=60?'👍':'💪';
-  const msg = pct===100?'Perfect! You completely understand how exercise drives every body system.':pct>=80?'Great work! You clearly understand the connections between exercise and body systems.':pct>=60?'Good effort! Review the explanations and try exploring the simulator some more.':'Keep studying! Try changing the intensity levels and reading the facts — then retry the quiz.';
+  const msg = pct===100?'Perfect! You completely understand how exercise drives every body system.':pct>=80?'Great work! You clearly understand the connections between exercise and body systems.':pct>=60?'Good effort! Review the explanations and try exploring the simulator some more.':'Keep studying! Try changing the intensity levels and reading the facts, then retry the quiz.';
   document.getElementById('fs-icon').textContent=icon;
   document.getElementById('fs-num').textContent=`${score} / ${total}`;
   document.getElementById('fs-msg').textContent=msg;

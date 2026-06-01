@@ -299,7 +299,7 @@
     white-space: nowrap;
   }
 
-  /* Grade pills — gold active */
+  /* Grade pills - gold active */
   .fp-grade { color: var(--muted); }
   .fp-grade:hover:not(.active) {
     color: var(--gold);
@@ -313,7 +313,7 @@
     box-shadow: 0 2px 14px rgba(245,200,66,0.4);
   }
 
-  /* Topic pills — teal active, colored tints at rest */
+  /* Topic pills - teal active, colored tints at rest */
   .fp-topic { color: var(--muted); }
   .fp-topic[data-topic="all"] { color: var(--muted); }
   .fp-topic[data-topic="life-science"]       { color: var(--bio);   border-color: rgba(61,220,132,0.3); }
@@ -617,10 +617,7 @@
   }
   .ulink.dis:hover { background: rgba(180,127,255,0.45); border-color: rgba(180,127,255,0.85); color: var(--astro); }
 
-  /* ===== WHAT IS LIFE CARD — compact pills ===== */
-  #unit-what-is-life .ulink { padding-left: 0.65rem; padding-right: 0.65rem; }
-
-  /* ===== PILL LEGEND ===== */
+/* ===== PILL LEGEND ===== */
   .pill-legend {
     display: flex;
     align-items: center;
@@ -968,7 +965,7 @@
         <span class="topic-group-name">Life Science</span>
       </div>
 
-      <!-- Life Science — Grade 6 -->
+      <!-- Life Science - Grade 6 -->
       <span id="bio" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
       <div class="subject-block" data-topic="life-science" data-grades="6">
         <div class="unit-row">
@@ -979,18 +976,14 @@
             </div>
             <div class="unit-links">
               <a href="lesson_what-is-life.html" class="ulink live">Lesson</a>
-              <span style="display:inline-flex;flex-wrap:nowrap;gap:0.45rem;">
-                <a href="game_is-it-alive.html" class="ulink game">Is It Alive?</a>
-              </span>
-              <span style="display:inline-flex;flex-wrap:nowrap;gap:0.45rem;">
-                <a href="investigation_gray-zone.html" class="ulink inv">The Gray Zone</a>
-              </span>
+              <a href="investigation_gray-zone.html" class="ulink inv">The Gray Zone</a>
+              <a href="game_is-it-alive.html" class="ulink game">Is It Alive?</a>
             </div>
           </div>
           <div class="unit-card" id="unit-cell-types">
             <div class="unit-top">
               <div class="unit-name">Cell Types</div>
-              <div class="unit-desc">Unicellular vs. multicellular, prokaryotic vs. eukaryotic — the building blocks of all living things.</div>
+              <div class="unit-desc">Unicellular vs. multicellular, prokaryotic vs. eukaryotic: the building blocks of all living things.</div>
             </div>
             <div class="unit-links">
               <a href="lesson_cell-types.html" class="ulink live">Lesson</a>
@@ -1001,19 +994,19 @@
           <div class="unit-card" id="unit-organelles">
             <div class="unit-top">
               <div class="unit-name">Cell Organelles</div>
-              <div class="unit-desc">Inside plant and animal cells — nuclei, mitochondria, chloroplasts, and more, using real-world analogies.</div>
+              <div class="unit-desc">Inside plant and animal cells: nuclei, mitochondria, chloroplasts, and more, using real-world analogies.</div>
             </div>
             <div class="unit-links">
               <a href="lesson_organelles.html" class="ulink live">Lesson</a>
-              <a href="game_cell-explorer.html" class="ulink game">Cell Explorer</a>
               <a href="investigation_organelles.html" class="ulink inv">Protein Pathway</a>
+              <a href="game_cell-explorer.html" class="ulink game">Cell Explorer</a>
               <a href="extension_neuron-explorer.html" class="ulink ext">Neuron Explorer</a>
             </div>
           </div>
           <div class="unit-card" id="unit-body-systems">
             <div class="unit-top">
               <div class="unit-name">Human Body Systems</div>
-              <div class="unit-desc">Circulatory, digestive, nervous systems and more — how organs work together to keep us alive.</div>
+              <div class="unit-desc">Circulatory, digestive, nervous systems and more: how organs work together to keep us alive.</div>
             </div>
             <div class="unit-links">
               <a href="lesson_body-systems.html" class="ulink live">Lesson</a>
@@ -1049,10 +1042,10 @@
       <span id="geo" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
       <div class="subject-block" data-topic="earth-space" data-grades="6">
         <div class="unit-row">
-          <div class="unit-card">
+          <div class="unit-card" id="unit-layers-of-time">
             <div class="unit-top">
               <div class="unit-name">Layers of Time</div>
-              <div class="unit-desc">Igneous, sedimentary, and metamorphic rocks — how each type forms and what the layers reveal about Earth's history.</div>
+              <div class="unit-desc">Igneous, sedimentary, and metamorphic rocks: how each type forms and what the layers reveal about Earth's history.</div>
             </div>
             <div class="unit-links">
               <a href="lesson_layers-of-time.html" class="ulink live">Lesson</a>
@@ -1060,7 +1053,7 @@
               <a href="extension_fossil-hunt.html" class="ulink ext">Fossil Hunt</a>
             </div>
           </div>
-          <div class="unit-card">
+          <div class="unit-card" id="unit-continental-drift">
             <div class="unit-top">
               <div class="unit-name">Continental Drift</div>
               <div class="unit-desc">How continents move, tectonic plate boundaries, earthquakes, volcanoes, and the forces that shape landmasses over time.</div>
@@ -1070,30 +1063,30 @@
               <a href="simulation_floatlandia-fracture.html" class="ulink sim">Floatlandia Fracture</a>
             </div>
           </div>
-          <div class="unit-card">
+          <div class="unit-card" id="unit-sun-earth-moon">
             <div class="unit-top">
               <div class="unit-name">Sun-Earth-Moon System</div>
-              <div class="unit-desc">How gravity, orbits, and motion connect the Sun, Earth, and Moon into one system — including rotation, revolution, and the forces that keep it all balanced.</div>
+              <div class="unit-desc">How gravity, orbits, and motion connect the Sun, Earth, and Moon into one system, including rotation, revolution, and the forces that keep it all balanced.</div>
             </div>
             <div class="unit-links">
               <a href="lesson_sun-earth-moon.html" class="ulink live">Lesson</a>
               <a href="simulation_gravity-wells.html" class="ulink sim">Gravity Wells</a>
             </div>
           </div>
-          <div class="unit-card">
+          <div class="unit-card" id="unit-phases-of-the-moon">
             <div class="unit-top">
               <div class="unit-name">Phases of the Moon</div>
-              <div class="unit-desc">Why the Moon appears to change shape every night — orbit, tidal locking, the 8 phases, and the 29.5-day lunar cycle explained.</div>
+              <div class="unit-desc">Why the Moon appears to change shape every night: orbit, tidal locking, the 8 phases, and the 29.5-day lunar cycle explained.</div>
             </div>
             <div class="unit-links">
               <a href="lesson_phases-of-the-moon.html" class="ulink live">Lesson</a>
               <a href="extension_moon-tonight.html" class="ulink ext">Moon Tonight</a>
             </div>
           </div>
-          <div class="unit-card">
+          <div class="unit-card" id="unit-eclipses">
             <div class="unit-top">
               <div class="unit-name">Eclipses</div>
-              <div class="unit-desc">Why solar and lunar eclipses are rare — orbital tilt, the umbra and penumbra, nodes, and the 400× coincidence that makes totality possible.</div>
+              <div class="unit-desc">Why solar and lunar eclipses are rare: orbital tilt, the umbra and penumbra, nodes, and the 400× coincidence that makes totality possible.</div>
             </div>
             <div class="unit-links">
               <a href="lesson_eclipses.html" class="ulink live">Lesson</a>
@@ -1115,10 +1108,10 @@
       <span id="chem" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
       <div class="subject-block" data-topic="physical-science" data-grades="6">
         <div class="unit-row">
-          <div class="unit-card">
+          <div class="unit-card" id="unit-nature-of-waves">
             <div class="unit-top">
               <div class="unit-name">Nature of Waves</div>
-              <div class="unit-desc">What's actually moving when a wave travels? Investigate how waves transfer energy without moving matter — and discover the difference between mechanical and electromagnetic waves.</div>
+              <div class="unit-desc">What's actually moving when a wave travels? Investigate how waves transfer energy without moving matter, and discover the difference between mechanical and electromagnetic waves.</div>
             </div>
             <div class="unit-links">
               <a href="lesson_nature-of-waves.html" class="ulink live">Lesson</a>
@@ -1137,7 +1130,7 @@
         <span class="topic-group-name">Tech &amp; Engineering</span>
       </div>
 
-      <!-- Science & Engineering Practices — All Grades -->
+      <!-- Science & Engineering Practices - All Grades -->
       <span id="sci" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
       <div class="subject-block" data-topic="tech-engineering" data-grades="6">
         <div class="unit-row">
@@ -1174,7 +1167,7 @@
           <div class="unit-card">
             <div class="unit-top">
               <div class="unit-name">Cognitive Biases</div>
-              <div class="unit-desc">The mental shortcuts your brain takes — confirmation bias, anchoring, the Dunning-Kruger effect, and more.</div>
+              <div class="unit-desc">The mental shortcuts your brain takes: confirmation bias, anchoring, the Dunning-Kruger effect, and more.</div>
             </div>
             <div class="unit-links"></div>
           </div>
@@ -1193,7 +1186,7 @@
     <div class="filter-empty" id="filter-empty">
       <p style="font-size:1.5rem; margin-bottom:0.75rem;">🔍</p>
       <p style="font-weight:700; margin-bottom:0.4rem; color:var(--text);">No units yet for that combination</p>
-      <p>New content is added throughout the year — check back soon, or try a different filter.</p>
+      <p>New content is added throughout the year. Check back soon, or try a different filter.</p>
     </div>
 
   </div>
@@ -1210,7 +1203,7 @@
         <div class="how-icon">📖</div>
         <div class="how-step">Step 1</div>
         <h3>Read the Review</h3>
-        <p>Clear notes and visual breakdowns cover every key concept — no textbook hunting required.</p>
+        <p>Clear notes and visual breakdowns cover every key concept. No textbook hunting required.</p>
       </div>
       <div class="how-card">
         <div class="how-icon">🎮</div>
@@ -1222,7 +1215,7 @@
         <div class="how-icon">✅</div>
         <div class="how-step">Step 3</div>
         <h3>Test Yourself</h3>
-        <p>Practice quizzes give instant feedback and real explanations — learn from every miss.</p>
+        <p>Practice quizzes give instant feedback and real explanations. Learn from every miss.</p>
       </div>
       <div class="how-card">
         <div class="how-icon">🏆</div>
@@ -1278,7 +1271,7 @@
       </button>
     </div>
     <div style="font-size:0.63rem; color:rgba(255,255,255,0.38); max-width:900px; text-align:center; line-height:1.5; white-space:nowrap;" id="edu-toggle-hint">
-      Badges &amp; standards appear on every lesson, map, activity, simulation, extension, and game — this session only.
+      Badges &amp; standards appear on every lesson, map, activity, simulation, extension, and game (this session only).
     </div>
   </div>
 
@@ -1365,7 +1358,7 @@ document.querySelectorAll('.fp-grade').forEach(function(btn) {
   });
 });
 
-// Topic pills — multi-select
+// Topic pills - multi-select
 document.querySelectorAll('.fp-topic').forEach(function(btn) {
   btn.addEventListener('click', function() {
     var topic = btn.dataset.topic;
