@@ -786,7 +786,6 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
     <div class="checkpoint-actions">
       <button class="btn btn-orange" id="cp1Check">Check Answer</button>
       <button class="btn btn-ghost"  id="cp1Retry" style="display:none;">Try Again</button>
-      <button class="btn btn-orange" id="cp1Continue" style="display:none;">Continue → Amplitude Lab</button>
     </div>
   </div>
 </section>
@@ -1345,7 +1344,7 @@ function wireCheckpoint(idx, correctIdx, feedbackCorrect, feedbackWrong, onPass)
       fb.textContent = feedbackCorrect;
       checkBtn.style.display='none';
       retryBtn.style.display='none';
-      contBtn.style.display='inline-flex';
+      if (contBtn) contBtn.style.display='inline-flex';
       [...opts.querySelectorAll('input')].forEach(i => i.disabled = true);
       onPass && onPass();
     } else {
@@ -1441,12 +1440,11 @@ function initPhase1(){
   loop();
 
   // Wire checkpoint
-  const cont = wireCheckpoint(1, 1,
+  wireCheckpoint(1, 1,
     'Correct. Amplitude is the height from the rest line up to a crest — it measures how strong the wave is.',
     'Not quite — re-read the labels on the wave. Amplitude is a height measurement, not a distance or a count.',
     () => { unlockPhase(2); }
   );
-  cont.addEventListener('click', () => { const t = document.getElementById('phase2'); if(t) t.scrollIntoView({behavior:'smooth', block:'start'}); });
 }
 
 function drawP1(){

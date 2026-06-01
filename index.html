@@ -169,13 +169,13 @@
 
   /* ===== HERO ===== */
   .hero {
-    min-height: 48vh;
+    min-height: 28vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 4.25rem 2rem 1.25rem;
+    padding: 2.25rem 2rem 1.25rem;
     background:
       radial-gradient(ellipse 70% 55% at 50% 0%, rgba(180,127,255,0.10) 0%, transparent 70%),
       radial-gradient(ellipse 50% 40% at 80% 80%, rgba(41,212,245,0.06) 0%, transparent 60%),
@@ -194,15 +194,15 @@
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    margin-bottom: 2rem;
+    margin-bottom: 1.1rem;
     animation: fadeUp 0.6s ease both;
   }
   .hero h1 {
     font-family: 'Orbitron', sans-serif;
-    font-size: clamp(3rem, 8vw, 6rem);
+    font-size: clamp(2.4rem, 6vw, 4.8rem);
     font-weight: 900;
     line-height: 1.05;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.8rem;
     animation: fadeUp 0.7s 0.1s ease both;
   }
   .word-lyfe { color: var(--text); }
@@ -216,34 +216,83 @@
     font-size: 1.15rem;
     color: var(--muted);
     max-width: 680px;
-    margin: 0 auto 2.5rem;
+    margin: 0 auto 1.5rem;
     line-height: 1.7;
     animation: fadeUp 0.7s 0.2s ease both;
   }
 
-  /* ===== FILTER SYSTEM ===== */
-  .filter-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
+  /* ===== CONTROL PANEL (filter) ===== */
+  .control-panel {
+    background: var(--card);
+    border: 1px solid rgba(245,200,66,0.28);
+    border-radius: 18px;
+    padding: 1.25rem 1.5rem 1.4rem;
+    width: 100%;
+    max-width: 680px;
+    box-shadow: 0 0 0 4px rgba(245,200,66,0.04);
     margin-bottom: 2.8rem;
     animation: fadeUp 0.7s 0.3s ease both;
   }
-  .filter-row {
+  .cp-label-row {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
-    justify-content: center;
-    flex-wrap: wrap;
+    margin-bottom: 1.1rem;
   }
+  .cp-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: rgba(245,200,66,0.14);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .cp-icon svg { width: 13px; height: 13px; }
+  .cp-panel-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .cp-hint {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .cp-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0.85rem 0;
+  }
+  .cp-row-label {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .cp-pills {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.9rem;
+  }
+  .cp-pills:last-child { margin-bottom: 0; }
+
   .filter-pill {
     font-family: 'Nunito', sans-serif;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
-    padding: 0.42rem 1.1rem;
+    letter-spacing: 0.05em;
+    padding: 0.38rem 1rem;
     border-radius: 99px;
-    border: 1.5px solid;
+    border: 1.5px solid rgba(255,255,255,0.14);
     cursor: pointer;
     transition: all 0.2s ease;
     background: transparent;
@@ -251,10 +300,7 @@
   }
 
   /* Grade pills — gold active */
-  .fp-grade {
-    color: var(--muted);
-    border-color: rgba(255,255,255,0.14);
-  }
+  .fp-grade { color: var(--muted); }
   .fp-grade:hover:not(.active) {
     color: var(--gold);
     border-color: rgba(245,200,66,0.4);
@@ -267,16 +313,16 @@
     box-shadow: 0 2px 14px rgba(245,200,66,0.4);
   }
 
-  /* Topic pills — teal active */
-  .fp-topic {
-    color: var(--muted);
-    border-color: rgba(255,255,255,0.14);
-  }
-  .fp-topic:hover:not(.active) {
-    color: var(--teal);
-    border-color: rgba(59,200,232,0.4);
-    background: rgba(59,200,232,0.06);
-  }
+  /* Topic pills — teal active, colored tints at rest */
+  .fp-topic { color: var(--muted); }
+  .fp-topic[data-topic="all"] { color: var(--muted); }
+  .fp-topic[data-topic="life-science"]       { color: var(--bio);   border-color: rgba(61,220,132,0.3); }
+  .fp-topic[data-topic="earth-space"]        { color: var(--astro); border-color: rgba(180,127,255,0.3); }
+  .fp-topic[data-topic="physical-science"]   { color: var(--chem);  border-color: rgba(255,112,67,0.3); }
+  .fp-topic[data-topic="tech-engineering"]   { color: var(--sci);   border-color: rgba(245,200,66,0.3); }
+  .fp-topic[data-topic="behavioral-science"] { color: var(--psych); border-color: rgba(244,114,182,0.3); }
+
+  .fp-topic:hover:not(.active) { background: rgba(59,200,232,0.06); border-color: rgba(59,200,232,0.4); color: var(--teal); }
   .fp-topic.active {
     color: #1a2535;
     background: var(--teal);
@@ -333,7 +379,7 @@
   }
 
   /* ===== SECTIONS ===== */
-  section { padding: 5.5rem 2rem; }
+  section { padding: 3rem 2rem; }
   .container { max-width: 1140px; margin: 0 auto; }
   .section-eyebrow {
     display: inline-block;
@@ -867,23 +913,34 @@
   </h1>
   <p class="hero-sub">Interactive science, built for middle school.<br>Filter by grade and topic to find exactly what you're studying.</p>
 
-  <!-- FILTER SYSTEM -->
-  <div class="filter-wrap">
-    <!-- Row 1: Grade -->
-    <div class="filter-row" id="grade-filters">
+  <!-- FILTER CONTROL PANEL -->
+  <div class="control-panel">
+    <div class="cp-label-row">
+      <div class="cp-icon">
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M2 4h12M4 8h8M6 12h4" stroke="#f5c842" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="cp-panel-title">Filter Content</span>
+      <span class="cp-hint">Select a grade and topic to get started</span>
+    </div>
+    <hr class="cp-divider">
+    <div class="cp-row-label">Grade</div>
+    <div class="cp-pills" id="grade-filters">
       <button class="filter-pill fp-grade" data-grade="all">All Grades</button>
       <button class="filter-pill fp-grade active" data-grade="6">Grade 6</button>
       <button class="filter-pill fp-grade" data-grade="7">Grade 7</button>
       <button class="filter-pill fp-grade" data-grade="8">Grade 8</button>
     </div>
-    <!-- Row 2: Topic -->
-    <div class="filter-row" id="topic-filters">
+    <hr class="cp-divider">
+    <div class="cp-row-label">Topic</div>
+    <div class="cp-pills" id="topic-filters">
       <button class="filter-pill fp-topic active" data-topic="all">All Topics</button>
-      <button class="filter-pill fp-topic" data-topic="life-science">🌱 Life Science</button>
-      <button class="filter-pill fp-topic" data-topic="earth-space">🌍 Earth &amp; Space</button>
-      <button class="filter-pill fp-topic" data-topic="physical-science">⚡ Physical Science</button>
-      <button class="filter-pill fp-topic" data-topic="tech-engineering">🔧 Tech &amp; Engineering</button>
-      <button class="filter-pill fp-topic psych-locked" data-topic="behavioral-science">🧠 Behavioral Science</button>
+      <button class="filter-pill fp-topic" data-topic="life-science">Life Science</button>
+      <button class="filter-pill fp-topic" data-topic="earth-space">Earth &amp; Space</button>
+      <button class="filter-pill fp-topic" data-topic="physical-science">Physical Science</button>
+      <button class="filter-pill fp-topic" data-topic="tech-engineering">Tech &amp; Engineering</button>
+      <button class="filter-pill fp-topic psych-locked" data-topic="behavioral-science">Behavioral Science</button>
     </div>
   </div>
 
