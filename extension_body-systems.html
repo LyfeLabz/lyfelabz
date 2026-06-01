@@ -101,6 +101,17 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 .turnin-notice-list{list-style:none;display:flex;flex-direction:column;gap:0.3rem;}
 .turnin-notice-list li{font-size:0.85rem;font-weight:700;color:#f08090;display:flex;align-items:center;gap:0.5rem;}
 .turnin-notice-list li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;}
+/* ── Turn-In Bar layout ───────────────────────────────────────── */
+.turnin-bar{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1rem 1.8rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;}
+.turnin-left{display:flex;align-items:center;gap:0.9rem;}
+.turnin-icon{font-size:1.6rem;flex-shrink:0;}
+.turnin-label{font-size:0.75rem;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:var(--text);margin-bottom:0.2rem;}
+.turnin-hint{font-size:0.82rem;color:var(--muted);font-weight:600;}
+.turnin-input-wrap{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}
+.turnin-name-input{background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:0.55rem 1rem;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:700;min-width:220px;transition:border-color 0.2s;}
+.turnin-name-input:focus{outline:none;border-color:rgba(59,200,232,0.5);background:rgba(59,200,232,0.04);}
+.turnin-name-input::placeholder{color:var(--muted);font-weight:600;}
+/* ─────────────────────────────────────────────────────────────── */
 .opt-letter{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:900;flex-shrink:0;}
 .feedback{margin-top:0.9rem;padding:0.85rem 1rem;border-radius:10px;font-size:0.88rem;line-height:1.6;display:none;}
 .feedback.show{display:block;}
@@ -479,10 +490,6 @@ body.stem-active .stem-detail {
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
   <span class="stem-badge" data-tip="Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.">6.MS-LS1-3</span>
 </div>
-</div>
-  </div>
-</div>
-
 
   <!-- ── Turn-In Bar ──────────────────────────────────────────── -->
   <div class="turnin-bar">
