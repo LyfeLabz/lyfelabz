@@ -1444,9 +1444,9 @@ function initPhase1(){
   const cont = wireCheckpoint(1, 1,
     'Correct. Amplitude is the height from the rest line up to a crest — it measures how strong the wave is.',
     'Not quite — re-read the labels on the wave. Amplitude is a height measurement, not a distance or a count.',
-    () => { state.phaseUnlocked = Math.max(state.phaseUnlocked, 2); saveState(); unlockPhase(2); }
+    () => { unlockPhase(2); }
   );
-  cont.addEventListener('click', () => unlockPhase(2));
+  cont.addEventListener('click', () => { const t = document.getElementById('phase2'); if(t) t.scrollIntoView({behavior:'smooth', block:'start'}); });
 }
 
 function drawP1(){
@@ -1643,9 +1643,9 @@ function initPhase2(){
   const cont = wireCheckpoint(2, 2,
     'Yes. Your data shows energy rising faster than amplitude — each step in amplitude adds more energy than the last.',
     'Look more carefully at your data. Compare amplitude = 2 vs amplitude = 4. Does energy double, or grow even more?',
-    () => { state.phaseUnlocked = Math.max(state.phaseUnlocked, 3); saveState(); unlockPhase(3); }
+    () => { unlockPhase(3); }
   );
-  cont.addEventListener('click', () => unlockPhase(3));
+  cont.addEventListener('click', () => { const t = document.getElementById('phase3'); if(t) t.scrollIntoView({behavior:'smooth', block:'start'}); });
 }
 
 function runTrial(){
@@ -1960,9 +1960,9 @@ function initPhase3(){
   const cont = wireCheckpoint(3, 1,
     'Exactly. Energy grows with the square of amplitude — so doubling amplitude means about four times the energy, not just double.',
     'Re-check your data. Compare an amplitude of 2 with an amplitude of 4. The energy did much more than double.',
-    () => { state.phaseUnlocked = Math.max(state.phaseUnlocked, 4); saveState(); unlockPhase(4); seedPhase4FromState(); }
+    () => { unlockPhase(4); seedPhase4FromState(); }
   );
-  cont.addEventListener('click', () => { unlockPhase(4); seedPhase4FromState(); });
+  cont.addEventListener('click', () => { const t = document.getElementById('phase4'); if(t) t.scrollIntoView({behavior:'smooth', block:'start'}); });
 }
 function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 
@@ -2108,12 +2108,11 @@ function initPhase4(){
   const cont = wireCheckpoint(4, 1,
     'Right. Three times the amplitude means about nine times the energy — because energy is proportional to amplitude squared.',
     'Look at the square model on your graph. If amplitude triples, what happens to A² ? That is your factor.',
-    () => { state.phaseUnlocked = Math.max(state.phaseUnlocked, 5); saveState(); unlockPhase(5); document.getElementById('modeGate').style.display='block'; }
+    () => { unlockPhase(5); document.getElementById('modeGate').style.display='block'; }
   );
   cont.addEventListener('click', () => {
-    unlockPhase(5);
-    document.getElementById('modeGate').style.display='block';
-    document.getElementById('modeGate').scrollIntoView({behavior:'smooth', block:'start'});
+    const t = document.getElementById('modeGate');
+    if(t) t.scrollIntoView({behavior:'smooth', block:'start'});
   });
 }
 
