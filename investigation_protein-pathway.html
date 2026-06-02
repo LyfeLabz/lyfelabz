@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/investigation_protein-pathway.html">
+<meta name="description" content="Trace the protein pathway through cell organelles in this biology investigation. Follow transcription, translation, and protein transport step by step.">
+<title>The Protein Pathway | LyfeLabz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+/* =================================================================
+   CSS VARIABLES AND RESET
+   ================================================================= */
+:root {
+  --bg-primary:    #0d1117;
+  --bg-secondary:  #161b22;
+  --bg-card:       #1c2230;
+  --bg-card-hover: #222b3a;
+  --border:        #2a3447;
+  --border-light:  #3a4a5e;
+  --text-primary:  #e6edf3;
+  --text-secondary:#b8c1cc;
+  --text-muted:    #9aa4af;
+  --teal:          #3bc8e8;
+  --teal-dim:      rgba(59,200,232,0.15);
+  --orange:        #e67e22;
+  --orange-dim:    rgba(230,126,34,0.15);
+  --gold:          #f5c842;
+  --gold-dim:      rgba(245,200,66,0.15);
+  --green:         #2ecc71;
+  --green-dim:     rgba(46,204,113,0.15);
+  --red:           #e87070;
+  --red-dim:       rgba(232,112,112,0.15);
+  --radius:        14px;
+  --radius-sm:     10px;
+  --shadow:        0 4px 20px rgba(0,0,0,0.4);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 18px; scroll-behavior: smooth; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Nunito', sans-serif;
+  line-height: 1.75;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* =================================================================
+   NAV
+   ================================================================= */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(8,14,22,0.97);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.8rem 2.5rem;
+}
+.nav-logo {
+  font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+  color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+  text-shadow: 0 0 18px rgba(245,200,66,0.35);
+}
+.nav-back {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--teal); background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.35);
+  padding: 0.32rem 0.9rem; border-radius: 99px; text-decoration: none; transition: all 0.2s;
+}
+.nav-back:hover { background: rgba(59,200,232,0.18); }
+.nav-back:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+/* =================================================================
+   BADGE BARS (hidden by default; shown when body.stem-active / ls-active)
+   ================================================================= */
+.badge-bar {
+  display: none; flex-wrap: wrap; gap: 0.5rem;
+  padding: 0.6rem 1.4rem; background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border); justify-content: center;
+}
+body.stem-active .badge-bar.stem-bar { display: flex; }
+body.ls-active   .badge-bar.ls-bar   { display: flex; }
+.badge {
+  position: relative; display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.72rem; font-weight: 800;
+  cursor: help; transition: filter 0.2s;
+}
+.badge:hover { filter: brightness(1.2); }
+.badge.green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+.badge.teal  { background: var(--teal-dim);  color: var(--teal);  border: 1px solid rgba(59,200,232,0.3); }
+.badge-tip {
+  display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%); background: #1c2230; border: 1px solid var(--border-light);
+  border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 0.7rem; font-weight: 600;
+  color: #c9d1d9; width: 240px; text-align: center; z-index: 200;
+  pointer-events: none; line-height: 1.4;
+}
+.badge:hover .badge-tip { display: block; }
+
+/* =================================================================
+   HERO
+   ================================================================= */
+.hero {
+  background:
+    radial-gradient(circle at 15% 25%, rgba(230,126,34,0.16), transparent 28%),
+    radial-gradient(circle at 85% 15%, rgba(230,126,34,0.09), transparent 22%),
+    radial-gradient(ellipse at 50% 0%, rgba(59,200,232,0.07) 0%, transparent 55%),
+    linear-gradient(135deg, #0a1218 0%, #0c1a22 50%, #080f15 100%);
+  padding: 4.1rem 2rem 3.35rem; text-align: center;
+  position: relative; overflow: hidden;
+  border-bottom: 1px solid rgba(230,126,34,0.2);
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(-32deg, transparent 0px, transparent 36px, rgba(230,126,34,0.016) 36px, rgba(230,126,34,0.016) 38px);
+  pointer-events: none;
+}
+.hero::after {
+  content: ''; position: absolute; inset: auto 0 0 0; height: 90px;
+  background: linear-gradient(180deg, transparent, rgba(8,14,22,0.65));
+  pointer-events: none;
+}
+.hero-canvas-wrap { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.hero-canvas-wrap canvas { width: 100%; height: 100%; display: block; }
+.hero-shell { max-width: 1120px; margin: 0 auto; position: relative; z-index: 1; }
+.hero-badge {
+  display: inline-block; background: rgba(230,126,34,0.12); border: 1px solid rgba(230,126,34,0.45);
+  color: var(--orange); padding: 0.35rem 1.1rem; border-radius: 99px; font-size: 0.75rem;
+  font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1.2rem;
+  position: relative; box-shadow: 0 0 18px rgba(230,126,34,0.16);
+}
+.hero h1 {
+  font-family: 'Fredoka One', cursive; font-size: clamp(2.3rem,5.6vw,3.9rem);
+  line-height: 1.06; margin-bottom: 0.8rem;
+  background: linear-gradient(135deg, #ffffff 20%, var(--orange) 65%, #fde68a 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; position: relative;
+}
+.hero p {
+  font-size: 1rem; color: #c9d1d9; max-width: 700px; margin: 0 auto;
+  line-height: 1.7; position: relative;
+}
+.hero-kicker {
+  margin-top: 1rem; font-size: 0.8rem; font-weight: 800;
+  letter-spacing: 0.06em; color: rgba(230,126,34,0.82); position: relative;
+}
+
+/* =================================================================
+   BEFORE YOU BEGIN
+   ================================================================= */
+.byb-wrap { background: var(--bg-primary); border-bottom: 2px solid rgba(230,126,34,0.14); padding: 2.5rem 1.5rem; }
+.byb-inner { max-width: 980px; margin: 0 auto; }
+.byb-header { text-align: center; margin-bottom: 2rem; }
+.byb-eyebrow { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.6rem; display: block; }
+.byb-title   { font-family: 'Fredoka One', cursive; font-size: clamp(1.5rem,3vw,2.2rem); color: var(--text-primary); margin-bottom: 0.4rem; }
+.byb-sub     { font-size: 0.9rem; color: #c9d1d9; line-height: 1.6; }
+.byb-qa      { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.byb-qa-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 1.2rem 1.4rem; transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.byb-qa-card:hover { transform: translateY(-2px); border-color: rgba(245,200,66,0.45); box-shadow: 0 4px 16px rgba(245,200,66,0.07); }
+.byb-q { font-family: 'Fredoka One', cursive; font-size: 0.97rem; color: var(--gold); margin-bottom: 0.55rem; line-height: 1.3; }
+.byb-a { font-size: 0.85rem; color: #c9d1d9; line-height: 1.7; }
+.byb-a strong { color: var(--text-primary); font-weight: 800; }
+.byb-a a { color: var(--teal); text-decoration: none; border-bottom: 1px dashed rgba(59,200,232,0.4); }
+.byb-a a:hover { border-bottom-style: solid; }
+@media (max-width: 720px) { .byb-qa { grid-template-columns: 1fr; } }
+
+/* =================================================================
+   PROGRESS STEPS
+   ================================================================= */
+.progress-wrap  { max-width: 900px; margin: 1.4rem auto 1.5rem; padding: 0 1.4rem; }
+.progress-steps {
+  display: flex; border-radius: var(--radius-sm); overflow: hidden;
+  border: 1px solid var(--border); background: var(--bg-secondary);
+}
+.progress-step {
+  flex: 1; padding: 0.55rem 0.25rem; text-align: center; font-size: 0.72rem;
+  font-weight: 800; color: #aeb8c2; background: var(--bg-secondary);
+  border-right: 1px solid var(--border); transition: background 0.4s ease, color 0.4s ease;
+  cursor: default; letter-spacing: 0.04em; user-select: none;
+}
+.progress-step:last-child { border-right: none; }
+.progress-step.active { background: var(--orange-dim, rgba(230,126,34,0.15)); color: var(--orange); border-right-color: rgba(230,126,34,0.25); box-shadow: inset 0 -2px 0 var(--orange); }
+.progress-step.done   { background: rgba(46,204,113,0.1); color: var(--green); border-right-color: rgba(46,204,113,0.25); }
+
+/* =================================================================
+   SECTION WRAPPER
+   ================================================================= */
+.sim-section { max-width: 900px; margin: 0 auto 2.25rem; padding: 0 1.4rem; }
+.section-label { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 0.4rem; }
+.section-title { font-family: 'Fredoka One', sans-serif; font-size: clamp(1.5rem,3vw,2rem); line-height: 1.15; color: var(--text-primary); margin-bottom: 0.55rem; }
+.section-desc  { font-size: 1rem; font-weight: 600; color: #d6dee6; line-height: 1.65; margin-bottom: 1.2rem; }
+
+/* =================================================================
+   PHASE CARD
+   ================================================================= */
+.phase-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.4rem 1.4rem 1.6rem; box-shadow: var(--shadow);
+}
+
+/* =================================================================
+   BIG IDEA PANEL
+   ================================================================= */
+.big-idea {
+  background: linear-gradient(135deg, rgba(230,126,34,0.06), rgba(59,200,232,0.03));
+  border: 1px solid rgba(230,126,34,0.18); border-radius: var(--radius);
+  padding: 1.3rem 1.5rem; margin-bottom: 1.4rem;
+}
+.big-idea h3 { font-family: 'Fredoka One', cursive; font-size: 1.15rem; color: var(--orange); margin-bottom: 0.4rem; }
+.big-idea p  { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; }
+
+/* =================================================================
+   PATHWAY STEPPER
+   ================================================================= */
+.stepper {
+  display: grid; grid-template-columns: 1.1fr 1.9fr; gap: 1.4rem; margin-top: 0;
+}
+@media (max-width: 860px) { .stepper { grid-template-columns: 1fr; } }
+
+.step-list {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.step-btn {
+  width: 100%; border: none; background: transparent;
+  padding: 0.85rem 1rem; color: var(--text-primary); font-family: 'Nunito', sans-serif;
+  text-align: left; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.2s; display: flex; align-items: center; gap: 0.75rem;
+}
+.step-btn:last-child { border-bottom: none; }
+.step-btn:hover { background: rgba(230,126,34,0.05); }
+.step-btn.active { background: rgba(230,126,34,0.08); }
+.step-btn:focus-visible { outline: 2px solid var(--orange); outline-offset: -2px; }
+.step-badge {
+  width: 30px; height: 30px; border-radius: 10px;
+  background: rgba(230,126,34,0.1); display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 0.82rem; color: var(--orange); flex-shrink: 0;
+}
+.step-btn.active .step-badge { background: rgba(230,126,34,0.2); }
+.step-label { font-weight: 800; font-size: 0.88rem; }
+
+.step-detail {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.4rem 1.5rem; position: relative; overflow: hidden;
+}
+.step-detail::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--orange), var(--gold));
+}
+.step-hint { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.7rem; }
+.step-detail h3 { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text-primary); margin-bottom: 0.5rem; }
+.step-detail p  { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem; }
+.chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.chip { font-size: 0.72rem; font-weight: 900; padding: 0.25rem 0.7rem; border-radius: 99px; letter-spacing: 0.04em; text-transform: uppercase; border: 1px solid transparent; }
+.chip-where { background: rgba(59,200,232,0.12); color: var(--teal);   border-color: rgba(59,200,232,0.25); }
+.chip-job   { background: rgba(230,126,34,0.12); color: var(--orange); border-color: rgba(230,126,34,0.25); }
+.chip-why   { background: rgba(245,200,66,0.10); color: var(--gold);   border-color: rgba(245,200,66,0.25); }
+
+/* =================================================================
+   TIP CARDS (shortcut / why / check)
+   ================================================================= */
+.tip-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px,1fr));
+  gap: 1rem; margin-top: 1.4rem;
+}
+.tip-card {
+  background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.2rem 1.3rem; transition: transform 0.25s ease, border-color 0.25s ease;
+}
+.tip-card:hover { transform: translateY(-2px); border-color: rgba(230,126,34,0.35); }
+.tip-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange); margin-bottom: 0.45rem; }
+.tip-name  { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-primary); margin-bottom: 0.35rem; }
+.tip-desc  { color: var(--text-secondary); font-size: 0.87rem; line-height: 1.6; }
+
+/* =================================================================
+   REAL WORLD CARDS
+   ================================================================= */
+.real-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(270px,1fr));
+  gap: 1rem; margin-top: 1rem;
+}
+.real-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.35rem; position: relative; overflow: hidden; transition: all 0.25s;
+}
+.real-card:nth-child(1) { --acc: #e67e22; }
+.real-card:nth-child(2) { --acc: #3bc8e8; }
+.real-card:nth-child(3) { --acc: #2ecc71; }
+.real-card:nth-child(4) { --acc: #e87070; }
+.real-card:nth-child(5) { --acc: #9b59b6; }
+.real-card:nth-child(6) { --acc: #1abc9c; }
+.real-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--acc, var(--orange)); }
+.real-card:hover { transform: translateY(-3px); border-color: var(--acc, rgba(230,126,34,0.4)); box-shadow: 0 10px 28px rgba(0,0,0,0.3); }
+.real-icon { font-size: 1.7rem; margin-bottom: 0.65rem; display: block; }
+.real-sub  { font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.07em; color: var(--orange); margin-bottom: 0.2rem; }
+.real-name { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-primary); margin-bottom: 0.4rem; }
+.real-desc { color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6; }
+
+/* =================================================================
+   WHAT GOES WRONG TABLE
+   ================================================================= */
+.wrong-wrap {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; margin-top: 1.3rem;
+}
+.wrong-table { width: 100%; border-collapse: collapse; }
+.wrong-table th {
+  background: rgba(232,112,112,0.1); padding: 0.85rem 1.1rem; text-align: left;
+  font-weight: 900; font-size: 0.77rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: #ff8a8a; border-bottom: 1px solid var(--border);
+}
+.wrong-table td { padding: 0.85rem 1.1rem; border-bottom: 1px solid var(--border); font-size: 0.875rem; color: var(--text-secondary); }
+.wrong-table tr:last-child td { border-bottom: none; }
+.wrong-table tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+.wrong-table td:first-child { color: var(--text-primary); font-weight: 800; font-size: 0.9rem; }
+.wrong-table td:nth-child(2) { color: #ff8a8a; font-weight: 700; }
+@media (max-width: 680px) {
+  .wrong-table thead { display: none; }
+  .wrong-table td { display: block; padding: 0.55rem 1rem; }
+  .wrong-table td:first-child { padding-top: 1rem; font-size: 0.95rem; }
+  .wrong-table td:last-child  { padding-bottom: 1rem; }
+  .wrong-table tr { border-bottom: 1px solid var(--border); }
+  .wrong-table tr:last-child { border-bottom: none; }
+}
+
+/* =================================================================
+   CHECKPOINT CARD
+   ================================================================= */
+.checkpoint-card {
+  background: var(--bg-secondary); border: 1.5px solid rgba(230,126,34,0.3);
+  border-radius: var(--radius); padding: 1.2rem 1.4rem; margin-top: 1.6rem;
+  animation: checkpointReveal 0.5s cubic-bezier(.2,.7,.2,1) both;
+}
+.cp-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 0.4rem; }
+.cp-sub     { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.cp-q       { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text-primary); margin-bottom: 0.85rem; line-height: 1.35; }
+.checkpoint-options { display: grid; gap: 0.45rem; }
+.checkpoint-options label {
+  display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer; font-size: 0.88rem; transition: all 0.2s;
+}
+.checkpoint-options label:hover { border-color: var(--orange); }
+.checkpoint-options label:focus-within { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(230,126,34,0.2); }
+.checkpoint-options input[type=radio] { accent-color: var(--orange); flex-shrink: 0; }
+.checkpoint-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.checkpoint-options label.wrong   { background: rgba(232,112,112,0.1); border-color: var(--red); }
+.checkpoint-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.55; }
+.checkpoint-feedback.visible      { display: block; }
+.checkpoint-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.checkpoint-feedback.no { background: rgba(232,112,112,0.1); border: 1px solid rgba(232,112,112,0.3); color: #ecb3b3; }
+.checkpoint-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+
+/* =================================================================
+   BUTTONS
+   ================================================================= */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  padding: 0.65rem 1.3rem; border-radius: 10px; font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem; font-weight: 800; border: 1px solid transparent; cursor: pointer;
+  transition: all 0.2s ease; text-decoration: none; line-height: 1;
+}
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.btn-orange { background: var(--orange); color: #fff; border-color: var(--orange); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+.btn-orange:hover:not(:disabled) { background: #d35400; box-shadow: 0 4px 14px rgba(230,126,34,0.4); transform: translateY(-1px); }
+.btn-ghost  { background: transparent; color: var(--text-primary); border-color: var(--border-light); }
+.btn-ghost:hover:not(:disabled)  { background: var(--bg-card); border-color: var(--orange); color: var(--orange); }
+
+/* =================================================================
+   QUIZ (button-based)
+   ================================================================= */
+.quiz-progress-wrap { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.4rem; }
+.quiz-progress-bar  { flex: 1; height: 7px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+.quiz-progress-fill { height: 100%; background: linear-gradient(90deg, var(--orange), var(--gold)); border-radius: 99px; transition: width 0.4s; width: 0%; }
+.quiz-progress-text { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; min-width: 54px; text-align: right; }
+
+.quiz-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem 1.3rem; margin-bottom: 0.85rem; }
+.quiz-header { display: flex; align-items: flex-start; gap: 0.85rem; margin-bottom: 0.9rem; }
+.quiz-num {
+  font-family: 'Fredoka One', cursive; font-size: 0.95rem; color: var(--text-muted);
+  width: 1.9rem; height: 1.9rem; border-radius: 50%;
+  background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.quiz-question-text { font-weight: 800; font-size: 0.97rem; line-height: 1.45; padding-top: 0.15rem; }
+
+.quiz-options-list { display: flex; flex-direction: column; gap: 0.55rem; }
+.quiz-option {
+  display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem 1rem;
+  border-radius: 10px; border: 1.5px solid var(--border); cursor: pointer;
+  transition: all 0.2s; background: rgba(255,255,255,0.02); font-size: 0.92rem;
+  font-weight: 600; font-family: 'Nunito', sans-serif; text-align: left;
+  color: var(--text-primary); width: 100%;
+}
+.quiz-option:hover:not(.selected):not(.disabled) { border-color: rgba(230,126,34,0.5); background: rgba(230,126,34,0.05); }
+.quiz-option:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.quiz-option.correct  { border-color: var(--green) !important; background: rgba(46,204,113,0.1) !important; }
+.quiz-option.incorrect{ border-color: var(--red) !important;   background: rgba(232,112,112,0.08) !important; }
+.quiz-option.disabled { pointer-events: none; }
+.quiz-option.revealed-correct { border-color: rgba(46,204,113,0.4) !important; background: rgba(46,204,113,0.05) !important; }
+.option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.15rem; font-size: 0.82rem; flex-shrink: 0; padding-top: 0.05rem; }
+
+.option-feedback { display: none; font-size: 0.84rem; margin-top: 0.8rem; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 700; line-height: 1.55; }
+.option-feedback.correct-fb  { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+.option-feedback.incorrect-fb{ display: block; color: #ff8080;       background: rgba(231,76,60,0.08);   border-left: 3px solid var(--red); }
+
+.score-board {
+  display: none; background: linear-gradient(135deg, rgba(230,126,34,0.1), rgba(245,200,66,0.05));
+  border: 2px solid rgba(230,126,34,0.3); border-radius: 20px; padding: 2rem 2rem 1.8rem;
+  text-align: center; margin-top: 1.5rem;
+}
+.score-board.show { display: block; animation: fadeUp 0.5s ease; }
+.big-score { font-family: 'Fredoka One', cursive; font-size: 3.5rem; color: var(--orange); line-height: 1; margin-bottom: 0.4rem; }
+.score-board p { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.2rem; line-height: 1.5; }
+.reset-btn {
+  background: var(--orange); color: #fff; border: none; padding: 0.75rem 2rem;
+  border-radius: 10px; font-weight: 800; font-size: 0.9rem; cursor: pointer;
+  font-family: 'Nunito', sans-serif; transition: all 0.2s;
+}
+.reset-btn:hover { background: #d35400; transform: translateY(-1px); }
+.reset-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* =================================================================
+   GO FURTHER
+   ================================================================= */
+.go-further-section { max-width: 900px; margin: 0 auto 3rem; padding: 0 1.4rem; }
+.go-further-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1rem; margin-top: 1rem; }
+.gf-card {
+  display: block; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.2rem; text-decoration: none;
+  color: var(--text-primary); transition: all 0.25s; box-shadow: var(--shadow);
+}
+.gf-card:hover { transform: translateY(-3px); border-color: var(--orange); background: var(--bg-card-hover); }
+.gf-card:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.gf-card-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); margin-bottom: 0.4rem; }
+.gf-card-title { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-primary); margin-bottom: 0.3rem; line-height: 1.3; }
+.gf-card-desc  { font-size: 0.82rem; color: #c9d1d9; line-height: 1.55; }
+
+/* =================================================================
+   FOOTER
+   ================================================================= */
+footer { background: #070f17; border-top: 1px solid var(--border); padding: 2rem; text-align: center; margin-top: 0.5rem; }
+footer .footer-logo    { font-family: 'Fredoka One', cursive; font-size: 1.1rem; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.35rem; }
+footer .footer-tagline { font-size: 0.83rem; color: rgba(240,228,200,0.6); margin-bottom: 0.6rem; }
+footer .footer-links   { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 0.6rem; }
+footer .footer-links a {
+  color: var(--gold); text-decoration: none; font-size: 0.72rem; font-weight: 800;
+  letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid rgba(245,200,66,0.4);
+  background: rgba(245,200,66,0.08); padding: 0.25rem 0.75rem; border-radius: 99px;
+  transition: border-color 0.2s, background 0.2s;
+}
+footer .footer-links a:hover { border-color: rgba(245,200,66,0.7); }
+footer .footer-links a.nav-why { color: #3bc8e8; border: 1px solid rgba(59,200,232,0.7); background: rgba(59,200,232,0.12); font-weight: 800; }
+footer .footer-links a.nav-why:hover { background: rgba(59,200,232,0.22); border-color: rgba(59,200,232,0.95); }
+footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
+
+/* =================================================================
+   ANIMATIONS AND POLISH
+   ================================================================= */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes checkpointReveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =================================================================
+   IMPORTANT NOTE CARD (scientific clarification, gold accent)
+   ================================================================= */
+.investigation-note {
+  background: rgba(245,200,66,0.06);
+  border: 1.5px solid rgba(245,200,66,0.32);
+  border-radius: var(--radius);
+  padding: 1.15rem 1.4rem;
+  margin-bottom: 1.3rem;
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+.inv-note-icon  { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+.inv-note-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
+.inv-note-title { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-primary); margin-bottom: 0.35rem; }
+.inv-note-body  { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.65; }
+
+/* =================================================================
+   DIAGNOSTIC CHALLENGE CARD (gold accent, non-graded)
+   ================================================================= */
+.challenge-card {
+  background: var(--bg-secondary);
+  border: 1.5px solid rgba(245,200,66,0.32);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  margin-top: 1.6rem;
+}
+.ch-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.45rem; }
+.ch-context {
+  font-size: 0.875rem; color: var(--text-secondary); line-height: 1.7;
+  background: rgba(245,200,66,0.04); border-left: 3px solid rgba(245,200,66,0.38);
+  padding: 0.75rem 0.95rem; border-radius: 6px; margin-bottom: 1rem;
+}
+.ch-context p { margin-bottom: 0.25rem; }
+.ch-context p:last-child { margin-bottom: 0; }
+.ch-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text-primary); margin-bottom: 0.85rem; line-height: 1.35; }
+
+/* =================================================================
+   PATHWAY DIAGRAM (visual progress tracker, updates via showStep)
+   ================================================================= */
+.pathway-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.15rem;
+  padding: 1.1rem 1rem 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 1.3rem;
+}
+.pd-stage { display: flex; flex-direction: column; align-items: center; }
+.pd-node {
+  display: flex; flex-direction: column; align-items: center; gap: 0.28rem;
+  padding: 0.55rem 0.65rem; border-radius: 10px;
+  border: 1.5px solid var(--border-light); background: var(--bg-card);
+  min-width: 72px; text-align: center; position: relative;
+  transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+.pd-icon  { font-size: 1rem; line-height: 1; display: block; }
+.pd-label { font-size: 0.68rem; font-weight: 800; color: var(--text-muted); letter-spacing: 0.03em; line-height: 1.25; transition: color 0.3s ease; }
+.pd-check {
+  display: none; position: absolute; top: -7px; right: -7px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--green); color: #000;
+  font-size: 0.58rem; font-weight: 900;
+  align-items: center; justify-content: center;
+  border: 1.5px solid var(--bg-secondary); line-height: 1;
+}
+.pd-stage.active .pd-node {
+  border-color: var(--orange);
+  background: rgba(230,126,34,0.12);
+  box-shadow: 0 0 14px rgba(230,126,34,0.22), inset 0 0 4px rgba(230,126,34,0.1);
+}
+.pd-stage.active .pd-label { color: var(--orange); }
+.pd-stage.done .pd-node { border-color: rgba(46,204,113,0.45); background: rgba(46,204,113,0.07); }
+.pd-stage.done .pd-label { color: var(--green); }
+.pd-stage.done .pd-check { display: flex; }
+.pd-arrow {
+  font-size: 0.92rem; color: var(--border-light);
+  flex-shrink: 0; user-select: none; align-self: center;
+  padding: 0 0.05rem; transition: color 0.3s ease;
+}
+.pd-stage.done + .pd-arrow { color: rgba(46,204,113,0.45); }
+@media (prefers-reduced-motion: reduce) {
+  .pd-node, .pd-label, .pd-arrow { transition: none; }
+}
+@media (max-width: 540px) {
+  .pd-arrow { display: none; }
+  .pathway-diagram { gap: 0.5rem; }
+  .pd-node { min-width: 54px; padding: 0.45rem 0.5rem; }
+  .pd-icon  { font-size: 0.88rem; }
+  .pd-label { font-size: 0.6rem; }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  nav { padding: 0.7rem 1.1rem; }
+  .hero { padding: 3rem 1.1rem 2.4rem; }
+  .byb-wrap { padding: 1.8rem 1rem; }
+  .sim-section { padding: 0 1rem; }
+  .go-further-section { padding: 0 1rem; }
+  .progress-wrap { padding: 0 1rem; }
+  .progress-step { font-size: 0.62rem; }
+  .quiz-options-list { gap: 0.45rem; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ======================================================
+     NAV
+     ====================================================== -->
+<nav>
+  <a class="nav-logo" href="index.html">LYFELABZ</a>
+  <a class="nav-back" href="lesson_organelles.html">← Back to Lesson</a>
+</nav>
+
+<!-- STEM badge bar (hidden until body.stem-active is set by index-page toggle) -->
+<div class="badge-bar stem-bar">
+  <span class="badge green">6.MS-LS1-2
+    <span class="badge-tip">Develop and use a model to describe how parts of cells contribute to cellular functions: obtaining food, water, nutrients, disposing of wastes, and providing energy for cellular processes.</span>
+  </span>
+  <span class="badge green">SEP: Developing and Using Models
+    <span class="badge-tip">You trace a multi-step pathway and explain how each organelle contributes to the whole system.</span>
+  </span>
+  <span class="badge green">CCC: Systems and System Models
+    <span class="badge-tip">Each organelle in the protein pathway is one part of an interdependent system. When one part breaks, the whole system is affected.</span>
+  </span>
+</div>
+
+<!-- Learning Science badge bar (hidden until body.ls-active is set by index-page toggle) -->
+<div class="badge-bar ls-bar">
+  <span class="badge teal">Elaboration
+    <span class="badge-tip">Students explain the why behind facts, building causal understanding rather than surface recall. (Dunlosky et al., 2013)</span>
+  </span>
+  <span class="badge teal">Generative Learning
+    <span class="badge-tip">Students construct meaning themselves rather than passively receiving information from a teacher or screen. (Fiorella and Mayer, 2016)</span>
+  </span>
+  <span class="badge teal">Analogical Reasoning
+    <span class="badge-tip">Familiar analogies scaffold understanding of new concepts by leveraging existing knowledge structures. (Vendetti et al., 2015)</span>
+  </span>
+  <span class="badge teal">Retrieval Practice
+    <span class="badge-tip">Students recall information from memory, which strengthens long-term retention far more than re-reading. (Adesope et al., 2017)</span>
+  </span>
+</div>
+
+<!-- ======================================================
+     HERO
+     ====================================================== -->
+<section class="hero">
+  <div class="hero-canvas-wrap"><canvas id="heroCanvas"></canvas></div>
+  <div class="hero-shell">
+    <div class="hero-badge">Investigation</div>
+    <h1>The Protein Pathway</h1>
+    <p>Go deeper into cell organelles. Trace every step a protein takes from DNA to the outside world, discover why this pathway is running in your body right now, and find out what happens when it breaks.</p>
+    <div class="hero-kicker">DNA · mRNA · Ribosome · Rough ER · Golgi · Cell Membrane</div>
+  </div>
+</section>
+
+<!-- ======================================================
+     BEFORE YOU BEGIN
+     ====================================================== -->
+<div class="byb-wrap">
+  <div class="byb-inner">
+    <div class="byb-header">
+      <span class="byb-eyebrow">Before You Begin</span>
+      <div class="byb-title">Read this first, then investigate</div>
+      <p class="byb-sub">This investigation shows how a cell builds a protein and ships it out. You will trace the pathway step by step, see it in real-world biology, and test your understanding with a quiz at the end.</p>
+    </div>
+    <div class="byb-qa">
+      <div class="byb-qa-card">
+        <div class="byb-q">What is this investigation about?</div>
+        <p class="byb-a">You will trace the <strong>protein pathway</strong>: the six-step route a protein takes from a DNA blueprint inside the nucleus to its final destination outside the cell.</p>
+      </div>
+      <div class="byb-qa-card">
+        <div class="byb-q">Why does this matter?</div>
+        <p class="byb-a">Every protein your body depends on (insulin, antibodies, digestive enzymes, collagen) was built and shipped using these exact steps. Understanding the pathway means understanding how cells do their jobs.</p>
+      </div>
+      <div class="byb-qa-card">
+        <div class="byb-q">What will I actually do?</div>
+        <p class="byb-a">You will <strong>step through the pathway</strong> organelle by organelle, <strong>connect it to real biology</strong>, and <strong>explore what breaks</strong> when each step fails. A quiz at the end checks your understanding.</p>
+      </div>
+      <div class="byb-qa-card">
+        <div class="byb-q">Do I need anything first?</div>
+        <p class="byb-a">This extension is for students who have already read the <a href="lesson_organelles.html">Cell Organelles</a> lesson. If you have not done that yet, start there first.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================
+     PROGRESS STEPS
+     ====================================================== -->
+<div class="progress-wrap">
+  <div class="progress-steps" role="list" aria-label="Investigation progress">
+    <div class="progress-step active" id="prog1" role="listitem">① Trace the Pathway</div>
+    <div class="progress-step"        id="prog2" role="listitem">② Why It Matters</div>
+    <div class="progress-step"        id="prog3" role="listitem">③ Check Your Understanding</div>
+  </div>
+</div>
+
+<!-- ======================================================
+     SECTION 1: TRACE THE PATHWAY
+     ====================================================== -->
+<section class="sim-section" id="pathway" style="margin-top:1.8rem;">
+  <div class="section-label">Section 1</div>
+  <div class="section-title">Trace the Pathway</div>
+  <p class="section-desc">Some proteins stay inside the cell. Others are built to leave (like hormones, enzymes, and signals). Click each step below to trace how a cell builds a protein and ships it out.</p>
+
+  <div class="big-idea">
+    <h3>Big Picture</h3>
+    <p>Information starts in the nucleus as DNA. The message gets copied (mRNA), then a ribosome builds the protein. If the protein is being shipped out, it travels through the rough ER, then the Golgi, then to the cell membrane to exit.</p>
+  </div>
+
+  <div class="investigation-note" role="note" aria-label="Scientific clarification">
+    <span class="inv-note-icon" aria-hidden="true">⚠️</span>
+    <div>
+      <div class="inv-note-label">Important Note</div>
+      <div class="inv-note-title">Not every protein follows this pathway.</div>
+      <p class="inv-note-body">Some proteins stay inside the cell and are built by free-floating ribosomes. These proteins never enter the rough ER, Golgi bodies, or cell membrane export system. This investigation focuses on proteins that are shipped <em>out</em> of the cell, such as insulin, antibodies, and digestive enzymes.</p>
+    </div>
+  </div>
+
+  <!-- Pathway Diagram (visual aid; aria-hidden — stepper provides full accessibility) -->
+  <div class="pathway-diagram" id="pathwayDiagram" aria-hidden="true">
+    <div class="pd-stage active" id="pd0">
+      <div class="pd-node">
+        <span class="pd-icon">🧬</span>
+        <span class="pd-label">DNA</span>
+        <span class="pd-check">✓</span>
+      </div>
+    </div>
+    <span class="pd-arrow">→</span>
+    <div class="pd-stage" id="pd1">
+      <div class="pd-node">
+        <span class="pd-icon">📨</span>
+        <span class="pd-label">mRNA</span>
+        <span class="pd-check">✓</span>
+      </div>
+    </div>
+    <span class="pd-arrow">→</span>
+    <div class="pd-stage" id="pd2">
+      <div class="pd-node">
+        <span class="pd-icon">🏗️</span>
+        <span class="pd-label">Ribosome</span>
+        <span class="pd-check">✓</span>
+      </div>
+    </div>
+    <span class="pd-arrow">→</span>
+    <div class="pd-stage" id="pd3">
+      <div class="pd-node">
+        <span class="pd-icon">🚇</span>
+        <span class="pd-label">Rough ER</span>
+        <span class="pd-check">✓</span>
+      </div>
+    </div>
+    <span class="pd-arrow">→</span>
+    <div class="pd-stage" id="pd4">
+      <div class="pd-node">
+        <span class="pd-icon">📦</span>
+        <span class="pd-label">Golgi</span>
+        <span class="pd-check">✓</span>
+      </div>
+    </div>
+    <span class="pd-arrow">→</span>
+    <div class="pd-stage" id="pd5">
+      <div class="pd-node">
+        <span class="pd-icon">🚪</span>
+        <span class="pd-label">Cell Membrane</span>
+        <span class="pd-check">✓</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-card">
+    <div class="stepper" aria-label="Protein pathway steps">
+      <div class="step-list" role="tablist" aria-label="Pathway steps">
+        <button class="step-btn active" role="tab" aria-selected="true" aria-controls="stepPanel" onclick="showStep(0)">
+          <span class="step-badge" aria-hidden="true">1</span>
+          <span class="step-label">DNA (Nucleus)</span>
+        </button>
+        <button class="step-btn" role="tab" aria-selected="false" aria-controls="stepPanel" onclick="showStep(1)">
+          <span class="step-badge" aria-hidden="true">2</span>
+          <span class="step-label">mRNA</span>
+        </button>
+        <button class="step-btn" role="tab" aria-selected="false" aria-controls="stepPanel" onclick="showStep(2)">
+          <span class="step-badge" aria-hidden="true">3</span>
+          <span class="step-label">Ribosome</span>
+        </button>
+        <button class="step-btn" role="tab" aria-selected="false" aria-controls="stepPanel" onclick="showStep(3)">
+          <span class="step-badge" aria-hidden="true">4</span>
+          <span class="step-label">Rough ER</span>
+        </button>
+        <button class="step-btn" role="tab" aria-selected="false" aria-controls="stepPanel" onclick="showStep(4)">
+          <span class="step-badge" aria-hidden="true">5</span>
+          <span class="step-label">Golgi Bodies</span>
+        </button>
+        <button class="step-btn" role="tab" aria-selected="false" aria-controls="stepPanel" onclick="showStep(5)">
+          <span class="step-badge" aria-hidden="true">6</span>
+          <span class="step-label">Cell Membrane</span>
+        </button>
+      </div>
+
+      <div class="step-detail" id="stepPanel" role="tabpanel" aria-live="polite">
+        <div class="step-hint" id="stepHint">Step 1 of 6</div>
+        <h3 id="stepTitle">DNA in the Nucleus</h3>
+        <p id="stepText">DNA contains the master instructions for every protein the cell will ever build. It never leaves the nucleus: it is too important to risk. Think of it as a blueprint locked in a vault that cannot be removed.</p>
+        <div class="chips" id="stepChips">
+          <span class="chip chip-where">Where: Nucleus</span>
+          <span class="chip chip-job">Job: Master instructions</span>
+          <span class="chip chip-why">Why: Starts the whole pathway</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-grid">
+    <div class="tip-card">
+      <div class="tip-label">Memory Tip</div>
+      <div class="tip-name">Say it fast</div>
+      <div class="tip-desc">DNA, mRNA, ribosome, rough ER, Golgi, cell membrane. If you can say it, you can sketch it.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-label">Big Idea</div>
+      <div class="tip-name">Why it matters</div>
+      <div class="tip-desc">This is how cells communicate and do jobs. Many important proteins leave the cell to help the body work.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-label">Self Check</div>
+      <div class="tip-name">Think it through</div>
+      <div class="tip-desc">If the rough ER or Golgi stops working, proteins might be made but not packaged or shipped correctly.</div>
+    </div>
+  </div>
+
+  <!-- Checkpoint 1 -->
+  <div class="checkpoint-card" role="region" aria-label="Checkpoint: Section 1">
+    <div class="cp-eyebrow">Checkpoint · Section 1</div>
+    <div class="cp-sub">Apply what you traced before moving on.</div>
+    <div class="cp-q">Which organelle packages proteins and routes them to their correct destination?</div>
+    <div class="checkpoint-options" id="cp1Opts">
+      <label><input type="radio" name="cp1" value="0"><span>Ribosome</span></label>
+      <label><input type="radio" name="cp1" value="1"><span>Rough ER</span></label>
+      <label><input type="radio" name="cp1" value="2"><span>Golgi Bodies</span></label>
+      <label><input type="radio" name="cp1" value="3"><span>Nucleus</span></label>
+    </div>
+    <div class="checkpoint-feedback" id="cp1Feedback" aria-live="polite"></div>
+    <div class="checkpoint-actions">
+      <button class="btn btn-orange" id="cp1Check">Check Answer</button>
+      <button class="btn btn-ghost"  id="cp1Retry" style="display:none;">Try Again</button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     SECTION 2: WHY IT MATTERS
+     ====================================================== -->
+<section class="sim-section" id="real-world" style="margin-top:2.5rem;">
+  <div class="section-label">Section 2</div>
+  <div class="section-title">Why It Matters</div>
+  <p class="section-desc">The protein pathway is not just a diagram to memorize. Your cells are running it constantly. Every protein your body depends on was made and shipped using these exact six steps.</p>
+
+  <div class="real-grid">
+    <div class="real-card">
+      <span class="real-icon" aria-hidden="true">💉</span>
+      <div class="real-sub">Pancreas cells</div>
+      <div class="real-name">Insulin</div>
+      <div class="real-desc">Insulin is a protein that signals your cells to absorb sugar from the blood. Pancreas cells make it and ship it out via this exact pathway. People with Type 1 diabetes cannot produce it, so they inject it instead.</div>
+    </div>
+    <div class="real-card">
+      <span class="real-icon" aria-hidden="true">🛡️</span>
+      <div class="real-sub">Immune cells (B cells)</div>
+      <div class="real-name">Antibodies</div>
+      <div class="real-desc">When you get sick, immune cells ramp up protein production to churn out antibodies that identify and attack invaders. Every single antibody exits the cell through the Golgi and cell membrane.</div>
+    </div>
+    <div class="real-card">
+      <span class="real-icon" aria-hidden="true">🥩</span>
+      <div class="real-sub">Stomach lining cells</div>
+      <div class="real-name">Digestive Enzymes</div>
+      <div class="real-desc">The enzymes that break down your food in your stomach are proteins made and secreted by stomach cells. Without the Golgi routing them correctly, digestion would not function.</div>
+    </div>
+    <div class="real-card">
+      <span class="real-icon" aria-hidden="true">💪</span>
+      <div class="real-sub">Muscle, skin, and bone cells</div>
+      <div class="real-name">Collagen and Actin</div>
+      <div class="real-desc">Structural proteins like collagen and actin give your body its physical strength and shape. They are produced in massive quantities by ribosomes on the rough ER.</div>
+    </div>
+    <div class="real-card">
+      <span class="real-icon" aria-hidden="true">🧠</span>
+      <div class="real-sub">Nerve cells (neurons)</div>
+      <div class="real-name">Neurotransmitters</div>
+      <div class="real-desc">Many of the chemical signals your brain uses to communicate involve proteins packaged and released by neurons. When you feel focused or happy, this pathway is part of it.</div>
+    </div>
+    <div class="real-card">
+      <span class="real-icon" aria-hidden="true">🌱</span>
+      <div class="real-sub">Plant cells</div>
+      <div class="real-name">Cell Wall Proteins</div>
+      <div class="real-desc">Plant cells use the same pathway to build and maintain their cell walls. The pathway is so fundamental that it operates almost identically in every living thing on Earth.</div>
+    </div>
+  </div>
+
+  <!-- Diagnostic Challenge -->
+  <div class="challenge-card" role="region" aria-label="Protein Pathway Challenge">
+    <div class="ch-eyebrow">Pathway Challenge</div>
+    <div class="ch-context">
+      <p>A pancreas cell successfully builds insulin.</p>
+      <p>The DNA worked. The mRNA worked. The ribosome built the protein correctly.</p>
+      <p>But insulin never reaches the bloodstream.</p>
+    </div>
+    <div class="ch-q">Which stage of the pathway is most likely causing the problem?</div>
+    <div class="checkpoint-options" id="chalOpts">
+      <label><input type="radio" name="chal" value="0"><span>DNA in the nucleus</span></label>
+      <label><input type="radio" name="chal" value="1"><span>Ribosome</span></label>
+      <label><input type="radio" name="chal" value="2"><span>Packaging or export (Golgi bodies and cell membrane)</span></label>
+      <label><input type="radio" name="chal" value="3"><span>mRNA (the copy message)</span></label>
+    </div>
+    <div class="checkpoint-feedback" id="chalFeedback" aria-live="polite"></div>
+    <div class="checkpoint-actions">
+      <button class="btn btn-orange" id="chalCheck">Figure It Out</button>
+      <button class="btn btn-ghost"  id="chalRetry" style="display:none;">Try Again</button>
+    </div>
+  </div>
+
+  <!-- What Goes Wrong subsection -->
+  <div style="margin-top:2.25rem;">
+    <div class="section-label">When Things Break</div>
+    <div class="section-title">What Happens When the Pathway Fails?</div>
+    <p class="section-desc">The protein pathway is so critical that when one step stops working correctly, it can cause serious disease. These are real examples of what happens when an organelle does not do its job.</p>
+
+    <div class="wrong-wrap">
+      <table class="wrong-table">
+        <thead>
+          <tr>
+            <th scope="col">Step / Organelle</th>
+            <th scope="col">What Goes Wrong</th>
+            <th scope="col">Real-World Consequence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>DNA (Nucleus)</td>
+            <td>Mutation in the blueprint</td>
+            <td>The wrong protein gets built, or none at all. This is the root cause of genetic diseases like cystic fibrosis and sickle cell anemia.</td>
+          </tr>
+          <tr>
+            <td>mRNA</td>
+            <td>mRNA is damaged or not produced correctly</td>
+            <td>The ribosome cannot read the instructions, so protein production stalls. Some cancers involve disruptions at this stage.</td>
+          </tr>
+          <tr>
+            <td>Ribosome</td>
+            <td>Ribosomes are blocked or malfunctioning</td>
+            <td>Proteins cannot be built. Some antibiotics work by specifically blocking <em>bacterial</em> ribosomes, killing bacteria without harming human cells.</td>
+          </tr>
+          <tr>
+            <td>Rough ER</td>
+            <td>Proteins misfold and build up (ER stress)</td>
+            <td>Linked to Parkinson's, Alzheimer's, and Type 2 diabetes: diseases where misfolded proteins accumulate and damage cells over time.</td>
+          </tr>
+          <tr>
+            <td>Golgi Bodies</td>
+            <td>Proteins are misrouted or not modified correctly</td>
+            <td>Proteins arrive at the wrong location or in the wrong form, contributing to several rare metabolic disorders.</td>
+          </tr>
+          <tr>
+            <td>Cell Membrane</td>
+            <td>Vesicles fail to fuse or release their cargo</td>
+            <td>Proteins never leave the cell. In neurons, this disrupts chemical signaling, affecting mood, movement, and cognition.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="big-idea" style="margin-top:1.3rem;">
+      <h3>The Big Takeaway</h3>
+      <p>Every organelle in the pathway has a job no other organelle can replace. One broken department affects the whole system. Understanding where the pathway breaks is often the first step to treating a disease.</p>
+    </div>
+  </div>
+
+  <!-- Checkpoint 2 -->
+  <div class="checkpoint-card" role="region" aria-label="Checkpoint: Section 2">
+    <div class="cp-eyebrow">Checkpoint · Section 2</div>
+    <div class="cp-sub">Quick self-check before the quiz.</div>
+    <div class="cp-q">A student's pancreas cells stop shipping insulin out of the cell, even though the protein is being produced correctly. Which part of the pathway has most likely failed?</div>
+    <div class="checkpoint-options" id="cp2Opts">
+      <label><input type="radio" name="cp2" value="0"><span>The nucleus (DNA is not being read)</span></label>
+      <label><input type="radio" name="cp2" value="1"><span>The ribosome (protein cannot be built)</span></label>
+      <label><input type="radio" name="cp2" value="2"><span>The Golgi or cell membrane (packaging or export has failed)</span></label>
+      <label><input type="radio" name="cp2" value="3"><span>The mRNA (the copy message is missing)</span></label>
+    </div>
+    <div class="checkpoint-feedback" id="cp2Feedback" aria-live="polite"></div>
+    <div class="checkpoint-actions">
+      <button class="btn btn-orange" id="cp2Check">Check Answer</button>
+      <button class="btn btn-ghost"  id="cp2Retry" style="display:none;">Try Again</button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     SECTION 3: CHECK YOUR UNDERSTANDING
+     ====================================================== -->
+<section class="sim-section" id="quiz" style="margin-top:2.5rem;">
+  <div class="section-label">Section 3</div>
+  <div class="section-title">Check Your Understanding</div>
+  <p class="section-desc">Eight questions focused on the protein pathway: the steps, the organelles, and why each one matters. Click an answer to get instant feedback.</p>
+
+  <div class="quiz-progress-wrap" aria-label="Quiz progress">
+    <div class="quiz-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0">
+      <div class="quiz-progress-fill" id="ex-progress"></div>
+    </div>
+    <div class="quiz-progress-text" id="ex-progress-text" aria-live="polite">0 / 8</div>
+  </div>
+
+  <div id="ex-questions"></div>
+
+  <div class="score-board" id="ex-score" role="region" aria-label="Quiz results" aria-live="polite">
+    <div class="big-score" id="ex-score-num">0/8</div>
+    <p id="ex-score-msg"></p>
+    <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
+  </div>
+</section>
+
+<!-- ======================================================
+     GO FURTHER
+     ====================================================== -->
+<div class="go-further-section">
+  <div class="section-label">Go Further</div>
+  <div class="section-title">Keep Exploring</div>
+  <div class="go-further-grid">
+    <a class="gf-card" href="lesson_organelles.html">
+      <div class="gf-card-label">Lesson</div>
+      <div class="gf-card-title">Cell Organelles</div>
+      <div class="gf-card-desc">Return to the home base. Review all the organelles, their jobs, and how they work together inside the cell.</div>
+    </a>
+    <a class="gf-card" href="investigation_cell-energy.html">
+      <div class="gf-card-label">Investigation</div>
+      <div class="gf-card-title">Cell Energy</div>
+      <div class="gf-card-desc">Trace a different pathway: how a cell captures, converts, and uses energy. Connects directly to what you learned here.</div>
+    </a>
+    <a class="gf-card" href="extension_virus.html">
+      <div class="gf-card-label">Extension</div>
+      <div class="gf-card-title">How Viruses Work</div>
+      <div class="gf-card-desc">Viruses hijack the protein pathway. Now that you understand the steps, you can understand exactly how viruses exploit them.</div>
+    </a>
+    <a class="gf-card" href="index.html">
+      <div class="gf-card-label">Library</div>
+      <div class="gf-card-title">Back to LyfeLabz</div>
+      <div class="gf-card-desc">Explore simulations, investigations, lessons, and games across the full LyfeLabz library.</div>
+    </a>
+  </div>
+</div>
+
+<!-- ======================================================
+     FOOTER
+     ====================================================== -->
+<footer>
+  <div class="footer-logo">LYFELABZ</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<script>
+/* =====================================================================
+   PATHWAY STEPPER DATA
+   ===================================================================== */
+const steps = [
+  {
+    hint:      "Step 1 of 6",
+    title:     "DNA in the Nucleus",
+    text:      "DNA contains the master instructions for every protein the cell will ever build. It never leaves the nucleus: it is too important to risk. Think of it as a blueprint locked in a vault that cannot be removed.",
+    chips:     ["Where: Nucleus",        "Job: Master instructions",       "Why: Starts the whole pathway"],
+    chipTypes: ["where",                 "job",                            "why"]
+  },
+  {
+    hint:      "Step 2 of 6",
+    title:     "mRNA: The Copy Message",
+    text:      "The cell makes a messenger RNA (mRNA) copy of the DNA instructions. This copy can safely leave the nucleus and travel to a ribosome. The original DNA stays protected in the nucleus.",
+    chips:     ["Where: Leaves the nucleus", "Job: Carries the instructions", "Why: Keeps DNA safe"],
+    chipTypes: ["where",                     "job",                            "why"]
+  },
+  {
+    hint:      "Step 3 of 6",
+    title:     "Ribosome: The Builder",
+    text:      "A ribosome reads the mRNA message and assembles the protein by connecting amino acids in exactly the right order. Ribosomes can float free in the cytoplasm or attach to the rough ER when building proteins for export.",
+    chips:     ["Where: Cytoplasm or rough ER", "Job: Builds proteins",      "Why: Proteins do the cell's work"],
+    chipTypes: ["where",                        "job",                       "why"]
+  },
+  {
+    hint:      "Step 4 of 6",
+    title:     "Rough ER: The Transport Highway",
+    text:      "For proteins being shipped out, ribosomes attach directly to the rough ER and feed the new protein into its transport network. The rough ER also folds the protein into the correct 3D shape, acting like quality control on an assembly line.",
+    chips:     ["Where: Near the nucleus", "Job: Transport and folding",    "Why: Prepares proteins for shipping"],
+    chipTypes: ["where",                   "job",                           "why"]
+  },
+  {
+    hint:      "Step 5 of 6",
+    title:     "Golgi Bodies: The Packager",
+    text:      "The Golgi receives proteins from the rough ER, makes final chemical modifications, sorts them by destination, and packages them into vesicles. Think of it as boxing and labeling parcels before delivery.",
+    chips:     ["Where: In the cytoplasm", "Job: Modify, sort, and package", "Why: Routes proteins correctly"],
+    chipTypes: ["where",                   "job",                            "why"]
+  },
+  {
+    hint:      "Step 6 of 6",
+    title:     "Cell Membrane: The Exit",
+    text:      "Vesicles carrying packaged proteins travel to and fuse with the cell membrane, releasing their contents outside the cell. This process is called exocytosis. The protein has now left the cell and can do its job in the body.",
+    chips:     ["Where: Cell boundary", "Job: Controls what enters and exits", "Why: Protein leaves to do its job"],
+    chipTypes: ["where",                "job",                                 "why"]
+  }
+];
+
+function showStep(i) {
+  const btns = document.querySelectorAll('.step-btn');
+  btns.forEach((b, idx) => {
+    b.classList.toggle('active', idx === i);
+    b.setAttribute('aria-selected', idx === i ? 'true' : 'false');
+  });
+  const s = steps[i];
+  document.getElementById('stepHint').textContent  = s.hint;
+  document.getElementById('stepTitle').textContent = s.title;
+  document.getElementById('stepText').textContent  = s.text;
+  const chipHTML = s.chips.map((t, idx) => {
+    const cls = s.chipTypes[idx] === 'where' ? 'chip-where' : s.chipTypes[idx] === 'job' ? 'chip-job' : 'chip-why';
+    return '<span class="chip ' + cls + '">' + t + '</span>';
+  }).join('');
+  document.getElementById('stepChips').innerHTML = chipHTML;
+  updatePathwayDiagram(i);
+}
+
+function updatePathwayDiagram(stepIndex) {
+  for (var d = 0; d < 6; d++) {
+    var stage = document.getElementById('pd' + d);
+    if (!stage) return;
+    stage.classList.remove('active', 'done');
+    if (d < stepIndex)       stage.classList.add('done');
+    else if (d === stepIndex) stage.classList.add('active');
+  }
+}
+
+/* =====================================================================
+   CHECKPOINT LOGIC
+   ===================================================================== */
+function initCheckpoint(optsId, feedbackId, checkBtnId, retryBtnId, correctIndex, correctMsg, wrongMsg) {
+  const opts     = document.getElementById(optsId);
+  const feedback = document.getElementById(feedbackId);
+  const checkBtn = document.getElementById(checkBtnId);
+  const retryBtn = document.getElementById(retryBtnId);
+  const labels   = opts.querySelectorAll('label');
+
+  checkBtn.addEventListener('click', function() {
+    const selected = opts.querySelector('input[type=radio]:checked');
+    if (!selected) return;
+    const val = parseInt(selected.value);
+
+    labels.forEach(function(l) { l.classList.remove('correct', 'wrong'); });
+    labels[correctIndex].classList.add('correct');
+    if (val !== correctIndex) labels[val].classList.add('wrong');
+    opts.querySelectorAll('input').forEach(function(inp) { inp.disabled = true; });
+
+    if (val === correctIndex) {
+      feedback.textContent = '✅ ' + correctMsg;
+      feedback.className   = 'checkpoint-feedback visible ok';
+    } else {
+      feedback.textContent = '❌ ' + wrongMsg;
+      feedback.className   = 'checkpoint-feedback visible no';
+    }
+    checkBtn.style.display = 'none';
+    retryBtn.style.display = 'inline-flex';
+  });
+
+  retryBtn.addEventListener('click', function() {
+    labels.forEach(function(l) { l.classList.remove('correct', 'wrong'); });
+    opts.querySelectorAll('input').forEach(function(inp) { inp.disabled = false; inp.checked = false; });
+    feedback.className     = 'checkpoint-feedback';
+    feedback.textContent   = '';
+    checkBtn.style.display = 'inline-flex';
+    retryBtn.style.display = 'none';
+  });
+}
+
+/* =====================================================================
+   QUIZ DATA
+   ===================================================================== */
+const quizData = {
+  total: 8,
+  questions: [
+    {
+      q: "Where does the protein pathway start?",
+      options: ["Cell membrane", "Golgi bodies", "DNA in the nucleus", "Mitochondria"],
+      correct: 2,
+      explanation: "DNA in the nucleus contains the instructions that start protein building."
+    },
+    {
+      q: "What is the main job of mRNA in the pathway?",
+      options: ["Package proteins", "Carry a copy of the instructions", "Break down waste", "Make ATP"],
+      correct: 1,
+      explanation: "mRNA carries a copy of the instructions from DNA so the cell can build the protein."
+    },
+    {
+      q: "Which organelle builds proteins by reading mRNA?",
+      options: ["Ribosome", "Vacuole", "Cell wall", "Chloroplast"],
+      correct: 0,
+      explanation: "Ribosomes read mRNA and connect amino acids to build proteins."
+    },
+    {
+      q: "A protein is being shipped out of the cell. Which structure is most directly involved in transporting it after the ribosome step?",
+      options: ["Rough ER", "Chloroplast", "Cell wall", "Cytoplasm only"],
+      correct: 0,
+      explanation: "The rough ER helps move and fold proteins that are being shipped out of the cell."
+    },
+    {
+      q: "Which organelle packages proteins for delivery like a post office?",
+      options: ["Golgi bodies", "Nucleus", "Mitochondria", "Cell membrane"],
+      correct: 0,
+      explanation: "Golgi bodies package and label proteins for transport to the correct destination."
+    },
+    {
+      q: "Insulin is a protein made by pancreas cells and released into the bloodstream. Which organelle handles the final step of releasing insulin outside the cell?",
+      options: ["The nucleus", "The mitochondria", "The rough endoplasmic reticulum", "The cell membrane"],
+      correct: 3,
+      explanation: "Vesicles carrying packaged insulin fuse with the cell membrane and release the insulin outside. This process is called exocytosis."
+    },
+    {
+      q: "A mutation in DNA causes a cell to produce a misshapen protein that cannot fold correctly in the rough ER. What is the most likely consequence?",
+      options: [
+        "The Golgi will fix the shape before shipping",
+        "The protein will likely be flagged for destruction, and the job it was supposed to do will not get done",
+        "The cell membrane repairs the protein on exit",
+        "mRNA will rewrite the instructions to fix the error"
+      ],
+      correct: 1,
+      explanation: "The rough ER has quality-control mechanisms. Misfolded proteins are typically flagged for destruction rather than shipped. If that protein had an important role (like regulating blood sugar), that function is lost."
+    },
+    {
+      q: "Some antibiotics work by blocking bacterial ribosomes without affecting human ribosomes. Why does blocking ribosomes stop a bacterial infection?",
+      options: [
+        "Bacteria can no longer produce energy from food",
+        "Bacteria can no longer build the proteins they need to survive and reproduce",
+        "Bacteria immediately lose their cell wall",
+        "Bacteria's DNA is destroyed when ribosomes stop"
+      ],
+      correct: 1,
+      explanation: "Ribosomes build proteins, and proteins run nearly every function in a cell. Without working ribosomes, bacteria cannot produce the proteins needed to survive, grow, or replicate, so they die."
+    }
+  ]
+};
+
+const quizState = { answered: 0, correct: 0 };
+
+function buildQuiz() {
+  const container = document.getElementById('ex-questions');
+  container.innerHTML = '';
+  quizState.answered  = 0;
+  quizState.correct   = 0;
+  updateProgress();
+  document.getElementById('ex-score').classList.remove('show');
+
+  const letters = ['A', 'B', 'C', 'D'];
+  quizData.questions.forEach(function(q, qi) {
+    const optionsHTML = q.options.map(function(opt, oi) {
+      return '<button class="quiz-option" onclick="selectAnswer(' + qi + ',' + oi + ')" id="ex-' + qi + '-' + oi + '" aria-label="Option ' + letters[oi] + ': ' + opt + '">'
+        + '<span class="option-letter" aria-hidden="true">' + letters[oi] + '</span>'
+        + '<span>' + opt + '</span>'
+        + '</button>';
+    }).join('');
+
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML = '<div class="quiz-header">'
+      + '<div class="quiz-num" aria-hidden="true">' + (qi + 1) + '</div>'
+      + '<div class="quiz-question-text">' + q.q + '</div>'
+      + '</div>'
+      + '<div class="quiz-options-list" role="group" aria-label="Answer options for question ' + (qi + 1) + '">' + optionsHTML + '</div>'
+      + '<div class="option-feedback" id="ex-feedback-' + qi + '" aria-live="polite"></div>';
+    container.appendChild(card);
+  });
+}
+
+function selectAnswer(qi, chosenIndex) {
+  const q         = quizData.questions[qi];
+  const isCorrect = chosenIndex === q.correct;
+
+  q.options.forEach(function(_, oi) {
+    const btn = document.getElementById('ex-' + qi + '-' + oi);
+    btn.classList.add('disabled');
+    if (oi === q.correct) btn.classList.add('revealed-correct');
+  });
+
+  const chosenBtn = document.getElementById('ex-' + qi + '-' + chosenIndex);
+  chosenBtn.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+  const feedback = document.getElementById('ex-feedback-' + qi);
+  if (isCorrect) {
+    feedback.className = 'option-feedback correct-fb';
+    feedback.textContent = '✅ Correct! ' + q.explanation;
+    quizState.correct++;
+  } else {
+    feedback.className = 'option-feedback incorrect-fb';
+    feedback.textContent = '❌ Not quite. ' + q.explanation;
+  }
+
+  quizState.answered++;
+  updateProgress();
+  if (quizState.answered === quizData.total) showScore();
+}
+
+function updateProgress() {
+  const pct = (quizState.answered / quizData.total) * 100;
+  const fill = document.getElementById('ex-progress');
+  fill.style.width = pct + '%';
+  fill.parentElement.setAttribute('aria-valuenow', quizState.answered);
+  document.getElementById('ex-progress-text').textContent = quizState.answered + ' / ' + quizData.total;
+}
+
+function showScore() {
+  const pct = Math.round((quizState.correct / quizData.total) * 100);
+  let msg;
+  if (pct === 100) msg = 'Perfect! You can trace every step of the pathway and explain why each one matters.';
+  else if (pct >= 80) msg = 'Great work! Investigate the one question you missed and you are set.';
+  else if (pct >= 60) msg = 'Good start. Retrace the steps in the stepper above and try again.';
+  else msg = 'Keep going! Retrace each step in the stepper and figure out what you missed.';
+
+  document.getElementById('ex-score-num').textContent = quizState.correct + '/' + quizData.total;
+  document.getElementById('ex-score-msg').textContent = msg;
+  document.getElementById('ex-score').classList.add('show');
+  document.getElementById('ex-score').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Mark quiz section done in progress bar
+  document.getElementById('prog3').classList.add('done');
+}
+
+function resetQuiz() {
+  buildQuiz();
+  document.getElementById('prog3').classList.remove('done');
+}
+
+/* =====================================================================
+   SCROLL-BASED PROGRESS STEP HIGHLIGHTING
+   ===================================================================== */
+function updateProgressSteps() {
+  const s1 = document.getElementById('pathway');
+  const s2 = document.getElementById('real-world');
+  const s3 = document.getElementById('quiz');
+  const scrollY = window.scrollY + 180;
+
+  const p1 = document.getElementById('prog1');
+  const p2 = document.getElementById('prog2');
+  const p3 = document.getElementById('prog3');
+
+  if (s3 && scrollY >= s3.offsetTop) {
+    p1.classList.remove('active'); p2.classList.remove('active');
+    if (!p3.classList.contains('done')) p3.classList.add('active'); else p3.classList.remove('active');
+    p1.classList.add('done'); p2.classList.add('done');
+  } else if (s2 && scrollY >= s2.offsetTop) {
+    p1.classList.remove('active'); p3.classList.remove('active');
+    p2.classList.add('active');
+    p1.classList.add('done');
+    p2.classList.remove('done'); p3.classList.remove('done');
+  } else {
+    p1.classList.add('active');
+    p2.classList.remove('active', 'done');
+    p3.classList.remove('active', 'done');
+    p1.classList.remove('done');
+  }
+}
+window.addEventListener('scroll', updateProgressSteps, { passive: true });
+
+/* =====================================================================
+   INDEX-PAGE TOGGLE SUPPORT
+   Reads from the same sessionStorage keys the index page writes.
+   ===================================================================== */
+function applyToggles() {
+  try {
+    if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+    if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
+  } catch(e) {}
+}
+
+/* =====================================================================
+   HERO CANVAS (drifting strand particles)
+   ===================================================================== */
+(function() {
+  var el  = document.getElementById('heroCanvas');
+  if (!el) return;
+  var ctx = el.getContext('2d');
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var W, H, T = 0;
+
+  var LINES = [0,1,2,3,4].map(function(i) {
+    return {
+      ph:    Math.random() * Math.PI * 2,
+      amp:   10 + i * 4,
+      k:     0.007 + i * 0.001,
+      speed: 0.01 + i * 0.003,
+      yF:    0.25 + i * 0.14,
+      alpha: 0.055 + (i % 2) * 0.03
+    };
+  });
+
+  function resize() {
+    var rect = el.parentElement.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    if (W < 1 || H < 1) return;
+    el.width  = W * dpr; el.height = H * dpr;
+    el.style.width = W + 'px'; el.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function loop() {
+    if (W > 0 && H > 0) {
+      ctx.clearRect(0, 0, W, H);
+      LINES.forEach(function(L) {
+        ctx.strokeStyle = 'rgba(230,126,34,' + L.alpha + ')';
+        ctx.lineWidth   = 1.3;
+        ctx.beginPath();
+        for (var x = 0; x <= W; x++) {
+          var y = H * L.yF + L.amp * Math.sin(L.k * x - T * L.speed + L.ph);
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      });
+      T++;
+    }
+    requestAnimationFrame(loop);
+  }
+
+  resize();
+  window.addEventListener('resize', function() {
+    clearTimeout(window._heroRt);
+    window._heroRt = setTimeout(resize, 180);
+  });
+  requestAnimationFrame(loop);
+})();
+
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+document.addEventListener('DOMContentLoaded', function() {
+  applyToggles();
+  showStep(0);
+  buildQuiz();
+  updateProgressSteps();
+
+  initCheckpoint(
+    'cp1Opts', 'cp1Feedback', 'cp1Check', 'cp1Retry',
+    2,
+    'Correct! The Golgi Bodies package proteins and route them to their correct destination.',
+    'Not quite. The Golgi Bodies are the organelle that packages and routes proteins. The ribosome builds the protein, the rough ER folds and transports it, and the nucleus holds the DNA instructions.'
+  );
+
+  initCheckpoint(
+    'cp2Opts', 'cp2Feedback', 'cp2Check', 'cp2Retry',
+    2,
+    'Correct! If the protein is being produced but not leaving the cell, the Golgi or cell membrane (packaging and export) has failed. The ribosome and nucleus are still working.',
+    'Not quite. The question says the protein is being produced correctly, so the nucleus, mRNA, and ribosome are all working. The failure is in packaging or export: the Golgi or cell membrane step.'
+  );
+
+  // Diagnostic Challenge: option 2 (Golgi/cell membrane) is correct.
+  initChallenge();
+});
+
+function initChallenge() {
+  var opts     = document.getElementById('chalOpts');
+  var feedback = document.getElementById('chalFeedback');
+  var checkBtn = document.getElementById('chalCheck');
+  var retryBtn = document.getElementById('chalRetry');
+  if (!opts) return;
+
+  var labels = opts.querySelectorAll('label');
+  var CORRECT = 2; // "Golgi bodies or cell membrane"
+
+  checkBtn.addEventListener('click', function() {
+    var selected = opts.querySelector('input[type=radio]:checked');
+    if (!selected) return;
+    var val = parseInt(selected.value);
+
+    labels.forEach(function(l) { l.classList.remove('correct', 'wrong'); });
+    labels[CORRECT].classList.add('correct');
+    if (val !== CORRECT) labels[val].classList.add('wrong');
+    opts.querySelectorAll('input').forEach(function(inp) { inp.disabled = true; });
+
+    if (val === CORRECT) {
+      feedback.textContent = '✅ Correct. The protein was successfully built, which means DNA, mRNA, and the ribosome all worked correctly. The problem must occur later in the pathway. Packaging and export are handled by the Golgi bodies and cell membrane, making this the most likely stage where the pathway failed.';
+      feedback.className   = 'checkpoint-feedback visible ok';
+    } else {
+      feedback.textContent = '❌ Not quite. The clues tell us the protein was successfully produced, which means the early steps of the pathway worked. Focus on what happens after the protein is built. Which organelles are responsible for packaging and releasing proteins from the cell?';
+      feedback.className   = 'checkpoint-feedback visible no';
+    }
+    checkBtn.style.display = 'none';
+    retryBtn.style.display = 'inline-flex';
+  });
+
+  retryBtn.addEventListener('click', function() {
+    labels.forEach(function(l) { l.classList.remove('correct', 'wrong'); });
+    opts.querySelectorAll('input').forEach(function(inp) { inp.disabled = false; inp.checked = false; });
+    feedback.className   = 'checkpoint-feedback';
+    feedback.textContent = '';
+    checkBtn.style.display = 'inline-flex';
+    retryBtn.style.display = 'none';
+  });
+}
+</script>
+</body>
+</html>
