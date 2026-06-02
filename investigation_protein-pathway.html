@@ -386,7 +386,15 @@ body.ls-active   .badge-bar.ls-bar   { display: flex; }
 /* =================================================================
    QUIZ (button-based)
    ================================================================= */
-.quiz-progress-wrap { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.4rem; }
+.quiz-progress-wrap {
+  display: flex; align-items: center; gap: 1rem;
+  position: sticky; top: 56px; z-index: 90;
+  background: rgba(13,17,23,0.97);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  padding: 0.9rem 1.4rem 0.7rem;
+  margin-left: -1.4rem; margin-right: -1.4rem; margin-bottom: 1.2rem;
+  border-bottom: 1px solid var(--border);
+}
 .quiz-progress-bar  { flex: 1; height: 7px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
 .quiz-progress-fill { height: 100%; background: linear-gradient(90deg, var(--orange), var(--gold)); border-radius: 99px; transition: width 0.4s; width: 0%; }
 .quiz-progress-text { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; min-width: 54px; text-align: right; }
@@ -598,6 +606,7 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
   .progress-wrap { padding: 0 1rem; }
   .progress-step { font-size: 0.62rem; }
   .quiz-options-list { gap: 0.45rem; }
+  .quiz-progress-wrap { padding-left: 1rem; padding-right: 1rem; margin-left: -1rem; margin-right: -1rem; }
 }
 </style>
 </head>
