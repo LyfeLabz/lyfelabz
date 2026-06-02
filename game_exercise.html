@@ -108,7 +108,67 @@ nav{position:sticky;top:0;z-index: 1000;background:rgba(10,18,28,0.97);backdrop-
 .btn-reset{padding:0.7rem 1.8rem;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--teal));color:#fff;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:800;cursor:pointer;transition:all 0.2s;}
 .btn-reset:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(105,217,122,0.4);}
 @keyframes fadeup{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-@media(max-width:700px){.intensity-levels{grid-template-columns:repeat(3,1fr);}.nav-center{display:none;}.main{padding:1.5rem 1rem 3rem;}}
+/* Mission cards */
+.mission-panel{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.8rem 2rem;margin-bottom:1.2rem;}
+.mp-title{font-family:'Fredoka One',cursive;font-size:1.3rem;margin-bottom:1.2rem;}
+.mission-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:0.8rem;}
+.mission-card{padding:1.2rem 0.7rem 1rem;border-radius:16px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;text-align:center;transition:all 0.25s;font-family:'Nunito',sans-serif;}
+.mission-card:hover{border-color:rgba(105,217,122,0.4);background:rgba(105,217,122,0.07);transform:translateY(-2px);}
+.mission-card.active{border-color:var(--accent);background:var(--accent-dim);box-shadow:0 0 22px rgba(var(--accent-rgb),0.2);}
+.mc-ico{font-size:2.4rem;display:block;margin-bottom:0.5rem;}
+.mc-name{font-weight:900;font-size:0.88rem;color:var(--text);line-height:1.2;margin-bottom:0.25rem;}
+.mc-sub{font-size:0.68rem;color:var(--muted);font-weight:700;}
+.mission-card.active .mc-name{color:var(--accent);}
+@media(max-width:700px){.intensity-levels{grid-template-columns:repeat(3,1fr);}.nav-center{display:none;}.main{padding:1.5rem 1rem 3rem;}.mission-cards{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:480px){.mission-cards{grid-template-columns:repeat(2,1fr);}}
+/* Mastery track */
+.mastery-wrap{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.4rem 2rem;margin-bottom:1.2rem;}
+.mastery-header{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;}
+.mastery-title{font-family:'Fredoka One',cursive;font-size:1.1rem;}
+.mastery-hint{font-size:0.73rem;color:var(--muted);font-weight:700;}
+.mastery-track{display:flex;align-items:center;gap:0;overflow-x:auto;padding-bottom:0.25rem;}
+.mt-node-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.mt-node{width:48px;height:48px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.1);background:#0e1c2a;display:flex;align-items:center;justify-content:center;font-size:1.3rem;transition:all 0.3s;flex-shrink:0;}
+.mt-node.mastered{background:rgba(105,217,122,0.18);border-color:var(--accent);}
+.mt-node.active{background:rgba(29,233,182,0.12);border-color:var(--teal);animation:mtpulse 2s ease-in-out infinite;}
+@keyframes mtpulse{0%,100%{box-shadow:0 0 0 0 rgba(29,233,182,0.45);}50%{box-shadow:0 0 0 9px rgba(29,233,182,0);}}
+.mt-node.upcoming{opacity:0.55;}
+.mt-label{font-size:0.62rem;font-weight:800;color:var(--muted);text-align:center;margin-top:0.35rem;max-width:56px;line-height:1.25;}
+.mt-node-wrap.mastered .mt-label{color:var(--accent);}
+.mt-node-wrap.active .mt-label{color:var(--teal);}
+.mt-node-wrap.upcoming .mt-label{opacity:0.6;}
+.mt-connector{width:28px;height:2px;background:rgba(255,255,255,0.08);flex-shrink:0;margin:0 2px;position:relative;top:-10px;}
+.mt-connector.mastered{background:var(--accent);}
+/* Challenge card */
+.ch-system{display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+.ch-sys-ico{font-size:2rem;flex-shrink:0;}
+.ch-sys-name{font-family:'Fredoka One',cursive;font-size:1.1rem;line-height:1.1;}
+.ch-sys-step{font-size:0.72rem;color:var(--muted);font-weight:700;margin-top:0.15rem;}
+.ch-question{font-size:0.97rem;font-weight:700;line-height:1.5;margin-bottom:1rem;}
+.ch-btns{margin-top:1rem;display:flex;gap:0.7rem;flex-wrap:wrap;}
+.ch-next-btn,.ch-retry-btn{padding:0.55rem 1.4rem;border-radius:99px;border:none;font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:800;cursor:pointer;transition:all 0.2s;display:none;align-items:center;}
+.ch-next-btn{background:linear-gradient(135deg,var(--accent),var(--teal));color:#fff;}
+.ch-next-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(105,217,122,0.4);}
+.ch-retry-btn{background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.13);color:var(--text);}
+.ch-retry-btn:hover{border-color:var(--accent);color:var(--accent);}
+.ch-complete{text-align:center;padding:2rem 1rem;}
+.ch-complete-ico{font-size:3rem;margin-bottom:0.5rem;}
+.ch-complete-txt{font-family:'Fredoka One',cursive;font-size:1.3rem;color:var(--accent);}
+/* Prediction step */
+.pred-section{margin-bottom:1.2rem;padding:1rem 1.1rem;background:rgba(29,233,182,0.05);border:1px solid rgba(29,233,182,0.18);border-radius:12px;}
+.pred-prompt{font-size:0.88rem;font-weight:700;color:var(--text);margin-bottom:0.75rem;line-height:1.5;}
+.pred-opts{display:flex;gap:0.5rem;flex-wrap:wrap;}
+.pred-btn{padding:0.38rem 1rem;border-radius:99px;border:1.5px solid rgba(29,233,182,0.35);background:rgba(29,233,182,0.07);color:var(--teal);font-family:'Nunito',sans-serif;font-size:0.82rem;font-weight:800;cursor:pointer;transition:all 0.2s;}
+.pred-btn:hover:not(.pred-disabled){border-color:rgba(29,233,182,0.6);background:rgba(29,233,182,0.13);}
+.pred-btn.pred-selected{background:rgba(29,233,182,0.2);border-color:var(--teal);}
+.pred-btn.pred-disabled{cursor:default;opacity:0.5;}
+.pred-btn.pred-selected.pred-disabled{opacity:1;}
+.pred-response{display:none;margin-top:0.75rem;font-size:0.82rem;color:var(--muted);font-weight:700;line-height:1.55;padding-top:0.6rem;border-top:1px solid rgba(29,233,182,0.12);}
+.ch-challenge-section{margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid var(--border);}
+/* Final result panel extras */
+.fs-title{font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--text);margin-bottom:0.3rem;}
+.fs-stats{font-size:0.82rem;color:var(--muted);font-weight:700;margin-bottom:1.2rem;letter-spacing:0.02em;}
+.fs-science{font-size:0.9rem;color:var(--text);line-height:1.65;margin-bottom:0.9rem;max-width:480px;margin-left:auto;margin-right:auto;}
 
   /* ── FOOTER ─────────────────────────────────────────── */
   footer {
@@ -456,43 +516,56 @@ body.stem-active .stem-detail {
   <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
   <span class="stem-badge" data-tip="Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.">6.MS-LS1-3</span>
 </div>
-</div>
-  </div>
-</div>
 
+  <div class="mission-panel">
+    <div class="mp-title">🎯 Choose Your Mission</div>
+    <div class="mission-cards" id="mission-cards"></div>
+  </div>
 
   <div class="intensity-panel">
     <div class="ip-top">
-      <div class="ip-title">🎚️ Choose Your Intensity Level</div>
-      <div class="ip-hint">Select a level, all systems update instantly</div>
+      <div class="ip-title">🎚️ Fine-Tune Intensity</div>
+      <div class="ip-hint">Advanced controls · synced with mission above</div>
     </div>
     <div class="intensity-levels" id="intensity-levels"></div>
+  </div>
+
+  <div class="mastery-wrap">
+    <div class="mastery-header">
+      <div class="mastery-title">🏅 System Mastery Path</div>
+      <div class="mastery-hint">Explore the simulator · then complete each system challenge</div>
+    </div>
+    <div class="mastery-track" id="mastery-track"></div>
   </div>
 
   <div class="score-bar">
     <div class="score-info">
       <div class="sc-item"><div class="sc-num" id="score-num">0</div><div class="sc-lbl">Points</div></div>
-      <div class="sc-item"><div class="sc-num" id="q-num">0</div><div class="sc-lbl">Answered</div></div>
+      <div class="sc-item"><div class="sc-num" id="q-num">0</div><div class="sc-lbl">Mastered</div></div>
+      <div class="sc-item"><div class="sc-num" id="streak-num" style="color:var(--orange)">0</div><div class="sc-lbl">Streak 🔥</div></div>
     </div>
     <div class="progress-wrap">
       <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-      <div class="progress-text" id="progress-text">Answer the quiz below to earn points</div>
+      <div class="progress-text" id="progress-text">Complete challenges below to master each system</div>
     </div>
   </div>
 
   <div class="systems-grid" id="systems-grid"></div>
   <div class="quiz-panel">
     <div class="qp-header">
-      <div class="qp-title">🧠 Quiz, Prove You Know Why!</div>
-      <div class="qp-badge">10 Questions · Score Tracking</div>
+      <div class="qp-title">🎯 System Challenges</div>
+      <div class="qp-badge">6 Challenges · Streak Scoring</div>
     </div>
     <div id="quiz-container"></div>
   </div>
   <div class="final-score" id="final-score">
     <div class="fs-icon" id="fs-icon">🏆</div>
+    <div class="fs-title">Exercise Coach Complete!</div>
     <div class="fs-num" id="fs-num"></div>
+    <div class="fs-stats" id="fs-stats"></div>
+    <div class="fs-science" id="fs-science"></div>
     <div class="fs-msg" id="fs-msg"></div>
-    <button class="btn-reset" onclick="resetQuiz()">Try Quiz Again 🔄</button>
+    <button type="button" class="btn-reset" onclick="resetGame()">Play Again 🔄</button>
   </div>
 </div>
 
@@ -509,6 +582,14 @@ body.stem-active .stem-detail {
 </footer>
 
 <script>
+const MISSIONS = [
+  { ico:"🛋️", name:"Recovery Mode",   sub:"Rest · Recharge",       level:0 },
+  { ico:"🚶", name:"Walk to School",  sub:"Walking · Easy pace",   level:1 },
+  { ico:"🏃", name:"Run the Mile",    sub:"Jogging · Steady push", level:2 },
+  { ico:"⚽", name:"Soccer Practice", sub:"Running · Hard effort",  level:3 },
+  { ico:"🔥", name:"100m Sprint",     sub:"Sprinting · Max effort", level:4 }
+];
+
 const LEVELS = [
   { id:0, ico:"🛋️", name:"Rest", desc:"Couch sitting" },
   { id:1, ico:"🚶", name:"Walking", desc:"Easy stroll" },
@@ -610,6 +691,69 @@ const SYSTEMS = [
   }
 ];
 
+const SYSTEM_CHALLENGES = [
+  {
+    systemId:'circ',
+    predictionPrompt:"During {mission}, what do you predict happens to heart rate?",
+    predictionOptions:["Increases","Stays the same","Decreases"],
+    predictionResponse:"Heart rate is one of the first things to shift during exercise. Now prove you know exactly why it changes.",
+    text:"When you start running, your heart rate increases. This is the Circulatory System responding. Why?",
+    options:["To make the lungs bigger","To pump more oxygen-carrying blood to working muscles","To slow digestion so energy goes to muscles","To reduce body temperature"],
+    correct:1,
+    explanation:"Working muscles need more oxygen. The heart pumps faster to deliver oxygen-rich blood faster — more beats per minute means more oxygen delivered per minute."
+  },
+  {
+    systemId:'resp',
+    predictionPrompt:"During {mission}, what do you predict happens to breathing rate?",
+    predictionOptions:["Increases","Stays the same","Decreases"],
+    predictionResponse:"Good thinking! Breathing rate changes dramatically with exercise intensity. Now see if you know which signal triggers that change.",
+    text:"Your breathing rate triples when jogging. Which waste product is the MAIN trigger that signals your body to breathe faster?",
+    options:["Oxygen","Glucose","Carbon dioxide (CO₂)","Nitrogen"],
+    correct:2,
+    explanation:"Rising CO₂ in the blood is the main signal to the brain to breathe faster. The body is less sensitive to falling O₂ levels — it's the CO₂ buildup that really sounds the alarm."
+  },
+  {
+    systemId:'musc',
+    predictionPrompt:"During {mission}, what do you predict happens to muscle oxygen demand?",
+    predictionOptions:["Increases a lot","Stays about the same","Decreases"],
+    predictionResponse:"Muscle demand can surge dramatically during exercise. Now see if you know how muscles actually use that extra oxygen.",
+    text:"During jogging, muscles can consume up to 8× more oxygen than at rest. What do muscles use oxygen for during exercise?",
+    options:["To produce antibodies","To release energy from glucose through cellular respiration","To build new muscle fibres during the run","To cool the body down"],
+    correct:1,
+    explanation:"Muscles use oxygen in cellular respiration: glucose + oxygen → energy (ATP) + CO₂ + heat. The more intense the exercise, the more oxygen muscles consume to keep producing energy for contractions."
+  },
+  {
+    systemId:'excr',
+    predictionPrompt:"During {mission}, what do you predict happens to sweat production?",
+    predictionOptions:["Increases","Stays the same","Decreases"],
+    predictionResponse:"Sweat is a key part of how the body maintains temperature during exercise. Now prove you know which system controls it.",
+    text:"You sweat heavily during intense exercise. Sweating is mainly the job of which system?",
+    options:["Respiratory System","Nervous System","Excretory System","Immune System"],
+    correct:2,
+    explanation:"Sweat glands are part of the Excretory System (skin). Sweating removes heat and also excretes small amounts of water, salt, and waste — helping maintain homeostasis."
+  },
+  {
+    systemId:'nerv',
+    predictionPrompt:"During {mission}, what do you predict happens to motor signals sent to your muscles?",
+    predictionOptions:["Increase","Stay the same","Decrease"],
+    predictionResponse:"Motor signals are constantly firing during movement. Now prove you know what those signal-carrying cells are called.",
+    text:"The nervous system sends more signals to muscles during exercise. What are the nerve cells called that carry movement commands from the brain to muscles?",
+    options:["Sensory neurons","Motor neurons","Blood vessels","Capillaries"],
+    correct:1,
+    explanation:"Motor neurons carry electrical signals from the brain and spinal cord to muscles, telling them to contract. The more intense the exercise, the more motor neurons fire."
+  },
+  {
+    systemId:'immu',
+    predictionPrompt:"After intense exercise like {mission}, what do you predict happens to immune activity?",
+    predictionOptions:["Temporarily drops","Temporarily spikes","Stays unchanged"],
+    predictionResponse:"The immune system has a surprising response to high-intensity exercise. Now prove you know what scientists call this effect.",
+    text:"After intense exercise, the immune system is temporarily weakened — the 'open window' effect. What does this mean for athletes?",
+    options:["They cannot get sick after exercise","They should exercise harder to strengthen immunity","They are more vulnerable to infections for a few hours post-exercise","Their white blood cells stop working permanently"],
+    correct:2,
+    explanation:"Intense exercise temporarily suppresses immunity — white blood cell activity drops for a few hours. This 'open window' is why athletes are advised to avoid sick people right after hard training."
+  }
+];
+
 const QUIZ = [
   { text:"When you start running, your heart rate increases. This is the Circulatory System responding. Why?", options:["To make the lungs bigger","To pump more oxygen-carrying blood to working muscles","To slow digestion so energy goes to muscles","To reduce body temperature"], correct:1, explanation:"Working muscles need more oxygen. The heart pumps faster to deliver oxygen-rich blood faster, more beats per minute means more oxygen delivered per minute." },
   { text:"Your breathing rate triples when jogging. Which waste product is the MAIN trigger that signals your body to breathe faster?", options:["Oxygen","Glucose","Carbon dioxide (CO₂)","Nitrogen"], correct:2, explanation:"Rising CO₂ in the blood is the main signal to the brain to breathe faster. The body is less sensitive to falling O₂ levels, it's the CO₂ buildup that really sounds the alarm." },
@@ -624,14 +768,53 @@ const QUIZ = [
 ];
 
 let currentLevel = 0;
-let score = 0, answered = 0;
-const total = QUIZ.length;
+let masteredSystems = [];
+let activeSystemIdx = 0;
+let score = 0;
+let streak = 0;
+let longestStreak = 0;
+let challengeAnswered = false;
+
+function buildMissions() {
+  const container = document.getElementById('mission-cards');
+  container.innerHTML = '';
+  MISSIONS.forEach(m => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'mission-card' + (m.level === currentLevel ? ' active' : '');
+    card.innerHTML = `<span class="mc-ico">${m.ico}</span><div class="mc-name">${m.name}</div><div class="mc-sub">${m.sub}</div>`;
+    card.onclick = () => setLevel(m.level);
+    container.appendChild(card);
+  });
+}
+
+function buildMasteryTrack() {
+  const track = document.getElementById('mastery-track');
+  track.innerHTML = '';
+  SYSTEMS.forEach((sys, i) => {
+    if (i > 0) {
+      const conn = document.createElement('div');
+      const prevMastered = masteredSystems.includes(SYSTEMS[i - 1].id);
+      conn.className = 'mt-connector' + (prevMastered ? ' mastered' : '');
+      track.appendChild(conn);
+    }
+    const wrap = document.createElement('div');
+    const isMastered = masteredSystems.includes(sys.id);
+    const isActive = i === activeSystemIdx;
+    const state = isMastered ? 'mastered' : isActive ? 'active' : 'upcoming';
+    wrap.className = `mt-node-wrap ${state}`;
+    const nodeContent = isMastered ? '✅' : sys.ico;
+    wrap.innerHTML = `<div class="mt-node ${state}">${nodeContent}</div><div class="mt-label">${sys.name.replace(' System', '')}</div>`;
+    track.appendChild(wrap);
+  });
+}
 
 function buildLevels() {
   const container = document.getElementById('intensity-levels');
   container.innerHTML = '';
   LEVELS.forEach(l => {
     const btn = document.createElement('button');
+    btn.type = 'button';
     btn.className = 'level-btn' + (l.id === currentLevel ? ' active' : '');
     btn.innerHTML = `<span class="li">${l.ico}</span><div class="ln">${l.name}</div><div class="ld">${l.desc}</div>`;
     btn.onclick = () => setLevel(l.id);
@@ -641,8 +824,15 @@ function buildLevels() {
 
 function setLevel(lvl) {
   currentLevel = lvl;
+  buildMissions();
   buildLevels();
   buildSystems();
+  // Keep prediction prompt in sync with current mission when no prediction has been made yet
+  const predPromptEl = document.querySelector('.pred-prompt');
+  if (predPromptEl && !document.querySelector('.pred-btn.pred-selected') && activeSystemIdx < SYSTEM_CHALLENGES.length) {
+    const ch = SYSTEM_CHALLENGES[activeSystemIdx];
+    predPromptEl.textContent = '🤔 ' + ch.predictionPrompt.replace('{mission}', MISSIONS[lvl].name);
+  }
 }
 
 function buildSystems() {
@@ -677,69 +867,174 @@ function buildSystems() {
   });
 }
 
-function buildQuiz() {
-  score = 0; answered = 0;
-  updateScore();
+function buildChallenge() {
+  challengeAnswered = false;
   const container = document.getElementById('quiz-container');
-  container.innerHTML = '';
   document.getElementById('final-score').classList.remove('show');
-  QUIZ.forEach((q, qi) => {
-    const letters = ['A','B','C','D'];
-    const opts = q.options.map((o,oi) => `<button class="qq-btn" id="qq-${qi}-${oi}" onclick="answerQ(${qi},${oi})"><span class="ql">${letters[oi]}</span><span>${o}</span></button>`).join('');
-    const div = document.createElement('div');
-    div.className = 'quiz-q';
-    div.innerHTML = `<div class="qq-text">${qi+1}. ${q.text}</div><div class="qq-opts">${opts}</div><div class="qq-fb" id="qqfb-${qi}"></div>`;
-    container.appendChild(div);
-  });
+
+  if (activeSystemIdx >= SYSTEM_CHALLENGES.length) {
+    container.innerHTML = `<div class="ch-complete"><div class="ch-complete-ico">🏆</div><div class="ch-complete-txt">All Systems Mastered!</div><p style="color:var(--muted);margin-top:0.5rem;font-size:0.88rem;">Use the button below to play again.</p></div>`;
+    showFinal();
+    return;
+  }
+
+  const ch = SYSTEM_CHALLENGES[activeSystemIdx];
+  const sys = SYSTEMS.find(s => s.id === ch.systemId);
+  const letters = ['A','B','C','D'];
+  const missionName = MISSIONS[currentLevel].name;
+  const predPrompt = ch.predictionPrompt.replace('{mission}', missionName);
+  const predOpts = ch.predictionOptions.map((o, pi) =>
+    `<button type="button" class="pred-btn" onclick="selectPrediction(this,${pi})">${o}</button>`
+  ).join('');
+  const opts = ch.options.map((o, oi) =>
+    `<button type="button" class="qq-btn" id="chopt-${oi}" onclick="answerChallenge(${oi})"><span class="ql">${letters[oi]}</span><span>${o}</span></button>`
+  ).join('');
+
+  container.innerHTML = `
+    <div class="ch-system">
+      <div class="ch-sys-ico">${sys.ico}</div>
+      <div>
+        <div class="ch-sys-name" style="color:${sys.col}">${sys.name}</div>
+        <div class="ch-sys-step">Challenge ${activeSystemIdx + 1} of ${SYSTEM_CHALLENGES.length}</div>
+      </div>
+    </div>
+    <div class="pred-section">
+      <div class="pred-prompt">🤔 ${predPrompt}</div>
+      <div class="pred-opts">${predOpts}</div>
+      <div class="pred-response" id="pred-response" aria-live="polite"></div>
+    </div>
+    <div class="ch-challenge-section" id="ch-challenge-section" style="display:none">
+      <div class="ch-question">${ch.text}</div>
+      <div class="qq-opts">${opts}</div>
+      <div class="qq-fb" id="ch-feedback" aria-live="polite"></div>
+      <div class="ch-btns">
+        <button type="button" class="ch-next-btn" id="ch-next" onclick="nextChallenge()">Next System →</button>
+        <button type="button" class="ch-retry-btn" id="ch-retry" onclick="retryChallenge()">Try Again 🔄</button>
+      </div>
+    </div>`;
 }
 
-function answerQ(qi, chosen) {
-  const q = QUIZ[qi];
-  if (document.getElementById(`qq-${qi}-${chosen}`).classList.contains('disabled')) return;
-  const isCorrect = chosen === q.correct;
-  q.options.forEach((_,oi) => {
-    const btn = document.getElementById(`qq-${qi}-${oi}`);
+function selectPrediction(btn, idx) {
+  document.querySelectorAll('.pred-btn').forEach(b => {
+    b.classList.add('pred-disabled');
+    b.onclick = null;
+  });
+  btn.classList.add('pred-selected');
+  const ch = SYSTEM_CHALLENGES[activeSystemIdx];
+  const resp = document.getElementById('pred-response');
+  resp.textContent = ch.predictionResponse;
+  resp.style.display = 'block';
+  document.getElementById('ch-challenge-section').style.display = 'block';
+}
+
+function answerChallenge(chosen) {
+  if (challengeAnswered) return;
+  challengeAnswered = true;
+  const ch = SYSTEM_CHALLENGES[activeSystemIdx];
+  const isCorrect = chosen === ch.correct;
+
+  ch.options.forEach((_, oi) => {
+    const btn = document.getElementById(`chopt-${oi}`);
     btn.classList.add('disabled');
-    if (oi === q.correct) btn.classList.add('correct');
+    if (oi === ch.correct) btn.classList.add('correct');
   });
-  if (!isCorrect) document.getElementById(`qq-${qi}-${chosen}`).classList.add('incorrect');
-  const fb = document.getElementById(`qqfb-${qi}`);
-  fb.className = `qq-fb show ${isCorrect?'cfb':'ifb'}`;
-  fb.innerHTML = `${isCorrect?'✅ Correct!':'❌ Not quite.'} ${q.explanation}`;
-  if (isCorrect) score++;
-  answered++;
-  updateScore();
-  if (answered === total) showFinal();
+  if (!isCorrect) document.getElementById(`chopt-${chosen}`).classList.add('incorrect');
+
+  const fb = document.getElementById('ch-feedback');
+  fb.className = `qq-fb show ${isCorrect ? 'cfb' : 'ifb'}`;
+  fb.innerHTML = `${isCorrect ? '✅ Correct!' : '❌ Not quite.'} ${ch.explanation}`;
+
+  if (isCorrect) {
+    streak++;
+    longestStreak = Math.max(longestStreak, streak);
+    const bonus = streak >= 3 ? 20 : 10;
+    score += bonus;
+    masteredSystems.push(ch.systemId);
+    activeSystemIdx++;
+    const isLast = activeSystemIdx >= SYSTEM_CHALLENGES.length;
+    const nextBtn = document.getElementById('ch-next');
+    nextBtn.textContent = isLast ? 'See Results 🏆' : 'Next System →';
+    nextBtn.style.display = 'inline-flex';
+    document.getElementById('ch-retry').style.display = 'none';
+  } else {
+    streak = 0;
+    document.getElementById('ch-next').style.display = 'none';
+    document.getElementById('ch-retry').style.display = 'inline-flex';
+  }
+
+  updateHUD();
+  buildMasteryTrack();
 }
 
-function updateScore() {
+function nextChallenge() {
+  buildChallenge();
+  document.getElementById('quiz-container').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function retryChallenge() {
+  buildChallenge();
+}
+
+function updateHUD() {
   document.getElementById('score-num').textContent = score;
-  document.getElementById('q-num').textContent = answered;
-  const pct = (answered/total)*100;
-  document.getElementById('progress-fill').style.width = pct+'%';
-  document.getElementById('progress-text').textContent = `${answered} of ${total} questions`;
+  document.getElementById('q-num').textContent = masteredSystems.length;
+  document.getElementById('streak-num').textContent = streak;
+  const pct = (masteredSystems.length / SYSTEM_CHALLENGES.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${masteredSystems.length} of ${SYSTEM_CHALLENGES.length} systems mastered`;
 }
 
 function showFinal() {
-  const pct = Math.round((score/total)*100);
-  const icon = pct===100?'🏆':pct>=80?'🌟':pct>=60?'👍':'💪';
-  const msg = pct===100?'Perfect! You completely understand how exercise drives every body system.':pct>=80?'Great work! You clearly understand the connections between exercise and body systems.':pct>=60?'Good effort! Review the explanations and try exploring the simulator some more.':'Keep studying! Try changing the intensity levels and reading the facts, then retry the quiz.';
-  document.getElementById('fs-icon').textContent=icon;
-  document.getElementById('fs-num').textContent=`${score} / ${total}`;
-  document.getElementById('fs-msg').textContent=msg;
+  const allMastered = masteredSystems.length === SYSTEM_CHALLENGES.length;
+  const missionName = MISSIONS[currentLevel].name;
+  const icon = allMastered ? '🏆' : masteredSystems.length >= 4 ? '🌟' : '💪';
+
+  document.getElementById('fs-icon').textContent = icon;
+  document.getElementById('fs-num').textContent =
+    `${score} pts · ${masteredSystems.length}/6 systems mastered`;
+  document.getElementById('fs-stats').textContent =
+    `Best streak: ${longestStreak} 🔥 · Mission: ${missionName}`;
+  document.getElementById('fs-science').textContent =
+    `You coached the body through ${missionName}. The circulatory, respiratory, muscular, excretory, nervous, and immune systems all adjusted together to maintain homeostasis during exercise.`;
+
+  let perfMsg;
+  if (longestStreak >= 6 && allMastered) {
+    perfMsg = 'Excellent systems thinking. You connected exercise intensity to every body system without breaking your streak.';
+  } else if (masteredSystems.length >= 4) {
+    perfMsg = 'Good work. Review the system cards and try again to build a stronger streak.';
+  } else {
+    perfMsg = 'Keep exploring. Change missions, watch the body systems respond, then retry the challenges.';
+  }
+  document.getElementById('fs-msg').textContent = perfMsg;
+
   document.getElementById('final-score').classList.add('show');
-  document.getElementById('final-score').scrollIntoView({behavior:'smooth',block:'nearest'});
+  document.getElementById('final-score').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function resetQuiz() {
+function resetGame() {
+  score = 0;
+  streak = 0;
+  longestStreak = 0;
+  masteredSystems = [];
+  activeSystemIdx = 0;
+  currentLevel = 0;
+  challengeAnswered = false;
   document.getElementById('final-score').classList.remove('show');
-  buildQuiz();
-  document.getElementById('quiz-container').scrollIntoView({behavior:'smooth',block:'start'});
+  updateHUD();
+  buildMissions();
+  buildLevels();
+  buildSystems();
+  buildMasteryTrack();
+  buildChallenge();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+buildMissions();
 buildLevels();
 buildSystems();
-buildQuiz();
+buildMasteryTrack();
+buildChallenge();
+updateHUD();
 </script>
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
 <script>
