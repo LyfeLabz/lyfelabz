@@ -501,6 +501,44 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 </style>
+
+<style>
+/* ── PRACTICE / CLASSROOM MODE — NEURON EXPLORER ── */
+.ne-classroom-wrap { padding: 2.5rem 1.5rem 3rem; background: var(--dark2); border-top: 1px solid var(--border); position: relative; z-index: 1; }
+.ne-classroom-inner { max-width: 680px; margin: 0 auto; }
+.ne-section-eyebrow { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; color: var(--neuro); font-family: 'Orbitron', sans-serif; margin-bottom: 0.5rem; }
+.ne-section-title { font-family: 'Fredoka One', cursive; font-size: clamp(1.4rem, 3vw, 2rem); color: var(--text); margin-bottom: 0.5rem; }
+.ne-section-desc { font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.6rem; }
+
+/* Mode toggle: override active color to blue so it's distinct from nav buttons */
+.ne-mode-toggle-wrap { margin-bottom: 1.4rem; }
+.ne-mode-toggle { display: inline-flex; border-radius: 10px; background: var(--card); border: 1px solid var(--border); padding: 3px; gap: 3px; }
+.ne-mode-toggle .mode-btn.active { background: rgba(59,130,246,0.18); color: #dde4f5; border: 1px solid rgba(59,130,246,0.45); box-shadow: 0 0 14px rgba(59,130,246,0.15), 0 2px 10px rgba(0,0,0,0.4); text-shadow: 0 0 12px rgba(59,130,246,0.4); }
+.ne-mode-hint { margin-top: 0.55rem; font-size: 0.84rem; color: var(--text-muted); }
+.ne-mode-hint span { display: none; }
+.ne-mode-hint span.visible { display: inline; }
+
+/* Classroom panel */
+.ne-classroom-panel { background: var(--card); border: 1px solid rgba(59,130,246,0.35); border-radius: 16px; padding: 1.4rem 1.6rem; margin-top: 1rem; }
+.ne-classroom-panel.hidden { display: none; }
+.ne-panel-title { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 1rem; }
+.ne-student-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+.ne-field-full { grid-column: 1 / -1; }
+.ne-field-label { display: block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.35rem; }
+.ne-field-input { width: 100%; padding: 0.6rem 0.85rem; border-radius: 10px; border: 1.5px solid var(--border); background: var(--dark); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 700; transition: border-color 0.2s; }
+.ne-field-input:focus { outline: none; border-color: rgba(59,130,246,0.65); }
+.ne-submit-section { text-align: center; }
+.ne-submit-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 2.2rem; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800; border: 1.5px solid var(--border); cursor: pointer; transition: all 0.22s; background: var(--card); color: var(--text-muted); }
+.ne-submit-btn.locked { opacity: 0.45; cursor: not-allowed; }
+.ne-submit-btn.ready { background: var(--green); border-color: var(--green); color: #000; box-shadow: 0 2px 0 rgba(0,0,0,0.18), 0 0 14px rgba(46,204,113,0.22); }
+.ne-submit-btn.ready:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.ne-submit-helper { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-top: 0.5rem; }
+.ne-submit-success { display: none; margin-top: 0.65rem; padding: 0.75rem 1rem; border-radius: 10px; background: rgba(46,204,113,0.1); color: var(--green); border: 1px solid rgba(46,204,113,0.35); font-size: 0.88rem; font-weight: 700; text-align: center; }
+.ne-submit-error   { display: none; margin-top: 0.65rem; padding: 0.75rem 1rem; border-radius: 10px; background: rgba(231,76,60,0.08); color: #ff8080; border: 1px solid rgba(231,76,60,0.3); font-size: 0.88rem; font-weight: 700; text-align: center; }
+.ne-quiz-status { font-size: 0.84rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+.ne-quiz-status .complete { color: var(--green); font-weight: 800; }
+@media (max-width: 540px) { .ne-student-fields { grid-template-columns: 1fr; } .ne-field-full { grid-column: 1; } }
+</style>
 </head>
 <body>
 <canvas id="stars"></canvas>
@@ -900,6 +938,57 @@ body.stem-active .stem-detail {
   </div>
 </div>
 
+<!-- PRACTICE / CLASSROOM MODE SECTION -->
+<section class="ne-classroom-wrap" id="neClassroomSection">
+  <div class="ne-classroom-inner">
+    <div class="ne-section-eyebrow">Classroom Submission</div>
+    <h2 class="ne-section-title">Submit Your Quiz Score</h2>
+    <p class="ne-section-desc">In <strong style="color:var(--text);">Practice Mode</strong>, use Quiz Me to self-check — nothing is sent. In <strong style="color:var(--text);">Classroom Mode</strong>, complete a round of 8 Quiz Me questions, fill in your info below, and submit your results to your teacher.</p>
+
+    <div class="ne-mode-toggle-wrap">
+      <div class="ne-mode-toggle">
+        <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
+        <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
+      </div>
+      <div class="ne-mode-hint">
+        <span id="modeHintPractice" class="visible">Use Quiz Me to check your understanding — nothing is sent to your teacher.</span>
+        <span id="modeHintClassroom">Complete a Quiz Me round (8 questions), then fill in your info to submit your score.</span>
+      </div>
+    </div>
+
+    <div class="ne-classroom-panel hidden" id="classroomPanel">
+      <div class="ne-panel-title">Submit to Your Teacher</div>
+      <div class="ne-quiz-status" id="neQuizStatus">
+        Complete a Quiz Me round (8 questions) above to unlock submission.
+      </div>
+      <div class="ne-student-fields">
+        <div>
+          <label class="ne-field-label" for="studentNameInput">Your Name</label>
+          <input class="ne-field-input" id="studentNameInput" type="text" placeholder="First Last" autocomplete="off">
+        </div>
+        <div>
+          <label class="ne-field-label" for="teacherSelect">Teacher</label>
+          <select class="ne-field-input" id="teacherSelect">
+            <option value="">Select your teacher</option>
+            <option value="Mr. Brown">Mr. Brown</option>
+            <option value="Ms. Gay">Ms. Gay</option>
+          </select>
+        </div>
+        <div class="ne-field-full">
+          <label class="ne-field-label" for="blockInput">Period / Block</label>
+          <input class="ne-field-input" id="blockInput" type="text" placeholder="e.g. Period 3" autocomplete="off">
+        </div>
+      </div>
+      <div class="ne-submit-section">
+        <button class="ne-submit-btn locked" id="classroomSubmitBtn" disabled>Submit Quiz Score</button>
+        <p class="ne-submit-helper" id="submitHelper">Complete a Quiz Me round and fill in all fields to submit.</p>
+        <div class="ne-submit-success" id="submitSuccess"></div>
+        <div class="ne-submit-error"   id="submitError">Something went wrong. Please try again.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <div class="modal" id="winModal">
   <div class="modal-box">
     <div class="modal-trophy">🏆</div>
@@ -1220,6 +1309,7 @@ body.stem-active .stem-detail {
   function answer(chosen, correct, btn){
     if(answered) return;
     answered=true; quizDone++;
+    if (typeof neAnswerLog !== 'undefined') neAnswerLog.push(chosen === correct);
     document.querySelectorAll('.quiz-opt').forEach(b=>{
       b.disabled=true;
       if(b.textContent===correct) b.classList.add('correct');
@@ -1256,6 +1346,13 @@ body.stem-active .stem-detail {
   }
 
   function showWinFromQuiz(){
+    if (typeof neQuizCompleted !== 'undefined') {
+      neQuizCompleted = true;
+      neQuizFinalScore = quizCorrect;
+      neQuizFinalAnswers = (typeof neAnswerLog !== 'undefined') ? neAnswerLog.slice(0, 8) : [];
+      neAnswerLog = [];
+      if (typeof neRenderSubmitState === 'function') neRenderSubmitState();
+    }
     const pct = Math.round((quizCorrect / Math.max(quizDone,1))*100);
     document.getElementById('modalScore').textContent = score + ' pts';
     const grade = pct>=90 ? `${pct}% · A+ (Neuro Master!` : pct>=75 ? `${pct}% · B) Strong Work!` : pct>=60 ? `${pct}% · C, Keep Practicing!` : `${pct}% · Keep Exploring!`;
@@ -1266,6 +1363,7 @@ body.stem-active .stem-detail {
   function restart(){
     score=0; visited.clear();
     quizDone=0; quizCorrect=0;
+    if (typeof neAnswerLog !== 'undefined') { neAnswerLog = []; neQuizCompleted = false; if (typeof neRenderSubmitState === 'function') neRenderSubmitState(); }
     updateHUD(); buildChips(); shuffleQ();
     document.getElementById('winModal').classList.remove('show');
     const card=document.getElementById('infoCard');
@@ -1279,5 +1377,132 @@ body.stem-active .stem-detail {
   init();
 </script>
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');</script>
+
+<script>
+/* =====================================================================
+   PRACTICE / CLASSROOM MODE — NEURON EXPLORER
+   Uses namespaced variables/functions to avoid collision with the
+   existing setMode(m) and game state in the main script block.
+   ===================================================================== */
+const NE_SCRIPT_URLS = {
+  'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+
+let neClassroomMode    = false;
+let neQuizCompleted    = false;
+let neQuizFinalScore   = 0;
+let neQuizFinalAnswers = [];
+let neAnswerLog        = [];
+
+function neSetMode(isClassroom) {
+  neClassroomMode = isClassroom;
+  document.getElementById('practiceModeBtn').classList.toggle('active', !isClassroom);
+  document.getElementById('classroomModeBtn').classList.toggle('active',  isClassroom);
+  var hP = document.getElementById('modeHintPractice');
+  var hC = document.getElementById('modeHintClassroom');
+  if (hP) hP.classList.toggle('visible', !isClassroom);
+  if (hC) hC.classList.toggle('visible',  isClassroom);
+  document.getElementById('classroomPanel').classList.toggle('hidden', !isClassroom);
+  neRenderSubmitState();
+}
+
+function neRenderSubmitState() {
+  var name    = (document.getElementById('studentNameInput') || {}).value || '';
+  var teacher = (document.getElementById('teacherSelect')    || {}).value || '';
+  var block   = (document.getElementById('blockInput')       || {}).value || '';
+
+  var btn    = document.getElementById('classroomSubmitBtn');
+  var helper = document.getElementById('submitHelper');
+  var status = document.getElementById('neQuizStatus');
+  if (!btn) return;
+
+  var ready = neClassroomMode && neQuizCompleted && name.trim() && teacher && block.trim();
+  btn.disabled  = !ready;
+  btn.className = 'ne-submit-btn ' + (ready ? 'ready' : 'locked');
+
+  if (status) {
+    if (neQuizCompleted) {
+      status.innerHTML = '<span class="complete">✓ Quiz complete — ' + neQuizFinalScore + '/8 correct.</span> Fill in the fields below and submit.';
+    } else {
+      status.textContent = 'Complete a Quiz Me round (8 questions) above to unlock submission.';
+    }
+  }
+
+  if (!helper) return;
+  if (!neClassroomMode)      helper.textContent = 'Switch to Classroom Mode above to submit.';
+  else if (!neQuizCompleted) helper.textContent = 'Complete a Quiz Me round (8 questions) to unlock submission.';
+  else if (!name.trim())     helper.textContent = 'Enter your name to submit.';
+  else if (!teacher)         helper.textContent = 'Select your teacher to submit.';
+  else if (!block.trim())    helper.textContent = 'Enter your period or block to submit.';
+  else                       helper.textContent = 'Ready to submit. Click when finished.';
+}
+
+function neSubmitWork() {
+  var name    = document.getElementById('studentNameInput').value.trim();
+  var teacher = document.getElementById('teacherSelect').value;
+  var block   = document.getElementById('blockInput').value.trim();
+  if (!name || !teacher || !block || !neQuizCompleted) return;
+
+  var scriptUrl = NE_SCRIPT_URLS[teacher];
+  if (!scriptUrl) {
+    document.getElementById('submitError').textContent = 'Unknown teacher selection. Please try again.';
+    document.getElementById('submitError').style.display = 'block';
+    return;
+  }
+
+  var btn = document.getElementById('classroomSubmitBtn');
+  btn.disabled = true; btn.className = 'ne-submit-btn locked'; btn.textContent = 'Submitting…';
+
+  var answerStr = neQuizFinalAnswers.map(function(ok, i) {
+    return 'Q' + (i + 1) + ':' + (ok ? 'C' : 'W');
+  }).join(', ');
+
+  var params = new URLSearchParams({
+    tab:        'Neuron Explorer',
+    studentName: name,
+    teacher:    teacher,
+    block:      block,
+    quizScore:  neQuizFinalScore + '/8',
+    answers:    answerStr
+  });
+
+  fetch(scriptUrl + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(function() {
+      btn.textContent = '✓ Submitted';
+      var s = document.getElementById('submitSuccess');
+      s.textContent   = 'Submitted! Your quiz score has been sent to ' + teacher + '. Great work.';
+      s.style.display = 'block';
+      document.getElementById('submitError').style.display = 'none';
+    })
+    .catch(function() {
+      btn.disabled  = false;
+      btn.className = 'ne-submit-btn ready';
+      btn.textContent = 'Submit Quiz Score';
+      document.getElementById('submitError').style.display = 'block';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var pBtn = document.getElementById('practiceModeBtn');
+  var cBtn = document.getElementById('classroomModeBtn');
+  var sBtn = document.getElementById('classroomSubmitBtn');
+  if (pBtn) pBtn.addEventListener('click',  function() { neSetMode(false); });
+  if (cBtn) cBtn.addEventListener('click',  function() { neSetMode(true);  });
+  if (sBtn) sBtn.addEventListener('click',  neSubmitWork);
+
+  ['input', 'change'].forEach(function(evt) {
+    var n = document.getElementById('studentNameInput');
+    var t = document.getElementById('teacherSelect');
+    var b = document.getElementById('blockInput');
+    if (n) n.addEventListener(evt, neRenderSubmitState);
+    if (t) t.addEventListener(evt, neRenderSubmitState);
+    if (b) b.addEventListener(evt, neRenderSubmitState);
+  });
+
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') neSetMode(true);
+});
+</script>
 </body>
 </html>

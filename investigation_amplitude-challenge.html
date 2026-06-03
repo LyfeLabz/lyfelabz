@@ -2868,14 +2868,16 @@ function initToggles(){
     if (ls)   { ls.classList.toggle('active', state.toggles.ls); ls.classList.toggle('ls', true); }
     // Mirror current state back into sessionStorage so the index page stays in sync.
     try {
-      sessionStorage.setItem('lyfelabz-stem-on', state.toggles.stem ? '1' : '0');
-      sessionStorage.setItem('lyfelabz-ls-on',   state.toggles.ls   ? '1' : '0');
+      if (state.toggles.stem) sessionStorage.setItem('lyfelabz-stem', 'on');
+      else sessionStorage.removeItem('lyfelabz-stem');
+      if (state.toggles.ls) sessionStorage.setItem('lyfelabz-ls', 'on');
+      else sessionStorage.removeItem('lyfelabz-ls');
     } catch(e){}
   }
   // Restore from the index-page sessionStorage settings.
   try {
-    state.toggles.stem = sessionStorage.getItem('lyfelabz-stem-on') === '1';
-    state.toggles.ls   = sessionStorage.getItem('lyfelabz-ls-on')   === '1';
+    state.toggles.stem = sessionStorage.getItem('lyfelabz-stem') === 'on';
+    state.toggles.ls   = sessionStorage.getItem('lyfelabz-ls')   === 'on';
   } catch(e){}
   // Only attach click listeners if the local buttons exist.
   if (stem) stem.addEventListener('click', () => { state.toggles.stem = !state.toggles.stem; applyToggles(); });

@@ -706,6 +706,36 @@
     .nb-table th:nth-child(4), .nb-table td:nth-child(4) { display: none; }
     .nb-stats { flex-direction: column; }
   }
+
+  /* ===== PRACTICE / CLASSROOM MODE TOGGLE ===== */
+  .mode-toggle-wrap { margin: 1.8rem 0 1.4rem; }
+  .mode-toggle { display: inline-flex; border-radius: 10px; background: var(--card); border: 1px solid var(--border); padding: 3px; gap: 3px; }
+  .mode-btn { padding: 0.55rem 1.4rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.04em; transition: all 0.22s; color: rgba(138,175,202,0.6); background: transparent; }
+  .mode-btn:hover:not(.active) { color: var(--text-muted); }
+  .mode-btn.active { background: rgba(59,130,246,0.18); color: #dde4f5; border: 1px solid rgba(59,130,246,0.45); box-shadow: 0 0 14px rgba(59,130,246,0.15), 0 2px 10px rgba(0,0,0,0.4); text-shadow: 0 0 12px rgba(59,130,246,0.4); }
+  .mode-hint { margin-top: 0.55rem; font-size: 0.84rem; color: var(--text-muted); }
+  .mode-hint span { display: none; }
+  .mode-hint span.visible { display: inline; }
+
+  /* ===== CLASSROOM SUBMISSION PANEL ===== */
+  .classroom-panel { background: var(--card); border: 1px solid rgba(59,130,246,0.35); border-radius: 16px; padding: 1.4rem 1.6rem; margin-top: 2rem; }
+  .classroom-panel.hidden { display: none; }
+  .classroom-panel-header { margin-bottom: 1rem; }
+  .classroom-panel-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
+  .cp-student-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+  .cp-field-full { grid-column: 1 / -1; }
+  .cp-field-label { display: block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.35rem; }
+  .cp-field-input { width: 100%; padding: 0.6rem 0.85rem; border-radius: 10px; border: 1.5px solid var(--border); background: var(--dark2); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 700; transition: border-color 0.2s; }
+  .cp-field-input:focus { outline: none; border-color: rgba(59,130,246,0.65); }
+  .cp-submit-section { text-align: center; }
+  .gz-submit-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 2.2rem; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800; border: 1.5px solid var(--border); cursor: pointer; transition: all 0.22s; background: var(--card); color: var(--text-muted); }
+  .gz-submit-btn.locked { opacity: 0.45; cursor: not-allowed; }
+  .gz-submit-btn.ready { background: var(--green); border-color: var(--green); color: #000; box-shadow: 0 2px 0 rgba(0,0,0,0.18), 0 0 14px rgba(46,204,113,0.22); }
+  .gz-submit-btn.ready:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .cp-submit-helper { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-top: 0.5rem; }
+  .cp-submit-success { display: none; margin-top: 0.65rem; padding: 0.75rem 1rem; border-radius: 10px; background: rgba(46,204,113,0.1); color: var(--green); border: 1px solid rgba(46,204,113,0.35); font-size: 0.88rem; font-weight: 700; text-align: center; }
+  .cp-submit-error   { display: none; margin-top: 0.65rem; padding: 0.75rem 1rem; border-radius: 10px; background: rgba(231,76,60,0.08); color: #ff8080; border: 1px solid rgba(231,76,60,0.3); font-size: 0.88rem; font-weight: 700; text-align: center; }
+  @media (max-width: 540px) { .cp-student-fields { grid-template-columns: 1fr; } .cp-field-full { grid-column: 1; } }
 </style>
 </head>
 
@@ -1412,6 +1442,18 @@
 <!-- QUIZ - hidden until Phase 5 complete -->
 <section id="quiz" class="quiz-section" style="display:none">
   <div class="container">
+
+    <div class="mode-toggle-wrap">
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
+        <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
+      </div>
+      <div class="mode-hint">
+        <span id="modeHintPractice" class="visible">Complete the quiz to check your understanding — nothing is sent to your teacher.</span>
+        <span id="modeHintClassroom">Complete the quiz and fill in your info below to submit your work to your teacher.</span>
+      </div>
+    </div>
+
     <span class="section-label">Phase 6 · Final Challenge</span>
     <h2 class="section-title">Apply Your Understanding 🎯</h2>
     <p class="section-desc">You've investigated unusual cases, gathered evidence, organized your thinking, and constructed scientific arguments. Now apply what you've learned to new questions about life and classification.</p>
@@ -1464,6 +1506,37 @@
         <div class="inv-reflection-note">Your selection is not scored or saved; this is purely for your own reflection.</div>
       </div>
     </div>
+
+    <div class="classroom-panel hidden" id="classroomPanel">
+      <div class="classroom-panel-header">
+        <div class="classroom-panel-title">Submit to Your Teacher</div>
+      </div>
+      <div class="cp-student-fields">
+        <div>
+          <label class="cp-field-label" for="studentNameInput">Your Name</label>
+          <input class="cp-field-input" id="studentNameInput" type="text" placeholder="First Last" autocomplete="off">
+        </div>
+        <div>
+          <label class="cp-field-label" for="teacherSelect">Teacher</label>
+          <select class="cp-field-input" id="teacherSelect">
+            <option value="">Select your teacher</option>
+            <option value="Mr. Brown">Mr. Brown</option>
+            <option value="Ms. Gay">Ms. Gay</option>
+          </select>
+        </div>
+        <div class="cp-field-full">
+          <label class="cp-field-label" for="blockInput">Period / Block</label>
+          <input class="cp-field-input" id="blockInput" type="text" placeholder="e.g. Period 3" autocomplete="off">
+        </div>
+      </div>
+      <div class="cp-submit-section">
+        <button class="gz-submit-btn locked" id="classroomSubmitBtn" disabled>Submit Investigation</button>
+        <p class="cp-submit-helper" id="submitHelper">Complete the quiz and fill in all fields to submit.</p>
+        <div class="cp-submit-success" id="submitSuccess"></div>
+        <div class="cp-submit-error"   id="submitError">Something went wrong. Please try again.</div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -1922,6 +1995,7 @@ function selectAnswer(qi, chosenIndex) {
   }
 
   quizState.answered++;
+  if (typeof gzQuizAnswers !== 'undefined') gzQuizAnswers[qi] = chosenIndex;
   updateProgress();
   if (quizState.answered === quizData.total) showScore();
 }
@@ -1945,11 +2019,14 @@ function showScore() {
   document.getElementById('q-score').classList.add('show');
   document.getElementById('q-score').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   showInvComplete();
+  if (typeof renderSubmitState === 'function') renderSubmitState();
 }
 
 function resetQuiz() {
   document.getElementById('q-score').classList.remove('show');
   buildQuiz();
+  if (typeof gzQuizAnswers !== 'undefined') gzQuizAnswers.fill(null);
+  if (typeof renderSubmitState === 'function') renderSubmitState();
 }
 
 buildQuiz();
@@ -2269,6 +2346,121 @@ function draw(t) {
 }
 window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
 resize(); requestAnimationFrame(draw);
+</script>
+
+<script>
+/* =====================================================================
+   PRACTICE / CLASSROOM MODE — GRAY ZONE INVESTIGATION
+   ===================================================================== */
+const GZ_SCRIPT_URLS = {
+  'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+
+let gzClassroomMode = false;
+let gzQuizAnswers   = new Array(8).fill(null);
+
+function setMode(isClassroom) {
+  gzClassroomMode = isClassroom;
+  document.getElementById('practiceModeBtn').classList.toggle('active', !isClassroom);
+  document.getElementById('classroomModeBtn').classList.toggle('active',  isClassroom);
+  var hP = document.getElementById('modeHintPractice');
+  var hC = document.getElementById('modeHintClassroom');
+  if (hP) hP.classList.toggle('visible', !isClassroom);
+  if (hC) hC.classList.toggle('visible',  isClassroom);
+  document.getElementById('classroomPanel').classList.toggle('hidden', !isClassroom);
+  renderSubmitState();
+}
+
+function renderSubmitState() {
+  var name    = (document.getElementById('studentNameInput') || {}).value || '';
+  var teacher = (document.getElementById('teacherSelect')    || {}).value || '';
+  var block   = (document.getElementById('blockInput')       || {}).value || '';
+  var quizDone = (typeof quizState !== 'undefined') && quizState.answered === quizData.total;
+
+  var ready  = gzClassroomMode && name.trim() && teacher && block.trim() && quizDone;
+  var btn    = document.getElementById('classroomSubmitBtn');
+  var helper = document.getElementById('submitHelper');
+  if (!btn) return;
+  btn.disabled  = !ready;
+  btn.className = 'gz-submit-btn ' + (ready ? 'ready' : 'locked');
+
+  if (!helper) return;
+  if (!gzClassroomMode)   helper.textContent = 'Switch to Classroom Mode above to submit.';
+  else if (!quizDone)     helper.textContent = 'Complete all quiz questions to unlock submission.';
+  else if (!name.trim())  helper.textContent = 'Enter your name to submit.';
+  else if (!teacher)      helper.textContent = 'Select your teacher to submit.';
+  else if (!block.trim()) helper.textContent = 'Enter your period or block to submit.';
+  else                    helper.textContent = 'Ready to submit. Click when finished.';
+}
+
+function gzSubmitWork() {
+  var name    = document.getElementById('studentNameInput').value.trim();
+  var teacher = document.getElementById('teacherSelect').value;
+  var block   = document.getElementById('blockInput').value.trim();
+  if (!name || !teacher || !block) return;
+
+  var scriptUrl = GZ_SCRIPT_URLS[teacher];
+  if (!scriptUrl) {
+    var err = document.getElementById('submitError');
+    err.textContent = 'Unknown teacher selection. Please try again.';
+    err.style.display = 'block';
+    return;
+  }
+
+  var btn = document.getElementById('classroomSubmitBtn');
+  btn.disabled = true; btn.className = 'gz-submit-btn locked'; btn.textContent = 'Submitting…';
+
+  var letters   = ['A','B','C','D'];
+  var answerStr = gzQuizAnswers.map(function(idx, i) {
+    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
+  }).join(', ');
+
+  var params = new URLSearchParams({
+    tab:        'Gray Zone',
+    studentName: name,
+    teacher:    teacher,
+    block:      block,
+    quizScore:  quizState.correct + '/' + quizData.total,
+    answers:    answerStr
+  });
+
+  fetch(scriptUrl + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(function() {
+      btn.textContent = '✓ Submitted';
+      var s = document.getElementById('submitSuccess');
+      s.textContent   = 'Submitted! Your investigation has been sent to ' + teacher + '. Great work.';
+      s.style.display = 'block';
+      document.getElementById('submitError').style.display = 'none';
+    })
+    .catch(function() {
+      btn.disabled  = false;
+      btn.className = 'gz-submit-btn ready';
+      btn.textContent = 'Submit Investigation';
+      document.getElementById('submitError').style.display = 'block';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var pBtn = document.getElementById('practiceModeBtn');
+  var cBtn = document.getElementById('classroomModeBtn');
+  var sBtn = document.getElementById('classroomSubmitBtn');
+  if (pBtn) pBtn.addEventListener('click',  function() { setMode(false); });
+  if (cBtn) cBtn.addEventListener('click',  function() { setMode(true);  });
+  if (sBtn) sBtn.addEventListener('click',  gzSubmitWork);
+
+  ['input', 'change'].forEach(function(evt) {
+    var n = document.getElementById('studentNameInput');
+    var t = document.getElementById('teacherSelect');
+    var b = document.getElementById('blockInput');
+    if (n) n.addEventListener(evt, renderSubmitState);
+    if (t) t.addEventListener(evt, renderSubmitState);
+    if (b) b.addEventListener(evt, renderSubmitState);
+  });
+
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') setMode(true);
+});
 </script>
 </body>
 </html>
