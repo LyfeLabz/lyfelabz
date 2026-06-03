@@ -65,11 +65,11 @@ Four distinct code formats appear across the lesson library. All are legitimate 
 | Format | Example | Files |
 |---|---|---|
 | `6.MS-LS1-X` | `6.MS-LS1-1` | what-is-life, organelles |
-| `MS-ESS1-X` | `MS-ESS1-1` | phases-of-the-moon, sun-earth-moon |
-| `6.ESS2-X` | `6.ESS2-2` | continental-drift |
+| `6.MS-ESS1-1a` | `6.MS-ESS1-1a` | phases-of-the-moon, sun-earth-moon, eclipses (corrected June 2026) |
+| `6.ESS2-X` | `6.ESS2-3` | continental-drift, layers-of-time |
 | `SEP-X` | `SEP-4` | continental-drift (engineering practice) |
 
-The `6.` prefix appears on Grade 6-specific MA adaptations. `MS-` prefix appears on middle school NGSS-aligned standards. `SEP-` is a Science and Engineering Practice code, not a content standard. These should remain as-is.
+The `6.` prefix appears on Grade 6-specific MA adaptations. `MS-` prefix appears on middle school NGSS-aligned standards. `SEP-` is a Science and Engineering Practice code, not a content standard. **Note (June 2026):** The `6.ESS2-2` code has been removed from all pages as it does not exist in the MA 2016 STE Framework. The astronomy pages have been corrected from `MS-ESS1-1` to `6.MS-ESS1-1a`.
 
 ---
 
@@ -80,7 +80,7 @@ The `6.` prefix appears on Grade 6-specific MA adaptations. `MS-` prefix appears
 | `lesson_what-is-life.html` | ✅ Added | ✅ Added | ✅ 6.MS-LS1-1, 6.MS-LS1-2 |
 | `lesson_body-systems.html` | ✅ Added | ✅ Added | ✅ 6.MS-LS1-3 |
 | `lesson_organelles.html` | ✅ Added | ✅ Added | ✅ 6.MS-LS1-1, 6.MS-LS1-2 |
-| `lesson_continental-drift.html` | ✅ Pre-existing | ✅ Pre-existing | ✅ 6.ESS2-3, 6.ESS2-2, SEP-4 |
+| `lesson_continental-drift.html` | ✅ Pre-existing | ✅ Pre-existing | ✅ 6.ESS2-3, SEP-4 (6.ESS2-2 removed June 2026) |
 | `lesson_phases-of-the-moon.html` | ✅ Pre-existing | ✅ Pre-existing | ✅ (reference file) |
 | `lesson_sun-earth-moon.html` | ✅ Pre-existing | ✅ Pre-existing | ✅ (reference file) |
 | `lesson_ragebaiting.html` |, |, | Not modified (out of scope) |
