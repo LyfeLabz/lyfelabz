@@ -267,46 +267,15 @@
   .bridge-callout.teal strong { color: var(--teal); }
 
   /* ===== FOOTER ===== */
-  footer {
-    background: #0c1623;
-    text-align: center;
-    padding: 3.5rem 2rem 2.5rem;
-    border-top: 1px solid var(--border);
-    position: relative;
-    z-index: 2;
-  }
-  .footer-logo {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 900;
-    color: var(--gold);
-    letter-spacing: 0.1em;
-    margin-bottom: 0.5rem;
-    text-shadow: 0 0 18px var(--gold-glow);
-  }
-  .footer-tagline {
-    color: var(--text-muted);
-    font-size: 0.92rem;
-    margin-bottom: 1.4rem;
-  }
-  .footer-links {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-    margin-bottom: 1.4rem;
-  }
-  .footer-links a {
-    color: var(--text-muted);
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    transition: color 0.2s;
-  }
-  .footer-links a:hover { color: var(--gold); }
-  footer p:last-child { font-size: 0.78rem; color: var(--text-muted); opacity: 0.7; }
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:.08em; color:var(--gold); margin-bottom:.35rem; }
+  footer .footer-tagline { font-size:.83rem; color:rgba(240,228,200,.6); margin-bottom:.6rem; }
+  footer .footer-links { display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:.72rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,.4); background:rgba(245,200,66,.08); padding:.25rem .75rem; border-radius:99px; transition:border-color .2s,background .2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,.7); background:rgba(59,200,232,.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,.22); border-color:rgba(59,200,232,.95); }
+  footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
 
   /* ===== RESPONSIVE NAV ===== */
   @media (max-width: 900px) {
@@ -5124,9 +5093,13 @@ function submitQuiz() {
 
   const { name, teacher, block } = validateStudentInfo();
   const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  const letters = ['A','B','C','D'];
+  const answerStr = quizState.selected.map((idx, i) =>
+    'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-')
+  ).join(', ');
   const params = new URLSearchParams({
     tab: 'Nature of Waves', studentName: name, teacher: teacherLabel,
-    block, score, percent: pct + '%'
+    block, score, percent: pct + '%', answers: answerStr
   });
   fetch(SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(() => {

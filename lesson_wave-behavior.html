@@ -1,0 +1,3079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_wave-behavior.html">
+<meta name="description" content="How can a wave hit an object and still keep moving? Discover reflection, absorption, and transmission through phenomenon-driven science. Grade 6 physical science aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Wave Behavior</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+  html { font-size: 18px; }
+
+  /* ===== CSS VARIABLES ===== */
+  :root {
+    --green:       #2ecc71;
+    --green-dark:  #27ae60;
+    --blue:        #3498db;
+    --blue-dark:   #2980b9;
+    --teal:        #3bc8e8;
+    --teal-deep:   #1abc9c;
+    --purple:      #9b59b6;
+    --red:         #e74c3c;
+    --orange:      #e67e22;
+    --yellow:      #f1c40f;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #1a2535;
+    --dark2:       #243447;
+    --card:        #1e2f42;
+    --text:        #e8f4f8;
+    --text-muted:  #8aafca;
+    --border:      rgba(52,152,219,0.2);
+
+    /* Wave-behavior behavior color system - three destinations */
+    /* These integrate into the LyfeLabz palette, not a separate system */
+    --reflect:      #3bc8e8;   /* teal  - matches --teal */
+    --reflect-dim:  rgba(59,200,232,0.08);
+    --reflect-border: rgba(59,200,232,0.3);
+
+    --transmit:     #2ecc71;   /* green - matches --green */
+    --transmit-dim: rgba(46,204,113,0.08);
+    --transmit-border: rgba(46,204,113,0.3);
+
+    --absorb:       #e67e22;   /* orange - matches --orange */
+    --absorb-dim:   rgba(230,126,34,0.08);
+    --absorb-border: rgba(230,126,34,0.3);
+  }
+
+  /* ===== RESET ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ===== STARFIELD ===== */
+  #stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.45;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: color 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-back:hover {
+    background: rgba(245,200,66,0.18);
+    border-color: rgba(245,200,66,0.65);
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0f2535 100%);
+    padding: 6rem 2rem 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(59,200,232,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(46,204,113,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 80%, rgba(230,126,34,0.04) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(245,200,66,0.15);
+    border: 1px solid rgba(245,200,66,0.4);
+    color: var(--gold);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  .hero p.hero-sub {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 620px;
+    margin: 0 auto 2.5rem;
+    position: relative;
+  }
+  /* floating hero decorations */
+  .hero-float {
+    position: absolute;
+    font-size: 4.5rem;
+    opacity: 0.045;
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+    filter: blur(0.5px);
+  }
+  .hero-float:nth-child(1) { top: 8%;    left: 4%;   animation-delay: 0s;   font-size: 5rem;   }
+  .hero-float:nth-child(2) { top: 15%;   right: 5%;  animation-delay: 1.5s; font-size: 3.8rem; }
+  .hero-float:nth-child(3) { bottom: 8%; left: 10%;  animation-delay: 3s;   font-size: 3.5rem; }
+  .hero-float:nth-child(4) { bottom: 12%;right: 4%;  animation-delay: 4.5s; font-size: 4.2rem; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* ===== DRIVING QUESTION (exact match to NoW) ===== */
+  .driving-question {
+    max-width: 760px;
+    margin: 1.6rem auto 0;
+    padding: 1.1rem 1.6rem;
+    background: rgba(59,200,232,0.06);
+    border: 1px solid rgba(59,200,232,0.22);
+    border-left: 4px solid var(--teal);
+    border-radius: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    box-sizing: border-box;
+    position: relative;
+  }
+  .dq-icon  { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body  { flex: 1; text-align: left; }
+  .dq-label {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(59,200,232,0.8);
+    margin-bottom: 0.3rem;
+  }
+  .dq-text  { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5rem 2rem; position: relative; scroll-margin-top: 10px; }
+  #quiz { scroll-margin-top: 45px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 760px;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+  }
+
+  /* ===== BRIDGE CALLOUT ===== */
+  .bridge-callout {
+    margin: 2rem auto 0;
+    max-width: 800px;
+    padding: 1.1rem 1.4rem;
+    background: rgba(245,200,66,0.06);
+    border: 1px solid rgba(245,200,66,0.22);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    font-size: 0.98rem;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .bridge-callout strong { color: var(--gold); }
+  .bridge-callout.teal {
+    background: rgba(59,200,232,0.06);
+    border-color: rgba(59,200,232,0.22);
+    border-left-color: var(--teal);
+  }
+  .bridge-callout.teal strong { color: var(--teal); }
+  .bridge-callout.green {
+    background: rgba(46,204,113,0.06);
+    border-color: rgba(46,204,113,0.22);
+    border-left-color: var(--green);
+  }
+  .bridge-callout.green strong { color: var(--green); }
+  .bridge-callout.orange {
+    background: rgba(230,126,34,0.06);
+    border-color: rgba(230,126,34,0.22);
+    border-left-color: var(--orange);
+  }
+  .bridge-callout.orange strong { color: var(--orange); }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-block;
+    padding: 0.85rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.25s;
+    cursor: pointer;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold), var(--teal));
+    color: #0d1f2d;
+    box-shadow: 0 4px 20px rgba(245,200,66,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(245,200,66,0.45); }
+
+  /* ===== VOCABULARY PILLS ===== */
+  .concept-tag {
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.4rem 1rem;
+    border-radius: 99px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-block;
+    user-select: none;
+  }
+  .concept-tag:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.15);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  }
+  .ct-green  { color: #2ecc71; background: rgba(46,204,113,0.08);  border-color: rgba(46,204,113,0.3);  }
+  .ct-teal   { color: #3bc8e8; background: rgba(59,200,232,0.08);  border-color: rgba(59,200,232,0.3);  }
+  .ct-blue   { color: #7cc8f8; background: rgba(41,140,212,0.1);   border-color: rgba(41,140,212,0.3);  }
+  .ct-orange { color: #e67e22; background: rgba(230,126,34,0.08);  border-color: rgba(230,126,34,0.3);  }
+  .ct-purple { color: #b47fff; background: rgba(180,127,255,0.08); border-color: rgba(180,127,255,0.3); }
+
+  /* vocab jump pulse - exact match to NoW */
+  @keyframes termPulse {
+    0%   { background: rgba(46,204,113,0);    box-shadow: none; }
+    20%  { background: rgba(46,204,113,0.32); box-shadow: 0 0 0 6px rgba(46,204,113,0.18); }
+    60%  { background: rgba(46,204,113,0.16); box-shadow: 0 0 0 9px rgba(46,204,113,0.08); }
+    100% { background: rgba(46,204,113,0);    box-shadow: none; }
+  }
+  .pulsing {
+    animation: termPulse 3s ease forwards;
+    border-radius: 6px;
+    -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+  }
+
+  /* ===== FOOTER ===== */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:.08em; color:var(--gold); margin-bottom:.35rem; }
+  footer .footer-tagline { font-size:.83rem; color:rgba(240,228,200,.6); margin-bottom:.6rem; }
+  footer .footer-links { display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:.72rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,.4); background:rgba(245,200,66,.08); padding:.25rem .75rem; border-radius:99px; transition:border-color .2s,background .2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,.7); background:rgba(59,200,232,.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,.22); border-color:rgba(59,200,232,.95); }
+  footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
+
+  /* ===== RESPONSIVE NAV ===== */
+  @media (max-width: 900px) {
+    nav { padding: 0.75rem 1.2rem; flex-wrap: wrap; gap: 0.6rem; }
+    .nav-links { gap: 0.9rem; order: 3; width: 100%; justify-content: center; }
+    .nav-links a { font-size: 0.78rem; }
+  }
+  @media (max-width: 560px) {
+    .hero { padding: 4rem 1.2rem 3.5rem; }
+    section { padding: 3.5rem 1.2rem; }
+  }
+</style>
+
+<!-- ── Learning Science Focus Bar - exact pattern from NoW ── -->
+<style>
+.ls-focus { display: none; }
+body.ls-active .ls-focus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+  width: fit-content;
+  max-width: 760px;
+  margin: 0.5rem auto 1.6rem;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 16px;
+  animation: barFadeIn 0.35s ease both;
+}
+@keyframes barFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ls-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(59,200,232,0.8);
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.ls-badge {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: default;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+}
+.ls-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.11);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255,255,255,0.11);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]:hover::after,
+.ls-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after,
+  .ls-badge[data-tip]::before { display: none; }
+  body.ls-active .ls-focus { max-width: calc(100% - 2.4rem); padding: 0.75rem 1rem; gap: 0.4rem 0.5rem; }
+}
+</style>
+
+<!-- ── MA STE Standards Badges - exact pattern from NoW ── -->
+<style>
+.stem-focus { display: none; }
+body.stem-active .stem-focus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+  width: fit-content;
+  max-width: 760px;
+  margin: 0.5rem auto 1.6rem;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+  background: rgba(46,204,113,0.05);
+  border: 1px solid rgba(46,204,113,0.2);
+  border-radius: 16px;
+  animation: barFadeIn 0.35s ease both;
+}
+.stem-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(46,204,113,0.75);
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.stem-badge {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: default;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+}
+.stem-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(46,204,113,0.2);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.stem-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(46,204,113,0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.stem-badge[data-tip]:hover::after,
+.stem-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .stem-badge[data-tip]::after,
+  .stem-badge[data-tip]::before { display: none; }
+}
+.stem-detail { display: none; }
+body.stem-active .stem-detail {
+  display: block;
+  width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
+  text-align: center; animation: barFadeIn 0.35s ease both;
+}
+.stem-show-btn {
+  background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
+}
+.stem-show-btn:hover { color: rgba(46,204,113,0.85); }
+.stem-detail-body {
+  display: none; margin-top: 0.5rem;
+  background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
+  border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
+}
+.stem-detail.stem-open .stem-detail-body { display: block; }
+.stem-std-row {
+  display: flex; gap: 0.8rem; align-items: flex-start;
+  padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
+.stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
+.stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
+</style>
+
+<!-- ── Engagement Optimization Styles ── -->
+<style>
+
+/* ── QUESTION PAUSE CARD ── */
+/* Used between observe-cards and name-it reveals in Reflection + Transmission */
+.question-pause {
+  max-width: 760px;
+  margin: 0.5rem auto 2rem;  /* 0.5rem top: small visual gap after observe-row */
+  padding: 1.2rem 1.5rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.question-pause-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+.question-pause-text {
+  font-size: 0.98rem;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.question-pause-text strong {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 800;
+}
+@media (max-width: 480px) {
+  .question-pause {
+    padding: 0.9rem 1rem;
+    gap: 0.6rem;
+    margin-top: 0;
+  }
+  .question-pause-icon { font-size: 1.2rem; }
+  .question-pause-text { font-size: 0.9rem; }
+}
+
+/* ── DEDUCTION SEQUENCE (Absorption) ── */
+.deduction-sequence {
+  max-width: 760px;
+  margin: 0 auto 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.deduction-step {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.3rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.deduction-step-num {
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-faint, #555e7a);
+  white-space: nowrap;
+  min-width: 44px;
+  letter-spacing: 0.05em;
+}
+.deduction-step-question {
+  flex: 1;
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.45;
+}
+.deduction-step-answer {
+  font-size: 0.88rem;
+  font-weight: 800;
+  white-space: nowrap;
+  padding: 0.25rem 0.7rem;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+.deduction-step.no .deduction-step-answer {
+  color: #d97070;                       /* slightly softened from #e87070 */
+  background: rgba(231,76,60,0.08);     /* lower intensity - less alarming */
+  border: 1px solid rgba(231,76,60,0.2);
+}
+.deduction-step.therefore {
+  background: rgba(230,126,34,0.07);
+  border-color: rgba(230,126,34,0.3);
+  border-left: 3px solid var(--orange);
+}
+.deduction-step.therefore .deduction-step-num { color: var(--orange); }
+.deduction-step.therefore .deduction-step-answer {
+  color: var(--orange);
+  background: rgba(230,126,34,0.12);
+  border: 1px solid rgba(230,126,34,0.3);
+  white-space: normal;
+  text-align: right;
+  max-width: 200px;
+  line-height: 1.4;
+}
+/* Mobile: stack answer badge below question on very narrow screens */
+@media (max-width: 520px) {
+  .deduction-step {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+  }
+  .deduction-step-answer {
+    white-space: normal;
+    width: 100%;
+    text-align: left;
+  }
+  .deduction-step.therefore .deduction-step-answer {
+    max-width: 100%;
+    text-align: left;
+  }
+}
+
+/* ── WRAP-UP BEATS ── */
+.wrapup-beats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+@media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+
+.wrapup-beat {
+  border-radius: 16px;
+  padding: 1.4rem 1.3rem;
+  position: relative;
+}
+.wrapup-beat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+.wrapup-beat-1 {
+  background: rgba(245,200,66,0.06);
+  border: 1px solid rgba(245,200,66,0.25);
+}
+.wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+
+.wrapup-beat-2 {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+}
+.wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+
+.wrapup-beat-3 {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.18);  /* strengthened: 0.1 → 0.18 */
+}
+.wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+
+.wrapup-beat-label {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+.wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+.wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+
+.wrapup-beat-answer {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+}
+.wrapup-beat-1 .wrapup-beat-answer { color: var(--text); }
+.wrapup-beat-2 .wrapup-beat-answer { color: var(--text); }
+.wrapup-beat-3 .wrapup-beat-answer { color: var(--text); }
+
+.wrapup-beat-body {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+
+/* Three-behavior mini chips inside beat 2 */
+.wrapup-behavior-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+.wbc {
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.22rem 0.65rem;
+  border-radius: 99px;
+  border: 1px solid;
+}
+.wbc-reflect  { color: var(--teal);   background: var(--reflect-dim);  border-color: var(--reflect-border);  }
+.wbc-transmit { color: var(--green);  background: var(--transmit-dim); border-color: var(--transmit-border); }
+.wbc-absorb   { color: var(--orange); background: var(--absorb-dim);   border-color: var(--absorb-border);   }
+
+/* Example materials row inside beat 3 */
+.wrapup-ratio-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+.wre-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.83rem;
+}
+.wre-icon  { font-size: 1.1rem; flex-shrink: 0; }
+.wre-label { color: var(--text-muted); flex: 1; }
+.wre-tag {
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 0.18rem 0.55rem;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.wre-tag.r { color: var(--teal);   background: var(--reflect-dim);  border: 1px solid var(--reflect-border);  }
+.wre-tag.t { color: var(--green);  background: var(--transmit-dim); border: 1px solid var(--transmit-border); }
+.wre-tag.a { color: var(--orange); background: var(--absorb-dim);   border: 1px solid var(--absorb-border);   }
+</style>
+
+<!-- ── Pass 2 Content Styles ── -->
+<style>
+
+/* ── HALLWAY MYSTERY CARDS (Section 0) ── */
+.hallway-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 720px) { .hallway-grid { grid-template-columns: 1fr; } }
+
+.hallway-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.8rem 1.4rem 1.6rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+.hallway-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+}
+.hallway-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.hallway-card.door::before   { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.4)); }
+.hallway-card.window::before { background: linear-gradient(90deg, var(--teal), rgba(59,200,232,0.4)); }
+.hallway-card.wall::before   { background: linear-gradient(90deg, var(--text-muted), rgba(138,175,202,0.3)); }
+
+.hallway-card-icon { font-size: 2.8rem; margin-bottom: 0.6rem; display: block; line-height: 1; }
+.hallway-card-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+.hallway-card-observation {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+.hallway-card-question {
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--gold);
+  line-height: 1.5;
+}
+
+/* ── REVIEW CARDS (Section 1) ── */
+.review-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  max-width: 100%;
+  margin-bottom: 2rem;
+}
+@media (max-width: 600px) { .review-grid { grid-template-columns: 1fr; } }
+
+.review-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+}
+.review-card-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.review-card-label.mech  { color: var(--gold); }
+.review-card-label.em    { color: var(--teal); }
+.review-card-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+.review-card-body {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+.review-card-body strong { color: var(--text); }
+
+/* full-width energy card */
+.review-energy {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-left: 4px solid var(--teal);
+  border-radius: 14px;
+  padding: 1.2rem 1.5rem;
+  max-width: 100%;
+  font-size: 0.98rem;
+  color: var(--text);
+  line-height: 1.65;
+  margin-bottom: 2rem;
+}
+.review-energy strong { color: var(--teal); }
+
+/* ── OBSERVE ROW (used in Reflection + Transmission) ── */
+.observe-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 560px) { .observe-row { grid-template-columns: 1fr; } }
+.observe-card {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.93rem;
+  line-height: 1.55;
+}
+.observe-icon { font-size: 1.6rem; flex-shrink: 0; }
+.observe-card strong { color: var(--teal); }
+.observe-card.green-card { background: rgba(46,204,113,0.05); border-color: rgba(46,204,113,0.2); }
+.observe-card.green-card strong { color: var(--green); }
+.observe-card.orange-card { background: rgba(230,126,34,0.05); border-color: rgba(230,126,34,0.2); }
+.observe-card.orange-card strong { color: var(--orange); }
+
+/* ── NAME-IT REVEAL (vocab after phenomenon) ── */
+.name-it {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 14px;
+  padding: 1.4rem 1.6rem;
+  max-width: 760px;
+  margin: 0 auto 2rem;
+}
+.name-it.teal-it { border-left-color: var(--teal); }
+.name-it.green-it { border-left-color: var(--green); }
+.name-it.orange-it { border-left-color: var(--orange); }
+.name-it-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+.name-it.teal-it .name-it-label   { color: var(--teal); }
+.name-it.green-it .name-it-label  { color: var(--green); }
+.name-it.orange-it .name-it-label { color: var(--orange); }
+.name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+.name-it p strong { font-weight: 800; }
+.name-it.teal-it p strong   { color: var(--teal); }
+.name-it.green-it p strong  { color: var(--green); }
+.name-it.orange-it p strong { color: var(--orange); }
+
+/* ── EXAMPLE GRID (real-world examples row) ── */
+.example-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 600px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
+.example-chip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+.example-chip-body { display: flex; flex-direction: column; gap: 0.25rem; }
+.ex-cat {
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.5rem;
+  border-radius: 99px;
+  align-self: flex-start;
+}
+.ex-cat-sound { color: var(--gold);  background: rgba(245,200,66,0.1);  border: 1px solid rgba(245,200,66,0.28);  }
+.ex-cat-light { color: var(--teal);  background: rgba(59,200,232,0.08); border: 1px solid rgba(59,200,232,0.25); }
+
+/* ── TTO PANELS (Section 4 - Transparent/Translucent/Opaque) ── */
+.tto-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 680px) { .tto-grid { grid-template-columns: 1fr; } }
+
+.tto-card {
+  border-radius: 18px;
+  padding: 2rem 1.4rem 1.6rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.tto-card.transparent-card {
+  background: rgba(59,200,232,0.06);
+  border: 1px solid rgba(59,200,232,0.3);
+}
+.tto-card.translucent-card {
+  background: rgba(46,204,113,0.06);
+  border: 1px solid rgba(46,204,113,0.3);
+}
+.tto-card.opaque-card {
+  background: rgba(138,175,202,0.06);
+  border: 1px solid rgba(138,175,202,0.2);
+}
+
+/* Light beam visual inside each card */
+.tto-visual {
+  width: 100%;
+  height: 80px;
+  margin-bottom: 1rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tto-beam {
+  height: 10px;
+  border-radius: 99px;
+  position: absolute;
+}
+.tto-beam-in  { width: 38%; left: 0;    background: linear-gradient(90deg, rgba(245,200,66,0.9), rgba(245,200,66,0.4)); }
+.tto-material { width: 14%; height: 54px; border-radius: 6px; position: absolute; left: 38%; top: 50%; transform: translateY(-50%); }
+.transparent-card  .tto-material { background: rgba(59,200,232,0.25); border: 1px solid rgba(59,200,232,0.5); }
+.translucent-card  .tto-material { background: rgba(46,204,113,0.35); border: 1px solid rgba(46,204,113,0.5); }
+.opaque-card       .tto-material {
+  background: linear-gradient(90deg, rgba(230,126,34,0.22) 0%, rgba(100,130,155,0.58) 45%);
+  border: 1px solid rgba(138,175,202,0.4);
+  box-shadow: -5px 0 18px rgba(245,200,66,0.18), inset 3px 0 10px rgba(230,126,34,0.12);
+}
+
+.tto-beam-through {
+  position: absolute;
+  height: 10px;
+  border-radius: 99px;
+  right: 0;
+}
+/* Transparent: beam starts at material edge, terminus aligns with silhouette */
+.transparent-card  .tto-beam-through { right: auto; left: 52%; width: 33%; background: linear-gradient(90deg, rgba(245,200,66,0.72), rgba(245,200,66,0.92)); }
+/* Translucent: diffuse beam, same span, terminus aligns with silhouette */
+.translucent-card  .tto-beam-through { right: auto; left: 52%; width: 33%; height: 18px; background: linear-gradient(90deg, rgba(245,200,66,0.36), rgba(245,200,66,0.20)); filter: blur(3.5px); }
+/* Opaque: no transmission */
+.opaque-card       .tto-beam-through { display: none; }
+
+/* Image cue: silhouette sits at beam terminus (left: 83%, beam ends at 85%) */
+.tto-img-cue {
+  position: absolute;
+  left: 83%;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+.transparent-card  .tto-img-cue { opacity: 0.82; }
+.translucent-card  .tto-img-cue { opacity: 0.82; }
+.opaque-card       .tto-img-cue { opacity: 0.82; }
+
+.tto-term {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.35rem;
+  margin-bottom: 0.4rem;
+}
+.transparent-card .tto-term { color: var(--teal); }
+.translucent-card .tto-term { color: var(--green); }
+.opaque-card      .tto-term { color: var(--text-muted); }
+
+.tto-definition {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.tto-examples {
+  margin-top: 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.tto-ex {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-muted);
+}
+
+/* ── WRAPUP TABLE (Section 7) ── */
+.wrapup-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+.wrapup-row {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.3rem 1.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+@media (max-width: 560px) {
+  .wrapup-row { grid-template-columns: 1fr; }
+}
+.wrapup-surface {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 70px;
+}
+.wrapup-surface-icon { font-size: 2rem; }
+.wrapup-surface-name {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.wrapup-col-head {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+.wrapup-col-head.light { color: var(--gold); }
+.wrapup-col-head.sound { color: var(--teal); }
+.wrapup-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+.wrapup-body strong { font-weight: 800; }
+
+/* answer reveal box */
+.answer-reveal {
+  background: rgba(245,200,66,0.05);
+  border: 1px solid rgba(245,200,66,0.25);
+  border-left: 4px solid var(--gold);
+  border-radius: 14px;
+  padding: 1.4rem 1.6rem;
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text);
+}
+.answer-reveal .answer-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+.answer-reveal strong { color: var(--gold); font-weight: 800; }
+
+
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="#hook">Mystery</a></li>
+    <li><a href="#reflection">Behaviors</a></li>
+    <li><a href="#interaction">Energy Tracker</a></li>
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+  </ul>
+  <a href="index.html#unit-nature-of-waves" class="nav-back">← Waves Unit</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">🪞</span>
+  <span class="hero-float">🔦</span>
+  <span class="hero-float">🧱</span>
+  <span class="hero-float">🔊</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Wave Behavior</h1>
+  <p class="hero-sub">A door. A window. A brick wall. Same sound, same light: three completely different outcomes. Why?</p>
+  <div class="driving-question">
+    <div class="dq-icon">🔍</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">How can a wave hit an object and still keep moving?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real hallway scenario before naming any vocabulary. Encountering a genuine puzzle activates curiosity and primes attention for the explanation that follows. (Loewenstein, 1994)">🔍 Phenomenon First</span>
+  <span class="ls-badge" data-tip="Reflection, transmission, and absorption are introduced through observable examples before their vocabulary labels appear. Students build understanding, then receive the word that names it. (Willingham, 2009)">🏷️ Label After Learning</span>
+  <span class="ls-badge" data-tip="The opening hallway scene returns at the synthesis stage. Revisiting the same scenario with new knowledge deepens comprehension and shows students how far they've traveled. (Bransford et al., 2000)">🔄 Return to Source</span>
+  <span class="ls-badge" data-tip="The energy-split interaction shows wave behavior as a continuous ratio rather than three separate categories. Models that show degrees rather than binary states reduce misconceptions. (Chi et al., 1994)">📊 Quantitative Modeling</span>
+  <span class="ls-badge" data-tip="The quiz asks students to apply concepts to new scenarios rather than recall definitions. Transfer tasks require deeper processing and reveal real understanding. (Adesope et al., 2017)">✅ Retrieval Practice</span>
+</div>
+
+<!-- MA STE STANDARDS BADGES -->
+<div class="stem-focus">
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
+  <span class="stem-badge" data-tip="Develop and use a model to describe that waves are reflected, absorbed, or transmitted through various materials.">6.MS-PS4-2</span>
+  <span class="stem-badge" data-tip="Use diagrams and other representations to show that both light and sound are waves that move and transfer energy.">6.MS-PS4-1</span>
+</div>
+<div class="stem-detail" id="stem-detail-wb">
+  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-wb')">▸ Show standard descriptions</button>
+  <div class="stem-detail-body">
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-PS4-2</span>
+      <span class="stem-std-text">Develop and use a model to describe that waves are reflected, absorbed, or transmitted through various materials.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-PS4-1</span>
+      <span class="stem-std-text">Use diagrams and other representations to show that both light and sound are waves that move and transfer energy.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 0 - MYSTERY
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="hook" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Mystery</span>
+    <h2 class="section-title">Three Objects. One Question.</h2>
+    <p class="section-desc">You're outside a classroom. A door, a window, and a brick wall are between you and what's happening inside. Each surface interacts with sound and light differently.</p>
+
+    <div class="hallway-grid">
+
+      <!-- DOOR -->
+      <div class="hallway-card door">
+        <span class="hallway-card-icon">🚪</span>
+        <div class="hallway-card-name">The Wooden Door</div>
+        <div class="hallway-card-observation">
+          You can hear voices inside, but you cannot see through the door.
+        </div>
+        <div class="hallway-card-question">Sound gets through. Light doesn't. Why?</div>
+      </div>
+
+      <!-- WINDOW -->
+      <div class="hallway-card window">
+        <span class="hallway-card-icon">🪟</span>
+        <div class="hallway-card-name">The Window</div>
+        <div class="hallway-card-observation">
+          You can see inside clearly, and the room sounds a little louder near the glass.
+        </div>
+        <div class="hallway-card-question">Light passes through easily. Why?</div>
+      </div>
+
+      <!-- WALL -->
+      <div class="hallway-card wall">
+        <span class="hallway-card-icon">🧱</span>
+        <div class="hallway-card-name">The Brick Wall</div>
+        <div class="hallway-card-observation">
+          You cannot see through it, and you barely hear anything.
+        </div>
+        <div class="hallway-card-question">Most of the energy seems to just... stop. Where does it go?</div>
+      </div>
+
+    </div>
+
+    <div class="observe-row">
+      <div class="observe-card">
+        <span class="observe-icon">💡</span>
+        <span><strong>Same energy.</strong> The same sound waves and light waves from inside the classroom are hitting all three surfaces.</span>
+      </div>
+      <div class="observe-card">
+        <span class="observe-icon">🤔</span>
+        <span>Why do the same waves behave so differently when they hit different materials?</span>
+      </div>
+    </div>
+
+    <div class="bridge-callout">
+      <strong>The question:</strong> What determines what happens when a wave reaches matter? The wave didn't make a choice. The surface didn't choose. Something about the physics of each material is causing this, and this whole lesson is about figuring out what.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 1 - WHAT WE ALREADY KNOW
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="review" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">What We Already Know</span>
+    <h2 class="section-title">Waves Carry Energy: And Energy Has to Go Somewhere</h2>
+    <p class="section-desc">Before we solve the mystery, there's one rule we need to remember.</p>
+
+    <div class="review-grid">
+      <div id="mechanical-wave" class="review-card">
+        <div class="review-card-label mech">Mechanical Waves</div>
+        <div class="review-card-title">Need a medium to travel</div>
+        <div class="review-card-body">
+          Sound, water, and seismic waves all travel by pushing matter from particle to particle.
+          <br><br>
+          <strong>No medium → no mechanical wave.</strong> That's why you can't hear an explosion in space.
+        </div>
+      </div>
+      <div id="electromagnetic-wave" class="review-card">
+        <div class="review-card-label em">Electromagnetic Waves</div>
+        <div class="review-card-title">Need no medium at all</div>
+        <div class="review-card-body">
+          Light, radio waves, and X-rays travel as disturbances in electric and magnetic fields, not in matter.
+          <br><br>
+          <strong>Empty space is fine.</strong> That's how sunlight crosses 93 million miles of vacuum to reach Earth.
+        </div>
+      </div>
+    </div>
+
+    <div class="review-energy">
+      <strong>Waves carry energy.</strong>
+      <br><br>
+      <strong>Energy cannot be created or destroyed.</strong>
+      <br><br>
+      So when a wave reaches a surface, the energy must go somewhere.
+      <br><br>
+      <strong>In this lesson, you'll discover the three places that energy can go.</strong>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 2 - WHEN WAVES BOUNCE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="reflection" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label" style="color: var(--teal); background: var(--reflect-dim); border-color: var(--reflect-border);">When Waves Bounce</span>
+    <h2 class="section-title">The Wave That Came Back</h2>
+    <p class="section-desc">Stand in a canyon and shout. A few seconds later, you hear your own voice return. How did the sound come back?</p>
+
+    <div class="observe-row">
+      <div class="observe-card">
+        <span class="observe-icon">🏔️</span>
+        <span>You shout in a canyon. Your voice <strong>comes back</strong> a moment later: the exact sound, delayed.</span>
+      </div>
+      <div class="observe-card">
+        <span class="observe-icon">🪞</span>
+        <span>You stand in front of a mirror. Light <strong>bounces back</strong> and reaches your eyes; your reflection appears.</span>
+      </div>
+    </div>
+
+    <!-- Question pause - thinking beat before the reveal -->
+    <div class="question-pause">
+      <span class="question-pause-icon">🤔</span>
+      <div class="question-pause-text"><strong>Think about it:</strong> What do you think is happening to the wave's energy at the moment it hits the surface?</div>
+    </div>
+
+    <!-- Name-it reveal -->
+    <div id="reflection-term" class="name-it teal-it">
+      <div class="name-it-label">Now we have a word for it</div>
+      <p><strong>Reflection</strong> happens when a wave bounces off a surface instead of passing through it.</p>
+    </div>
+
+    <!-- Real-world examples -->
+    <div class="example-grid">
+      <div class="example-chip"><span class="example-chip-icon">🏔️</span><div class="example-chip-body"><span>Echo in a canyon or cave</span><span class="ex-cat ex-cat-sound">Sound</span></div></div>
+      <div class="example-chip"><span class="example-chip-icon">🪞</span><div class="example-chip-body"><span>Your reflection in a mirror</span><span class="ex-cat ex-cat-light">Light</span></div></div>
+      <div class="example-chip"><span class="example-chip-icon">🦇</span><div class="example-chip-body"><span>Bat echolocation: sound bounces off prey</span><span class="ex-cat ex-cat-sound">Sound</span></div></div>
+      <div class="example-chip"><span class="example-chip-icon">🛥️</span><div class="example-chip-body"><span>Sonar: bounces off the ocean floor</span><span class="ex-cat ex-cat-sound">Sound</span></div></div>
+      <div class="example-chip"><span class="example-chip-icon">🎵</span><div class="example-chip-body"><span>Concert halls shaped to reflect sound toward the audience</span><span class="ex-cat ex-cat-sound">Sound</span></div></div>
+      <div class="example-chip"><span class="example-chip-icon">☀️</span><div class="example-chip-body"><span>Sunlight reflecting off water on a bright day</span><span class="ex-cat ex-cat-light">Light</span></div></div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Reflection:</strong> Sometimes energy bounces back.
+      <br><br>
+      But what if it doesn't?
+      <br><br>
+      Let's follow the energy next.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 3 - WHEN WAVE ENERGY STAYS BEHIND
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="absorption" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label" style="color: var(--orange); background: var(--absorb-dim); border-color: var(--absorb-border);">When Wave Energy Stays Behind</span>
+    <h2 class="section-title">The Wave That Disappeared, or Did It?</h2>
+    <p class="section-desc">Leave a black car in the sun for an hour. Touch the seat. It's burning hot: no fire, no heater, just sunlight hitting dark fabric all afternoon.</p>
+
+    <div class="observe-row">
+      <div class="observe-card orange-card">
+        <span class="observe-icon">🚗</span>
+        <span>A black car seat gets <strong>burning hot</strong> in sunlight. The light didn't bounce back; the seat isn't shiny. It didn't pass through; you can't see through it.</span>
+      </div>
+      <div class="observe-card orange-card">
+        <span class="observe-icon">🎙️</span>
+        <span>A recording studio lined with foam is eerily quiet. Sound enters the room and <strong>seems to vanish</strong> into the walls. Where did it go?</span>
+      </div>
+    </div>
+
+    <!-- Deduction sequence - students reason their way to absorption -->
+    <div class="deduction-sequence">
+      <div class="deduction-step no">
+        <span class="deduction-step-num">Step 1</span>
+        <span class="deduction-step-question">Did the energy <strong>reflect</strong> back off the material?</span>
+        <span class="deduction-step-answer">❌ No: the seat isn't shiny</span>
+      </div>
+      <div class="deduction-step no">
+        <span class="deduction-step-num">Step 2</span>
+        <span class="deduction-step-question">Did the energy <strong>transmit</strong> through the material?</span>
+        <span class="deduction-step-answer">❌ No: you can't see through it</span>
+      </div>
+      <div class="deduction-step therefore">
+        <span class="deduction-step-num">Step 3</span>
+        <span class="deduction-step-question">So where did the energy go? Energy can't be destroyed; it must have gone <em>somewhere</em>.</span>
+        <span class="deduction-step-answer">→ It stayed inside the material</span>
+      </div>
+    </div>
+
+    <!-- Name-it reveal -->
+    <div id="absorption-term" class="name-it orange-it">
+      <div class="name-it-label">Now we have a word for it</div>
+      <p><strong>Absorption</strong> is what happens when a wave's energy transfers into a material. The wave doesn't bounce back and doesn't pass through; its energy is taken in by the material, usually converted into <strong>thermal energy</strong> (heat).</p>
+    </div>
+
+    <!-- Real-world examples -->
+    <div class="example-grid">
+      <div class="example-chip"><span class="example-chip-icon">🚗</span>Black car seat heating in sunlight</div>
+      <div class="example-chip"><span class="example-chip-icon">🛣️</span>Black asphalt getting hot on a summer day</div>
+      <div class="example-chip"><span class="example-chip-icon">🎙️</span>Acoustic foam quieting a recording studio</div>
+      <div class="example-chip"><span class="example-chip-icon">🏠</span>Carpet absorbing sound; hardwood floors are louder</div>
+      <div class="example-chip"><span class="example-chip-icon">☀️</span>Solar panels absorbing light and converting it to electricity</div>
+      <div class="example-chip"><span class="example-chip-icon">👕</span>Wearing dark clothing in summer; absorbs more light energy</div>
+    </div>
+
+    <div class="bridge-callout orange">
+      <strong>Absorption:</strong> Sometimes wave energy transfers into the material itself.
+      <br><br>
+      But not all energy stays behind.
+      <br><br>
+      Sometimes it keeps moving through the material instead.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 4 - WHEN WAVES PASS THROUGH
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="transmission" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label" style="color: var(--green); background: var(--transmit-dim); border-color: var(--transmit-border);">When Waves Pass Through</span>
+    <h2 class="section-title">The Wave That Kept Going</h2>
+    <p class="section-desc">You're outside at night. Inside the house, the lights are on. You look through the window and see everything inside, clearly, in detail. Light waves traveled from inside, hit the glass, and kept moving, all the way to your eyes.</p>
+
+    <div class="observe-row">
+      <div class="observe-card green-card">
+        <span class="observe-icon">🪟</span>
+        <span>Light travels through window glass. <strong>The wave keeps moving</strong> through solid material and reaches your eyes on the other side.</span>
+      </div>
+      <div class="observe-card green-card">
+        <span class="observe-icon">🚪</span>
+        <span>A classroom door is closed. You can still hear muffled voices inside. <strong>Sound waves passed through</strong> the solid wood door.</span>
+      </div>
+    </div>
+
+    <!-- Question pause - thinking beat before the reveal -->
+    <div class="question-pause">
+      <span class="question-pause-icon">🤔</span>
+      <div class="question-pause-text"><strong>Think about it:</strong> The energy didn't bounce back. And the glass didn't heat up. So where did the energy go?</div>
+    </div>
+
+    <!-- Name-it reveal -->
+    <div id="transmission-term" class="name-it green-it">
+      <div class="name-it-label">Now we have a word for it</div>
+      <p><strong>Transmission</strong> is what happens when a wave passes through a material. The wave's energy continues moving, through the surface and beyond.</p>
+    </div>
+
+    <!-- Real-world examples -->
+    <div class="example-grid">
+      <div class="example-chip"><span class="example-chip-icon">🪟</span>Light through window glass</div>
+      <div class="example-chip"><span class="example-chip-icon">🚪</span>Sound through a closed door or wall</div>
+      <div class="example-chip"><span class="example-chip-icon">🌊</span>Sound traveling through water</div>
+      <div class="example-chip"><span class="example-chip-icon">👓</span>Light through eyeglass lenses</div>
+      <div class="example-chip"><span class="example-chip-icon">🔬</span>X-rays passing through soft tissue</div>
+      <div class="example-chip"><span class="example-chip-icon">📻</span>Radio waves passing through walls</div>
+    </div>
+
+    <div class="bridge-callout green">
+      <strong>Transmission:</strong> Some energy passes straight through the material.
+      <br><br>
+      But how much gets through isn't the same for every material. Let's compare three different cases.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 5 - HOW MUCH GETS THROUGH?
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="tto" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label" style="color: var(--green); background: var(--transmit-dim); border-color: var(--transmit-border);">How Much Gets Through?</span>
+    <h2 class="section-title">Transparent, Translucent, and Opaque</h2>
+    <p class="section-desc">Transmission turns out to exist on a spectrum. Some materials let all the light through. Some let a little through. Some let none through. Watch what happens to a beam of light as it hits three different panels.</p>
+
+    <!-- Three TTO panels with inline SVG-style light beam visuals -->
+    <div class="tto-grid">
+
+      <!-- TRANSPARENT -->
+      <div class="tto-card transparent-card">
+        <div class="tto-visual">
+          <div class="tto-beam tto-beam-in"></div>
+          <div class="tto-material"></div>
+          <div class="tto-beam tto-beam-through"></div>
+          <span class="tto-img-cue">👤</span>
+        </div>
+        <div id="transparent-term" class="tto-term">Transparent</div>
+        <div class="tto-definition">Light passes through clearly.<br>Images stay sharp.</div>
+        <div class="tto-examples">
+          <span class="tto-ex">Window glass</span>
+          <span class="tto-ex">Clear water</span>
+          <span class="tto-ex">Eyeglass lens</span>
+          <span class="tto-ex">Plastic wrap</span>
+        </div>
+      </div>
+
+      <!-- TRANSLUCENT -->
+      <div class="tto-card translucent-card">
+        <div class="tto-visual">
+          <div class="tto-beam tto-beam-in"></div>
+          <div class="tto-material"></div>
+          <div class="tto-beam tto-beam-through"></div>
+          <span class="tto-img-cue">👤</span>
+        </div>
+        <div id="translucent-term" class="tto-term">Translucent</div>
+        <div class="tto-definition">Some light passes through.<br>Images look blurry.</div>
+        <div class="tto-examples">
+          <span class="tto-ex">Frosted glass</span>
+          <span class="tto-ex">Wax paper</span>
+          <span class="tto-ex">Fog</span>
+          <span class="tto-ex">Stained glass</span>
+        </div>
+      </div>
+
+      <!-- OPAQUE -->
+      <div class="tto-card opaque-card">
+        <div class="tto-visual">
+          <div class="tto-beam tto-beam-in"></div>
+          <div class="tto-material"></div>
+          <span class="tto-img-cue">👤</span>
+        </div>
+        <div id="opaque-term" class="tto-term">Opaque</div>
+        <div class="tto-definition">Light cannot pass through.<br>No image forms.</div>
+        <div class="tto-examples">
+          <span class="tto-ex">Brick wall</span>
+          <span class="tto-ex">Wooden door</span>
+          <span class="tto-ex">Metal</span>
+          <span class="tto-ex">Most clothing</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Hook callback -->
+    <div class="name-it green-it" style="margin-bottom: 2rem;">
+      <div class="name-it-label">Back to the hallway</div>
+      <p>The window next to the classroom door? <strong>Transparent</strong>: light fully transmits through. The wooden door? <strong>Opaque</strong> to light, but only partially opaque to sound, which is why you can still hear voices. The brick wall? <strong>Opaque</strong> to both.</p>
+    </div>
+
+    <div class="bridge-callout orange">
+      <strong>Important:</strong> "Opaque" doesn't mean the energy vanished. It means light can't transmit through; the energy reflects or absorbs instead.
+      <br><br>
+      And most real materials do all three things at the same time, just in different proportions.
+      <br><br>
+      Let's see what that actually looks like.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 6 - ENERGY TRACKER (Pass 3 - full interactive build)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+/* ── Energy Tracker section padding ── */
+#interaction { padding: 6rem 2rem 7rem; }
+
+/* ── Outer card keeps the animated border from Pass 2 teaser ── */
+.energy-tracker-card {
+  background: var(--card);
+  border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 24px;
+  padding: 2.5rem 2.5rem 3rem;
+  max-width: 920px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+}
+.energy-tracker-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 25px;
+  background: linear-gradient(135deg,
+    rgba(59,200,232,0.3) 0%, rgba(245,200,66,0.08) 25%,
+    rgba(46,204,113,0.25) 50%, rgba(245,200,66,0.08) 75%,
+    rgba(230,126,34,0.25) 100%
+  );
+  background-size: 400% 400%;
+  animation: borderFlow 6s ease infinite;
+  z-index: 0;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+}
+@keyframes borderFlow {
+  0%,100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.energy-tracker-card > * { position: relative; z-index: 1; }
+
+/* ── Material selector row ── */
+.et-materials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-bottom: 2rem;
+}
+.et-mat-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.75rem 1rem;
+  background: var(--dark2);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.22s;
+  font-family: 'Nunito', sans-serif;
+  min-width: 90px;
+  user-select: none;
+}
+.et-mat-btn:hover {
+  border-color: rgba(245,200,66,0.5);
+  background: rgba(245,200,66,0.05);
+  transform: translateY(-2px);
+}
+.et-mat-btn.active {
+  border-color: var(--gold);
+  background: rgba(245,200,66,0.08);
+  box-shadow: 0 0 0 3px rgba(245,200,66,0.12);
+}
+.et-mat-btn.visited:not(.active) {
+  border-color: rgba(255,255,255,0.18);
+  opacity: 0.75;
+}
+.et-mat-icon { font-size: 1.6rem; line-height: 1; }
+.et-mat-name { font-size: 0.72rem; font-weight: 800; color: var(--text-muted); letter-spacing: 0.04em; text-align: center; }
+.et-mat-btn.active .et-mat-name { color: var(--gold); }
+
+/* ── Central display area ── */
+.et-stage {
+  background: var(--dark);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.8rem 1.5rem 2rem;
+  margin-bottom: 1.8rem;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.4rem;
+}
+
+/* wave beam + material block + outgoing paths */
+.et-diagram {
+  width: 100%;
+  max-width: 680px;
+  position: relative;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Incoming beam */
+.et-beam-in {
+  position: absolute;
+  left: 0;
+  width: 28%;
+  height: 10px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, rgba(245,200,66,0.9), rgba(245,200,66,0.5));
+  top: 50%;
+  transform: translateY(-50%);
+}
+.et-beam-in::after {
+  content: 'Wave energy →';
+  position: absolute;
+  top: -22px;
+  left: 0;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(245,200,66,0.6);
+  white-space: nowrap;
+}
+
+/* Material block */
+.et-material-block {
+  position: absolute;
+  left: 29%;
+  width: 12%;
+  height: 80px;
+  border-radius: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.35s ease;
+  border: 2px solid rgba(255,255,255,0.15);
+  background: var(--dark2);
+}
+
+/* Three outgoing paths */
+.et-paths {
+  position: absolute;
+  left: 43%;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+.et-path {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 30px;
+}
+.et-path-bar-wrap {
+  flex: 1;
+  height: 10px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.et-path-bar {
+  height: 100%;
+  border-radius: 99px;
+  width: 0%;
+  transition: width 0.6s cubic-bezier(0.22,1,0.36,1);
+}
+.et-path.reflect .et-path-bar { background: var(--teal); box-shadow: 0 0 8px rgba(59,200,232,0.4); }
+.et-path.transmit .et-path-bar { background: var(--green); box-shadow: 0 0 8px rgba(46,204,113,0.4); }
+.et-path.absorb .et-path-bar { background: var(--orange); box-shadow: 0 0 8px rgba(230,126,34,0.4); }
+.et-path-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  min-width: 28px;
+  text-align: right;
+  transition: color 0.3s;
+}
+.et-path.reflect  .et-path-label { color: var(--teal); }
+.et-path.transmit .et-path-label { color: var(--green); }
+.et-path.absorb   .et-path-label { color: var(--orange); }
+.et-path-name {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 72px;
+}
+.et-path.reflect  .et-path-name { color: rgba(59,200,232,0.7); }
+.et-path.transmit .et-path-name { color: rgba(46,204,113,0.7); }
+.et-path.absorb   .et-path-name { color: rgba(230,126,34,0.7); }
+
+/* Interpretation sentence */
+.et-interp {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 560px;
+  line-height: 1.65;
+  font-style: italic;
+  min-height: 2.5rem;
+  transition: opacity 0.3s;
+}
+.et-interp strong { color: var(--text); font-style: normal; font-weight: 800; }
+
+/* ── Progress dots ── */
+.et-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1.6rem;
+}
+.et-progress-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint, #555e7a);
+  margin-right: 0.3rem;
+}
+.et-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: all 0.3s;
+}
+.et-dot.seen { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 6px rgba(245,200,66,0.5); }
+
+/* ── Synthesis reveal ── */
+.et-synthesis {
+  display: none;
+  background: rgba(245,200,66,0.05);
+  border: 1px solid rgba(245,200,66,0.3);
+  border-left: 4px solid var(--gold);
+  border-radius: 14px;
+  padding: 1.4rem 1.6rem;
+  margin-top: 0.5rem;
+  animation: barFadeIn 0.5s ease both;
+}
+.et-synthesis.visible { display: block; }
+.et-synthesis-q {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem;
+  color: var(--gold);
+  margin-bottom: 0.8rem;
+  line-height: 1.3;
+}
+.et-synthesis-a {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.75;
+}
+.et-synthesis-a strong { color: var(--gold); font-weight: 800; }
+
+/* ── Prompt to begin (shown before any material selected) ── */
+.et-prompt {
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 2rem 0 1rem;
+  transition: opacity 0.3s;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .et-mat-btn { min-width: 72px; padding: 0.6rem 0.6rem; }
+  .et-mat-icon { font-size: 1.3rem; }
+  .et-beam-in::after { display: none; }
+  .et-path-name { display: none; }
+  .energy-tracker-card { padding: 1.5rem 1rem 2rem; }
+}
+</style>
+
+<section id="interaction" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Energy Tracker</span>
+    <h2 class="section-title">Where Does the Energy Go?</h2>
+    <p class="section-desc">Real objects almost never do just one thing. Select a material and watch how incoming wave energy divides among the three destinations. The question isn't <em>which</em> behavior; it's <em>how much</em> of each.</p>
+
+    <div class="energy-tracker-card">
+
+      <!-- Material selector -->
+      <div class="et-materials" role="group" aria-label="Select a material">
+        <button class="et-mat-btn" data-mat="mirror"    aria-pressed="false">
+          <span class="et-mat-icon">🪞</span>
+          <span class="et-mat-name">Mirror</span>
+        </button>
+        <button class="et-mat-btn" data-mat="window"    aria-pressed="false">
+          <span class="et-mat-icon">🪟</span>
+          <span class="et-mat-name">Window Glass</span>
+        </button>
+        <button class="et-mat-btn" data-mat="frosted"   aria-pressed="false">
+          <span class="et-mat-icon">🧊</span>
+          <span class="et-mat-name">Frosted Glass</span>
+        </button>
+        <button class="et-mat-btn" data-mat="brick"     aria-pressed="false">
+          <span class="et-mat-icon">🧱</span>
+          <span class="et-mat-name">Brick Wall</span>
+        </button>
+        <button class="et-mat-btn" data-mat="foam"      aria-pressed="false">
+          <span class="et-mat-icon">🔇</span>
+          <span class="et-mat-name">Acoustic Foam</span>
+        </button>
+        <button class="et-mat-btn" data-mat="asphalt"   aria-pressed="false">
+          <span class="et-mat-icon">🛣️</span>
+          <span class="et-mat-name">Black Asphalt</span>
+        </button>
+      </div>
+
+      <!-- Progress tracker -->
+      <div class="et-progress" aria-label="Materials explored">
+        <span class="et-progress-label">Explored</span>
+        <span class="et-dot" data-progress="0"></span>
+        <span class="et-dot" data-progress="1"></span>
+        <span class="et-dot" data-progress="2"></span>
+        <span class="et-dot" data-progress="3"></span>
+        <span class="et-dot" data-progress="4"></span>
+        <span class="et-dot" data-progress="5"></span>
+      </div>
+
+      <!-- Stage - diagram + interpretation -->
+      <div class="et-stage">
+
+        <!-- Prompt shown before first selection -->
+        <div class="et-prompt" id="et-prompt">
+          ← Select a material above to begin
+        </div>
+
+        <!-- Diagram (hidden until material selected) -->
+        <div class="et-diagram" id="et-diagram" style="display:none;">
+          <div class="et-beam-in"></div>
+          <div class="et-material-block" id="et-material-block">?</div>
+          <div class="et-paths">
+            <div class="et-path reflect">
+              <span class="et-path-name">Reflected</span>
+              <div class="et-path-bar-wrap">
+                <div class="et-path-bar" id="et-bar-reflect"></div>
+              </div>
+              <span class="et-path-label" id="et-pct-reflect">--</span>
+            </div>
+            <div class="et-path transmit">
+              <span class="et-path-name">Transmitted</span>
+              <div class="et-path-bar-wrap">
+                <div class="et-path-bar" id="et-bar-transmit"></div>
+              </div>
+              <span class="et-path-label" id="et-pct-transmit">--</span>
+            </div>
+            <div class="et-path absorb">
+              <span class="et-path-name">Absorbed</span>
+              <div class="et-path-bar-wrap">
+                <div class="et-path-bar" id="et-bar-absorb"></div>
+              </div>
+              <span class="et-path-label" id="et-pct-absorb">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interpretation sentence -->
+        <div class="et-interp" id="et-interp"></div>
+
+      </div><!-- /.et-stage -->
+
+      <!-- Synthesis reveal - appears after all 6 explored -->
+      <div class="et-synthesis" id="et-synthesis" aria-live="polite">
+        <div class="et-synthesis-q">Did any material put 100% of its energy into just one category?</div>
+        <div class="et-synthesis-a">
+          No. Every single material split its energy among all three destinations. What changes is the <strong>ratio</strong>.
+          <br><br>
+          A mirror <strong>mostly reflects</strong>. Black asphalt <strong>mostly absorbs</strong>. Window glass <strong>mostly transmits</strong>. But none of them does only one thing; they all reflect some, transmit some, and absorb some.
+          <br><br>
+          That's the key insight: <strong>real materials almost never do just one thing. The difference between them is how much energy goes to each destination.</strong>
+        </div>
+      </div>
+
+    </div><!-- /.energy-tracker-card -->
+  </div>
+</section>
+
+<script>
+// ── ENERGY TRACKER INTERACTION ──────────────────────────────────────────
+(function () {
+  'use strict';
+
+  // Material data - conceptual model values, not measured scientific values
+  var MATERIALS = {
+    mirror:  { icon: '🪞', reflect: 90, transmit:  5, absorb:  5,
+               interp: '<strong>Mirrors mostly reflect.</strong> Almost all incoming wave energy bounces straight back; that\'s what creates a clear reflection. A small amount is absorbed by the glass or coating.' },
+    window:  { icon: '🪟', reflect: 10, transmit: 85, absorb:  5,
+               interp: '<strong>Window glass mostly transmits.</strong> Most light energy passes straight through, which is why glass is transparent. A little reflects (you can see a faint reflection in windows) and a little warms the glass.' },
+    frosted: { icon: '🧊', reflect: 20, transmit: 55, absorb: 25,
+               interp: '<strong>Frosted glass scatters the energy.</strong> It transmits more than half the light, but the uneven surface scatters it, so you see a glow, not a clear image. More is absorbed than plain glass.' },
+    brick:   { icon: '🧱', reflect: 70, transmit:  2, absorb: 28,
+               interp: '<strong>Brick walls mostly reflect and absorb.</strong> Dense brick bounces most wave energy back. Very little transmits; that\'s why you can\'t see or hear through a thick wall. The absorbed energy slowly warms the bricks.' },
+    foam:    { icon: '🔇', reflect: 10, transmit:  5, absorb: 85,
+               interp: '<strong>Acoustic foam mostly absorbs.</strong> The porous structure traps sound wave energy and converts it to heat. That\'s why recording studios use foam; it kills echoes by absorbing nearly all the sound.' },
+    asphalt: { icon: '🛣️', reflect:  5, transmit:  2, absorb: 93,
+               interp: '<strong>Black asphalt is an absorption champion.</strong> Its dark surface takes in almost all incoming light energy and converts it to heat; that\'s why blacktop gets scorching hot on a summer day. Almost nothing reflects or transmits.' }
+  };
+
+  var seen = new Set();
+  var totalMaterials = Object.keys(MATERIALS).length;
+
+  var buttons     = document.querySelectorAll('.et-mat-btn');
+  var prompt      = document.getElementById('et-prompt');
+  var diagram     = document.getElementById('et-diagram');
+  var matBlock    = document.getElementById('et-material-block');
+  var barReflect  = document.getElementById('et-bar-reflect');
+  var barTransmit = document.getElementById('et-bar-transmit');
+  var barAbsorb   = document.getElementById('et-bar-absorb');
+  var pctReflect  = document.getElementById('et-pct-reflect');
+  var pctTransmit = document.getElementById('et-pct-transmit');
+  var pctAbsorb   = document.getElementById('et-pct-absorb');
+  var interp      = document.getElementById('et-interp');
+  var synthesis   = document.getElementById('et-synthesis');
+  var dots        = document.querySelectorAll('.et-dot');
+
+  function selectMaterial(key) {
+    var data = MATERIALS[key];
+    if (!data) return;
+
+    // Update button states
+    buttons.forEach(function (btn) {
+      var isThis = btn.getAttribute('data-mat') === key;
+      btn.classList.toggle('active', isThis);
+      btn.setAttribute('aria-pressed', isThis ? 'true' : 'false');
+    });
+
+    // Show diagram, hide prompt
+    prompt.style.display  = 'none';
+    diagram.style.display = 'flex';
+
+    // Update material block
+    matBlock.textContent = data.icon;
+
+    // Reset bars to 0 first (forces re-transition)
+    barReflect.style.width  = '0%';
+    barTransmit.style.width = '0%';
+    barAbsorb.style.width   = '0%';
+    pctReflect.textContent  = '';
+    pctTransmit.textContent = '';
+    pctAbsorb.textContent   = '';
+    interp.style.opacity    = '0';
+
+    // Animate bars after a short frame delay
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        barReflect.style.width  = data.reflect  + '%';
+        barTransmit.style.width = data.transmit + '%';
+        barAbsorb.style.width   = data.absorb   + '%';
+
+        // Show percentages after bar animation starts
+        setTimeout(function () {
+          pctReflect.textContent  = data.reflect  + '%';
+          pctTransmit.textContent = data.transmit + '%';
+          pctAbsorb.textContent   = data.absorb   + '%';
+          interp.innerHTML        = data.interp;
+          interp.style.opacity    = '1';
+        }, 350);
+      });
+    });
+
+    // Track explored materials
+    if (!seen.has(key)) {
+      seen.add(key);
+      var idx = Array.from(buttons).findIndex(function (b) {
+        return b.getAttribute('data-mat') === key;
+      });
+      if (dots[idx]) dots[idx].classList.add('seen');
+
+      // Mark button as visited
+      var btn = document.querySelector('[data-mat="' + key + '"]');
+      if (btn) btn.classList.add('visited');
+    }
+
+    // Reveal synthesis after all 6 explored
+    if (seen.size >= totalMaterials && !synthesis.classList.contains('visible')) {
+      setTimeout(function () {
+        synthesis.classList.add('visible');
+        synthesis.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 800);
+    }
+  }
+
+  // Wire up buttons
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      selectMaterial(btn.getAttribute('data-mat'));
+    });
+  });
+
+  // Auto-select mirror on load to invite engagement
+  // (does NOT mark it as seen - student must click)
+  // Left intentionally unselected so students make the first move.
+
+})();
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 7 - WRAP-UP: BACK TO THE HALLWAY
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="synthesis" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Wrap-Up</span>
+    <h2 class="section-title">Back to the Hallway</h2>
+    <p class="section-desc">You started this lesson standing in a hallway, wondering why light and sound behaved differently when they reached different materials. Now you know the answer. Every surface reflects, absorbs, and transmits energy. What changes is how much of each happens.</p>
+
+    <div class="wrapup-grid">
+
+      <!-- WINDOW -->
+      <div class="wrapup-row">
+        <div class="wrapup-surface">
+          <span class="wrapup-surface-icon">🪟</span>
+          <span class="wrapup-surface-name">Window</span>
+        </div>
+        <div>
+          <div class="wrapup-col-head light">Light</div>
+          <div class="wrapup-body">Mostly <strong>transmitted</strong>. The glass is transparent; light waves pass through almost completely. That's why you can see the room inside clearly.</div>
+        </div>
+        <div>
+          <div class="wrapup-col-head sound">Sound</div>
+          <div class="wrapup-body">Some <strong>transmission</strong>, some <strong>reflection</strong>. Sound gets through more easily near the glass, but not as clearly as through the open door.</div>
+        </div>
+      </div>
+
+      <!-- DOOR -->
+      <div class="wrapup-row">
+        <div class="wrapup-surface">
+          <span class="wrapup-surface-icon">🚪</span>
+          <span class="wrapup-surface-name">Door</span>
+        </div>
+        <div>
+          <div class="wrapup-col-head light">Light</div>
+          <div class="wrapup-body">Mostly <strong>absorbed and reflected</strong>. Wood is opaque; light cannot transmit through. Your eyes see nothing but the door itself.</div>
+        </div>
+        <div>
+          <div class="wrapup-col-head sound">Sound</div>
+          <div class="wrapup-body">Partially <strong>transmitted</strong>. Some sound energy passes through the wood. That's why you can hear muffled voices, but the door absorbs and reflects most of it.</div>
+        </div>
+      </div>
+
+      <!-- WALL -->
+      <div class="wrapup-row">
+        <div class="wrapup-surface">
+          <span class="wrapup-surface-icon">🧱</span>
+          <span class="wrapup-surface-name">Brick Wall</span>
+        </div>
+        <div>
+          <div class="wrapup-col-head light">Light</div>
+          <div class="wrapup-body">Mostly <strong>reflected and absorbed</strong>. Very little light transmits through a thick brick wall.</div>
+        </div>
+        <div>
+          <div class="wrapup-col-head sound">Sound</div>
+          <div class="wrapup-body">Almost entirely <strong>reflected and absorbed</strong>. Very little transmits. The density of brick reflects most sound energy back, and absorbs the rest.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Three-beat earned answer - replaces paragraph wall -->
+    <div class="wrapup-beats">
+
+      <!-- Beat 1: Direct answer to the driving question -->
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">The Answer</div>
+        <div class="wrapup-beat-answer">A wave can hit an object and still keep moving because transmission is always an option.</div>
+        <div class="wrapup-beat-body">When a wave reaches matter, some of its energy can pass straight through; the wave doesn't have to stop.</div>
+      </div>
+
+      <!-- Beat 2: All three behaviors at once -->
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">The Bigger Picture</div>
+        <div class="wrapup-beat-answer">Most real objects do all three things at the same time.</div>
+        <div class="wrapup-beat-body">When a wave reaches matter, its energy is almost always divided among:</div>
+        <div class="wrapup-behavior-chips">
+          <span class="wbc wbc-reflect">Reflected</span>
+          <span class="wbc wbc-transmit">Transmitted</span>
+          <span class="wbc wbc-absorb">Absorbed</span>
+        </div>
+      </div>
+
+      <!-- Beat 3: Ratio is what changes -->
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">What Changes</div>
+        <div class="wrapup-beat-answer">The ratio. Each material just uses a different mix.</div>
+        <div class="wrapup-ratio-examples">
+          <div class="wre-row"><span class="wre-icon">🪟</span><span class="wre-label">Window glass</span><span class="wre-tag t">mostly transmits</span></div>
+          <div class="wre-row"><span class="wre-icon">🪞</span><span class="wre-label">Mirror</span><span class="wre-tag r">mostly reflects</span></div>
+          <div class="wre-row"><span class="wre-icon">🛣️</span><span class="wre-label">Black asphalt</span><span class="wre-tag a">mostly absorbs</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 8 - VOCABULARY
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Vocabulary</span>
+    <h2 class="section-title">Now We Have Words for It</h2>
+    <p class="section-desc" style="margin-bottom: 1.5rem;">Click any term to jump back to where it first appeared in the lesson.</p>
+
+    <!-- Vocab pills - jump to source section + pulse -->
+    <div style="display: flex; flex-wrap: wrap; gap: 0.65rem;">
+      <span class="concept-tag ct-blue"   onclick="jumpToTerm('mechanical-wave')">Mechanical Wave</span>
+      <span class="concept-tag ct-teal"   onclick="jumpToTerm('electromagnetic-wave')">Electromagnetic Wave</span>
+      <span class="concept-tag ct-teal"   onclick="jumpToTerm('reflection-term')">Reflection</span>
+      <span class="concept-tag ct-orange" onclick="jumpToTerm('absorption-term')">Absorption</span>
+      <span class="concept-tag ct-green"  onclick="jumpToTerm('transmission-term')">Transmission</span>
+      <span class="concept-tag ct-green"  onclick="jumpToTerm('transparent-term')">Transparent</span>
+      <span class="concept-tag ct-green"  onclick="jumpToTerm('translucent-term')">Translucent</span>
+      <span class="concept-tag ct-blue"   onclick="jumpToTerm('opaque-term')">Opaque</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 9 - QUIZ  (Pass 4)
+     Mirror of Nature of Waves quiz architecture:
+       Practice mode (default) + Classroom mode with Google Sheets submission
+       7 questions covering reflection, transmission, absorption, T/TL/O,
+       mechanical vs EM, multi-behavior reasoning, hallway return
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.quiz-section { background: var(--dark); }
+
+.quiz-mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 2rem;
+  background: rgba(122,143,166,0.1);
+  border: 1.5px solid rgba(122,143,166,0.35);
+  border-radius: 14px;
+  padding: 0.35rem;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+}
+.mode-btn {
+  padding: 0.65rem 1.8rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  transition: all 0.22s;
+  color: rgba(122,143,166,0.55);
+  background: transparent;
+}
+.mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+.mode-btn.active {
+  background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+  color: #ddeaf5;
+  border: 1px solid rgba(159,184,204,0.55);
+  box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+  text-shadow: 0 0 12px rgba(159,184,204,0.6);
+}
+.mode-hint {
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: -1.3rem;
+  margin-bottom: 2rem;
+  letter-spacing: 0.01em;
+}
+.mode-hint span         { display: none; }
+.mode-hint span.visible { display: inline; }
+
+.student-info-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 2rem 2.2rem;
+  margin-bottom: 2.5rem;
+  border-top: 3px solid var(--gold);
+}
+.student-info-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.25rem;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+.student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+.info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+.info-field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.info-field input,
+.info-field select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.info-field input:focus,
+.info-field select:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(245,200,66,0.15);
+}
+.info-field select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238aafca' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.2rem;
+}
+.info-field select option { background: #1e2f42; color: var(--text); }
+.info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+.info-error.show { display: block; }
+
+.quiz-progress-sticky {
+  position: sticky;
+  top: 64px;
+  z-index: 100;
+  background: var(--dark);
+  padding: 0.85rem 0 0.75rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.quiz-progress { display: flex; align-items: center; gap: 1rem; }
+.progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--green), var(--orange));
+  border-radius: 99px;
+  transition: width 0.4s;
+  width: 0%;
+}
+.progress-text { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; min-width: 90px; text-align: right; }
+
+.quiz-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.8rem;
+  margin-bottom: 1.2rem;
+}
+.quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+.quiz-num {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  color: var(--text-muted);
+  width: 2rem; height: 2rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.quiz-question-text { font-weight: 800; font-size: 1rem; line-height: 1.55; }
+.quiz-options {
+  display: flex; flex-direction: column; gap: 0.6rem;
+  margin-top: 1rem; padding-left: 3rem;
+}
+.quiz-option {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.02);
+  font-size: 0.95rem; font-weight: 600;
+  font-family: 'Nunito', sans-serif;
+  text-align: left; color: var(--text); width: 100%;
+}
+.quiz-option:hover:not(.selected):not(.disabled) {
+  border-color: rgba(245,200,66,0.5);
+  background: rgba(245,200,66,0.06);
+}
+.quiz-option.selected         { border-color: var(--gold)   !important; background: rgba(245,200,66,0.1)  !important; }
+.quiz-option.correct          { border-color: var(--green)  !important; background: rgba(46,204,113,0.1)  !important; }
+.quiz-option.incorrect        { border-color: var(--red)    !important; background: rgba(231,76,60,0.08)  !important; }
+.quiz-option.disabled         { pointer-events: none; }
+.quiz-option.revealed-correct { border-color: rgba(46,204,113,0.4) !important; background: rgba(46,204,113,0.05) !important; }
+.option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+.option-feedback {
+  display: none; font-size: 0.85rem;
+  margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem;
+  border-radius: 10px; font-weight: 700;
+}
+.option-feedback.correct-fb   { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+.option-feedback.incorrect-fb { display: block; color: #ff8080;     background: rgba(231,76,60,0.08);  border-left: 3px solid var(--red);   }
+
+.quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+.quiz-submit-btn {
+  background: linear-gradient(135deg, var(--gold), #ffd97a);
+  color: #0d1f2d; border: none;
+  padding: 1rem 3rem; border-radius: 14px;
+  font-weight: 900; font-size: 1.05rem;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+  transition: all 0.25s; letter-spacing: 0.04em;
+}
+.quiz-submit-btn:hover    { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(245,200,66,0.4); }
+.quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.score-board {
+  display: none;
+  background: linear-gradient(135deg, rgba(46,204,113,0.1), rgba(26,188,156,0.05));
+  border: 1px solid rgba(46,204,113,0.3);
+  border-radius: 20px; padding: 2.5rem;
+  text-align: center; margin-top: 2rem;
+}
+.score-board.show { display: block; }
+.big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--green); margin-bottom: 0.5rem; }
+.score-board p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
+
+.mystery-loop {
+  max-width: 540px; margin: 0.4rem auto 1.5rem;
+  padding: 1.05rem 1.3rem;
+  background: rgba(245,200,66,0.08);
+  border: 1px solid rgba(245,200,66,0.3);
+  border-left: 4px solid var(--gold);
+  border-radius: 12px; text-align: left;
+  font-size: 0.92rem; line-height: 1.65; color: var(--text);
+}
+.mystery-loop .ml-label {
+  display: block; font-size: 0.66rem; font-weight: 900;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 0.4rem;
+}
+.mystery-loop strong { color: var(--gold); }
+
+.score-submitted {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--green); background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.score-error {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  color: #e87070; background: rgba(231,76,60,0.1);
+  border: 1px solid rgba(231,76,60,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.reset-btn {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  color: #fff; border: none;
+  padding: 0.85rem 2.5rem; border-radius: 12px;
+  font-weight: 800; font-size: 1rem;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+  transition: all 0.25s;
+}
+.reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+@media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .quiz-options { padding-left: 0; }
+  .option-feedback { padding-left: 1rem; }
+}
+</style>
+
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you discovered. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="wbSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="wbSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="wb-student-name">Your Name</label>
+          <input type="text" id="wb-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="wb-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="wb-teacher-select">Teacher</label>
+          <select id="wb-teacher-select">
+            <option value="">- Select -</option>
+            <option value="MrBrown">Mr. Brown</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="wb-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="wb-block-select">Block</label>
+          <select id="wb-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="wb-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="wb-progress"></div></div>
+        <div class="progress-text" id="wb-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="wb-quiz-questions"></div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="wb-submit-btn" onclick="wbSubmitQuiz()" disabled>Submit Quiz</button>
+    </div>
+
+    <!-- Score Board -->
+    <div class="score-board" id="wb-score">
+      <div class="big-score" id="wb-score-num"></div>
+      <p id="wb-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">🔍 The Mystery You Came In With</span>
+        You started this lesson with one question: <strong>"How can a wave hit an object and still keep moving?"</strong> If you can explain it now, you've solved the mystery.
+      </div>
+      <div id="wb-submit-status"></div>
+      <button class="reset-btn" onclick="wbResetQuiz()">Try Again</button>
+    </div>
+
+  </div>
+</section>
+
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+var WB_SCRIPT_URLS = {
+  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+
+// ── QUIZ STATE ────────────────────────────────────────────────────────
+var wbQuizState = { selected: [], submitted: false };
+var wbQuizMode  = 'practice';
+
+// ── QUIZ QUESTIONS ────────────────────────────────────────────────────
+var wbQuizQuestions = [
+  {
+    // Q1 - Reflection
+    q: "A student shouts near a canyon wall and hears their own voice return a moment later. Which wave behavior caused the echo?",
+    options: [
+      "Reflection: the sound wave bounced back off the surface",
+      "Absorption: the canyon wall took in the sound energy",
+      "Transmission: the sound passed through the rock",
+      "Refraction: the sound bent around the canyon edge"
+    ],
+    correct: 0,
+    explanation: "When a wave bounces off a surface instead of passing through it or being absorbed, that's reflection. The canyon wall sent the sound energy back toward the student, creating the echo."
+  },
+  {
+    // Q2 - Transmission
+    q: "A lamp is on inside a house. You're standing outside and can see it clearly through the window. What happened to most of the light waves when they hit the glass?",
+    options: [
+      "They were reflected back into the room",
+      "They were absorbed and converted to heat",
+      "They were transmitted through the glass and reached your eyes",
+      "They were stopped by the glass and couldn't continue"
+    ],
+    correct: 2,
+    explanation: "Window glass is transparent; it transmits most light. The wave's energy continued moving through the glass and reached your eyes on the other side. That's transmission."
+  },
+  {
+    // Q3 - Absorption
+    q: "A black asphalt parking lot gets very hot on a sunny afternoon, even though no one heated it directly. What happened to much of the light energy from the sun?",
+    options: [
+      "It reflected off the asphalt into the surrounding air",
+      "It was absorbed by the asphalt and converted into thermal energy",
+      "It transmitted through the asphalt into the ground below",
+      "It passed along the surface and radiated back out as visible light"
+    ],
+    correct: 1,
+    explanation: "Dark surfaces absorb a large portion of incoming light energy and convert it to thermal energy: heat. That's absorption. The asphalt didn't reflect much (it's not shiny) and nothing passed through it."
+  },
+  {
+    // Q4 - Transparent / Translucent / Opaque
+    q: "You can see light through a frosted glass shower door, but you can't make out any clear details or shapes. Which word best describes the frosted glass?",
+    options: [
+      "Transparent: it fully transmits light",
+      "Translucent: it partially transmits light, but scatters it",
+      "Opaque: it blocks all light from passing through",
+      "Reflective: it sends all light back toward the source"
+    ],
+    correct: 1,
+    explanation: "Translucent materials let some light through, but scatter it, so you see a glow or blur, not a clear image. Transparent means fully clear, and opaque means no light gets through at all."
+  },
+  {
+    // Q5 - Mechanical vs. Electromagnetic
+    q: "Which type of wave can travel through completely empty space, with no air or matter at all?",
+    options: [
+      "Sound waves, because they are produced by vibrating objects",
+      "Water waves, because they carry large amounts of energy",
+      "Seismic waves, because they can travel through solid rock",
+      "Light waves, because they are electromagnetic and need no medium"
+    ],
+    correct: 3,
+    explanation: "Light is an electromagnetic wave; it doesn't need a medium to travel through. Sound, water, and seismic waves are all mechanical waves, which require a medium (like air, water, or rock) to move."
+  },
+  {
+    // Q6 - Multi-behavior Reasoning
+    q: "Sunlight hits a frosted window. Some light passes through (but blurry), some glare reflects off the surface, and the glass warms slightly. What does this best show?",
+    options: [
+      "Frosted glass only transmits; the blurriness is just how glass works",
+      "All the light energy must have been reflected, since the image is blurry",
+      "Real materials can transmit, reflect, and absorb at the same time",
+      "Wave energy must have been created inside the glass to make it warm"
+    ],
+    correct: 2,
+    explanation: "Most real materials do all three things at once. The frosted glass transmitted some light (blurry), reflected some (glare), and absorbed a small amount (warmth). The difference between materials is the ratio, not which behaviors happen."
+  },
+  {
+    // Q7 - Return to the Hallway
+    q: "Standing in a hallway, you can hear students talking through a closed wooden door, but you cannot see them through it. Which explanation is best?",
+    options: [
+      "Sound and light both pass through the door equally; you're just not listening hard enough",
+      "Sound reflects off the door and bounces to your ear, while light is absorbed completely",
+      "The door absorbs all wave energy, but your ears are more sensitive than your eyes",
+      "The door transmits some sound energy but is opaque to light, so light cannot pass through"
+    ],
+    correct: 3,
+    explanation: "Wood is opaque to light; no light transmits through, so you can't see. But wood allows some sound wave energy to transmit through it, so you can hear muffled voices. Some sound energy is also reflected and absorbed by the door. Different materials allow different waves to transmit."
+  },
+  {
+    // Q8 - Energy Tracker / simultaneous behaviors
+    q: "The Energy Tracker shows window glass splits incoming light: 85% transmitted, 10% reflected, 5% absorbed. What does this data best show?",
+    options: [
+      "Most light passes through, but some also reflects and some absorbs",
+      "Window glass behaves differently for every color of light in the spectrum",
+      "Only the transmitted light is real; the reflected and absorbed amounts are errors",
+      "Because most light transmits, none of it can be reflected or absorbed"
+    ],
+    correct: 0,
+    explanation: "Window glass mostly transmits light, which is why it looks clear. But the data also shows it reflects a small amount and absorbs a tiny amount that slightly warms the glass. Real materials almost never do just one thing; what changes is the ratio."
+  },
+  {
+    // Q9 - Opaque does not mean energy disappears
+    q: "A flashlight shines directly at a brick wall. No light appears on the other side. What actually happens to the light energy?",
+    options: [
+      "The wall converts all the light energy into electrical energy",
+      "All of the light is reflected straight back toward the flashlight",
+      "The energy reflects off the surface and absorbs into the wall",
+      "The light energy stops moving when it reaches the wall"
+    ],
+    correct: 2,
+    explanation: "Brick is opaque, so light cannot transmit through. But opaque doesn't mean the energy disappears. Some reflects off the surface (that's why you can see the wall's color), and the rest is absorbed and converted to heat. Energy cannot be created or destroyed."
+  },
+  {
+    // Q10 - Apply the full lesson model
+    q: "The same sound waves and light waves reach a wooden door, a glass window, and a brick wall. Each surface behaves differently. What is the best explanation?",
+    options: [
+      "Each material has a different ratio of reflection, absorption, and transmission",
+      "Sound waves are mechanical, so they can always transmit through solid materials",
+      "The energy is reflected by all three surfaces equally, just at different angles",
+      "Only the window transmits anything; the door and wall can only absorb"
+    ],
+    correct: 0,
+    explanation: "All three surfaces reflect, absorb, and transmit energy, but in different proportions. Window glass mostly transmits light. Wood mostly reflects and absorbs light, but transmits some sound. Brick mostly reflects and absorbs both. The material determines the ratio, not whether each behavior happens at all."
+  }
+];
+
+// ── SET QUIZ MODE ─────────────────────────────────────────────────────
+function wbSetQuizMode(mode) {
+  wbQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+
+// ── URL PARAM - auto-set mode on load ─────────────────────────────────
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') wbSetQuizMode('classroom');
+  else wbSetQuizMode('practice');
+})();
+
+// ── BUILD QUIZ ────────────────────────────────────────────────────────
+function wbBuildQuiz() {
+  var container = document.getElementById('wb-quiz-questions');
+  container.innerHTML = '';
+  wbQuizState.selected  = new Array(wbQuizQuestions.length).fill(null);
+  wbQuizState.submitted = false;
+  document.getElementById('wb-submit-btn').disabled = true;
+  wbUpdateProgress();
+  var letters = ['A','B','C','D'];
+  wbQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="wbSelectAnswer(' + qi + ',' + oi + ')" id="wb-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="wb-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+// ── SELECT ANSWER ─────────────────────────────────────────────────────
+function wbSelectAnswer(qi, chosenIndex) {
+  if (wbQuizState.submitted) return;
+  var prev = wbQuizState.selected[qi];
+  if (prev !== null) document.getElementById('wb-q-' + qi + '-' + prev).classList.remove('selected');
+  wbQuizState.selected[qi] = chosenIndex;
+  document.getElementById('wb-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  wbUpdateProgress();
+  document.getElementById('wb-submit-btn').disabled = !wbQuizState.selected.every(function (s) { return s !== null; });
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────
+function wbUpdateProgress() {
+  var total    = wbQuizQuestions.length;
+  var answered = wbQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('wb-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('wb-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+// ── VALIDATE STUDENT INFO ─────────────────────────────────────────────
+function wbValidateStudentInfo() {
+  var name    = document.getElementById('wb-student-name').value.trim();
+  var teacher = document.getElementById('wb-teacher-select').value;
+  var block   = document.getElementById('wb-block-select').value;
+  document.getElementById('wb-err-name').classList.toggle('show', !name);
+  document.getElementById('wb-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('wb-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+
+// ── SUBMIT QUIZ ───────────────────────────────────────────────────────
+function wbSubmitQuiz() {
+  if (wbQuizState.submitted) return;
+  if (wbQuizMode === 'classroom') {
+    var info = wbValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  wbQuizState.submitted = true;
+  document.getElementById('wb-submit-btn').disabled = true;
+  var correct = 0;
+  wbQuizQuestions.forEach(function (q, qi) {
+    var chosen    = wbQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('wb-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('wb-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('wb-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = wbQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '🏆 Perfect score! You understand wave behavior cold.'
+    : pct >= 80 ? '🌟 Great work! Review any you missed and you\'re ready for the next lesson.'
+    : pct >= 60 ? '📚 Solid effort. Go back through the lesson and try again.'
+    : '💪 Keep going; review each section carefully and try again!';
+  document.getElementById('wb-score-num').textContent = score;
+  document.getElementById('wb-score-msg').textContent = msg;
+  var sb = document.getElementById('wb-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  if (wbQuizMode === 'practice') {
+    document.getElementById('wb-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+
+  var info2 = wbValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var letters = ['A','B','C','D'];
+  var answerStr = wbQuizState.selected.map(function (idx, i) {
+    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
+  }).join(', ');
+  var params = new URLSearchParams({
+    tab: 'Wave Behavior', studentName: info2.name, teacher: teacherLabel,
+    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+  });
+  fetch(WB_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(function () {
+      document.getElementById('wb-submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+    })
+    .catch(function () {
+      document.getElementById('wb-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+}
+
+// ── RESET QUIZ ────────────────────────────────────────────────────────
+function wbResetQuiz() {
+  document.getElementById('wb-score').classList.remove('show');
+  document.getElementById('wb-submit-status').innerHTML = '';
+  wbBuildQuiz();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+wbBuildQuiz();
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+#continue { background: var(--dark2); padding-top: 4rem; padding-bottom: 5rem; }
+.continue-intro {
+  text-align: left;
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 720px;
+  margin: 0 auto 2.4rem 0;
+}
+.continue-intro strong { color: var(--gold); }
+.continue-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin-top: 0;
+}
+@media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+.cont-card {
+  border-radius: 18px;
+  padding: 1.5rem 1.5rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.cont-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.cont-card.sim { background: rgba(245,160,40,0.08);  border: 1px solid rgba(245,160,40,0.35); }
+.cont-card.inv { background: rgba(59,130,246,0.08);  border: 1px solid rgba(59,130,246,0.38); }
+.cont-card.ext { background: rgba(180,127,255,0.10); border: 1px solid rgba(180,127,255,0.35); }
+.cont-card.game { background: rgba(61,220,132,0.10); border: 1px solid rgba(61,220,132,0.35); }
+.cont-card.sim::before { background: linear-gradient(90deg, #f5a028, #f5c842); }
+.cont-card.inv::before { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
+.cont-card.ext::before { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+.cont-card.game::before { background: linear-gradient(90deg, #3ddc84, #1de9b6); }
+.cont-card.sim:hover { border-color: rgba(245,160,40,0.65); box-shadow: 0 14px 40px rgba(245,160,40,0.18); transform: translateY(-4px); }
+.cont-card.inv:hover { border-color: rgba(59,130,246,0.7);  box-shadow: 0 14px 40px rgba(59,130,246,0.2);  transform: translateY(-4px); }
+.cont-card.ext:hover { border-color: rgba(180,127,255,0.65);box-shadow: 0 14px 40px rgba(180,127,255,0.15);transform: translateY(-4px); }
+.cont-card.game:hover { border-color: rgba(61,220,132,0.6); box-shadow: 0 14px 40px rgba(61,220,132,0.12); transform: translateY(-4px); }
+.cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; }
+.cont-card.sim .cont-icon { background: rgba(245,160,40,0.18); }
+.cont-card.inv .cont-icon { background: rgba(59,130,246,0.2);  }
+.cont-card.ext .cont-icon { background: rgba(180,127,255,0.22);}
+.cont-card.game .cont-icon { background: rgba(61,220,132,0.18); }
+.cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; }
+.cont-card.sim .cont-cat { color: #f5a028; }
+.cont-card.inv .cont-cat { color: #3B82F6; }
+.cont-card.ext .cont-cat { color: #b47fff; }
+.cont-card.game .cont-cat { color: #3ddc84; }
+.cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+.cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+.cont-link { display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-decoration: none; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; transition: all 0.2s; white-space: nowrap; align-self: flex-start; margin-top: auto; }
+.cont-card.game .cont-link { background: rgba(61,220,132,0.1); border-color: rgba(61,220,132,0.3); color: #3ddc84; }
+.cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2); border-color: rgba(61,220,132,0.55); }
+</style>
+
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">Put what you know about wave behavior to the test. Guide a photon through a lab corridor and use reflection, transmission, and absorption to escape.</p>
+    <div class="continue-grid">
+      <a href="game_energy-escape.html" class="cont-card game">
+        <div class="cont-icon">🎮</div>
+        <div class="cont-cat">Game</div>
+        <div class="cont-name">Energy Escape: Photon Runner</div>
+        <div class="cont-desc">Pilot a photon ship through a science-lab corridor. Navigate transparent, translucent, opaque, and reflective materials to reach the exit.</div>
+        <span class="cont-link">Play</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ™</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<!-- ===== SESSION TOGGLES (LS + STE bars) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
+function toggleStemDetail(id) {
+  const el  = document.getElementById(id);
+  el.classList.toggle('stem-open');
+  const btn = el.querySelector('.stem-show-btn');
+  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
+}
+</script>
+
+<!-- ===== VOCAB JUMP ===== -->
+<script>
+function jumpToTerm(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 110;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 500);
+}
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

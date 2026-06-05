@@ -1,0 +1,3062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/game_energy-escape.html">
+<meta name="description" content="Pilot a photon ship through a science-lab corridor. Energy Escape teaches reflection, absorption, and transmission through transparent, translucent, opaque, and reflective materials.">
+<title>LyfeLabz | Energy Escape: Photon Runner</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+  html { font-size: 18px; }
+
+  :root {
+    --green:       #2ecc71;
+    --green-dark:  #27ae60;
+    --blue:        #3498db;
+    --teal:        #3bc8e8;
+    --teal-deep:   #1abc9c;
+    --purple:      #9b59b6;
+    --red:         #e74c3c;
+    --orange:      #e67e22;
+    --yellow:      #f1c40f;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #1a2535;
+    --dark2:       #243447;
+    --card:        #1e2f42;
+    --text:        #e8f4f8;
+    --text-muted:  #8aafca;
+    --border:      rgba(52,152,219,0.2);
+
+    /* Wave behavior color system (matches lesson_wave-behavior.html) */
+    --reflect:        #3bc8e8;
+    --reflect-dim:    rgba(59,200,232,0.08);
+    --reflect-border: rgba(59,200,232,0.3);
+    --transmit:       #2ecc71;
+    --transmit-dim:   rgba(46,204,113,0.08);
+    --transmit-border:rgba(46,204,113,0.3);
+    --absorb:         #e67e22;
+    --absorb-dim:     rgba(230,126,34,0.08);
+    --absorb-border:  rgba(230,126,34,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background:
+      radial-gradient(circle at 50% 30%, rgba(59,200,232,0.07), transparent 30%),
+      radial-gradient(circle at 15% 80%, rgba(46,204,113,0.06), transparent 22%),
+      radial-gradient(circle at 85% 75%, rgba(230,126,34,0.06), transparent 22%),
+      linear-gradient(180deg, #0d1f2d, var(--dark) 55%, #0a1622);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== NAV (matches lesson_wave-behavior.html) ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: color 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-back:hover {
+    background: rgba(245,200,66,0.18);
+    border-color: rgba(245,200,66,0.65);
+  }
+
+  /* ===== PAGE SHELL ===== */
+  .app { max-width: 1240px; margin: 0 auto; padding: 1.4rem 1.5rem 3rem; }
+
+  .hero { text-align: center; margin: 0.6rem auto 1.4rem; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.42);
+    color: var(--gold);
+    padding: 0.35rem 1.1rem;
+    border-radius: 99px;
+    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 0.9rem;
+  }
+  .hero h1 {
+    margin: 0 0 0.5rem;
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 4.8vw, 3.2rem);
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--reflect) 0%, var(--transmit) 55%, var(--absorb) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    margin: 0.4rem auto 0;
+    color: var(--text-muted);
+    max-width: 720px;
+    font-size: 1rem;
+  }
+
+  /* ===== HUD ===== */
+  .hud {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stat-card {
+    background: linear-gradient(180deg, rgba(17,25,46,0.95), rgba(12,19,38,0.9));
+    border: 1px solid rgba(89,112,170,0.35);
+    border-radius: 18px;
+    padding: 12px 10px;
+    text-align: center;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); border-color: rgba(89,112,170,0.6); }
+  .stat-card .label {
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .stat-card .value {
+    margin-top: 4px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    font-weight: 900;
+  }
+  .v-gold { color: var(--gold); }
+  .v-red  { color: var(--red); }
+  .v-teal { color: var(--reflect); }
+  .v-orange { color: var(--absorb); }
+  .v-green { color: var(--transmit); }
+
+  /* ===== MAIN LAYOUT ===== */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 980px) {
+    .main { grid-template-columns: 1fr; }
+    .hud { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .arena-panel,
+  .side-panel {
+    background: linear-gradient(180deg, rgba(7,12,26,0.78), rgba(7,12,26,0.62));
+    border: 1px solid rgba(81,102,158,0.32);
+    border-radius: 24px;
+    padding: 16px;
+    position: relative;
+  }
+
+  .arena-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(59,200,232,0.10), transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(46,204,113,0.08), transparent 40%),
+      linear-gradient(180deg, #0a1422, #060d18);
+    border: 1px solid rgba(59,200,232,0.18);
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.55);
+  }
+  canvas#game {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Science feedback toast inside arena */
+  .feedback {
+    position: absolute;
+    left: 50%; top: 14px;
+    transform: translateX(-50%);
+    background: rgba(17,25,46,0.92);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.45);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    max-width: 80%;
+    text-align: center;
+  }
+  .feedback.show { opacity: 1; }
+  .feedback.reflect  { border-color: var(--reflect-border);  color: var(--reflect); }
+  .feedback.transmit { border-color: var(--transmit-border); color: var(--transmit); }
+  .feedback.absorb   { border-color: var(--absorb-border);   color: var(--absorb); }
+
+  /* Overlay for start, win, lose */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: rgba(8,14,26,0.82);
+    backdrop-filter: blur(6px);
+    text-align: center;
+    padding: 1.5rem;
+    z-index: 5;
+  }
+  .overlay.hidden { display: none; }
+  .overlay h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--reflect), var(--transmit), var(--absorb));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .overlay p {
+    color: var(--text-muted);
+    max-width: 480px;
+    margin: 0.3rem auto 0.9rem;
+    font-size: 0.95rem;
+  }
+  .overlay .controls-card {
+    background: rgba(17,25,46,0.7);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0.7rem 1rem;
+    margin: 0.6rem 0 1rem;
+    font-size: 0.85rem;
+    color: var(--text);
+    display: inline-block;
+  }
+  .overlay .touch-notice {
+    background: rgba(230,126,34,0.10);
+    border: 1px solid rgba(230,126,34,0.55);
+    color: var(--text);
+    border-radius: 14px;
+    padding: 0.7rem 1rem;
+    margin: 0.4rem auto 0.9rem;
+    max-width: 480px;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    text-align: center;
+  }
+  .overlay .touch-notice b { color: var(--absorb); }
+
+  .overlay .controls-card kbd {
+    display: inline-block;
+    padding: 0.12rem 0.45rem;
+    margin: 0 0.15rem;
+    background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.4);
+    border-radius: 6px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    color: var(--gold);
+    font-size: 0.78rem;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: linear-gradient(180deg, rgba(245,200,66,0.22), rgba(245,200,66,0.10));
+    color: var(--gold);
+    border: 1px solid rgba(245,200,66,0.5);
+    padding: 0.7rem 1.4rem;
+    border-radius: 14px;
+    font-weight: 800; font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem; letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: transform 0.15s, filter 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .btn:hover { transform: translateY(-2px); filter: brightness(1.1);
+               box-shadow: 0 6px 18px rgba(245,200,66,0.25); }
+  .btn.btn-teal {
+    background: linear-gradient(180deg, rgba(59,200,232,0.22), rgba(59,200,232,0.10));
+    color: var(--reflect);
+    border-color: rgba(59,200,232,0.5);
+  }
+  .btn.btn-teal:hover { box-shadow: 0 6px 18px rgba(59,200,232,0.25); }
+  .btn.btn-notes {
+    background: linear-gradient(180deg, rgba(46,204,113,0.22), rgba(46,204,113,0.10));
+    color: var(--transmit);
+    border-color: rgba(46,204,113,0.5);
+  }
+  .btn.btn-notes:hover { box-shadow: 0 6px 18px rgba(46,204,113,0.25); }
+  .end-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .notes-status {
+    min-height: 1.2rem;
+    margin-top: 0.6rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    transition: color 0.2s;
+  }
+  .notes-status.ok    { color: var(--transmit); }
+  .notes-status.warn  { color: var(--gold); }
+  .notes-fallback {
+    display: none;
+    margin-top: 0.5rem;
+    width: min(540px, 86%);
+    height: 130px;
+    background: rgba(8,14,26,0.85);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    font-family: 'Nunito', monospace;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    resize: none;
+  }
+  .notes-fallback.show { display: block; }
+
+  /* ===== SIDE PANEL ===== */
+  .panel-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.05rem;
+    margin-bottom: 0.7rem;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  .panel-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 800;
+    margin: 0.9rem 0 0.4rem;
+  }
+
+  .energy-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 48px;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .energy-row .meter {
+    height: 10px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.06);
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .energy-row .meter > span {
+    display: block; height: 100%; width: 0%;
+    transition: width 0.4s ease;
+    border-radius: 99px;
+  }
+  .energy-row.reflect  .label { color: var(--reflect); }
+  .energy-row.absorb   .label { color: var(--absorb); }
+  .energy-row.transmit .label { color: var(--transmit); }
+  .energy-row.reflect  .meter > span { background: linear-gradient(90deg, var(--reflect), #6fdcef); }
+  .energy-row.absorb   .meter > span { background: linear-gradient(90deg, var(--absorb), #f0a55b); }
+  .energy-row.transmit .meter > span { background: linear-gradient(90deg, var(--transmit), #5fe39a); }
+  .energy-row .pct { text-align: right; color: var(--text-muted); font-size: 0.8rem; }
+
+  .legend {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .legend-item {
+    display: grid;
+    grid-template-columns: 16px 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 0.55rem 0.6rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+  .legend-item .dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    margin-top: 3px;
+    box-shadow: 0 0 10px currentColor;
+  }
+  .legend-item b { display: block; margin-bottom: 1px; font-weight: 800; }
+  .legend-item .sub { color: var(--text-muted); }
+
+  .legend-item.transparent  { border-color: var(--transmit-border); }
+  .legend-item.transparent  .dot, .legend-item.transparent  b { color: var(--transmit); background: var(--transmit); }
+  .legend-item.transparent  b { background: none; color: var(--transmit); }
+  .legend-item.translucent  { border-color: rgba(46,204,113,0.18); }
+  .legend-item.translucent  .dot { color: #9be3b6; background: #9be3b6; }
+  .legend-item.translucent  b { color: #9be3b6; }
+  .legend-item.opaque       { border-color: var(--absorb-border); }
+  .legend-item.opaque       .dot { color: var(--absorb); background: var(--absorb); }
+  .legend-item.opaque       b { color: var(--absorb); }
+  .legend-item.reflective   { border-color: var(--reflect-border); }
+  .legend-item.reflective   .dot { color: var(--reflect); background: var(--reflect); }
+  .legend-item.reflective   b { color: var(--reflect); }
+
+  .footer-note {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    margin-top: 1.2rem;
+  }
+
+  /* Subtle pulse animation reuse */
+  @keyframes softPulse {
+    0%,100% { opacity: 0.9; }
+    50%     { opacity: 1; }
+  }
+
+  /* ===== MISSION GOAL ===== */
+  .mission-goal {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    background: linear-gradient(90deg, rgba(245,200,66,0.10), rgba(245,200,66,0.03) 70%, transparent);
+    border: 1px solid rgba(245,200,66,0.32);
+    border-left: 4px solid var(--gold);
+    border-radius: 14px;
+    padding: 0.65rem 1rem;
+    margin-bottom: 12px;
+    font-size: 0.92rem;
+    color: var(--text);
+  }
+  .mission-goal .goal-icon {
+    font-size: 1.15rem;
+    filter: drop-shadow(0 0 6px var(--gold-glow));
+  }
+  .mission-goal b { color: var(--gold); font-weight: 900; letter-spacing: 0.02em; }
+  .mission-goal .goal-num {
+    display: inline-block;
+    padding: 0 0.4rem;
+    background: rgba(245,200,66,0.14);
+    border: 1px solid rgba(245,200,66,0.35);
+    border-radius: 6px;
+    color: var(--gold);
+    font-weight: 800;
+    margin: 0 1px;
+  }
+  .goal-num.goal-transmit { background: rgba(46,204,113,0.14);  border-color: var(--transmit-border); color: var(--transmit); }
+  .goal-num.goal-absorb   { background: rgba(230,126,34,0.14);  border-color: var(--absorb-border);   color: var(--absorb); }
+  .goal-num.goal-reflect  { background: rgba(59,200,232,0.14);  border-color: var(--reflect-border);  color: var(--reflect); }
+  .mission-goal .goal-text { flex: 1; }
+  .skip-tut {
+    background: rgba(138,175,202,0.08);
+    border: 1px solid rgba(138,175,202,0.35);
+    color: var(--text-muted);
+    padding: 0.35rem 0.8rem;
+    border-radius: 99px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .skip-tut:hover {
+    color: var(--gold);
+    background: rgba(245,200,66,0.10);
+    border-color: rgba(245,200,66,0.45);
+  }
+  .skip-tut.hidden { display: none; }
+
+  .mute-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(59,200,232,0.10);
+    border: 1px solid rgba(59,200,232,0.4);
+    color: var(--reflect);
+    padding: 0.35rem 0.8rem;
+    border-radius: 99px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+    white-space: nowrap;
+  }
+  .mute-pill:hover { background: rgba(59,200,232,0.18); border-color: rgba(59,200,232,0.65); }
+  .mute-pill.muted {
+    background: rgba(138,175,202,0.08);
+    border-color: rgba(138,175,202,0.35);
+    color: var(--text-muted);
+  }
+  .mute-pill.muted:hover { color: var(--gold); border-color: rgba(245,200,66,0.45); background: rgba(245,200,66,0.10); }
+
+  /* ===== INTERACTION DATA ===== */
+  .data-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 0.6rem 0.8rem;
+  }
+  .data-grid .dlabel {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .data-grid .dval {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.95rem;
+    color: var(--text);
+    text-align: right;
+  }
+  .data-grid .dlabel.row-t { color: var(--transmit); }
+  .data-grid .dlabel.row-a { color: var(--absorb); }
+  .data-grid .dlabel.row-r { color: var(--reflect); }
+  .data-grid .dlabel.row-m { color: var(--gold); }
+  .data-grid .dlabel.row-h { color: var(--red); }
+
+  /* ===== MIXED-MATERIALS CARD ===== */
+  .mixed-card {
+    background: linear-gradient(180deg, rgba(245,200,66,0.06), rgba(245,200,66,0.02));
+    border: 1px solid rgba(245,200,66,0.28);
+    border-radius: 12px;
+    padding: 0.6rem 0.7rem;
+  }
+  .mixed-card p {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .mixed-card .c-r { color: var(--reflect); }
+  .mixed-card .c-a { color: var(--absorb); }
+  .mixed-card .c-t { color: var(--transmit); }
+  .mixed-key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.9rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .mixed-key b { font-weight: 900; }
+
+  /* ===== LAST INTERACTION CARD ===== */
+  .last-interaction {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 0.6rem 0.75rem;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .last-interaction.tone-transmit { border-color: var(--transmit-border); background: var(--transmit-dim); }
+  .last-interaction.tone-absorb   { border-color: var(--absorb-border);   background: var(--absorb-dim); }
+  .last-interaction.tone-reflect  { border-color: var(--reflect-border);  background: var(--reflect-dim); }
+  .last-interaction .li-row {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 6px;
+    margin: 3px 0;
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  .last-interaction .li-label {
+    color: var(--text-muted);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    align-self: center;
+  }
+  .last-interaction .li-val { color: var(--text); font-weight: 700; }
+  .last-interaction.tone-transmit .li-outcome { color: var(--transmit); }
+  .last-interaction.tone-absorb   .li-outcome { color: var(--absorb); }
+  .last-interaction.tone-reflect  .li-outcome { color: var(--reflect); }
+  .last-interaction .li-science  { color: var(--text-muted); font-weight: 600; font-size: 0.78rem; }
+
+  /* ===== DISCOVERY BANNER ===== */
+  .discovery {
+    position: absolute;
+    left: 50%;
+    top: 62px;
+    transform: translateX(-50%) translateY(-10px);
+    background: linear-gradient(180deg, rgba(245,200,66,0.22), rgba(245,200,66,0.08));
+    border: 1px solid rgba(245,200,66,0.6);
+    border-radius: 14px;
+    padding: 0.7rem 1.1rem;
+    text-align: center;
+    color: var(--text);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.45), 0 0 24px var(--gold-glow);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    max-width: 78%;
+    z-index: 3;
+  }
+  .discovery.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .discovery .discovery-tag {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    margin-bottom: 0.35rem;
+  }
+  .discovery .discovery-text { font-size: 0.88rem; line-height: 1.45; }
+  .discovery .discovery-text b { color: var(--gold); }
+
+  /* ===== MATERIAL LAB TRACKER ===== */
+  .lab-tracker {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(245,200,66,0.32);
+    border-radius: 12px;
+    padding: 0.6rem 0.75rem;
+  }
+  .lab-tracker .track-row {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+    padding: 3px 0;
+  }
+  .lab-tracker .track-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid rgba(138,175,202,0.55);
+    background: rgba(255,255,255,0.04);
+    color: transparent;
+    font-weight: 900;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    transition: background 0.25s, border-color 0.25s, color 0.25s;
+  }
+  .lab-tracker .track-row.done .track-box {
+    border-color: rgba(46,204,113,0.85);
+    background: rgba(46,204,113,0.25);
+    color: var(--transmit);
+  }
+  .lab-tracker .track-row.done {
+    color: var(--text);
+  }
+  .lab-tracker .track-ratio {
+    margin-left: auto;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  .panel-sub.lab-sub { color: var(--gold); }
+  .hidden-section { display: none !important; }
+
+  .lab-tracker .track-sub {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.6rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    padding: 0 0 6px 28px;
+    letter-spacing: 0.02em;
+    font-weight: 700;
+  }
+  .lab-tracker .track-sub .track-res { color: var(--text-muted); }
+  .lab-tracker .track-row.done + .track-sub .track-res { color: var(--text); }
+  .lab-tracker .track-sub .track-mark-ok  { color: var(--transmit); margin-left: 3px; }
+  .lab-tracker .track-sub .track-mark-no  { color: var(--red);      margin-left: 3px; }
+
+  /* ===== PREDICTION OVERLAY ===== */
+  .overlay .predict-tag {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+    background: rgba(245,200,66,0.14);
+    border: 1px solid rgba(245,200,66,0.5);
+    color: var(--gold);
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+  }
+  .predict-buttons {
+    display: flex;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 0.4rem;
+  }
+  .btn.btn-predict {
+    padding: 0.65rem 1.1rem;
+    font-size: 0.9rem;
+  }
+  .btn.btn-predict.is-reflect {
+    background: linear-gradient(180deg, rgba(59,200,232,0.22), rgba(59,200,232,0.10));
+    color: var(--reflect);
+    border-color: rgba(59,200,232,0.5);
+  }
+  .btn.btn-predict.is-reflect:hover { box-shadow: 0 6px 18px rgba(59,200,232,0.25); }
+  .btn.btn-predict.is-absorb {
+    background: linear-gradient(180deg, rgba(230,126,34,0.22), rgba(230,126,34,0.10));
+    color: var(--absorb);
+    border-color: rgba(230,126,34,0.5);
+  }
+  .btn.btn-predict.is-absorb:hover { box-shadow: 0 6px 18px rgba(230,126,34,0.25); }
+  .btn.btn-predict.is-transmit {
+    background: linear-gradient(180deg, rgba(46,204,113,0.22), rgba(46,204,113,0.10));
+    color: var(--transmit);
+    border-color: rgba(46,204,113,0.5);
+  }
+  .btn.btn-predict.is-transmit:hover { box-shadow: 0 6px 18px rgba(46,204,113,0.25); }
+
+  /* ===== LEVEL 2 INTRO OVERLAY ===== */
+  .overlay .level-tag {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+    background: rgba(46,204,113,0.14);
+    border: 1px solid rgba(46,204,113,0.5);
+    color: var(--transmit);
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+  }
+
+  /* ===== MIXED TAKEAWAY (win recap) ===== */
+  .recap .takeaway {
+    margin-top: 0.6rem;
+    padding-top: 0.55rem;
+    border-top: 1px dashed var(--border);
+  }
+  .recap .takeaway b { color: var(--gold); }
+
+  /* ===== PAUSE OVERLAY ===== */
+  .pause-overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8,14,26,0.72);
+    backdrop-filter: blur(4px);
+    z-index: 4;
+    text-align: center;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+  .pause-overlay.show { display: flex; }
+  .pause-overlay h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    color: var(--gold);
+    text-shadow: 0 0 24px var(--gold-glow);
+    margin-bottom: 0.4rem;
+  }
+  .pause-overlay p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+  .pause-overlay kbd {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.4);
+    border-radius: 6px;
+    font-weight: 800;
+    color: var(--gold);
+    font-size: 0.85rem;
+    margin: 0 0.15rem;
+  }
+
+  /* ===== WIN PROGRESS ===== */
+  .win-progress {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 0.6rem 0.7rem;
+    margin-top: 0.5rem;
+  }
+  .win-progress .row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.78rem; font-weight: 700;
+    margin: 4px 0 4px;
+  }
+  .win-progress .row .lbl { color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; }
+  .win-progress .row .val { color: var(--text); font-family: 'Fredoka One', cursive; font-size: 0.95rem; }
+  .win-progress .row.done .val { color: var(--transmit); }
+  .win-progress .bar {
+    height: 8px; border-radius: 99px; background: rgba(255,255,255,0.06);
+    overflow: hidden; border: 1px solid rgba(255,255,255,0.06);
+  }
+  .win-progress .bar > span {
+    display: block; height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--gold), #ffd76b);
+    border-radius: 99px; transition: width 0.35s ease;
+  }
+  .win-progress .row.done .bar > span { background: linear-gradient(90deg, var(--transmit), #5fe39a); }
+
+  .recap {
+    text-align: left;
+    background: rgba(17,25,46,0.7);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.7rem 0.9rem;
+    margin: 0.5rem auto 0.9rem;
+    max-width: 520px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  .recap b { color: var(--text); }
+  .recap ul { margin: 0.3rem 0 0 1.1rem; padding: 0; }
+  .recap li { margin: 0.15rem 0; }
+  .recap .c-t { color: var(--transmit); }
+  .recap .c-a { color: var(--absorb); }
+  .recap .c-r { color: var(--reflect); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="lesson_wave-behavior.html#reflection">Behaviors</a></li>
+    <li><a href="lesson_wave-behavior.html#interaction">Energy Tracker</a></li>
+    <li><a href="lesson_wave-behavior.html#vocab">Vocab</a></li>
+  </ul>
+  <a href="lesson_wave-behavior.html" class="nav-back">← Wave Behavior Lesson</a>
+</nav>
+
+<div class="app">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">⚡ Waves Unit · Game</div>
+    <h1>Energy Escape: Photon Runner</h1>
+    <p>Pilot a photon ship through the energy corridor. Fire light pulses at bubbles and discover how reflection, absorption, and transmission really work.</p>
+  </div>
+
+  <!-- MISSION GOAL + TUTORIAL -->
+  <div class="mission-goal" id="missionGoal">
+    <span class="goal-icon" id="goalIcon">🧪</span>
+    <span class="goal-text" id="goalText">
+      <b id="goalTitle">Tutorial:</b>
+      <span id="goalBody">Try shooting a <span class="goal-num goal-transmit">transparent</span> bubble. Watch the pulse pass through.</span>
+    </span>
+    <button class="skip-tut" id="btnSkipTut" title="Skip the tutorial and jump to the mission">Skip Tutorial</button>
+    <button class="mute-pill" id="btnPauseToggle" title="Pause or resume the game" aria-label="Pause">
+      <span id="pauseIcon">⏸</span><span id="pauseText">Pause</span>
+    </button>
+    <button class="mute-pill" id="btnExportNotes" title="Copy your Lab Notes at any time" aria-label="Copy Lab Notes">
+      <span>📋</span><span id="exportText">Copy Notes</span>
+    </button>
+    <button class="mute-pill" id="btnMute" title="Mute or unmute sound effects" aria-label="Toggle sound">
+      <span id="muteIcon">🔊</span><span id="muteText">Sound On</span>
+    </button>
+  </div>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="stat-card">
+      <div class="label">Level</div>
+      <div class="value v-gold" id="hudLevel">Training Corridor</div>
+    </div>
+    <div class="stat-card">
+      <div class="label" id="hudScoreLabel">Unlock Level 2</div>
+      <div class="value v-gold" id="hudScore">0 / 220</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Shields</div>
+      <div class="value v-red" id="hudHealth">100</div>
+    </div>
+    <div class="stat-card">
+      <div class="label" id="hudClearedLabel">Bubbles Cleared</div>
+      <div class="value v-orange" id="hudCleared">0 / 0</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Status</div>
+      <div class="value v-teal" id="hudStatus">Ready</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- ARENA -->
+    <div class="arena-panel">
+      <div class="arena-wrap" id="arena">
+        <canvas id="game" width="1280" height="720"></canvas>
+        <div class="feedback" id="feedback"></div>
+
+        <div class="overlay" id="overlayStart">
+          <h2>Level 1 · Training Corridor</h2>
+          <p>Test how light energy interacts with four kinds of material. Aim through transparent bubbles, watch opaque ones overload, and avoid your own reflected beams.</p>
+          <div class="touch-notice" id="touchNotice" hidden>
+            <b>⚠ Keyboard required</b><br>
+            Photon Runner is designed for keyboard play. To play, use a <b>Chromebook, laptop, or desktop computer</b> with a physical keyboard.
+          </div>
+          <div class="controls-card">
+            Move: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>
+            &nbsp;·&nbsp; Fire: <kbd>Space</kbd>
+            &nbsp;·&nbsp; Pause: <kbd>P</kbd>
+          </div>
+          <button class="btn" id="btnStart">Launch Photon Ship</button>
+        </div>
+
+        <div class="pause-overlay" id="pauseOverlay">
+          <h2>Paused</h2>
+          <p>Press <kbd>P</kbd> or click to resume</p>
+        </div>
+
+        <div class="overlay hidden" id="overlayPredict">
+          <div class="predict-tag">🔬 PREDICT</div>
+          <h2>Make a Prediction</h2>
+          <p>Which energy behavior do you think will happen MOST in <b id="predictMaterial">this material</b>?</p>
+          <div class="predict-buttons">
+            <button class="btn btn-predict is-reflect"  data-pred="reflect">Mostly Reflect</button>
+            <button class="btn btn-predict is-absorb"   data-pred="absorb">Mostly Absorb</button>
+            <button class="btn btn-predict is-transmit" data-pred="transmit">Mostly Transmit</button>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="overlayLevel2Intro">
+          <div class="level-tag">LEVEL 2</div>
+          <h2>Material Lab</h2>
+          <p>Real materials usually reflect, absorb, and transmit energy in different amounts. Test several materials and compare their energy ratios.</p>
+          <button class="btn" id="btnEnterLevel2">Enter Material Lab</button>
+        </div>
+
+        <div class="discovery" id="discoveryBanner" aria-hidden="true">
+          <div class="discovery-tag">⚡ NEW DISCOVERY</div>
+          <div class="discovery-text">
+            <b>Real materials usually do all three.</b><br>
+            They can reflect, absorb, and transmit energy at the same time.
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="overlayEnd">
+          <h2 id="endTitle">Mission Complete</h2>
+          <p id="endMsg">You cleared the corridor.</p>
+          <div class="controls-card" id="endStats">- - -</div>
+          <div class="end-actions">
+            <button class="btn btn-teal" id="btnReset">Replay Level</button>
+            <button class="btn btn-notes" id="btnNotes">📋 Copy Lab Notes</button>
+          </div>
+          <div class="notes-status" id="notesStatus"></div>
+          <textarea class="notes-fallback" id="notesFallback" readonly spellcheck="false"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDE PANEL -->
+    <div class="side-panel">
+      <div class="panel-title">Energy Result</div>
+      <div class="energy-row reflect">
+        <span class="label">Reflected</span>
+        <div class="meter"><span id="meterReflect"></span></div>
+        <span class="pct" id="pctReflect">0%</span>
+      </div>
+      <div class="energy-row absorb">
+        <span class="label">Absorbed</span>
+        <div class="meter"><span id="meterAbsorb"></span></div>
+        <span class="pct" id="pctAbsorb">0%</span>
+      </div>
+      <div class="energy-row transmit">
+        <span class="label">Transmitted</span>
+        <div class="meter"><span id="meterTransmit"></span></div>
+        <span class="pct" id="pctTransmit">0%</span>
+      </div>
+
+      <div class="panel-sub">Last Interaction</div>
+      <div class="last-interaction" id="lastInteraction">
+        <div class="li-row"><span class="li-label">Material</span><span class="li-val" id="liMaterial">- - -</span></div>
+        <div class="li-row"><span class="li-label">Outcome</span><span class="li-val li-outcome" id="liOutcome">Awaiting fire</span></div>
+        <div class="li-row"><span class="li-label">Science</span><span class="li-val li-science" id="liScience">Fire a pulse to see how light energy interacts with a material.</span></div>
+      </div>
+
+      <div id="missionProgressSection">
+        <div class="panel-sub">Mission Progress</div>
+        <div class="win-progress">
+          <div class="row" id="wpScoreRow">
+            <span class="lbl">Score</span>
+            <span class="val"><span id="wpScoreVal">0</span> / 220</span>
+          </div>
+          <div class="bar"><span id="wpScoreBar"></span></div>
+          <div class="row" id="wpOpaqueRow" style="margin-top:8px">
+            <span class="lbl">Opaque Overloaded</span>
+            <span class="val"><span id="wpOpaqueVal">0</span> / 2</span>
+          </div>
+          <div class="bar"><span id="wpOpaqueBar"></span></div>
+        </div>
+      </div>
+
+      <div id="labTrackerSection" class="hidden-section">
+        <div class="panel-sub lab-sub">Materials Tested</div>
+        <div class="lab-tracker" id="labTracker"></div>
+      </div>
+
+      <div class="panel-sub">Interaction Data</div>
+      <div class="data-grid">
+        <div class="dlabel row-t" style="grid-column:1">Transparent passes</div>
+        <div class="dval"  id="dTransparent">0</div>
+        <div class="dlabel row-t" style="grid-column:1">Translucent scatters</div>
+        <div class="dval"  id="dTranslucent">0</div>
+        <div class="dlabel row-a" style="grid-column:1">Opaque absorptions</div>
+        <div class="dval"  id="dOpaque">0</div>
+        <div class="dlabel row-r" style="grid-column:1">Reflective bounces</div>
+        <div class="dval"  id="dReflective">0</div>
+        <div class="dlabel row-m" style="grid-column:1">Mixed material tests</div>
+        <div class="dval"  id="dMixed">0</div>
+        <div class="dlabel row-h" style="grid-column:1">Shield hits</div>
+        <div class="dval"  id="dHits">0</div>
+      </div>
+
+      <div class="panel-sub">Mixed Materials</div>
+      <div class="mixed-card">
+        <p>Real materials usually do all three. The numbers show how much energy <b class="c-r">reflects</b>, <b class="c-a">absorbs</b>, and <b class="c-t">transmits</b>.</p>
+        <div class="mixed-key">
+          <span><b class="c-r">R</b> = Reflected</span>
+          <span><b class="c-a">A</b> = Absorbed</span>
+          <span><b class="c-t">T</b> = Transmitted</span>
+        </div>
+      </div>
+
+      <div class="panel-sub">Material Legend</div>
+      <div class="legend">
+        <div class="legend-item transparent">
+          <span class="dot"></span>
+          <div><b>Transparent</b><span class="sub">High transmission - beam passes through, full points.</span></div>
+        </div>
+        <div class="legend-item translucent">
+          <span class="dot"></span>
+          <div><b>Translucent</b><span class="sub">Partial transmission with scattering - fewer points.</span></div>
+        </div>
+        <div class="legend-item opaque">
+          <span class="dot"></span>
+          <div><b>Opaque</b><span class="sub">High absorption - bubble charges, then overloads.</span></div>
+        </div>
+        <div class="legend-item reflective">
+          <span class="dot"></span>
+          <div><b>Reflective</b><span class="sub">High reflection - beam bounces back, watch out!</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="footer-note">First build pass · Level 1 vertical slice · Energy is never destroyed; it changes form.</p>
+</div>
+
+<script>
+/* ============================================================
+   ENERGY ESCAPE: PHOTON RUNNER  -  Level 1 Vertical Slice
+   ============================================================ */
+
+/* ---------- CONSTANTS ---------- */
+const ARENA_W = 1280;
+const ARENA_H = 720;
+
+const SHIP = {
+  radius: 18,
+  speed: 420,         // px/sec - target top speed
+  accel: 2400,        // px/sec^2 - quick ramp for snappy feel
+  damp:  10,          // friction when no input (per sec)
+  fireCooldown: 0.18, // sec
+  maxHealth: 100
+};
+
+const SHOT = {
+  speed: 640,
+  radius: 5,
+  life: 2.4,          // sec
+  damage: 12          // damage if reflected and hits ship
+};
+
+const COLORS = {
+  ship:      '#f5c842',
+  shipGlow:  'rgba(245,200,66,0.45)',
+  shot:      '#ffe98a',
+  shotGlow:  'rgba(255,233,138,0.6)',
+  reflect:   '#3bc8e8',
+  transmit:  '#2ecc71',
+  translucent:'#9be3b6',
+  absorb:    '#e67e22',
+  grid:      'rgba(59,200,232,0.06)',
+  wall:      'rgba(245,200,66,0.35)',
+  gate:      'rgba(46,204,113,0.55)'
+};
+
+const WIN_SCORE = 220;
+
+/* Tutorial stages - each targets one material type, then a final Mission stage. */
+const TUTORIAL_STAGES = [
+  {
+    id: 'transparent',
+    target: 'transparent',
+    titleHTML: 'Tutorial:',
+    bodyHTML: 'Try shooting a <span class="goal-num goal-transmit">transparent</span> bubble. Watch the pulse pass through.',
+    icon: '🧪'
+  },
+  {
+    id: 'translucent',
+    target: 'translucent',
+    titleHTML: 'Tutorial:',
+    bodyHTML: 'Now try a <span class="goal-num goal-transmit">translucent</span> bubble. The pulse still gets through, but it scatters.',
+    icon: '🌫️'
+  },
+  {
+    id: 'opaque',
+    target: 'opaque',
+    titleHTML: 'Tutorial:',
+    bodyHTML: 'Now charge an <span class="goal-num goal-absorb">opaque</span> bubble. It absorbs the beam instead of letting it pass.',
+    icon: '🟠'
+  },
+  {
+    id: 'reflective',
+    target: 'reflective',
+    titleHTML: 'Tutorial:',
+    bodyHTML: 'Careful - <span class="goal-num goal-reflect">reflective</span> bubbles bounce energy back toward you.',
+    icon: '🪞'
+  },
+  {
+    id: 'mission',
+    target: null,
+    titleHTML: 'Mission Goal:',
+    bodyHTML: 'Now clear the corridor: score <span class="goal-num">220</span> and overload <span class="goal-num">both</span> opaque bubbles.',
+    icon: '🎯'
+  }
+];
+
+/* Science feedback text */
+const FEEDBACK = {
+  transparent:  { text: 'Transparent: most light energy transmits straight through.', tone: 'transmit' },
+  translucent:  { text: 'Translucent: some light transmits, but it scatters and weakens.', tone: 'transmit' },
+  opaque:       { text: 'Opaque: the beam is absorbed. The energy charges the material.', tone: 'absorb' },
+  overload:     { text: 'Overload! Absorbed energy released - bubble destroyed.', tone: 'absorb' },
+  reflective:   { text: 'Reflective: the beam bounces back. Energy changed direction!', tone: 'reflect' },
+  hit:          { text: 'Your shields took a hit from your own reflected beam!', tone: 'reflect' },
+  win:          { text: 'Corridor cleared. Energy is never destroyed - it changes form.', tone: 'transmit' },
+  // Mixed materials - dynamic copy filled in at call site using showFeedbackText.
+  mixedTransmit:{ text: '', tone: 'transmit' },
+  mixedAbsorb:  { text: '', tone: 'absorb' },
+  mixedReflect: { text: '', tone: 'reflect' }
+};
+
+/* ---------- AUDIO ----------
+   Lightweight WebAudio synth - short envelopes, soft volume.
+   The AudioContext is created lazily on the first user gesture (Launch button)
+   so browsers don't block it. All sounds are throttled per-channel so rapid
+   firing or chained collisions can't pile into harsh noise. */
+const audio = {
+  ctx: null,
+  master: null,
+  muted: false,
+  ready: false,
+  lastPlay: {} // per-event timestamps for throttling
+};
+
+const MUTE_KEY = 'lyfelabz_energy_escape_muted';
+try {
+  const stored = localStorage.getItem(MUTE_KEY);
+  if (stored === '1') audio.muted = true;
+} catch (e) { /* localStorage unavailable - ignore */ }
+
+function ensureAudio() {
+  if (audio.ready) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    audio.ctx = new Ctx();
+    audio.master = audio.ctx.createGain();
+    audio.master.gain.value = audio.muted ? 0 : 0.35;
+    audio.master.connect(audio.ctx.destination);
+    audio.ready = true;
+  } catch (e) { /* audio not available - silent fail */ }
+}
+
+function setMuted(v) {
+  audio.muted = !!v;
+  if (audio.ready) audio.master.gain.setTargetAtTime(audio.muted ? 0 : 0.35, audio.ctx.currentTime, 0.02);
+  try { localStorage.setItem(MUTE_KEY, audio.muted ? '1' : '0'); } catch (e) {}
+  renderMuteUI();
+}
+
+function renderMuteUI() {
+  const pill = document.getElementById('btnMute');
+  const icon = document.getElementById('muteIcon');
+  const text = document.getElementById('muteText');
+  if (!pill) return;
+  pill.classList.toggle('muted', audio.muted);
+  icon.textContent = audio.muted ? '🔈' : '🔊';
+  text.textContent = audio.muted ? 'Muted' : 'Sound On';
+}
+
+/* Per-event throttling so collision storms don't pile into harsh noise. */
+function canPlay(name, minGapMs) {
+  const now = performance.now();
+  const last = audio.lastPlay[name] || 0;
+  if (now - last < minGapMs) return false;
+  audio.lastPlay[name] = now;
+  return true;
+}
+
+/* Generic tone with ADSR-ish envelope. */
+function tone({ freq = 440, type = 'sine', dur = 0.12, attack = 0.005, decay = 0.08, peak = 0.5, sweepTo = null, sweepTime = null }) {
+  if (!audio.ready || audio.muted) return;
+  const t0 = audio.ctx.currentTime;
+  const osc = audio.ctx.createOscillator();
+  const g   = audio.ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  if (sweepTo != null) {
+    osc.frequency.exponentialRampToValueAtTime(Math.max(20, sweepTo), t0 + (sweepTime || dur));
+  }
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(peak, t0 + attack);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + attack + decay);
+  osc.connect(g).connect(audio.master);
+  osc.start(t0);
+  osc.stop(t0 + attack + decay + 0.02);
+}
+
+/* Short noise burst for the airy translucent scatter. */
+function noiseBurst({ dur = 0.18, peak = 0.18, lowpass = 1800 }) {
+  if (!audio.ready || audio.muted) return;
+  const t0 = audio.ctx.currentTime;
+  const sr = audio.ctx.sampleRate;
+  const buf = audio.ctx.createBuffer(1, Math.floor(sr * dur), sr);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+  const src = audio.ctx.createBufferSource();
+  src.buffer = buf;
+  const filt = audio.ctx.createBiquadFilter();
+  filt.type = 'lowpass';
+  filt.frequency.value = lowpass;
+  const g = audio.ctx.createGain();
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(peak, t0 + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  src.connect(filt).connect(g).connect(audio.master);
+  src.start(t0);
+}
+
+const SFX = {
+  fire:        () => canPlay('fire', 70)  && tone({ freq: 880, type: 'square',   dur: 0.08, attack: 0.002, decay: 0.07, peak: 0.18, sweepTo: 1320, sweepTime: 0.06 }),
+  transparent: () => canPlay('tx',   90)  && tone({ freq: 720, type: 'sine',     dur: 0.14, attack: 0.005, decay: 0.10, peak: 0.18, sweepTo: 980, sweepTime: 0.10 }),
+  translucent: () => canPlay('tl',   110) && noiseBurst({ dur: 0.16, peak: 0.10, lowpass: 1200 }),
+  opaque:      () => canPlay('op',   80)  && tone({ freq: 140, type: 'sine',     dur: 0.18, attack: 0.005, decay: 0.14, peak: 0.30, sweepTo: 90,  sweepTime: 0.14 }),
+  overload:    () => canPlay('ov',   200) && (tone({ freq: 220, type: 'sawtooth', dur: 0.35, attack: 0.005, decay: 0.30, peak: 0.32, sweepTo: 60, sweepTime: 0.30 }),
+                                              noiseBurst({ dur: 0.30, peak: 0.18, lowpass: 700 })),
+  reflective:  () => canPlay('rf',   90)  && tone({ freq: 1480, type: 'triangle', dur: 0.18, attack: 0.002, decay: 0.16, peak: 0.20, sweepTo: 1180, sweepTime: 0.16 }),
+  damage:      () => canPlay('dm',   200) && tone({ freq: 160, type: 'sawtooth', dur: 0.30, attack: 0.005, decay: 0.25, peak: 0.30, sweepTo: 80, sweepTime: 0.25 }),
+  win:         () => {
+    if (!audio.ready || audio.muted) return;
+    const t = audio.ctx.currentTime;
+    [523, 659, 784].forEach((f, i) => setTimeout(() => tone({ freq: f, type: 'triangle', dur: 0.22, peak: 0.22, decay: 0.20 }), i * 110));
+  },
+  lose:        () => {
+    if (!audio.ready || audio.muted) return;
+    [392, 311, 233].forEach((f, i) => setTimeout(() => tone({ freq: f, type: 'sine', dur: 0.28, peak: 0.24, decay: 0.26 }), i * 130));
+  }
+};
+
+document.getElementById('btnMute').addEventListener('click', () => setMuted(!audio.muted));
+renderMuteUI();
+
+/* ---------- GAME STATE ---------- */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+let state = null;        // full game state
+let lastTime = 0;
+let running = false;
+
+/* ---------- LEVEL 1 LAYOUT ----------
+   Bubbles arranged so the player encounters each behavior. */
+/* Level 2: Material Lab - four mixed-ratio bubbles spread across the arena.
+   Reuses the existing mixed-material rendering + behavior. */
+const LEVEL2_MATERIALS = [
+  { name: 'Clear Water',    ratios: { reflect: 0.05, absorb: 0.05, transmit: 0.90 } },
+  { name: 'Brick Wall',     ratios: { reflect: 0.15, absorb: 0.80, transmit: 0.05 } },
+  { name: 'Polished Metal', ratios: { reflect: 0.80, absorb: 0.15, transmit: 0.05 } },
+  { name: 'Smoked Glass',   ratios: { reflect: 0.25, absorb: 0.25, transmit: 0.50 } }
+];
+
+function buildLevel2() {
+  // Spread across the arena so the student has to move and aim.
+  const positions = [
+    { x: 540,  y: 220 },
+    { x: 700,  y: 480 },
+    { x: 920,  y: 240 },
+    { x: 1080, y: 470 }
+  ];
+  return LEVEL2_MATERIALS.map((m, i) => ({
+    type: 'mixed',
+    material: m.name,
+    x: positions[i].x,
+    y: positions[i].y,
+    r: 46,
+    absorbed: 0,
+    ratios: { ...m.ratios }
+  }));
+}
+
+function buildLevel1() {
+  return [
+    // Transparent cluster: easy intro, beam passes through cleanly.
+    { type: 'transparent', x: 480, y: 200, r: 38 },
+    { type: 'transparent', x: 480, y: 360, r: 44 },
+    { type: 'transparent', x: 480, y: 520, r: 38 },
+
+    // Translucent column: beam continues but weakened.
+    { type: 'translucent', x: 650, y: 260, r: 42 },
+    { type: 'translucent', x: 650, y: 460, r: 42 },
+
+    // Opaque charge targets.
+    { type: 'opaque', x: 820, y: 180, r: 46, absorbed: 0, capacity: 3 },
+    { type: 'opaque', x: 820, y: 540, r: 46, absorbed: 0, capacity: 3 },
+
+    // Reflective hazards near the end.
+    { type: 'reflective', x: 970, y: 300, r: 42 },
+    { type: 'reflective', x: 970, y: 420, r: 42 },
+
+    // Mixed-ratio extension bubbles - the big idea of this unit.
+    { type: 'mixed', material: 'Frosted Glass', x: 1130, y: 220, r: 44, absorbed: 0,
+      ratios: { reflect: 0.15, absorb: 0.20, transmit: 0.65 } },
+    { type: 'mixed', material: 'Black Asphalt', x: 1130, y: 500, r: 44, absorbed: 0,
+      ratios: { reflect: 0.05, absorb: 0.90, transmit: 0.05 } },
+  ];
+}
+
+function freshState() {
+  const bubbles = buildLevel1();
+  return {
+    ship: {
+      x: 130, y: ARENA_H / 2,
+      vx: 0, vy: 0,
+      health: SHIP.maxHealth,
+      cooldown: 0,
+      iframes: 0,
+      muzzle: 0   // muzzle flash timer
+    },
+    shots: [],
+    bubbles,
+    particles: [],
+    rings: [],          // expanding shockwave rings (overloads)
+    shake: 0,           // screen shake magnitude (px)
+    requiredOpaque: bubbles.filter(b => b.type === 'opaque').length,
+    cleared: 0,
+    score: 0,
+    energy: { reflect: 0, absorb: 0, transmit: 0 },
+    elapsed: 0,
+    over: false,
+    won: false,
+    paused: false,
+    tutorialIndex: 0,
+    tutorialSkipped: false,
+    level: 1,
+    tested: {},               // material name -> true (Level 2 tracker)
+    level2Complete: false,    // set when all 4 L2 materials tested
+    transitionPending: false, // Level 1 cleared, waiting on Enter Material Lab
+    predictions: {},          // material name -> 'reflect' | 'absorb' | 'transmit'
+    results: {},              // material name -> dominant key (filled on first test)
+    predictionsCorrect: 0,
+    awaitingPrediction: false,
+    pendingPredictionMaterial: null,
+    counts: {
+      transparent: 0,
+      translucent: 0,
+      opaque: 0,
+      reflective: 0,
+      mixed: 0,
+      hits: 0
+    }
+  };
+}
+
+/* ---------- INPUT ---------- */
+const keys = new Set();
+window.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
+  // P toggles pause (only while a game is active and not over).
+  if (k === 'p' && !keys.has('p')) {
+    if (state && running && !state.over && !state.awaitingPrediction) togglePause();
+  }
+  keys.add(k);
+});
+window.addEventListener('keyup', (e) => {
+  keys.delete(e.key.toLowerCase());
+});
+
+function readInput() {
+  // Freeze controls while the prediction modal is open so the player can't
+  // drift or shoot through it.
+  if (state && state.awaitingPrediction) return { dx: 0, dy: 0, fire: false };
+  let dx = 0, dy = 0;
+  if (keys.has('arrowleft')  || keys.has('a')) dx -= 1;
+  if (keys.has('arrowright') || keys.has('d')) dx += 1;
+  if (keys.has('arrowup')    || keys.has('w')) dy -= 1;
+  if (keys.has('arrowdown')  || keys.has('s')) dy += 1;
+  if (dx && dy) { const inv = 1/Math.sqrt(2); dx *= inv; dy *= inv; }
+  return { dx, dy, fire: keys.has(' ') };
+}
+
+/* ---------- PLAYER ---------- */
+function updateShip(dt) {
+  const { dx, dy, fire } = readInput();
+  const s = state.ship;
+
+  // Accelerate toward target velocity; decelerate when no input for inertia feel.
+  const targetVx = dx * SHIP.speed;
+  const targetVy = dy * SHIP.speed;
+  const ax = (targetVx - s.vx);
+  const ay = (targetVy - s.vy);
+  const accelStep = SHIP.accel * dt;
+  if (dx === 0) s.vx -= s.vx * Math.min(1, SHIP.damp * dt);
+  else          s.vx += Math.sign(ax) * Math.min(Math.abs(ax), accelStep);
+  if (dy === 0) s.vy -= s.vy * Math.min(1, SHIP.damp * dt);
+  else          s.vy += Math.sign(ay) * Math.min(Math.abs(ay), accelStep);
+
+  s.x += s.vx * dt;
+  s.y += s.vy * dt;
+
+  // Clamp inside the arena (leave a small margin and respect the playfield left wall).
+  const margin = SHIP.radius + 8;
+  if (s.x < margin)              { s.x = margin;              s.vx = 0; }
+  if (s.x > ARENA_W * 0.55)      { s.x = ARENA_W * 0.55;      s.vx = 0; }
+  if (s.y < margin)              { s.y = margin;              s.vy = 0; }
+  if (s.y > ARENA_H - margin)    { s.y = ARENA_H - margin;    s.vy = 0; }
+
+  s.cooldown = Math.max(0, s.cooldown - dt);
+  s.iframes  = Math.max(0, s.iframes - dt);
+  s.muzzle   = Math.max(0, s.muzzle - dt);
+
+  if (fire && s.cooldown === 0) {
+    fireShot();
+    s.cooldown = SHIP.fireCooldown;
+    s.muzzle = 0.12;
+    SFX.fire();
+  }
+
+  // Engine trail: emit a small particle when moving.
+  const speedNow = Math.hypot(s.vx, s.vy);
+  if (speedNow > 30 && Math.random() < 0.85) {
+    state.particles.push({
+      x: s.x - SHIP.radius * 0.5 + (Math.random()-0.5) * 4,
+      y: s.y + (Math.random()-0.5) * 6,
+      vx: -s.vx * 0.18 - 30 - Math.random() * 30,
+      vy: -s.vy * 0.18 + (Math.random()-0.5) * 30,
+      life: 0.45, maxLife: 0.45,
+      size: 3 + Math.random() * 2,
+      color: 'rgba(245,200,66,'
+    });
+  }
+}
+
+/* ---------- SHOTS ---------- */
+function fireShot() {
+  state.shots.push({
+    x: state.ship.x + SHIP.radius + 4,
+    y: state.ship.y,
+    vx: SHOT.speed,
+    vy: 0,
+    life: SHOT.life,
+    reflected: false,
+    weakened: false,
+    passedBubbles: new Set(),  // ids already passed (transparent/translucent)
+    bounceCount: 0,
+    reflectCooldowns: {}        // bubbleId → elapsed-time until this bubble can re-reflect this shot
+  });
+}
+
+const BOUNCE_LIMIT = 4;
+const REFLECT_COOLDOWN_SEC = 0.25; // ignore same-bubble re-hits within this window
+
+function updateShots(dt) {
+  for (const sh of state.shots) {
+    sh.x += sh.vx * dt;
+    sh.y += sh.vy * dt;
+    sh.life -= dt;
+    // Shot trail particle - more vivid for reflected shots.
+    if (Math.random() < 0.8) {
+      state.particles.push({
+        x: sh.x + (Math.random()-0.5) * 2,
+        y: sh.y + (Math.random()-0.5) * 2,
+        vx: -sh.vx * 0.05 + (Math.random()-0.5) * 20,
+        vy: -sh.vy * 0.05 + (Math.random()-0.5) * 20,
+        life: 0.3, maxLife: 0.3,
+        size: 2.2,
+        color: sh.reflected ? 'rgba(255,80,110,' : 'rgba(255,233,138,'
+      });
+    }
+  }
+  // Remove off-arena or expired shots.
+  state.shots = state.shots.filter(sh =>
+    sh.life > 0 &&
+    sh.x > -20 && sh.x < ARENA_W + 20 &&
+    sh.y > -20 && sh.y < ARENA_H + 20
+  );
+}
+
+function updateParticles(dt) {
+  for (const p of state.particles) {
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.life -= dt;
+  }
+  state.particles = state.particles.filter(p => p.life > 0);
+
+  for (const r of state.rings) {
+    r.life -= dt;
+    r.radius += r.speed * dt;
+  }
+  state.rings = state.rings.filter(r => r.life > 0);
+
+  if (state.shake > 0) {
+    state.shake = Math.max(0, state.shake - dt * 30);
+  }
+}
+
+/* ---------- COLLISIONS / MATERIAL INTERACTIONS ---------- */
+function dist2(ax, ay, bx, by) {
+  const dx = ax - bx, dy = ay - by;
+  return dx*dx + dy*dy;
+}
+
+function bubbleId(b) {
+  // Stable identifier from coordinates (bubbles are static).
+  return b.type + ':' + b.x + ',' + b.y;
+}
+
+function handleShotBubbleCollisions() {
+  for (const sh of state.shots) {
+    for (const b of state.bubbles) {
+      if (b.dead) continue;
+      const id = bubbleId(b);
+      const rr = (b.r + SHOT.radius);
+      if (dist2(sh.x, sh.y, b.x, b.y) > rr * rr) continue;
+
+      if (b.type === 'transparent') {
+        if (sh.passedBubbles.has(id)) continue;
+        sh.passedBubbles.add(id);
+        b.flash = 0.4;
+        addScore(10);
+        state.energy.transmit += 10;
+        showFeedback('transparent');
+        setLastInteraction('Transparent Bubble', 'Transmitted',
+          'Most light energy passed through.', 'transmit');
+        state.counts.transparent += 1;
+        SFX.transparent();
+        advanceTutorialOn('transparent');
+      }
+      else if (b.type === 'translucent') {
+        if (sh.passedBubbles.has(id)) continue;
+        sh.passedBubbles.add(id);
+        b.flash = 0.4;
+        // Scatter: nudge shot direction slightly.
+        const angle = (Math.random() - 0.5) * 0.6;
+        const speed = Math.hypot(sh.vx, sh.vy) * 0.78; // weakened
+        const baseAng = Math.atan2(sh.vy, sh.vx) + angle;
+        sh.vx = Math.cos(baseAng) * speed;
+        sh.vy = Math.sin(baseAng) * speed;
+        sh.weakened = true;
+        addScore(4);
+        state.energy.transmit += 4;
+        state.energy.reflect  += 1; // scatter counts as a little energy redirected
+        showFeedback('translucent');
+        setLastInteraction('Translucent Bubble', 'Scattered Transmission',
+          'Light passed through but spread out.', 'transmit');
+        state.counts.translucent += 1;
+        SFX.translucent();
+        advanceTutorialOn('translucent');
+      }
+      else if (b.type === 'opaque') {
+        // Absorb: shot is consumed, bubble charges.
+        sh.life = 0;
+        b.absorbed = (b.absorbed || 0) + 1;
+        b.flash = 0.5;
+        addScore(6);
+        state.energy.absorb += 10;
+        showFeedback('opaque');
+        setLastInteraction('Opaque Bubble', 'Absorbed',
+          'Energy was absorbed and stored in the material.', 'absorb');
+        state.counts.opaque += 1;
+        SFX.opaque();
+        advanceTutorialOn('opaque');
+        if (b.absorbed >= b.capacity) {
+          b.dead = true;
+          b.overloadAt = state.elapsed;
+          state.cleared += 1;
+          addScore(40);
+          state.energy.absorb += 20;
+          showFeedback('overload');
+          setLastInteraction('Opaque Bubble', 'Overloaded',
+            'Stored energy released - mostly as heat. Energy was not destroyed.', 'absorb');
+          spawnOverload(b.x, b.y);
+          SFX.overload();
+        }
+        break;
+      }
+      else if (b.type === 'mixed') {
+        // Credit the FULL ratio amounts to the Energy Result so the science
+        // panel reflects what the material actually does. The visual outcome
+        // is then chosen by a weighted roll for gameplay variety.
+        // (Uses the outer `id` already computed from bubbleId(b) above.)
+        if (sh.passedBubbles.has(id)) continue;
+        sh.passedBubbles.add(id);
+
+        const R = b.ratios.reflect, A = b.ratios.absorb, T = b.ratios.transmit;
+        state.energy.reflect  += Math.round(R * 100);
+        state.energy.absorb   += Math.round(A * 100);
+        state.energy.transmit += Math.round(T * 100);
+        state.counts.mixed += 1;
+        addScore(8);
+        b.flash = 0.5;
+
+        // Weighted roll for the visible outcome.
+        const roll = Math.random();
+        let outcome;
+        if (roll < R) outcome = 'reflect';
+        else if (roll < R + A) outcome = 'absorb';
+        else outcome = 'transmit';
+
+        const dominant = (T >= A && T >= R) ? 'transmitted'
+                       : (A >= R) ? 'absorbed' : 'reflected';
+        const dominantPct = Math.round(Math.max(T, A, R) * 100);
+        const matName = b.material || 'Mixed material';
+
+        // Last Interaction card describes the material's overall behavior,
+        // not the per-shot roll, so students see the consistent science story.
+        const dominantTone = (dominant === 'transmitted') ? 'transmit'
+                            : (dominant === 'absorbed') ? 'absorb' : 'reflect';
+        const dominantLabel = dominant.charAt(0).toUpperCase() + dominant.slice(1);
+        const level2Science = 'About ' + dominantPct + '% of incoming energy ' +
+                              dominant + ' from this material.';
+        const genericScience = 'Real materials can reflect, absorb, and transmit energy at the same time.';
+        setLastInteraction(
+          matName,
+          'Mostly ' + dominantLabel,
+          state.level === 2 ? level2Science : genericScience,
+          dominantTone
+        );
+        // Level 1's "first mixed bubble" discovery moment stays in Level 1 only.
+        // Level 2 swaps it for the per-material prediction result banner below.
+        if (state.level !== 2) triggerDiscovery();
+
+        // Material Lab tracking - mark this named material as tested.
+        if (b.material && !state.tested[b.material]) {
+          state.tested[b.material] = true;
+          const domKey = (dominant === 'transmitted') ? 'transmit'
+                        : (dominant === 'absorbed') ? 'absorb' : 'reflect';
+          state.results[b.material] = domKey;
+          if (state.level === 2 && state.predictions[b.material]) {
+            showPredictionResult(b.material, state.predictions[b.material], domKey);
+          }
+          renderLabTracker();
+          if (state.level === 2) checkLevel2Completion();
+        }
+
+        if (outcome === 'transmit') {
+          // Shot passes through, slight weakening to read as a real surface.
+          const speed = Math.hypot(sh.vx, sh.vy) * 0.92;
+          const ang = Math.atan2(sh.vy, sh.vx);
+          sh.vx = Math.cos(ang) * speed;
+          sh.vy = Math.sin(ang) * speed;
+          SFX.transparent();
+          showFeedbackText(`${matName}: most energy ${dominant} (~${dominantPct}%). Some reflected, some absorbed.`, 'transmit');
+        }
+        else if (outcome === 'absorb') {
+          sh.life = 0;
+          b.absorbed = (b.absorbed || 0) + 1;
+          SFX.opaque();
+          showFeedbackText(`${matName}: most energy absorbed. The energy did not disappear - it stored in the material.`, 'absorb');
+        }
+        else { // reflect
+          const cdEnd = sh.reflectCooldowns[id] || 0;
+          if (state.elapsed < cdEnd) {
+            // Recently bounced this shot off this same bubble; just pass through.
+            continue;
+          }
+          sh.reflectCooldowns[id] = state.elapsed + REFLECT_COOLDOWN_SEC;
+          if (!sh.reflected) {
+            sh.reflected = true;
+            sh.vx = -Math.abs(sh.vx);
+            const offset = (sh.y - b.y) / b.r;
+            sh.vy += offset * SHOT.speed * 0.5;
+            const sp = Math.hypot(sh.vx, sh.vy);
+            sh.vx = sh.vx / sp * SHOT.speed;
+            sh.vy = sh.vy / sp * SHOT.speed;
+            sh.life = Math.min(sh.life, 1.6);
+          } else {
+            sh.vx *= -1; sh.vy *= -1;
+          }
+          sh.bounceCount += 1;
+          state.counts.reflective += 1;
+          SFX.reflective();
+          showFeedbackText(`${matName}: some energy reflected this time. Mixed materials do all three.`, 'reflect');
+          if (sh.bounceCount > BOUNCE_LIMIT) {
+            spawnBounceSparkle(sh.x, sh.y);
+            sh.life = 0;
+          }
+        }
+        // NOTE: deliberately does NOT call advanceTutorialOn() - mixed bubbles
+        // should not interfere with the tutorial sequence.
+        break;
+      }
+      else if (b.type === 'reflective') {
+        // Per-shot cooldown so a shot can't get repeatedly counted against the same bubble
+        // while it's still inside the collision radius or pinging between two parallels.
+        const cdEnd = sh.reflectCooldowns[id] || 0;
+        if (state.elapsed < cdEnd) continue;
+        sh.reflectCooldowns[id] = state.elapsed + REFLECT_COOLDOWN_SEC;
+
+        if (sh.reflected) {
+          // Already reflected: bounce back along incoming direction.
+          sh.vx *= -1; sh.vy *= -1;
+        } else {
+          sh.reflected = true;
+          // Reflect horizontally (beam was coming from left).
+          sh.vx = -Math.abs(sh.vx);
+          // Add some vertical bounce based on impact point.
+          const offset = (sh.y - b.y) / b.r;
+          sh.vy += offset * SHOT.speed * 0.6;
+          // Renormalize to keep beam speed reasonable.
+          const sp = Math.hypot(sh.vx, sh.vy);
+          const target = SHOT.speed;
+          sh.vx = sh.vx / sp * target;
+          sh.vy = sh.vy / sp * target;
+          sh.life = Math.min(sh.life, 1.6);
+        }
+        sh.bounceCount += 1;
+        b.flash = 0.5;
+        addScore(3);
+        state.energy.reflect += 12;
+        showFeedback('reflective');
+        setLastInteraction('Reflective Bubble', 'Reflected',
+          'Energy changed direction and bounced back.', 'reflect');
+        state.counts.reflective += 1;
+        SFX.reflective();
+        advanceTutorialOn('reflective');
+
+        // Cap runaway loops: expire the shot with a small sparkle.
+        if (sh.bounceCount > BOUNCE_LIMIT) {
+          spawnBounceSparkle(sh.x, sh.y);
+          sh.life = 0;
+        }
+        break;
+      }
+    }
+  }
+}
+
+function handleShipDamage() {
+  const s = state.ship;
+  if (s.iframes > 0) return;
+  for (const sh of state.shots) {
+    if (!sh.reflected) continue;
+    const rr = (SHIP.radius + SHOT.radius);
+    if (dist2(sh.x, sh.y, s.x, s.y) < rr * rr) {
+      s.health = Math.max(0, s.health - SHOT.damage);
+      s.iframes = 0.7;
+      sh.life = 0;
+      state.shake = 14;
+      spawnImpact(s.x, s.y);
+      state.counts.hits += 1;
+      SFX.damage();
+      showFeedback('hit');
+      if (s.health <= 0) loseGame();
+      break;
+    }
+  }
+}
+
+/* ---------- SCORING / FEEDBACK ---------- */
+function addScore(n) { state.score += n; }
+
+let feedbackTimer = 0;
+let lastFeedbackKey = null;
+const feedbackEl = document.getElementById('feedback');
+function showFeedback(key) {
+  if (key === lastFeedbackKey && feedbackTimer > 1.2) return; // avoid spam
+  lastFeedbackKey = key;
+  feedbackTimer = 2.4;
+  const f = FEEDBACK[key];
+  feedbackEl.textContent = f.text;
+  feedbackEl.className = 'feedback show ' + f.tone;
+}
+function showFeedbackText(text, tone) {
+  // Always replace - mixed-material messages should not be deduped by key.
+  lastFeedbackKey = null;
+  feedbackTimer = 2.6;
+  feedbackEl.textContent = text;
+  feedbackEl.className = 'feedback show ' + (tone || 'transmit');
+}
+
+function tickFeedback(dt) {
+  if (feedbackTimer > 0) {
+    feedbackTimer -= dt;
+    if (feedbackTimer <= 0) feedbackEl.classList.remove('show');
+  }
+}
+
+/* ---------- LAST INTERACTION CARD ---------- */
+const lastInteractionEl = document.getElementById('lastInteraction');
+const liMaterial = document.getElementById('liMaterial');
+const liOutcome  = document.getElementById('liOutcome');
+const liScience  = document.getElementById('liScience');
+function setLastInteraction(material, outcome, science, tone) {
+  liMaterial.textContent = material;
+  liOutcome.textContent  = outcome;
+  liScience.textContent  = science;
+  lastInteractionEl.classList.remove('tone-transmit', 'tone-absorb', 'tone-reflect');
+  if (tone) lastInteractionEl.classList.add('tone-' + tone);
+}
+function resetLastInteraction() {
+  setLastInteraction('- - -', 'Awaiting fire', 'Fire a pulse to see how light energy interacts with a material.', null);
+}
+
+/* ---------- DISCOVERY BANNER (one-shot per run) ---------- */
+const discoveryBanner = document.getElementById('discoveryBanner');
+let discoveryShown = false;
+let discoveryTimer = 0;
+const DISCOVERY_DEFAULT_TAG = '⚡ NEW DISCOVERY';
+const DISCOVERY_DEFAULT_HTML = '<b>Real materials usually do all three.</b><br>They can reflect, absorb, and transmit energy at the same time.';
+function triggerDiscovery() {
+  if (discoveryShown) return;
+  discoveryShown = true;
+  // Reset banner content in case it was repurposed by showBanner() earlier.
+  discoveryBanner.querySelector('.discovery-tag').innerHTML = DISCOVERY_DEFAULT_TAG;
+  discoveryBanner.querySelector('.discovery-text').innerHTML = DISCOVERY_DEFAULT_HTML;
+  discoveryBanner.classList.add('show');
+  discoveryTimer = 5.2;
+}
+function tickDiscovery(dt) {
+  if (discoveryTimer > 0) {
+    discoveryTimer -= dt;
+    if (discoveryTimer <= 0) discoveryBanner.classList.remove('show');
+  }
+}
+function resetDiscovery() {
+  discoveryShown = false;
+  discoveryTimer = 0;
+  discoveryBanner.classList.remove('show');
+}
+
+/* Reuse the discovery banner for the Investigation Complete moment. */
+function showBanner(tagHTML, textHTML, dur) {
+  discoveryBanner.querySelector('.discovery-tag').innerHTML = tagHTML;
+  discoveryBanner.querySelector('.discovery-text').innerHTML = textHTML;
+  discoveryBanner.classList.add('show');
+  discoveryTimer = dur || 5.2;
+}
+
+/* ---------- MATERIAL LAB TRACKER ---------- */
+const labTrackerSection = document.getElementById('labTrackerSection');
+const missionProgressSection = document.getElementById('missionProgressSection');
+const labTrackerEl = document.getElementById('labTracker');
+
+function renderLabTracker() {
+  if (!state) return;
+  const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '- - -';
+  const html = LEVEL2_MATERIALS.map(m => {
+    const done = !!state.tested[m.name];
+    const r = Math.round(m.ratios.reflect  * 100);
+    const a = Math.round(m.ratios.absorb   * 100);
+    const t = Math.round(m.ratios.transmit * 100);
+    const predKey = state.predictions[m.name] || null;
+    const resKey  = state.results[m.name] || null;
+    const predText = predKey ? cap(predKey) : '- - -';
+    const resText  = resKey  ? cap(resKey)  : '- - -';
+    let mark = '';
+    if (done && predKey) {
+      mark = (predKey === resKey)
+        ? ' <span class="track-mark-ok">✓</span>'
+        : ' <span class="track-mark-no">✗</span>';
+    }
+    return `<div class="track-row ${done ? 'done' : ''}">
+              <span class="track-box">${done ? '✓' : ''}</span>
+              <span class="track-name">${m.name}</span>
+              <span class="track-ratio">R${r} A${a} T${t}</span>
+            </div>
+            <div class="track-sub">
+              <span class="track-pred">Prediction: ${predText}</span>
+              <span class="track-res">Result: ${resText}${mark}</span>
+            </div>`;
+  }).join('');
+  labTrackerEl.innerHTML = html;
+}
+
+/* ---------- LEVEL TRANSITION ---------- */
+const overlayLevel2Intro = document.getElementById('overlayLevel2Intro');
+
+function showLevel2Intro() {
+  state.transitionPending = true;
+  running = false;
+  overlayLevel2Intro.classList.remove('hidden');
+}
+
+function enterLevel2() {
+  if (!state) return;
+  overlayLevel2Intro.classList.add('hidden');
+
+  state.level = 2;
+  state.transitionPending = false;
+  state.bubbles = buildLevel2();
+  state.shots = [];
+  state.particles = [];
+  state.rings = [];
+  state.shake = 0;
+  state.requiredOpaque = 0;     // not used in Level 2
+  state.cleared = 0;
+  state.tested = {};
+  state.predictions = {};
+  state.results = {};
+  state.predictionsCorrect = 0;
+  state.awaitingPrediction = false;
+  state.pendingPredictionMaterial = null;
+  overlayPredict.classList.add('hidden');
+  state.level2Complete = false;
+  state.over = false;
+  state.won = false;
+
+  // Park the ship back on the left so the new corridor reads fresh.
+  state.ship.x = 130;
+  state.ship.y = ARENA_H / 2;
+  state.ship.vx = 0;
+  state.ship.vy = 0;
+  state.ship.cooldown = 0;
+  state.ship.iframes = 0.6;
+
+  // Tutorial is already past the mission stage; refresh goal copy for Level 2.
+  setMissionGoalForLevel2();
+
+  // Swap side-panel sections.
+  missionProgressSection.classList.add('hidden-section');
+  labTrackerSection.classList.remove('hidden-section');
+  renderLabTracker();
+
+  // Reset feedback + interaction card so the new level reads clean.
+  feedbackEl.classList.remove('show');
+  feedbackTimer = 0;
+  resetLastInteraction();
+  resetDiscovery();
+
+  // Resume the loop.
+  running = true;
+  lastTime = performance.now();
+  requestAnimationFrame(loop);
+  updateHUD();
+}
+
+function setMissionGoalForLevel2() {
+  goalIcon.textContent = '🔬';
+  goalTitle.innerHTML  = 'Material Lab:';
+  goalBody.innerHTML   = 'Test <span class="goal-num">4</span> materials and compare how energy moves through them.';
+  btnSkipTut.classList.add('hidden');
+}
+
+/* ---------- LEVEL 2 PREDICTIONS ---------- */
+const overlayPredict = document.getElementById('overlayPredict');
+const predictMaterialEl = document.getElementById('predictMaterial');
+const PREDICT_KEYS = { reflect: 'Reflect', absorb: 'Absorb', transmit: 'Transmit' };
+const SHIP_PREDICT_RANGE = 220;
+const SHOT_PREDICT_RANGE = 90;
+
+function dominantKeyOf(mat) {
+  const R = mat.ratios.reflect, A = mat.ratios.absorb, T = mat.ratios.transmit;
+  if (T >= A && T >= R) return 'transmit';
+  if (A >= R) return 'absorb';
+  return 'reflect';
+}
+
+function showPredictionOverlay(materialName) {
+  state.awaitingPrediction = true;
+  state.pendingPredictionMaterial = materialName;
+  predictMaterialEl.textContent = materialName;
+  overlayPredict.classList.remove('hidden');
+}
+
+function recordPrediction(predKey) {
+  if (!state.awaitingPrediction) return;
+  const matName = state.pendingPredictionMaterial;
+  if (!matName) return;
+  state.predictions[matName] = predKey;
+  state.awaitingPrediction = false;
+  state.pendingPredictionMaterial = null;
+  overlayPredict.classList.add('hidden');
+  renderLabTracker();
+  // Avoid a dt spike when the simulation resumes.
+  lastTime = performance.now();
+}
+
+function maybePromptPrediction() {
+  if (state.level !== 2) return;
+  if (state.awaitingPrediction) return;
+  for (const b of state.bubbles) {
+    if (b.type !== 'mixed' || !b.material) continue;
+    if (state.predictions[b.material]) continue;
+    const dShip = dist2(state.ship.x, state.ship.y, b.x, b.y);
+    const rShip = b.r + SHIP_PREDICT_RANGE;
+    if (dShip < rShip * rShip) { showPredictionOverlay(b.material); return; }
+    for (const sh of state.shots) {
+      const rShot = b.r + SHOT_PREDICT_RANGE;
+      if (dist2(sh.x, sh.y, b.x, b.y) < rShot * rShot) {
+        showPredictionOverlay(b.material);
+        return;
+      }
+    }
+  }
+}
+
+function showPredictionResult(materialName, predKey, domKey) {
+  const pastTense = (domKey === 'transmit') ? 'transmitted'
+                   : (domKey === 'absorb')  ? 'absorbed' : 'reflected';
+  const correct = predKey === domKey;
+  if (correct) state.predictionsCorrect += 1;
+  const tag = correct ? '✓ PREDICTION CORRECT' : '✗ PREDICTION INCORRECT';
+  const body = correct
+    ? `<b>Nice call!</b> ${materialName} mostly ${pastTense} energy.`
+    : `<b>Not this time.</b> ${materialName} mostly ${pastTense} energy.`;
+  showBanner(tag, body, 2.4);
+}
+
+/* Wire prediction buttons (delegation on the overlay container). */
+overlayPredict.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-pred]');
+  if (!btn) return;
+  recordPrediction(btn.getAttribute('data-pred'));
+});
+
+function checkLevel2Completion() {
+  if (state.level2Complete) return;
+  const all = LEVEL2_MATERIALS.every(m => state.tested[m.name]);
+  if (!all) return;
+  state.level2Complete = true;
+  showBanner(
+    '🔬 INVESTIGATION COMPLETE',
+    '<b>Different materials move energy in different proportions.</b><br>You tested all four samples.',
+    5.5
+  );
+  // Brief delay so the student sees the banner before the end overlay lands.
+  setTimeout(() => {
+    if (state && state.level === 2 && !state.over) winLevel2();
+  }, 1800);
+}
+
+/* ---------- TUTORIAL ---------- */
+const goalIcon = document.getElementById('goalIcon');
+const goalTitle = document.getElementById('goalTitle');
+const goalBody = document.getElementById('goalBody');
+const btnSkipTut = document.getElementById('btnSkipTut');
+
+function currentTutorialStage() {
+  if (!state) return null;
+  return TUTORIAL_STAGES[Math.min(state.tutorialIndex, TUTORIAL_STAGES.length - 1)];
+}
+
+function renderTutorialUI() {
+  const stage = currentTutorialStage();
+  if (!stage) return;
+  goalIcon.textContent = stage.icon;
+  goalTitle.innerHTML  = stage.titleHTML;
+  goalBody.innerHTML   = stage.bodyHTML;
+  // Hide skip button once we reach the mission stage.
+  btnSkipTut.classList.toggle('hidden', stage.id === 'mission');
+}
+
+function advanceTutorialOn(materialType) {
+  const stage = currentTutorialStage();
+  if (!stage || !stage.target) return;
+  if (stage.target === materialType) {
+    state.tutorialIndex = Math.min(state.tutorialIndex + 1, TUTORIAL_STAGES.length - 1);
+    renderTutorialUI();
+  }
+}
+
+function skipTutorial() {
+  if (!state) return;
+  state.tutorialIndex = TUTORIAL_STAGES.length - 1; // jump to "mission"
+  state.tutorialSkipped = true;
+  renderTutorialUI();
+}
+
+btnSkipTut.addEventListener('click', skipTutorial);
+
+/* ---------- PAUSE ---------- */
+const pauseOverlay = document.getElementById('pauseOverlay');
+function togglePause() {
+  if (!state || state.over) return;
+  state.paused = !state.paused;
+  pauseOverlay.classList.toggle('show', state.paused);
+  if (!state.paused) lastTime = performance.now(); // avoid huge dt spike on resume
+  renderPauseButton();
+}
+function clearPause() {
+  if (state) state.paused = false;
+  pauseOverlay.classList.remove('show');
+  renderPauseButton();
+}
+
+/* ---------- EFFECTS ---------- */
+function spawnOverload(x, y) {
+  // Expanding ring shockwave - "stored energy released".
+  state.rings.push({ x, y, radius: 10, speed: 320, life: 0.7, maxLife: 0.7, color: 'rgba(255,180,90,' });
+  state.rings.push({ x, y, radius: 4,  speed: 180, life: 0.55, maxLife: 0.55, color: 'rgba(255,230,180,' });
+  // Particle burst in absorb-orange.
+  for (let i = 0; i < 26; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp  = 120 + Math.random() * 260;
+    state.particles.push({
+      x, y,
+      vx: Math.cos(ang) * sp,
+      vy: Math.sin(ang) * sp,
+      life: 0.55 + Math.random() * 0.35,
+      maxLife: 0.9,
+      size: 2 + Math.random() * 3,
+      color: 'rgba(255,180,90,'
+    });
+  }
+  state.shake = 10;
+}
+
+function spawnBounceSparkle(x, y) {
+  // Subtle teal sparkle marking a shot that hit the bounce limit.
+  state.rings.push({ x, y, radius: 3, speed: 180, life: 0.32, maxLife: 0.32, color: 'rgba(59,200,232,' });
+  for (let i = 0; i < 8; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp  = 60 + Math.random() * 120;
+    state.particles.push({
+      x, y,
+      vx: Math.cos(ang) * sp,
+      vy: Math.sin(ang) * sp,
+      life: 0.3 + Math.random() * 0.15,
+      maxLife: 0.45,
+      size: 1.5 + Math.random() * 1.5,
+      color: 'rgba(180,235,250,'
+    });
+  }
+}
+
+function spawnImpact(x, y) {
+  state.rings.push({ x, y, radius: 6, speed: 260, life: 0.45, maxLife: 0.45, color: 'rgba(255,80,110,' });
+  for (let i = 0; i < 14; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp  = 80 + Math.random() * 200;
+    state.particles.push({
+      x, y,
+      vx: Math.cos(ang) * sp,
+      vy: Math.sin(ang) * sp,
+      life: 0.4 + Math.random() * 0.2,
+      maxLife: 0.6,
+      size: 2 + Math.random() * 2,
+      color: 'rgba(255,120,140,'
+    });
+  }
+}
+
+/* ---------- RENDER ---------- */
+function drawBackground() {
+  // Faint grid for "lab corridor" feel.
+  ctx.fillStyle = '#06101c';
+  ctx.fillRect(0, 0, ARENA_W, ARENA_H);
+
+  ctx.strokeStyle = COLORS.grid;
+  ctx.lineWidth = 1;
+  const step = 80;
+  for (let x = 0; x < ARENA_W; x += step) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ARENA_H); ctx.stroke();
+  }
+  for (let y = 0; y < ARENA_H; y += step) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(ARENA_W, y); ctx.stroke();
+  }
+
+  // Player zone boundary (subtle).
+  ctx.strokeStyle = COLORS.wall;
+  ctx.setLineDash([8, 10]);
+  ctx.beginPath();
+  ctx.moveTo(ARENA_W * 0.55, 20);
+  ctx.lineTo(ARENA_W * 0.55, ARENA_H - 20);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // End gate on the right.
+  const gx = ARENA_W - 36;
+  const grad = ctx.createLinearGradient(gx - 30, 0, gx + 6, 0);
+  grad.addColorStop(0, 'rgba(46,204,113,0)');
+  grad.addColorStop(1, 'rgba(46,204,113,0.45)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(gx - 30, 30, 36, ARENA_H - 60);
+
+  ctx.fillStyle = COLORS.gate;
+  ctx.font = 'bold 16px Nunito, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.save();
+  ctx.translate(gx - 12, ARENA_H / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('END GATE', 0, 0);
+  ctx.restore();
+}
+
+function drawShip() {
+  const s = state.ship;
+  ctx.save();
+  // Glow
+  ctx.shadowColor = COLORS.shipGlow;
+  ctx.shadowBlur = 20;
+  // Ship body: a small triangle photon ship.
+  ctx.translate(s.x, s.y);
+  ctx.fillStyle = (s.iframes > 0 && Math.floor(s.iframes * 20) % 2 === 0)
+    ? 'rgba(245,200,66,0.45)' : COLORS.ship;
+  ctx.beginPath();
+  ctx.moveTo(SHIP.radius + 4, 0);
+  ctx.lineTo(-SHIP.radius * 0.8, -SHIP.radius * 0.85);
+  ctx.lineTo(-SHIP.radius * 0.4, 0);
+  ctx.lineTo(-SHIP.radius * 0.8, SHIP.radius * 0.85);
+  ctx.closePath();
+  ctx.fill();
+  // Cockpit dot
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.beginPath();
+  ctx.arc(2, 0, 3.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Muzzle flash: brief bright burst at the nose.
+  if (s.muzzle > 0) {
+    const a = s.muzzle / 0.12;
+    ctx.shadowColor = 'rgba(255,233,138,0.9)';
+    ctx.shadowBlur = 24 * a;
+    ctx.fillStyle = `rgba(255,250,210,${0.85 * a})`;
+    ctx.beginPath();
+    ctx.arc(SHIP.radius + 8, 0, 7 * (0.6 + a * 0.6), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = `rgba(255,210,90,${0.55 * a})`;
+    ctx.beginPath();
+    ctx.arc(SHIP.radius + 14, 0, 4 * a, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawParticles() {
+  for (const p of state.particles) {
+    const a = Math.max(0, p.life / p.maxLife);
+    ctx.fillStyle = p.color + (a * 0.85).toFixed(3) + ')';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * (0.5 + a * 0.5), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawRings() {
+  for (const r of state.rings) {
+    const a = Math.max(0, r.life / r.maxLife);
+    ctx.strokeStyle = r.color + (a * 0.9).toFixed(3) + ')';
+    ctx.lineWidth = 3 + a * 2;
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+function drawShots() {
+  for (const sh of state.shots) {
+    ctx.save();
+    const color = sh.reflected ? COLORS.reflect : COLORS.shot;
+    const glow  = sh.reflected ? 'rgba(59,200,232,0.6)' : COLORS.shotGlow;
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = 14;
+    ctx.fillStyle = color;
+    const r = sh.weakened ? SHOT.radius * 0.78 : SHOT.radius;
+    ctx.beginPath();
+    ctx.arc(sh.x, sh.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    // Trail
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.arc(sh.x - sh.vx * 0.012, sh.y - sh.vy * 0.012, r * 0.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawBubble(b) {
+  const flash = b.flash || 0;
+  const pulse = 1 + Math.sin(state.elapsed * 2.4 + b.x * 0.01) * 0.04;
+  ctx.save();
+
+  if (b.type === 'transparent') {
+    // Clean glass: bright crisp ring, near-empty fill, a single shine highlight.
+    ctx.shadowColor = 'rgba(120,240,170,0.65)';
+    ctx.shadowBlur = 20 + flash * 30;
+    ctx.fillStyle = 'rgba(46,204,113,0.05)';
+    ctx.strokeStyle = 'rgba(140,250,190,0.95)';
+    ctx.lineWidth = 2 + flash * 2;
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r * pulse, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    // Glass shine highlight: clean, sharp, single arc.
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(230,255,240,0.85)';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r * 0.72, Math.PI * 1.15, Math.PI * 1.55);
+    ctx.stroke();
+    // Tiny sparkle dot
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.beginPath();
+    ctx.arc(b.x - b.r * 0.42, b.y - b.r * 0.42, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  else if (b.type === 'translucent') {
+    // Foggy frosted: soft outer halo, milky fill, dense scatter dots, no shine.
+    // Outer halo conveys diffusion.
+    ctx.shadowColor = 'rgba(155,227,182,0.5)';
+    ctx.shadowBlur = 26 + flash * 26;
+    ctx.fillStyle = 'rgba(155,227,182,0.10)';
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r * pulse * 1.18, 0, Math.PI * 2); ctx.fill();
+    // Milky body.
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = 'rgba(205,232,215,0.42)';
+    ctx.strokeStyle = 'rgba(190,225,205,0.55)';
+    ctx.setLineDash([4, 5]);
+    ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r * pulse, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.setLineDash([]);
+    // Dense scatter stipple - more dots than before, larger spread, soft.
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(240,255,245,0.55)';
+    const seed = (b.x * 13 + b.y * 7) % 1000;
+    for (let i = 0; i < 28; i++) {
+      const t = (i / 28) * Math.PI * 2 + seed * 0.001;
+      const rr = (i % 2 === 0) ? b.r * 0.28 : b.r * 0.62;
+      const dx = Math.cos(t * 1.3 + seed) * rr;
+      const dy = Math.sin(t * 1.7 + seed) * rr;
+      ctx.beginPath(); ctx.arc(b.x + dx, b.y + dy, 1.7, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  else if (b.type === 'opaque') {
+    const chargePct = (b.absorbed || 0) / b.capacity;
+    ctx.shadowColor = 'rgba(230,126,34,0.55)';
+    ctx.shadowBlur = 14 + flash * 30 + chargePct * 18;
+    // Solid fill that gets brighter as it charges.
+    const fillAlpha = 0.55 + chargePct * 0.4;
+    ctx.fillStyle = `rgba(230,126,34,${fillAlpha})`;
+    ctx.strokeStyle = 'rgba(230,126,34,0.95)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    // Charge ring
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,221,170,0.95)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r + 6, -Math.PI/2, -Math.PI/2 + Math.PI * 2 * chargePct);
+    ctx.stroke();
+  }
+  else if (b.type === 'reflective') {
+    ctx.shadowColor = 'rgba(59,200,232,0.6)';
+    ctx.shadowBlur = 16 + flash * 30;
+    const grad = ctx.createRadialGradient(b.x - b.r*0.3, b.y - b.r*0.3, 4, b.x, b.y, b.r);
+    grad.addColorStop(0, 'rgba(220,250,255,0.95)');
+    grad.addColorStop(0.5, 'rgba(59,200,232,0.65)');
+    grad.addColorStop(1, 'rgba(26,90,120,0.85)');
+    ctx.fillStyle = grad;
+    ctx.strokeStyle = 'rgba(180,235,250,0.9)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r * pulse, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+  }
+  else if (b.type === 'mixed') {
+    // Three-color conic-ish fill via concentric arcs proportional to ratios.
+    const R = b.ratios.reflect, A = b.ratios.absorb, T = b.ratios.transmit;
+    ctx.shadowColor = 'rgba(245,200,66,0.35)';
+    ctx.shadowBlur = 14 + flash * 24;
+    // Pie wedges show the ratio composition.
+    const wedges = [
+      { v: R, color: 'rgba(59,200,232,0.75)' },   // reflect (teal)
+      { v: A, color: 'rgba(230,126,34,0.75)' },   // absorb (orange)
+      { v: T, color: 'rgba(46,204,113,0.75)' }    // transmit (green)
+    ];
+    let start = -Math.PI / 2;
+    for (const w of wedges) {
+      const end = start + w.v * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.arc(b.x, b.y, b.r, start, end);
+      ctx.closePath();
+      ctx.fillStyle = w.color;
+      ctx.fill();
+      start = end;
+    }
+    // Outer rim and inner darken so it reads as a mixed material, not a pie chart.
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(245,200,66,0.85)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.stroke();
+    // Subtle inner glass overlay.
+    const overlay = ctx.createRadialGradient(b.x - b.r*0.3, b.y - b.r*0.3, 4, b.x, b.y, b.r);
+    overlay.addColorStop(0, 'rgba(255,255,255,0.25)');
+    overlay.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = overlay;
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+  }
+
+  ctx.restore();
+
+  if (b.flash) b.flash = Math.max(0, b.flash - 0.03);
+}
+
+const BUBBLE_LABELS = {
+  transparent: 'TRANSPARENT',
+  translucent: 'TRANSLUCENT',
+  opaque:      'OPAQUE',
+  reflective:  'REFLECTIVE'
+};
+const BUBBLE_LABEL_COLOR = {
+  transparent: 'rgba(46,204,113,0.85)',
+  translucent: 'rgba(155,227,182,0.85)',
+  opaque:      'rgba(230,126,34,0.95)',
+  reflective:  'rgba(180,235,250,0.95)'
+};
+function drawBubbleLabel(b) {
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0,0,0,0.75)';
+  ctx.shadowBlur = 4;
+
+  if (b.type === 'mixed') {
+    // Material name above the bubble.
+    ctx.font = '800 11px Nunito, sans-serif';
+    ctx.fillStyle = 'rgba(245,200,66,0.95)';
+    ctx.fillText((b.material || 'MIXED').toUpperCase(), b.x, b.y - b.r - 20);
+
+    // Colored ratio readout: R15 A20 T65
+    const R = Math.round(b.ratios.reflect  * 100);
+    const A = Math.round(b.ratios.absorb   * 100);
+    const T = Math.round(b.ratios.transmit * 100);
+    ctx.font = '800 11px Nunito, sans-serif';
+    const parts = [
+      { txt: 'R' + R, color: 'rgba(59,200,232,0.95)' },
+      { txt: 'A' + A, color: 'rgba(230,126,34,0.95)' },
+      { txt: 'T' + T, color: 'rgba(46,204,113,0.95)' }
+    ];
+    // Measure widths so we can place each part with a small gap.
+    const gap = 6;
+    const widths = parts.map(p => { ctx.fillStyle = p.color; return ctx.measureText(p.txt).width; });
+    const total = widths.reduce((a, w) => a + w, 0) + gap * (parts.length - 1);
+    let cx = b.x - total / 2;
+    ctx.textAlign = 'left';
+    for (let i = 0; i < parts.length; i++) {
+      ctx.fillStyle = parts[i].color;
+      ctx.fillText(parts[i].txt, cx, b.y - b.r - 8);
+      cx += widths[i] + gap;
+    }
+  } else {
+    ctx.font = '700 11px Nunito, sans-serif';
+    ctx.fillStyle = BUBBLE_LABEL_COLOR[b.type];
+    ctx.fillText(BUBBLE_LABELS[b.type], b.x, b.y - b.r - 8);
+  }
+  ctx.restore();
+}
+
+function drawTutorialPointers() {
+  const stage = currentTutorialStage();
+  if (!stage || !stage.target) return;
+  const color = {
+    transparent: 'rgba(46,204,113,',
+    translucent: 'rgba(155,227,182,',
+    opaque:      'rgba(230,126,34,',
+    reflective:  'rgba(59,200,232,'
+  }[stage.target];
+  const pulse = 0.6 + Math.sin(state.elapsed * 4) * 0.4;
+  for (const b of state.bubbles) {
+    if (b.dead || b.type !== stage.target) continue;
+    // Outer pulsing target ring.
+    ctx.save();
+    ctx.strokeStyle = color + (0.4 + pulse * 0.45).toFixed(3) + ')';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([6, 6]);
+    ctx.lineDashOffset = -state.elapsed * 30;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r + 12 + pulse * 4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Small arrow above the bubble.
+    const ay = b.y - b.r - 22 - pulse * 4;
+    ctx.fillStyle = color + '0.95)';
+    ctx.beginPath();
+    ctx.moveTo(b.x, ay + 8);
+    ctx.lineTo(b.x - 6, ay - 2);
+    ctx.lineTo(b.x + 6, ay - 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawBubbles() {
+  for (const b of state.bubbles) {
+    if (b.dead) continue;
+    drawBubble(b);
+    drawBubbleLabel(b);
+  }
+  drawTutorialPointers();
+}
+
+function render() {
+  ctx.save();
+  // Screen shake offset
+  if (state.shake > 0) {
+    ctx.translate((Math.random()-0.5) * state.shake, (Math.random()-0.5) * state.shake);
+  }
+  drawBackground();
+  drawBubbles();
+  drawRings();
+  drawShots();
+  drawParticles();
+  drawShip();
+  ctx.restore();
+}
+
+/* ---------- HUD UPDATE ---------- */
+const hudScore       = document.getElementById('hudScore');
+const hudScoreLabel  = document.getElementById('hudScoreLabel');
+const hudHealth  = document.getElementById('hudHealth');
+const hudCleared = document.getElementById('hudCleared');
+const hudClearedLabel = document.getElementById('hudClearedLabel');
+const hudStatus  = document.getElementById('hudStatus');
+const dT = document.getElementById('dTransparent');
+const dL = document.getElementById('dTranslucent');
+const dO = document.getElementById('dOpaque');
+const dR = document.getElementById('dReflective');
+const dM = document.getElementById('dMixed');
+const dH = document.getElementById('dHits');
+const wpScoreVal = document.getElementById('wpScoreVal');
+const wpScoreBar = document.getElementById('wpScoreBar');
+const wpScoreRow = document.getElementById('wpScoreRow');
+const wpOpaqueVal = document.getElementById('wpOpaqueVal');
+const wpOpaqueBar = document.getElementById('wpOpaqueBar');
+const wpOpaqueRow = document.getElementById('wpOpaqueRow');
+const meterR = document.getElementById('meterReflect');
+const meterA = document.getElementById('meterAbsorb');
+const meterT = document.getElementById('meterTransmit');
+const pctR = document.getElementById('pctReflect');
+const pctA = document.getElementById('pctAbsorb');
+const pctT = document.getElementById('pctTransmit');
+
+function updateHUD() {
+  // Level 1: show "Unlock Level 2: X / 220" so the win threshold is visible
+  // in the HUD at all times. Level 2: just current score (no score target).
+  if (state.level === 2) {
+    hudScoreLabel.textContent = 'Score';
+    hudScore.textContent      = state.score;
+  } else {
+    hudScoreLabel.textContent = 'Unlock Level 2';
+    hudScore.textContent      = state.score + ' / ' + WIN_SCORE;
+  }
+  hudHealth.textContent = Math.round(state.ship.health);
+  if (state.level === 2) {
+    const testedCount = LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length;
+    hudClearedLabel.textContent = 'Materials Tested';
+    hudCleared.textContent = `${testedCount} / 4`;
+  } else {
+    hudClearedLabel.textContent = 'Bubbles Cleared';
+    hudCleared.textContent = `${state.cleared} / ${state.requiredOpaque}`;
+  }
+  hudStatus.textContent = state.over ? (state.won ? 'Win!' : 'Down') : 'Running';
+
+  const e = state.energy;
+  const total = e.reflect + e.absorb + e.transmit;
+  const r = total ? (e.reflect  / total) * 100 : 0;
+  const a = total ? (e.absorb   / total) * 100 : 0;
+  const t = total ? (e.transmit / total) * 100 : 0;
+  meterR.style.width = r.toFixed(0) + '%';
+  meterA.style.width = a.toFixed(0) + '%';
+  meterT.style.width = t.toFixed(0) + '%';
+  pctR.textContent = r.toFixed(0) + '%';
+  pctA.textContent = a.toFixed(0) + '%';
+  pctT.textContent = t.toFixed(0) + '%';
+
+  // Mission progress
+  const scorePct = Math.min(100, (state.score / WIN_SCORE) * 100);
+  const opaquePct = state.requiredOpaque
+    ? Math.min(100, (state.cleared / state.requiredOpaque) * 100) : 100;
+  wpScoreVal.textContent = state.score;
+  wpScoreBar.style.width = scorePct.toFixed(0) + '%';
+  wpScoreRow.classList.toggle('done', state.score >= WIN_SCORE);
+  wpOpaqueVal.textContent = state.cleared;
+  wpOpaqueBar.style.width = opaquePct.toFixed(0) + '%';
+  wpOpaqueRow.classList.toggle('done', state.cleared >= state.requiredOpaque);
+
+  // Interaction counters
+  const c = state.counts;
+  dT.textContent = c.transparent;
+  dL.textContent = c.translucent;
+  dO.textContent = c.opaque;
+  dR.textContent = c.reflective;
+  dM.textContent = c.mixed;
+  dH.textContent = c.hits;
+}
+
+/* ---------- WIN / LOSE / RESET ---------- */
+function checkWin() {
+  if (state.over) return;
+  if (state.transitionPending) return;
+  if (state.level === 1) {
+    if (state.score >= WIN_SCORE && state.cleared >= state.requiredOpaque) {
+      winLevel1();
+    }
+  }
+  // Level 2 wins are triggered by checkLevel2Completion() on the 4th unique test.
+}
+
+function winLevel1() {
+  // Level 1 cleared - hand off to the Material Lab transition instead of ending the run.
+  state.won = true;
+  clearPause();
+  showFeedback('win');
+  SFX.win();
+  showLevel2Intro();
+}
+
+function winLevel2() {
+  state.over = true;
+  state.won = true;
+  running = false;
+  clearPause();
+  SFX.win();
+  showEnd(true);
+}
+
+// Backwards-compat shim (in case any code path still calls winGame).
+function winGame() { winLevel1(); }
+
+function loseGame() {
+  state.over = true;
+  state.won = false;
+  running = false;
+  clearPause();
+  SFX.lose();
+  showEnd(false);
+}
+
+const overlayStart = document.getElementById('overlayStart');
+const overlayEnd   = document.getElementById('overlayEnd');
+const endTitle     = document.getElementById('endTitle');
+const endMsg       = document.getElementById('endMsg');
+const endStats     = document.getElementById('endStats');
+
+function buildLabNotes() {
+  const e = state.energy;
+  const tot = e.reflect + e.absorb + e.transmit || 1;
+  const c = state.counts;
+  // End-of-run keeps the original two labels so existing exports are
+  // unchanged. Mid-run exports (Fix 5) report "In Progress" rather than
+  // mislabeling the student as Shields Down.
+  const result = state.over
+    ? (state.won ? 'Corridor Cleared' : 'Shields Down')
+    : 'In Progress';
+  return [
+    'Energy Escape: Photon Runner - Lab Notes',
+    '----------------------------------------',
+    'Result: ' + result,
+    'Score: ' + state.score,
+    'Shields remaining: ' + Math.round(state.ship.health),
+    '',
+    'Energy Result:',
+    '  Reflected:   ' + (e.reflect  / tot * 100).toFixed(0) + '%',
+    '  Absorbed:    ' + (e.absorb   / tot * 100).toFixed(0) + '%',
+    '  Transmitted: ' + (e.transmit / tot * 100).toFixed(0) + '%',
+    '',
+    'Interaction Data:',
+    '  Transparent passes:   ' + c.transparent,
+    '  Translucent scatters: ' + c.translucent,
+    '  Opaque absorptions:   ' + c.opaque,
+    '  Reflective bounces:   ' + c.reflective,
+    '  Mixed material tests: ' + c.mixed,
+    '  Shield hits:          ' + c.hits,
+    '',
+    'Energy was reflected, absorbed, and transmitted in different amounts.',
+    'Mixed materials showed that real surfaces can reflect, absorb, and transmit energy at the same time.',
+    '',
+    'Material Lab Results:',
+    ...LEVEL2_MATERIALS.flatMap(m => {
+      const r = Math.round(m.ratios.reflect  * 100);
+      const a = Math.round(m.ratios.absorb   * 100);
+      const t = Math.round(m.ratios.transmit * 100);
+      const mark = state.tested[m.name] ? '[x]' : '[ ]';
+      const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '- - -';
+      const pred = cap(state.predictions[m.name]);
+      const res  = cap(state.results[m.name]);
+      return [
+        `  ${mark} ${m.name} (R${r} A${a} T${t})`,
+        `       Prediction: ${pred}`,
+        `       Result:     ${res}`
+      ];
+    }),
+    '  Materials tested:    ' + LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length + ' / 4',
+    '  Correct predictions: ' + state.predictionsCorrect,
+    '  Prediction accuracy: ' + state.predictionsCorrect + ' / ' + LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length
+  ].join('\n');
+}
+
+const notesStatus   = document.getElementById('notesStatus');
+const notesFallback = document.getElementById('notesFallback');
+const btnNotes      = document.getElementById('btnNotes');
+
+function setNotesStatus(text, tone) {
+  notesStatus.textContent = text;
+  notesStatus.classList.remove('ok', 'warn');
+  if (tone) notesStatus.classList.add(tone);
+}
+
+function showFallbackNotes(notes) {
+  notesFallback.value = notes;
+  notesFallback.classList.add('show');
+  // Pre-select so the student can immediately Cmd/Ctrl-C.
+  setTimeout(() => { try { notesFallback.focus(); notesFallback.select(); } catch (e) {} }, 30);
+  setNotesStatus('Copy is blocked. Select the notes below.', 'warn');
+}
+
+function copyLabNotes() {
+  const notes = buildLabNotes();
+  const fail = () => showFallbackNotes(notes);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(notes).then(
+        () => setNotesStatus('Lab notes copied!', 'ok'),
+        fail
+      );
+    } else {
+      fail();
+    }
+  } catch (e) {
+    fail();
+  }
+}
+
+btnNotes.addEventListener('click', copyLabNotes);
+
+/* ---------- MID-RUN LAB NOTES EXPORT (Fix 5) ----------
+   Reuses buildLabNotes() so the output is byte-identical to the end-overlay
+   export. Status feedback is routed through the existing in-arena feedback
+   toast since the notes-status element lives inside the end overlay. */
+function copyLabNotesMidRun() {
+  if (!state) return;
+  const notes = buildLabNotes();
+  const okMsg   = '📋 Lab notes copied to clipboard.';
+  const failMsg = 'Copy was blocked. Finish the level and use the end-screen export.';
+  const done = () => {
+    showFeedbackText(okMsg, 'transmit');
+    flashExportButton('Copied!');
+  };
+  const fail = () => {
+    showFeedbackText(failMsg, 'absorb');
+    flashExportButton('Copy blocked');
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(notes).then(done, fail);
+    } else { fail(); }
+  } catch (e) { fail(); }
+}
+const exportTextEl = document.getElementById('exportText');
+let exportFlashTimer = null;
+function flashExportButton(label) {
+  if (!exportTextEl) return;
+  exportTextEl.textContent = label;
+  if (exportFlashTimer) clearTimeout(exportFlashTimer);
+  exportFlashTimer = setTimeout(() => { exportTextEl.textContent = 'Copy Notes'; }, 1500);
+}
+document.getElementById('btnExportNotes').addEventListener('click', copyLabNotesMidRun);
+
+/* ---------- VISIBLE PAUSE BUTTON (Fix 2) ----------
+   Reuses togglePause(); does NOT introduce a second pause system. Mirrors the
+   same guards as the P keyboard shortcut. */
+const btnPauseToggle = document.getElementById('btnPauseToggle');
+const pauseIcon = document.getElementById('pauseIcon');
+const pauseText = document.getElementById('pauseText');
+btnPauseToggle.addEventListener('click', () => {
+  if (!state || !running || state.over || state.awaitingPrediction) return;
+  togglePause();
+});
+// Clicking the Paused overlay also resumes.
+pauseOverlay.addEventListener('click', () => {
+  if (state && state.paused) togglePause();
+});
+function renderPauseButton() {
+  if (!state) {
+    pauseIcon.textContent = '⏸';
+    pauseText.textContent = 'Pause';
+    return;
+  }
+  if (state.paused) {
+    pauseIcon.textContent = '▶';
+    pauseText.textContent = 'Resume';
+  } else {
+    pauseIcon.textContent = '⏸';
+    pauseText.textContent = 'Pause';
+  }
+}
+
+function showEnd(won) {
+  const isL2 = state.level === 2;
+  endTitle.textContent = won
+    ? (isL2 ? 'Investigation Complete!' : 'Corridor Cleared!')
+    : 'Shields Down';
+  endMsg.textContent = won
+    ? (isL2
+        ? 'You tested all four materials and compared their energy ratios.'
+        : 'You guided light energy through the corridor and watched it reflect, absorb, and transmit.')
+    : 'Your photon reflected off a Reflective bubble and hit your shields. Reflection sends energy back along a new path - try angling your shots away from reflective surfaces next time.';
+  const e = state.energy;
+  const tot = e.reflect + e.absorb + e.transmit || 1;
+
+  let recap = '';
+  if (won && !isL2) {
+    recap = `
+      <div class="recap">
+        <b>Science Recap:</b>
+        <ul>
+          <li><span class="c-t">Transparent</span> materials transmit most light energy straight through.</li>
+          <li><span class="c-t">Translucent</span> materials transmit some light, but it scatters and weakens.</li>
+          <li><span class="c-a">Opaque</span> materials absorb the beam. The energy did not vanish - it stored in the bubble until it overloaded.</li>
+          <li><span class="c-r">Reflective</span> materials bounce the beam back. Same energy, new direction.</li>
+        </ul>
+        <div class="takeaway">
+          <b>Mixed Materials Takeaway</b><br>
+          Real materials can reflect, absorb, and transmit energy at the same time.
+          The difference is how much of each happens.
+        </div>
+      </div>`;
+  } else if (won && isL2) {
+    const testedCount = LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length;
+    const byKey = (key) => LEVEL2_MATERIALS.reduce((best, m) =>
+      (m.ratios[key] > best.ratios[key]) ? m : best, LEVEL2_MATERIALS[0]);
+    const mostR = byKey('reflect');
+    const mostA = byKey('absorb');
+    const mostT = byKey('transmit');
+    const correctCount = state.predictionsCorrect;
+    recap = `
+      <div class="recap">
+        <b>Investigation Summary:</b>
+        <ul>
+          <li><b>Materials Tested:</b> ${testedCount} / 4</li>
+          <li><b>Correct Predictions:</b> ${correctCount}</li>
+          <li><b>Prediction Accuracy:</b> ${correctCount} / ${testedCount}</li>
+          <li><b>Most Reflective:</b> <span class="c-r">${mostR.name}</span> (R${Math.round(mostR.ratios.reflect*100)})</li>
+          <li><b>Most Absorptive:</b> <span class="c-a">${mostA.name}</span> (A${Math.round(mostA.ratios.absorb*100)})</li>
+          <li><b>Most Transmissive:</b> <span class="c-t">${mostT.name}</span> (T${Math.round(mostT.ratios.transmit*100)})</li>
+        </ul>
+        <div class="takeaway">
+          <b>Mixed Materials Takeaway</b><br>
+          Scientists compare energy ratios to understand how materials interact with waves.
+        </div>
+      </div>`;
+  }
+
+  if (isL2 && won) {
+    const testedCount = LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length;
+    endStats.innerHTML =
+      `<b>Materials Tested:</b> ${testedCount} / 4 &nbsp;·&nbsp; ` +
+      `<b>Reflected:</b> ${(e.reflect/tot*100).toFixed(0)}% &nbsp;·&nbsp; ` +
+      `<b>Absorbed:</b> ${(e.absorb/tot*100).toFixed(0)}% &nbsp;·&nbsp; ` +
+      `<b>Transmitted:</b> ${(e.transmit/tot*100).toFixed(0)}%` +
+      recap;
+  } else {
+    endStats.innerHTML =
+      `<b>Score:</b> ${state.score} &nbsp;·&nbsp; ` +
+      `<b>Reflected:</b> ${(e.reflect/tot*100).toFixed(0)}% &nbsp;·&nbsp; ` +
+      `<b>Absorbed:</b> ${(e.absorb/tot*100).toFixed(0)}% &nbsp;·&nbsp; ` +
+      `<b>Transmitted:</b> ${(e.transmit/tot*100).toFixed(0)}%` +
+      recap;
+  }
+  // Reset notes UI for this end state.
+  setNotesStatus('', null);
+  notesFallback.classList.remove('show');
+  notesFallback.value = '';
+  overlayEnd.classList.remove('hidden');
+}
+
+function startGame() {
+  state = freshState();
+  feedbackTimer = 0;
+  lastFeedbackKey = null;
+  feedbackEl.classList.remove('show');
+  overlayStart.classList.add('hidden');
+  overlayEnd.classList.add('hidden');
+  overlayLevel2Intro.classList.add('hidden');
+  overlayPredict.classList.add('hidden');
+  clearPause();
+  resetLastInteraction();
+  resetDiscovery();
+  // Reset side-panel sections to Level 1 view.
+  missionProgressSection.classList.remove('hidden-section');
+  labTrackerSection.classList.add('hidden-section');
+  renderTutorialUI();
+  running = true;
+  lastTime = performance.now();
+  requestAnimationFrame(loop);
+  updateHUD();
+}
+
+function resetGame() {
+  startGame();
+}
+
+document.getElementById('btnStart').addEventListener('click', () => {
+  ensureAudio();      // user gesture - safe to create AudioContext
+  if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+  startGame();
+});
+document.getElementById('btnReset').addEventListener('click', () => {
+  if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+  resetGame();
+});
+document.getElementById('btnEnterLevel2').addEventListener('click', () => {
+  if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+  enterLevel2();
+});
+
+/* ---------- MAIN LOOP ---------- */
+function loop(now) {
+  const dt = Math.min(0.04, (now - lastTime) / 1000);
+  lastTime = now;
+
+  if (running) {
+    if (!state.paused && !state.awaitingPrediction) {
+      state.elapsed += dt;
+      updateShip(dt);
+      updateShots(dt);
+      maybePromptPrediction();
+      updateParticles(dt);
+      handleShotBubbleCollisions();
+      handleShipDamage();
+      tickFeedback(dt);
+      tickDiscovery(dt);
+      checkWin();
+    } else if (state.awaitingPrediction) {
+      // Still tick the banner timer + feedback timer while the modal is up so
+      // any leftover toast doesn't stick around forever.
+      tickFeedback(dt);
+      tickDiscovery(dt);
+    }
+    render();
+    updateHUD();
+    requestAnimationFrame(loop);
+  } else {
+    // Still draw a static frame so the arena isn't blank behind overlays.
+    if (state) render();
+    updateHUD && state && updateHUD();
+  }
+}
+
+/* ---------- TOUCH-ONLY DEVICE NOTICE (Fix 3) ----------
+   Photon Runner requires a keyboard. We detect devices that have only coarse
+   pointers and no hover capability - phones and tablets without an attached
+   keyboard - and surface a clear notice on the start overlay. Chromebooks with
+   touchscreens still report a fine pointer, so they are not flagged. */
+(function setupTouchOnlyNotice() {
+  let touchOnly = false;
+  try {
+    if (window.matchMedia) {
+      const coarseOnly = window.matchMedia('(any-pointer: coarse) and (not (any-pointer: fine))').matches;
+      const noHover    = window.matchMedia('(any-hover: none)').matches;
+      touchOnly = coarseOnly || noHover;
+    } else {
+      touchOnly = ('ontouchstart' in window) && !('onmousemove' in window);
+    }
+  } catch (e) { touchOnly = false; }
+  if (touchOnly) {
+    const notice = document.getElementById('touchNotice');
+    if (notice) notice.hidden = false;
+  }
+})();
+
+/* ---------- BOOT: draw idle frame behind start overlay ---------- */
+state = freshState();
+renderTutorialUI();
+render();
+updateHUD();
+
+</script>
+</body>
+</html>
