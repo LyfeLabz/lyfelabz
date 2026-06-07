@@ -13,7 +13,7 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="https://lyfelabz.com/game_energy-escape.html">
-<meta name="description" content="Pilot a photon ship through a science-lab corridor. Energy Escape teaches reflection, absorption, and transmission through transparent, translucent, opaque, and reflective materials.">
+<meta name="description" content="Pilot a photon ship through the Training Corridor and Material Lab. Energy Escape teaches reflection, absorption, and transmission with real materials and student predictions.">
 <title>LyfeLabz | Energy Escape: Photon Runner</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 
@@ -64,6 +64,9 @@
     line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
+    /* Micropass 35: flex column so .app fills the viewport and footer stays at bottom */
+    display: flex;
+    flex-direction: column;
   }
 
   /* ===== NAV (matches lesson_wave-behavior.html) ===== */
@@ -126,67 +129,262 @@
   }
 
   /* ===== PAGE SHELL ===== */
-  .app { max-width: 1240px; margin: 0 auto; padding: 1.4rem 1.5rem 3rem; }
+  /* Micropass 35: flex:1 + flex column so pre-game screen centers and footer sits at bottom */
+  .app { max-width: 1240px; margin: 0 auto; padding: 0.9rem 1.5rem 1.5rem; flex: 1; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; }
 
-  .hero { text-align: center; margin: 0.6rem auto 1.4rem; }
+  .hero { text-align: center; margin-top: 24px; margin-bottom: 20px; }
   .hero-badge {
     display: inline-flex; align-items: center; gap: 0.5rem;
-    background: rgba(245,200,66,0.12);
-    border: 1px solid rgba(245,200,66,0.42);
-    color: var(--gold);
+    background: rgba(61,220,132,0.12);
+    border: 1px solid rgba(61,220,132,0.42);
+    color: #3ddc84;
     padding: 0.35rem 1.1rem;
     border-radius: 99px;
-    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
-    margin-bottom: 0.9rem;
+    font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.2rem; animation: fadeUp 0.5s ease both;
   }
   .hero h1 {
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.8rem;
     font-family: 'Fredoka One', cursive;
-    font-size: clamp(2rem, 4.8vw, 3.2rem);
+    font-size: clamp(2.2rem, 5.5vw, 3.5rem);
     line-height: 1.1;
     background: linear-gradient(135deg, var(--reflect) 0%, var(--transmit) 55%, var(--absorb) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .hero p {
-    margin: 0.4rem auto 0;
+    margin: 12px 0 6px;
     color: var(--text-muted);
-    max-width: 720px;
-    font-size: 1rem;
+    font-size: clamp(14px, 1.8vw, 18px);
   }
+
+  /* ===== PRE-GAME DIRECTIONS SCREEN (Micropass 34 + 35) ===== */
+  #preGameScreen {
+    flex: 1;                       /* fills remaining viewport height in .app flex column */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;       /* vertically centers hero+card in available space */
+    padding: 1rem;
+    text-align: center;
+    gap: 0;
+  }
+  /* Micropass 35: hide the pre-game screen after launch (no overlap with .overlay.hidden) */
+  #preGameScreen.hidden { display: none !important; }
+  .dir-card {
+    max-width: 440px;
+    width: 100%;
+    background: linear-gradient(180deg, rgba(17,25,46,0.80), rgba(12,19,38,0.75));
+    border: 1px solid rgba(89,112,170,0.42);
+    border-radius: 20px;
+    padding: 1.5rem 1.8rem 1.6rem;
+    text-align: center;
+  }
+  .dir-card .dir-level {
+    display: inline-block;
+    margin-bottom: 0.45rem;
+    padding: 0.22rem 0.75rem;
+    border-radius: 99px;
+    background: rgba(245,200,66,0.13);
+    border: 1px solid rgba(245,200,66,0.48);
+    color: var(--gold);
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .dir-card .dir-obj {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.65;
+    margin: 0.15rem 0 0.85rem;
+  }
+  .dir-card .controls-card {
+    margin: 0 0 1rem;
+    text-align: left;
+    display: inline-block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .dir-card .dir-touch {
+    background: rgba(230,126,34,0.10);
+    border: 1px solid rgba(230,126,34,0.55);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+  .dir-card .dir-touch b { color: var(--absorb); }
+  .game-ui-hidden { display: none !important; }
 
   /* ===== HUD ===== */
   .hud {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-    margin-bottom: 14px;
+    gap: 8px;
+    margin-bottom: 10px;
   }
   .stat-card {
     background: linear-gradient(180deg, rgba(17,25,46,0.95), rgba(12,19,38,0.9));
     border: 1px solid rgba(89,112,170,0.35);
-    border-radius: 18px;
-    padding: 12px 10px;
+    border-radius: 14px;
+    padding: 8px 8px;
     text-align: center;
     transition: border-color 0.2s, transform 0.2s;
   }
   .stat-card:hover { transform: translateY(-2px); border-color: rgba(89,112,170,0.6); }
   .stat-card .label {
     color: var(--text-muted);
-    font-size: 0.65rem;
-    font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    font-size: 0.6rem;
+    font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+    line-height: 1.15;
   }
   .stat-card .value {
-    margin-top: 4px;
+    margin-top: 3px;
     font-family: 'Fredoka One', cursive;
-    font-size: 1.4rem;
+    font-size: 1.15rem;
     font-weight: 900;
+    line-height: 1.15;
   }
   .v-gold { color: var(--gold); }
   .v-red  { color: var(--red); }
   .v-teal { color: var(--reflect); }
   .v-orange { color: var(--absorb); }
   .v-green { color: var(--transmit); }
+
+  /* ===== PHOTON HUD (Micropass 19) ===== */
+  .photon-hud {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 6px 12px;
+    margin-bottom: 10px;
+    background: linear-gradient(180deg, rgba(12,22,42,0.92), rgba(8,14,30,0.88));
+    border: 1px solid rgba(89,112,170,0.30);
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .photon-hud .ph-label {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-size: 0.62rem;
+    font-weight: 800;
+  }
+  .photon-hud .ph-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    border-radius: 10px;
+    background: rgba(59,200,232,0.08);
+    border: 1px solid rgba(59,200,232,0.30);
+  }
+  .photon-hud .ph-chip.ph-gold {
+    background: rgba(255,215,107,0.10);
+    border-color: rgba(255,215,107,0.40);
+  }
+  .photon-hud .ph-dot {
+    width: 9px; height: 9px;
+    transform: rotate(45deg);
+    background: var(--reflect);
+    box-shadow: 0 0 8px rgba(59,200,232,0.7);
+  }
+  .photon-hud .ph-chip.ph-gold .ph-dot {
+    background: #ffd76b;
+    box-shadow: 0 0 10px rgba(255,215,107,0.85);
+  }
+  .photon-hud .ph-val {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.0rem;
+    color: var(--reflect);
+  }
+  .photon-hud .ph-chip.ph-gold .ph-val { color: #ffd76b; }
+  .photon-hud .ph-power {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .photon-hud .ph-slots {
+    flex: 1;
+    display: flex;
+    gap: 5px;
+  }
+  .photon-hud .ph-slot {
+    flex: 1;
+    position: relative;
+    padding: 4px 6px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(89,112,170,0.32);
+    font-size: 0.60rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--text-muted);
+    overflow: hidden;
+    transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out, color 0.15s ease-out;
+  }
+  .photon-hud .ph-slot-fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 0%;
+    background: linear-gradient(90deg, rgba(59,200,232,0.22), rgba(59,200,232,0.42));
+    transition: width 0.18s ease-out;
+    pointer-events: none;
+  }
+  .photon-hud .ph-slot-name {
+    position: relative;
+    z-index: 2;
+    white-space: nowrap;
+  }
+  .photon-hud .ph-slot.is-filled {
+    color: #b9eeff;
+    background: rgba(59,200,232,0.10);
+    border-color: rgba(140,235,250,0.45);
+  }
+  .photon-hud .ph-slot.is-cursor {
+    color: #fff5c8;
+    border-color: rgba(245,200,66,0.95);
+    box-shadow: 0 0 12px rgba(245,200,66,0.55), 0 0 4px rgba(245,200,66,0.6) inset;
+    animation: phPulse 1.1s ease-in-out infinite;
+  }
+  .photon-hud .ph-slot.is-cursor .ph-slot-fill {
+    background: linear-gradient(90deg, rgba(255,233,138,0.55), rgba(245,200,66,0.75));
+  }
+  .photon-hud .ph-slot.is-active {
+    color: #c4f5ff;
+    background: rgba(59,200,232,0.18);
+    border-color: rgba(140,235,250,0.7);
+    box-shadow: 0 0 8px rgba(59,200,232,0.45) inset;
+  }
+  @keyframes phPulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(245,200,66,0.55), 0 0 4px rgba(245,200,66,0.6) inset; }
+    50%      { box-shadow: 0 0 18px rgba(245,200,66,0.85), 0 0 6px rgba(245,200,66,0.9)  inset; }
+  }
+  .photon-hud .ph-hint {
+    font-size: 0.58rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  .photon-hud .ph-hint kbd {
+    background: rgba(245,200,66,0.18);
+    border: 1px solid rgba(245,200,66,0.55);
+    color: #ffe9a0;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.62rem;
+    margin-right: 3px;
+  }
 
   /* ===== MAIN LAYOUT ===== */
   .main {
@@ -204,8 +402,8 @@
   .side-panel {
     background: linear-gradient(180deg, rgba(7,12,26,0.78), rgba(7,12,26,0.62));
     border: 1px solid rgba(81,102,158,0.32);
-    border-radius: 24px;
-    padding: 16px;
+    border-radius: 20px;
+    padding: 12px;
     position: relative;
   }
 
@@ -252,6 +450,84 @@
   .feedback.transmit { border-color: var(--transmit-border); color: var(--transmit); }
   .feedback.absorb   { border-color: var(--absorb-border);   color: var(--absorb); }
 
+  /* Micropass 27: Foundry run summary card. */
+  .run-summary {
+    display: grid; grid-template-columns: 1fr;
+    gap: 0.25rem;
+    background: rgba(20,30,46,0.85);
+    border: 1px solid rgba(245,200,66,0.35);
+    border-radius: 10px;
+    padding: 0.6rem 0.9rem;
+    margin: 0.25rem auto 0.6rem;
+    max-width: 420px;
+    width: 92%;
+    font-size: 0.92rem;
+    color: #d8e2f0;
+  }
+  .run-summary .run-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 0.75rem;
+  }
+  .run-summary .run-row-hero { padding-bottom: 0.2rem; border-bottom: 1px dashed rgba(245,200,66,0.25); margin-bottom: 0.2rem; }
+  .run-summary .run-k { color: #a8b6c8; letter-spacing: 0.02em; }
+  .run-summary .run-v { color: #f5c842; font-weight: 700; }
+  .run-summary .run-v-big { font-size: 1.25rem; }
+  .run-best-tag {
+    display: inline-block; margin-left: 0.4rem;
+    font-size: 0.7rem; letter-spacing: 0.08em;
+    background: rgba(245,200,66,0.18);
+    color: #ffd76b;
+    padding: 0.1rem 0.4rem;
+    border-radius: 6px;
+    vertical-align: middle;
+  }
+  .run-lives { color: #ff7a8a; letter-spacing: 0.15em; }
+  .run-lives .run-lives-dim { color: rgba(255,122,138,0.28); margin-left: 0.15em; }
+
+  /* In-arena Foundry HUD pill (lives + score + combo).
+     Micropass 28: slightly stronger backdrop + a clamp() font size so it stays
+     readable at 1366x768 (where the arena scales down) without crowding the
+     play area. */
+  .foundry-hud {
+    position: absolute;
+    top: 10px; left: 10px;
+    display: none;
+    align-items: center; gap: 0.65rem;
+    padding: 0.35rem 0.7rem;
+    background: rgba(8,14,26,0.85);
+    border: 1px solid rgba(245,200,66,0.45);
+    border-radius: 999px;
+    font-size: clamp(0.74rem, 1.05vw, 0.9rem);
+    color: #eef3fa;
+    pointer-events: none;
+    z-index: 4;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+    max-width: calc(100% - 24px);
+    white-space: nowrap;
+  }
+  .foundry-hud.show { display: inline-flex; }
+  .foundry-hud .fh-k { color: #b2c0d2; margin-right: 0.3rem; font-size: 0.85em; letter-spacing: 0.04em; }
+  .foundry-hud .fh-lives { color: #ff8a99; letter-spacing: 0.14em; font-size: 1.05em; }
+  .foundry-hud .fh-lives .fh-lives-dim { color: rgba(255,122,138,0.32); }
+  .foundry-hud .fh-score { color: #ffd76b; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .foundry-hud .fh-best  { color: #b9c8da; font-variant-numeric: tabular-nums; }
+  .foundry-hud .fh-combo {
+    color: #3bc8e8;
+    font-weight: 800;
+    transition: color 0.2s ease;
+    font-variant-numeric: tabular-nums;
+  }
+  .foundry-hud .fh-combo.hot { color: #ffd76b; text-shadow: 0 0 8px rgba(255,215,107,0.5), 0 1px 2px rgba(0,0,0,0.7); }
+  .foundry-hud .fh-sep { color: rgba(255,255,255,0.22); }
+  .foundry-hud.boss .fh-k-lives,
+  .foundry-hud.boss .fh-k-score,
+  .foundry-hud.boss .fh-sep-score,
+  .foundry-hud.boss .fh-sep-best,
+  .foundry-hud.boss .fh-best-wrap,
+  .foundry-hud.boss .fh-sep-combo,
+  .foundry-hud.boss .fh-combo-wrap { display: none; }
+
   /* Overlay for start, win, lose */
   .overlay {
     position: absolute;
@@ -276,34 +552,27 @@
   .overlay p {
     color: var(--text-muted);
     max-width: 480px;
-    margin: 0.3rem auto 0.9rem;
+    margin: 0.25rem auto 0.5rem;
     font-size: 0.95rem;
+    line-height: 1.7;
   }
   .overlay .controls-card {
     background: rgba(17,25,46,0.7);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 0.7rem 1rem;
-    margin: 0.6rem 0 1rem;
+    padding: 0.7rem 1.1rem;
+    margin: 0.45rem 0 0.6rem;
     font-size: 0.85rem;
     color: var(--text);
     display: inline-block;
   }
-  .overlay .touch-notice {
-    background: rgba(230,126,34,0.10);
-    border: 1px solid rgba(230,126,34,0.55);
-    color: var(--text);
-    border-radius: 14px;
-    padding: 0.7rem 1rem;
-    margin: 0.4rem auto 0.9rem;
-    max-width: 480px;
-    font-size: 0.88rem;
-    line-height: 1.45;
-    text-align: center;
-  }
-  .overlay .touch-notice b { color: var(--absorb); }
+  /* Micropass 36.5: .overlay ctrl-* halves removed (no overlay uses these); dir-card only */
+  .dir-card .controls-grid { display: flex; flex-direction: column; gap: 0.32rem; text-align: left; }
+  .dir-card .ctrl-row { display: flex; align-items: center; gap: 0.65rem; white-space: nowrap; }
+  .dir-card .ctrl-lbl { color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; min-width: 4rem; }
+  .dir-card .ctrl-keys { display: flex; align-items: center; gap: 0.12rem; flex-wrap: nowrap; font-size: 0.85rem; color: var(--text); }
 
-  .overlay .controls-card kbd {
+  .dir-card kbd {
     display: inline-block;
     padding: 0.12rem 0.45rem;
     margin: 0 0.15rem;
@@ -379,18 +648,18 @@
   /* ===== SIDE PANEL ===== */
   .panel-title {
     font-family: 'Fredoka One', cursive;
-    font-size: 1.05rem;
-    margin-bottom: 0.7rem;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
     color: var(--text);
     letter-spacing: 0.02em;
   }
   .panel-sub {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     font-weight: 800;
-    margin: 0.9rem 0 0.4rem;
+    margin: 0.65rem 0 0.3rem;
   }
 
   .energy-row {
@@ -461,12 +730,66 @@
   .legend-item.reflective   .dot { color: var(--reflect); background: var(--reflect); }
   .legend-item.reflective   b { color: var(--reflect); }
 
-  .footer-note {
+  footer {
+    background: #070f17;
+    border-top: 1px solid var(--border, rgba(245,200,66,0.12));
+    padding: 2rem 2rem;
     text-align: center;
-    color: var(--text-muted);
-    font-size: 0.78rem;
-    margin-top: 1.2rem;
+    margin-top: 0.5rem;
   }
+  footer .footer-logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    color: var(--gold, #f5c842);
+    margin-bottom: 0.35rem;
+  }
+  footer .footer-tagline {
+    font-size: 0.83rem;
+    color: rgba(240,228,200,0.6);
+    margin-bottom: 0.6rem;
+  }
+  footer .footer-links {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 0.6rem;
+  }
+  footer .footer-links a {
+    color: var(--gold, #f5c842);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.4);
+    background: rgba(245,200,66,0.08);
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover {
+    border-color: rgba(245,200,66,0.7);
+    text-decoration: none;
+  }
+  footer .footer-links a.nav-why {
+    color: #3bc8e8;
+    border: 1px solid rgba(59,200,232,0.7);
+    background: rgba(59,200,232,0.12);
+    font-weight: 800;
+  }
+  footer .footer-links a.nav-why:hover {
+    background: rgba(59,200,232,0.22);
+    border-color: rgba(59,200,232,0.95);
+    color: #3bc8e8;
+  }
+  footer p {
+    font-size: 0.72rem;
+    color: rgba(180,200,220,0.35);
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
   /* Subtle pulse animation reuse */
   @keyframes softPulse {
@@ -478,14 +801,15 @@
   .mission-goal {
     display: flex;
     align-items: center;
-    gap: 0.7rem;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.7rem;
     background: linear-gradient(90deg, rgba(245,200,66,0.10), rgba(245,200,66,0.03) 70%, transparent);
     border: 1px solid rgba(245,200,66,0.32);
     border-left: 4px solid var(--gold);
-    border-radius: 14px;
-    padding: 0.65rem 1rem;
-    margin-bottom: 12px;
-    font-size: 0.92rem;
+    border-radius: 12px;
+    padding: 0.5rem 0.85rem;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
     color: var(--text);
   }
   .mission-goal .goal-icon {
@@ -724,6 +1048,58 @@
   .panel-sub.lab-sub { color: var(--gold); }
   .hidden-section { display: none !important; }
 
+  /* ===== COMPACT SIDEBAR ACTION ROW ===== */
+  .sidebar-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .side-pill {
+    background: rgba(59,200,232,0.08);
+    border: 1px solid rgba(59,200,232,0.35);
+    color: var(--reflect);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.3rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
+    white-space: nowrap;
+  }
+  .side-pill:hover {
+    background: rgba(59,200,232,0.18);
+    border-color: rgba(59,200,232,0.6);
+    transform: translateY(-1px);
+  }
+
+  /* ===== SIDEBAR MODAL OVERLAYS ===== */
+  .overlay.modal-sidebar { z-index: 8; }
+  .overlay.modal-sidebar .modal-body {
+    width: min(560px, 92%);
+    max-height: 62%;
+    overflow-y: auto;
+    margin-bottom: 0.9rem;
+    text-align: left;
+  }
+  .notes-modal-text {
+    width: min(560px, 92%);
+    height: 220px;
+    background: rgba(8,14,26,0.85);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    font-family: 'Nunito', monospace;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    resize: none;
+    margin-bottom: 0.6rem;
+  }
+
   .lab-tracker .track-sub {
     display: flex;
     justify-content: space-between;
@@ -782,6 +1158,79 @@
     border-color: rgba(46,204,113,0.5);
   }
   .btn.btn-predict.is-transmit:hover { box-shadow: 0 6px 18px rgba(46,204,113,0.25); }
+
+  /* Prediction sheet (Material Lab) */
+  #overlayPredict { overflow-y: auto; padding: 0.75rem 1rem; justify-content: center; }
+  #overlayPredict .predict-tag { margin-bottom: 0.25rem; }
+  #overlayPredict h2 { font-size: clamp(1.1rem, 2.2vw, 1.6rem); margin: 0.15rem 0 0.2rem; }
+  #overlayPredict p { margin: 0.1rem auto 0.4rem; font-size: 0.82rem; }
+  #overlayPredict .btn { padding: 0.55rem 1.2rem; font-size: 0.9rem; }
+  .predict-sheet {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0.4rem 0 0.55rem;
+    text-align: left;
+    width: 100%;
+    max-width: 560px;
+  }
+  .predict-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: rgba(8,14,26,0.55);
+  }
+  .predict-row .predict-name {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    font-size: 0.76rem;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  .predict-choices {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .predict-choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    background: rgba(8,14,26,0.6);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .predict-choice input { position: absolute; opacity: 0; pointer-events: none; }
+  .predict-choice:hover { color: var(--text); }
+  .predict-choice.is-reflect.checked {
+    background: rgba(59,200,232,0.18); color: var(--reflect); border-color: rgba(59,200,232,0.55);
+  }
+  .predict-choice.is-absorb.checked {
+    background: rgba(230,126,34,0.18); color: var(--absorb); border-color: rgba(230,126,34,0.55);
+  }
+  .predict-choice.is-transmit.checked {
+    background: rgba(46,204,113,0.18); color: var(--transmit); border-color: rgba(46,204,113,0.55);
+  }
+  #btnBeginInvestigation:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.4);
+  }
+
+  /* Last Interaction - prediction line (Level 2) */
+  .li-row.li-pred-row { display: none; }
+  .last-interaction.show-pred .li-row.li-pred-row { display: flex; }
 
   /* ===== LEVEL 2 INTRO OVERLAY ===== */
   .overlay .level-tag {
@@ -889,6 +1338,99 @@
   .recap .c-t { color: var(--transmit); }
   .recap .c-a { color: var(--absorb); }
   .recap .c-r { color: var(--reflect); }
+
+  /* ===== FOUNDRY RUN SIDEBAR CARD (Micropass 30) ===== */
+  .foundry-run-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(245,200,66,0.28);
+    border-radius: 12px;
+    padding: 0.5rem 0.65rem;
+  }
+  .foundry-run-card .fr-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 3px 0;
+  }
+  .foundry-run-card .fr-k {
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  .foundry-run-card .fr-v {
+    color: var(--text);
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.88rem;
+  }
+  .foundry-run-card .fr-lives { color: #ff8a99; letter-spacing: 0.10em; }
+  .foundry-run-card .fr-lives-dim { color: rgba(255,122,138,0.30); }
+  .foundry-run-card .fr-pips {
+    display: flex;
+    gap: 4px;
+    margin: 5px 0 3px;
+    flex-wrap: wrap;
+  }
+  .foundry-run-card .fr-pip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    font-size: 0.60rem;
+    font-weight: 800;
+    color: var(--text-muted);
+  }
+  .foundry-run-card .fr-pip.done {
+    background: rgba(46,204,113,0.18);
+    border-color: rgba(46,204,113,0.5);
+    color: var(--transmit);
+  }
+  .foundry-run-card .fr-pip.active {
+    background: rgba(245,200,66,0.18);
+    border-color: rgba(245,200,66,0.60);
+    color: var(--gold);
+  }
+  .foundry-run-card .fr-goal {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-top: 5px;
+    letter-spacing: 0.02em;
+    line-height: 1.35;
+  }
+
+  /* ===== CLASSROOM SHORT-VIEWPORT TIGHTENING ===== */
+  @media (max-height: 920px) {
+    nav { padding: 0.5rem 2rem; }
+    .app { padding: 0.45rem 1.5rem 0.8rem; }
+    .mission-goal { padding: 0.4rem 0.75rem; margin-bottom: 8px; font-size: 0.8rem; }
+    .hud { gap: 6px; margin-bottom: 8px; }
+    .stat-card { padding: 6px 6px; border-radius: 12px; }
+    .stat-card .value { font-size: 1rem; margin-top: 2px; }
+    .stat-card .label { font-size: 0.58rem; }
+    .arena-panel, .side-panel { padding: 9px; border-radius: 16px; }
+    .arena-wrap { max-height: calc(100vh - 260px); }
+    .panel-title { font-size: 0.88rem; margin-bottom: 0.4rem; }
+    .panel-sub { margin: 0.5rem 0 0.25rem; font-size: 0.62rem; }
+    .energy-row { margin: 4px 0; font-size: 0.76rem; }
+    .last-interaction { padding: 0.45rem 0.6rem; }
+    .last-interaction .li-row { margin: 2px 0; font-size: 0.74rem; }
+    .win-progress { padding: 0.45rem 0.6rem; }
+    .win-progress .row { margin: 3px 0; }
+    .sidebar-actions { margin-top: 8px; gap: 5px; }
+    .side-pill { font-size: 0.62rem; padding: 0.4rem 0.25rem; }
+    .lab-tracker { padding: 0.45rem 0.55rem; }
+    .lab-tracker .track-row { padding: 1px 0; font-size: 0.74rem; gap: 0.4rem; }
+    .lab-tracker .track-box { width: 16px; height: 16px; font-size: 0.74rem; }
+    .lab-tracker .track-ratio { font-size: 0.64rem; }
+    .lab-tracker .track-sub { font-size: 0.62rem; padding: 0 0 3px 24px; }
+  }
 </style>
 </head>
 <body>
@@ -896,29 +1438,44 @@
 <!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
-  <ul class="nav-links">
-    <li><a href="lesson_wave-behavior.html#reflection">Behaviors</a></li>
-    <li><a href="lesson_wave-behavior.html#interaction">Energy Tracker</a></li>
-    <li><a href="lesson_wave-behavior.html#vocab">Vocab</a></li>
-  </ul>
   <a href="lesson_wave-behavior.html" class="nav-back">← Wave Behavior Lesson</a>
 </nav>
 
 <div class="app">
 
-  <!-- HERO -->
-  <div class="hero">
-    <div class="hero-badge">⚡ Waves Unit · Game</div>
-    <h1>Energy Escape: Photon Runner</h1>
-    <p>Pilot a photon ship through the energy corridor. Fire light pulses at bubbles and discover how reflection, absorption, and transmission really work.</p>
+  <!-- PRE-GAME DIRECTIONS SCREEN (Micropass 34) -->
+  <div id="preGameScreen">
+    <div class="hero">
+      <div class="hero-badge">Game</div>
+      <h1>Energy Escape: Photon Runner</h1>
+      <p>Pilot a photon ship through the energy corridor. Fire light pulses at materials and discover how reflection, absorption, and transmission really work.</p>
+    </div>
+    <div class="dir-card">
+      <div class="dir-level">Level 1 - Training Corridor</div>
+      <p class="dir-obj">Shoot materials. Watch how light behaves.<br>Survive the reflected beams.</p>
+      <div id="dirTouchNotice" class="dir-touch" hidden>
+        <b>⚠ Keyboard required</b><br>
+        Photon Runner is designed for keyboard play. Use a <b>Chromebook, laptop, or desktop</b> with a physical keyboard.
+      </div>
+      <div class="controls-card controls-grid">
+        <div class="ctrl-row"><span class="ctrl-lbl">Move</span><span class="ctrl-keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>&nbsp;/&nbsp;<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></span></div>
+        <div class="ctrl-row"><span class="ctrl-lbl">Fire</span><span class="ctrl-keys"><kbd>Space</kbd></span></div>
+        <div class="ctrl-row"><span class="ctrl-lbl">Power</span><span class="ctrl-keys"><kbd>E</kbd></span></div>
+        <div class="ctrl-row"><span class="ctrl-lbl">Pause</span><span class="ctrl-keys"><kbd>P</kbd></span></div>
+      </div>
+      <button class="btn" id="btnStart">Launch Photon Ship</button>
+    </div>
   </div>
+
+  <!-- GAME UI - hidden until Launch is clicked (Micropass 34) -->
+  <div id="gameUi" class="game-ui-hidden">
 
   <!-- MISSION GOAL + TUTORIAL -->
   <div class="mission-goal" id="missionGoal">
     <span class="goal-icon" id="goalIcon">🧪</span>
     <span class="goal-text" id="goalText">
       <b id="goalTitle">Tutorial:</b>
-      <span id="goalBody">Try shooting a <span class="goal-num goal-transmit">transparent</span> bubble. Watch the pulse pass through.</span>
+      <span id="goalBody">Shoot the <span class="goal-num goal-transmit">transparent</span> bubble.</span>
     </span>
     <button class="skip-tut" id="btnSkipTut" title="Skip the tutorial and jump to the mission">Skip Tutorial</button>
     <button class="mute-pill" id="btnPauseToggle" title="Pause or resume the game" aria-label="Pause">
@@ -939,7 +1496,7 @@
       <div class="value v-gold" id="hudLevel">Training Corridor</div>
     </div>
     <div class="stat-card">
-      <div class="label" id="hudScoreLabel">Unlock Level 2</div>
+      <div class="label" id="hudScoreLabel">Unlock Material Lab</div>
       <div class="value v-gold" id="hudScore">0 / 220</div>
     </div>
     <div class="stat-card">
@@ -956,6 +1513,29 @@
     </div>
   </div>
 
+  <!-- PHOTON HUD -->
+  <div class="photon-hud" id="photonHud">
+    <span class="ph-label">Photon Shards</span>
+    <span class="ph-chip" title="Cyan Shards collected">
+      <span class="ph-dot"></span>
+      <span class="ph-val" id="phCyan">0</span>
+    </span>
+    <span class="ph-chip ph-gold" title="Gold Shards collected">
+      <span class="ph-dot"></span>
+      <span class="ph-val" id="phGold">0</span>
+    </span>
+    <div class="ph-power">
+      <span class="ph-label">Power</span>
+      <div class="ph-slots" id="phSlots">
+        <div class="ph-slot" data-slot="1"><div class="ph-slot-fill"></div><span class="ph-slot-name">Velocity</span></div>
+        <div class="ph-slot" data-slot="2"><div class="ph-slot-fill"></div><span class="ph-slot-name">Shield</span></div>
+        <div class="ph-slot" data-slot="3"><div class="ph-slot-fill"></div><span class="ph-slot-name">Twin Beam</span></div>
+        <div class="ph-slot" data-slot="4"><div class="ph-slot-fill"></div><span class="ph-slot-name">Burst</span></div>
+      </div>
+      <span class="ph-hint"><kbd>E</kbd>Activate</span>
+    </div>
+  </div>
+
   <!-- MAIN -->
   <div class="main">
 
@@ -965,20 +1545,19 @@
         <canvas id="game" width="1280" height="720"></canvas>
         <div class="feedback" id="feedback"></div>
 
-        <div class="overlay" id="overlayStart">
-          <h2>Level 1 · Training Corridor</h2>
-          <p>Test how light energy interacts with four kinds of material. Aim through transparent bubbles, watch opaque ones overload, and avoid your own reflected beams.</p>
-          <div class="touch-notice" id="touchNotice" hidden>
-            <b>⚠ Keyboard required</b><br>
-            Photon Runner is designed for keyboard play. To play, use a <b>Chromebook, laptop, or desktop computer</b> with a physical keyboard.
-          </div>
-          <div class="controls-card">
-            Move: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>
-            &nbsp;·&nbsp; Fire: <kbd>Space</kbd>
-            &nbsp;·&nbsp; Pause: <kbd>P</kbd>
-          </div>
-          <button class="btn" id="btnStart">Launch Photon Ship</button>
+        <div class="foundry-hud" id="foundryHud" aria-hidden="true">
+          <span><span class="fh-k fh-k-lives">Lives</span><span class="fh-lives" id="fhLives">&#10084;&#10084;&#10084;</span></span>
+          <span class="fh-sep fh-sep-score">|</span>
+          <span><span class="fh-k fh-k-score">Score</span><span class="fh-score" id="fhScore">0</span></span>
+          <span class="fh-sep fh-sep-best">|</span>
+          <span class="fh-best-wrap"><span class="fh-k">Best</span><span class="fh-best" id="fhBest">0</span></span>
+          <span class="fh-sep fh-sep-combo">|</span>
+          <span class="fh-combo-wrap"><span class="fh-k">Combo</span><span class="fh-combo" id="fhCombo">x1</span></span>
         </div>
+
+        <!-- overlayStart gutted in Micropass 34 - pre-game screen is now the start experience. -->
+        <!-- Element kept as empty placeholder so JS references remain valid.                  -->
+        <div class="overlay hidden" id="overlayStart"></div>
 
         <div class="pause-overlay" id="pauseOverlay">
           <h2>Paused</h2>
@@ -987,20 +1566,49 @@
 
         <div class="overlay hidden" id="overlayPredict">
           <div class="predict-tag">🔬 PREDICT</div>
-          <h2>Make a Prediction</h2>
-          <p>Which energy behavior do you think will happen MOST in <b id="predictMaterial">this material</b>?</p>
-          <div class="predict-buttons">
-            <button class="btn btn-predict is-reflect"  data-pred="reflect">Mostly Reflect</button>
-            <button class="btn btn-predict is-absorb"   data-pred="absorb">Mostly Absorb</button>
-            <button class="btn btn-predict is-transmit" data-pred="transmit">Mostly Transmit</button>
+          <h2>Material Lab Predictions</h2>
+          <p>Before testing the materials, predict what you think each material will do MOST.</p>
+          <div class="predict-sheet" id="predictSheet"></div>
+          <button class="btn" id="btnBeginInvestigation" disabled>Begin Investigation</button>
+        </div>
+
+        <div class="overlay hidden" id="overlayLevel3Intro">
+          <div class="level-tag">LEVEL 2 COMPLETE</div>
+          <h2>Material Lab Complete!</h2>
+          <p>You compared real materials. Now enter the Glass Foundry and use what you learned while the game keeps moving.</p>
+          <div class="end-actions">
+            <button class="btn" id="btnEnterLevel3">Enter Glass Foundry</button>
+            <button class="btn btn-notes" id="btnL2Notes">📋 Copy Lab Notes</button>
+            <button class="btn btn-teal" id="btnReplayFromL2">Replay Game</button>
           </div>
+          <div class="notes-status" id="notesStatusL2"></div>
+          <textarea class="notes-fallback" id="notesFallbackL2" readonly spellcheck="false"></textarea>
+        </div>
+
+        <div class="overlay hidden" id="overlayLevel3Complete">
+          <div class="level-tag">LEVEL 3 COMPLETE</div>
+          <h2>Glass Foundry Complete!</h2>
+          <p>You slipped through transparent paths, pushed through translucent barriers, and avoided opaque blocks.</p>
+          <div id="foundryRunSummary"></div>
+          <div class="end-actions">
+            <button class="btn btn-notes" id="btnL3Notes">📋 Copy Lab Notes</button>
+            <button class="btn btn-teal" id="btnReplayFromL3">Replay Game</button>
+          </div>
+          <div class="notes-status" id="notesStatusL3"></div>
+          <textarea class="notes-fallback" id="notesFallbackL3" readonly spellcheck="false"></textarea>
         </div>
 
         <div class="overlay hidden" id="overlayLevel2Intro">
-          <div class="level-tag">LEVEL 2</div>
-          <h2>Material Lab</h2>
-          <p>Real materials usually reflect, absorb, and transmit energy in different amounts. Test several materials and compare their energy ratios.</p>
-          <button class="btn" id="btnEnterLevel2">Enter Material Lab</button>
+          <div class="level-tag">LEVEL 1 COMPLETE</div>
+          <h2>Training Corridor Complete!</h2>
+          <p>You tested how light energy can transmit, scatter, absorb, and reflect. Now compare real materials in the Material Lab.</p>
+          <div class="end-actions">
+            <button class="btn" id="btnEnterLevel2">Start Material Lab</button>
+            <button class="btn btn-notes" id="btnL1Notes">📋 Copy Lab Notes</button>
+            <button class="btn btn-teal" id="btnReplayTraining">Replay Training</button>
+          </div>
+          <div class="notes-status" id="notesStatusL1"></div>
+          <textarea class="notes-fallback" id="notesFallbackL1" readonly spellcheck="false"></textarea>
         </div>
 
         <div class="discovery" id="discoveryBanner" aria-hidden="true">
@@ -1014,13 +1622,78 @@
         <div class="overlay hidden" id="overlayEnd">
           <h2 id="endTitle">Mission Complete</h2>
           <p id="endMsg">You cleared the corridor.</p>
+          <div id="foundryRunSummaryEnd"></div>
           <div class="controls-card" id="endStats">- - -</div>
           <div class="end-actions">
-            <button class="btn btn-teal" id="btnReset">Replay Level</button>
+            <button class="btn btn-teal" id="btnReset">Replay Game</button>
             <button class="btn btn-notes" id="btnNotes">📋 Copy Lab Notes</button>
           </div>
           <div class="notes-status" id="notesStatus"></div>
           <textarea class="notes-fallback" id="notesFallback" readonly spellcheck="false"></textarea>
+        </div>
+
+        <div class="overlay hidden modal-sidebar" id="modalGuide">
+          <h2>Material Guide</h2>
+          <div class="modal-body">
+            <div class="legend">
+              <div class="legend-item transparent">
+                <span class="dot"></span>
+                <div><b>Transparent</b><span class="sub">Most light transmits through.</span></div>
+              </div>
+              <div class="legend-item translucent">
+                <span class="dot"></span>
+                <div><b>Translucent</b><span class="sub">Some light transmits, but it scatters.</span></div>
+              </div>
+              <div class="legend-item opaque">
+                <span class="dot"></span>
+                <div><b>Opaque</b><span class="sub">Light does not transmit through; energy is absorbed.</span></div>
+              </div>
+              <div class="legend-item reflective">
+                <span class="dot"></span>
+                <div><b>Reflective</b><span class="sub">Light bounces back in a new direction.</span></div>
+              </div>
+            </div>
+            <div class="mixed-card" style="margin-top:10px">
+              <p><b>Mixed Materials:</b> Real materials can reflect, absorb, and transmit energy in different amounts.</p>
+              <div class="mixed-key">
+                <span><b class="c-r">R</b> = Reflected</span>
+                <span><b class="c-a">A</b> = Absorbed</span>
+                <span><b class="c-t">T</b> = Transmitted</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-teal" data-modal-close type="button">Close</button>
+        </div>
+
+        <div class="overlay hidden modal-sidebar" id="modalData">
+          <h2>Interaction Data</h2>
+          <div class="modal-body">
+            <div class="data-grid">
+              <div class="dlabel row-t" style="grid-column:1">Transparent passes</div>
+              <div class="dval"  id="dTransparent">0</div>
+              <div class="dlabel row-t" style="grid-column:1">Translucent scatters</div>
+              <div class="dval"  id="dTranslucent">0</div>
+              <div class="dlabel row-a" style="grid-column:1">Opaque absorptions</div>
+              <div class="dval"  id="dOpaque">0</div>
+              <div class="dlabel row-r" style="grid-column:1">Reflective bounces</div>
+              <div class="dval"  id="dReflective">0</div>
+              <div class="dlabel row-m" style="grid-column:1">Mixed material tests</div>
+              <div class="dval"  id="dMixed">0</div>
+              <div class="dlabel row-h" style="grid-column:1">Shield hits</div>
+              <div class="dval"  id="dHits">0</div>
+            </div>
+          </div>
+          <button class="btn btn-teal" data-modal-close type="button">Close</button>
+        </div>
+
+        <div class="overlay hidden modal-sidebar" id="modalNotes">
+          <h2>Lab Notes</h2>
+          <textarea class="notes-modal-text" id="notesModalText" readonly spellcheck="false"></textarea>
+          <div class="notes-status" id="notesModalStatus"></div>
+          <div class="end-actions">
+            <button class="btn btn-notes" id="btnNotesModalCopy" type="button">📋 Copy</button>
+            <button class="btn btn-teal" data-modal-close type="button">Close</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1047,7 +1720,8 @@
       <div class="panel-sub">Last Interaction</div>
       <div class="last-interaction" id="lastInteraction">
         <div class="li-row"><span class="li-label">Material</span><span class="li-val" id="liMaterial">- - -</span></div>
-        <div class="li-row"><span class="li-label">Outcome</span><span class="li-val li-outcome" id="liOutcome">Awaiting fire</span></div>
+        <div class="li-row li-pred-row"><span class="li-label">Prediction</span><span class="li-val" id="liPrediction">- - -</span></div>
+        <div class="li-row"><span class="li-label">Observed</span><span class="li-val li-outcome" id="liOutcome">Awaiting fire</span></div>
         <div class="li-row"><span class="li-label">Science</span><span class="li-val li-science" id="liScience">Fire a pulse to see how light energy interacts with a material.</span></div>
       </div>
 
@@ -1067,65 +1741,58 @@
         </div>
       </div>
 
+      <div class="sidebar-actions">
+        <button class="side-pill" id="pillGuide" type="button">📘 Material Guide</button>
+        <button class="side-pill" id="pillData"  type="button">📊 View Data</button>
+        <button class="side-pill" id="pillNotes" type="button">📋 Lab Notes</button>
+      </div>
+
       <div id="labTrackerSection" class="hidden-section">
         <div class="panel-sub lab-sub">Materials Tested</div>
         <div class="lab-tracker" id="labTracker"></div>
       </div>
 
-      <div class="panel-sub">Interaction Data</div>
-      <div class="data-grid">
-        <div class="dlabel row-t" style="grid-column:1">Transparent passes</div>
-        <div class="dval"  id="dTransparent">0</div>
-        <div class="dlabel row-t" style="grid-column:1">Translucent scatters</div>
-        <div class="dval"  id="dTranslucent">0</div>
-        <div class="dlabel row-a" style="grid-column:1">Opaque absorptions</div>
-        <div class="dval"  id="dOpaque">0</div>
-        <div class="dlabel row-r" style="grid-column:1">Reflective bounces</div>
-        <div class="dval"  id="dReflective">0</div>
-        <div class="dlabel row-m" style="grid-column:1">Mixed material tests</div>
-        <div class="dval"  id="dMixed">0</div>
-        <div class="dlabel row-h" style="grid-column:1">Shield hits</div>
-        <div class="dval"  id="dHits">0</div>
-      </div>
-
-      <div class="panel-sub">Mixed Materials</div>
-      <div class="mixed-card">
-        <p>Real materials usually do all three. The numbers show how much energy <b class="c-r">reflects</b>, <b class="c-a">absorbs</b>, and <b class="c-t">transmits</b>.</p>
-        <div class="mixed-key">
-          <span><b class="c-r">R</b> = Reflected</span>
-          <span><b class="c-a">A</b> = Absorbed</span>
-          <span><b class="c-t">T</b> = Transmitted</span>
-        </div>
-      </div>
-
-      <div class="panel-sub">Material Legend</div>
-      <div class="legend">
-        <div class="legend-item transparent">
-          <span class="dot"></span>
-          <div><b>Transparent</b><span class="sub">High transmission - beam passes through, full points.</span></div>
-        </div>
-        <div class="legend-item translucent">
-          <span class="dot"></span>
-          <div><b>Translucent</b><span class="sub">Partial transmission with scattering - fewer points.</span></div>
-        </div>
-        <div class="legend-item opaque">
-          <span class="dot"></span>
-          <div><b>Opaque</b><span class="sub">High absorption - bubble charges, then overloads.</span></div>
-        </div>
-        <div class="legend-item reflective">
-          <span class="dot"></span>
-          <div><b>Reflective</b><span class="sub">High reflection - beam bounces back, watch out!</span></div>
+      <!-- Micropass 30: Level 3 only - Foundry run context card -->
+      <div id="foundryRunSection" class="hidden-section">
+        <div class="panel-sub">Foundry Run</div>
+        <div class="foundry-run-card">
+          <div class="fr-row">
+            <span class="fr-k">Segment</span>
+            <span class="fr-v" id="frSegment">Catwalk</span>
+          </div>
+          <div class="fr-pips" id="frPips"></div>
+          <div class="fr-row">
+            <span class="fr-k">Lives</span>
+            <span class="fr-v fr-lives" id="frLives">&#10084;&#10084;&#10084;</span>
+          </div>
+          <div class="fr-row">
+            <span class="fr-k">Best</span>
+            <span class="fr-v" id="frBest">0</span>
+          </div>
+          <div class="fr-goal" id="frGoal">Reach and defeat the Foreman</div>
         </div>
       </div>
     </div>
   </div>
 
-  <p class="footer-note">First build pass · Level 1 vertical slice · Energy is never destroyed; it changes form.</p>
-</div>
+  </div><!-- end #gameUi -->
+
+</div><!-- end .app -->
+
+<footer>
+  <div class="footer-logo">LYFELABZ&#8482;</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
 
 <script>
 /* ============================================================
-   ENERGY ESCAPE: PHOTON RUNNER  -  Level 1 Vertical Slice
+   ENERGY ESCAPE: PHOTON RUNNER
    ============================================================ */
 
 /* ---------- CONSTANTS ---------- */
@@ -1164,13 +1831,53 @@ const COLORS = {
 
 const WIN_SCORE = 220;
 
+/* ---------- PHOTON SHARDS (Micropass 19) ----------
+   Cyan = common, Gold = rare. Hybrid burst -> drift -> pull collection.
+   Counts are temporary tuning values; future passes will replace. */
+const SHARD_REWARDS = {
+  transparent:         1,
+  translucent:         1,
+  opaqueOverload:      3,
+  reflective:          1,
+  mixedFirstDiscovery: 2,
+  materialLabComplete: 1   // gold, one-time
+};
+const SHARD = {
+  burstSpeedMin:  140,
+  burstSpeedMax:  280,
+  burstDur:       0.30,   // sec - while burst-decelerating
+  driftDrag:      1.6,    // per-sec drag during drift
+  pullRadius:     130,    // px - within this, magnetize to ship
+  pullAccel:      1400,   // px/sec^2
+  pullSpeedCap:   780,
+  collectRadius:  20,     // px from ship center (in addition to ship radius)
+  life:           14.0,   // sec before despawn
+  fadeStart:      12.0,
+  cyanColor:      '#3bc8e8',
+  cyanGlow:       'rgba(59,200,232,0.85)',
+  goldColor:      '#ffd76b',
+  goldGlow:       'rgba(255,215,107,0.95)'
+};
+/* Power Bar (Micropass 22): Gradius-style four-slot upgrade selector.
+   Cyan shards advance the cursor; the player chooses when to activate. */
+const POWER_BAR = {
+  threshold: 6,                                          // cyan shards to advance cursor one slot
+  slots: ['Velocity', 'Shield', 'Twin Beam', 'Burst']    // index 0..3 maps to cursor 1..4
+};
+const POWER_UPGRADES = {
+  velocitySpeedBonus: 0.20,   // +20% top speed per Velocity activation
+  velocityMaxStacks:  3,      // cap to keep movement readable
+  burstRadius:        220,    // px - burst clears projectiles + damages enemies in radius
+  burstDamage:        3       // hp per enemy in burst radius
+};
+
 /* Tutorial stages - each targets one material type, then a final Mission stage. */
 const TUTORIAL_STAGES = [
   {
     id: 'transparent',
     target: 'transparent',
     titleHTML: 'Tutorial:',
-    bodyHTML: 'Try shooting a <span class="goal-num goal-transmit">transparent</span> bubble. Watch the pulse pass through.',
+    bodyHTML: 'Shoot the <span class="goal-num goal-transmit">transparent</span> bubble.',
     icon: '🧪'
   },
   {
@@ -1333,6 +2040,57 @@ const SFX = {
   lose:        () => {
     if (!audio.ready || audio.muted) return;
     [392, 311, 233].forEach((f, i) => setTimeout(() => tone({ freq: f, type: 'sine', dur: 0.28, peak: 0.24, decay: 0.26 }), i * 130));
+  },
+  shardCyan:   () => canPlay('sc',   35)  && tone({ freq: 1180, type: 'triangle', dur: 0.10, attack: 0.002, decay: 0.09, peak: 0.16, sweepTo: 1760, sweepTime: 0.08 }),
+  shardGold:   () => {
+    if (!audio.ready || audio.muted) return;
+    if (!canPlay('sg', 120)) return;
+    tone({ freq: 880,  type: 'triangle', dur: 0.16, attack: 0.003, decay: 0.14, peak: 0.22, sweepTo: 1320, sweepTime: 0.14 });
+    setTimeout(() => tone({ freq: 1320, type: 'triangle', dur: 0.18, attack: 0.003, decay: 0.16, peak: 0.20, sweepTo: 1980, sweepTime: 0.16 }), 70);
+  },
+  powerAdvance: () => canPlay('pa', 50)  && tone({ freq: 660, type: 'square',   dur: 0.14, attack: 0.002, decay: 0.12, peak: 0.18, sweepTo: 990,  sweepTime: 0.12 }),
+  /* Micropass 28: short two-tone chime on combo tier-ups. */
+  comboTier: () => {
+    if (!audio.ready || audio.muted) return;
+    if (!canPlay('ctier', 150)) return;
+    tone({ freq: 880,  type: 'triangle', dur: 0.12, attack: 0.002, decay: 0.10, peak: 0.18, sweepTo: 1240, sweepTime: 0.10 });
+    setTimeout(() => tone({ freq: 1320, type: 'triangle', dur: 0.16, attack: 0.002, decay: 0.14, peak: 0.18, sweepTo: 1760, sweepTime: 0.14 }), 70);
+  },
+  powerActivate:() => {
+    if (!audio.ready || audio.muted) return;
+    if (!canPlay('pact', 80)) return;
+    tone({ freq: 520, type: 'triangle', dur: 0.18, attack: 0.002, decay: 0.16, peak: 0.24, sweepTo: 1040, sweepTime: 0.16 });
+    setTimeout(() => tone({ freq: 1040, type: 'triangle', dur: 0.20, attack: 0.003, decay: 0.18, peak: 0.20, sweepTo: 1560, sweepTime: 0.18 }), 60);
+  },
+  shieldBlock: () => canPlay('sb', 80)  && tone({ freq: 1320, type: 'sine', dur: 0.22, attack: 0.002, decay: 0.20, peak: 0.26, sweepTo: 880, sweepTime: 0.20 }),
+  burst:       () => {
+    if (!audio.ready || audio.muted) return;
+    if (!canPlay('br', 200)) return;
+    tone({ freq: 220, type: 'sawtooth', dur: 0.40, attack: 0.005, decay: 0.36, peak: 0.32, sweepTo: 90, sweepTime: 0.36 });
+    noiseBurst({ dur: 0.40, peak: 0.22, lowpass: 1200 });
+  },
+  /* Foreman boss SFX (Micropass 26) */
+  bossHit:             () => canPlay('bh',  60)   && tone({ freq: 280, type: 'sawtooth', dur: 0.14, attack: 0.002, decay: 0.12, peak: 0.24, sweepTo: 200, sweepTime: 0.12 }),
+  p2WindowOpen:        () => canPlay('p2o', 1500)  && tone({ freq: 660, type: 'sine',     dur: 0.20, attack: 0.005, decay: 0.16, peak: 0.15, sweepTo: 880, sweepTime: 0.16 }),
+  p3StateChange:       () => canPlay('p3c', 400)   && noiseBurst({ dur: 0.14, peak: 0.08, lowpass: 2400 }),
+  bossPhaseTransition: () => {
+    if (!audio.ready || audio.muted) return;
+    if (!canPlay('bpt', 500)) return;
+    tone({ freq: 320, type: 'sawtooth', dur: 0.45, attack: 0.005, decay: 0.40, peak: 0.26, sweepTo: 110, sweepTime: 0.40 });
+    setTimeout(() => noiseBurst({ dur: 0.26, peak: 0.16, lowpass: 800 }), 80);
+  },
+  bossPhaseClear: () => {
+    if (!audio.ready || audio.muted) return;
+    if (!canPlay('bpc', 300)) return;
+    [440, 550, 660].forEach((f, i) => setTimeout(() => tone({ freq: f, type: 'triangle', dur: 0.18, peak: 0.18, decay: 0.16 }), i * 90));
+  },
+  bossDefeat: () => {
+    if (!audio.ready || audio.muted) return;
+    if (!canPlay('bdf', 2000)) return;
+    tone({ freq: 220, type: 'sawtooth', dur: 0.55, attack: 0.005, decay: 0.50, peak: 0.28, sweepTo: 80, sweepTime: 0.50 });
+    setTimeout(() => {
+      [440, 550, 660, 880].forEach((f, i) => setTimeout(() => tone({ freq: f, type: 'triangle', dur: 0.22, peak: 0.20, decay: 0.20 }), i * 80));
+    }, 600);
   }
 };
 
@@ -1404,6 +2162,1625 @@ function buildLevel1() {
   ];
 }
 
+/* ---------- LEVEL 3: GLASS FOUNDRY (Micropass 20) ----------
+   Room-by-room beat progression: each beat replaces the bubble layout when the
+   ship crosses the right-edge gate. Skeleton only - no enemies, no boss. */
+const LEVEL3_BEAT_COUNT = 5;
+const LEVEL3_BEAT_TITLES = [
+  'Beat 1 - The Catwalk',
+  'Beat 2 - The Pour',
+  'Beat 3 - The Bounce Hall',
+  'Beat 4 - The Cooling Yard',
+  'Beat 5 - Foreman\'s Gate'
+];
+const LEVEL3_BEAT_GOALS = [
+  'Read the transparent panels and reach the next gate.',
+  'Time your moves through the translucent shutters.',
+  'Bank shots off the mirrors. Trust the ghost line on the first one.',
+  'Watch the cooling cycle: opaque -> translucent -> transparent.',
+  'Press on to the Foreman\'s Gate. Collect the gold shard on the way.'
+];
+const L3_GATE_X = ARENA_W - 40;          // ship crosses this to advance
+const L3_GATE_TRIGGER = ARENA_W - 50;    // start the transition slightly before
+
+/* ---------- Micropass 23: Scrolling Foundry world ----------
+   The five beats are stitched into one continuous scrolling stage.
+   Bubbles and enemies live in screen coords but spawn from a world-x queue;
+   each frame the world drifts left and new entries enter from the right. */
+const SCROLL_SPEED   = 95;                                    // px/sec world-scroll in L3
+
+/* Micropass 27: Foundry run constants. Lives, score sources, combo tuning. */
+const FOUNDRY_RUN = {
+  startLives:        3,
+  respawnIframes:    2.0,
+  respawnRewind:     200,    // world-px to rewind on respawn (clears the immediate threat)
+  comboDecaySec:     4.0,    // seconds without a shard pickup before combo resets
+  comboMaxMult:      4.0,    // hard cap on combo multiplier
+  comboPerStep:      5,      // shards per +0.5x multiplier step
+  scoreCyan:         5,
+  scoreGold:         25,
+  scoreEnemy:        15,
+  scoreSegment:      50,
+  scoreForeman:      500
+};
+const FOUNDRY_BEST_KEY = 'lyfelabz.foundry.best';
+
+function loadFoundryBest() {
+  try {
+    const v = localStorage.getItem(FOUNDRY_BEST_KEY);
+    const n = v ? parseInt(v, 10) : 0;
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  } catch (e) { return 0; }
+}
+function saveFoundryBest(n) {
+  try { localStorage.setItem(FOUNDRY_BEST_KEY, String(n | 0)); } catch (e) { /* ignore */ }
+}
+function foundryComboMult() {
+  if (!state || !state.foundryCombo) return 1;
+  const steps = Math.floor(state.foundryCombo / FOUNDRY_RUN.comboPerStep);
+  return Math.min(FOUNDRY_RUN.comboMaxMult, 1 + steps * 0.5);
+}
+function addFoundryScore(n, useCombo) {
+  if (!state || state.level !== 3) return;
+  const mult = useCombo ? foundryComboMult() : 1;
+  state.foundryScore += Math.round(n * mult);
+}
+function resetFoundryCombo() {
+  if (!state) return;
+  // Micropass 28: surface a small "COMBO BROKEN" pop when a meaningful streak
+  // is interrupted by damage. Threshold avoids spam on tiny streaks.
+  const prev = state.foundryCombo || 0;
+  if (state.level === 3 && prev >= 3) {
+    const ship = state.ship;
+    spawnScorePop(ship ? ship.x : ARENA_W / 2, ship ? ship.y - 32 : ARENA_H / 2,
+      'COMBO BROKEN', { color: '#ff7a8a', size: 16, life: 1.0, vy: -28, kind: 'broken' });
+  }
+  state.foundryCombo = 0;
+  state.comboTimer   = 0;
+  state.lastComboMult = 1;
+}
+
+/* Micropass 28: floating score popups and combo banners (Glass Foundry only).
+   Light-weight: positioned in canvas coordinates, drift upward, fade out.
+   Render inside the arena shake transform so they share visual feel with the
+   particle system. */
+function spawnScorePop(x, y, text, opts) {
+  if (!state) return;
+  if (!state.scorePops) state.scorePops = [];
+  if (state.scorePops.length > 24) state.scorePops.shift(); // safety cap
+  opts = opts || {};
+  const life = opts.life != null ? opts.life : 0.9;
+  state.scorePops.push({
+    x: x, y: y,
+    vy:      opts.vy != null ? opts.vy : -36,
+    life:    life,
+    maxLife: life,
+    text:    text,
+    color:   opts.color || '#f5c842',
+    size:    opts.size  || 14,
+    kind:    opts.kind  || 'pop'
+  });
+}
+function updateScorePops(dt) {
+  if (!state || !state.scorePops || !state.scorePops.length) return;
+  for (const p of state.scorePops) {
+    p.life -= dt;
+    p.y    += p.vy * dt;
+    p.vy   *= Math.max(0, 1 - 0.9 * dt); // ease out: drift slows as it fades
+  }
+  state.scorePops = state.scorePops.filter(p => p.life > 0);
+}
+function drawScorePops() {
+  if (!state || !state.scorePops || !state.scorePops.length) return;
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const p of state.scorePops) {
+    const t = Math.max(0, Math.min(1, p.life / p.maxLife));
+    const fade = t < 0.35 ? t / 0.35 : 1;
+    const scale = p.kind === 'banner'
+      ? (1 + (1 - t) * 0.15)
+      : 1;
+    ctx.globalAlpha = fade;
+    const weight = (p.kind === 'banner' || p.kind === 'big') ? 800 : 700;
+    ctx.font = weight + ' ' + Math.round(p.size * scale) + 'px system-ui, -apple-system, sans-serif';
+    ctx.shadowColor = 'rgba(0,0,0,0.85)';
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = p.color;
+    ctx.fillText(p.text, p.x, p.y);
+  }
+  ctx.restore();
+}
+function comboMultLabel(m) {
+  return 'x' + (m % 1 ? m.toFixed(1) : m);
+}
+const L3_SEGMENT_LEN = 1400;                                  // world-px per segment
+const L3_SEGMENTS = [
+  { idx: 1, name: 'THE CATWALK',     worldX: 0 },
+  { idx: 2, name: 'THE POUR',        worldX: L3_SEGMENT_LEN * 1 },
+  { idx: 3, name: 'BOUNCE HALL',     worldX: L3_SEGMENT_LEN * 2 },
+  { idx: 4, name: 'COOLING YARD',    worldX: L3_SEGMENT_LEN * 3 },
+  { idx: 5, name: 'FOREMAN GATE',    worldX: L3_SEGMENT_LEN * 4 }
+];
+const L3_GATE_WORLD_X = L3_SEGMENT_LEN * 4 + 1200;            // end-of-level marker
+const L3_SPAWN_AHEAD  = ARENA_W + 80;                         // spawn margin past right edge
+
+function buildLevel3Beat(n) {
+  if (n === 1) {
+    // Catwalk: transparent panels in a clear path. Shoot through for cyan shards.
+    return [
+      { type: 'transparent', x: 420, y: 200, r: 38 },
+      { type: 'transparent', x: 420, y: 520, r: 38 },
+      { type: 'transparent', x: 680, y: 360, r: 44 },
+      { type: 'transparent', x: 940, y: 200, r: 38 },
+      { type: 'transparent', x: 940, y: 520, r: 38 }
+    ];
+  }
+  if (n === 2) {
+    // Pour: translucent shutters oscillating vertically.
+    const shutter = (baseX, baseY, phase) => ({
+      type: 'translucent', x: baseX, y: baseY, r: 44,
+      mover: { axis: 'y', baseX, baseY, range: 140, speed: 1.2, phase, t: 0 }
+    });
+    return [
+      shutter(500,  300, 0),
+      shutter(720,  380, Math.PI),
+      shutter(940,  300, Math.PI * 0.5),
+      { type: 'transparent', x: 1130, y: 360, r: 36 }   // shard reward behind the shutters
+    ];
+  }
+  if (n === 3) {
+    // Bounce Hall: reflective targets reachable only with bank shots.
+    return [
+      { type: 'reflective',  x: 560, y: 360, r: 44, aimGhost: true },
+      { type: 'reflective',  x: 820, y: 220, r: 40 },
+      { type: 'reflective',  x: 820, y: 500, r: 40 },
+      { type: 'transparent', x: 1100, y: 360, r: 34 }   // bank-shot reward
+    ];
+  }
+  if (n === 4) {
+    // Cooling Yard: cyclic panels swap state on a timer.
+    const cycle = (baseX, baseY, phaseOffset) => ({
+      type: 'opaque', x: baseX, y: baseY, r: 44,
+      absorbed: 0, capacity: 3,
+      cycle: { phases: ['opaque', 'translucent', 'transparent'], interval: 2.2, start: -phaseOffset, lastStep: -1 }
+    });
+    return [
+      { type: 'transparent', x: 380, y: 360, r: 36 },
+      cycle(620, 260, 0),
+      cycle(620, 480, 1.1),
+      cycle(880, 360, 2.2),
+      { type: 'transparent', x: 1120, y: 220, r: 34 },
+      { type: 'transparent', x: 1120, y: 500, r: 34 }
+    ];
+  }
+  // Beat 5: Foreman's Gate. Sparse opaque walls; a cyan trail and a gold near the gate.
+  return [
+    { type: 'opaque', x: 520, y: 220, r: 50, absorbed: 0, capacity: 3 },
+    { type: 'opaque', x: 520, y: 500, r: 50, absorbed: 0, capacity: 3 },
+    { type: 'opaque', x: 880, y: 360, r: 56, absorbed: 0, capacity: 4 },
+    { type: 'transparent', x: 1140, y: 360, r: 34 }
+  ];
+}
+
+/* ---------- LEVEL 3: GLASS FOUNDRY ENEMIES (Micropass 21) ----------
+   Simple type-tagged enemies plus enemy projectiles (Crucible globs).
+   Each type teaches one wave behavior: reflection, absorption, or
+   transmission. No boss, no upgrades. */
+const ENEMY_SHARDS = { ember: 1, lensfly: 2, crucible: 2, mirror: 3, sootback: 3 };
+
+function makeEmber(x, y, phase) {
+  return { type: 'ember', x, y, baseX: x, baseY: y, vx: -55, t: phase || 0,
+           r: 11, hp: 1, maxHp: 1, hitFlash: 0, dead: false };
+}
+function makeLensfly(x, y) {
+  return { type: 'lensfly', x, y, baseX: x, baseY: y, t: Math.random() * 6,
+           rWing: 22, rCore: 7, hp: 1, maxHp: 1, hitFlash: 0, dead: false };
+}
+function makeCrucible(x, y) {
+  return { type: 'crucible', x, y, r: 24, hp: 2, maxHp: 2,
+           hitFlash: 0, dead: false, fireTimer: 1.4 };
+}
+function makeMirror(x, y) {
+  return { type: 'mirror', x, y, baseX: x, baseY: y, t: 0,
+           r: 24, hp: 3, maxHp: 3, hitFlash: 0, dead: false };
+}
+function makeSootback(x, y) {
+  return { type: 'sootback', x, y, baseX: x, vx: -28,
+           r: 26, hp: 2, maxHp: 2, hitFlash: 0, dead: false,
+           cycle: 0, isOpen: false };
+}
+
+function buildLevel3Enemies(n) {
+  if (n === 1) {
+    return [ makeEmber(820, 220, 0), makeEmber(980, 460, 1.2), makeEmber(1120, 320, 2.4) ];
+  }
+  if (n === 2) {
+    return [ makeLensfly(1000, 200), makeCrucible(820, ARENA_H - 70) ];
+  }
+  if (n === 3) {
+    return [ makeMirror(1000, 300) ];
+  }
+  if (n === 4) {
+    return [
+      makeEmber(420, 180, 0),
+      makeEmber(560, 540, 1),
+      makeEmber(780, 200, 2),
+      makeEmber(960, 540, 3),
+      makeEmber(1100, 340, 0.6),
+      makeLensfly(760, 180),
+      makeLensfly(1060, 440),
+      makeCrucible(500, ARENA_H - 70),
+      makeMirror(1000, 260)
+    ];
+  }
+  if (n === 5) {
+    return [ makeSootback(820, ARENA_H - 90) ];
+  }
+  return [];
+}
+
+/* ---------- Micropass 24: WAVE DIRECTOR ----------
+   Data-driven enemy rhythm for Glass Foundry. Each entry is anchored to a
+   segment and a per-segment world-x offset (at). At spawn time the wave
+   resolves to one or more concrete enemies, hand-placed shard pickups, or
+   hazard cues. The director replaces the static buildLevel3Enemies layout
+   so each segment gets:
+     1. Entry beat   - small introductory pressure
+     2. Pressure wave - the segment's signature moment
+     3. Reward beat  - risk/reward shard opportunity
+     4. Breather     - intentional 1-2s gap
+     5. Exit beat    - one final cue before the segment transition
+
+   Authoring rules:
+     - No enemy spawns within ~120 px of the player's screen clamp (left
+       third) to prevent unavoidable hits.
+     - Wave entries are listed roughly in 'at' order per segment; the final
+       sort below makes order independent of authoring.
+     - 'cyanShard' kind drops a hand-placed cyan shard for risk/reward
+       trails near hazards. No new shard types are introduced.
+*/
+const L3_WAVES = [
+  /* ===== Segment 1 - The Catwalk : safe but alive ===== */
+  // Entry: a single drifting ember teaches "shoot the floaters."
+  { seg: 1, at: 360,  enemies: [['ember', 880, 220, 0.0]] },
+  // Pressure wave: a small ember stream, no projectile threats.
+  { seg: 1, at: 640,  enemies: [['ember', 880, 460, 0.6], ['ember', 1020, 320, 1.4]] },
+  // Reward beat: optional Lensfly carrying a tiny risk for free shards.
+  { seg: 1, at: 950,  enemies: [['lensfly', 920, 280]] },
+  // Risk/reward shard trail: cyan crumbs along the upper catwalk.
+  { seg: 1, at: 1080, cyanShards: [[880, 200], [980, 200], [1080, 200]] },
+  // Breather: ~1.5s of empty corridor before The Pour begins.
+
+  /* ===== Segment 2 - The Pour : first real pressure ===== */
+  // Entry: paired embers framing the first shutter.
+  { seg: 2, at: 180,  enemies: [['ember', 880, 200, 0.0], ['ember', 980, 520, 1.0]] },
+  // Pressure wave: a Lensfly weaving across the moving shutters.
+  { seg: 2, at: 560,  enemies: [['lensfly', 900, 360]] },
+  // Risk/reward shard trail near a translucent shutter: 3 cyan beads
+  // arranged in front of the second shutter so the player must thread it.
+  { seg: 2, at: 760,  cyanShards: [[880, 320], [940, 360], [1000, 400]] },
+  // Breather: ~1.2s gap.
+  // Escalation: late Crucible introduces projectile pressure for the first time.
+  { seg: 2, at: 1080, enemies: [['crucible', 700, ARENA_H - 70]] },
+  // Exit beat: one drifting ember as cooldown.
+  { seg: 2, at: 1280, enemies: [['ember', 920, 240, 0.0]] },
+
+  /* ===== Segment 3 - The Bounce Hall : reflection challenge ===== */
+  // Entry: embers settle the player into the reflective corridor.
+  { seg: 3, at: 260,  enemies: [['ember', 880, 240, 0.0], ['ember', 880, 480, 1.2]] },
+  // Pressure wave: the segment's signature Mirror Drone, placed after the
+  // ghost-line tutorial mirror. Generous spacing so the player can read it.
+  { seg: 3, at: 640,  enemies: [['mirror', 960, 320]] },
+  // Risk/reward shard cluster behind the reflective geometry - encourages
+  // bank shots, not direct fire.
+  { seg: 3, at: 840,  cyanShards: [[1020, 280], [1080, 320], [1020, 360]] },
+  // Breather, then a single Lensfly as an exit beat.
+  { seg: 3, at: 1120, enemies: [['lensfly', 940, 360]] },
+
+  /* ===== Segment 4 - The Cooling Yard : highest pressure ===== */
+  // Entry: three embers fan in. Sets the high-energy tone.
+  { seg: 4, at: 160,  enemies: [['ember', 860, 180, 0.0], ['ember', 880, 540, 1.0], ['ember', 1020, 360, 2.0]] },
+  // Pressure wave 1: single Lensfly (Micropass 32: removed paired second Lensfly to ease density).
+  { seg: 4, at: 480,  enemies: [['lensfly', 860, 280]] },
+  // Breather window: ~1.5s for shard collection and a power-bar activation.
+  // Risk/reward shard cluster near a cycling opaque/translucent/transparent panel.
+  { seg: 4, at: 720,  cyanShards: [[880, 260], [880, 360], [880, 460]] },
+  // Pressure wave 2: Crucible projectile pressure plus an ember screen.
+  // Micropass 32: pushed from at:880 to at:960 (+80px ~840ms gap) to smooth post-shard rush.
+  { seg: 4, at: 960,  enemies: [['crucible', 700, ARENA_H - 70], ['ember', 1040, 240, 0.5]] },
+  // Escalation: a Mirror Drone arrives as the segment's exit beat.
+  // Micropass 32: pushed from at:1180 to at:1260 to preserve wave-2-to-exit spacing.
+  { seg: 4, at: 1260, enemies: [['mirror', 960, 280], ['ember', 880, 540, 0.8]] },
+
+  /* ===== Segment 5 - Foreman's Gate : tense approach ===== */
+  // Entry: a lone Sootback grinds forward - sustained pressure, not bullet hell.
+  { seg: 5, at: 200,  enemies: [['sootback', 960, ARENA_H - 90]] },
+  // Long breather to let the heart rate drop before the gate.
+  // Sparse embers re-introduce motion.
+  { seg: 5, at: 720,  enemies: [['ember', 920, 240, 0.0], ['ember', 920, 480, 1.0]] },
+  // Optional late Lensfly maintains tension into the final stretch.
+  { seg: 5, at: 1000, enemies: [['lensfly', 950, 360]] }
+];
+
+function instantiateWaveEnemy(spec) {
+  const [type, x, y, phase] = spec;
+  if (type === 'ember')    return makeEmber(x, y, phase || 0);
+  if (type === 'lensfly')  return makeLensfly(x, y);
+  if (type === 'crucible') return makeCrucible(x, y);
+  if (type === 'mirror')   return makeMirror(x, y);
+  if (type === 'sootback') return makeSootback(x, y);
+  return null;
+}
+
+/* Micropass 23 + 24: stitch the five beats and the Wave Director into one
+   continuous scrolling spawn queue. Bubbles come from buildLevel3Beat;
+   enemies and risk/reward shards come from L3_WAVES. */
+function buildLevel3SpawnQueue() {
+  const items = [];
+
+  // Bubbles per segment (unchanged level-3 geometry).
+  for (let i = 0; i < L3_SEGMENTS.length; i++) {
+    const seg = L3_SEGMENTS[i];
+    const bubbles = buildLevel3Beat(i + 1);
+    for (const b of bubbles) {
+      items.push({ kind: 'bubble', worldX: seg.worldX + b.x, data: b });
+    }
+  }
+
+  // Wave Director: enemies and risk/reward shard pickups.
+  for (const wave of L3_WAVES) {
+    const seg = L3_SEGMENTS[wave.seg - 1];
+    if (!seg) continue;
+    if (wave.enemies) {
+      for (const spec of wave.enemies) {
+        const enemy = instantiateWaveEnemy(spec);
+        if (!enemy) continue;
+        // worldX is anchored to the wave's 'at' offset rather than the
+        // enemy's authoring x, so wave timing is decoupled from sprite
+        // geometry. The enemy's screen x is set at spawn time.
+        items.push({ kind: 'enemy', worldX: seg.worldX + wave.at, data: enemy });
+      }
+    }
+    if (wave.cyanShards) {
+      for (const [sx, sy] of wave.cyanShards) {
+        items.push({ kind: 'cyanShard', worldX: seg.worldX + wave.at, x: sx, y: sy });
+      }
+    }
+  }
+
+  // One gold shard sits inside the final segment as a forward-momentum reward.
+  items.push({ kind: 'goldShard', worldX: L3_SEGMENTS[4].worldX + 700, y: ARENA_H / 2 });
+
+  items.sort((a, b) => a.worldX - b.worldX);
+  return items;
+}
+
+function currentL3Segment() {
+  let idx = 1;
+  for (let i = 0; i < L3_SEGMENTS.length; i++) {
+    if (state.distance >= L3_SEGMENTS[i].worldX) idx = L3_SEGMENTS[i].idx;
+  }
+  return idx;
+}
+
+function updateLevel3Scroll(dt) {
+  if (!state || state.level !== 3) return;
+  // Micropass 28: tick floating score popups even after l3Complete so the
+  // Foreman bonus pop finishes its animation behind the win overlay.
+  updateScorePops(dt);
+  if (state.l3Complete || state.over) return;
+  // Micropass 27: combo decays if the player stops collecting.
+  if (state.foundryCombo > 0) {
+    state.comboTimer += dt;
+    if (state.comboTimer >= FOUNDRY_RUN.comboDecaySec) resetFoundryCombo();
+  }
+  // Micropass 25: freeze scrolling and queue-spawning during the boss fight.
+  if (state.bossActive) { updateForeman(dt); return; }
+  const dx = SCROLL_SPEED * dt;
+  state.distance += dx;
+
+  // Drift active world entities leftward in screen space.
+  if (dx > 0) {
+    for (const b of state.bubbles) {
+      b.x -= dx;
+      if (b.mover) b.mover.baseX -= dx;
+    }
+    for (const e of state.enemies) {
+      e.x -= dx;
+      if (e.baseX !== undefined) e.baseX -= dx;
+    }
+    for (const g of state.enemyShots) g.x -= dx;
+    for (const sh of state.shards) sh.x -= dx;
+  }
+
+  // Despawn anything that drifted off the left edge.
+  state.bubbles    = state.bubbles.filter(b => b.x > -80);
+  state.enemies    = state.enemies.filter(e => !e.dead && e.x > -100);
+  state.enemyShots = state.enemyShots.filter(g => g.x > -40 && g.life > 0);
+  state.shards     = state.shards.filter(sh => sh.x > -30 && sh.life > 0);
+
+  // Spawn upcoming queue entries as they enter the right-side spawn window.
+  while (state.l3SpawnIdx < state.l3SpawnQueue.length) {
+    const item = state.l3SpawnQueue[state.l3SpawnIdx];
+    const screenX = item.worldX - state.distance;
+    if (screenX > L3_SPAWN_AHEAD) break;
+    state.l3SpawnIdx++;
+    if (item.kind === 'bubble') {
+      const b = item.data;
+      b.x = screenX;
+      if (b.mover) b.mover.baseX = screenX;
+      if (b.cycle && !b.__anchored) {
+        // Convert the template's -phaseOffset offset into an absolute reference time
+        // so the cycling phases line up with state.elapsed at spawn.
+        b.cycle.start = state.elapsed + b.cycle.start;
+        b.__anchored = true;
+      }
+      state.bubbles.push(b);
+    } else if (item.kind === 'enemy') {
+      const e = item.data;
+      // Wave Director: spawn enemies just past the right edge so they drift
+      // in cleanly. Embers and sootbacks use x as their horizontal anchor;
+      // hovering enemies (lensfly, mirror) use baseX as their sine center.
+      e.x = screenX;
+      if (e.baseX !== undefined) e.baseX = screenX;
+      state.enemies.push(e);
+    } else if (item.kind === 'goldShard') {
+      spawnShard(screenX, item.y, 'gold');
+    } else if (item.kind === 'cyanShard') {
+      // Hand-placed cyan shard for risk/reward trails. screenX already
+      // accounts for the world drift; item.x is the wave's authoring x,
+      // which we use only to bias the screen position so a trail of
+      // shards lines up horizontally as authored.
+      const sx = screenX + (item.x - 920);
+      spawnShard(sx, item.y, 'cyan');
+    }
+  }
+
+  // Segment banner: fire once when the player crosses a segment boundary.
+  const segNow = currentL3Segment();
+  if (segNow !== state.l3LastSegment) {
+    // Micropass 27: pay segment-complete bonus for the segment the player just left.
+    const prevSeg = state.l3LastSegment;
+    if (prevSeg >= 1 && !state.segmentScored[prevSeg]) {
+      state.segmentScored[prevSeg] = true;
+      addFoundryScore(FOUNDRY_RUN.scoreSegment, false);
+      spawnScorePop(ARENA_W / 2, 110,
+        '+' + FOUNDRY_RUN.scoreSegment + ' SEGMENT',
+        { color: '#f5c842', size: 22, life: 1.2, vy: -22, kind: 'big' });
+    }
+    state.l3LastSegment = segNow;
+    state.beat = segNow;
+    const seg = L3_SEGMENTS[segNow - 1];
+    showBanner('SEGMENT ' + segNow + ' / 5', seg.name, 2.4);
+  }
+
+  // Micropass 25: reaching the Foreman Gate triggers the boss, not completion.
+  // completeLevel3() is now only called by the boss-defeat path.
+  if (!state.boss && !state.bossDefeated && state.distance >= L3_GATE_WORLD_X) {
+    spawnForeman();
+  }
+}
+
+/* ---------- Micropass 25: FOREMAN BOSS ----------
+   Vertical-slice boss for Glass Foundry. Three phases test the three core
+   wave behaviors through pure gameplay:
+     Phase 1 - Reflection Cage : direct shots blocked by mirror plating;
+               two reflective panels in the arena let the player bank shots
+               into a transparent lens weak point.
+     Phase 2 - Absorption Wall : matte black plating drinks direct shots; a
+               transparent window opens on a timer. Photon Burst briefly
+               strips the plating for a free volley.
+     Phase 3 - Transmission Pour : the core is exposed but a cycling material
+               panel (opaque -> translucent -> transparent) gates damage by
+               the player's read of state.
+   Boss state lives on state.boss; spawn/defeat manage state.bossActive and
+   state.bossDefeated for the scrolling and completion hand-off. */
+const FOREMAN = {
+  // Layout (the boss sits in the right third of the arena).
+  cx:           ARENA_W - 250,
+  cy:           ARENA_H / 2,
+  bodyR:        110,    // outer body radius
+  weakR:        26,     // weak-point lens radius
+  phaseHp:      [10, 10, 8],   // hp budget per phase (total ~28 hits)
+  // Phase 1: two reflective panels framing the arena center.
+  panelTopY:    180,
+  panelBotY:    ARENA_H - 180,
+  panelX:       ARENA_W - 560,
+  panelR:       46,
+  // Phase 2: the absorption window timing.
+  p2WindowOn:   1.6,    // sec window is open and core is hittable
+  p2WindowOff:  2.4,    // sec window is closed (direct shots absorbed)
+  p2BurstStun:  1.5,    // sec the plating is stripped after a Photon Burst
+  // Phase 3: cycling panel timing.
+  p3OpaqueT:    1.6,
+  p3TransluT:   1.6,
+  p3TranspT:    1.8,    // transparent window is the longest, generous on purpose
+  // Attack pacing.
+  p1FireEvery:  2.4,
+  p2FireEvery:  3.0,
+  p3SparkEvery: 1.5
+};
+
+function spawnForeman() {
+  // Clean up minor field elements so the showdown reads cleanly.
+  state.enemies    = [];
+  state.enemyShots = [];
+  state.bubbles    = [];
+
+  state.boss = {
+    phase:        1,
+    hp:           FOREMAN.phaseHp[0],
+    maxHp:        FOREMAN.phaseHp[0],
+    hitFlash:     0,
+    iframes:      0,
+    // Phase 1.
+    p1FireTimer:  FOREMAN.p1FireEvery,
+    // Phase 2.
+    p2Timer:      0,       // counts up; window opens/closes by modulo
+    p2BurstUntil: 0,       // state.elapsed value while plating is stripped
+    p2FireTimer:  FOREMAN.p2FireEvery,
+    // Phase 3.
+    p3Timer:      0,
+    p3State:      'opaque',
+    p3SparkTimer: FOREMAN.p3SparkEvery,
+    // Death.
+    dying:        false,
+    deathAge:     0,
+    // Polish fields (Micropass 26).
+    p1GlowActive:      false,   // amber glow on arm tips before Phase 1 fires
+    p1TelegraphPlayed: false,   // chime plays once per charge cycle
+    p2WindowWasOpen:   false,   // edge detection for window-open event
+    p3StateFlash:      0,       // brief lens flash on material state change
+    phaseTransTimer:   0,       // >0 = boss attacks paused during transition beat
+    _deathRing1:       false,   // ring + shake at ~0.8 s into death
+    _deathRing2:       false    // final ring + defeat SFX at ~1.5 s
+  };
+  state.bossActive = true;
+  state.bossDefeated = false;
+  state.bossSpawnT = state.elapsed;
+  // Phase 1 reflective panels live as enemies of type 'mirror' so existing
+  // shot/mirror reflection geometry handles them with no new collision code.
+  // hp is set very high so the player cannot break them during the fight.
+  const panelTop = makeMirror(FOREMAN.panelX, FOREMAN.panelTopY);
+  panelTop.hp = panelTop.maxHp = 999; panelTop.bossPanel = true;
+  const panelBot = makeMirror(FOREMAN.panelX, FOREMAN.panelBotY);
+  panelBot.hp = panelBot.maxHp = 999; panelBot.bossPanel = true;
+  state.enemies.push(panelTop, panelBot);
+
+  showBanner('REFLECTION CAGE', 'Bank your shots off the mirrors to hit the lens.', 2.6);
+  SFX.win && SFX.win(); // brief sting; reuses the existing chime
+}
+
+function bossWeakPoint() {
+  // The lens weak point is just to the left of the boss center, where the
+  // player will naturally aim. Phase 3 moves it slightly to read as exposed.
+  const b = state.boss;
+  if (!b) return null;
+  const off = (b.phase === 3) ? -FOREMAN.bodyR * 0.65 : -FOREMAN.bodyR * 0.55;
+  return { x: FOREMAN.cx + off, y: FOREMAN.cy, r: FOREMAN.weakR };
+}
+
+function bossFireGlob(speed, life) {
+  const b = state.boss;
+  if (!b) return;
+  const wp = bossWeakPoint();
+  const sx = wp.x, sy = wp.y;
+  const dx = state.ship.x - sx, dy = state.ship.y - sy;
+  const d = Math.hypot(dx, dy) || 1;
+  const sp = speed || 150;
+  state.enemyShots.push({
+    x: sx, y: sy, vx: dx / d * sp, vy: dy / d * sp,
+    r: 10, life: life || 3.6, pulse: Math.random() * 6
+  });
+  SFX.translucent && SFX.translucent();
+}
+
+function bossFireSpark() {
+  // Phase 3: slow drifting embers as light pressure. Reuse the existing ember
+  // enemy so collision and rendering already work.
+  const e = makeEmber(FOREMAN.cx - FOREMAN.bodyR, FOREMAN.cy - 100 + Math.random() * 200, Math.random() * 6);
+  e.vx = -70;
+  state.enemies.push(e);
+}
+
+function updateForeman(dt) {
+  if (!state.boss) return;
+  const b = state.boss;
+  b.hitFlash = Math.max(0, b.hitFlash - dt);
+  b.iframes  = Math.max(0, b.iframes  - dt);
+  if (b.p3StateFlash) b.p3StateFlash = Math.max(0, b.p3StateFlash - dt);
+
+  if (b.dying) {
+    b.deathAge += dt;
+    // Staged death ring beats.
+    if (!b._deathRing1 && b.deathAge >= 0.8) {
+      b._deathRing1 = true;
+      state.rings.push({ x: FOREMAN.cx, y: FOREMAN.cy, radius: FOREMAN.bodyR * 0.35,
+        speed: 340, life: 0.55, maxLife: 0.55, color: 'rgba(255,220,140,' });
+      state.shake = Math.max(state.shake, 10);
+    }
+    if (!b._deathRing2 && b.deathAge >= 1.5) {
+      b._deathRing2 = true;
+      state.rings.push({ x: FOREMAN.cx, y: FOREMAN.cy, radius: 12,
+        speed: 560, life: 0.65, maxLife: 0.65, color: 'rgba(255,250,220,' });
+      state.rings.push({ x: FOREMAN.cx, y: FOREMAN.cy, radius: 24,
+        speed: 400, life: 0.75, maxLife: 0.75, color: 'rgba(255,200,120,' });
+      state.shake = Math.max(state.shake, 18);
+      SFX.bossDefeat && SFX.bossDefeat();
+    }
+    // Ember particles escape throughout the death sequence.
+    if (b.deathAge < 1.7 && Math.random() < 0.65) {
+      const ang = Math.random() * Math.PI * 2;
+      const rr  = FOREMAN.bodyR * (0.2 + Math.random() * 0.65);
+      state.particles.push({
+        x: FOREMAN.cx + Math.cos(ang) * rr,
+        y: FOREMAN.cy + Math.sin(ang) * rr,
+        vx: Math.cos(ang) * (55 + Math.random() * 95),
+        vy: Math.sin(ang) * (55 + Math.random() * 95),
+        life: 0.4 + Math.random() * 0.5, maxLife: 0.9,
+        size: 2 + Math.random() * 3,
+        color: 'rgba(255,200,120,'
+      });
+    }
+    if (b.deathAge >= 2.0) finishForemanDefeat();
+    return;
+  }
+
+  // Phase transition freeze: boss holds fire so the beat lands cleanly.
+  if (b.phaseTransTimer > 0) {
+    b.phaseTransTimer -= dt;
+    return;
+  }
+
+  if (b.phase === 1) {
+    b.p1FireTimer -= dt;
+    // Telegraph: arm tips glow amber in the 0.8 s window before each glob.
+    b.p1GlowActive = (b.p1FireTimer > 0 && b.p1FireTimer <= 0.8);
+    if (b.p1GlowActive && !b.p1TelegraphPlayed) {
+      b.p1TelegraphPlayed = true;
+      SFX.p3StateChange && SFX.p3StateChange();
+    }
+    if (b.p1FireTimer <= 0) {
+      b.p1FireTimer = FOREMAN.p1FireEvery + Math.random() * 0.6;
+      b.p1GlowActive = false;
+      b.p1TelegraphPlayed = false;
+      bossFireGlob(150, 4.0);
+    }
+  } else if (b.phase === 2) {
+    b.p2Timer += dt;
+    b.p2FireTimer -= dt;
+    // Detect window-open edge and play a cue.
+    const nowOpen = bossPhase2WindowOpen();
+    if (nowOpen && !b.p2WindowWasOpen) {
+      SFX.p2WindowOpen && SFX.p2WindowOpen();
+      const wp = bossWeakPoint();
+      if (wp) {
+        state.rings.push({ x: wp.x, y: wp.y, radius: FOREMAN.weakR,
+          speed: 170, life: 0.42, maxLife: 0.42, color: 'rgba(255,220,140,' });
+      }
+    }
+    b.p2WindowWasOpen = nowOpen;
+    if (b.p2FireTimer <= 0) {
+      b.p2FireTimer = FOREMAN.p2FireEvery + Math.random() * 0.6;
+      bossFireGlob(135, 4.2);
+    }
+  } else if (b.phase === 3) {
+    b.p3Timer += dt;
+    const cyc = FOREMAN.p3OpaqueT + FOREMAN.p3TransluT + FOREMAN.p3TranspT;
+    const t = b.p3Timer % cyc;
+    const prevState = b.p3State;
+    if (t < FOREMAN.p3OpaqueT) b.p3State = 'opaque';
+    else if (t < FOREMAN.p3OpaqueT + FOREMAN.p3TransluT) b.p3State = 'translucent';
+    else b.p3State = 'transparent';
+    // Detect material state change - flash lens and play audio cue.
+    if (b.p3State !== prevState) {
+      b.p3StateFlash = 0.30;
+      SFX.p3StateChange && SFX.p3StateChange();
+      // Extra open-window chime when the vulnerable transparent window arrives.
+      if (b.p3State === 'transparent') SFX.p2WindowOpen && SFX.p2WindowOpen();
+    }
+    b.p3SparkTimer -= dt;
+    if (b.p3SparkTimer <= 0) {
+      b.p3SparkTimer = FOREMAN.p3SparkEvery + Math.random() * 0.6;
+      bossFireSpark();
+    }
+  }
+}
+
+function bossPhase2WindowOpen() {
+  const b = state.boss;
+  if (!b || b.phase !== 2) return false;
+  if (state.elapsed < b.p2BurstUntil) return true;
+  const cyc = FOREMAN.p2WindowOn + FOREMAN.p2WindowOff;
+  const t = b.p2Timer % cyc;
+  return t < FOREMAN.p2WindowOn;
+}
+
+/* Returns a damage multiplier the boss takes for this shot, or 0 if blocked. */
+function bossDamageFromShot(sh) {
+  const b = state.boss;
+  if (!b) return 0;
+  if (b.phase === 1) {
+    // Only reflected (banked) shots damage the boss in Phase 1.
+    return sh.reflected ? 1 : 0;
+  }
+  if (b.phase === 2) {
+    return bossPhase2WindowOpen() ? 1 : 0;
+  }
+  if (b.phase === 3) {
+    if (b.p3State === 'opaque')      return 0;
+    if (b.p3State === 'translucent') return 0.5;
+    return 1; // transparent
+  }
+  return 0;
+}
+
+function damageBoss(amt, hx, hy) {
+  const b = state.boss;
+  if (!b || b.iframes > 0 || b.dying) return;
+  b.hp -= amt;
+  b.hitFlash = 0.22;
+  b.iframes  = 0.06;
+  for (let i = 0; i < 6; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp  = 80 + Math.random() * 160;
+    state.particles.push({
+      x: hx, y: hy, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+      life: 0.32, maxLife: 0.32, size: 2,
+      color: 'rgba(255,233,138,'
+    });
+  }
+  SFX.bossHit && SFX.bossHit();
+  if (b.hp <= 0) advanceBossPhase();
+}
+
+function advanceBossPhase() {
+  const b = state.boss;
+  if (!b) return;
+  if (b.phase < 3) {
+    // Transition: brief boss-attack pause, shockwave rings, phase label banner.
+    b.phase += 1;
+    b.maxHp = FOREMAN.phaseHp[b.phase - 1];
+    b.hp    = b.maxHp;
+    b.iframes = 0.9;
+    b.phaseTransTimer = 0.5; // hold fire during the beat
+    // Three rings: amber shockwave, secondary flash, inner white burst.
+    state.rings.push({
+      x: FOREMAN.cx, y: FOREMAN.cy, radius: FOREMAN.bodyR,
+      speed: 480, life: 0.55, maxLife: 0.55,
+      color: 'rgba(255,180,90,'
+    });
+    state.rings.push({
+      x: FOREMAN.cx, y: FOREMAN.cy, radius: FOREMAN.bodyR + 22,
+      speed: 360, life: 0.65, maxLife: 0.65,
+      color: 'rgba(255,240,200,'
+    });
+    state.rings.push({
+      x: FOREMAN.cx, y: FOREMAN.cy, radius: 6,
+      speed: 300, life: 0.60, maxLife: 0.60,
+      color: 'rgba(255,255,255,'
+    });
+    state.shake = Math.max(state.shake, 14);
+    // Phase labels name the mechanic the player is about to face.
+    const label = (b.phase === 2) ? 'ABSORPTION WALL' : 'TRANSMISSION POUR';
+    const hint  = (b.phase === 2)
+      ? 'Wait for the window. Burst opens the plating.'
+      : 'Read the cycle. Strike when the panel turns clear.';
+    showBanner(label, hint, 2.4);
+    SFX.bossPhaseTransition && SFX.bossPhaseTransition();
+  } else {
+    // Phase 3 cleared: start the staged death sequence.
+    b.dying = true;
+    b.deathAge = 0;
+    state.shake = Math.max(state.shake, 18);
+    state.enemyShots = []; // clear projectiles for a clean finish moment
+    state.rings.push({
+      x: FOREMAN.cx, y: FOREMAN.cy, radius: FOREMAN.bodyR + 6,
+      speed: 700, life: 0.7, maxLife: 0.7,
+      color: 'rgba(255,233,138,'
+    });
+    state.rings.push({
+      x: FOREMAN.cx, y: FOREMAN.cy, radius: FOREMAN.bodyR + 28,
+      speed: 520, life: 0.8, maxLife: 0.8,
+      color: 'rgba(255,200,120,'
+    });
+    SFX.bossPhaseClear && SFX.bossPhaseClear();
+  }
+}
+
+/* Boss vs player-shot collision. Mirror panels are still handled by the
+   existing handleShotEnemyCollisions; here we only check the weak-point hit
+   against the boss body. */
+function handleShotBossCollisions() {
+  if (!state.boss || state.boss.dying) return;
+  const b = state.boss;
+  const wp = bossWeakPoint();
+  for (const sh of state.shots) {
+    if (sh.life <= 0) continue;
+    // Body absorbs shots that miss the weak point (so the boss reads as solid).
+    const dbx = sh.x - FOREMAN.cx, dby = sh.y - FOREMAN.cy;
+    if (dbx * dbx + dby * dby > FOREMAN.bodyR * FOREMAN.bodyR) continue;
+    const dwx = sh.x - wp.x, dwy = sh.y - wp.y;
+    const hitWeak = (dwx * dwx + dwy * dwy <= wp.r * wp.r);
+    if (hitWeak) {
+      const mult = bossDamageFromShot(sh);
+      if (mult > 0) {
+        damageBoss(mult, sh.x, sh.y);
+      } else {
+        // Plating/cycle blocked the shot. Visible spark, shot dies.
+        spawnImpact && spawnImpact(sh.x, sh.y);
+        SFX.opaque && SFX.opaque();
+      }
+      sh.life = 0;
+    } else {
+      // Hit the body shell, never the lens. Absorbed.
+      spawnImpact && spawnImpact(sh.x, sh.y);
+      sh.life = 0;
+    }
+  }
+}
+
+/* Boss vs Photon Burst: strip the absorption plating in phase 2 briefly. */
+function bossOnPhotonBurst(burstX, burstY, radius) {
+  if (!state.boss || state.boss.dying) return;
+  const b = state.boss;
+  const dx = FOREMAN.cx - burstX, dy = FOREMAN.cy - burstY;
+  if (dx * dx + dy * dy > (radius + FOREMAN.bodyR) * (radius + FOREMAN.bodyR)) return;
+  if (b.phase === 2) {
+    b.p2BurstUntil = state.elapsed + FOREMAN.p2BurstStun;
+    damageBoss(2, FOREMAN.cx - FOREMAN.bodyR * 0.5, FOREMAN.cy);
+  } else if (b.phase === 1 || b.phase === 3) {
+    // Modest contribution outside phase 2 so Burst is never useless.
+    damageBoss(1, FOREMAN.cx - FOREMAN.bodyR * 0.5, FOREMAN.cy);
+  }
+}
+
+/* Boss body contact pushes the ship out (no instakill on touch). */
+function handleBossPlayerContact() {
+  if (!state.boss || state.boss.dying) return;
+  const s = state.ship;
+  if (s.iframes > 0) return;
+  const dx = s.x - FOREMAN.cx, dy = s.y - FOREMAN.cy;
+  const rr = SHIP.radius + FOREMAN.bodyR * 0.9;
+  if (dx * dx + dy * dy < rr * rr) {
+    if (consumeShieldIfAny(FOREMAN.cx, FOREMAN.cy)) return;
+    s.health = Math.max(0, s.health - 6);
+    s.iframes = 0.7;
+    state.shake = 10;
+    spawnImpact(s.x, s.y);
+    state.counts.hits += 1;
+    SFX.damage && SFX.damage();
+    if (state.level === 3) resetFoundryCombo();
+    if (s.health <= 0) loseGame();
+  }
+}
+
+function finishForemanDefeat() {
+  state.bossActive   = false;
+  state.bossDefeated = true;
+  state.boss = null;
+  state.enemies = state.enemies.filter(e => !e.bossPanel);
+  spawnShards(FOREMAN.cx - 40, FOREMAN.cy, 18, 'cyan');
+  spawnShards(FOREMAN.cx,      FOREMAN.cy, 3,  'gold');
+  // Micropass 27: also pay any unpaid segment-complete bonuses (segments 4 and 5)
+  // and the Foreman bounty into the Foundry run score.
+  for (let i = 1; i <= L3_SEGMENTS.length; i++) {
+    if (!state.segmentScored[i]) {
+      state.segmentScored[i] = true;
+      addFoundryScore(FOUNDRY_RUN.scoreSegment, false);
+    }
+  }
+  addFoundryScore(FOUNDRY_RUN.scoreForeman, false);
+  // Micropass 28: celebratory pop near the boss center for the kill bonus.
+  spawnScorePop(FOREMAN.cx, FOREMAN.cy - FOREMAN.bodyR - 10,
+    '+' + FOUNDRY_RUN.scoreForeman + ' FOREMAN',
+    { color: '#ffd76b', size: 28, life: 1.6, vy: -26, kind: 'banner' });
+  completeLevel3();
+}
+
+/* ---------- Foreman rendering (Micropass 26 polish) ---------- */
+function drawForeman() {
+  if (!state.boss) return;
+  const b = state.boss;
+  const cx = FOREMAN.cx, cy = FOREMAN.cy;
+  const flash = b.hitFlash > 0;
+  const armT = state.elapsed * 0.6;
+  ctx.save();
+
+  // Soft furnace heat-haze halo. Phase 2 is darker; Phase 3 is amber-warm.
+  const haloAlpha = b.phase === 2 ? 0.20 : 0.35;
+  const haloColor = b.phase === 2 ? '160,90,60' : '255,180,90';
+  const halo = ctx.createRadialGradient(cx, cy, FOREMAN.bodyR * 0.4, cx, cy, FOREMAN.bodyR * 1.6);
+  halo.addColorStop(0, `rgba(${haloColor},${haloAlpha})`);
+  halo.addColorStop(1, `rgba(${haloColor},0.0)`);
+  ctx.fillStyle = halo;
+  ctx.beginPath(); ctx.arc(cx, cy, FOREMAN.bodyR * 1.6, 0, Math.PI * 2); ctx.fill();
+
+  // Four industrial arms.
+  ctx.strokeStyle = 'rgba(80,60,50,0.85)';
+  ctx.lineWidth = 14;
+  for (let i = 0; i < 4; i++) {
+    const ang = armT + i * Math.PI / 2;
+    const x1 = cx + Math.cos(ang) * (FOREMAN.bodyR * 0.6);
+    const y1 = cy + Math.sin(ang) * (FOREMAN.bodyR * 0.6);
+    const x2 = cx + Math.cos(ang) * (FOREMAN.bodyR * 1.35);
+    const y2 = cy + Math.sin(ang) * (FOREMAN.bodyR * 1.35);
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    // Tool tip - glows amber when Phase 1 is charging.
+    if (b.phase === 1 && b.p1GlowActive) {
+      const glowPct = 1 - (b.p1FireTimer / 0.8);
+      ctx.save();
+      ctx.shadowColor = 'rgba(255,160,60,0.95)';
+      ctx.shadowBlur = 16 + glowPct * 14;
+      ctx.fillStyle = `rgba(255,${Math.floor(130 + glowPct * 80)},50,${(0.85 + glowPct * 0.15).toFixed(3)})`;
+      ctx.beginPath(); ctx.arc(x2, y2, 10 + glowPct * 5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    } else {
+      ctx.fillStyle = 'rgba(180,140,100,0.9)';
+      ctx.beginPath(); ctx.arc(x2, y2, 10, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  // Body shell tinted by phase.
+  let shellFill, shellEdge;
+  if (b.phase === 1) {
+    shellFill = 'rgba(190,210,225,0.55)';
+    shellEdge = 'rgba(220,235,250,0.95)';
+  } else if (b.phase === 2) {
+    const stripped = state.elapsed < b.p2BurstUntil;
+    shellFill = stripped ? 'rgba(120,90,70,0.85)' : 'rgba(30,28,32,0.95)';
+    shellEdge = stripped ? 'rgba(255,210,150,0.95)' : 'rgba(80,70,80,0.9)';
+  } else {
+    shellFill = 'rgba(255,180,90,0.45)';
+    shellEdge = 'rgba(255,210,150,0.95)';
+  }
+  ctx.shadowColor = 'rgba(255,160,80,0.7)';
+  ctx.shadowBlur = 22;
+  ctx.fillStyle = flash ? 'rgba(255,255,255,0.85)' : shellFill;
+  ctx.beginPath(); ctx.arc(cx, cy, FOREMAN.bodyR, 0, Math.PI * 2); ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = shellEdge;
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(cx, cy, FOREMAN.bodyR, 0, Math.PI * 2); ctx.stroke();
+
+  // Furnace core visibility.
+  let coreVisible = true;
+  let coreTint = 'rgba(255,210,90,';
+  if (b.phase === 2) {
+    coreVisible = bossPhase2WindowOpen();
+  } else if (b.phase === 3) {
+    if (b.p3State === 'opaque')           { coreVisible = false; }
+    else if (b.p3State === 'translucent') { coreTint = 'rgba(255,200,140,'; }
+  }
+
+  // Weak-point lens.
+  const wp = bossWeakPoint();
+  ctx.save();
+
+  // Phase 2: pulsing ring around the window when it is open (telegraph).
+  if (b.phase === 2 && coreVisible) {
+    const wpPulse = 0.75 + 0.25 * Math.sin(state.elapsed * 9);
+    ctx.shadowColor = 'rgba(255,220,140,0.9)';
+    ctx.shadowBlur = 18 * wpPulse;
+    ctx.strokeStyle = `rgba(255,220,140,${(0.65 + 0.35 * wpPulse).toFixed(3)})`;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r + 8 + wpPulse * 4, 0, Math.PI * 2); ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // Phase 3: material state indicator ring around the lens.
+  if (b.phase === 3) {
+    let stateColor, stateDash;
+    if (b.p3State === 'opaque')           { stateColor = 'rgba(230,126,34,0.80)'; stateDash = [4, 4]; }
+    else if (b.p3State === 'translucent') { stateColor = 'rgba(220,200,160,0.70)'; stateDash = [7, 3]; }
+    else                                  { stateColor = 'rgba(140,250,190,0.95)'; stateDash = []; }
+    const p3Pulse = 0.85 + 0.15 * Math.sin(state.elapsed * 7);
+    ctx.shadowColor = stateColor;
+    ctx.shadowBlur = (b.p3State === 'transparent') ? 16 : 8;
+    ctx.strokeStyle = stateColor;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash(stateDash);
+    ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r + 10 * p3Pulse, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.shadowBlur = 0;
+  }
+
+  // Lens state flash (brief bright overlay on material state change).
+  if (b.p3StateFlash > 0) {
+    ctx.globalAlpha = (b.p3StateFlash / 0.30) * 0.55;
+    ctx.fillStyle = 'rgba(255,250,220,1)';
+    ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r * 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // Lens fill and stroke.
+  ctx.shadowColor = 'rgba(255,200,90,0.9)';
+  ctx.shadowBlur = 20;
+  if (b.phase === 1) {
+    ctx.fillStyle = 'rgba(140,250,190,0.28)';
+    ctx.strokeStyle = 'rgba(180,255,210,0.98)';
+  } else if (b.phase === 2) {
+    if (coreVisible) {
+      ctx.fillStyle = 'rgba(255,220,140,0.60)';
+      ctx.strokeStyle = 'rgba(255,233,138,0.98)';
+    } else {
+      ctx.fillStyle = 'rgba(20,18,22,0.92)';
+      ctx.strokeStyle = 'rgba(60,55,65,0.95)';
+    }
+  } else {
+    if (b.p3State === 'opaque') {
+      ctx.fillStyle = 'rgba(40,30,30,0.95)';
+      ctx.strokeStyle = 'rgba(120,90,70,0.95)';
+    } else if (b.p3State === 'translucent') {
+      ctx.fillStyle = 'rgba(220,200,170,0.58)';
+      ctx.strokeStyle = 'rgba(245,225,190,0.95)';
+    } else {
+      ctx.fillStyle = 'rgba(140,250,190,0.32)';
+      ctx.strokeStyle = 'rgba(180,255,210,0.98)';
+    }
+  }
+  ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  // Inner core glow when visible.
+  if (coreVisible) {
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = coreTint + '0.88)';
+    ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r * 0.55, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+
+  // Phase 1: bank-shot hint dashes. Full-alpha for the first 3.5 s, then
+  // Micropass 30: persist at low alpha throughout Phase 1 so the cue never
+  // vanishes entirely for students who haven't solved the mechanic yet.
+  if (b.phase === 1) {
+    const hintAge = state.elapsed - (state.bossSpawnT || 0);
+    const lineAlpha = hintAge < 3.5 ? 0.35 : 0.12;
+    ctx.strokeStyle = 'rgba(180,255,210,' + lineAlpha + ')';
+    ctx.setLineDash([6, 8]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(FOREMAN.panelX, FOREMAN.panelTopY);
+    ctx.lineTo(wp.x, wp.y);
+    ctx.moveTo(FOREMAN.panelX, FOREMAN.panelBotY);
+    ctx.lineTo(wp.x, wp.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  ctx.restore();
+
+  // Staged death sequence (Micropass 26).
+  if (b.dying) {
+    ctx.save();
+    const da = b.deathAge;
+
+    // Stage 1: crack glow lines radiating outward (0 - 1.2 s).
+    if (da < 1.2) {
+      const crackFade = 1 - da / 1.2;
+      ctx.save();
+      ctx.shadowColor = 'rgba(255,233,138,0.9)';
+      ctx.shadowBlur = 10;
+      ctx.strokeStyle = `rgba(255,233,138,${(crackFade * 0.75).toFixed(3)})`;
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 6; i++) {
+        const ang = (i / 6) * Math.PI * 2 + 0.52;
+        const inner = 16;
+        const outer = FOREMAN.bodyR * 0.45 + da * 85;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(ang) * inner, cy + Math.sin(ang) * inner);
+        ctx.lineTo(cx + Math.cos(ang) * outer, cy + Math.sin(ang) * outer);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // Stage 2: furnace core flicker (0.4 - 1.6 s).
+    if (da > 0.4 && da < 1.6 && Math.random() < 0.55) {
+      const flickIn = Math.min(1, (da - 0.4) / 0.4);
+      ctx.save();
+      ctx.globalAlpha = flickIn * 0.60;
+      ctx.shadowColor = 'rgba(255,160,60,0.9)';
+      ctx.shadowBlur = 28;
+      ctx.fillStyle = 'rgba(255,160,60,1)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, FOREMAN.bodyR * (0.28 + Math.random() * 0.18), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Stage 3: pre-flash dim expansion (0 - 1.5 s).
+    if (da < 1.5) {
+      const t = da / 1.5;
+      ctx.save();
+      ctx.globalAlpha = 0.50 * (1 - t);
+      ctx.fillStyle = 'rgba(255,233,138,1)';
+      ctx.beginPath(); ctx.arc(cx, cy, FOREMAN.bodyR * (1 + t * 0.7), 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    // Stage 4: final white flash (1.5 - 2.0 s).
+    if (da >= 1.5) {
+      const flashT = Math.min(1, (da - 1.5) / 0.5);
+      ctx.save();
+      ctx.globalAlpha = (1 - flashT) * 0.92;
+      ctx.shadowColor = 'rgba(255,250,220,0.8)';
+      ctx.shadowBlur = 40;
+      ctx.fillStyle = 'rgba(255,252,230,1)';
+      ctx.beginPath(); ctx.arc(cx, cy, FOREMAN.bodyR * (1 + flashT * 1.7), 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+}
+
+/* HUD HP bar overlay rendered on the canvas during the boss fight. */
+function drawForemanHpBar() {
+  if (!state.boss) return;
+  const b = state.boss;
+  const w = 360, h = 12;
+  const cx = ARENA_W / 2;
+  const x  = cx - w / 2;
+  const y  = 62;
+  ctx.save();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(10,12,16,0.7)';
+  ctx.fillRect(x - 6, y - 42, w + 12, h + 48);
+  const phaseNames = ['REFLECTION CAGE', 'ABSORPTION WALL', 'TRANSMISSION POUR'];
+  const phaseHudColors = ['rgba(180,235,250,0.95)', 'rgba(230,126,34,0.95)', 'rgba(255,210,120,0.95)'];
+  ctx.font = 'bold 13px system-ui, sans-serif';
+  ctx.textBaseline = 'top';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(245,200,66,0.95)';
+  ctx.fillText('FOREMAN', cx, y - 36);
+  ctx.fillStyle = phaseHudColors[b.phase - 1];
+  ctx.fillText(phaseNames[b.phase - 1], cx, y - 20);
+  ctx.textAlign = 'left';
+  ctx.fillStyle = 'rgba(40,30,30,0.85)';
+  ctx.fillRect(x, y, w, h);
+  const frac = Math.max(0, b.hp / b.maxHp);
+  const tint = b.phase === 1 ? 'rgba(180,235,250,0.95)'
+             : b.phase === 2 ? 'rgba(230,126,34,0.95)'
+             :                  'rgba(255,210,120,0.95)';
+  ctx.fillStyle = tint;
+  ctx.fillRect(x, y, w * frac, h);
+  ctx.strokeStyle = 'rgba(255,233,138,0.85)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  ctx.restore();
+}
+
+function updateEnemies(dt) {
+  if (state.level !== 3) return;
+  for (const e of state.enemies) {
+    if (e.dead) continue;
+    e.hitFlash = Math.max(0, e.hitFlash - dt);
+    if (e.type === 'ember') {
+      e.t += dt;
+      e.x += e.vx * dt;
+      e.y = e.baseY + Math.sin(e.t * 2.2) * 38;
+      if (e.x < -30) {
+        // Micropass 23: scrolling Foundry despawns embers at the left edge
+        // instead of wrapping them, so the world feels one-directional.
+        if (state.level === 3) { e.dead = true; }
+        else { e.x = ARENA_W + 30; e.baseY = 100 + Math.random() * (ARENA_H - 200); }
+      }
+    } else if (e.type === 'lensfly') {
+      e.t += dt;
+      e.x = e.baseX + Math.sin(e.t * 0.85) * 58;
+      e.y = e.baseY + Math.cos(e.t * 1.25) * 46;
+    } else if (e.type === 'crucible') {
+      e.fireTimer -= dt;
+      if (e.fireTimer <= 0) {
+        e.fireTimer = 2.6 + Math.random() * 0.6;
+        const dx = state.ship.x - e.x, dy = state.ship.y - (e.y - 16);
+        const d = Math.hypot(dx, dy) || 1;
+        const sp = 175;
+        state.enemyShots.push({ x: e.x, y: e.y - 16, vx: dx / d * sp, vy: dy / d * sp,
+                                r: 9, life: 3.4, pulse: Math.random() * 6 });
+        SFX.translucent();
+      }
+    } else if (e.type === 'mirror') {
+      e.t += dt;
+      e.y = e.baseY + Math.sin(e.t * 1.3) * 28;
+    } else if (e.type === 'sootback') {
+      e.cycle += dt;
+      const period = 5.0;
+      const phase = e.cycle % period;
+      e.isOpen = phase > 3.0;
+      e.x += e.vx * dt;
+      // Micropass 23: sootback bounds are relative to its drifting baseX
+      // so the patrol stays consistent as the world scrolls past.
+      const sbMin = e.baseX - 80;
+      const sbMax = e.baseX + 80;
+      if (e.x < sbMin) { e.x = sbMin; e.vx = Math.abs(e.vx); }
+      if (e.x > sbMax) { e.x = sbMax; e.vx = -Math.abs(e.vx); }
+    }
+  }
+  state.enemies = state.enemies.filter(e => !e.dead);
+}
+
+function updateEnemyShots(dt) {
+  for (const g of state.enemyShots) {
+    g.x += g.vx * dt;
+    g.y += g.vy * dt;
+    g.life -= dt;
+    g.pulse = (g.pulse || 0) + dt * 4;
+  }
+  state.enemyShots = state.enemyShots.filter(g =>
+    g.life > 0 && g.x > -30 && g.x < ARENA_W + 30 && g.y > -30 && g.y < ARENA_H + 30
+  );
+}
+
+function spawnEnemyDefeat(x, y) {
+  state.rings.push({ x, y, radius: 4, speed: 200, life: 0.4, maxLife: 0.4, color: 'rgba(140,225,250,' });
+  for (let i = 0; i < 14; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp  = 90 + Math.random() * 180;
+    state.particles.push({
+      x, y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+      life: 0.4 + Math.random() * 0.25, maxLife: 0.65,
+      size: 2 + Math.random() * 2,
+      color: 'rgba(180,235,250,'
+    });
+  }
+}
+
+function damageEnemy(e, amt, hx, hy) {
+  e.hp -= amt;
+  e.hitFlash = 0.22;
+  for (let i = 0; i < 4; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp = 60 + Math.random() * 120;
+    state.particles.push({
+      x: hx, y: hy, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+      life: 0.28, maxLife: 0.28, size: 1.8,
+      color: 'rgba(255,233,138,'
+    });
+  }
+  if (e.hp <= 0) {
+    e.dead = true;
+    spawnEnemyDefeat(e.x, e.y);
+    spawnShards(e.x, e.y, ENEMY_SHARDS[e.type] || 1, 'cyan');
+    SFX.overload();
+    // Micropass 27: enemy defeats feed Foundry run score (combo-scaled).
+    if (state.level === 3) {
+      const mult = foundryComboMult();
+      const awarded = Math.round(FOUNDRY_RUN.scoreEnemy * mult);
+      addFoundryScore(FOUNDRY_RUN.scoreEnemy, true);
+      const suffix = mult > 1 ? '  ' + comboMultLabel(mult) : '';
+      spawnScorePop(e.x, e.y - 14, '+' + awarded + suffix,
+        { color: '#ffae5e', size: 14 });
+    }
+  } else {
+    SFX.fire();
+  }
+}
+
+function handleShotEnemyCollisions() {
+  for (const sh of state.shots) {
+    if (sh.life <= 0) continue;
+    for (const e of state.enemies) {
+      if (e.dead) continue;
+
+      if (e.type === 'lensfly') {
+        // Only the core counts. Wings transmit the shot.
+        if (dist2(sh.x, sh.y, e.x, e.y) > e.rCore * e.rCore) continue;
+        damageEnemy(e, 1, sh.x, sh.y);
+        sh.life = 0;
+        break;
+      }
+
+      const rr = e.r + SHOT.radius;
+      if (dist2(sh.x, sh.y, e.x, e.y) > rr * rr) continue;
+
+      if (e.type === 'mirror') {
+        // Boss reflective panels in Phase 1: redirect the shot toward the
+        // weak point so banking actually closes the loop. The shot is marked
+        // as reflected so bossDamageFromShot accepts it.
+        if (e.bossPanel && state.boss && state.boss.phase === 1) {
+          const wp = bossWeakPoint();
+          if (wp) {
+            const dx = wp.x - e.x, dy = wp.y - e.y;
+            const d = Math.hypot(dx, dy) || 1;
+            sh.vx = dx / d * SHOT.speed;
+            sh.vy = dy / d * SHOT.speed;
+            sh.reflected = true;
+            sh.life = Math.max(sh.life, 1.0);
+            e.hitFlash = 0.25;
+            SFX.reflective();
+            spawnBounceSparkle(e.x, e.y);
+          }
+          break;
+        }
+        // Front arc = shot moving right (vx > 0) AND vertical offset within band.
+        const dy = sh.y - e.y;
+        const frontHit = (sh.vx > 0) && Math.abs(dy) < e.r * 0.55;
+        if (frontHit) {
+          sh.reflected = true;
+          sh.vx = -Math.abs(sh.vx);
+          const offset = dy / e.r;
+          sh.vy += offset * SHOT.speed * 0.45;
+          const sp = Math.hypot(sh.vx, sh.vy) || 1;
+          sh.vx = sh.vx / sp * SHOT.speed;
+          sh.vy = sh.vy / sp * SHOT.speed;
+          sh.life = Math.min(sh.life, 1.6);
+          e.hitFlash = 0.2;
+          SFX.reflective();
+          spawnBounceSparkle(e.x - e.r * 0.6, sh.y);
+        } else {
+          damageEnemy(e, 1, sh.x, sh.y);
+          sh.life = 0;
+        }
+        break;
+      }
+
+      if (e.type === 'sootback') {
+        if (e.isOpen) {
+          damageEnemy(e, 1, sh.x, sh.y);
+        } else {
+          e.hitFlash = 0.18;
+          SFX.opaque();
+          // Micropass 32: one-time hint when beam hits a closed Sootback.
+          showFeedbackTextOnce('sootback_closed', 'Sootback closed. Wait for it to open.', 'absorb');
+        }
+        sh.life = 0;
+        break;
+      }
+
+      // ember, crucible: simple direct hit.
+      damageEnemy(e, 1, sh.x, sh.y);
+      sh.life = 0;
+      break;
+    }
+  }
+}
+
+function handleShotGlobCollisions() {
+  for (const sh of state.shots) {
+    if (sh.life <= 0) continue;
+    for (const g of state.enemyShots) {
+      if (g.life <= 0) continue;
+      const rr = SHOT.radius + g.r;
+      if (dist2(sh.x, sh.y, g.x, g.y) > rr * rr) continue;
+      // Glob scatters/destroys the player shot's path and is consumed.
+      g.life = 0;
+      const ang = Math.atan2(sh.vy, sh.vx) + (Math.random() - 0.5) * 0.7;
+      const sp = Math.hypot(sh.vx, sh.vy) * 0.8;
+      sh.vx = Math.cos(ang) * sp;
+      sh.vy = Math.sin(ang) * sp;
+      sh.weakened = true;
+      spawnBounceSparkle(g.x, g.y);
+      SFX.translucent();
+      break;
+    }
+  }
+}
+
+function handleEnemyPlayerCollisions() {
+  const s = state.ship;
+  if (s.iframes > 0) return;
+  // Enemy projectiles vs ship.
+  for (const g of state.enemyShots) {
+    if (g.life <= 0) continue;
+    const rr = SHIP.radius + g.r;
+    if (dist2(g.x, g.y, s.x, s.y) < rr * rr) {
+      if (consumeShieldIfAny(g.x, g.y)) {
+        g.life = 0;
+        return;
+      }
+      s.health = Math.max(0, s.health - 10);
+      s.iframes = 0.7;
+      g.life = 0;
+      state.shake = 12;
+      spawnImpact(s.x, s.y);
+      state.counts.hits += 1;
+      SFX.damage();
+      if (state.level === 3) resetFoundryCombo();
+      if (s.health <= 0) loseGame();
+      return;
+    }
+  }
+  // Enemy contact vs ship.
+  for (const e of state.enemies) {
+    if (e.dead) continue;
+    if (e.bossPanel) continue; // boss reflective panels never damage on contact
+    const r = (e.type === 'lensfly') ? e.rWing : e.r;
+    const rr = SHIP.radius + r;
+    if (dist2(e.x, e.y, s.x, s.y) < rr * rr) {
+      if (consumeShieldIfAny(e.x, e.y)) return;
+      s.health = Math.max(0, s.health - 8);
+      s.iframes = 0.7;
+      state.shake = 10;
+      spawnImpact(s.x, s.y);
+      state.counts.hits += 1;
+      SFX.damage();
+      if (state.level === 3) resetFoundryCombo();
+      if (s.health <= 0) loseGame();
+      return;
+    }
+  }
+}
+
+/* ---------- LEVEL 3 ENEMY RENDERING ---------- */
+function drawEnemyHpPips(e, cx, cy) {
+  if (e.maxHp <= 1) return;
+  ctx.save();
+  ctx.shadowBlur = 0;
+  for (let i = 0; i < e.maxHp; i++) {
+    ctx.fillStyle = i < e.hp ? 'rgba(245,200,66,0.95)' : 'rgba(120,120,120,0.5)';
+    ctx.beginPath();
+    ctx.arc(cx - (e.maxHp - 1) * 3.5 + i * 7, cy, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawEmber(e) {
+  const pulse = 0.85 + 0.15 * Math.sin(state.elapsed * 6 + e.x * 0.05);
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,180,90,0.85)';
+  ctx.shadowBlur = 16;
+  ctx.fillStyle = e.hitFlash > 0 ? 'rgba(255,255,255,0.95)' : 'rgba(255,200,120,0.92)';
+  ctx.beginPath(); ctx.arc(e.x, e.y, e.r * pulse, 0, Math.PI * 2); ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,250,220,0.9)';
+  ctx.beginPath(); ctx.arc(e.x - 1, e.y - 1, e.r * 0.45, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function drawLensfly(e) {
+  ctx.save();
+  // Transparent wing/body.
+  ctx.shadowColor = 'rgba(140,250,190,0.45)';
+  ctx.shadowBlur = 12;
+  ctx.fillStyle = 'rgba(140,250,190,0.12)';
+  ctx.strokeStyle = 'rgba(190,250,215,0.6)';
+  ctx.lineWidth = 1.3;
+  ctx.beginPath();
+  ctx.ellipse(e.x, e.y, e.rWing, e.rWing * 0.55, 0, 0, Math.PI * 2);
+  ctx.fill(); ctx.stroke();
+  // Inner glassy wing accent.
+  ctx.strokeStyle = 'rgba(220,255,235,0.5)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.ellipse(e.x, e.y - 2, e.rWing * 0.6, e.rWing * 0.3, 0, Math.PI, 0);
+  ctx.stroke();
+  // Dark core (the only hit zone).
+  ctx.shadowColor = 'rgba(245,200,66,0.95)';
+  ctx.shadowBlur = 12;
+  ctx.fillStyle = e.hitFlash > 0 ? 'rgba(255,255,255,0.95)' : 'rgba(40,30,30,0.95)';
+  ctx.beginPath(); ctx.arc(e.x, e.y, e.rCore, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(245,200,66,0.95)';
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawCrucible(e) {
+  ctx.save();
+  ctx.shadowColor = 'rgba(230,126,34,0.55)';
+  ctx.shadowBlur = 16;
+  ctx.fillStyle = e.hitFlash > 0 ? 'rgba(255,255,255,0.9)' : 'rgba(120,70,40,0.95)';
+  // Half-dome body.
+  ctx.beginPath();
+  ctx.arc(e.x, e.y, e.r, Math.PI, 0);
+  ctx.lineTo(e.x + e.r, e.y + 10);
+  ctx.lineTo(e.x - e.r, e.y + 10);
+  ctx.closePath();
+  ctx.fill();
+  // Hot mouth.
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = 'rgba(245,200,66,0.95)';
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.moveTo(e.x - e.r, e.y);
+  ctx.lineTo(e.x + e.r, e.y);
+  ctx.stroke();
+  const charge = Math.max(0, 1 - e.fireTimer / 2.6);
+  ctx.fillStyle = `rgba(255,180,90,${0.55 + charge * 0.4})`;
+  ctx.beginPath(); ctx.ellipse(e.x, e.y - 4, e.r * 0.55, 5 + charge * 2, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,250,210,0.9)';
+  ctx.beginPath(); ctx.arc(e.x, e.y - 4, 2 + charge * 1.5, 0, Math.PI * 2); ctx.fill();
+  drawEnemyHpPips(e, e.x, e.y - e.r - 10);
+  ctx.restore();
+}
+
+function drawMirror(e) {
+  ctx.save();
+  // Body.
+  ctx.shadowColor = 'rgba(180,235,250,0.55)';
+  ctx.shadowBlur = 16;
+  ctx.fillStyle = e.hitFlash > 0 ? 'rgba(255,255,255,0.95)' : 'rgba(70,100,130,0.95)';
+  ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2); ctx.fill();
+  // Reflective polished front (left-facing arc).
+  const grad = ctx.createLinearGradient(e.x - e.r, e.y, e.x + e.r * 0.2, e.y);
+  grad.addColorStop(0, 'rgba(235,250,255,0.98)');
+  grad.addColorStop(1, 'rgba(120,180,210,0.2)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(e.x, e.y);
+  ctx.arc(e.x, e.y, e.r, Math.PI * 0.55, Math.PI * 1.45);
+  ctx.closePath();
+  ctx.fill();
+  // Mirror shine line.
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(e.x, e.y, e.r * 0.72, Math.PI * 0.8, Math.PI * 1.2);
+  ctx.stroke();
+  // Rim.
+  ctx.strokeStyle = 'rgba(180,235,250,0.95)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2); ctx.stroke();
+  drawEnemyHpPips(e, e.x, e.y - e.r - 10);
+  ctx.restore();
+}
+
+function drawSootback(e) {
+  ctx.save();
+  ctx.shadowColor = e.isOpen ? 'rgba(245,200,66,0.6)' : 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = e.isOpen ? 18 : 10;
+  ctx.fillStyle = e.hitFlash > 0 ? 'rgba(255,255,255,0.9)' : 'rgba(22,22,28,0.97)';
+  ctx.beginPath();
+  ctx.arc(e.x, e.y, e.r, Math.PI, 0);
+  ctx.lineTo(e.x + e.r, e.y + 12);
+  ctx.lineTo(e.x - e.r, e.y + 12);
+  ctx.closePath();
+  ctx.fill();
+  // Matte shell texture marks.
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = 'rgba(60,60,70,0.85)';
+  ctx.lineWidth = 1;
+  for (let i = -2; i <= 2; i++) {
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, e.r - 4 + i * 0.5, Math.PI + 0.4, Math.PI * 2 - 0.4);
+    ctx.stroke();
+  }
+  if (e.isOpen) {
+    ctx.shadowColor = 'rgba(245,200,66,0.9)';
+    ctx.shadowBlur = 14;
+    ctx.fillStyle = 'rgba(245,200,66,0.9)';
+    ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, e.r * 0.6, 6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,250,210,0.95)';
+    ctx.beginPath(); ctx.arc(e.x, e.y + 2, 4, 0, Math.PI * 2); ctx.fill();
+  }
+  drawEnemyHpPips(e, e.x, e.y - e.r - 10);
+  ctx.restore();
+}
+
+function drawEnemies() {
+  if (!state.enemies) return;
+  for (const e of state.enemies) {
+    if (e.dead) continue;
+    if (e.type === 'ember')    drawEmber(e);
+    else if (e.type === 'lensfly')  drawLensfly(e);
+    else if (e.type === 'crucible') drawCrucible(e);
+    else if (e.type === 'mirror')   drawMirror(e);
+    else if (e.type === 'sootback') drawSootback(e);
+  }
+}
+
+function drawEnemyShots() {
+  if (!state.enemyShots) return;
+  for (const g of state.enemyShots) {
+    const pulse = 0.85 + 0.15 * Math.sin(g.pulse || 0);
+    ctx.save();
+    ctx.shadowColor = 'rgba(230,126,34,0.6)';
+    ctx.shadowBlur = 14;
+    ctx.fillStyle = 'rgba(230,180,120,0.45)';
+    ctx.beginPath(); ctx.arc(g.x, g.y, g.r * pulse * 1.1, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,210,150,0.7)';
+    ctx.beginPath(); ctx.arc(g.x, g.y, g.r * 0.55 * pulse, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,220,170,0.85)';
+    ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.arc(g.x, g.y, g.r * pulse, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
+}
+
 function freshState() {
   const bubbles = buildLevel1();
   return {
@@ -1413,9 +3790,16 @@ function freshState() {
       health: SHIP.maxHealth,
       cooldown: 0,
       iframes: 0,
-      muzzle: 0   // muzzle flash timer
+      muzzle: 0,         // muzzle flash timer
+      speedMult: 1,      // Velocity upgrade multiplier (stacks while a run lasts)
+      shieldCharges: 0,  // Reflection Shield charges (consumed on damage)
+      shieldAngle: 0     // visual rotation for the shield ring
     },
     shots: [],
+    enemies: [],
+    enemyShots: [],
+    twinBeam: false,           // Twin Beam upgrade active
+    burstFx: null,             // active Photon Burst visual {age, life, x, y}
     bubbles,
     particles: [],
     rings: [],          // expanding shockwave rings (overloads)
@@ -1437,8 +3821,6 @@ function freshState() {
     predictions: {},          // material name -> 'reflect' | 'absorb' | 'transmit'
     results: {},              // material name -> dominant key (filled on first test)
     predictionsCorrect: 0,
-    awaitingPrediction: false,
-    pendingPredictionMaterial: null,
     counts: {
       transparent: 0,
       translucent: 0,
@@ -1446,7 +3828,44 @@ function freshState() {
       reflective: 0,
       mixed: 0,
       hits: 0
-    }
+    },
+    seenFeedback: {
+      transparent: false,
+      translucent: false,
+      opaque: false,
+      overload: false,
+      reflective: false,
+      hit: false,
+      mixed: false
+    },
+    modalOpen: false,
+    shards: [],
+    photons: { cyan: 0, gold: 0, cursor: 0, fill: 0 },
+    photonsAwarded: { materialLabComplete: false, foundryGate: false },
+    beat: 0,                  // 0 outside L3, 1..5 inside L3 (derived from distance)
+    beatTransitioning: false, // legacy: kept for compat with older code paths
+    foundryReached: false,    // L3 entered (set when enterLevel3 runs)
+    l3Complete: false,        // Foreman Gate reached
+    // Micropass 23: scrolling-stage state.
+    distance: 0,              // world-px scrolled in L3
+    l3SpawnQueue: [],          // sorted list of pending world entities
+    l3SpawnIdx: 0,            // next-to-spawn index
+    l3LastSegment: 0,         // last segment number whose banner fired
+    // Micropass 25: Foreman boss.
+    boss: null,               // active boss object (see spawnForeman)
+    bossActive: false,        // true while the fight is running
+    bossDefeated: false,      // set when Phase 3 ends
+    bossSpawnT: 0,            // state.elapsed at spawn (used for hint timers)
+    // Micropass 27: Foundry run structure (lives + score chase + combo).
+    lives:           3,       // Glass Foundry lives (consumed only in L3)
+    foundryScore:    0,       // run score for Glass Foundry
+    foundryBest:     loadFoundryBest(), // best run score (localStorage-backed)
+    foundryCombo:    0,       // current combo (shards collected since last damage / decay)
+    comboTimer:      0,       // seconds since last shard pickup
+    segmentScored:   {},      // segNum -> true once segment-complete bonus paid
+    // Micropass 28: feedback polish (floating score popups + combo banners).
+    scorePops:       [],      // [{x,y,vy,life,maxLife,text,color,size,kind}]
+    lastComboMult:   1        // tracks tier so we can banner on tier-up
   };
 }
 
@@ -1457,7 +3876,11 @@ window.addEventListener('keydown', (e) => {
   if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
   // P toggles pause (only while a game is active and not over).
   if (k === 'p' && !keys.has('p')) {
-    if (state && running && !state.over && !state.awaitingPrediction) togglePause();
+    if (state && running && !state.over) togglePause();
+  }
+  // E activates the currently highlighted Power Bar upgrade.
+  if (k === 'e' && !keys.has('e')) {
+    if (state && running && !state.over && !state.paused) activatePower();
   }
   keys.add(k);
 });
@@ -1466,9 +3889,6 @@ window.addEventListener('keyup', (e) => {
 });
 
 function readInput() {
-  // Freeze controls while the prediction modal is open so the player can't
-  // drift or shoot through it.
-  if (state && state.awaitingPrediction) return { dx: 0, dy: 0, fire: false };
   let dx = 0, dy = 0;
   if (keys.has('arrowleft')  || keys.has('a')) dx -= 1;
   if (keys.has('arrowright') || keys.has('d')) dx += 1;
@@ -1484,8 +3904,10 @@ function updateShip(dt) {
   const s = state.ship;
 
   // Accelerate toward target velocity; decelerate when no input for inertia feel.
-  const targetVx = dx * SHIP.speed;
-  const targetVy = dy * SHIP.speed;
+  // Velocity upgrade scales the top speed via state.ship.speedMult.
+  const topSpeed = SHIP.speed * (s.speedMult || 1);
+  const targetVx = dx * topSpeed;
+  const targetVy = dy * topSpeed;
   const ax = (targetVx - s.vx);
   const ay = (targetVy - s.vy);
   const accelStep = SHIP.accel * dt;
@@ -1499,8 +3921,12 @@ function updateShip(dt) {
 
   // Clamp inside the arena (leave a small margin and respect the playfield left wall).
   const margin = SHIP.radius + 8;
+  // Level 1/2 keep the ship in the left "pilot zone". Level 3 (Glass Foundry)
+  // is now a scrolling stage (Micropass 23): the ship stays in the left third
+  // while the world flows past from the right.
+  const rightLimit = (state.level === 3) ? (ARENA_W * 0.4) : (ARENA_W * 0.55);
   if (s.x < margin)              { s.x = margin;              s.vx = 0; }
-  if (s.x > ARENA_W * 0.55)      { s.x = ARENA_W * 0.55;      s.vx = 0; }
+  if (s.x > rightLimit)          { s.x = rightLimit;          s.vx = 0; }
   if (s.y < margin)              { s.y = margin;              s.vy = 0; }
   if (s.y > ARENA_H - margin)    { s.y = ARENA_H - margin;    s.vy = 0; }
 
@@ -1518,12 +3944,13 @@ function updateShip(dt) {
   // Engine trail: emit a small particle when moving.
   const speedNow = Math.hypot(s.vx, s.vy);
   if (speedNow > 30 && Math.random() < 0.85) {
+    const trailBoost = (s.speedMult || 1);   // Velocity upgrade lengthens the trail
     state.particles.push({
       x: s.x - SHIP.radius * 0.5 + (Math.random()-0.5) * 4,
       y: s.y + (Math.random()-0.5) * 6,
-      vx: -s.vx * 0.18 - 30 - Math.random() * 30,
+      vx: -s.vx * 0.18 - 30 * trailBoost - Math.random() * 30 * trailBoost,
       vy: -s.vy * 0.18 + (Math.random()-0.5) * 30,
-      life: 0.45, maxLife: 0.45,
+      life: 0.45 * trailBoost, maxLife: 0.45 * trailBoost,
       size: 3 + Math.random() * 2,
       color: 'rgba(245,200,66,'
     });
@@ -1531,10 +3958,9 @@ function updateShip(dt) {
 }
 
 /* ---------- SHOTS ---------- */
-function fireShot() {
-  state.shots.push({
-    x: state.ship.x + SHIP.radius + 4,
-    y: state.ship.y,
+function makeShot(x, y) {
+  return {
+    x, y,
     vx: SHOT.speed,
     vy: 0,
     life: SHOT.life,
@@ -1542,8 +3968,19 @@ function fireShot() {
     weakened: false,
     passedBubbles: new Set(),  // ids already passed (transparent/translucent)
     bounceCount: 0,
-    reflectCooldowns: {}        // bubbleId → elapsed-time until this bubble can re-reflect this shot
-  });
+    reflectCooldowns: {}        // bubbleId -> elapsed-time until this bubble can re-reflect this shot
+  };
+}
+function fireShot() {
+  const s = state.ship;
+  const nx = s.x + SHIP.radius + 4;
+  if (state.twinBeam) {
+    // Twin Beam: two parallel shots offset vertically.
+    state.shots.push(makeShot(nx, s.y - 8));
+    state.shots.push(makeShot(nx, s.y + 8));
+  } else {
+    state.shots.push(makeShot(nx, s.y));
+  }
 }
 
 const BOUNCE_LIMIT = 4;
@@ -1619,11 +4056,12 @@ function handleShotBubbleCollisions() {
         b.flash = 0.4;
         addScore(10);
         state.energy.transmit += 10;
-        showFeedback('transparent');
+        showFeedbackOnce('transparent');
         setLastInteraction('Transparent Bubble', 'Transmitted',
           'Most light energy passed through.', 'transmit');
         state.counts.transparent += 1;
         SFX.transparent();
+        spawnShards(b.x, b.y, SHARD_REWARDS.transparent, 'cyan');
         advanceTutorialOn('transparent');
       }
       else if (b.type === 'translucent') {
@@ -1640,11 +4078,12 @@ function handleShotBubbleCollisions() {
         addScore(4);
         state.energy.transmit += 4;
         state.energy.reflect  += 1; // scatter counts as a little energy redirected
-        showFeedback('translucent');
+        showFeedbackOnce('translucent');
         setLastInteraction('Translucent Bubble', 'Scattered Transmission',
           'Light passed through but spread out.', 'transmit');
         state.counts.translucent += 1;
         SFX.translucent();
+        spawnShards(b.x, b.y, SHARD_REWARDS.translucent, 'cyan');
         advanceTutorialOn('translucent');
       }
       else if (b.type === 'opaque') {
@@ -1654,7 +4093,7 @@ function handleShotBubbleCollisions() {
         b.flash = 0.5;
         addScore(6);
         state.energy.absorb += 10;
-        showFeedback('opaque');
+        showFeedbackOnce('opaque');
         setLastInteraction('Opaque Bubble', 'Absorbed',
           'Energy was absorbed and stored in the material.', 'absorb');
         state.counts.opaque += 1;
@@ -1666,10 +4105,11 @@ function handleShotBubbleCollisions() {
           state.cleared += 1;
           addScore(40);
           state.energy.absorb += 20;
-          showFeedback('overload');
+          showFeedbackOnce('overload');
           setLastInteraction('Opaque Bubble', 'Overloaded',
             'Stored energy released - mostly as heat. Energy was not destroyed.', 'absorb');
           spawnOverload(b.x, b.y);
+          spawnShards(b.x, b.y, SHARD_REWARDS.opaqueOverload, 'cyan');
           SFX.overload();
         }
         break;
@@ -1707,27 +4147,34 @@ function handleShotBubbleCollisions() {
         const dominantTone = (dominant === 'transmitted') ? 'transmit'
                             : (dominant === 'absorbed') ? 'absorb' : 'reflect';
         const dominantLabel = dominant.charAt(0).toUpperCase() + dominant.slice(1);
+        const domKey = dominantTone;
         const level2Science = 'About ' + dominantPct + '% of incoming energy ' +
                               dominant + ' from this material.';
         const genericScience = 'Real materials can reflect, absorb, and transmit energy at the same time.';
+        let predLine = null;
+        if (state.level === 2 && state.predictions[matName]) {
+          const predKey = state.predictions[matName];
+          const predCap = predKey.charAt(0).toUpperCase() + predKey.slice(1);
+          const mark = (predKey === domKey) ? '✅' : '❌';
+          predLine = predCap + ' ' + mark;
+        }
         setLastInteraction(
           matName,
           'Mostly ' + dominantLabel,
           state.level === 2 ? level2Science : genericScience,
-          dominantTone
+          dominantTone,
+          predLine
         );
         // Level 1's "first mixed bubble" discovery moment stays in Level 1 only.
-        // Level 2 swaps it for the per-material prediction result banner below.
         if (state.level !== 2) triggerDiscovery();
 
         // Material Lab tracking - mark this named material as tested.
         if (b.material && !state.tested[b.material]) {
           state.tested[b.material] = true;
-          const domKey = (dominant === 'transmitted') ? 'transmit'
-                        : (dominant === 'absorbed') ? 'absorb' : 'reflect';
           state.results[b.material] = domKey;
+          spawnShards(b.x, b.y, SHARD_REWARDS.mixedFirstDiscovery, 'cyan');
           if (state.level === 2 && state.predictions[b.material]) {
-            showPredictionResult(b.material, state.predictions[b.material], domKey);
+            if (state.predictions[b.material] === domKey) state.predictionsCorrect += 1;
           }
           renderLabTracker();
           if (state.level === 2) checkLevel2Completion();
@@ -1740,13 +4187,13 @@ function handleShotBubbleCollisions() {
           sh.vx = Math.cos(ang) * speed;
           sh.vy = Math.sin(ang) * speed;
           SFX.transparent();
-          showFeedbackText(`${matName}: most energy ${dominant} (~${dominantPct}%). Some reflected, some absorbed.`, 'transmit');
+          showFeedbackTextOnce('mixed', `${matName}: most energy ${dominant} (~${dominantPct}%). Some reflected, some absorbed.`, 'transmit');
         }
         else if (outcome === 'absorb') {
           sh.life = 0;
           b.absorbed = (b.absorbed || 0) + 1;
           SFX.opaque();
-          showFeedbackText(`${matName}: most energy absorbed. The energy did not disappear - it stored in the material.`, 'absorb');
+          showFeedbackTextOnce('mixed', `${matName}: most energy absorbed. The energy did not disappear - it stored in the material.`, 'absorb');
         }
         else { // reflect
           const cdEnd = sh.reflectCooldowns[id] || 0;
@@ -1770,7 +4217,7 @@ function handleShotBubbleCollisions() {
           sh.bounceCount += 1;
           state.counts.reflective += 1;
           SFX.reflective();
-          showFeedbackText(`${matName}: some energy reflected this time. Mixed materials do all three.`, 'reflect');
+          showFeedbackTextOnce('mixed', `${matName}: some energy reflected this time. Mixed materials do all three.`, 'reflect');
           if (sh.bounceCount > BOUNCE_LIMIT) {
             spawnBounceSparkle(sh.x, sh.y);
             sh.life = 0;
@@ -1808,11 +4255,12 @@ function handleShotBubbleCollisions() {
         b.flash = 0.5;
         addScore(3);
         state.energy.reflect += 12;
-        showFeedback('reflective');
+        showFeedbackOnce('reflective');
         setLastInteraction('Reflective Bubble', 'Reflected',
           'Energy changed direction and bounced back.', 'reflect');
         state.counts.reflective += 1;
         SFX.reflective();
+        spawnShards(b.x, b.y, SHARD_REWARDS.reflective, 'cyan');
         advanceTutorialOn('reflective');
 
         // Cap runaway loops: expire the shot with a small sparkle.
@@ -1833,6 +4281,10 @@ function handleShipDamage() {
     if (!sh.reflected) continue;
     const rr = (SHIP.radius + SHOT.radius);
     if (dist2(sh.x, sh.y, s.x, s.y) < rr * rr) {
+      if (consumeShieldIfAny(sh.x, sh.y)) {
+        sh.life = 0;
+        return;
+      }
       s.health = Math.max(0, s.health - SHOT.damage);
       s.iframes = 0.7;
       sh.life = 0;
@@ -1840,7 +4292,7 @@ function handleShipDamage() {
       spawnImpact(s.x, s.y);
       state.counts.hits += 1;
       SFX.damage();
-      showFeedback('hit');
+      showFeedbackOnce('hit');
       if (s.health <= 0) loseGame();
       break;
     }
@@ -1854,6 +4306,7 @@ let feedbackTimer = 0;
 let lastFeedbackKey = null;
 const feedbackEl = document.getElementById('feedback');
 function showFeedback(key) {
+  if (isBannerActive()) return;
   if (key === lastFeedbackKey && feedbackTimer > 1.2) return; // avoid spam
   lastFeedbackKey = key;
   feedbackTimer = 2.4;
@@ -1862,11 +4315,22 @@ function showFeedback(key) {
   feedbackEl.className = 'feedback show ' + f.tone;
 }
 function showFeedbackText(text, tone) {
+  if (isBannerActive()) return;
   // Always replace - mixed-material messages should not be deduped by key.
   lastFeedbackKey = null;
   feedbackTimer = 2.6;
   feedbackEl.textContent = text;
   feedbackEl.className = 'feedback show ' + (tone || 'transmit');
+}
+function showFeedbackOnce(key) {
+  if (state.seenFeedback[key]) return;
+  state.seenFeedback[key] = true;
+  showFeedback(key);
+}
+function showFeedbackTextOnce(key, text, tone) {
+  if (state.seenFeedback[key]) return;
+  state.seenFeedback[key] = true;
+  showFeedbackText(text, tone);
 }
 
 function tickFeedback(dt) {
@@ -1878,18 +4342,26 @@ function tickFeedback(dt) {
 
 /* ---------- LAST INTERACTION CARD ---------- */
 const lastInteractionEl = document.getElementById('lastInteraction');
-const liMaterial = document.getElementById('liMaterial');
-const liOutcome  = document.getElementById('liOutcome');
-const liScience  = document.getElementById('liScience');
-function setLastInteraction(material, outcome, science, tone) {
+const liMaterial   = document.getElementById('liMaterial');
+const liOutcome    = document.getElementById('liOutcome');
+const liScience    = document.getElementById('liScience');
+const liPrediction = document.getElementById('liPrediction');
+function setLastInteraction(material, outcome, science, tone, prediction) {
   liMaterial.textContent = material;
   liOutcome.textContent  = outcome;
   liScience.textContent  = science;
   lastInteractionEl.classList.remove('tone-transmit', 'tone-absorb', 'tone-reflect');
   if (tone) lastInteractionEl.classList.add('tone-' + tone);
+  if (prediction) {
+    liPrediction.textContent = prediction;
+    lastInteractionEl.classList.add('show-pred');
+  } else {
+    liPrediction.textContent = '- - -';
+    lastInteractionEl.classList.remove('show-pred');
+  }
 }
 function resetLastInteraction() {
-  setLastInteraction('- - -', 'Awaiting fire', 'Fire a pulse to see how light energy interacts with a material.', null);
+  setLastInteraction('- - -', 'Awaiting fire', 'Fire a pulse to see how light energy interacts with a material.', null, null);
 }
 
 /* ---------- DISCOVERY BANNER (one-shot per run) ---------- */
@@ -1901,6 +4373,7 @@ const DISCOVERY_DEFAULT_HTML = '<b>Real materials usually do all three.</b><br>T
 function triggerDiscovery() {
   if (discoveryShown) return;
   discoveryShown = true;
+  dismissFeedbackToast();
   // Reset banner content in case it was repurposed by showBanner() earlier.
   discoveryBanner.querySelector('.discovery-tag').innerHTML = DISCOVERY_DEFAULT_TAG;
   discoveryBanner.querySelector('.discovery-text').innerHTML = DISCOVERY_DEFAULT_HTML;
@@ -1919,8 +4392,21 @@ function resetDiscovery() {
   discoveryBanner.classList.remove('show');
 }
 
+/* ---------- MESSAGE PRIORITY ---------- */
+// Priority 2 (medium): discovery/investigation banners
+// Priority 1 (low): material feedback toasts
+// A lower-priority toast may not show while a higher-priority banner is active.
+function isBannerActive() {
+  return discoveryBanner.classList.contains('show');
+}
+function dismissFeedbackToast() {
+  feedbackTimer = 0;
+  feedbackEl.classList.remove('show');
+}
+
 /* Reuse the discovery banner for the Investigation Complete moment. */
 function showBanner(tagHTML, textHTML, dur) {
+  dismissFeedbackToast();
   discoveryBanner.querySelector('.discovery-tag').innerHTML = tagHTML;
   discoveryBanner.querySelector('.discovery-text').innerHTML = textHTML;
   discoveryBanner.classList.add('show');
@@ -1944,11 +4430,11 @@ function renderLabTracker() {
     const resKey  = state.results[m.name] || null;
     const predText = predKey ? cap(predKey) : '- - -';
     const resText  = resKey  ? cap(resKey)  : '- - -';
-    let mark = '';
+    let predMark = '';
     if (done && predKey) {
-      mark = (predKey === resKey)
-        ? ' <span class="track-mark-ok">✓</span>'
-        : ' <span class="track-mark-no">✗</span>';
+      predMark = (predKey === resKey)
+        ? ' <span class="track-mark-ok">✅</span>'
+        : ' <span class="track-mark-no">❌</span>';
     }
     return `<div class="track-row ${done ? 'done' : ''}">
               <span class="track-box">${done ? '✓' : ''}</span>
@@ -1956,8 +4442,8 @@ function renderLabTracker() {
               <span class="track-ratio">R${r} A${a} T${t}</span>
             </div>
             <div class="track-sub">
-              <span class="track-pred">Prediction: ${predText}</span>
-              <span class="track-res">Result: ${resText}${mark}</span>
+              <span class="track-pred">Prediction: ${predText}${predMark}</span>
+              <span class="track-res">Observed: ${resText}</span>
             </div>`;
   }).join('');
   labTrackerEl.innerHTML = html;
@@ -1965,6 +4451,8 @@ function renderLabTracker() {
 
 /* ---------- LEVEL TRANSITION ---------- */
 const overlayLevel2Intro = document.getElementById('overlayLevel2Intro');
+const overlayLevel3Intro = document.getElementById('overlayLevel3Intro');
+const overlayLevel3Complete = document.getElementById('overlayLevel3Complete');
 
 function showLevel2Intro() {
   state.transitionPending = true;
@@ -1973,8 +4461,17 @@ function showLevel2Intro() {
 }
 
 function enterLevel2() {
+  // Open the Material Lab Predictions sheet. The level itself starts on
+  // Begin Investigation (see beginInvestigation).
   if (!state) return;
   overlayLevel2Intro.classList.add('hidden');
+  running = false;
+  showPredictionSheet();
+}
+
+function beginInvestigation() {
+  if (!state) return;
+  overlayPredict.classList.add('hidden');
 
   state.level = 2;
   state.transitionPending = false;
@@ -1982,16 +4479,14 @@ function enterLevel2() {
   state.shots = [];
   state.particles = [];
   state.rings = [];
+  state.shards = [];
   state.shake = 0;
   state.requiredOpaque = 0;     // not used in Level 2
   state.cleared = 0;
   state.tested = {};
-  state.predictions = {};
+  state.predictions = { ...predictDraft };
   state.results = {};
   state.predictionsCorrect = 0;
-  state.awaitingPrediction = false;
-  state.pendingPredictionMaterial = null;
-  overlayPredict.classList.add('hidden');
   state.level2Complete = false;
   state.over = false;
   state.won = false;
@@ -2034,10 +4529,10 @@ function setMissionGoalForLevel2() {
 
 /* ---------- LEVEL 2 PREDICTIONS ---------- */
 const overlayPredict = document.getElementById('overlayPredict');
-const predictMaterialEl = document.getElementById('predictMaterial');
+const predictSheet   = document.getElementById('predictSheet');
+const btnBeginInvestigation = document.getElementById('btnBeginInvestigation');
 const PREDICT_KEYS = { reflect: 'Reflect', absorb: 'Absorb', transmit: 'Transmit' };
-const SHIP_PREDICT_RANGE = 220;
-const SHOT_PREDICT_RANGE = 90;
+let predictDraft = {}; // material name -> 'reflect' | 'absorb' | 'transmit'
 
 function dominantKeyOf(mat) {
   const R = mat.ratios.reflect, A = mat.ratios.absorb, T = mat.ratios.transmit;
@@ -2046,62 +4541,50 @@ function dominantKeyOf(mat) {
   return 'reflect';
 }
 
-function showPredictionOverlay(materialName) {
-  state.awaitingPrediction = true;
-  state.pendingPredictionMaterial = materialName;
-  predictMaterialEl.textContent = materialName;
+function renderPredictSheet() {
+  const rows = LEVEL2_MATERIALS.map(m => {
+    const chosen = predictDraft[m.name] || null;
+    const choice = (key, label) => {
+      const isOn = chosen === key;
+      return `<label class="predict-choice is-${key} ${isOn ? 'checked' : ''}">
+                <input type="radio" name="pred-${cssId(m.name)}" value="${key}" ${isOn ? 'checked' : ''}>
+                ${label}
+              </label>`;
+    };
+    return `<div class="predict-row" data-mat="${m.name}">
+              <span class="predict-name">${m.name}</span>
+              <div class="predict-choices">
+                ${choice('reflect',  'Mostly Reflect')}
+                ${choice('absorb',   'Mostly Absorb')}
+                ${choice('transmit', 'Mostly Transmit')}
+              </div>
+            </div>`;
+  }).join('');
+  predictSheet.innerHTML = rows;
+  refreshBeginButton();
+}
+
+function cssId(name) { return name.replace(/\s+/g, '-').toLowerCase(); }
+
+function refreshBeginButton() {
+  const allChosen = LEVEL2_MATERIALS.every(m => !!predictDraft[m.name]);
+  btnBeginInvestigation.disabled = !allChosen;
+}
+
+function showPredictionSheet() {
+  predictDraft = {};
+  renderPredictSheet();
   overlayPredict.classList.remove('hidden');
 }
 
-function recordPrediction(predKey) {
-  if (!state.awaitingPrediction) return;
-  const matName = state.pendingPredictionMaterial;
-  if (!matName) return;
-  state.predictions[matName] = predKey;
-  state.awaitingPrediction = false;
-  state.pendingPredictionMaterial = null;
-  overlayPredict.classList.add('hidden');
-  renderLabTracker();
-  // Avoid a dt spike when the simulation resumes.
-  lastTime = performance.now();
-}
-
-function maybePromptPrediction() {
-  if (state.level !== 2) return;
-  if (state.awaitingPrediction) return;
-  for (const b of state.bubbles) {
-    if (b.type !== 'mixed' || !b.material) continue;
-    if (state.predictions[b.material]) continue;
-    const dShip = dist2(state.ship.x, state.ship.y, b.x, b.y);
-    const rShip = b.r + SHIP_PREDICT_RANGE;
-    if (dShip < rShip * rShip) { showPredictionOverlay(b.material); return; }
-    for (const sh of state.shots) {
-      const rShot = b.r + SHOT_PREDICT_RANGE;
-      if (dist2(sh.x, sh.y, b.x, b.y) < rShot * rShot) {
-        showPredictionOverlay(b.material);
-        return;
-      }
-    }
-  }
-}
-
-function showPredictionResult(materialName, predKey, domKey) {
-  const pastTense = (domKey === 'transmit') ? 'transmitted'
-                   : (domKey === 'absorb')  ? 'absorbed' : 'reflected';
-  const correct = predKey === domKey;
-  if (correct) state.predictionsCorrect += 1;
-  const tag = correct ? '✓ PREDICTION CORRECT' : '✗ PREDICTION INCORRECT';
-  const body = correct
-    ? `<b>Nice call!</b> ${materialName} mostly ${pastTense} energy.`
-    : `<b>Not this time.</b> ${materialName} mostly ${pastTense} energy.`;
-  showBanner(tag, body, 2.4);
-}
-
-/* Wire prediction buttons (delegation on the overlay container). */
-overlayPredict.addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-pred]');
-  if (!btn) return;
-  recordPrediction(btn.getAttribute('data-pred'));
+predictSheet.addEventListener('change', (e) => {
+  const input = e.target.closest('input[type="radio"]');
+  if (!input) return;
+  const row = input.closest('.predict-row');
+  if (!row) return;
+  const matName = row.getAttribute('data-mat');
+  predictDraft[matName] = input.value;
+  renderPredictSheet();
 });
 
 function checkLevel2Completion() {
@@ -2109,6 +4592,10 @@ function checkLevel2Completion() {
   const all = LEVEL2_MATERIALS.every(m => state.tested[m.name]);
   if (!all) return;
   state.level2Complete = true;
+  if (!state.photonsAwarded.materialLabComplete) {
+    state.photonsAwarded.materialLabComplete = true;
+    spawnShards(state.ship.x + 40, state.ship.y, SHARD_REWARDS.materialLabComplete, 'gold');
+  }
   showBanner(
     '🔬 INVESTIGATION COMPLETE',
     '<b>Different materials move energy in different proportions.</b><br>You tested all four samples.',
@@ -2231,6 +4718,433 @@ function spawnImpact(x, y) {
   }
 }
 
+/* ---------- LEVEL 3 BUBBLE BEHAVIORS ---------- */
+function updateBubblesL3(dt) {
+  if (state.level !== 3) return;
+  for (const b of state.bubbles) {
+    if (b.dead) continue;
+    if (b.mover) {
+      const m = b.mover;
+      m.t += dt;
+      if (m.axis === 'y') {
+        b.y = m.baseY + Math.sin(m.t * m.speed + (m.phase || 0)) * m.range;
+      } else {
+        b.x = m.baseX + Math.sin(m.t * m.speed + (m.phase || 0)) * m.range;
+      }
+    }
+    if (b.cycle) {
+      const c = b.cycle;
+      const step = Math.floor((state.elapsed - c.start) / c.interval) % c.phases.length;
+      if (step !== c.lastStep) {
+        b.type = c.phases[step];
+        if (b.type === 'opaque') { b.absorbed = 0; b.capacity = b.capacity || 3; }
+        c.lastStep = step;
+        b.flash = 0.4;
+      }
+    }
+  }
+}
+
+function drawAimGhosts() {
+  // Micropass 23: aimGhost is now gated by the flag on the bubble itself,
+  // which only exists in the Bounce Hall segment's first reflective target.
+  if (state.level !== 3) return;
+  // Show a faint dashed bank-shot line from the ship through the first reflective
+  // bubble (the one tagged aimGhost). Skeleton training aid.
+  const target = state.bubbles.find(b => b.aimGhost && !b.dead);
+  if (!target) return;
+  const s = state.ship;
+  const dx = target.x - s.x;
+  const dy = target.y - s.y;
+  const d  = Math.hypot(dx, dy) || 1;
+  const incomingY = dy / d;
+  // Reflective surface flips horizontal velocity; ghost shows the post-bounce ray.
+  const bounceX = target.x + 1;     // start just past the bubble
+  const bounceY = target.y;
+  const reflectAng = Math.atan2(incomingY, -1);   // mirror across the x-axis
+  const endX = bounceX + Math.cos(reflectAng) * 700;
+  const endY = bounceY + Math.sin(reflectAng) * 700;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(180,235,250,0.45)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 8]);
+  ctx.lineDashOffset = -state.elapsed * 40;
+  ctx.beginPath();
+  ctx.moveTo(s.x + 10, s.y);
+  ctx.lineTo(target.x, target.y);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(bounceX, bounceY);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+/* ---------- PHOTON SHARDS ---------- */
+function spawnShard(x, y, kind) {
+  const ang = Math.random() * Math.PI * 2;
+  const sp  = SHARD.burstSpeedMin + Math.random() * (SHARD.burstSpeedMax - SHARD.burstSpeedMin);
+  state.shards.push({
+    x, y,
+    vx: Math.cos(ang) * sp,
+    vy: Math.sin(ang) * sp,
+    kind,
+    stage: 'burst',
+    age: 0,
+    life: SHARD.life,
+    rot: Math.random() * Math.PI * 2,
+    rotVel: (Math.random() - 0.5) * 4,
+    pulse: Math.random() * Math.PI * 2
+  });
+}
+function spawnShards(x, y, count, kind) {
+  for (let i = 0; i < count; i++) spawnShard(x, y, kind);
+}
+function spawnShardCollectSparkle(x, y, kind) {
+  const baseColor = kind === 'gold' ? 'rgba(255,215,107,' : 'rgba(140,225,250,';
+  for (let i = 0; i < (kind === 'gold' ? 14 : 7); i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp  = 60 + Math.random() * 140;
+    state.particles.push({
+      x, y,
+      vx: Math.cos(ang) * sp,
+      vy: Math.sin(ang) * sp,
+      life: 0.35 + Math.random() * 0.2,
+      maxLife: 0.55,
+      size: 1.5 + Math.random() * 1.8,
+      color: baseColor
+    });
+  }
+}
+function collectShard(sh) {
+  // Micropass 27: Foundry combo + run score (L3 only). Power Bar logic unchanged.
+  if (state.level === 3) {
+    state.foundryCombo += 1;
+    state.comboTimer = 0;
+    const base = sh.kind === 'gold' ? FOUNDRY_RUN.scoreGold : FOUNDRY_RUN.scoreCyan;
+    const mult = foundryComboMult();
+    const awarded = Math.round(base * mult);
+    if (sh.kind === 'gold') addFoundryScore(FOUNDRY_RUN.scoreGold, true);
+    else                    addFoundryScore(FOUNDRY_RUN.scoreCyan, true);
+    // Micropass 28: floating pop + combo tier banner.
+    const popColor = sh.kind === 'gold' ? '#ffd76b' : '#3bc8e8';
+    const suffix = mult > 1 ? '  ' + comboMultLabel(mult) : '';
+    spawnScorePop(sh.x, sh.y - 8, '+' + awarded + suffix,
+      { color: popColor, size: sh.kind === 'gold' ? 16 : 13 });
+    if (mult > (state.lastComboMult || 1)) {
+      state.lastComboMult = mult;
+      spawnScorePop(ARENA_W / 2, 70, 'COMBO ' + comboMultLabel(mult),
+        { color: '#ffd76b', size: 28, life: 1.1, vy: -20, kind: 'banner' });
+      SFX.comboTier && SFX.comboTier();
+    }
+  }
+  if (sh.kind === 'gold') {
+    state.photons.gold += 1;
+    SFX.shardGold();
+  } else {
+    state.photons.cyan += 1;
+    // Advance the Power Bar cursor when the fill threshold is reached.
+    // Cursor caps at 4 (Burst): the player must activate before more cyan counts.
+    if (state.photons.cursor < 4) {
+      state.photons.fill += 1;
+      if (state.photons.fill >= POWER_BAR.threshold) {
+        state.photons.fill = 0;
+        state.photons.cursor += 1;
+        SFX.powerAdvance();
+        // Micropass 32: one-time hint the very first time slot 1 fills.
+        if (state.photons.cursor === 1) {
+          showFeedbackTextOnce('power_ready_hint', 'Power ready! Press E to activate.', 'transmit');
+        }
+      } else {
+        SFX.shardCyan();
+      }
+    } else {
+      SFX.shardCyan();
+    }
+  }
+  spawnShardCollectSparkle(sh.x, sh.y, sh.kind);
+}
+function updateShards(dt) {
+  const ship = state.ship;
+  for (const sh of state.shards) {
+    sh.age += dt;
+    sh.life -= dt;
+    sh.rot += sh.rotVel * dt;
+    sh.pulse += dt * 4.0;
+
+    const dx = ship.x - sh.x;
+    const dy = ship.y - sh.y;
+    const d2 = dx * dx + dy * dy;
+    const collectR = SHARD.collectRadius + SHIP.radius;
+    if (d2 < collectR * collectR) {
+      collectShard(sh);
+      sh.life = 0;
+      continue;
+    }
+
+    if (sh.stage === 'burst') {
+      // Strong drag to decelerate the burst into a drift.
+      const drag = 4.5 * dt;
+      sh.vx -= sh.vx * Math.min(1, drag);
+      sh.vy -= sh.vy * Math.min(1, drag);
+      if (sh.age >= SHARD.burstDur) sh.stage = 'drift';
+    } else if (sh.stage === 'drift') {
+      const drag = SHARD.driftDrag * dt;
+      sh.vx -= sh.vx * Math.min(1, drag);
+      sh.vy -= sh.vy * Math.min(1, drag);
+      if (d2 < SHARD.pullRadius * SHARD.pullRadius) sh.stage = 'pull';
+    } else { // pull
+      const d = Math.sqrt(d2) || 1;
+      const ax = (dx / d) * SHARD.pullAccel;
+      const ay = (dy / d) * SHARD.pullAccel;
+      sh.vx += ax * dt;
+      sh.vy += ay * dt;
+      const sp = Math.hypot(sh.vx, sh.vy);
+      if (sp > SHARD.pullSpeedCap) {
+        sh.vx = sh.vx / sp * SHARD.pullSpeedCap;
+        sh.vy = sh.vy / sp * SHARD.pullSpeedCap;
+      }
+    }
+
+    sh.x += sh.vx * dt;
+    sh.y += sh.vy * dt;
+
+    // Soft bounce off arena edges so shards stay collectible.
+    // Micropass 23: skip horizontal bounce in L3 so shards flow with the world
+    // instead of pinging against the scrolling boundaries.
+    const m = 8;
+    if (state.level !== 3) {
+      if (sh.x < m)             { sh.x = m;             sh.vx = Math.abs(sh.vx) * 0.5; }
+      if (sh.x > ARENA_W - m)   { sh.x = ARENA_W - m;   sh.vx = -Math.abs(sh.vx) * 0.5; }
+    }
+    if (sh.y < m)             { sh.y = m;             sh.vy = Math.abs(sh.vy) * 0.5; }
+    if (sh.y > ARENA_H - m)   { sh.y = ARENA_H - m;   sh.vy = -Math.abs(sh.vy) * 0.5; }
+  }
+  state.shards = state.shards.filter(s => s.life > 0);
+}
+function drawShard(sh) {
+  const isGold = sh.kind === 'gold';
+  const r = isGold ? 9 : 6;
+  const color = isGold ? SHARD.goldColor : SHARD.cyanColor;
+  const glow  = isGold ? SHARD.goldGlow  : SHARD.cyanGlow;
+  // Fade in last seconds of life.
+  let alpha = 1;
+  if (sh.life < (SHARD.life - SHARD.fadeStart)) {
+    alpha = Math.max(0, sh.life / (SHARD.life - SHARD.fadeStart));
+  }
+  const pulse = 0.85 + 0.15 * Math.sin(sh.pulse);
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(sh.x, sh.y);
+  ctx.rotate(sh.rot);
+
+  // Outer glow.
+  ctx.shadowColor = glow;
+  ctx.shadowBlur = isGold ? 22 : 14;
+
+  // Crystal / diamond shape (rhombus with elongated vertical).
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, -r * 1.2 * pulse);
+  ctx.lineTo(r * 0.75, 0);
+  ctx.lineTo(0,  r * 1.2 * pulse);
+  ctx.lineTo(-r * 0.75, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // Inner highlight.
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = isGold ? 'rgba(255,250,220,0.9)' : 'rgba(220,250,255,0.85)';
+  ctx.beginPath();
+  ctx.moveTo(0, -r * 0.65);
+  ctx.lineTo(r * 0.32, -r * 0.05);
+  ctx.lineTo(0, r * 0.25);
+  ctx.lineTo(-r * 0.32, -r * 0.05);
+  ctx.closePath();
+  ctx.fill();
+
+  // Gold sparkle ring.
+  if (isGold) {
+    ctx.strokeStyle = 'rgba(255,235,160,0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.8, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawShards() {
+  for (const sh of state.shards) drawShard(sh);
+}
+
+/* ---------- POWER BAR ACTIVATION (Micropass 22) ---------- */
+function activatePower() {
+  if (!state || !state.photons) return;
+  const slot = state.photons.cursor;
+  if (slot < 1) return;  // no upgrade highlighted yet
+  // Reset cursor + fill regardless of slot (one upgrade per charge).
+  state.photons.cursor = 0;
+  state.photons.fill = 0;
+  if (slot === 1) {
+    // Velocity: persistent speed boost (stacks up to a cap).
+    const s = state.ship;
+    const stacks = Math.round(((s.speedMult || 1) - 1) / POWER_UPGRADES.velocitySpeedBonus);
+    if (stacks < POWER_UPGRADES.velocityMaxStacks) {
+      s.speedMult = (s.speedMult || 1) + POWER_UPGRADES.velocitySpeedBonus;
+    }
+  } else if (slot === 2) {
+    // Reflection Shield: grants one absorbing/reflecting charge.
+    state.ship.shieldCharges = (state.ship.shieldCharges || 0) + 1;
+  } else if (slot === 3) {
+    // Twin Beam: persistent split shot for the rest of the run.
+    state.twinBeam = true;
+  } else if (slot === 4) {
+    // Photon Burst: one-time radial detonation around the ship.
+    triggerPhotonBurst();
+  }
+  SFX.powerActivate();
+  spawnPowerActivateFx();
+  updateHUD();
+}
+function spawnPowerActivateFx() {
+  const s = state.ship;
+  state.rings.push({
+    x: s.x, y: s.y, radius: SHIP.radius + 4,
+    speed: 360, life: 0.45, maxLife: 0.45,
+    color: 'rgba(140,235,250,'
+  });
+}
+function triggerPhotonBurst() {
+  const s = state.ship;
+  const R = POWER_UPGRADES.burstRadius;
+  // Visual: large expanding ring + bright shockwave.
+  state.rings.push({
+    x: s.x, y: s.y, radius: SHIP.radius + 6,
+    speed: 900, life: 0.45, maxLife: 0.45,
+    color: 'rgba(255,233,138,'
+  });
+  state.rings.push({
+    x: s.x, y: s.y, radius: SHIP.radius + 14,
+    speed: 640, life: 0.55, maxLife: 0.55,
+    color: 'rgba(255,180,90,'
+  });
+  state.burstFx = { x: s.x, y: s.y, age: 0, life: 0.55, radius: R };
+  state.shake = Math.max(state.shake, 14);
+  // Sparks.
+  for (let i = 0; i < 36; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp = 220 + Math.random() * 380;
+    state.particles.push({
+      x: s.x, y: s.y,
+      vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+      life: 0.45 + Math.random() * 0.25, maxLife: 0.7,
+      size: 2 + Math.random() * 2,
+      color: Math.random() < 0.5 ? 'rgba(255,233,138,' : 'rgba(255,180,90,'
+    });
+  }
+  // Destroy enemy projectiles within radius.
+  for (const g of state.enemyShots) {
+    if (g.life <= 0) continue;
+    if (dist2(g.x, g.y, s.x, s.y) <= R * R) {
+      g.life = 0;
+      spawnImpact(g.x, g.y);
+    }
+  }
+  // Damage enemies within radius.
+  for (const e of state.enemies) {
+    if (e.dead) continue;
+    if (e.bossPanel) continue; // do not damage the indestructible boss panels
+    if (dist2(e.x, e.y, s.x, s.y) <= R * R) {
+      damageEnemy(e, POWER_UPGRADES.burstDamage, e.x, e.y);
+    }
+  }
+  // Micropass 25: Burst opens the boss's Phase 2 plating for a window.
+  bossOnPhotonBurst(s.x, s.y, R);
+  SFX.burst();
+}
+function updateBurstFx(dt) {
+  if (!state.burstFx) return;
+  state.burstFx.age += dt;
+  if (state.burstFx.age >= state.burstFx.life) state.burstFx = null;
+}
+function drawBurstFx() {
+  if (!state.burstFx) return;
+  const f = state.burstFx;
+  const t = Math.min(1, f.age / f.life);
+  const r = f.radius * (0.25 + 0.95 * t);
+  ctx.save();
+  ctx.globalAlpha = (1 - t) * 0.55;
+  const grad = ctx.createRadialGradient(f.x, f.y, 4, f.x, f.y, r);
+  grad.addColorStop(0,    'rgba(255,250,210,0.9)');
+  grad.addColorStop(0.45, 'rgba(255,180,90,0.45)');
+  grad.addColorStop(1,    'rgba(255,180,90,0.0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(f.x, f.y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/* Shield consumption: returns true if a damage event was blocked. */
+function consumeShieldIfAny(srcX, srcY) {
+  const s = state.ship;
+  if (!s.shieldCharges || s.shieldCharges <= 0) return false;
+  s.shieldCharges -= 1;
+  s.iframes = Math.max(s.iframes, 0.5);
+  // Visual ring + return shot in the direction away from the source.
+  state.rings.push({
+    x: s.x, y: s.y, radius: SHIP.radius + 6,
+    speed: 520, life: 0.40, maxLife: 0.40,
+    color: 'rgba(140,235,250,'
+  });
+  for (let i = 0; i < 14; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp = 140 + Math.random() * 260;
+    state.particles.push({
+      x: s.x, y: s.y,
+      vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+      life: 0.35 + Math.random() * 0.2, maxLife: 0.55,
+      size: 1.8 + Math.random() * 1.6,
+      color: 'rgba(140,225,250,'
+    });
+  }
+  // Reflect a return shot outward (toward right by default, or away from src).
+  const dx = s.x - srcX;
+  const dy = s.y - srcY;
+  const d  = Math.hypot(dx, dy) || 1;
+  const shot = makeShot(s.x + SHIP.radius + 4, s.y);
+  shot.vx = -dx / d * SHOT.speed;
+  shot.vy = -dy / d * SHOT.speed;
+  shot.reflected = true;
+  state.shots.push(shot);
+  SFX.shieldBlock();
+  return true;
+}
+function drawShieldRing() {
+  const s = state.ship;
+  if (!s.shieldCharges || s.shieldCharges <= 0) return;
+  ctx.save();
+  const t = state.elapsed * 2.4;
+  ctx.translate(s.x, s.y);
+  ctx.rotate(t);
+  ctx.shadowColor = 'rgba(140,235,250,0.8)';
+  ctx.shadowBlur = 16;
+  ctx.strokeStyle = 'rgba(140,235,250,0.85)';
+  ctx.lineWidth = 2;
+  const r = SHIP.radius + 8;
+  ctx.beginPath();
+  for (let i = 0; i < 4; i++) {
+    const a0 = i * Math.PI / 2 + 0.12;
+    const a1 = i * Math.PI / 2 + Math.PI / 2 - 0.12;
+    ctx.moveTo(Math.cos(a0) * r, Math.sin(a0) * r);
+    ctx.arc(0, 0, r, a0, a1);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
 /* ---------- RENDER ---------- */
 function drawBackground() {
   // Faint grid for "lab corridor" feel.
@@ -2247,31 +5161,59 @@ function drawBackground() {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(ARENA_W, y); ctx.stroke();
   }
 
-  // Player zone boundary (subtle).
-  ctx.strokeStyle = COLORS.wall;
-  ctx.setLineDash([8, 10]);
-  ctx.beginPath();
-  ctx.moveTo(ARENA_W * 0.55, 20);
-  ctx.lineTo(ARENA_W * 0.55, ARENA_H - 20);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  // Player zone boundary (subtle) - L1/L2 only. L3 lets the ship roam.
+  if (state.level !== 3) {
+    ctx.strokeStyle = COLORS.wall;
+    ctx.setLineDash([8, 10]);
+    ctx.beginPath();
+    ctx.moveTo(ARENA_W * 0.55, 20);
+    ctx.lineTo(ARENA_W * 0.55, ARENA_H - 20);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
 
-  // End gate on the right.
-  const gx = ARENA_W - 36;
-  const grad = ctx.createLinearGradient(gx - 30, 0, gx + 6, 0);
-  grad.addColorStop(0, 'rgba(46,204,113,0)');
-  grad.addColorStop(1, 'rgba(46,204,113,0.45)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(gx - 30, 30, 36, ARENA_H - 60);
+  // End gate on the right. L1/L2 show their fixed end gate. L3 is now a
+  // scrolling stage (Micropass 23) so the gate is a world-end event, not a
+  // static right-edge marker.
+  if (state.level !== 3) {
+    const gateRGB = '46,204,113';
+    const gx = ARENA_W - 36;
+    const grad = ctx.createLinearGradient(gx - 30, 0, gx + 6, 0);
+    grad.addColorStop(0, `rgba(${gateRGB},0)`);
+    grad.addColorStop(1, `rgba(${gateRGB},0.45)`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(gx - 30, 30, 36, ARENA_H - 60);
 
-  ctx.fillStyle = COLORS.gate;
-  ctx.font = 'bold 16px Nunito, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.save();
-  ctx.translate(gx - 12, ARENA_H / 2);
-  ctx.rotate(-Math.PI / 2);
-  ctx.fillText('END GATE', 0, 0);
-  ctx.restore();
+    ctx.fillStyle = COLORS.gate;
+    ctx.font = 'bold 16px Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.save();
+    ctx.translate(gx - 12, ARENA_H / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('END GATE', 0, 0);
+    ctx.restore();
+  } else {
+    // L3: warm amber gradient slides in from the right as the Foreman Gate approaches.
+    const distToGate = L3_GATE_WORLD_X - (state.distance || 0);
+    if (distToGate < ARENA_W + 100) {
+      const t = Math.max(0, Math.min(1, 1 - (distToGate / (ARENA_W + 100))));
+      const grad = ctx.createLinearGradient(ARENA_W - 200, 0, ARENA_W, 0);
+      grad.addColorStop(0, 'rgba(245,200,66,0)');
+      grad.addColorStop(1, `rgba(245,200,66,${(0.18 + t * 0.35).toFixed(3)})`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(ARENA_W - 200, 30, 200, ARENA_H - 60);
+      if (t > 0.25) {
+        ctx.fillStyle = `rgba(245,200,66,${(t * 0.85).toFixed(3)})`;
+        ctx.font = 'bold 16px Nunito, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.save();
+        ctx.translate(ARENA_W - 18, ARENA_H / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('FOREMAN GATE', 0, 0);
+        ctx.restore();
+      }
+    }
+  }
 }
 
 function drawShip() {
@@ -2588,15 +5530,26 @@ function render() {
     ctx.translate((Math.random()-0.5) * state.shake, (Math.random()-0.5) * state.shake);
   }
   drawBackground();
+  drawAimGhosts();
   drawBubbles();
+  drawEnemies();
+  drawForeman();
   drawRings();
   drawShots();
+  drawEnemyShots();
   drawParticles();
+  drawShards();
   drawShip();
+  drawShieldRing();
+  drawBurstFx();
+  drawScorePops();
   ctx.restore();
+  // HUD overlay outside the shake transform.
+  if (state.bossActive) drawForemanHpBar();
 }
 
 /* ---------- HUD UPDATE ---------- */
+const hudLevel       = document.getElementById('hudLevel');
 const hudScore       = document.getElementById('hudScore');
 const hudScoreLabel  = document.getElementById('hudScoreLabel');
 const hudHealth  = document.getElementById('hudHealth');
@@ -2621,19 +5574,27 @@ const meterT = document.getElementById('meterTransmit');
 const pctR = document.getElementById('pctReflect');
 const pctA = document.getElementById('pctAbsorb');
 const pctT = document.getElementById('pctTransmit');
+const phCyan = document.getElementById('phCyan');
+const phGold = document.getElementById('phGold');
+const phSlotEls = Array.from(document.querySelectorAll('#phSlots .ph-slot'));
 
 function updateHUD() {
-  // Level 1: show "Unlock Level 2: X / 220" so the win threshold is visible
-  // in the HUD at all times. Level 2: just current score (no score target).
-  if (state.level === 2) {
+  hudLevel.textContent = state.level === 3 ? 'Glass Foundry'
+                        : state.level === 2 ? 'Material Lab' : 'Training Corridor';
+  // Level 1: show "Unlock Material Lab: X / 220" so the win threshold is visible
+  // in the HUD at all times. Level 2/3: just current score (no score target).
+  if (state.level === 2 || state.level === 3) {
     hudScoreLabel.textContent = 'Score';
     hudScore.textContent      = state.score;
   } else {
-    hudScoreLabel.textContent = 'Unlock Level 2';
+    hudScoreLabel.textContent = 'Unlock Material Lab';
     hudScore.textContent      = state.score + ' / ' + WIN_SCORE;
   }
   hudHealth.textContent = Math.round(state.ship.health);
-  if (state.level === 2) {
+  if (state.level === 3) {
+    hudClearedLabel.textContent = 'Foundry Segment';
+    hudCleared.textContent = `${state.beat || 1} / ${LEVEL3_BEAT_COUNT}`;
+  } else if (state.level === 2) {
     const testedCount = LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length;
     hudClearedLabel.textContent = 'Materials Tested';
     hudCleared.textContent = `${testedCount} / 4`;
@@ -2674,6 +5635,132 @@ function updateHUD() {
   dR.textContent = c.reflective;
   dM.textContent = c.mixed;
   dH.textContent = c.hits;
+
+  // Photon Shards (Micropass 19).
+  if (state.photons) {
+    phCyan.textContent = state.photons.cyan;
+    phGold.textContent = state.photons.gold;
+    updatePowerBarSlots();
+  }
+
+  // Micropass 27: in-arena Foundry pill (lives / score / best / combo).
+  updateFoundryHud();
+  // Micropass 30: Level 3 sidebar progress card.
+  updateFoundrySidebar();
+}
+
+const foundryHud   = document.getElementById('foundryHud');
+const fhLives      = document.getElementById('fhLives');
+const fhScore      = document.getElementById('fhScore');
+const fhBest       = document.getElementById('fhBest');
+const fhCombo      = document.getElementById('fhCombo');
+function updateFoundryHud() {
+  if (!foundryHud) return;
+  const isL3 = state && state.level === 3;
+  foundryHud.classList.toggle('show', !!isL3);
+  foundryHud.classList.toggle('boss', !!(state && state.bossActive));
+  if (!isL3) return;
+  const lives = Math.max(0, state.lives || 0);
+  const max   = FOUNDRY_RUN.startLives;
+  const filled = '&#10084;'.repeat(lives);
+  const dim    = '&#10084;'.repeat(Math.max(0, max - lives));
+  fhLives.innerHTML = filled + (dim ? '<span class="fh-lives-dim">' + dim + '</span>' : '');
+  fhScore.textContent = state.foundryScore || 0;
+  fhBest.textContent  = state.foundryBest  || 0;
+  const mult = foundryComboMult();
+  fhCombo.textContent = 'x' + (mult % 1 ? mult.toFixed(1) : mult);
+  fhCombo.classList.toggle('hot', mult >= 2);
+}
+
+/* ---------- FOUNDRY RUN SIDEBAR CARD (Micropass 30) ----------
+   Shows only during Glass Foundry. Displays current segment, pip progress
+   (1-5 + Boss), lives remaining, best score, and goal copy. Updates through
+   updateHUD() so it stays in sync with the main HUD pass. */
+const foundryRunSection = document.getElementById('foundryRunSection');
+const frSegmentEl  = document.getElementById('frSegment');
+const frPipsEl     = document.getElementById('frPips');
+const frLivesEl    = document.getElementById('frLives');
+const frBestEl     = document.getElementById('frBest');
+const frGoalEl     = document.getElementById('frGoal');
+
+const L3_SEG_DISPLAY = ['Catwalk', 'The Pour', 'Bounce Hall', 'Cooling Yard', 'Foreman Gate'];
+
+function updateFoundrySidebar() {
+  if (!foundryRunSection) return;
+  const isL3 = state && state.level === 3;
+  foundryRunSection.classList.toggle('hidden-section', !isL3);
+  if (!isL3) return;
+
+  // Segment name - show "Foreman" during boss fight.
+  const inBoss = state.bossActive || (state.bossDefeated && state.l3Complete);
+  const segIdx = Math.max(0, Math.min(4, (state.beat || 1) - 1));
+  frSegmentEl.textContent = inBoss ? 'Foreman' : (L3_SEG_DISPLAY[segIdx] || 'Catwalk');
+
+  // Segment pip row: 1 2 3 4 5 B
+  const pipLabels = ['1', '2', '3', '4', '5', 'B'];
+  let pipsHtml = '';
+  for (let i = 0; i < 6; i++) {
+    const isBossPip = i === 5;
+    let cls = 'fr-pip';
+    if (isBossPip) {
+      if (state.bossDefeated)  cls += ' done';
+      else if (state.bossActive) cls += ' active';
+    } else {
+      const pipSeg = i + 1;
+      if (state.segmentScored && state.segmentScored[pipSeg]) cls += ' done';
+      else if (!state.bossActive && pipSeg === (state.beat || 1))  cls += ' active';
+    }
+    pipsHtml += '<span class="' + cls + '">' + pipLabels[i] + '</span>';
+  }
+  frPipsEl.innerHTML = pipsHtml;
+
+  // Lives hearts.
+  const lives = Math.max(0, state.lives || 0);
+  const maxL  = FOUNDRY_RUN.startLives;
+  const filledH = '&#10084;'.repeat(lives);
+  const dimH    = lives < maxL
+    ? '<span class="fr-lives-dim">' + '&#10084;'.repeat(maxL - lives) + '</span>'
+    : '';
+  frLivesEl.innerHTML = filledH + dimH;
+
+  // Best score + goal copy.
+  frBestEl.textContent = state.foundryBest || 0;
+  frGoalEl.textContent = state.bossDefeated
+    ? 'Foreman defeated!'
+    : 'Reach and defeat the Foreman';
+}
+
+function updatePowerBarSlots() {
+  const cursor = state.photons.cursor;       // 0..4 (4 = burst held)
+  const fillPct = (state.photons.fill / POWER_BAR.threshold) * 100;
+  const s = state.ship;
+  // Which slots reflect a currently active/persistent upgrade?
+  const activeFlags = [
+    (s.speedMult || 1) > 1.001,             // Velocity stacks applied
+    (s.shieldCharges || 0) > 0,             // Shield charge held
+    !!state.twinBeam,                       // Twin Beam on
+    false                                    // Burst is one-shot - never "active"
+  ];
+  for (let i = 0; i < phSlotEls.length; i++) {
+    const el = phSlotEls[i];
+    const slotNum = i + 1;
+    const isCursor = (slotNum === cursor);
+    // Fill belongs to the *next* unfilled slot (cursor + 1). Burst-held caps at slot 4.
+    const isNext   = (slotNum === cursor + 1);
+    const fillEl   = el.firstElementChild;
+    if (isCursor) {
+      fillEl.style.width = '100%';
+    } else if (isNext) {
+      fillEl.style.width = fillPct.toFixed(1) + '%';
+    } else if (slotNum < cursor) {
+      fillEl.style.width = '100%';
+    } else {
+      fillEl.style.width = '0%';
+    }
+    el.classList.toggle('is-cursor', isCursor);
+    el.classList.toggle('is-filled', !isCursor && slotNum <= cursor);
+    el.classList.toggle('is-active', !isCursor && activeFlags[i]);
+  }
 }
 
 /* ---------- WIN / LOSE / RESET ---------- */
@@ -2698,24 +5785,204 @@ function winLevel1() {
 }
 
 function winLevel2() {
+  // Material Lab cleared. Hand off to the Glass Foundry transition rather than ending the run.
+  state.won = true;
+  clearPause();
+  SFX.win();
+  showLevel3Intro();
+}
+
+/* ---------- LEVEL 3 FLOW ---------- */
+function showLevel3Intro() {
+  state.transitionPending = true;
+  running = false;
+  overlayLevel3Intro.classList.remove('hidden');
+}
+
+function enterLevel3() {
+  if (!state) return;
+  overlayLevel3Intro.classList.add('hidden');
+  state.level = 3;
+  state.foundryReached = true;
+  state.transitionPending = false;
+  state.over = false;
+  state.won = false;
+  state.beat = 1;
+  state.beatTransitioning = false;
+  state.shots = [];
+  state.enemies = [];
+  state.enemyShots = [];
+  state.particles = [];
+  state.rings = [];
+  state.bubbles = [];
+  state.scorePops = [];  // Micropass 30: explicit reset for safety
+  state.shake = 0;
+
+  // Hide L2-specific side panel sections so the sidebar stays compact.
+  missionProgressSection.classList.add('hidden-section');
+  labTrackerSection.classList.add('hidden-section');
+
+  resetLastInteraction();
+  resetDiscovery();
+  feedbackEl.classList.remove('show');
+  feedbackTimer = 0;
+
+  // Micropass 23: scrolling-stage init. One continuous level instead of
+  // five swap-in rooms. Park the ship in the left third; the world flows past.
+  state.distance      = 0;
+  state.l3SpawnQueue  = buildLevel3SpawnQueue();
+  state.l3SpawnIdx    = 0;
+  state.l3LastSegment = 0;
+  // Micropass 25: clear any leftover boss state from a prior run.
+  state.boss = null;
+  state.bossActive = false;
+  state.bossDefeated = false;
+  state.bossSpawnT = 0;
+  state.ship.x  = 130;
+  state.ship.y  = ARENA_H / 2;
+  state.ship.vx = 0;
+  state.ship.vy = 0;
+  state.ship.iframes = 0.6;
+  // Micropass 27: start a fresh Foundry run.
+  state.lives          = FOUNDRY_RUN.startLives;
+  state.foundryScore   = 0;
+  state.foundryBest    = loadFoundryBest();
+  state.foundryCombo   = 0;
+  state.comboTimer     = 0;
+  state.segmentScored  = {};
+  setMissionGoalForLevel3();
+
+  // Prime the spawn window so segment 1 content is on screen at frame 0.
+  updateLevel3Scroll(0);
+
+  running = true;
+  lastTime = performance.now();
+  requestAnimationFrame(loop);
+  updateHUD();
+}
+
+function completeLevel3() {
+  state.l3Complete = true;
   state.over = true;
   state.won = true;
   running = false;
   clearPause();
   SFX.win();
-  showEnd(true);
+  // Micropass 27: persist best Foundry score and render the run summary.
+  if (state.foundryScore > state.foundryBest) {
+    state.foundryBest = state.foundryScore;
+    saveFoundryBest(state.foundryBest);
+  }
+  renderFoundryRunSummary();
+  overlayLevel3Complete.classList.remove('hidden');
+}
+
+/* Micropass 27: Foundry end-of-run summary card. Inserted at the top of
+   #overlayLevel3Complete and #overlayEnd so both win and lose flows surface
+   the run score, best, shards, lives left, and Foreman status. */
+function renderFoundryRunSummary(targetId) {
+  const host = document.getElementById(targetId || 'foundryRunSummary');
+  if (!host) return;
+  const lifeChips = '<span class="run-lives">' +
+    (state.lives > 0
+      ? '&#10084;'.repeat(state.lives) + '<span class="run-lives-dim">' + '&#10084;'.repeat(Math.max(0, FOUNDRY_RUN.startLives - state.lives)) + '</span>'
+      : '<span class="run-lives-dim">' + '&#10084;'.repeat(FOUNDRY_RUN.startLives) + '</span>') +
+    '</span>';
+  const isBest = state.foundryScore >= state.foundryBest && state.foundryScore > 0;
+  host.innerHTML =
+    '<div class="run-summary">' +
+      '<div class="run-row run-row-hero">' +
+        '<span class="run-k">Foundry Score</span>' +
+        '<span class="run-v run-v-big">' + state.foundryScore + (isBest ? ' <span class="run-best-tag">NEW BEST</span>' : '') + '</span>' +
+      '</div>' +
+      '<div class="run-row"><span class="run-k">Best Score</span><span class="run-v">' + state.foundryBest + '</span></div>' +
+      '<div class="run-row"><span class="run-k">Cyan Shards</span><span class="run-v">' + (state.photons ? state.photons.cyan : 0) + '</span></div>' +
+      '<div class="run-row"><span class="run-k">Gold Shards</span><span class="run-v">' + (state.photons ? state.photons.gold : 0) + '</span></div>' +
+      '<div class="run-row"><span class="run-k">Lives Remaining</span><span class="run-v">' + lifeChips + '</span></div>' +
+      '<div class="run-row"><span class="run-k">Foreman Defeated</span><span class="run-v">' + (state.bossDefeated ? 'Yes' : 'No') + '</span></div>' +
+    '</div>';
+}
+
+function setMissionGoalForLevel3() {
+  if (!state) return;
+  goalIcon.textContent = '🏭';
+  goalTitle.innerHTML  = 'Glass Foundry:';
+  goalBody.innerHTML   = 'Survive the Foundry and reach the Foreman Gate.';
+  btnSkipTut.classList.add('hidden');
 }
 
 // Backwards-compat shim (in case any code path still calls winGame).
 function winGame() { winLevel1(); }
 
 function loseGame() {
+  // Micropass 27: Glass Foundry runs use a lives system. Each fatal hit burns
+  // one life; respawn if any lives remain, otherwise fall through to lose.
+  if (state.level === 3) {
+    state.lives = Math.max(0, (state.lives || 0) - 1);
+    if (state.lives > 0) {
+      respawnFoundry();
+      return;
+    }
+  }
+  // Lives 0 (or non-L3 levels): persist best score, then show lose.
+  if (state.level === 3) {
+    if (state.foundryScore > state.foundryBest) {
+      state.foundryBest = state.foundryScore;
+      saveFoundryBest(state.foundryBest);
+    }
+  }
   state.over = true;
   state.won = false;
   running = false;
   clearPause();
   SFX.lose();
   showEnd(false);
+}
+
+/* Micropass 27: Foundry respawn. Restores shields, clears immediate threats,
+   grants brief iframes, keeps shards/upgrades/Power Bar. During the Foreman,
+   resets the current phase HP and clears boss projectiles. Outside the boss,
+   rewinds the scrolling stage to the start of the current segment. */
+function respawnFoundry() {
+  const s = state.ship;
+  s.health  = SHIP.maxHealth;
+  s.vx = 0; s.vy = 0;
+  s.x = 130; s.y = ARENA_H / 2;
+  s.iframes = FOUNDRY_RUN.respawnIframes;
+  state.shake = 0;
+  state.enemyShots = [];
+  resetFoundryCombo();
+
+  if (state.bossActive && state.boss) {
+    // Restore the current boss phase HP and clear stray pressure.
+    const b = state.boss;
+    b.hp = FOREMAN.phaseHp[b.phase - 1];
+    b.maxHp = FOREMAN.phaseHp[b.phase - 1];
+    b.iframes = 0.6;
+    b.hitFlash = 0;
+    b.phaseTransTimer = 0;
+    // Sweep stray embers/sparks the boss has summoned.
+    state.enemies = state.enemies.filter(e => e.bossPanel);
+    showBanner('RESPAWN', 'Lives remaining: ' + state.lives, 1.8);
+  } else {
+    // Rewind to the start of the current segment so the player picks up
+    // near where they fell instead of restarting the level.
+    const segIdx = currentL3Segment();
+    const seg = L3_SEGMENTS[segIdx - 1];
+    if (seg) state.distance = seg.worldX;
+    // Re-aim the spawn cursor at the rewound world position.
+    state.l3SpawnIdx = 0;
+    while (state.l3SpawnIdx < state.l3SpawnQueue.length &&
+           state.l3SpawnQueue[state.l3SpawnIdx].worldX < state.distance) {
+      state.l3SpawnIdx++;
+    }
+    state.l3LastSegment = segIdx;
+    state.beat = segIdx;
+    // Clear hostile field so the respawn is survivable.
+    state.enemies = [];
+    state.bubbles = [];
+    showBanner('RESPAWN', 'Lives remaining: ' + state.lives, 1.8);
+  }
 }
 
 const overlayStart = document.getElementById('overlayStart');
@@ -2774,7 +6041,15 @@ function buildLabNotes() {
     }),
     '  Materials tested:    ' + LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length + ' / 4',
     '  Correct predictions: ' + state.predictionsCorrect,
-    '  Prediction accuracy: ' + state.predictionsCorrect + ' / ' + LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length
+    '  Prediction accuracy: ' + state.predictionsCorrect + ' / ' + LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length,
+    '',
+    'Glass Foundry reached: ' + (state.foundryReached ? 'yes' : 'no'),
+    'Glass Foundry complete: ' + (state.l3Complete ? 'yes' : 'no'),
+    'Foreman defeated: ' + (state.bossDefeated ? 'yes' : 'no'),
+    'Glass Foundry distance traveled: ' + Math.round(state.distance || 0) + ' px',
+    'Foundry Score: ' + (state.foundryScore || 0),
+    'Best Foundry Score: ' + (state.foundryBest || 0),
+    'Lives Remaining: ' + (state.lives != null ? state.lives : FOUNDRY_RUN.startLives) + ' / ' + FOUNDRY_RUN.startLives
   ].join('\n');
 }
 
@@ -2855,7 +6130,7 @@ const btnPauseToggle = document.getElementById('btnPauseToggle');
 const pauseIcon = document.getElementById('pauseIcon');
 const pauseText = document.getElementById('pauseText');
 btnPauseToggle.addEventListener('click', () => {
-  if (!state || !running || state.over || state.awaitingPrediction) return;
+  if (!state || !running || state.over) return;
   togglePause();
 });
 // Clicking the Paused overlay also resumes.
@@ -2877,16 +6152,89 @@ function renderPauseButton() {
   }
 }
 
+/* ---------- SIDEBAR MODALS (Micropass 12) ----------
+   openSidebarModal/closeSidebarModal freeze the simulation via state.modalOpen
+   (checked in the main loop) so they never race with user pause. They do NOT
+   touch state.paused, so manual pause state is preserved across open/close. */
+let activeSidebarModal = null;
+function refreshDataModal() {
+  if (!state) return;
+  const c = state.counts;
+  document.getElementById('dTransparent').textContent = c.transparent;
+  document.getElementById('dTranslucent').textContent = c.translucent;
+  document.getElementById('dOpaque').textContent      = c.opaque;
+  document.getElementById('dReflective').textContent  = c.reflective;
+  document.getElementById('dMixed').textContent       = c.mixed;
+  document.getElementById('dHits').textContent        = c.hits;
+}
+function refreshNotesModal() {
+  if (!state) return;
+  document.getElementById('notesModalText').value = buildLabNotes();
+  const s = document.getElementById('notesModalStatus');
+  s.textContent = ''; s.classList.remove('ok', 'warn');
+}
+function openSidebarModal(name) {
+  if (activeSidebarModal) closeSidebarModal();
+  const el = document.getElementById('modal' + name);
+  if (!el) return;
+  if (name === 'Data')  refreshDataModal();
+  if (name === 'Notes') refreshNotesModal();
+  activeSidebarModal = name;
+  if (state) state.modalOpen = true;
+  el.classList.remove('hidden');
+}
+function closeSidebarModal() {
+  if (!activeSidebarModal) return;
+  document.getElementById('modal' + activeSidebarModal).classList.add('hidden');
+  activeSidebarModal = null;
+  if (state) state.modalOpen = false;
+  lastTime = performance.now();
+}
+document.getElementById('pillGuide').addEventListener('click', () => openSidebarModal('Guide'));
+document.getElementById('pillData').addEventListener('click',  () => openSidebarModal('Data'));
+document.getElementById('pillNotes').addEventListener('click', () => openSidebarModal('Notes'));
+document.querySelectorAll('[data-modal-close]').forEach(b => b.addEventListener('click', closeSidebarModal));
+document.getElementById('btnNotesModalCopy').addEventListener('click', () => {
+  const notes = document.getElementById('notesModalText').value || buildLabNotes();
+  const s = document.getElementById('notesModalStatus');
+  const setStatus = (text, tone) => {
+    s.textContent = text;
+    s.classList.remove('ok', 'warn');
+    if (tone) s.classList.add(tone);
+  };
+  const fail = () => {
+    const ta = document.getElementById('notesModalText');
+    ta.focus(); ta.select();
+    setStatus('Copy is blocked. Select the notes above.', 'warn');
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(notes).then(() => setStatus('Lab notes copied!', 'ok'), fail);
+    } else { fail(); }
+  } catch (e) { fail(); }
+});
+
 function showEnd(won) {
   const isL2 = state.level === 2;
   endTitle.textContent = won
     ? (isL2 ? 'Investigation Complete!' : 'Corridor Cleared!')
     : 'Shields Down';
+  // Micropass 30: level-aware lose message so L3 students see relevant advice.
+  let loseMsg;
+  if (state.level === 3) {
+    loseMsg = state.bossActive
+      ? 'The Foreman overwhelmed your shields. Read the phase, use the reflection panels, and wait for openings.'
+      : 'You ran out of lives in the Glass Foundry. Watch enemy telegraphs, protect your shields, and use your Power Bar before the next big wave.';
+  } else if (state.level === 2) {
+    loseMsg = 'Your shields took damage in the Material Lab. Try to dodge reflected beams while testing each material.';
+  } else {
+    loseMsg = 'Your photon reflected off a Reflective bubble and hit your shields. Reflection sends energy back along a new path - try angling your shots away from reflective surfaces next time.';
+  }
   endMsg.textContent = won
     ? (isL2
-        ? 'You tested all four materials and compared their energy ratios.'
+        ? 'You tested four materials and compared how energy moved through each one.'
         : 'You guided light energy through the corridor and watched it reflect, absorb, and transmit.')
-    : 'Your photon reflected off a Reflective bubble and hit your shields. Reflection sends energy back along a new path - try angling your shots away from reflective surfaces next time.';
+    : loseMsg;
   const e = state.energy;
   const tot = e.reflect + e.absorb + e.transmit || 1;
 
@@ -2917,37 +6265,38 @@ function showEnd(won) {
     const correctCount = state.predictionsCorrect;
     recap = `
       <div class="recap">
-        <b>Investigation Summary:</b>
+        <b>Key Findings:</b>
         <ul>
           <li><b>Materials Tested:</b> ${testedCount} / 4</li>
-          <li><b>Correct Predictions:</b> ${correctCount}</li>
           <li><b>Prediction Accuracy:</b> ${correctCount} / ${testedCount}</li>
-          <li><b>Most Reflective:</b> <span class="c-r">${mostR.name}</span> (R${Math.round(mostR.ratios.reflect*100)})</li>
-          <li><b>Most Absorptive:</b> <span class="c-a">${mostA.name}</span> (A${Math.round(mostA.ratios.absorb*100)})</li>
-          <li><b>Most Transmissive:</b> <span class="c-t">${mostT.name}</span> (T${Math.round(mostT.ratios.transmit*100)})</li>
+          <li><b>Most Reflective:</b> <span class="c-r">${mostR.name}</span></li>
+          <li><b>Most Absorptive:</b> <span class="c-a">${mostA.name}</span></li>
+          <li><b>Most Transmissive:</b> <span class="c-t">${mostT.name}</span></li>
         </ul>
-        <div class="takeaway">
-          <b>Mixed Materials Takeaway</b><br>
-          Scientists compare energy ratios to understand how materials interact with waves.
-        </div>
       </div>`;
   }
 
   if (isL2 && won) {
-    const testedCount = LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length;
-    endStats.innerHTML =
-      `<b>Materials Tested:</b> ${testedCount} / 4 &nbsp;·&nbsp; ` +
-      `<b>Reflected:</b> ${(e.reflect/tot*100).toFixed(0)}% &nbsp;·&nbsp; ` +
-      `<b>Absorbed:</b> ${(e.absorb/tot*100).toFixed(0)}% &nbsp;·&nbsp; ` +
-      `<b>Transmitted:</b> ${(e.transmit/tot*100).toFixed(0)}%` +
-      recap;
+    endStats.innerHTML = recap;
+    endStats.style.background = 'transparent';
+    endStats.style.border = 'none';
+    endStats.style.padding = '0';
   } else {
+    endStats.style.background = '';
+    endStats.style.border = '';
+    endStats.style.padding = '';
     endStats.innerHTML =
       `<b>Score:</b> ${state.score} &nbsp;·&nbsp; ` +
       `<b>Reflected:</b> ${(e.reflect/tot*100).toFixed(0)}% &nbsp;·&nbsp; ` +
       `<b>Absorbed:</b> ${(e.absorb/tot*100).toFixed(0)}% &nbsp;·&nbsp; ` +
       `<b>Transmitted:</b> ${(e.transmit/tot*100).toFixed(0)}%` +
       recap;
+  }
+  // Micropass 27: Foundry run summary in the lose flow (only L3).
+  const endSummaryHost = document.getElementById('foundryRunSummaryEnd');
+  if (endSummaryHost) {
+    if (state.level === 3) renderFoundryRunSummary('foundryRunSummaryEnd');
+    else endSummaryHost.innerHTML = '';
   }
   // Reset notes UI for this end state.
   setNotesStatus('', null);
@@ -2957,6 +6306,12 @@ function showEnd(won) {
 }
 
 function startGame() {
+  // Micropass 34: swap pre-game screen for game UI on first launch (idempotent on reset).
+  const preGameScreen = document.getElementById('preGameScreen');
+  const gameUi        = document.getElementById('gameUi');
+  if (preGameScreen) preGameScreen.classList.add('hidden');
+  if (gameUi)        gameUi.classList.remove('game-ui-hidden');
+
   state = freshState();
   feedbackTimer = 0;
   lastFeedbackKey = null;
@@ -2964,7 +6319,16 @@ function startGame() {
   overlayStart.classList.add('hidden');
   overlayEnd.classList.add('hidden');
   overlayLevel2Intro.classList.add('hidden');
+  overlayLevel3Intro.classList.add('hidden');
+  overlayLevel3Complete.classList.add('hidden');
   overlayPredict.classList.add('hidden');
+  predictDraft = {};
+  ['modalGuide','modalData','modalNotes'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  activeSidebarModal = null;
+  const l1Status = document.getElementById('notesStatusL1');
+  const l1Fallback = document.getElementById('notesFallbackL1');
+  if (l1Status) { l1Status.textContent = ''; l1Status.classList.remove('ok', 'warn'); }
+  if (l1Fallback) { l1Fallback.classList.remove('show'); l1Fallback.value = ''; }
   clearPause();
   resetLastInteraction();
   resetDiscovery();
@@ -2995,6 +6359,80 @@ document.getElementById('btnEnterLevel2').addEventListener('click', () => {
   if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
   enterLevel2();
 });
+btnBeginInvestigation.addEventListener('click', () => {
+  if (btnBeginInvestigation.disabled) return;
+  if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+  beginInvestigation();
+});
+document.getElementById('btnReplayTraining').addEventListener('click', () => {
+  if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+  resetGame();
+});
+document.getElementById('btnEnterLevel3').addEventListener('click', () => {
+  if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+  enterLevel3();
+});
+document.getElementById('btnReplayFromL2').addEventListener('click', () => {
+  if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+  resetGame();
+});
+document.getElementById('btnReplayFromL3').addEventListener('click', () => {
+  if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+  resetGame();
+});
+
+/* Lab Notes copy helper for the L2 -> L3 transition + L3 completion overlays. */
+function wireNotesButton(btnId, statusId, fallbackId) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const notes = buildLabNotes();
+    const statusEl = document.getElementById(statusId);
+    const fallbackEl = document.getElementById(fallbackId);
+    const setStatus = (text, tone) => {
+      statusEl.textContent = text;
+      statusEl.classList.remove('ok', 'warn');
+      if (tone) statusEl.classList.add(tone);
+    };
+    const fail = () => {
+      fallbackEl.value = notes;
+      fallbackEl.classList.add('show');
+      setTimeout(() => { try { fallbackEl.focus(); fallbackEl.select(); } catch (e) {} }, 30);
+      setStatus('Copy is blocked. Select the notes below.', 'warn');
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(notes).then(() => setStatus('Lab notes copied!', 'ok'), fail);
+      } else { fail(); }
+    } catch (e) { fail(); }
+  });
+}
+wireNotesButton('btnL2Notes', 'notesStatusL2', 'notesFallbackL2');
+wireNotesButton('btnL3Notes', 'notesStatusL3', 'notesFallbackL3');
+document.getElementById('btnL1Notes').addEventListener('click', () => {
+  const notes = buildLabNotes();
+  const statusEl = document.getElementById('notesStatusL1');
+  const fallbackEl = document.getElementById('notesFallbackL1');
+  const setStatus = (text, tone) => {
+    statusEl.textContent = text;
+    statusEl.classList.remove('ok', 'warn');
+    if (tone) statusEl.classList.add(tone);
+  };
+  const fail = () => {
+    fallbackEl.value = notes;
+    fallbackEl.classList.add('show');
+    setTimeout(() => { try { fallbackEl.focus(); fallbackEl.select(); } catch (e) {} }, 30);
+    setStatus('Copy is blocked. Select the notes below.', 'warn');
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(notes).then(
+        () => setStatus('Lab notes copied!', 'ok'),
+        fail
+      );
+    } else { fail(); }
+  } catch (e) { fail(); }
+});
 
 /* ---------- MAIN LOOP ---------- */
 function loop(now) {
@@ -3002,22 +6440,27 @@ function loop(now) {
   lastTime = now;
 
   if (running) {
-    if (!state.paused && !state.awaitingPrediction) {
+    if (!state.paused && !state.modalOpen) {
       state.elapsed += dt;
       updateShip(dt);
       updateShots(dt);
-      maybePromptPrediction();
+      updateEnemies(dt);
+      updateEnemyShots(dt);
       updateParticles(dt);
+      updateShards(dt);
+      updateBurstFx(dt);
+      updateBubblesL3(dt);
       handleShotBubbleCollisions();
+      handleShotEnemyCollisions();
+      handleShotGlobCollisions();
+      updateLevel3Scroll(dt);
+      handleShotBossCollisions();
       handleShipDamage();
+      handleEnemyPlayerCollisions();
+      handleBossPlayerContact();
       tickFeedback(dt);
       tickDiscovery(dt);
       checkWin();
-    } else if (state.awaitingPrediction) {
-      // Still tick the banner timer + feedback timer while the modal is up so
-      // any leftover toast doesn't stick around forever.
-      tickFeedback(dt);
-      tickDiscovery(dt);
     }
     render();
     updateHUD();
@@ -3046,7 +6489,7 @@ function loop(now) {
     }
   } catch (e) { touchOnly = false; }
   if (touchOnly) {
-    const notice = document.getElementById('touchNotice');
+    const notice = document.getElementById('dirTouchNotice'); // Micropass 34: moved to pre-game dir-card
     if (notice) notice.hidden = false;
   }
 })();
