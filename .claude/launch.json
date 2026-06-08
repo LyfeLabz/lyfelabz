@@ -8,7 +8,7 @@
       "port": 3456
     },
     {
-      "name": "game_energy-escape.html",
+      "name": "game_photon-runner.html",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3457", "."],
       "port": 3457

@@ -12,9 +12,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="https://lyfelabz.com/game_energy-escape.html">
-<meta name="description" content="Pilot a photon ship through the Training Corridor and Material Lab. Energy Escape teaches reflection, absorption, and transmission with real materials and student predictions.">
-<title>LyfeLabz | Energy Escape: Photon Runner</title>
+<link rel="canonical" href="https://lyfelabz.com/game_photon-runner.html">
+<meta name="description" content="Pilot a photon ship through the Photon Academy and Solar Array. Photon Runner teaches reflection, absorption, and transmission with real materials and student predictions.">
+<title>LyfeLabz | Photon Runner</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 
 <style>
@@ -606,44 +606,63 @@
     border-color: rgba(59,200,232,0.5);
   }
   .btn.btn-teal:hover { box-shadow: 0 6px 18px rgba(59,200,232,0.25); }
-  .btn.btn-notes {
-    background: linear-gradient(180deg, rgba(46,204,113,0.22), rgba(46,204,113,0.10));
-    color: var(--transmit);
-    border-color: rgba(46,204,113,0.5);
-  }
-  .btn.btn-notes:hover { box-shadow: 0 6px 18px rgba(46,204,113,0.25); }
   .end-actions {
     display: flex;
     gap: 0.6rem;
     flex-wrap: wrap;
     justify-content: center;
   }
-  .notes-status {
-    min-height: 1.2rem;
-    margin-top: 0.6rem;
-    font-size: 0.82rem;
-    font-weight: 700;
+
+  /* ===== ACADEMIC CHECKPOINT (Micropass 50) ===== */
+  .checkpoint-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    margin-bottom: 0.4rem;
+    background: rgba(245,200,66,0.15);
+    border: 1px solid rgba(245,200,66,0.45);
+    border-radius: 999px;
+    color: var(--gold);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  #overlayCheckpoint h2 {
+    max-width: 640px;
+    font-size: clamp(1.2rem, 2.6vw, 1.8rem);
+    line-height: 1.3;
+    margin: 0.2rem auto 0.8rem;
+  }
+  .checkpoint-answers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    gap: 0.6rem;
+    max-width: 520px;
+    width: 100%;
+    margin: 0.4rem auto 0;
+  }
+  .checkpoint-btn {
+    justify-content: center;
+    text-align: center;
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+    width: 100%;
+  }
+  .checkpoint-feedback {
+    min-height: 1.4rem;
+    margin-top: 0.9rem;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
     color: var(--text-muted);
     transition: color 0.2s;
   }
-  .notes-status.ok    { color: var(--transmit); }
-  .notes-status.warn  { color: var(--gold); }
-  .notes-fallback {
-    display: none;
-    margin-top: 0.5rem;
-    width: min(540px, 86%);
-    height: 130px;
-    background: rgba(8,14,26,0.85);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.6rem 0.8rem;
-    font-family: 'Nunito', monospace;
-    font-size: 0.78rem;
-    line-height: 1.4;
-    resize: none;
+  .checkpoint-feedback.ok   { color: var(--transmit); }
+  .checkpoint-feedback.warn { color: var(--gold); }
+  @media (max-width: 540px) {
+    .checkpoint-answers { grid-template-columns: 1fr; }
   }
-  .notes-fallback.show { display: block; }
 
   /* ===== SIDE PANEL ===== */
   .panel-title {
@@ -1048,10 +1067,243 @@
   .panel-sub.lab-sub { color: var(--gold); }
   .hidden-section { display: none !important; }
 
+  /* ===== SOLAR PANEL ARRAY (Micropass 46) ===== */
+  .solar-array {
+    background: rgba(8,14,26,0.55);
+    border: 1px solid rgba(245,200,66,0.45);
+    border-radius: 12px;
+    padding: 0.75rem 0.85rem;
+    box-shadow: 0 0 18px rgba(245,200,66,0.08) inset;
+  }
+  .solar-array .solar-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .solar-array .solar-progress {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.12em;
+    color: var(--text);
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .solar-array .solar-progress #solarVal { color: var(--gold); }
+  .solar-array .solar-bar-outer {
+    width: 100%;
+    height: 10px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(245,200,66,0.35);
+    overflow: hidden;
+  }
+  .solar-array .solar-bar-inner {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, rgba(245,200,66,0.85), rgba(255,235,150,0.95));
+    box-shadow: 0 0 12px rgba(245,200,66,0.6);
+    transition: width 0.18s ease-out;
+  }
+  .solar-array .solar-hint {
+    margin-top: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  /* Micropass 51: Panel milestones inside the Solar Array sidebar. */
+  .solar-array .solar-panels {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 10px;
+  }
+  .solar-array .solar-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 7px;
+    border: 1px solid rgba(81,102,158,0.32);
+    background: rgba(8,14,26,0.55);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  .solar-array .solar-panel .sp-name { font-weight: 700; }
+  .solar-array .solar-panel .sp-status { font-weight: 600; font-size: 0.68rem; }
+  .solar-array .solar-panel.charging {
+    color: var(--gold);
+    border-color: rgba(245,200,66,0.45);
+    background: rgba(245,200,66,0.08);
+  }
+  .solar-array .solar-panel.online {
+    color: #6ee7a0;
+    border-color: rgba(61,220,132,0.45);
+    background: rgba(61,220,132,0.10);
+  }
+  .solar-array .solar-status {
+    margin-top: 8px;
+    min-height: 18px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-align: center;
+    color: var(--text-muted);
+    transition: color 0.2s;
+  }
+  .solar-array .solar-status.leak {
+    color: #e67e22;
+    text-shadow: 0 0 8px rgba(230,126,34,0.45);
+  }
+  .solar-array .solar-status.cloud {
+    color: #9bb4d6;
+    text-shadow: 0 0 8px rgba(120,170,220,0.35);
+  }
+  .solar-array .solar-status.teach {
+    color: var(--reflect);
+    text-shadow: 0 0 8px rgba(59,200,232,0.45);
+  }
+
+  /* ===== LEVEL 1 CHECKLIST (Mission Progress) ===== */
+  .l1-checklist {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 8px 10px;
+    background: rgba(8,14,26,0.55);
+    border: 1px solid rgba(81,102,158,0.32);
+    border-radius: 10px;
+  }
+  .l1-row {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+  .l1-row .l1-mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(81,102,158,0.18);
+    color: var(--text-muted);
+    font-size: 0.7rem; font-weight: 700;
+  }
+  .l1-row.done { color: var(--text); }
+  .l1-row.done .l1-mark {
+    background: rgba(61,220,132,0.18);
+    color: #6ee7a0;
+  }
+
+  /* ===== LEVEL 1 TEACHING CARD (in-arena, right side, vertical panel) ===== */
+  .teach-card {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    bottom: 14px;
+    width: clamp(220px, 24%, 290px);
+    display: flex;
+    flex-direction: column;
+    background: rgba(11,18,34,0.94);
+    border: 1px solid rgba(245,200,66,0.42);
+    border-radius: 14px;
+    padding: 14px 14px 12px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.5);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    z-index: 5;
+    pointer-events: auto;
+    transition: border-color 0.2s;
+  }
+  .teach-card.hidden { display: none; }
+  .teach-card .tc-tag {
+    align-self: flex-start;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.4);
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-bottom: 10px;
+  }
+  .teach-card .tc-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--reflect);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+  .teach-card .tc-body {
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .teach-card .tc-line {
+    color: var(--text);
+    margin-top: 8px;
+    padding-left: 8px;
+    border-left: 2px solid rgba(81,102,158,0.45);
+  }
+  .teach-card .tc-line b { color: var(--gold); font-weight: 800; }
+  .teach-card .tc-shard {
+    margin-top: 10px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: rgba(59,200,232,0.10);
+    border: 1px solid rgba(59,200,232,0.35);
+    color: var(--reflect);
+    font-size: 0.76rem;
+  }
+  .teach-card .tc-shard b { color: #ffd76b; }
+  .teach-card .tc-spacer { flex: 1 1 auto; }
+  .teach-card.tone-transmit { border-color: var(--transmit-border); }
+  .teach-card.tone-transmit .tc-title { color: var(--transmit); }
+  .teach-card.tone-transmit .tc-line { border-left-color: var(--transmit-border); }
+  .teach-card.tone-absorb { border-color: var(--absorb-border); }
+  .teach-card.tone-absorb .tc-title { color: var(--absorb); }
+  .teach-card.tone-absorb .tc-line { border-left-color: var(--absorb-border); }
+  .teach-card.tone-reflect { border-color: var(--reflect-border); }
+  .teach-card.tone-reflect .tc-title { color: var(--reflect); }
+  .teach-card.tone-reflect .tc-line { border-left-color: var(--reflect-border); }
+  .teach-card .tc-continue {
+    margin-top: 12px;
+    display: none;
+    width: 100%;
+    background: linear-gradient(180deg, rgba(245,200,66,0.95), rgba(218,165,32,0.95));
+    color: #1a1208;
+    border: 1px solid rgba(245,200,66,0.75);
+    border-radius: 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.6rem 0.75rem;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(245,200,66,0.25);
+    transition: transform 0.12s, box-shadow 0.15s;
+  }
+  .teach-card .tc-continue.show { display: block; }
+  .teach-card .tc-continue:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(245,200,66,0.35);
+  }
+
   /* ===== COMPACT SIDEBAR ACTION ROW ===== */
   .sidebar-actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 6px;
     margin-top: 12px;
   }
@@ -1064,11 +1316,13 @@
     font-size: 0.66rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    padding: 0.5rem 0.3rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 10px;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
     white-space: nowrap;
+    text-align: center;
+    width: 100%;
   }
   .side-pill:hover {
     background: rgba(59,200,232,0.18);
@@ -1084,20 +1338,6 @@
     overflow-y: auto;
     margin-bottom: 0.9rem;
     text-align: left;
-  }
-  .notes-modal-text {
-    width: min(560px, 92%);
-    height: 220px;
-    background: rgba(8,14,26,0.85);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.7rem 0.85rem;
-    font-family: 'Nunito', monospace;
-    font-size: 0.78rem;
-    line-height: 1.45;
-    resize: none;
-    margin-bottom: 0.6rem;
   }
 
   .lab-tracker .track-sub {
@@ -1159,7 +1399,7 @@
   }
   .btn.btn-predict.is-transmit:hover { box-shadow: 0 6px 18px rgba(46,204,113,0.25); }
 
-  /* Prediction sheet (Material Lab) */
+  /* Prediction sheet (Solar Array) */
   #overlayPredict { overflow-y: auto; padding: 0.75rem 1rem; justify-content: center; }
   #overlayPredict .predict-tag { margin-bottom: 0.25rem; }
   #overlayPredict h2 { font-size: clamp(1.1rem, 2.2vw, 1.6rem); margin: 0.15rem 0 0.2rem; }
@@ -1423,8 +1663,8 @@
     .last-interaction .li-row { margin: 2px 0; font-size: 0.74rem; }
     .win-progress { padding: 0.45rem 0.6rem; }
     .win-progress .row { margin: 3px 0; }
-    .sidebar-actions { margin-top: 8px; gap: 5px; }
-    .side-pill { font-size: 0.62rem; padding: 0.4rem 0.25rem; }
+    .sidebar-actions { margin-top: 8px; gap: 5px; flex-direction: column; }
+    .side-pill { font-size: 0.62rem; padding: 0.4rem 0.6rem; }
     .lab-tracker { padding: 0.45rem 0.55rem; }
     .lab-tracker .track-row { padding: 1px 0; font-size: 0.74rem; gap: 0.4rem; }
     .lab-tracker .track-box { width: 16px; height: 16px; font-size: 0.74rem; }
@@ -1447,11 +1687,11 @@
   <div id="preGameScreen">
     <div class="hero">
       <div class="hero-badge">Game</div>
-      <h1>Energy Escape: Photon Runner</h1>
+      <h1>Photon Runner</h1>
       <p>Pilot a photon ship through the energy corridor. Fire light pulses at materials and discover how reflection, absorption, and transmission really work.</p>
     </div>
     <div class="dir-card">
-      <div class="dir-level">Level 1 - Training Corridor</div>
+      <div class="dir-level">Level 1 - Photon Academy</div>
       <p class="dir-obj">Shoot materials. Watch how light behaves.<br>Survive the reflected beams.</p>
       <div id="dirTouchNotice" class="dir-touch" hidden>
         <b>⚠ Keyboard required</b><br>
@@ -1460,7 +1700,7 @@
       <div class="controls-card controls-grid">
         <div class="ctrl-row"><span class="ctrl-lbl">Move</span><span class="ctrl-keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>&nbsp;/&nbsp;<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></span></div>
         <div class="ctrl-row"><span class="ctrl-lbl">Fire</span><span class="ctrl-keys"><kbd>Space</kbd></span></div>
-        <div class="ctrl-row"><span class="ctrl-lbl">Power</span><span class="ctrl-keys"><kbd>E</kbd></span></div>
+        <div class="ctrl-row"><span class="ctrl-lbl">Powers</span><span class="ctrl-keys"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd></span></div>
         <div class="ctrl-row"><span class="ctrl-lbl">Pause</span><span class="ctrl-keys"><kbd>P</kbd></span></div>
       </div>
       <button class="btn" id="btnStart">Launch Photon Ship</button>
@@ -1481,9 +1721,6 @@
     <button class="mute-pill" id="btnPauseToggle" title="Pause or resume the game" aria-label="Pause">
       <span id="pauseIcon">⏸</span><span id="pauseText">Pause</span>
     </button>
-    <button class="mute-pill" id="btnExportNotes" title="Copy your Lab Notes at any time" aria-label="Copy Lab Notes">
-      <span>📋</span><span id="exportText">Copy Notes</span>
-    </button>
     <button class="mute-pill" id="btnMute" title="Mute or unmute sound effects" aria-label="Toggle sound">
       <span id="muteIcon">🔊</span><span id="muteText">Sound On</span>
     </button>
@@ -1493,11 +1730,11 @@
   <div class="hud">
     <div class="stat-card">
       <div class="label">Level</div>
-      <div class="value v-gold" id="hudLevel">Training Corridor</div>
+      <div class="value v-gold" id="hudLevel">Photon Academy</div>
     </div>
     <div class="stat-card">
-      <div class="label" id="hudScoreLabel">Unlock Material Lab</div>
-      <div class="value v-gold" id="hudScore">0 / 220</div>
+      <div class="label" id="hudScoreLabel">Score</div>
+      <div class="value v-gold" id="hudScore">0</div>
     </div>
     <div class="stat-card">
       <div class="label">Shields</div>
@@ -1527,12 +1764,12 @@
     <div class="ph-power">
       <span class="ph-label">Power</span>
       <div class="ph-slots" id="phSlots">
-        <div class="ph-slot" data-slot="1"><div class="ph-slot-fill"></div><span class="ph-slot-name">Velocity</span></div>
-        <div class="ph-slot" data-slot="2"><div class="ph-slot-fill"></div><span class="ph-slot-name">Shield</span></div>
-        <div class="ph-slot" data-slot="3"><div class="ph-slot-fill"></div><span class="ph-slot-name">Twin Beam</span></div>
-        <div class="ph-slot" data-slot="4"><div class="ph-slot-fill"></div><span class="ph-slot-name">Burst</span></div>
+        <div class="ph-slot" data-slot="1"><div class="ph-slot-fill"></div><span class="ph-slot-name">Velocity [1]</span></div>
+        <div class="ph-slot" data-slot="2"><div class="ph-slot-fill"></div><span class="ph-slot-name">Shield [2]</span></div>
+        <div class="ph-slot" data-slot="3"><div class="ph-slot-fill"></div><span class="ph-slot-name">Twin Beam [3]</span></div>
+        <div class="ph-slot" data-slot="4"><div class="ph-slot-fill"></div><span class="ph-slot-name">Burst [4]</span></div>
       </div>
-      <span class="ph-hint"><kbd>E</kbd>Activate</span>
+      <span class="ph-hint"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd>Activate</span>
     </div>
   </div>
 
@@ -1544,6 +1781,17 @@
       <div class="arena-wrap" id="arena">
         <canvas id="game" width="1280" height="720"></canvas>
         <div class="feedback" id="feedback"></div>
+
+        <!-- Level 1 teaching card. Vertical side-panel inside the arena. -->
+        <div class="teach-card hidden" id="teachCard">
+          <span class="tc-tag">Wave Behavior</span>
+          <div class="tc-title" id="tcTitle">Photon Academy</div>
+          <div class="tc-body" id="tcBody">Shoot each material bubble to see how light behaves.</div>
+          <div class="tc-line" id="tcLine" style="display:none"></div>
+          <div class="tc-shard" id="tcShard"><b>Photon shards</b> are energy pickups. Collect them to charge your Power Bar.</div>
+          <div class="tc-spacer"></div>
+          <button class="tc-continue" id="tcContinue" type="button">Continue to Solar Array →</button>
+        </div>
 
         <div class="foundry-hud" id="foundryHud" aria-hidden="true">
           <span><span class="fh-k fh-k-lives">Lives</span><span class="fh-lives" id="fhLives">&#10084;&#10084;&#10084;</span></span>
@@ -1566,7 +1814,7 @@
 
         <div class="overlay hidden" id="overlayPredict">
           <div class="predict-tag">🔬 PREDICT</div>
-          <h2>Material Lab Predictions</h2>
+          <h2>Solar Array Predictions</h2>
           <p>Before testing the materials, predict what you think each material will do MOST.</p>
           <div class="predict-sheet" id="predictSheet"></div>
           <button class="btn" id="btnBeginInvestigation" disabled>Begin Investigation</button>
@@ -1574,15 +1822,12 @@
 
         <div class="overlay hidden" id="overlayLevel3Intro">
           <div class="level-tag">LEVEL 2 COMPLETE</div>
-          <h2>Material Lab Complete!</h2>
+          <h2>Solar Array Complete!</h2>
           <p>You compared real materials. Now enter the Glass Foundry and use what you learned while the game keeps moving.</p>
           <div class="end-actions">
             <button class="btn" id="btnEnterLevel3">Enter Glass Foundry</button>
-            <button class="btn btn-notes" id="btnL2Notes">📋 Copy Lab Notes</button>
             <button class="btn btn-teal" id="btnReplayFromL2">Replay Game</button>
           </div>
-          <div class="notes-status" id="notesStatusL2"></div>
-          <textarea class="notes-fallback" id="notesFallbackL2" readonly spellcheck="false"></textarea>
         </div>
 
         <div class="overlay hidden" id="overlayLevel3Complete">
@@ -1591,24 +1836,18 @@
           <p>You slipped through transparent paths, pushed through translucent barriers, and avoided opaque blocks.</p>
           <div id="foundryRunSummary"></div>
           <div class="end-actions">
-            <button class="btn btn-notes" id="btnL3Notes">📋 Copy Lab Notes</button>
             <button class="btn btn-teal" id="btnReplayFromL3">Replay Game</button>
           </div>
-          <div class="notes-status" id="notesStatusL3"></div>
-          <textarea class="notes-fallback" id="notesFallbackL3" readonly spellcheck="false"></textarea>
         </div>
 
         <div class="overlay hidden" id="overlayLevel2Intro">
           <div class="level-tag">LEVEL 1 COMPLETE</div>
-          <h2>Training Corridor Complete!</h2>
-          <p>You tested how light energy can transmit, scatter, absorb, and reflect. Now compare real materials in the Material Lab.</p>
+          <h2>Photon Academy Complete!</h2>
+          <p>You tested how light energy can transmit, scatter, absorb, and reflect. Now compare real materials in the Solar Array.</p>
           <div class="end-actions">
-            <button class="btn" id="btnEnterLevel2">Start Material Lab</button>
-            <button class="btn btn-notes" id="btnL1Notes">📋 Copy Lab Notes</button>
+            <button class="btn" id="btnEnterLevel2">Start Solar Array</button>
             <button class="btn btn-teal" id="btnReplayTraining">Replay Training</button>
           </div>
-          <div class="notes-status" id="notesStatusL1"></div>
-          <textarea class="notes-fallback" id="notesFallbackL1" readonly spellcheck="false"></textarea>
         </div>
 
         <div class="discovery" id="discoveryBanner" aria-hidden="true">
@@ -1626,10 +1865,7 @@
           <div class="controls-card" id="endStats">- - -</div>
           <div class="end-actions">
             <button class="btn btn-teal" id="btnReset">Replay Game</button>
-            <button class="btn btn-notes" id="btnNotes">📋 Copy Lab Notes</button>
           </div>
-          <div class="notes-status" id="notesStatus"></div>
-          <textarea class="notes-fallback" id="notesFallback" readonly spellcheck="false"></textarea>
         </div>
 
         <div class="overlay hidden modal-sidebar" id="modalGuide">
@@ -1686,14 +1922,11 @@
           <button class="btn btn-teal" data-modal-close type="button">Close</button>
         </div>
 
-        <div class="overlay hidden modal-sidebar" id="modalNotes">
-          <h2>Lab Notes</h2>
-          <textarea class="notes-modal-text" id="notesModalText" readonly spellcheck="false"></textarea>
-          <div class="notes-status" id="notesModalStatus"></div>
-          <div class="end-actions">
-            <button class="btn btn-notes" id="btnNotesModalCopy" type="button">📋 Copy</button>
-            <button class="btn btn-teal" data-modal-close type="button">Close</button>
-          </div>
+        <div class="overlay hidden" id="overlayCheckpoint">
+          <div class="checkpoint-tag">📚 ACADEMIC CHECKPOINT</div>
+          <h2 id="checkpointQuestion">Question</h2>
+          <div class="checkpoint-answers" id="checkpointAnswers"></div>
+          <div class="checkpoint-feedback" id="checkpointFeedback" aria-live="polite"></div>
         </div>
       </div>
     </div>
@@ -1727,29 +1960,38 @@
 
       <div id="missionProgressSection">
         <div class="panel-sub">Mission Progress</div>
-        <div class="win-progress">
-          <div class="row" id="wpScoreRow">
-            <span class="lbl">Score</span>
-            <span class="val"><span id="wpScoreVal">0</span> / 220</span>
-          </div>
-          <div class="bar"><span id="wpScoreBar"></span></div>
-          <div class="row" id="wpOpaqueRow" style="margin-top:8px">
-            <span class="lbl">Opaque Overloaded</span>
-            <span class="val"><span id="wpOpaqueVal">0</span> / 2</span>
-          </div>
-          <div class="bar"><span id="wpOpaqueBar"></span></div>
+        <div class="l1-checklist" id="l1Checklist">
+          <div class="l1-row" id="l1RowTransparent"><span class="l1-mark">○</span><span class="l1-lbl">Transparent tested</span></div>
+          <div class="l1-row" id="l1RowTranslucent"><span class="l1-mark">○</span><span class="l1-lbl">Translucent tested</span></div>
+          <div class="l1-row" id="l1RowOpaque"><span class="l1-mark">○</span><span class="l1-lbl">Opaque tested</span></div>
+          <div class="l1-row" id="l1RowReflective"><span class="l1-mark">○</span><span class="l1-lbl">Reflective tested</span></div>
+        </div>
+        <!-- Legacy refs kept hidden so HUD code that still touches them does not crash. -->
+        <div style="display:none">
+          <span id="wpScoreVal">0</span><span id="wpScoreBar"></span><span id="wpScoreRow"></span>
+          <span id="wpOpaqueVal">0</span><span id="wpOpaqueBar"></span><span id="wpOpaqueRow"></span>
         </div>
       </div>
 
-      <div class="sidebar-actions">
+      <div class="sidebar-actions" id="sidebarActions">
         <button class="side-pill" id="pillGuide" type="button">📘 Material Guide</button>
         <button class="side-pill" id="pillData"  type="button">📊 View Data</button>
-        <button class="side-pill" id="pillNotes" type="button">📋 Lab Notes</button>
       </div>
 
       <div id="labTrackerSection" class="hidden-section">
-        <div class="panel-sub lab-sub">Materials Tested</div>
-        <div class="lab-tracker" id="labTracker"></div>
+        <div class="panel-sub lab-sub">Solar Panel Array</div>
+        <div class="solar-array" id="solarArray">
+          <div class="solar-title">SOLAR PANEL ARRAY</div>
+          <div class="solar-progress"><span id="solarVal">0</span> / <span id="solarTarget">300</span> ENERGY</div>
+          <div class="solar-bar-outer"><div class="solar-bar-inner" id="solarBar"></div></div>
+          <div class="solar-panels" id="solarPanels">
+            <div class="solar-panel" id="solarPanelA"><span class="sp-name">Panel A</span><span class="sp-status" id="sp-statusA">0 / 50</span></div>
+            <div class="solar-panel" id="solarPanelB"><span class="sp-name">Panel B</span><span class="sp-status" id="sp-statusB">0 / 50</span></div>
+            <div class="solar-panel" id="solarPanelC"><span class="sp-name">Panel C</span><span class="sp-status" id="sp-statusC">0 / 50</span></div>
+          </div>
+          <div class="solar-status" id="solarStatus"></div>
+          <div class="solar-hint">Transparent +5 - Translucent +2 - Opaque absorbs</div>
+        </div>
       </div>
 
       <!-- Micropass 30: Level 3 only - Foundry run context card -->
@@ -1835,12 +2077,80 @@ const WIN_SCORE = 220;
    Cyan = common, Gold = rare. Hybrid burst -> drift -> pull collection.
    Counts are temporary tuning values; future passes will replace. */
 const SHARD_REWARDS = {
-  transparent:         1,
-  translucent:         1,
-  opaqueOverload:      3,
-  reflective:          1,
-  mixedFirstDiscovery: 2,
+  transparent:         0,
+  translucent:         0,
+  /* Micropass 52: standard opaque overload bumped 3 -> 5 to feed the Solar
+     Array power economy without forcing players to grind enemies. */
+  opaqueOverload:      5,
+  /* Micropass 52: large opaque resource bubble (Solar Array). */
+  opaqueLarge:        10,
+  reflective:          0,
+  mixedFirstDiscovery: 0,
   materialLabComplete: 1   // gold, one-time
+};
+
+/* Solar Array solar array mission (Micropass 46, retuned Micropass 51,
+   target raised in Micropass 52 to 300 to support a 3-5 minute mission). */
+const SOLAR_ENERGY_TARGET = 300;
+const SOLAR_ENERGY_TRANSPARENT = 5;
+const SOLAR_ENERGY_TRANSLUCENT = 2;
+/* Micropass 51: cloud-cover degrades transparent/translucent awards. */
+const SOLAR_ENERGY_TRANSPARENT_CLOUD = 3;
+const SOLAR_ENERGY_TRANSLUCENT_CLOUD = 1;
+/* Micropass 51: three milestone panels for visible mission stages. */
+const SOLAR_PANEL_SIZE = 50;
+/* Micropass 51: occasional Solar Array instability. Cap leaks per run so the
+   level feels unstable rather than punishing. */
+const SOLAR_LEAK = {
+  minInterval: 20,    // sec
+  maxInterval: 30,    // sec
+  amount:      5,     // energy drained per leak
+  maxLeaks:    4,     // hard cap per run
+  firstDelay:  18     // sec before the first leak can fire
+};
+/* Micropass 51: Cloud Cover event - subtle, non-stacking, no modal. */
+const SOLAR_CLOUD = {
+  minInterval: 30,
+  maxInterval: 45,
+  durationMin: 8,
+  durationMax: 10,
+  firstDelay:  25
+};
+/* Micropass 52: Power Surge - periodic boost window. While active, enemy
+   spawn cadence intensifies and shard drops double. Pure economy/density
+   event - no modal, no pause, status surfaced via the sidebar. */
+const SOLAR_SURGE = {
+  minInterval: 55,
+  maxInterval: 70,
+  duration:    15,
+  firstDelay:  30,
+  enemyMult:   1.5,
+  shardMult:   2,
+  spawnSpeedMult: 1.25
+};
+/* Micropass 52: Enemy Swarms - intermittent dense waves of Lensflies or
+   mixed Lensfly + Sootback packs. Encourages Burst and Shield use. */
+const SOLAR_SWARM = {
+  minInterval: 45,
+  maxInterval: 75,
+  firstDelay:  35,
+  sizeMin:     6,
+  sizeMax:     8,
+  spawnGapSec: 0.18
+};
+/* Stream behaviour. */
+const L2_STREAM = {
+  scrollSpeed:     90,   // px/sec right -> left for materials
+  spawnMin:        0.55, // sec between spawns (min)
+  spawnMax:        1.25, // sec between spawns (max)
+  enemyChance:     0.35, // Micropass 52: raised 0.30 -> 0.35 for slightly tighter pressure
+  topMargin:       110,
+  bottomMargin:    110,
+  spawnX:          ARENA_W + 80,
+  despawnX:       -90,
+  /* Micropass 51: Shieldfly is gated until the player has earned some energy
+     so the first encounter feels like an escalation, not a wall. */
+  shieldflyMinEnergy: 50
 };
 const SHARD = {
   burstSpeedMin:  140,
@@ -1858,11 +2168,13 @@ const SHARD = {
   goldColor:      '#ffd76b',
   goldGlow:       'rgba(255,215,107,0.95)'
 };
-/* Power Bar (Micropass 22): Gradius-style four-slot upgrade selector.
-   Cyan shards advance the cursor; the player chooses when to activate. */
+/* Power Bar (Micropass 45): four independent ability bars.
+   Cyan shards fill bars in order (Velocity > Shield > Twin Beam > Burst);
+   the player presses 1-4 to fire any bar that is fully charged. Only the
+   fired bar resets; the others (full or partial) are untouched. */
 const POWER_BAR = {
-  threshold: 6,                                          // cyan shards to advance cursor one slot
-  slots: ['Velocity', 'Shield', 'Twin Beam', 'Burst']    // index 0..3 maps to cursor 1..4
+  threshold: 6,                                          // cyan shards to fully charge one bar
+  slots: ['Velocity', 'Shield', 'Twin Beam', 'Burst']    // index 0..3 = keys 1..4
 };
 const POWER_UPGRADES = {
   velocitySpeedBonus: 0.20,   // +20% top speed per Velocity activation
@@ -1905,7 +2217,7 @@ const TUTORIAL_STAGES = [
     id: 'mission',
     target: null,
     titleHTML: 'Mission Goal:',
-    bodyHTML: 'Now clear the corridor: score <span class="goal-num">220</span> and overload <span class="goal-num">both</span> opaque bubbles.',
+    bodyHTML: 'Overload the <span class="goal-num goal-absorb">opaque</span> bubble to finish the corridor.',
     icon: '🎯'
   }
 ];
@@ -2107,7 +2419,7 @@ let running = false;
 
 /* ---------- LEVEL 1 LAYOUT ----------
    Bubbles arranged so the player encounters each behavior. */
-/* Level 2: Material Lab - four mixed-ratio bubbles spread across the arena.
+/* Level 2: Solar Array - four mixed-ratio bubbles spread across the arena.
    Reuses the existing mixed-material rendering + behavior. */
 const LEVEL2_MATERIALS = [
   { name: 'Clear Water',    ratios: { reflect: 0.05, absorb: 0.05, transmit: 0.90 } },
@@ -2136,29 +2448,14 @@ function buildLevel2() {
 }
 
 function buildLevel1() {
+  // Four-bubble onboarding column. One of each core wave behavior so the
+  // student can interact with each cleanly before moving on to Solar Array.
+  const colX = 440;
   return [
-    // Transparent cluster: easy intro, beam passes through cleanly.
-    { type: 'transparent', x: 480, y: 200, r: 38 },
-    { type: 'transparent', x: 480, y: 360, r: 44 },
-    { type: 'transparent', x: 480, y: 520, r: 38 },
-
-    // Translucent column: beam continues but weakened.
-    { type: 'translucent', x: 650, y: 260, r: 42 },
-    { type: 'translucent', x: 650, y: 460, r: 42 },
-
-    // Opaque charge targets.
-    { type: 'opaque', x: 820, y: 180, r: 46, absorbed: 0, capacity: 3 },
-    { type: 'opaque', x: 820, y: 540, r: 46, absorbed: 0, capacity: 3 },
-
-    // Reflective hazards near the end.
-    { type: 'reflective', x: 970, y: 300, r: 42 },
-    { type: 'reflective', x: 970, y: 420, r: 42 },
-
-    // Mixed-ratio extension bubbles - the big idea of this unit.
-    { type: 'mixed', material: 'Frosted Glass', x: 1130, y: 220, r: 44, absorbed: 0,
-      ratios: { reflect: 0.15, absorb: 0.20, transmit: 0.65 } },
-    { type: 'mixed', material: 'Black Asphalt', x: 1130, y: 500, r: 44, absorbed: 0,
-      ratios: { reflect: 0.05, absorb: 0.90, transmit: 0.05 } },
+    { type: 'transparent', x: colX, y: 140, r: 44 },
+    { type: 'translucent', x: colX, y: 300, r: 44 },
+    { type: 'opaque',      x: colX, y: 460, r: 46, absorbed: 0, capacity: 2 },
+    { type: 'reflective',  x: colX, y: 610, r: 44 }
   ];
 }
 
@@ -2367,7 +2664,9 @@ function buildLevel3Beat(n) {
    Simple type-tagged enemies plus enemy projectiles (Crucible globs).
    Each type teaches one wave behavior: reflection, absorption, or
    transmission. No boss, no upgrades. */
-const ENEMY_SHARDS = { ember: 1, lensfly: 2, crucible: 2, mirror: 3, sootback: 3 };
+/* Micropass 52: Solar Array shard economy needs more headroom so players
+   regularly charge and spend powers. Lensfly/Sootback/Shieldfly bumped. */
+const ENEMY_SHARDS = { ember: 1, lensfly: 2, crucible: 2, mirror: 3, sootback: 3, shieldfly: 3 };
 
 function makeEmber(x, y, phase) {
   return { type: 'ember', x, y, baseX: x, baseY: y, vx: -55, t: phase || 0,
@@ -2389,6 +2688,16 @@ function makeSootback(x, y) {
   return { type: 'sootback', x, y, baseX: x, vx: -28,
            r: 26, hp: 2, maxHp: 2, hitFlash: 0, dead: false,
            cycle: 0, isOpen: false };
+}
+/* Micropass 51: Shieldfly.
+   Half-moon shield on its front (left-facing, since the enemy drifts right to
+   left, so its "front" is the side facing the player). Direct frontal
+   photons are blocked. Reflected, rear, or angled shots damage it. */
+function makeShieldfly(x, y) {
+  return { type: 'shieldfly', x, y, baseX: x, baseY: y, t: Math.random() * 6,
+           r: 22, hp: 2, maxHp: 2, hitFlash: 0, dead: false,
+           shieldArc: Math.PI * 0.55, // half-arc opening on the rear side
+           blockFlash: 0 };
 }
 
 function buildLevel3Enemies(n) {
@@ -2505,11 +2814,12 @@ const L3_WAVES = [
 
 function instantiateWaveEnemy(spec) {
   const [type, x, y, phase] = spec;
-  if (type === 'ember')    return makeEmber(x, y, phase || 0);
-  if (type === 'lensfly')  return makeLensfly(x, y);
-  if (type === 'crucible') return makeCrucible(x, y);
-  if (type === 'mirror')   return makeMirror(x, y);
-  if (type === 'sootback') return makeSootback(x, y);
+  if (type === 'ember')     return makeEmber(x, y, phase || 0);
+  if (type === 'lensfly')   return makeLensfly(x, y);
+  if (type === 'crucible')  return makeCrucible(x, y);
+  if (type === 'mirror')    return makeMirror(x, y);
+  if (type === 'sootback')  return makeSootback(x, y);
+  if (type === 'shieldfly') return makeShieldfly(x, y);
   return null;
 }
 
@@ -2616,6 +2926,7 @@ function updateLevel3Scroll(dt) {
         b.cycle.start = state.elapsed + b.cycle.start;
         b.__anchored = true;
       }
+      if (b.id == null) b.id = state.nextBubbleId++;
       state.bubbles.push(b);
     } else if (item.kind === 'enemy') {
       const e = item.data;
@@ -2657,8 +2968,17 @@ function updateLevel3Scroll(dt) {
 
   // Micropass 25: reaching the Foreman Gate triggers the boss, not completion.
   // completeLevel3() is now only called by the boss-defeat path.
-  if (!state.boss && !state.bossDefeated && state.distance >= L3_GATE_WORLD_X) {
-    spawnForeman();
+  // Micropass 50: the Foreman gate is gated behind an academic checkpoint.
+  if (!state.boss && !state.bossDefeated && !state.foremanCheckpointShown
+      && state.distance >= L3_GATE_WORLD_X) {
+    state.foremanCheckpointShown = true;
+    showCheckpoint('l3', () => {
+      if (!state || state.over || state.bossDefeated) return;
+      running = true;
+      lastTime = performance.now();
+      requestAnimationFrame(loop);
+      spawnForeman();
+    });
   }
 }
 
@@ -3076,7 +3396,13 @@ function finishForemanDefeat() {
   spawnScorePop(FOREMAN.cx, FOREMAN.cy - FOREMAN.bodyR - 10,
     '+' + FOUNDRY_RUN.scoreForeman + ' FOREMAN',
     { color: '#ffd76b', size: 28, life: 1.6, vy: -26, kind: 'banner' });
-  completeLevel3();
+  // Micropass 50: gate the final victory sequence behind one last checkpoint.
+  if (!state.finalCheckpointShown) {
+    state.finalCheckpointShown = true;
+    showCheckpoint('final', () => { completeLevel3(); });
+  } else {
+    completeLevel3();
+  }
 }
 
 /* ---------- Foreman rendering (Micropass 26 polish) ---------- */
@@ -3442,7 +3768,10 @@ function damageEnemy(e, amt, hx, hy) {
   if (e.hp <= 0) {
     e.dead = true;
     spawnEnemyDefeat(e.x, e.y);
-    spawnShards(e.x, e.y, ENEMY_SHARDS[e.type] || 1, 'cyan');
+    /* Micropass 52: Power Surge doubles shard drops in Solar Array. */
+    const baseEnemyShards = ENEMY_SHARDS[e.type] || 1;
+    const surgeMult = (state.level === 2 && state.powerSurge && state.powerSurge.active) ? 2 : 1;
+    spawnShards(e.x, e.y, baseEnemyShards * surgeMult, 'cyan');
     SFX.overload();
     // Micropass 27: enemy defeats feed Foundry run score (combo-scaled).
     if (state.level === 3) {
@@ -3526,6 +3855,35 @@ function handleShotEnemyCollisions() {
           showFeedbackTextOnce('sootback_closed', 'Sootback closed. Wait for it to open.', 'absorb');
         }
         sh.life = 0;
+        break;
+      }
+
+      if (e.type === 'shieldfly') {
+        // Micropass 51: half-moon shield on the left (front) side.
+        // A photon counts as "frontal" when it strikes the left hemisphere
+        // of the body AND it is travelling rightward (toward the enemy's
+        // back). Reflected photons (sh.reflected) bypass the shield by
+        // design - that is the intended solution. Steep vertical angles
+        // also slip past the shield curvature.
+        const dx = sh.x - e.x;
+        const dy = sh.y - e.y;
+        const incomingFromFront = (dx < 0) && (sh.vx > 0);
+        const steepAngle = Math.abs(dy) > e.r * 0.75;
+        if (incomingFromFront && !steepAngle && !sh.reflected) {
+          e.blockFlash = 0.22;
+          SFX.reflective();
+          // First-time teaching: short, non-modal, never pauses gameplay.
+          showFeedbackTextOnce(
+            'shieldfly_block',
+            'Shieldfly: front shield blocks direct photons. Reflect to hit it from behind.',
+            'reflect'
+          );
+          setSolarStatus('SHIELDFLY: reflect to hit', 'teach', 4.0);
+          sh.life = 0;
+        } else {
+          damageEnemy(e, 1, sh.x, sh.y);
+          sh.life = 0;
+        }
         break;
       }
 
@@ -3751,15 +4109,58 @@ function drawSootback(e) {
   ctx.restore();
 }
 
+/* Micropass 51: Shieldfly draw - body plus front half-moon shield. */
+function drawShieldfly(e) {
+  ctx.save();
+  // Soft outer glow.
+  ctx.shadowColor = 'rgba(180,210,255,0.45)';
+  ctx.shadowBlur = 14;
+  // Body.
+  ctx.fillStyle = e.hitFlash > 0 ? 'rgba(255,255,255,0.92)' : 'rgba(120,90,180,0.95)';
+  ctx.strokeStyle = 'rgba(200,180,255,0.85)';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  // Inner core dot - readable hit marker.
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,240,200,0.95)';
+  ctx.beginPath();
+  ctx.arc(e.x + e.r * 0.18, e.y, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+  // Front half-moon shield (left side, facing the player).
+  const blockGlow = Math.min(1, e.blockFlash || 0);
+  ctx.shadowColor = 'rgba(120,220,255,' + (0.45 + blockGlow * 0.5) + ')';
+  ctx.shadowBlur = 14 + blockGlow * 14;
+  ctx.strokeStyle = 'rgba(170,235,255,' + (0.85 + blockGlow * 0.15) + ')';
+  ctx.lineWidth = 3.2;
+  ctx.beginPath();
+  // Arc on the left (front) side: from upper-left to lower-left.
+  ctx.arc(e.x, e.y, e.r + 6, Math.PI * 0.65, Math.PI * 1.35);
+  ctx.stroke();
+  // Soft fill behind the arc to read as a half-disc shield.
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(120,220,255,' + (0.10 + blockGlow * 0.25) + ')';
+  ctx.beginPath();
+  ctx.arc(e.x, e.y, e.r + 5, Math.PI * 0.65, Math.PI * 1.35);
+  ctx.lineTo(e.x, e.y);
+  ctx.closePath();
+  ctx.fill();
+  drawEnemyHpPips(e, e.x, e.y - e.r - 12);
+  ctx.restore();
+}
+
 function drawEnemies() {
   if (!state.enemies) return;
   for (const e of state.enemies) {
     if (e.dead) continue;
     if (e.type === 'ember')    drawEmber(e);
-    else if (e.type === 'lensfly')  drawLensfly(e);
-    else if (e.type === 'crucible') drawCrucible(e);
-    else if (e.type === 'mirror')   drawMirror(e);
-    else if (e.type === 'sootback') drawSootback(e);
+    else if (e.type === 'lensfly')   drawLensfly(e);
+    else if (e.type === 'crucible')  drawCrucible(e);
+    else if (e.type === 'mirror')    drawMirror(e);
+    else if (e.type === 'sootback')  drawSootback(e);
+    else if (e.type === 'shieldfly') drawShieldfly(e);
   }
 }
 
@@ -3783,6 +4184,13 @@ function drawEnemyShots() {
 
 function freshState() {
   const bubbles = buildLevel1();
+  // Stable bubble IDs: assigned at spawn time and reused for the bubble's
+  // lifetime. Counter lives on state so it survives level transitions and
+  // resets cleanly on freshState. (Fixes a Level 2 bug where the previous
+  // position-based id changed every frame for moving bubbles, allowing one
+  // bubble to be counted many times by a single shot.)
+  let nextBubbleId = 1;
+  for (const b of bubbles) b.id = nextBubbleId++;
   return {
     ship: {
       x: 130, y: ARENA_H / 2,
@@ -3817,7 +4225,7 @@ function freshState() {
     level: 1,
     tested: {},               // material name -> true (Level 2 tracker)
     level2Complete: false,    // set when all 4 L2 materials tested
-    transitionPending: false, // Level 1 cleared, waiting on Enter Material Lab
+    transitionPending: false, // Level 1 cleared, waiting on Enter Solar Array
     predictions: {},          // material name -> 'reflect' | 'absorb' | 'transmit'
     results: {},              // material name -> dominant key (filled on first test)
     predictionsCorrect: 0,
@@ -3840,7 +4248,7 @@ function freshState() {
     },
     modalOpen: false,
     shards: [],
-    photons: { cyan: 0, gold: 0, cursor: 0, fill: 0 },
+    photons: { cyan: 0, gold: 0, bars: [0, 0, 0, 0] },
     photonsAwarded: { materialLabComplete: false, foundryGate: false },
     beat: 0,                  // 0 outside L3, 1..5 inside L3 (derived from distance)
     beatTransitioning: false, // legacy: kept for compat with older code paths
@@ -3856,6 +4264,8 @@ function freshState() {
     bossActive: false,        // true while the fight is running
     bossDefeated: false,      // set when Phase 3 ends
     bossSpawnT: 0,            // state.elapsed at spawn (used for hint timers)
+    foremanCheckpointShown: false, // Micropass 50: academic checkpoint gate before Foreman
+    finalCheckpointShown:   false, // Micropass 50: checkpoint gate after Foreman defeat
     // Micropass 27: Foundry run structure (lives + score chase + combo).
     lives:           3,       // Glass Foundry lives (consumed only in L3)
     foundryScore:    0,       // run score for Glass Foundry
@@ -3865,7 +4275,18 @@ function freshState() {
     segmentScored:   {},      // segNum -> true once segment-complete bonus paid
     // Micropass 28: feedback polish (floating score popups + combo banners).
     scorePops:       [],      // [{x,y,vy,life,maxLife,text,color,size,kind}]
-    lastComboMult:   1        // tracks tier so we can banner on tier-up
+    lastComboMult:   1,       // tracks tier so we can banner on tier-up
+    // Micropass 43: one-time shard teaching moment in Level 1.
+    level1ShardTaught: false,
+    // Micropass 46: Solar Array solar panel array.
+    solarEnergy:      0,
+    solarComplete:    false,
+    l2SpawnTimer:     0.8,
+    l2SpawnCount:     0,
+    // Micropass 51: instability + cloud cover state for Solar Array.
+    solarLeak:        { timer: SOLAR_LEAK.firstDelay, fired: 0 },
+    cloudCover:       { timer: SOLAR_CLOUD.firstDelay, active: false, remaining: 0 },
+    nextBubbleId:     nextBubbleId  // counter for stable per-bubble ids
   };
 }
 
@@ -3878,9 +4299,9 @@ window.addEventListener('keydown', (e) => {
   if (k === 'p' && !keys.has('p')) {
     if (state && running && !state.over) togglePause();
   }
-  // E activates the currently highlighted Power Bar upgrade.
-  if (k === 'e' && !keys.has('e')) {
-    if (state && running && !state.over && !state.paused) activatePower();
+  // Number keys 1-4 directly activate a charged power.
+  if ((k === '1' || k === '2' || k === '3' || k === '4') && !keys.has(k)) {
+    if (state && running && !state.over && !state.paused) activatePower(parseInt(k, 10));
   }
   keys.add(k);
 });
@@ -4038,8 +4459,10 @@ function dist2(ax, ay, bx, by) {
 }
 
 function bubbleId(b) {
-  // Stable identifier from coordinates (bubbles are static).
-  return b.type + ':' + b.x + ',' + b.y;
+  // Stable per-bubble id assigned at spawn time. Position-based ids broke
+  // moving L2 bubbles (every frame produced a different key, defeating
+  // sh.passedBubbles and double-counting solar energy).
+  return b.id;
 }
 
 function handleShotBubbleCollisions() {
@@ -4056,13 +4479,15 @@ function handleShotBubbleCollisions() {
         b.flash = 0.4;
         addScore(10);
         state.energy.transmit += 10;
-        showFeedbackOnce('transparent');
+        if (state.level !== 1) showFeedbackOnce('transparent');
         setLastInteraction('Transparent Bubble', 'Transmitted',
           'Most light energy passed through.', 'transmit');
         state.counts.transparent += 1;
         SFX.transparent();
         spawnShards(b.x, b.y, SHARD_REWARDS.transparent, 'cyan');
+        if (state.level === 2) deliverSolarEnergy(currentSolarAward('transparent'), b.x, b.y);
         advanceTutorialOn('transparent');
+        if (state.level === 1) updateTeachCard('transparent');
       }
       else if (b.type === 'translucent') {
         if (sh.passedBubbles.has(id)) continue;
@@ -4078,13 +4503,15 @@ function handleShotBubbleCollisions() {
         addScore(4);
         state.energy.transmit += 4;
         state.energy.reflect  += 1; // scatter counts as a little energy redirected
-        showFeedbackOnce('translucent');
+        if (state.level !== 1) showFeedbackOnce('translucent');
         setLastInteraction('Translucent Bubble', 'Scattered Transmission',
           'Light passed through but spread out.', 'transmit');
         state.counts.translucent += 1;
         SFX.translucent();
         spawnShards(b.x, b.y, SHARD_REWARDS.translucent, 'cyan');
+        if (state.level === 2) deliverSolarEnergy(currentSolarAward('translucent'), b.x, b.y);
         advanceTutorialOn('translucent');
+        if (state.level === 1) updateTeachCard('translucent');
       }
       else if (b.type === 'opaque') {
         // Absorb: shot is consumed, bubble charges.
@@ -4093,23 +4520,29 @@ function handleShotBubbleCollisions() {
         b.flash = 0.5;
         addScore(6);
         state.energy.absorb += 10;
-        showFeedbackOnce('opaque');
+        if (state.level !== 1) showFeedbackOnce('opaque');
         setLastInteraction('Opaque Bubble', 'Absorbed',
           'Energy was absorbed and stored in the material.', 'absorb');
         state.counts.opaque += 1;
         SFX.opaque();
         advanceTutorialOn('opaque');
+        if (state.level === 1) updateTeachCard('opaque');
         if (b.absorbed >= b.capacity) {
           b.dead = true;
           b.overloadAt = state.elapsed;
           state.cleared += 1;
           addScore(40);
           state.energy.absorb += 20;
-          showFeedbackOnce('overload');
+          if (state.level !== 1) showFeedbackOnce('overload');
           setLastInteraction('Opaque Bubble', 'Overloaded',
             'Stored energy released - mostly as heat. Energy was not destroyed.', 'absorb');
           spawnOverload(b.x, b.y);
-          spawnShards(b.x, b.y, SHARD_REWARDS.opaqueOverload, 'cyan');
+          /* Micropass 52: large resource opaque bubbles drop a fat cyan
+             payload to feed the power economy; standard opaque uses the
+             base reward (also raised in MP52). Power Surge doubles shards. */
+          const baseDrop = b.largeResource ? SHARD_REWARDS.opaqueLarge : SHARD_REWARDS.opaqueOverload;
+          const surgeMult = (state.level === 2 && state.powerSurge && state.powerSurge.active) ? 2 : 1;
+          spawnShards(b.x, b.y, baseDrop * surgeMult, 'cyan');
           SFX.overload();
         }
         break;
@@ -4168,7 +4601,7 @@ function handleShotBubbleCollisions() {
         // Level 1's "first mixed bubble" discovery moment stays in Level 1 only.
         if (state.level !== 2) triggerDiscovery();
 
-        // Material Lab tracking - mark this named material as tested.
+        // Solar Array tracking - mark this named material as tested.
         if (b.material && !state.tested[b.material]) {
           state.tested[b.material] = true;
           state.results[b.material] = domKey;
@@ -4255,13 +4688,14 @@ function handleShotBubbleCollisions() {
         b.flash = 0.5;
         addScore(3);
         state.energy.reflect += 12;
-        showFeedbackOnce('reflective');
+        if (state.level !== 1) showFeedbackOnce('reflective');
         setLastInteraction('Reflective Bubble', 'Reflected',
           'Energy changed direction and bounced back.', 'reflect');
         state.counts.reflective += 1;
         SFX.reflective();
         spawnShards(b.x, b.y, SHARD_REWARDS.reflective, 'cyan');
         advanceTutorialOn('reflective');
+        if (state.level === 1) updateTeachCard('reflective');
 
         // Cap runaway loops: expire the shot with a small sparkle.
         if (sh.bounceCount > BOUNCE_LIMIT) {
@@ -4292,7 +4726,13 @@ function handleShipDamage() {
       spawnImpact(s.x, s.y);
       state.counts.hits += 1;
       SFX.damage();
-      showFeedbackOnce('hit');
+
+      if (state.level === 1) {
+        updateTeachCard('reflectionHit');
+      } else {
+        showFeedbackOnce('hit');
+      }
+
       if (s.health <= 0) loseGame();
       break;
     }
@@ -4413,9 +4853,150 @@ function showBanner(tagHTML, textHTML, dur) {
   discoveryTimer = dur || 5.2;
 }
 
+/* ---------- LEVEL 1 TEACHING CARD ---------- */
+const teachCard   = document.getElementById('teachCard');
+const tcTitle     = document.getElementById('tcTitle');
+const tcBody      = document.getElementById('tcBody');
+const tcLine      = document.getElementById('tcLine');
+const tcShard     = document.getElementById('tcShard');
+const tcContinue  = document.getElementById('tcContinue');
+
+const TEACH_CARD = {
+  _default: {
+    title: 'Photon Academy',
+    tone:  null,
+    body:  'Shoot each material bubble to see how light behaves.',
+    line:  null,
+    shardHTML: '<b>Photon shards</b> are energy pickups. Collect them to charge your Power Bar.'
+  },
+  transparent: {
+    title: 'Transparent',
+    tone:  'tone-transmit',
+    body:  'Transparent materials let most light pass through.',
+    line:  '<b>In the game:</b> your photon keeps moving forward.',
+    shardHTML: 'Shards help charge your Power Bar.'
+  },
+  translucent: {
+    title: 'Translucent',
+    tone:  'tone-transmit',
+    body:  'Translucent materials let some light through, but scatter it.',
+    line:  '<b>In the game:</b> your photon keeps going, but it changes path or weakens.',
+    shardHTML: null
+  },
+  opaque: {
+    title: 'Opaque',
+    tone:  'tone-absorb',
+    body:  'Opaque materials block light from passing through.',
+    line:  '<b>In the game:</b> your photon is absorbed and charges the material. Energy does not disappear.',
+    shardHTML: null
+  },
+  reflective: {
+    title: 'Reflective',
+    tone:  'tone-reflect',
+    body:  'Reflective materials bounce light away.',
+    line:  '<b>In the game:</b> your photon can bounce back toward your ship.',
+    shardHTML: null
+  },
+  reflectionHit: {
+    title: 'Reflected Photon',
+    tone:  'tone-reflect',
+    body:  'Your photon bounced off a reflective material and returned to your ship.',
+    line:  '<b>Science:</b> Reflection occurs when light changes direction after striking a surface. The photon still carries energy, but now travels along a different path.',
+    shardHTML: null
+  },
+  shards: {
+    title: 'Photon Shards',
+    tone:  null,
+    body:  'Photon shards are pieces of stored light energy.',
+    line:  '<b>In the game:</b> collect shards to charge your powers.',
+    shardHTML: '<b>Tip:</b> press 1, 2, 3, or 4 to use any charged power.'
+  }
+};
+
+function renderTeachCard(data) {
+  if (!teachCard || !data) return;
+  teachCard.classList.remove('tone-transmit', 'tone-absorb', 'tone-reflect');
+  if (data.tone) teachCard.classList.add(data.tone);
+  tcTitle.textContent = data.title;
+  tcBody.textContent  = data.body;
+  if (data.line) {
+    tcLine.style.display = '';
+    tcLine.innerHTML = data.line;
+  } else {
+    tcLine.style.display = 'none';
+    tcLine.innerHTML = '';
+  }
+  if (data.shardHTML) {
+    tcShard.style.display = '';
+    tcShard.innerHTML = data.shardHTML;
+  } else {
+    tcShard.style.display = 'none';
+    tcShard.innerHTML = '';
+  }
+}
+
+function resetTeachCard() {
+  if (!teachCard) return;
+  renderTeachCard(TEACH_CARD._default);
+  tcContinue.classList.remove('show');
+}
+
+function updateTeachCard(materialType) {
+  const data = TEACH_CARD[materialType];
+  if (!data) return;
+  renderTeachCard(data);
+}
+
+function showTeachCardForLevel1() {
+  if (!teachCard) return;
+  teachCard.classList.remove('hidden');
+}
+function hideTeachCard() {
+  if (!teachCard) return;
+  teachCard.classList.add('hidden');
+  tcContinue.classList.remove('show');
+}
+
+function maybeRevealContinue() {
+  if (!state || state.level !== 1) return;
+  const c = state.counts;
+  const ready = c.transparent > 0 && c.translucent > 0
+             && c.opaque > 0 && c.reflective > 0;
+  if (ready) tcContinue.classList.add('show');
+}
+
+if (tcContinue) {
+  tcContinue.addEventListener('click', () => {
+    if (!state || state.level !== 1 || state.over || state.transitionPending) return;
+    if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+    winLevel1();
+  });
+}
+
+/* ---------- LEVEL 1 CHECKLIST ---------- */
+function updateL1Checklist() {
+  if (!state) return;
+  const rows = {
+    transparent: document.getElementById('l1RowTransparent'),
+    translucent: document.getElementById('l1RowTranslucent'),
+    opaque:      document.getElementById('l1RowOpaque'),
+    reflective:  document.getElementById('l1RowReflective')
+  };
+  const c = state.counts;
+  if (rows.transparent) rows.transparent.classList.toggle('done', c.transparent > 0);
+  if (rows.translucent) rows.translucent.classList.toggle('done', c.translucent > 0);
+  if (rows.opaque)      rows.opaque.classList.toggle('done', c.opaque > 0);
+  if (rows.reflective)  rows.reflective.classList.toggle('done', c.reflective > 0);
+  rows.transparent && (rows.transparent.querySelector('.l1-mark').textContent = c.transparent > 0 ? '✓' : '○');
+  rows.translucent && (rows.translucent.querySelector('.l1-mark').textContent = c.translucent > 0 ? '✓' : '○');
+  rows.opaque      && (rows.opaque.querySelector('.l1-mark').textContent      = c.opaque > 0 ? '✓' : '○');
+  rows.reflective  && (rows.reflective.querySelector('.l1-mark').textContent  = c.reflective > 0 ? '✓' : '○');
+}
+
 /* ---------- MATERIAL LAB TRACKER ---------- */
 const labTrackerSection = document.getElementById('labTrackerSection');
 const missionProgressSection = document.getElementById('missionProgressSection');
+const sidebarActions = document.getElementById('sidebarActions');
 const labTrackerEl = document.getElementById('labTracker');
 
 function renderLabTracker() {
@@ -4449,6 +5030,63 @@ function renderLabTracker() {
   labTrackerEl.innerHTML = html;
 }
 
+/* ---------- SOLAR PANEL ARRAY UI (Micropass 46, expanded Micropass 51) ---------- */
+const solarValEl    = document.getElementById('solarVal');
+const solarTargetEl = document.getElementById('solarTarget');
+const solarBarEl    = document.getElementById('solarBar');
+const solarPanelEls = [
+  { row: document.getElementById('solarPanelA'), status: document.getElementById('sp-statusA') },
+  { row: document.getElementById('solarPanelB'), status: document.getElementById('sp-statusB') },
+  { row: document.getElementById('solarPanelC'), status: document.getElementById('sp-statusC') }
+];
+const solarStatusEl = document.getElementById('solarStatus');
+let solarStatusTimer = 0;
+
+function renderSolarArray() {
+  if (!state || !solarValEl) return;
+  const cur = Math.min(SOLAR_ENERGY_TARGET, state.solarEnergy | 0);
+  solarValEl.textContent    = cur;
+  solarTargetEl.textContent = SOLAR_ENERGY_TARGET;
+  solarBarEl.style.width    = ((cur / SOLAR_ENERGY_TARGET) * 100).toFixed(1) + '%';
+  // Micropass 51: per-panel milestone status.
+  for (let i = 0; i < solarPanelEls.length; i++) {
+    const el = solarPanelEls[i];
+    if (!el.row) continue;
+    const start = i * SOLAR_PANEL_SIZE;
+    const filled = Math.max(0, Math.min(SOLAR_PANEL_SIZE, cur - start));
+    el.status.textContent = filled + ' / ' + SOLAR_PANEL_SIZE;
+    el.row.classList.toggle('online',   filled >= SOLAR_PANEL_SIZE);
+    el.row.classList.toggle('charging', filled > 0 && filled < SOLAR_PANEL_SIZE);
+  }
+}
+
+/* Micropass 51: brief status line under the panel milestones. Tone styles the
+   color; the timer auto-clears so the row reads as transient telemetry, not
+   a persistent banner. No modal, no pause. */
+function setSolarStatus(text, tone, dur) {
+  if (!solarStatusEl) return;
+  solarStatusEl.textContent = text || '';
+  solarStatusEl.classList.remove('leak', 'cloud', 'teach');
+  if (tone) solarStatusEl.classList.add(tone);
+  solarStatusTimer = (text && dur) ? dur : 0;
+}
+function clearSolarStatus() {
+  if (!solarStatusEl) return;
+  solarStatusEl.textContent = '';
+  solarStatusEl.classList.remove('leak', 'cloud', 'teach');
+  solarStatusTimer = 0;
+}
+function updateSolarStatusTimer(dt) {
+  if (solarStatusTimer > 0) {
+    solarStatusTimer -= dt;
+    // Cloud cover writes a sticky "CLOUD COVER" status, so don't auto-clear
+    // while cloud cover is active. The cloud handler will rewrite it.
+    if (solarStatusTimer <= 0 && !(state && state.cloudCover && state.cloudCover.active)) {
+      clearSolarStatus();
+    }
+  }
+}
+
 /* ---------- LEVEL TRANSITION ---------- */
 const overlayLevel2Intro = document.getElementById('overlayLevel2Intro');
 const overlayLevel3Intro = document.getElementById('overlayLevel3Intro');
@@ -4461,12 +5099,12 @@ function showLevel2Intro() {
 }
 
 function enterLevel2() {
-  // Open the Material Lab Predictions sheet. The level itself starts on
-  // Begin Investigation (see beginInvestigation).
+  // Micropass 46: Solar Array is now a mission level (Solar Panel Array),
+  // so skip the predictions sheet and start the investigation directly.
   if (!state) return;
   overlayLevel2Intro.classList.add('hidden');
   running = false;
-  showPredictionSheet();
+  beginInvestigation();
 }
 
 function beginInvestigation() {
@@ -4475,7 +5113,11 @@ function beginInvestigation() {
 
   state.level = 2;
   state.transitionPending = false;
-  state.bubbles = buildLevel2();
+  // Micropass 46: Solar Array is now the Solar Panel Array stream mission.
+  // Materials are spawned continuously by updateLevel2Stream(); start empty.
+  state.bubbles = [];
+  state.enemies = [];
+  state.enemyShots = [];
   state.shots = [];
   state.particles = [];
   state.rings = [];
@@ -4484,10 +5126,22 @@ function beginInvestigation() {
   state.requiredOpaque = 0;     // not used in Level 2
   state.cleared = 0;
   state.tested = {};
-  state.predictions = { ...predictDraft };
+  state.predictions = {};
   state.results = {};
   state.predictionsCorrect = 0;
   state.level2Complete = false;
+  state.solarEnergy = 0;
+  state.solarComplete = false;
+  state.l2SpawnTimer = 0.6;
+  state.l2SpawnCount = 0;
+  // Micropass 51: reset Solar Array instability + cloud cover timers.
+  state.solarLeak  = { timer: SOLAR_LEAK.firstDelay, fired: 0 };
+  state.cloudCover = { timer: SOLAR_CLOUD.firstDelay, active: false, remaining: 0 };
+  // Micropass 52: Power Surge, Enemy Swarm, and Large Resource bubble timers.
+  state.powerSurge = { timer: SOLAR_SURGE.firstDelay, active: false, remaining: 0 };
+  state.swarm = { timer: SOLAR_SWARM.firstDelay, queue: 0, queueGap: 0, mix: false };
+  state.largeOpaque = { timer: SOLAR_LARGE_OPAQUE.firstDelay };
+  clearSolarStatus();
   state.over = false;
   state.won = false;
 
@@ -4505,7 +5159,8 @@ function beginInvestigation() {
   // Swap side-panel sections.
   missionProgressSection.classList.add('hidden-section');
   labTrackerSection.classList.remove('hidden-section');
-  renderLabTracker();
+  hideTeachCard();
+  renderSolarArray();
 
   // Reset feedback + interaction card so the new level reads clean.
   feedbackEl.classList.remove('show');
@@ -4518,12 +5173,16 @@ function beginInvestigation() {
   lastTime = performance.now();
   requestAnimationFrame(loop);
   updateHUD();
+
+  showBanner('MISSION: SOLAR ARRAY',
+    'The city\'s solar array is losing power. Deliver ' + SOLAR_ENERGY_TARGET + ' energy across three panels. Beware leaks, cloud cover, and shielded interceptors.',
+    5.0);
 }
 
 function setMissionGoalForLevel2() {
-  goalIcon.textContent = '🔬';
-  goalTitle.innerHTML  = 'Material Lab:';
-  goalBody.innerHTML   = 'Test <span class="goal-num">4</span> materials and compare how energy moves through them.';
+  goalIcon.textContent = '☀️';
+  goalTitle.innerHTML  = 'Solar Panel Array:';
+  goalBody.innerHTML   = 'Deliver <span class="goal-num">' + SOLAR_ENERGY_TARGET + '</span> energy across <b>3 panels</b>. Transparent +5, translucent +2, opaque blocks. Reflect to flank Shieldflies.';
   btnSkipTut.classList.add('hidden');
 }
 
@@ -4612,6 +5271,7 @@ const goalIcon = document.getElementById('goalIcon');
 const goalTitle = document.getElementById('goalTitle');
 const goalBody = document.getElementById('goalBody');
 const btnSkipTut = document.getElementById('btnSkipTut');
+const missionGoal = document.getElementById('missionGoal');
 
 function currentTutorialStage() {
   if (!state) return null;
@@ -4745,6 +5405,327 @@ function updateBubblesL3(dt) {
   }
 }
 
+/* ---------- LEVEL 2 MATERIAL STREAM (Micropass 46) ----------
+   Continuous right-to-left flow of materials and enemies. Materials that
+   reach the left edge deliver energy to the Solar Panel Array. Opaque
+   materials block the light and can be destroyed for shards. */
+function pickL2Material() {
+  const r = Math.random();
+  // Weighted so transparent + translucent dominate the flow (the "good light"
+  // the array needs). Opaque and reflective are obstacles, mixed in lightly.
+  if (r < 0.45) return 'transparent';
+  if (r < 0.80) return 'translucent';
+  if (r < 0.95) return 'opaque';
+  return 'reflective';
+}
+
+function spawnL2Material() {
+  const type = pickL2Material();
+  const y = L2_STREAM.topMargin + Math.random() * (ARENA_H - L2_STREAM.topMargin - L2_STREAM.bottomMargin);
+  const r = 30 + Math.random() * 14;
+  const vx = -(L2_STREAM.scrollSpeed * (0.85 + Math.random() * 0.35));
+  const b = { type, x: L2_STREAM.spawnX, y, r, vx, flash: 0, dead: false, l2: true };
+  if (type === 'opaque') { b.absorbed = 0; b.capacity = 6; }
+  b.id = state.nextBubbleId++;
+  state.bubbles.push(b);
+}
+
+/* Micropass 52: rare large opaque resource bubble. 15 HP, slow drift,
+   large radius, drops 10 shards on overload, awards no solar energy.
+   Twin Beam shines here. Roughly one every ~25s of stream time. */
+const SOLAR_LARGE_OPAQUE = {
+  minInterval: 20,
+  maxInterval: 32,
+  firstDelay:  12,
+  hp:          15,
+  radius:      72,
+  shardDrop:   10
+};
+function spawnL2LargeOpaque() {
+  const yMin = L2_STREAM.topMargin + 30;
+  const yMax = ARENA_H - L2_STREAM.bottomMargin - 30;
+  const y = yMin + Math.random() * (yMax - yMin);
+  const b = {
+    type: 'opaque', x: L2_STREAM.spawnX, y, r: SOLAR_LARGE_OPAQUE.radius,
+    vx: -(L2_STREAM.scrollSpeed * 0.55),
+    flash: 0, dead: false, l2: true,
+    absorbed: 0, capacity: SOLAR_LARGE_OPAQUE.hp,
+    largeResource: true
+  };
+  b.id = state.nextBubbleId++;
+  state.bubbles.push(b);
+  setSolarStatus('LARGE RESOURCE BUBBLE', 'teach', 3.0);
+}
+
+function spawnL2Enemy() {
+  // Micropass 51: Shieldfly only unlocks once the player has built some
+  // energy so the first encounter feels like an escalation, not a roadblock.
+  const shieldflyUnlocked = state.solarEnergy >= L2_STREAM.shieldflyMinEnergy;
+  const roll = Math.random();
+  let pick;
+  if (shieldflyUnlocked) {
+    if (roll < 0.55)      pick = 'lensfly';
+    else if (roll < 0.80) pick = 'sootback';
+    else                  pick = 'shieldfly';
+  } else {
+    pick = roll < 0.65 ? 'lensfly' : 'sootback';
+  }
+  if (pick === 'lensfly') {
+    // Lensfly: fast, low health, weaves while drifting left.
+    const y = 140 + Math.random() * (ARENA_H - 280);
+    const e = makeLensfly(L2_STREAM.spawnX, y);
+    e.vx = -(L2_STREAM.scrollSpeed * 1.35);
+    e.l2 = true;
+    state.enemies.push(e);
+  } else if (pick === 'sootback') {
+    // Sootback: slower, more health, grinds left.
+    const y = 200 + Math.random() * (ARENA_H - 360);
+    const e = makeSootback(L2_STREAM.spawnX, y);
+    e.vx = -(L2_STREAM.scrollSpeed * 0.85);
+    e.baseX = L2_STREAM.spawnX;
+    e.l2 = true;
+    state.enemies.push(e);
+  } else {
+    // Shieldfly: medium speed, frontal shield, must be hit from behind or
+    // via a reflected/angled photon.
+    const y = 170 + Math.random() * (ARENA_H - 320);
+    const e = makeShieldfly(L2_STREAM.spawnX, y);
+    e.vx = -(L2_STREAM.scrollSpeed * 1.05);
+    e.baseY = y;
+    e.l2 = true;
+    state.enemies.push(e);
+  }
+}
+
+/* Micropass 51: Cloud Cover lowers per-material awards while active. */
+function currentSolarAward(materialType) {
+  const active = state && state.cloudCover && state.cloudCover.active;
+  if (materialType === 'transparent') {
+    return active ? SOLAR_ENERGY_TRANSPARENT_CLOUD : SOLAR_ENERGY_TRANSPARENT;
+  }
+  if (materialType === 'translucent') {
+    return active ? SOLAR_ENERGY_TRANSLUCENT_CLOUD : SOLAR_ENERGY_TRANSLUCENT;
+  }
+  return 0;
+}
+
+/* Micropass 51: Solar Array energy leak.
+   Drains a small chunk of energy with a brief status. Never reduces below 0,
+   never below the start of the player's current panel (no rollback of
+   completed milestones), and caps at SOLAR_LEAK.maxLeaks per run so the level
+   feels unstable rather than punishing. Isolated for easy tuning/disable. */
+function fireSolarLeak() {
+  if (!state || state.solarComplete) return;
+  if (state.solarLeak.fired >= SOLAR_LEAK.maxLeaks) return;
+  const before = state.solarEnergy;
+  const drain  = Math.min(SOLAR_LEAK.amount, before);
+  if (drain <= 0) return;
+  state.solarEnergy = Math.max(0, before - drain);
+  state.solarLeak.fired += 1;
+  spawnScorePop(80, 120, 'SOLAR LEAK -' + drain,
+    { color: '#e67e22', size: 16, life: 1.1, vy: -22, kind: 'big' });
+  setSolarStatus('SOLAR LEAK -' + drain, 'leak', 3.5);
+  renderSolarArray();
+  SFX.damage();
+}
+
+/* Micropass 51: Cloud Cover event - subtle, non-stacking, non-pausing. */
+function startCloudCover() {
+  if (!state || state.cloudCover.active || state.solarComplete) return;
+  const dur = SOLAR_CLOUD.durationMin +
+              Math.random() * (SOLAR_CLOUD.durationMax - SOLAR_CLOUD.durationMin);
+  state.cloudCover.active = true;
+  state.cloudCover.remaining = dur;
+  setSolarStatus('CLOUD COVER (-energy)', 'cloud', dur);
+}
+function endCloudCover() {
+  if (!state) return;
+  state.cloudCover.active = false;
+  state.cloudCover.remaining = 0;
+  // Restart the gap toward the next event.
+  state.cloudCover.timer = SOLAR_CLOUD.minInterval +
+                           Math.random() * (SOLAR_CLOUD.maxInterval - SOLAR_CLOUD.minInterval);
+  setSolarStatus('SUNLIGHT RESTORED', 'cloud', 2.2);
+}
+
+/* Micropass 52: Power Surge - density and shard windfall window. */
+function startPowerSurge() {
+  if (!state || state.powerSurge.active || state.solarComplete) return;
+  state.powerSurge.active = true;
+  state.powerSurge.remaining = SOLAR_SURGE.duration;
+  setSolarStatus('POWER SURGE DETECTED', 'teach', SOLAR_SURGE.duration);
+  showBanner('⚡ POWER SURGE DETECTED',
+    '<b>Shard drops x2.</b> Stream intensity rising for ' + SOLAR_SURGE.duration + ' seconds.',
+    3.2);
+}
+function endPowerSurge() {
+  if (!state) return;
+  state.powerSurge.active = false;
+  state.powerSurge.remaining = 0;
+  state.powerSurge.timer = SOLAR_SURGE.minInterval +
+                           Math.random() * (SOLAR_SURGE.maxInterval - SOLAR_SURGE.minInterval);
+  setSolarStatus('SURGE ENDED', 'teach', 2.0);
+}
+
+/* Micropass 52: Enemy Swarm - queue 6-8 enemies spawned in quick succession.
+   Half of all swarms mix Sootbacks in alongside Lensflies. */
+function startEnemySwarm() {
+  if (!state || state.solarComplete) return;
+  const size = SOLAR_SWARM.sizeMin +
+               Math.floor(Math.random() * (SOLAR_SWARM.sizeMax - SOLAR_SWARM.sizeMin + 1));
+  state.swarm.queue = size;
+  state.swarm.queueGap = 0;
+  state.swarm.mix = Math.random() < 0.5;
+  setSolarStatus(state.swarm.mix ? 'SWARM: MIXED WAVE' : 'SWARM: LENSFLIES', 'teach', 3.2);
+}
+function tickEnemySwarm(dt) {
+  if (!state || state.swarm.queue <= 0) return;
+  state.swarm.queueGap -= dt;
+  if (state.swarm.queueGap > 0) return;
+  /* Mixed swarms alternate Sootback every third spawn so most pressure stays
+     readable Lensfly weaving rather than a wall of Sootbacks. */
+  const y = 160 + Math.random() * (ARENA_H - 320);
+  if (state.swarm.mix && state.swarm.queue % 3 === 0) {
+    const e = makeSootback(L2_STREAM.spawnX, y);
+    e.vx = -(L2_STREAM.scrollSpeed * 0.85);
+    e.baseX = L2_STREAM.spawnX;
+    e.l2 = true;
+    state.enemies.push(e);
+  } else {
+    const e = makeLensfly(L2_STREAM.spawnX, y);
+    e.vx = -(L2_STREAM.scrollSpeed * 1.35);
+    e.l2 = true;
+    state.enemies.push(e);
+  }
+  state.swarm.queue -= 1;
+  state.swarm.queueGap = SOLAR_SWARM.spawnGapSec;
+}
+
+function updateSolarInstability(dt) {
+  if (!state || state.level !== 2 || state.solarComplete) return;
+  // Energy leaks.
+  if (state.solarLeak.fired < SOLAR_LEAK.maxLeaks && state.solarEnergy > 0) {
+    state.solarLeak.timer -= dt;
+    if (state.solarLeak.timer <= 0) {
+      fireSolarLeak();
+      state.solarLeak.timer = SOLAR_LEAK.minInterval +
+                              Math.random() * (SOLAR_LEAK.maxInterval - SOLAR_LEAK.minInterval);
+    }
+  }
+  // Cloud Cover.
+  if (state.cloudCover.active) {
+    state.cloudCover.remaining -= dt;
+    if (state.cloudCover.remaining <= 0) endCloudCover();
+  } else {
+    state.cloudCover.timer -= dt;
+    if (state.cloudCover.timer <= 0) startCloudCover();
+  }
+  // Power Surge.
+  if (state.powerSurge.active) {
+    state.powerSurge.remaining -= dt;
+    if (state.powerSurge.remaining <= 0) endPowerSurge();
+  } else {
+    state.powerSurge.timer -= dt;
+    if (state.powerSurge.timer <= 0) startPowerSurge();
+  }
+  // Enemy swarms.
+  if (state.swarm.queue <= 0) {
+    state.swarm.timer -= dt;
+    if (state.swarm.timer <= 0) {
+      startEnemySwarm();
+      state.swarm.timer = SOLAR_SWARM.minInterval +
+                          Math.random() * (SOLAR_SWARM.maxInterval - SOLAR_SWARM.minInterval);
+    }
+  }
+  tickEnemySwarm(dt);
+  // Rare large resource bubble.
+  state.largeOpaque.timer -= dt;
+  if (state.largeOpaque.timer <= 0) {
+    spawnL2LargeOpaque();
+    state.largeOpaque.timer = SOLAR_LARGE_OPAQUE.minInterval +
+                              Math.random() * (SOLAR_LARGE_OPAQUE.maxInterval - SOLAR_LARGE_OPAQUE.minInterval);
+  }
+  updateSolarStatusTimer(dt);
+}
+
+function deliverSolarEnergy(amount, x, y) {
+  if (!state || state.solarComplete) return;
+  state.solarEnergy = Math.min(SOLAR_ENERGY_TARGET, state.solarEnergy + amount);
+  spawnScorePop(Math.max(30, x), y, '+' + amount + ' ENERGY',
+    { color: amount >= 5 ? '#ffd76b' : '#9be3b6', size: 16, life: 0.95, vy: -28, kind: 'big' });
+  renderSolarArray();
+  if (!state.solarComplete && state.solarEnergy >= SOLAR_ENERGY_TARGET) {
+    state.solarComplete = true;
+    state.level2Complete = true;
+    if (!state.photonsAwarded.materialLabComplete) {
+      state.photonsAwarded.materialLabComplete = true;
+      spawnShards(state.ship.x + 40, state.ship.y, SHARD_REWARDS.materialLabComplete, 'gold');
+    }
+    showBanner('☀️ SOLAR PANEL ARRAY ONLINE',
+      '<b>You delivered ' + SOLAR_ENERGY_TARGET + ' energy.</b><br>Transparent and translucent materials carried the light through.',
+      4.5);
+    setTimeout(() => {
+      if (state && state.level === 2 && !state.over) winLevel2();
+    }, 1800);
+  }
+}
+
+function updateLevel2Stream(dt) {
+  if (!state || state.level !== 2) return;
+  updateScorePops(dt);
+  if (state.solarComplete) return;
+
+  // Drift L2 materials right -> left.
+  for (const b of state.bubbles) {
+    if (!b.l2 || b.dead) continue;
+    b.x += (b.vx || 0) * dt;
+    if (b.flash > 0) b.flash = Math.max(0, b.flash - dt);
+  }
+  // Materials that drift off the left edge simply disappear. Solar energy
+  // is only awarded for active player interaction (shooting through
+  // transparent / translucent materials).
+  state.bubbles = state.bubbles.filter(b => !b.dead && !(b.l2 && b.x < L2_STREAM.despawnX));
+
+  // Drift L2 enemies left + despawn off-screen.
+  for (const e of state.enemies) {
+    if (!e.l2 || e.dead) continue;
+    e.x += (e.vx || 0) * dt;
+    if (e.type === 'lensfly') {
+      e.t = (e.t || 0) + dt;
+      e.y = (e.baseY || e.y) + Math.sin(e.t * 1.6) * 22;
+    } else if (e.type === 'sootback') {
+      e.cycle = (e.cycle || 0) + dt;
+      const period = 5.0;
+      const phase = e.cycle % period;
+      e.isOpen = phase > 3.0;
+    } else if (e.type === 'shieldfly') {
+      e.t = (e.t || 0) + dt;
+      // Gentle vertical drift so it doesn't read as a static turret.
+      e.y = (e.baseY || e.y) + Math.sin(e.t * 1.1) * 14;
+      e.blockFlash = Math.max(0, (e.blockFlash || 0) - dt);
+    }
+    e.hitFlash = Math.max(0, (e.hitFlash || 0) - dt);
+  }
+  state.enemies = state.enemies.filter(e => !e.dead && e.x > L2_STREAM.despawnX);
+
+  // Spawn pacing - continuous, jittered.
+  // Micropass 52: Power Surge tightens the cadence (faster spawns) and
+  // raises the enemy share of each spawn slot so swarms get extra company.
+  state.l2SpawnTimer -= dt;
+  if (state.l2SpawnTimer <= 0) {
+    const surging = state.powerSurge && state.powerSurge.active;
+    const enemyChance = surging
+      ? Math.min(0.95, L2_STREAM.enemyChance * SOLAR_SURGE.enemyMult)
+      : L2_STREAM.enemyChance;
+    if (Math.random() < enemyChance) spawnL2Enemy();
+    else spawnL2Material();
+    state.l2SpawnCount++;
+    const minGap = surging ? L2_STREAM.spawnMin / SOLAR_SURGE.spawnSpeedMult : L2_STREAM.spawnMin;
+    const maxGap = surging ? L2_STREAM.spawnMax / SOLAR_SURGE.spawnSpeedMult : L2_STREAM.spawnMax;
+    state.l2SpawnTimer = minGap + Math.random() * (maxGap - minGap);
+  }
+}
+
 function drawAimGhosts() {
   // Micropass 23: aimGhost is now gated by the flag on the bubble itself,
   // which only exists in the Bounce Hall segment's first reflective target.
@@ -4844,26 +5825,30 @@ function collectShard(sh) {
     SFX.shardGold();
   } else {
     state.photons.cyan += 1;
-    // Advance the Power Bar cursor when the fill threshold is reached.
-    // Cursor caps at 4 (Burst): the player must activate before more cyan counts.
-    if (state.photons.cursor < 4) {
-      state.photons.fill += 1;
-      if (state.photons.fill >= POWER_BAR.threshold) {
-        state.photons.fill = 0;
-        state.photons.cursor += 1;
-        SFX.powerAdvance();
-        // Micropass 32: one-time hint the very first time slot 1 fills.
-        if (state.photons.cursor === 1) {
-          showFeedbackTextOnce('power_ready_hint', 'Power ready! Press E to activate.', 'transmit');
-        }
-      } else {
-        SFX.shardCyan();
+    // Charge the first not-yet-full bar in order: Velocity, Shield, Twin Beam, Burst.
+    const bars = state.photons.bars;
+    let chargedSlot = -1;
+    for (let i = 0; i < bars.length; i++) {
+      if (bars[i] < POWER_BAR.threshold) {
+        bars[i] += 1;
+        if (bars[i] >= POWER_BAR.threshold) chargedSlot = i + 1;
+        break;
+      }
+    }
+    if (chargedSlot > 0) {
+      SFX.powerAdvance();
+      if (chargedSlot === 1) {
+        showFeedbackTextOnce('power_ready_hint', 'Power ready! Press 1, 2, 3, or 4 to use a charged power.', 'transmit');
       }
     } else {
       SFX.shardCyan();
     }
   }
   spawnShardCollectSparkle(sh.x, sh.y, sh.kind);
+  if (state.level === 1 && !state.level1ShardTaught) {
+    state.level1ShardTaught = true;
+    updateTeachCard('shards');
+  }
 }
 function updateShards(dt) {
   const ship = state.ship;
@@ -4979,14 +5964,15 @@ function drawShards() {
   for (const sh of state.shards) drawShard(sh);
 }
 
-/* ---------- POWER BAR ACTIVATION (Micropass 22) ---------- */
-function activatePower() {
+/* ---------- POWER ACTIVATION (Micropass 45) ----------
+   Direct keyed activation: 1=Velocity, 2=Shield, 3=Twin Beam, 4=Burst.
+   Only the requested bar resets; other bars are untouched. */
+function activatePower(slot) {
   if (!state || !state.photons) return;
-  const slot = state.photons.cursor;
-  if (slot < 1) return;  // no upgrade highlighted yet
-  // Reset cursor + fill regardless of slot (one upgrade per charge).
-  state.photons.cursor = 0;
-  state.photons.fill = 0;
+  if (slot < 1 || slot > 4) return;
+  const bars = state.photons.bars;
+  if (!bars || bars[slot - 1] < POWER_BAR.threshold) return; // not charged yet
+  bars[slot - 1] = 0;
   if (slot === 1) {
     // Velocity: persistent speed boost (stacks up to a cap).
     const s = state.ship;
@@ -5361,8 +6347,8 @@ function drawBubble(b) {
     // Solid fill that gets brighter as it charges.
     const fillAlpha = 0.55 + chargePct * 0.4;
     ctx.fillStyle = `rgba(230,126,34,${fillAlpha})`;
-    ctx.strokeStyle = 'rgba(230,126,34,0.95)';
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = b.largeResource ? 'rgba(255,215,107,0.95)' : 'rgba(230,126,34,0.95)';
+    ctx.lineWidth = b.largeResource ? 4 : 2.5;
     ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
     ctx.fill(); ctx.stroke();
     // Charge ring
@@ -5523,6 +6509,45 @@ function drawBubbles() {
   drawTutorialPointers();
 }
 
+function drawSolarPanelArray() {
+  if (state.level !== 2) return;
+  const x = 0;
+  const w = 22;
+  const h = ARENA_H;
+  ctx.save();
+  // Backplate
+  ctx.fillStyle = 'rgba(20,30,55,0.85)';
+  ctx.fillRect(x, 0, w, h);
+  // Glowing edge that intensifies with charge.
+  const pct = Math.min(1, state.solarEnergy / SOLAR_ENERGY_TARGET);
+  const glow = 0.25 + pct * 0.55;
+  ctx.shadowColor = 'rgba(245,200,66,' + glow + ')';
+  ctx.shadowBlur = 22 + pct * 28;
+  ctx.fillStyle = 'rgba(245,200,66,' + (0.35 + pct * 0.5) + ')';
+  ctx.fillRect(x + w - 4, 0, 4, h);
+  ctx.shadowBlur = 0;
+  // Panel cells.
+  const cells = 12;
+  const ch = h / cells;
+  for (let i = 0; i < cells; i++) {
+    const litThresh = (cells - i - 1) / cells; // top fills first
+    const lit = pct > litThresh;
+    ctx.fillStyle = lit ? 'rgba(255,220,120,0.85)' : 'rgba(80,120,180,0.35)';
+    ctx.fillRect(x + 4, i * ch + 4, w - 12, ch - 8);
+  }
+  // Vertical label.
+  ctx.translate(x + w / 2, h / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.font = '700 10px Orbitron, sans-serif';
+  ctx.fillStyle = 'rgba(245,200,66,0.95)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.75)';
+  ctx.shadowBlur = 4;
+  ctx.fillText('SOLAR PANEL ARRAY  ' + Math.min(SOLAR_ENERGY_TARGET, state.solarEnergy | 0) + ' / ' + SOLAR_ENERGY_TARGET, 0, 0);
+  ctx.restore();
+}
+
 function render() {
   ctx.save();
   // Screen shake offset
@@ -5530,6 +6555,7 @@ function render() {
     ctx.translate((Math.random()-0.5) * state.shake, (Math.random()-0.5) * state.shake);
   }
   drawBackground();
+  drawSolarPanelArray();
   drawAimGhosts();
   drawBubbles();
   drawEnemies();
@@ -5580,24 +6606,23 @@ const phSlotEls = Array.from(document.querySelectorAll('#phSlots .ph-slot'));
 
 function updateHUD() {
   hudLevel.textContent = state.level === 3 ? 'Glass Foundry'
-                        : state.level === 2 ? 'Material Lab' : 'Training Corridor';
-  // Level 1: show "Unlock Material Lab: X / 220" so the win threshold is visible
+                        : state.level === 2 ? 'Solar Array' : 'Photon Academy';
+  // Level 1: show "Unlock Solar Array: X / 220" so the win threshold is visible
   // in the HUD at all times. Level 2/3: just current score (no score target).
   if (state.level === 2 || state.level === 3) {
     hudScoreLabel.textContent = 'Score';
     hudScore.textContent      = state.score;
   } else {
-    hudScoreLabel.textContent = 'Unlock Material Lab';
-    hudScore.textContent      = state.score + ' / ' + WIN_SCORE;
+    hudScoreLabel.textContent = 'Score';
+    hudScore.textContent      = state.score;
   }
   hudHealth.textContent = Math.round(state.ship.health);
   if (state.level === 3) {
     hudClearedLabel.textContent = 'Foundry Segment';
     hudCleared.textContent = `${state.beat || 1} / ${LEVEL3_BEAT_COUNT}`;
   } else if (state.level === 2) {
-    const testedCount = LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length;
-    hudClearedLabel.textContent = 'Materials Tested';
-    hudCleared.textContent = `${testedCount} / 4`;
+    hudClearedLabel.textContent = 'Solar Energy';
+    hudCleared.textContent = `${Math.min(SOLAR_ENERGY_TARGET, state.solarEnergy | 0)} / ${SOLAR_ENERGY_TARGET}`;
   } else {
     hudClearedLabel.textContent = 'Bubbles Cleared';
     hudCleared.textContent = `${state.cleared} / ${state.requiredOpaque}`;
@@ -5620,12 +6645,8 @@ function updateHUD() {
   const scorePct = Math.min(100, (state.score / WIN_SCORE) * 100);
   const opaquePct = state.requiredOpaque
     ? Math.min(100, (state.cleared / state.requiredOpaque) * 100) : 100;
-  wpScoreVal.textContent = state.score;
-  wpScoreBar.style.width = scorePct.toFixed(0) + '%';
-  wpScoreRow.classList.toggle('done', state.score >= WIN_SCORE);
-  wpOpaqueVal.textContent = state.cleared;
-  wpOpaqueBar.style.width = opaquePct.toFixed(0) + '%';
-  wpOpaqueRow.classList.toggle('done', state.cleared >= state.requiredOpaque);
+  // Level 1 checklist (replaces the legacy score-bar progress UI).
+  if (state.level === 1) updateL1Checklist();
 
   // Interaction counters
   const c = state.counts;
@@ -5647,6 +6668,10 @@ function updateHUD() {
   updateFoundryHud();
   // Micropass 30: Level 3 sidebar progress card.
   updateFoundrySidebar();
+  // Micropass 41: hide sidebar action buttons during Level 1 Photon Academy.
+  if (sidebarActions) sidebarActions.classList.toggle('hidden-section', state.level === 1);
+  // Micropass 44: hide mission strip during Level 1 Photon Academy.
+  if (missionGoal) missionGoal.classList.toggle('hidden-section', state.level === 1);
 }
 
 const foundryHud   = document.getElementById('foundryHud');
@@ -5731,8 +6756,7 @@ function updateFoundrySidebar() {
 }
 
 function updatePowerBarSlots() {
-  const cursor = state.photons.cursor;       // 0..4 (4 = burst held)
-  const fillPct = (state.photons.fill / POWER_BAR.threshold) * 100;
+  const bars = state.photons.bars || [0, 0, 0, 0];
   const s = state.ship;
   // Which slots reflect a currently active/persistent upgrade?
   const activeFlags = [
@@ -5743,23 +6767,13 @@ function updatePowerBarSlots() {
   ];
   for (let i = 0; i < phSlotEls.length; i++) {
     const el = phSlotEls[i];
-    const slotNum = i + 1;
-    const isCursor = (slotNum === cursor);
-    // Fill belongs to the *next* unfilled slot (cursor + 1). Burst-held caps at slot 4.
-    const isNext   = (slotNum === cursor + 1);
-    const fillEl   = el.firstElementChild;
-    if (isCursor) {
-      fillEl.style.width = '100%';
-    } else if (isNext) {
-      fillEl.style.width = fillPct.toFixed(1) + '%';
-    } else if (slotNum < cursor) {
-      fillEl.style.width = '100%';
-    } else {
-      fillEl.style.width = '0%';
-    }
-    el.classList.toggle('is-cursor', isCursor);
-    el.classList.toggle('is-filled', !isCursor && slotNum <= cursor);
-    el.classList.toggle('is-active', !isCursor && activeFlags[i]);
+    const fillEl = el.firstElementChild;
+    const fillPct = Math.min(100, (bars[i] / POWER_BAR.threshold) * 100);
+    fillEl.style.width = fillPct.toFixed(1) + '%';
+    const isReady = bars[i] >= POWER_BAR.threshold;
+    el.classList.toggle('is-cursor', isReady);
+    el.classList.toggle('is-filled', isReady);
+    el.classList.toggle('is-active', !isReady && activeFlags[i]);
   }
 }
 
@@ -5768,15 +6782,16 @@ function checkWin() {
   if (state.over) return;
   if (state.transitionPending) return;
   if (state.level === 1) {
-    if (state.score >= WIN_SCORE && state.cleared >= state.requiredOpaque) {
-      winLevel1();
-    }
+    // Four-bubble onboarding: once the student has touched each behavior,
+    // reveal the Continue button inside the teaching card. The student chooses
+    // when to advance, so the Reflective card stays on-screen long enough to read.
+    maybeRevealContinue();
   }
   // Level 2 wins are triggered by checkLevel2Completion() on the 4th unique test.
 }
 
 function winLevel1() {
-  // Level 1 cleared - hand off to the Material Lab transition instead of ending the run.
+  // Level 1 cleared - hand off to the Solar Array transition instead of ending the run.
   state.won = true;
   clearPause();
   showFeedback('win');
@@ -5785,7 +6800,7 @@ function winLevel1() {
 }
 
 function winLevel2() {
-  // Material Lab cleared. Hand off to the Glass Foundry transition rather than ending the run.
+  // Solar Array cleared. Hand off to the Glass Foundry transition rather than ending the run.
   state.won = true;
   clearPause();
   SFX.win();
@@ -5821,6 +6836,7 @@ function enterLevel3() {
   // Hide L2-specific side panel sections so the sidebar stays compact.
   missionProgressSection.classList.add('hidden-section');
   labTrackerSection.classList.add('hidden-section');
+  hideTeachCard();
 
   resetLastInteraction();
   resetDiscovery();
@@ -5838,6 +6854,8 @@ function enterLevel3() {
   state.bossActive = false;
   state.bossDefeated = false;
   state.bossSpawnT = 0;
+  state.foremanCheckpointShown = false;
+  state.finalCheckpointShown   = false;
   state.ship.x  = 130;
   state.ship.y  = ARENA_H / 2;
   state.ship.vx = 0;
@@ -5991,138 +7009,6 @@ const endTitle     = document.getElementById('endTitle');
 const endMsg       = document.getElementById('endMsg');
 const endStats     = document.getElementById('endStats');
 
-function buildLabNotes() {
-  const e = state.energy;
-  const tot = e.reflect + e.absorb + e.transmit || 1;
-  const c = state.counts;
-  // End-of-run keeps the original two labels so existing exports are
-  // unchanged. Mid-run exports (Fix 5) report "In Progress" rather than
-  // mislabeling the student as Shields Down.
-  const result = state.over
-    ? (state.won ? 'Corridor Cleared' : 'Shields Down')
-    : 'In Progress';
-  return [
-    'Energy Escape: Photon Runner - Lab Notes',
-    '----------------------------------------',
-    'Result: ' + result,
-    'Score: ' + state.score,
-    'Shields remaining: ' + Math.round(state.ship.health),
-    '',
-    'Energy Result:',
-    '  Reflected:   ' + (e.reflect  / tot * 100).toFixed(0) + '%',
-    '  Absorbed:    ' + (e.absorb   / tot * 100).toFixed(0) + '%',
-    '  Transmitted: ' + (e.transmit / tot * 100).toFixed(0) + '%',
-    '',
-    'Interaction Data:',
-    '  Transparent passes:   ' + c.transparent,
-    '  Translucent scatters: ' + c.translucent,
-    '  Opaque absorptions:   ' + c.opaque,
-    '  Reflective bounces:   ' + c.reflective,
-    '  Mixed material tests: ' + c.mixed,
-    '  Shield hits:          ' + c.hits,
-    '',
-    'Energy was reflected, absorbed, and transmitted in different amounts.',
-    'Mixed materials showed that real surfaces can reflect, absorb, and transmit energy at the same time.',
-    '',
-    'Material Lab Results:',
-    ...LEVEL2_MATERIALS.flatMap(m => {
-      const r = Math.round(m.ratios.reflect  * 100);
-      const a = Math.round(m.ratios.absorb   * 100);
-      const t = Math.round(m.ratios.transmit * 100);
-      const mark = state.tested[m.name] ? '[x]' : '[ ]';
-      const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '- - -';
-      const pred = cap(state.predictions[m.name]);
-      const res  = cap(state.results[m.name]);
-      return [
-        `  ${mark} ${m.name} (R${r} A${a} T${t})`,
-        `       Prediction: ${pred}`,
-        `       Result:     ${res}`
-      ];
-    }),
-    '  Materials tested:    ' + LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length + ' / 4',
-    '  Correct predictions: ' + state.predictionsCorrect,
-    '  Prediction accuracy: ' + state.predictionsCorrect + ' / ' + LEVEL2_MATERIALS.filter(m => state.tested[m.name]).length,
-    '',
-    'Glass Foundry reached: ' + (state.foundryReached ? 'yes' : 'no'),
-    'Glass Foundry complete: ' + (state.l3Complete ? 'yes' : 'no'),
-    'Foreman defeated: ' + (state.bossDefeated ? 'yes' : 'no'),
-    'Glass Foundry distance traveled: ' + Math.round(state.distance || 0) + ' px',
-    'Foundry Score: ' + (state.foundryScore || 0),
-    'Best Foundry Score: ' + (state.foundryBest || 0),
-    'Lives Remaining: ' + (state.lives != null ? state.lives : FOUNDRY_RUN.startLives) + ' / ' + FOUNDRY_RUN.startLives
-  ].join('\n');
-}
-
-const notesStatus   = document.getElementById('notesStatus');
-const notesFallback = document.getElementById('notesFallback');
-const btnNotes      = document.getElementById('btnNotes');
-
-function setNotesStatus(text, tone) {
-  notesStatus.textContent = text;
-  notesStatus.classList.remove('ok', 'warn');
-  if (tone) notesStatus.classList.add(tone);
-}
-
-function showFallbackNotes(notes) {
-  notesFallback.value = notes;
-  notesFallback.classList.add('show');
-  // Pre-select so the student can immediately Cmd/Ctrl-C.
-  setTimeout(() => { try { notesFallback.focus(); notesFallback.select(); } catch (e) {} }, 30);
-  setNotesStatus('Copy is blocked. Select the notes below.', 'warn');
-}
-
-function copyLabNotes() {
-  const notes = buildLabNotes();
-  const fail = () => showFallbackNotes(notes);
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(notes).then(
-        () => setNotesStatus('Lab notes copied!', 'ok'),
-        fail
-      );
-    } else {
-      fail();
-    }
-  } catch (e) {
-    fail();
-  }
-}
-
-btnNotes.addEventListener('click', copyLabNotes);
-
-/* ---------- MID-RUN LAB NOTES EXPORT (Fix 5) ----------
-   Reuses buildLabNotes() so the output is byte-identical to the end-overlay
-   export. Status feedback is routed through the existing in-arena feedback
-   toast since the notes-status element lives inside the end overlay. */
-function copyLabNotesMidRun() {
-  if (!state) return;
-  const notes = buildLabNotes();
-  const okMsg   = '📋 Lab notes copied to clipboard.';
-  const failMsg = 'Copy was blocked. Finish the level and use the end-screen export.';
-  const done = () => {
-    showFeedbackText(okMsg, 'transmit');
-    flashExportButton('Copied!');
-  };
-  const fail = () => {
-    showFeedbackText(failMsg, 'absorb');
-    flashExportButton('Copy blocked');
-  };
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(notes).then(done, fail);
-    } else { fail(); }
-  } catch (e) { fail(); }
-}
-const exportTextEl = document.getElementById('exportText');
-let exportFlashTimer = null;
-function flashExportButton(label) {
-  if (!exportTextEl) return;
-  exportTextEl.textContent = label;
-  if (exportFlashTimer) clearTimeout(exportFlashTimer);
-  exportFlashTimer = setTimeout(() => { exportTextEl.textContent = 'Copy Notes'; }, 1500);
-}
-document.getElementById('btnExportNotes').addEventListener('click', copyLabNotesMidRun);
-
 /* ---------- VISIBLE PAUSE BUTTON (Fix 2) ----------
    Reuses togglePause(); does NOT introduce a second pause system. Mirrors the
    same guards as the P keyboard shortcut. */
@@ -6167,18 +7053,11 @@ function refreshDataModal() {
   document.getElementById('dMixed').textContent       = c.mixed;
   document.getElementById('dHits').textContent        = c.hits;
 }
-function refreshNotesModal() {
-  if (!state) return;
-  document.getElementById('notesModalText').value = buildLabNotes();
-  const s = document.getElementById('notesModalStatus');
-  s.textContent = ''; s.classList.remove('ok', 'warn');
-}
 function openSidebarModal(name) {
   if (activeSidebarModal) closeSidebarModal();
   const el = document.getElementById('modal' + name);
   if (!el) return;
   if (name === 'Data')  refreshDataModal();
-  if (name === 'Notes') refreshNotesModal();
   activeSidebarModal = name;
   if (state) state.modalOpen = true;
   el.classList.remove('hidden');
@@ -6192,27 +7071,7 @@ function closeSidebarModal() {
 }
 document.getElementById('pillGuide').addEventListener('click', () => openSidebarModal('Guide'));
 document.getElementById('pillData').addEventListener('click',  () => openSidebarModal('Data'));
-document.getElementById('pillNotes').addEventListener('click', () => openSidebarModal('Notes'));
 document.querySelectorAll('[data-modal-close]').forEach(b => b.addEventListener('click', closeSidebarModal));
-document.getElementById('btnNotesModalCopy').addEventListener('click', () => {
-  const notes = document.getElementById('notesModalText').value || buildLabNotes();
-  const s = document.getElementById('notesModalStatus');
-  const setStatus = (text, tone) => {
-    s.textContent = text;
-    s.classList.remove('ok', 'warn');
-    if (tone) s.classList.add(tone);
-  };
-  const fail = () => {
-    const ta = document.getElementById('notesModalText');
-    ta.focus(); ta.select();
-    setStatus('Copy is blocked. Select the notes above.', 'warn');
-  };
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(notes).then(() => setStatus('Lab notes copied!', 'ok'), fail);
-    } else { fail(); }
-  } catch (e) { fail(); }
-});
 
 function showEnd(won) {
   const isL2 = state.level === 2;
@@ -6226,7 +7085,7 @@ function showEnd(won) {
       ? 'The Foreman overwhelmed your shields. Read the phase, use the reflection panels, and wait for openings.'
       : 'You ran out of lives in the Glass Foundry. Watch enemy telegraphs, protect your shields, and use your Power Bar before the next big wave.';
   } else if (state.level === 2) {
-    loseMsg = 'Your shields took damage in the Material Lab. Try to dodge reflected beams while testing each material.';
+    loseMsg = 'Your shields took damage in the Solar Array. Try to dodge reflected beams while testing each material.';
   } else {
     loseMsg = 'Your photon reflected off a Reflective bubble and hit your shields. Reflection sends energy back along a new path - try angling your shots away from reflective surfaces next time.';
   }
@@ -6298,10 +7157,6 @@ function showEnd(won) {
     if (state.level === 3) renderFoundryRunSummary('foundryRunSummaryEnd');
     else endSummaryHost.innerHTML = '';
   }
-  // Reset notes UI for this end state.
-  setNotesStatus('', null);
-  notesFallback.classList.remove('show');
-  notesFallback.value = '';
   overlayEnd.classList.remove('hidden');
 }
 
@@ -6322,19 +7177,19 @@ function startGame() {
   overlayLevel3Intro.classList.add('hidden');
   overlayLevel3Complete.classList.add('hidden');
   overlayPredict.classList.add('hidden');
+  document.getElementById('overlayCheckpoint').classList.add('hidden');
   predictDraft = {};
-  ['modalGuide','modalData','modalNotes'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  ['modalGuide','modalData'].forEach(id => document.getElementById(id).classList.add('hidden'));
   activeSidebarModal = null;
-  const l1Status = document.getElementById('notesStatusL1');
-  const l1Fallback = document.getElementById('notesFallbackL1');
-  if (l1Status) { l1Status.textContent = ''; l1Status.classList.remove('ok', 'warn'); }
-  if (l1Fallback) { l1Fallback.classList.remove('show'); l1Fallback.value = ''; }
   clearPause();
   resetLastInteraction();
   resetDiscovery();
   // Reset side-panel sections to Level 1 view.
   missionProgressSection.classList.remove('hidden-section');
   labTrackerSection.classList.add('hidden-section');
+  resetTeachCard();
+  showTeachCardForLevel1();
+  updateL1Checklist();
   renderTutorialUI();
   running = true;
   lastTime = performance.now();
@@ -6357,7 +7212,8 @@ document.getElementById('btnReset').addEventListener('click', () => {
 });
 document.getElementById('btnEnterLevel2').addEventListener('click', () => {
   if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
-  enterLevel2();
+  overlayLevel2Intro.classList.add('hidden');
+  showCheckpoint('l1', enterLevel2);
 });
 btnBeginInvestigation.addEventListener('click', () => {
   if (btnBeginInvestigation.disabled) return;
@@ -6370,7 +7226,8 @@ document.getElementById('btnReplayTraining').addEventListener('click', () => {
 });
 document.getElementById('btnEnterLevel3').addEventListener('click', () => {
   if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
-  enterLevel3();
+  overlayLevel3Intro.classList.add('hidden');
+  showCheckpoint('l2', enterLevel3);
 });
 document.getElementById('btnReplayFromL2').addEventListener('click', () => {
   if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
@@ -6381,58 +7238,82 @@ document.getElementById('btnReplayFromL3').addEventListener('click', () => {
   resetGame();
 });
 
-/* Lab Notes copy helper for the L2 -> L3 transition + L3 completion overlays. */
-function wireNotesButton(btnId, statusId, fallbackId) {
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    const notes = buildLabNotes();
-    const statusEl = document.getElementById(statusId);
-    const fallbackEl = document.getElementById(fallbackId);
-    const setStatus = (text, tone) => {
-      statusEl.textContent = text;
-      statusEl.classList.remove('ok', 'warn');
-      if (tone) statusEl.classList.add(tone);
-    };
-    const fail = () => {
-      fallbackEl.value = notes;
-      fallbackEl.classList.add('show');
-      setTimeout(() => { try { fallbackEl.focus(); fallbackEl.select(); } catch (e) {} }, 30);
-      setStatus('Copy is blocked. Select the notes below.', 'warn');
-    };
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(notes).then(() => setStatus('Lab notes copied!', 'ok'), fail);
-      } else { fail(); }
-    } catch (e) { fail(); }
-  });
+/* ---------- ACADEMIC CHECKPOINTS (Micropass 50) ----------
+   Single overlay used between every stage transition. The transition
+   itself becomes retrieval practice: the player cannot advance until
+   they answer the prompt correctly. No timer, no penalty, no lives lost.
+   Answer order is randomized per show. */
+const CHECKPOINTS = {
+  l1:    { q: 'Which type of material scatters light as it passes through?',
+           a: ['Transparent', 'Translucent', 'Opaque', 'Reflective'],
+           correct: 'Translucent' },
+  l2:    { q: 'Which type of material allows the most light to pass through?',
+           a: ['Opaque', 'Reflective', 'Transparent', 'Translucent'],
+           correct: 'Transparent' },
+  l3:    { q: 'Which type of material absorbs most incoming light energy?',
+           a: ['Reflective', 'Transparent', 'Translucent', 'Opaque'],
+           correct: 'Opaque' },
+  final: { q: 'Which type of material reflects light energy?',
+           a: ['Opaque', 'Transparent', 'Reflective', 'Translucent'],
+           correct: 'Reflective' }
+};
+
+const overlayCheckpoint = document.getElementById('overlayCheckpoint');
+const checkpointQuestion = document.getElementById('checkpointQuestion');
+const checkpointAnswers  = document.getElementById('checkpointAnswers');
+const checkpointFeedback = document.getElementById('checkpointFeedback');
+let checkpointOnCorrect = null;
+
+function shuffleAnswers(arr) {
+  const copy = arr.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+  }
+  return copy;
 }
-wireNotesButton('btnL2Notes', 'notesStatusL2', 'notesFallbackL2');
-wireNotesButton('btnL3Notes', 'notesStatusL3', 'notesFallbackL3');
-document.getElementById('btnL1Notes').addEventListener('click', () => {
-  const notes = buildLabNotes();
-  const statusEl = document.getElementById('notesStatusL1');
-  const fallbackEl = document.getElementById('notesFallbackL1');
-  const setStatus = (text, tone) => {
-    statusEl.textContent = text;
-    statusEl.classList.remove('ok', 'warn');
-    if (tone) statusEl.classList.add(tone);
-  };
-  const fail = () => {
-    fallbackEl.value = notes;
-    fallbackEl.classList.add('show');
-    setTimeout(() => { try { fallbackEl.focus(); fallbackEl.select(); } catch (e) {} }, 30);
-    setStatus('Copy is blocked. Select the notes below.', 'warn');
-  };
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(notes).then(
-        () => setStatus('Lab notes copied!', 'ok'),
-        fail
-      );
-    } else { fail(); }
-  } catch (e) { fail(); }
-});
+
+function showCheckpoint(key, onCorrect) {
+  const cp = CHECKPOINTS[key];
+  if (!cp) { if (onCorrect) onCorrect(); return; }
+  checkpointOnCorrect = onCorrect || null;
+  if (state) {
+    state.transitionPending = true;
+    state.modalOpen = true;
+  }
+  running = false;
+  checkpointQuestion.textContent = cp.q;
+  checkpointFeedback.textContent = '';
+  checkpointFeedback.className = 'checkpoint-feedback';
+  checkpointAnswers.innerHTML = '';
+  shuffleAnswers(cp.a).forEach(answer => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn checkpoint-btn';
+    btn.textContent = answer;
+    btn.addEventListener('click', () => onCheckpointAnswer(btn, answer, cp.correct));
+    checkpointAnswers.appendChild(btn);
+  });
+  overlayCheckpoint.classList.remove('hidden');
+}
+
+function onCheckpointAnswer(btn, answer, correct) {
+  if (answer === correct) {
+    checkpointFeedback.textContent = 'Excellent.';
+    checkpointFeedback.className = 'checkpoint-feedback ok';
+    Array.from(checkpointAnswers.querySelectorAll('button')).forEach(b => b.disabled = true);
+    setTimeout(() => {
+      overlayCheckpoint.classList.add('hidden');
+      if (state) state.modalOpen = false;
+      const cb = checkpointOnCorrect;
+      checkpointOnCorrect = null;
+      if (cb) cb();
+    }, 550);
+  } else {
+    checkpointFeedback.textContent = 'Not quite. Try again.';
+    checkpointFeedback.className = 'checkpoint-feedback warn';
+  }
+}
 
 /* ---------- MAIN LOOP ---------- */
 function loop(now) {
@@ -6450,6 +7331,8 @@ function loop(now) {
       updateShards(dt);
       updateBurstFx(dt);
       updateBubblesL3(dt);
+      updateLevel2Stream(dt);
+      updateSolarInstability(dt);
       handleShotBubbleCollisions();
       handleShotEnemyCollisions();
       handleShotGlobCollisions();
