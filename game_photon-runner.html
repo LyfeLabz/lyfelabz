@@ -1487,6 +1487,55 @@
     letter-spacing: 0.18em;
   }
 
+  /* ===== MISSION BRIEFING (Micropass 54) ===== */
+  .overlay .level-tag.warn {
+    background: rgba(232,76,61,0.14);
+    border-color: rgba(232,76,61,0.55);
+    color: var(--absorb);
+  }
+  .briefing-body {
+    max-width: 520px;
+    margin: 0.35rem auto 0.7rem;
+    color: var(--text);
+    font-size: 0.92rem;
+    line-height: 1.55;
+    text-align: left;
+  }
+  .briefing-body p { margin: 0.35rem 0; color: var(--text-muted); text-align: left; }
+  .briefing-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.4rem 0 0.5rem;
+  }
+  .briefing-body li {
+    color: var(--text-muted);
+    margin: 0.22rem 0;
+    padding-left: 1.1rem;
+    position: relative;
+    font-size: 0.9rem;
+  }
+  .briefing-body li::before {
+    content: '\25C6';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 0.7rem;
+    top: 0.18rem;
+  }
+  .briefing-target {
+    display: inline-block;
+    margin: 0.3rem 0 0.6rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 10px;
+    background: rgba(245,200,66,0.10);
+    border: 1px solid rgba(245,200,66,0.45);
+    color: var(--gold);
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    font-size: 0.85rem;
+  }
+
   /* ===== MIXED TAKEAWAY (win recap) ===== */
   .recap .takeaway {
     margin-top: 0.6rem;
@@ -1847,6 +1896,56 @@
           <div class="end-actions">
             <button class="btn" id="btnEnterLevel2">Start Solar Array</button>
             <button class="btn btn-teal" id="btnReplayTraining">Replay Training</button>
+          </div>
+        </div>
+
+        <!-- Micropass 54: Mission briefings (Solar Array, Glass Foundry, Foreman). -->
+        <div class="overlay hidden" id="overlayBriefSolar">
+          <div class="level-tag">MISSION BRIEFING</div>
+          <h2>SOLAR ARRAY</h2>
+          <div class="briefing-body">
+            <p>The city's Solar Array is failing.</p>
+            <p>Light energy is no longer reaching the power grid.</p>
+            <p><b>Your mission:</b></p>
+            <ul>
+              <li>Shoot photons through transparent materials to deliver energy.</li>
+              <li>Translucent materials deliver less energy.</li>
+              <li>Opaque materials block light, but contain photon shards.</li>
+              <li>Enemies interfere with energy collection.</li>
+            </ul>
+            <p>Restore all three solar panels.</p>
+          </div>
+          <div class="briefing-target">TARGET: 300 ENERGY</div>
+          <div class="end-actions">
+            <button class="btn" id="btnBriefSolar" type="button">BEGIN MISSION</button>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="overlayBriefFoundry">
+          <div class="level-tag">MISSION BRIEFING</div>
+          <h2>GLASS FOUNDRY</h2>
+          <div class="briefing-body">
+            <p>The Foreman has redirected the flow of light.</p>
+            <p>Dangerous machinery and enemies are disrupting the system.</p>
+            <p>Fight through the Foundry.</p>
+            <p>Survive long enough to reach the Foreman.</p>
+          </div>
+          <div class="end-actions">
+            <button class="btn" id="btnBriefFoundry" type="button">ENTER FOUNDRY</button>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="overlayBriefForeman">
+          <div class="level-tag warn">WARNING</div>
+          <h2>FOREMAN DETECTED</h2>
+          <div class="briefing-body">
+            <p>The Foreman controls the flow of light inside the Foundry.</p>
+            <p>Study each phase.</p>
+            <p>Use your powers wisely.</p>
+            <p>Defeat the Foreman and restore the system.</p>
+          </div>
+          <div class="end-actions">
+            <button class="btn" id="btnBriefForeman" type="button">BEGIN BATTLE</button>
           </div>
         </div>
 
@@ -2974,11 +3073,13 @@ function updateLevel3Scroll(dt) {
       && state.distance >= L3_GATE_WORLD_X) {
     state.foremanCheckpointShown = true;
     showCheckpoint('l3', () => {
-      if (!state || state.over || state.bossDefeated) return;
-      running = true;
-      lastTime = performance.now();
-      requestAnimationFrame(loop);
-      spawnForeman();
+      showBriefing('foreman', () => {
+        if (!state || state.over || state.bossDefeated) return;
+        running = true;
+        lastTime = performance.now();
+        requestAnimationFrame(loop);
+        spawnForeman();
+      });
     });
   }
 }
@@ -7196,6 +7297,10 @@ function startGame() {
   overlayLevel3Complete.classList.add('hidden');
   overlayPredict.classList.add('hidden');
   document.getElementById('overlayCheckpoint').classList.add('hidden');
+  ['overlayBriefSolar','overlayBriefFoundry','overlayBriefForeman'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.classList.add('hidden');
+  });
+  briefingOnContinue = null; currentBriefingEl = null;
   predictDraft = {};
   ['modalGuide','modalData'].forEach(id => document.getElementById(id).classList.add('hidden'));
   activeSidebarModal = null;
@@ -7241,6 +7346,10 @@ function restartSolarArray() {
   overlayLevel3Complete.classList.add('hidden');
   overlayPredict.classList.add('hidden');
   document.getElementById('overlayCheckpoint').classList.add('hidden');
+  ['overlayBriefSolar','overlayBriefFoundry','overlayBriefForeman'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.classList.add('hidden');
+  });
+  briefingOnContinue = null; currentBriefingEl = null;
   predictDraft = {};
   ['modalGuide','modalData'].forEach(id => document.getElementById(id).classList.add('hidden'));
   activeSidebarModal = null;
@@ -7266,6 +7375,10 @@ function restartGlassFoundry() {
   overlayLevel3Complete.classList.add('hidden');
   overlayPredict.classList.add('hidden');
   document.getElementById('overlayCheckpoint').classList.add('hidden');
+  ['overlayBriefSolar','overlayBriefFoundry','overlayBriefForeman'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.classList.add('hidden');
+  });
+  briefingOnContinue = null; currentBriefingEl = null;
   predictDraft = {};
   ['modalGuide','modalData'].forEach(id => document.getElementById(id).classList.add('hidden'));
   activeSidebarModal = null;
@@ -7287,7 +7400,7 @@ document.getElementById('btnReset').addEventListener('click', () => {
 document.getElementById('btnEnterLevel2').addEventListener('click', () => {
   if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
   overlayLevel2Intro.classList.add('hidden');
-  showCheckpoint('l1', enterLevel2);
+  showCheckpoint('l1', () => showBriefing('solar', enterLevel2));
 });
 btnBeginInvestigation.addEventListener('click', () => {
   if (btnBeginInvestigation.disabled) return;
@@ -7301,7 +7414,7 @@ document.getElementById('btnReplayTraining').addEventListener('click', () => {
 document.getElementById('btnEnterLevel3').addEventListener('click', () => {
   if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
   overlayLevel3Intro.classList.add('hidden');
-  showCheckpoint('l2', enterLevel3);
+  showCheckpoint('l2', () => showBriefing('foundry', enterLevel3));
 });
 document.getElementById('btnReplayFromL2').addEventListener('click', () => {
   if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
@@ -7388,6 +7501,49 @@ function onCheckpointAnswer(btn, answer, correct) {
     checkpointFeedback.className = 'checkpoint-feedback warn';
   }
 }
+
+/* ---------- MISSION BRIEFINGS (Micropass 54) ----------
+   Narrative bridge between checkpoint and stage start. No quiz, no scoring,
+   no gameplay effect - just sets up purpose before the level begins. */
+const BRIEFING_OVERLAYS = {
+  solar:   'overlayBriefSolar',
+  foundry: 'overlayBriefFoundry',
+  foreman: 'overlayBriefForeman'
+};
+let briefingOnContinue = null;
+let currentBriefingEl  = null;
+
+function showBriefing(key, onContinue) {
+  const id = BRIEFING_OVERLAYS[key];
+  const overlay = id ? document.getElementById(id) : null;
+  if (!overlay) { if (onContinue) onContinue(); return; }
+  briefingOnContinue = onContinue || null;
+  currentBriefingEl  = overlay;
+  if (state) {
+    state.modalOpen = true;
+    state.transitionPending = true;
+  }
+  running = false;
+  overlay.classList.remove('hidden');
+}
+
+function dismissBriefing() {
+  if (currentBriefingEl) currentBriefingEl.classList.add('hidden');
+  currentBriefingEl = null;
+  if (state) state.modalOpen = false;
+  const cb = briefingOnContinue;
+  briefingOnContinue = null;
+  if (cb) cb();
+}
+
+['btnBriefSolar', 'btnBriefFoundry', 'btnBriefForeman'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('click', () => {
+    if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+    dismissBriefing();
+  });
+});
 
 /* ---------- MAIN LOOP ---------- */
 function loop(now) {

@@ -3587,7 +3587,7 @@ window.revealWavelength = function() {
 
     // Bin for word labels (0..4)
     const bin = Math.min(4, Math.floor(v / 20));
-    wlEl.textContent = wlWords[4 - bin];   // wavelength is INVERSE of v
+    wlEl.textContent = wlWords[bin];        // wavelength grows with lambda, which shrinks as v increases
     fqEl.textContent = fqWords[bin];
     enEl.textContent = enWords[bin];
 
