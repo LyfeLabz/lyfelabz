@@ -259,6 +259,7 @@
   .photon-hud {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 14px;
     padding: 6px 12px;
     margin-bottom: 10px;
@@ -384,6 +385,84 @@
     font-family: 'Fredoka One', cursive;
     font-size: 0.62rem;
     margin-right: 3px;
+  }
+
+  /* ===== HEAT METER (Micropass 55) ===== */
+  .photon-hud .heat-card {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    border-radius: 10px;
+    background: rgba(232,76,61,0.08);
+    border: 1px solid rgba(232,76,61,0.32);
+    white-space: nowrap;
+  }
+  .photon-hud .heat-label {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-size: 0.62rem;
+    font-weight: 800;
+  }
+  .photon-hud .heat-bar-outer {
+    width: 70px;
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(232,76,61,0.25);
+  }
+  .photon-hud .heat-bar-inner {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ffd76b, #f59e3a 60%, #e84c3d);
+    transition: width 0.12s linear;
+  }
+  .photon-hud .heat-pct {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.85rem;
+    color: #ffb8a8;
+    min-width: 30px;
+    text-align: right;
+  }
+  .photon-hud .heat-card.is-overheat {
+    background: rgba(232,76,61,0.22);
+    border-color: rgba(232,76,61,0.85);
+    animation: heatPulse 0.55s ease-in-out infinite alternate;
+  }
+  .photon-hud .heat-card.is-overheat .heat-label,
+  .photon-hud .heat-card.is-overheat .heat-pct {
+    color: #ffe1d8;
+  }
+  @keyframes heatPulse {
+    from { box-shadow: 0 0 0 rgba(232,76,61,0); }
+    to   { box-shadow: 0 0 14px rgba(232,76,61,0.55); }
+  }
+
+  /* ===== EFFICIENCY READOUT (Micropass 55) ===== */
+  .solar-efficiency {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.30);
+    border-radius: 8px;
+    font-size: 0.75rem;
+  }
+  .solar-efficiency .se-k {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+    font-size: 0.62rem;
+  }
+  .solar-efficiency .se-v {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.0rem;
+    color: var(--transmit);
   }
 
   /* ===== MAIN LAYOUT ===== */
@@ -1820,6 +1899,12 @@
       </div>
       <span class="ph-hint"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd>Activate</span>
     </div>
+    <!-- Micropass 55: emitter heat meter -->
+    <div class="heat-card" id="heatCard">
+      <span class="heat-label" id="heatLabel">Heat</span>
+      <div class="heat-bar-outer"><div class="heat-bar-inner" id="heatBar"></div></div>
+      <span class="heat-pct" id="heatPct">0%</span>
+    </div>
   </div>
 
   <!-- MAIN -->
@@ -2089,6 +2174,11 @@
             <div class="solar-panel" id="solarPanelC"><span class="sp-name">Panel C</span><span class="sp-status" id="sp-statusC">0 / 50</span></div>
           </div>
           <div class="solar-status" id="solarStatus"></div>
+          <!-- Micropass 55: efficiency readout (energy delivered per shot fired) -->
+          <div class="solar-efficiency" id="solarEfficiency">
+            <span class="se-k">Efficiency</span>
+            <span class="se-v" id="solarEfficiencyVal">--</span>
+          </div>
           <div class="solar-hint">Transparent +5 - Translucent +2 - Opaque absorbs</div>
         </div>
       </div>
@@ -2148,6 +2238,24 @@ const SHIP = {
   fireCooldown: 0.18, // sec
   maxHealth: 100
 };
+
+/* Micropass 55: anti-spam tuning. Heat throttles rapid firing, the shot
+   cap forces aiming, the Solar combo rewards accuracy, and efficiency
+   gives students a percentage to compete on. */
+const HEAT = {
+  perShot:        16,   // heat added per fire action (twin = single trigger)
+  cool:           50,   // heat units bled per second while not firing
+  coolOverheat:   55,   // cool rate while emitter is locked
+  overheatLock:   2.0,  // sec the player cannot fire after hitting 100
+  max:            100
+};
+const SHOT_LIMIT_NORMAL = 3;
+const SHOT_LIMIT_TWIN   = 4;
+const SOLAR_COMBO_TIERS = [
+  { hits: 10, bonus: 3, label: 'x10', color: '#ffd76b' },
+  { hits: 6,  bonus: 2, label: 'x6',  color: '#9be3b6' },
+  { hits: 3,  bonus: 1, label: 'x3',  color: '#b9eeff' }
+];
 
 const SHOT = {
   speed: 640,
@@ -4388,6 +4496,12 @@ function freshState() {
     // Micropass 51: instability + cloud cover state for Solar Array.
     solarLeak:        { timer: SOLAR_LEAK.firstDelay, fired: 0 },
     cloudCover:       { timer: SOLAR_CLOUD.firstDelay, active: false, remaining: 0 },
+    // Micropass 55: anti-spam meters.
+    heat:             0,
+    heatLockTimer:    0,
+    shotsFired:       0,
+    solarCombo:       0,
+    solarComboTier:   0,
     nextBubbleId:     nextBubbleId  // counter for stable per-bubble ids
   };
 }
@@ -4457,11 +4571,26 @@ function updateShip(dt) {
   s.iframes  = Math.max(0, s.iframes - dt);
   s.muzzle   = Math.max(0, s.muzzle - dt);
 
-  if (fire && s.cooldown === 0) {
+  // Micropass 55: heat cooling + overheat lock countdown.
+  if (state.heatLockTimer > 0) {
+    state.heatLockTimer = Math.max(0, state.heatLockTimer - dt);
+    state.heat = Math.max(0, state.heat - HEAT.coolOverheat * dt);
+  } else if (!fire) {
+    state.heat = Math.max(0, state.heat - HEAT.cool * dt);
+  }
+
+  if (fire && s.cooldown === 0 && canFireNow()) {
     fireShot();
     s.cooldown = SHIP.fireCooldown;
     s.muzzle = 0.12;
     SFX.fire();
+    state.shotsFired += 1;
+    state.heat = Math.min(HEAT.max, state.heat + HEAT.perShot);
+    if (state.heat >= HEAT.max && state.heatLockTimer <= 0) {
+      state.heatLockTimer = HEAT.overheatLock;
+      spawnScorePop(s.x, s.y - 24, 'EMITTER OVERHEATED',
+        { color: '#ff8a78', size: 14, life: 1.4, vy: -22, kind: 'big' });
+    }
   }
 
   // Engine trail: emit a small particle when moving.
@@ -4491,18 +4620,29 @@ function makeShot(x, y) {
     weakened: false,
     passedBubbles: new Set(),  // ids already passed (transparent/translucent)
     bounceCount: 0,
-    reflectCooldowns: {}        // bubbleId -> elapsed-time until this bubble can re-reflect this shot
+    reflectCooldowns: {},       // bubbleId -> elapsed-time until this bubble can re-reflect this shot
+    playerFired: false,         // Micropass 55: only player shots count toward combo + efficiency
+    didTransmit: false          // Micropass 55: set on transparent/translucent transmission
   };
+}
+/* Micropass 55: returns true if the player can fire another shot right now.
+   Blocks while the emitter is overheated or the active player-shot cap is full. */
+function canFireNow() {
+  if (state.heatLockTimer > 0) return false;
+  const cap = state.twinBeam ? SHOT_LIMIT_TWIN : SHOT_LIMIT_NORMAL;
+  let active = 0;
+  for (const sh of state.shots) if (sh.playerFired) active += 1;
+  return active < cap;
 }
 function fireShot() {
   const s = state.ship;
   const nx = s.x + SHIP.radius + 4;
   if (state.twinBeam) {
     // Twin Beam: two parallel shots offset vertically.
-    state.shots.push(makeShot(nx, s.y - 8));
-    state.shots.push(makeShot(nx, s.y + 8));
+    const a = makeShot(nx, s.y - 8); a.playerFired = true; state.shots.push(a);
+    const b = makeShot(nx, s.y + 8); b.playerFired = true; state.shots.push(b);
   } else {
-    state.shots.push(makeShot(nx, s.y));
+    const a = makeShot(nx, s.y); a.playerFired = true; state.shots.push(a);
   }
 }
 
@@ -4528,11 +4668,18 @@ function updateShots(dt) {
     }
   }
   // Remove off-arena or expired shots.
-  state.shots = state.shots.filter(sh =>
-    sh.life > 0 &&
-    sh.x > -20 && sh.x < ARENA_W + 20 &&
-    sh.y > -20 && sh.y < ARENA_H + 20
-  );
+  // Micropass 55: in the Solar Array, a player shot that leaves play
+  // without transmitting (transparent/translucent) counts as a miss and
+  // resets the accuracy combo.
+  state.shots = state.shots.filter(sh => {
+    const alive = sh.life > 0 &&
+      sh.x > -20 && sh.x < ARENA_W + 20 &&
+      sh.y > -20 && sh.y < ARENA_H + 20;
+    if (!alive && state.level === 2 && sh.playerFired && !sh.didTransmit) {
+      resetSolarCombo();
+    }
+    return alive;
+  });
 }
 
 function updateParticles(dt) {
@@ -4587,7 +4734,11 @@ function handleShotBubbleCollisions() {
         state.counts.transparent += 1;
         SFX.transparent();
         spawnShards(b.x, b.y, SHARD_REWARDS.transparent, 'cyan');
-        if (state.level === 2) deliverSolarEnergy(currentSolarAward('transparent'), b.x, b.y);
+        if (state.level === 2) {
+          sh.didTransmit = true;
+          bumpSolarCombo(b.x, b.y);
+          deliverSolarEnergy(currentSolarAward('transparent') + solarComboBonus(), b.x, b.y);
+        }
         advanceTutorialOn('transparent');
         if (state.level === 1) updateTeachCard('transparent');
       }
@@ -4611,13 +4762,19 @@ function handleShotBubbleCollisions() {
         state.counts.translucent += 1;
         SFX.translucent();
         spawnShards(b.x, b.y, SHARD_REWARDS.translucent, 'cyan');
-        if (state.level === 2) deliverSolarEnergy(currentSolarAward('translucent'), b.x, b.y);
+        if (state.level === 2) {
+          sh.didTransmit = true;
+          bumpSolarCombo(b.x, b.y);
+          deliverSolarEnergy(currentSolarAward('translucent'), b.x, b.y);
+        }
         advanceTutorialOn('translucent');
         if (state.level === 1) updateTeachCard('translucent');
       }
       else if (b.type === 'opaque') {
         // Absorb: shot is consumed, bubble charges.
         sh.life = 0;
+        // Micropass 55: opaque hits reset the Solar accuracy combo.
+        if (state.level === 2 && sh.playerFired) resetSolarCombo();
         b.absorbed = (b.absorbed || 0) + 1;
         b.flash = 0.5;
         addScore(6);
@@ -5237,6 +5394,12 @@ function beginInvestigation() {
   state.solarComplete = false;
   state.l2SpawnTimer = 0.6;
   state.l2SpawnCount = 0;
+  // Micropass 55: reset anti-spam meters on each Solar Array attempt.
+  state.heat = 0;
+  state.heatLockTimer = 0;
+  state.shotsFired = 0;
+  state.solarCombo = 0;
+  state.solarComboTier = 0;
   // Micropass 51: reset Solar Array instability + cloud cover timers.
   state.solarLeak  = { timer: SOLAR_LEAK.firstDelay, fired: 0 };
   state.cloudCover = { timer: SOLAR_CLOUD.firstDelay, active: false, remaining: 0 };
@@ -5598,6 +5761,40 @@ function spawnL2Enemy() {
     e.l2 = true;
     state.enemies.push(e);
   }
+}
+
+/* ---------- Micropass 55: SOLAR ACCURACY COMBO ----------
+   Increments on each successful transparent/translucent transmission;
+   resets on opaque hits or shots that leave play without transmitting.
+   Tier-up at 3/6/10 awards a small floating "x3"/"x6"/"x10" tag and
+   raises the transparent bonus by +1/+2/+3. */
+function solarComboBonus() {
+  const c = (state && state.solarCombo) || 0;
+  for (const t of SOLAR_COMBO_TIERS) if (c >= t.hits) return t.bonus;
+  return 0;
+}
+function currentComboTier() {
+  const c = (state && state.solarCombo) || 0;
+  for (let i = 0; i < SOLAR_COMBO_TIERS.length; i++) {
+    if (c >= SOLAR_COMBO_TIERS[i].hits) return SOLAR_COMBO_TIERS.length - i;
+  }
+  return 0;
+}
+function bumpSolarCombo(x, y) {
+  if (!state) return;
+  state.solarCombo += 1;
+  const tier = currentComboTier();
+  if (tier > state.solarComboTier) {
+    state.solarComboTier = tier;
+    const meta = SOLAR_COMBO_TIERS[SOLAR_COMBO_TIERS.length - tier];
+    spawnScorePop(Math.max(40, x), y - 18, meta.label,
+      { color: meta.color, size: 22, life: 1.1, vy: -30, kind: 'big' });
+  }
+}
+function resetSolarCombo() {
+  if (!state) return;
+  state.solarCombo = 0;
+  state.solarComboTier = 0;
 }
 
 /* Micropass 51: Cloud Cover lowers per-material awards while active. */
@@ -6706,6 +6903,13 @@ const pctT = document.getElementById('pctTransmit');
 const phCyan = document.getElementById('phCyan');
 const phGold = document.getElementById('phGold');
 const phSlotEls = Array.from(document.querySelectorAll('#phSlots .ph-slot'));
+// Micropass 55: heat meter + efficiency readout.
+const heatCardEl   = document.getElementById('heatCard');
+const heatBarEl    = document.getElementById('heatBar');
+const heatPctEl    = document.getElementById('heatPct');
+const heatLabelEl  = document.getElementById('heatLabel');
+const solarEfficiencyEl    = document.getElementById('solarEfficiency');
+const solarEfficiencyValEl = document.getElementById('solarEfficiencyVal');
 
 function updateHUD() {
   hudLevel.textContent = state.level === 3 ? 'Glass Foundry'
@@ -6731,6 +6935,23 @@ function updateHUD() {
     hudCleared.textContent = `${state.cleared} / ${state.requiredOpaque}`;
   }
   hudStatus.textContent = state.over ? (state.won ? 'Win!' : 'Down') : 'Running';
+
+  // Micropass 55: heat meter + efficiency.
+  const heatPct = Math.max(0, Math.min(100, (state.heat / HEAT.max) * 100));
+  if (heatBarEl)   heatBarEl.style.width = heatPct.toFixed(0) + '%';
+  if (heatPctEl)   heatPctEl.textContent = heatPct.toFixed(0) + '%';
+  if (heatCardEl)  heatCardEl.classList.toggle('is-overheat', state.heatLockTimer > 0);
+  if (heatLabelEl) heatLabelEl.textContent = state.heatLockTimer > 0 ? 'Overheated' : 'Heat';
+  if (solarEfficiencyValEl) {
+    if (state.shotsFired > 0) {
+      // Efficiency is energy-per-shot scaled by the transparent base award
+      // (the best per-shot result), so a perfect run reads ~100%.
+      const eff = (state.solarEnergy / (state.shotsFired * SOLAR_ENERGY_TRANSPARENT)) * 100;
+      solarEfficiencyValEl.textContent = Math.min(999, Math.max(0, eff)).toFixed(0) + '%';
+    } else {
+      solarEfficiencyValEl.textContent = '--';
+    }
+  }
 
   const e = state.energy;
   const total = e.reflect + e.absorb + e.transmit;
