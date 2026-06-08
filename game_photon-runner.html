@@ -2416,6 +2416,7 @@ const ctx = canvas.getContext('2d');
 let state = null;        // full game state
 let lastTime = 0;
 let running = false;
+let currentCheckpoint = 'academy'; // 'academy' | 'solar' | 'foundry'
 
 /* ---------- LEVEL 1 LAYOUT ----------
    Bubbles arranged so the player encounters each behavior. */
@@ -5111,6 +5112,7 @@ function beginInvestigation() {
   if (!state) return;
   overlayPredict.classList.add('hidden');
 
+  currentCheckpoint = 'solar';
   state.level = 2;
   state.transitionPending = false;
   // Micropass 46: Solar Array is now the Solar Panel Array stream mission.
@@ -6817,6 +6819,7 @@ function showLevel3Intro() {
 function enterLevel3() {
   if (!state) return;
   overlayLevel3Intro.classList.add('hidden');
+  currentCheckpoint = 'foundry';
   state.level = 3;
   state.foundryReached = true;
   state.transitionPending = false;
@@ -7157,6 +7160,20 @@ function showEnd(won) {
     if (state.level === 3) renderFoundryRunSummary('foundryRunSummaryEnd');
     else endSummaryHost.innerHTML = '';
   }
+  const btnResetEl = document.getElementById('btnReset');
+  if (btnResetEl) {
+    if (!won) {
+      if (currentCheckpoint === 'foundry') {
+        btnResetEl.textContent = 'Retry Glass Foundry';
+      } else if (currentCheckpoint === 'solar') {
+        btnResetEl.textContent = 'Retry Solar Array';
+      } else {
+        btnResetEl.textContent = 'Replay Game';
+      }
+    } else {
+      btnResetEl.textContent = 'Replay Game';
+    }
+  }
   overlayEnd.classList.remove('hidden');
 }
 
@@ -7167,6 +7184,7 @@ function startGame() {
   if (preGameScreen) preGameScreen.classList.add('hidden');
   if (gameUi)        gameUi.classList.remove('game-ui-hidden');
 
+  currentCheckpoint = 'academy';
   state = freshState();
   feedbackTimer = 0;
   lastFeedbackKey = null;
@@ -7198,7 +7216,63 @@ function startGame() {
 }
 
 function resetGame() {
-  startGame();
+  if (currentCheckpoint === 'solar') {
+    restartSolarArray();
+  } else if (currentCheckpoint === 'foundry') {
+    restartGlassFoundry();
+  } else {
+    startGame();
+  }
+}
+
+function restartSolarArray() {
+  const preGameScreen = document.getElementById('preGameScreen');
+  const gameUi        = document.getElementById('gameUi');
+  if (preGameScreen) preGameScreen.classList.add('hidden');
+  if (gameUi)        gameUi.classList.remove('game-ui-hidden');
+  state = freshState();
+  feedbackTimer = 0;
+  lastFeedbackKey = null;
+  feedbackEl.classList.remove('show');
+  overlayStart.classList.add('hidden');
+  overlayEnd.classList.add('hidden');
+  overlayLevel2Intro.classList.add('hidden');
+  overlayLevel3Intro.classList.add('hidden');
+  overlayLevel3Complete.classList.add('hidden');
+  overlayPredict.classList.add('hidden');
+  document.getElementById('overlayCheckpoint').classList.add('hidden');
+  predictDraft = {};
+  ['modalGuide','modalData'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  activeSidebarModal = null;
+  clearPause();
+  resetLastInteraction();
+  resetDiscovery();
+  beginInvestigation();
+}
+
+function restartGlassFoundry() {
+  const preGameScreen = document.getElementById('preGameScreen');
+  const gameUi        = document.getElementById('gameUi');
+  if (preGameScreen) preGameScreen.classList.add('hidden');
+  if (gameUi)        gameUi.classList.remove('game-ui-hidden');
+  state = freshState();
+  feedbackTimer = 0;
+  lastFeedbackKey = null;
+  feedbackEl.classList.remove('show');
+  overlayStart.classList.add('hidden');
+  overlayEnd.classList.add('hidden');
+  overlayLevel2Intro.classList.add('hidden');
+  overlayLevel3Intro.classList.add('hidden');
+  overlayLevel3Complete.classList.add('hidden');
+  overlayPredict.classList.add('hidden');
+  document.getElementById('overlayCheckpoint').classList.add('hidden');
+  predictDraft = {};
+  ['modalGuide','modalData'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  activeSidebarModal = null;
+  clearPause();
+  resetLastInteraction();
+  resetDiscovery();
+  enterLevel3();
 }
 
 document.getElementById('btnStart').addEventListener('click', () => {
@@ -7222,7 +7296,7 @@ btnBeginInvestigation.addEventListener('click', () => {
 });
 document.getElementById('btnReplayTraining').addEventListener('click', () => {
   if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
-  resetGame();
+  startGame();
 });
 document.getElementById('btnEnterLevel3').addEventListener('click', () => {
   if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
@@ -7231,11 +7305,11 @@ document.getElementById('btnEnterLevel3').addEventListener('click', () => {
 });
 document.getElementById('btnReplayFromL2').addEventListener('click', () => {
   if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
-  resetGame();
+  startGame();
 });
 document.getElementById('btnReplayFromL3').addEventListener('click', () => {
   if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
-  resetGame();
+  startGame();
 });
 
 /* ---------- ACADEMIC CHECKPOINTS (Micropass 50) ----------
