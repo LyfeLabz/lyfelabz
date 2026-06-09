@@ -3048,10 +3048,14 @@ function spawnFurnaceBubbles(id) {
     out.push({ type: 'opaque', x: 620, y: 500, r: 44, absorbed: 0, capacity: 3 });
     out.push({ type: 'opaque', x: 780, y: 360, r: 46, absorbed: 0, capacity: 3 });
   } else if (id === 'C') {
-    // Reflective bubbles - bank shots around the front shield.
-    out.push({ type: 'reflective', x: 700, y: 220, r: 42 });
-    out.push({ type: 'reflective', x: 700, y: 500, r: 42 });
-    out.push({ type: 'reflective', x: 820, y: 360, r: 42 });
+    // Reflective bubbles - act as redirectors that bend photons around the
+    // front shield and aim them at the rear weak point. Generous radius and
+    // multiple lanes so Grade 6 players can find a working angle quickly.
+    out.push({ type: 'reflective', x: 720, y: 200, r: 50, redirect: true });
+    out.push({ type: 'reflective', x: 720, y: 520, r: 50, redirect: true });
+    out.push({ type: 'reflective', x: 880, y: 140, r: 46, redirect: true });
+    out.push({ type: 'reflective', x: 880, y: 580, r: 46, redirect: true });
+    out.push({ type: 'reflective', x: 600, y: 360, r: 44, redirect: true });
   }
   for (const b of out) b.furnaceProp = true;
   return out;
@@ -3456,9 +3460,16 @@ function handleShotFurnaceCollisions(core) {
           core.firstReflectShown = true;
           updateTeachCard('reflectedLight');
           if (teachCard) teachCard.classList.remove('hidden');
+          showFeedbackTextOnce('furnaceCReflect',
+            'REFLECTION SUCCESS. The photon reached the weak side.', 'reflect');
         }
       } else {
         blocked = true;
+        if (!core.firstBlockShown) {
+          core.firstBlockShown = true;
+          showFeedbackTextOnce('furnaceCBlock',
+            'Front shield blocks direct photons. Use a reflective bubble.', 'reflect');
+        }
       }
     }
     if (dmg > 0) {
@@ -3512,6 +3523,42 @@ function drawFurnace() {
     ctx.strokeStyle = 'rgba(255,255,255,0.55)';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(core.x - halfW, core.y - halfH * 0.7, 10, halfH * 1.4);
+  }
+  // Micropass 57A: Furnace C front shield (half-moon) + rear weak point glow.
+  if (core.id === 'C') {
+    // Front shield - bright teal half-moon arc bulging toward the player.
+    const shieldR = halfH * 1.05;
+    const shieldCx = core.x - halfW + 4;
+    const pulse = 0.65 + 0.2 * Math.sin(state.elapsed * 4);
+    const shieldGrad = ctx.createRadialGradient(shieldCx - 6, core.y, 4, shieldCx - 6, core.y, shieldR);
+    shieldGrad.addColorStop(0, 'rgba(180,240,255,' + (0.55 * pulse) + ')');
+    shieldGrad.addColorStop(0.6, 'rgba(59,200,232,' + (0.45 * pulse) + ')');
+    shieldGrad.addColorStop(1, 'rgba(59,200,232,0)');
+    ctx.fillStyle = shieldGrad;
+    ctx.beginPath();
+    ctx.arc(shieldCx, core.y, shieldR, Math.PI * 0.5, Math.PI * 1.5);
+    ctx.closePath();
+    ctx.fill();
+    // Shield rim outline.
+    ctx.strokeStyle = 'rgba(170,240,255,' + (0.85 * pulse) + ')';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(shieldCx, core.y, shieldR, Math.PI * 0.55, Math.PI * 1.45);
+    ctx.stroke();
+    // Rear weak point - small pulsing glow on the right side.
+    const weakX = core.x + halfW - 6;
+    const weakR = 10 + Math.sin(state.elapsed * 6) * 2;
+    const weakGrad = ctx.createRadialGradient(weakX, core.y, 1, weakX, core.y, weakR * 2);
+    weakGrad.addColorStop(0, 'rgba(255,200,120,0.95)');
+    weakGrad.addColorStop(1, 'rgba(255,120,80,0)');
+    ctx.fillStyle = weakGrad;
+    ctx.beginPath();
+    ctx.arc(weakX, core.y, weakR * 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,230,160,0.95)';
+    ctx.beginPath();
+    ctx.arc(weakX, core.y, 4, 0, Math.PI * 2);
+    ctx.fill();
   }
   // ID label.
   ctx.fillStyle = 'rgba(255,233,138,0.95)';
@@ -5422,6 +5469,38 @@ function handleShotBubbleCollisions() {
         const cdEnd = sh.reflectCooldowns[id] || 0;
         if (state.elapsed < cdEnd) continue;
         sh.reflectCooldowns[id] = state.elapsed + REFLECT_COOLDOWN_SEC;
+
+        // Micropass 57A: Furnace C redirector. Bend the photon around the
+        // front shield and aim it at the rear weak point instead of bouncing
+        // back. Keeps the reflective lesson intact while making the puzzle
+        // solvable for Grade 6 players.
+        if (b.redirect && state.furnaceActive && state.activeFurnaceId === 'C') {
+          const core = activeFurnaceCore();
+          if (core) {
+            sh.reflected = true;
+            const targetX = core.x + FURNACE_LAYOUT.bodyW * 0.25;
+            const targetY = core.y;
+            const dxv = targetX - sh.x;
+            const dyv = targetY - sh.y;
+            const sp = Math.hypot(dxv, dyv) || 1;
+            sh.vx = (dxv / sp) * SHOT.speed;
+            sh.vy = (dyv / sp) * SHOT.speed;
+            sh.life = Math.min(sh.life + 0.4, 2.0);
+            sh.bounceCount += 1;
+            b.flash = 0.5;
+            addScore(3);
+            state.energy.reflect += 12;
+            state.counts.reflective += 1;
+            SFX.reflective();
+            setLastInteraction('Reflective Bubble', 'Redirected',
+              'Reflection changed the path of light around the shield.', 'reflect');
+            if (sh.bounceCount > BOUNCE_LIMIT) {
+              spawnBounceSparkle(sh.x, sh.y);
+              sh.life = 0;
+            }
+            break;
+          }
+        }
 
         if (sh.reflected) {
           // Already reflected: bounce back along incoming direction.
