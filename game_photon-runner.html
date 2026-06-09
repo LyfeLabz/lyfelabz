@@ -3458,8 +3458,7 @@ function handleShotFurnaceCollisions(core) {
         dmg = 1;
         if (!core.firstReflectShown) {
           core.firstReflectShown = true;
-          updateTeachCard('reflectedLight');
-          if (teachCard) teachCard.classList.remove('hidden');
+          showFurnaceCReflectCard();
           showFeedbackTextOnce('furnaceCReflect',
             'REFLECTION SUCCESS. The photon reached the weak side.', 'reflect');
         }
@@ -4999,6 +4998,7 @@ function freshState() {
       mixed: false
     },
     modalOpen: false,
+    furnaceCardActive: false,
     shards: [],
     photons: { cyan: 0, gold: 0, bars: [0, 0, 0, 0] },
     photonsAwarded: { materialLabComplete: false, foundryGate: false },
@@ -5053,6 +5053,11 @@ const keys = new Set();
 window.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
+  // Dismiss Furnace C tutorial card on Space or Enter.
+  if ((k === ' ' || k === 'enter') && state && state.furnaceCardActive) {
+    dismissFurnaceCCard();
+    return;
+  }
   // P toggles pause (only while a game is active and not over).
   if (k === 'p' && !keys.has('p')) {
     if (state && running && !state.over) togglePause();
@@ -5799,6 +5804,27 @@ function hideTeachCard() {
   tcContinue.classList.remove('show');
 }
 
+function showFurnaceCReflectCard() {
+  if (!state) return;
+  state.furnaceCardActive = true;
+  updateTeachCard('reflectedLight');
+  // Show a dismiss hint in the shard row since reflectedLight has no shardHTML.
+  if (tcShard) {
+    tcShard.style.display = '';
+    tcShard.innerHTML = 'Press <b>Space</b>, <b>Enter</b>, or click to continue.';
+  }
+  if (teachCard) teachCard.classList.remove('hidden');
+  console.log('[FurnaceC] Reflected Light card shown - game paused for card');
+}
+
+function dismissFurnaceCCard() {
+  if (!state || !state.furnaceCardActive) return;
+  state.furnaceCardActive = false;
+  hideTeachCard();
+  lastTime = performance.now(); // avoid dt spike after pause
+  console.log('[FurnaceC] Reflected Light card dismissed - gameplay resumed');
+}
+
 function maybeRevealContinue() {
   if (!state || state.level !== 1) return;
   const c = state.counts;
@@ -5812,6 +5838,13 @@ if (tcContinue) {
     if (!state || state.level !== 1 || state.over || state.transitionPending) return;
     if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
     winLevel1();
+  });
+}
+
+// Click anywhere on the teach card dismisses the Furnace C tutorial card.
+if (teachCard) {
+  teachCard.addEventListener('click', () => {
+    if (state && state.furnaceCardActive) dismissFurnaceCCard();
   });
 }
 
@@ -7939,6 +7972,12 @@ function respawnFoundry() {
       core.hitFlash = 0;
       core.firstBlockShown = false;
       core.firstReflectShown = false;
+      // Hide any visible tutorial card from the previous life and unfreeze gameplay.
+      if (state.furnaceCardActive) {
+        state.furnaceCardActive = false;
+        hideTeachCard();
+        console.log('[FurnaceC] Card hidden on death - will re-show on next reflect hit (Furnace ' + core.id + ')');
+      }
       // Respawn the puzzle bubbles for this furnace.
       const props = spawnFurnaceBubbles(core.id);
       for (const b of props) { b.id = state.nextBubbleId++; state.bubbles.push(b); }
@@ -8420,7 +8459,7 @@ function loop(now) {
   lastTime = now;
 
   if (running) {
-    if (!state.paused && !state.modalOpen) {
+    if (!state.paused && !state.modalOpen && !state.furnaceCardActive) {
       state.elapsed += dt;
       updateShip(dt);
       updateShots(dt);
