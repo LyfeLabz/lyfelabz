@@ -1912,6 +1912,32 @@
   }
   .foundry-run-card .fr-furnace.disabled .fr-furnace-k { color: #f5e29a; }
   .foundry-run-card .fr-furnace.disabled .fr-furnace-v { color: var(--gold); }
+  /* Micropass 57: per-furnace HP bar (replaces ONLINE/DISABLED text only). */
+  .foundry-run-card .fr-furnace { flex-wrap: wrap; row-gap: 4px; }
+  .foundry-run-card .fr-furnace-hp {
+    flex: 1 1 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+    margin-top: 2px;
+  }
+  .foundry-run-card .fr-furnace-hp > span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #ff8a99, #ffd76b);
+    transition: width 0.18s ease-out;
+  }
+  .foundry-run-card .fr-furnace.active .fr-furnace-v { color: #ffd76b; }
+  .foundry-run-card .fr-furnace.active {
+    background: rgba(255,215,107,0.10);
+    border-color: rgba(255,215,107,0.45);
+  }
+  .foundry-run-card .fr-furnace.disabled .fr-furnace-hp > span {
+    background: rgba(245,200,66,0.4);
+    width: 0% !important;
+  }
 
   /* ===== CLASSROOM SHORT-VIEWPORT TIGHTENING ===== */
   @media (max-height: 920px) {
@@ -2347,14 +2373,17 @@
             <div class="fr-furnace" id="frFurnaceA">
               <span class="fr-furnace-k">Furnace A</span>
               <span class="fr-furnace-v">ONLINE</span>
+              <div class="fr-furnace-hp"><span style="width:100%"></span></div>
             </div>
             <div class="fr-furnace" id="frFurnaceB">
               <span class="fr-furnace-k">Furnace B</span>
               <span class="fr-furnace-v">ONLINE</span>
+              <div class="fr-furnace-hp"><span style="width:100%"></span></div>
             </div>
             <div class="fr-furnace" id="frFurnaceC">
               <span class="fr-furnace-k">Furnace C</span>
               <span class="fr-furnace-v">ONLINE</span>
+              <div class="fr-furnace-hp"><span style="width:100%"></span></div>
             </div>
           </div>
           <div class="fr-row">
@@ -2975,6 +3004,59 @@ const L3_SEGMENTS = [
 const L3_GATE_WORLD_X = L3_SEGMENT_LEN * 4 + 1200;            // end-of-level marker
 const L3_SPAWN_AHEAD  = ARENA_W + 80;                         // spawn margin past right edge
 
+/* ---------- Micropass 57: FURNACE MINI-BOSSES ----------
+   Each furnace is a stationary core on the right side of the arena that
+   moves vertically. Scroll pauses while a furnace is active. The player
+   damages the core only by using the correct material puzzle:
+     A: transmitted photons (through transparent/translucent bubbles)
+     B: flank / Twin Beam shots (frontal armor blocks direct shots; opaque
+        resource bubbles drop shards that charge Twin Beam)
+     C: reflected photons (front shield blocks direct shots; bank through
+        reflective bubbles to strike the rear weak point)
+*/
+const FURNACE_DEFS = [
+  { id: 'A', label: 'TRANSMISSION FURNACE',
+    triggerX: L3_SEGMENT_LEN * 1 + 700,  hp: 8,
+    color: '#7be3a1', accent: '#2ecc71' },
+  { id: 'B', label: 'ARMORED FURNACE',
+    triggerX: L3_SEGMENT_LEN * 3 + 200,  hp: 8,
+    color: '#f0a55b', accent: '#e67e22' },
+  { id: 'C', label: 'REFLECTIVE FURNACE',
+    triggerX: L3_SEGMENT_LEN * 4 + 200,  hp: 8,
+    color: '#6fdcef', accent: '#3bc8e8' }
+];
+const FURNACE_LAYOUT = {
+  cx:        ARENA_W - 140,
+  bodyW:     90,
+  bodyH:     140,
+  speedY:    90,        // vertical oscillation speed
+  rangeY:    180        // half-range from center
+};
+/* Material bubbles spawned around an active furnace so the player has the
+   correct ammo for the puzzle. */
+function spawnFurnaceBubbles(id) {
+  const out = [];
+  if (id === 'A') {
+    // Transparent/translucent bubbles in front of the core so direct shots
+    // become transmitted shots.
+    out.push({ type: 'transparent', x: 760, y: 200, r: 40 });
+    out.push({ type: 'translucent', x: 760, y: 520, r: 40 });
+    out.push({ type: 'transparent', x: 640, y: 360, r: 38 });
+  } else if (id === 'B') {
+    // Opaque resource bubbles drop cyan shards to charge Twin Beam.
+    out.push({ type: 'opaque', x: 620, y: 220, r: 44, absorbed: 0, capacity: 3 });
+    out.push({ type: 'opaque', x: 620, y: 500, r: 44, absorbed: 0, capacity: 3 });
+    out.push({ type: 'opaque', x: 780, y: 360, r: 46, absorbed: 0, capacity: 3 });
+  } else if (id === 'C') {
+    // Reflective bubbles - bank shots around the front shield.
+    out.push({ type: 'reflective', x: 700, y: 220, r: 42 });
+    out.push({ type: 'reflective', x: 700, y: 500, r: 42 });
+    out.push({ type: 'reflective', x: 820, y: 360, r: 42 });
+  }
+  for (const b of out) b.furnaceProp = true;
+  return out;
+}
+
 function buildLevel3Beat(n) {
   if (n === 1) {
     // Catwalk: transparent panels in a clear path. Shoot through for cyan shards.
@@ -3002,7 +3084,7 @@ function buildLevel3Beat(n) {
   if (n === 3) {
     // Bounce Hall: reflective targets reachable only with bank shots.
     return [
-      { type: 'reflective',  x: 560, y: 360, r: 44, aimGhost: true },
+      { type: 'reflective',  x: 560, y: 360, r: 44 },
       { type: 'reflective',  x: 820, y: 220, r: 40 },
       { type: 'reflective',  x: 820, y: 500, r: 40 },
       { type: 'transparent', x: 1100, y: 360, r: 34 }   // bank-shot reward
@@ -3239,6 +3321,248 @@ function buildLevel3SpawnQueue() {
   return items;
 }
 
+/* ---------- Micropass 57: FURNACE MINI-BOSS RUNTIME ---------- */
+function maybeTriggerFurnace() {
+  if (!state || state.level !== 3) return;
+  if (state.furnaceActive || state.bossActive || state.bossDefeated) return;
+  if (!state.furnaceCores) return;
+  for (const core of state.furnaceCores) {
+    if (core.defeated || core.triggered) continue;
+    if (state.distance >= core.triggerX) {
+      core.triggered = true;
+      core.alive = true;
+      core.x = FURNACE_LAYOUT.cx;
+      core.y = ARENA_H / 2;
+      core.vy = FURNACE_LAYOUT.speedY;
+      core.hitFlash = 0;
+      core.firstReflectShown = false;
+      state.activeFurnaceId = core.id;
+      state.furnaceActive   = true;
+      // Spawn the matching material puzzle around the core.
+      const props = spawnFurnaceBubbles(core.id);
+      for (const b of props) {
+        b.id = state.nextBubbleId++;
+        state.bubbles.push(b);
+      }
+      // Clear lingering enemy projectiles for a clean read of the puzzle.
+      state.enemyShots = [];
+      showBanner('FURNACE ' + core.id, core.label, 2.4);
+      return;
+    }
+  }
+}
+
+function activeFurnaceCore() {
+  if (!state || !state.furnaceActive) return null;
+  return state.furnaceCores.find(c => c.id === state.activeFurnaceId) || null;
+}
+
+function updateFurnace(dt) {
+  // Shots/particles/shards/bubbles are already ticked by the main loop.
+  // We just freeze world-scroll, animate the core, and resolve damage.
+  const core = activeFurnaceCore();
+  if (!core) return;
+
+  // Vertical oscillation.
+  core.y += core.vy * dt;
+  if (core.y < ARENA_H / 2 - FURNACE_LAYOUT.rangeY) {
+    core.y = ARENA_H / 2 - FURNACE_LAYOUT.rangeY; core.vy = Math.abs(core.vy);
+  }
+  if (core.y > ARENA_H / 2 + FURNACE_LAYOUT.rangeY) {
+    core.y = ARENA_H / 2 + FURNACE_LAYOUT.rangeY; core.vy = -Math.abs(core.vy);
+  }
+
+  if (core.hitFlash > 0) core.hitFlash = Math.max(0, core.hitFlash - dt);
+
+  // Collisions: player shots vs furnace core (material rules per id).
+  handleShotFurnaceCollisions(core);
+
+  // Defeat -> banner, mark shutdown, clear props, resume scroll.
+  if (core.hp <= 0 && !core.defeated) {
+    core.defeated = true;
+    core.alive = false;
+    state.furnaces[core.id] = true;
+    showBanner('FURNACE ' + core.id + ' DISABLED',
+      core.id === 'C' ? 'FOREMAN DETECTED' : 'Push forward to the next furnace.', 2.6);
+    // Reward a small shard burst on shutdown.
+    spawnShards(core.x, core.y, 6, 'cyan');
+    state.shake = Math.max(state.shake || 0, 14);
+    // Despawn any remaining furnace prop bubbles.
+    state.bubbles = state.bubbles.filter(b => !b.furnaceProp);
+    state.furnaceActive = false;
+    state.activeFurnaceId = null;
+  }
+
+  // Background spawns (enemies/bubbles) stay paused while furnace fight is active.
+}
+
+function shotHitsFurnace(sh, core) {
+  if (sh.life <= 0) return false;
+  const halfW = FURNACE_LAYOUT.bodyW * 0.5;
+  const halfH = FURNACE_LAYOUT.bodyH * 0.5;
+  return sh.x > core.x - halfW && sh.x < core.x + halfW &&
+         sh.y > core.y - halfH && sh.y < core.y + halfH;
+}
+
+function furnaceFrontArmorBlocks(sh, core) {
+  // Front face is the left side of the core (player is to the left).
+  // A "direct" shot is one moving rightward and entering through the front.
+  // Twin Beam / reflected / flank shots bypass.
+  const halfW = FURNACE_LAYOUT.bodyW * 0.5;
+  const halfH = FURNACE_LAYOUT.bodyH * 0.5;
+  const enteredFromLeft = sh.x < core.x - halfW * 0.4;
+  const movingRight     = sh.vx > 0;
+  const withinArmorBand = Math.abs(sh.y - core.y) < halfH * 0.7;
+  return enteredFromLeft && movingRight && withinArmorBand;
+}
+
+function damageFurnace(core, amt, hx, hy) {
+  if (!core || core.defeated) return;
+  core.hp = Math.max(0, core.hp - amt);
+  core.hitFlash = 0.22;
+  for (let i = 0; i < 6; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp  = 80 + Math.random() * 160;
+    state.particles.push({
+      x: hx, y: hy, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+      life: 0.32, maxLife: 0.32, size: 2,
+      color: 'rgba(255,233,138,'
+    });
+  }
+  SFX.bossHit && SFX.bossHit();
+}
+
+function handleShotFurnaceCollisions(core) {
+  for (const sh of state.shots) {
+    if (!shotHitsFurnace(sh, core)) continue;
+    let dmg = 0;
+    let blocked = false;
+    if (core.id === 'A') {
+      // Only transmitted photons damage. Direct shots fizzle on the heat shell.
+      if (sh.transmitted) dmg = 1; else blocked = true;
+    } else if (core.id === 'B') {
+      // Front armor blocks direct frontal shots; flank/Twin Beam offset shots
+      // (different y), reflected shots, and any non-frontal angles damage.
+      if (furnaceFrontArmorBlocks(sh, core)) {
+        blocked = true;
+      } else {
+        dmg = 1;
+      }
+    } else if (core.id === 'C') {
+      // Front shield blocks all direct shots; only reflected photons damage.
+      if (sh.reflected) {
+        dmg = 1;
+        if (!core.firstReflectShown) {
+          core.firstReflectShown = true;
+          updateTeachCard('reflectedLight');
+          if (teachCard) teachCard.classList.remove('hidden');
+        }
+      } else {
+        blocked = true;
+      }
+    }
+    if (dmg > 0) {
+      damageFurnace(core, dmg, sh.x, sh.y);
+    } else if (blocked) {
+      spawnImpact && spawnImpact(sh.x, sh.y);
+      SFX.opaque && SFX.opaque();
+    }
+    sh.life = 0;
+  }
+}
+
+function drawFurnace() {
+  const core = activeFurnaceCore();
+  if (!core) return;
+  const halfW = FURNACE_LAYOUT.bodyW * 0.5;
+  const halfH = FURNACE_LAYOUT.bodyH * 0.5;
+  const def = FURNACE_DEFS.find(d => d.id === core.id);
+  ctx.save();
+  // Heat halo.
+  const haloGrad = ctx.createRadialGradient(core.x, core.y, 10, core.x, core.y, halfH * 2.2);
+  haloGrad.addColorStop(0, 'rgba(255,180,90,0.35)');
+  haloGrad.addColorStop(1, 'rgba(255,180,90,0)');
+  ctx.fillStyle = haloGrad;
+  ctx.beginPath();
+  ctx.arc(core.x, core.y, halfH * 2.2, 0, Math.PI * 2);
+  ctx.fill();
+  // Body.
+  const flash = core.hitFlash > 0;
+  ctx.fillStyle = flash ? 'rgba(255,240,200,0.95)' : 'rgba(20,18,28,0.92)';
+  ctx.strokeStyle = def ? def.accent : '#ffd76b';
+  ctx.lineWidth = 3;
+  const r = 14;
+  roundRect(ctx, core.x - halfW, core.y - halfH, FURNACE_LAYOUT.bodyW, FURNACE_LAYOUT.bodyH, r);
+  ctx.fill();
+  ctx.stroke();
+  // Inner glowing core.
+  const innerGrad = ctx.createRadialGradient(core.x, core.y, 4, core.x, core.y, halfW * 0.85);
+  innerGrad.addColorStop(0, def ? def.color : '#ffd76b');
+  innerGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = innerGrad;
+  ctx.beginPath();
+  ctx.arc(core.x, core.y, halfW * 0.85, 0, Math.PI * 2);
+  ctx.fill();
+  // Front-facing armor stripe for B and C (visual cue that direct shots are blocked).
+  if (core.id === 'B' || core.id === 'C') {
+    ctx.fillStyle = core.id === 'B'
+      ? 'rgba(230,126,34,0.85)'
+      : 'rgba(59,200,232,0.85)';
+    ctx.fillRect(core.x - halfW, core.y - halfH * 0.7, 10, halfH * 1.4);
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(core.x - halfW, core.y - halfH * 0.7, 10, halfH * 1.4);
+  }
+  // ID label.
+  ctx.fillStyle = 'rgba(255,233,138,0.95)';
+  ctx.font = '700 16px Orbitron, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('FURNACE ' + core.id, core.x, core.y - halfH - 14);
+  ctx.restore();
+}
+
+function drawFurnaceHpBar() {
+  const core = activeFurnaceCore();
+  if (!core) return;
+  const w = 320, h = 14;
+  const x = (ARENA_W - w) / 2;
+  const y = 26;
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(x - 8, y - 6, w + 16, h + 24);
+  ctx.fillStyle = 'rgba(255,255,255,0.10)';
+  ctx.fillRect(x, y, w, h);
+  const pct = Math.max(0, core.hp / core.maxHp);
+  const grad = ctx.createLinearGradient(x, y, x + w, y);
+  grad.addColorStop(0, '#ff8a99');
+  grad.addColorStop(1, '#ffd76b');
+  ctx.fillStyle = grad;
+  ctx.fillRect(x, y, w * pct, h);
+  ctx.strokeStyle = 'rgba(255,233,138,0.8)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(x, y, w, h);
+  ctx.fillStyle = 'rgba(255,233,138,0.95)';
+  ctx.font = '700 11px Orbitron, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('FURNACE ' + core.id + '  CORE', x + w / 2, y + h + 12);
+  ctx.restore();
+}
+
+/* Small rounded-rect helper (kept local to the furnace renderer). */
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
 function currentL3Segment() {
   let idx = 1;
   for (let i = 0; i < L3_SEGMENTS.length; i++) {
@@ -3260,6 +3584,10 @@ function updateLevel3Scroll(dt) {
   }
   // Micropass 25: freeze scrolling and queue-spawning during the boss fight.
   if (state.bossActive) { updateForeman(dt); return; }
+  // Micropass 57: trigger a furnace mini-boss when its trigger world-x is
+  // reached, then freeze scrolling until the core is disabled.
+  maybeTriggerFurnace();
+  if (state.furnaceActive) { updateFurnace(dt); return; }
   const dx = SCROLL_SPEED * dt;
   state.distance += dx;
 
@@ -3337,22 +3665,8 @@ function updateLevel3Scroll(dt) {
     state.beat = segNow;
     const seg = L3_SEGMENTS[segNow - 1];
     showBanner('SEGMENT ' + segNow + ' / 5', seg.name, 2.4);
-    // Micropass 56: tie factory-shutdown beats to segment progress.
-    // ~1/3, ~2/3, and near-boss disable Furnace A / B / C respectively.
-    if (state.furnaces) {
-      if (segNow === 2 && !state.furnaces.A) {
-        state.furnaces.A = true;
-        showBanner('FURNACE A DISABLED', 'Two furnaces still producing reflective glass.', 2.4);
-      }
-      if (segNow === 4 && !state.furnaces.B) {
-        state.furnaces.B = true;
-        showBanner('FURNACE B DISABLED', 'One furnace remains. Push forward.', 2.4);
-      }
-      if (segNow === 5 && !state.furnaces.C) {
-        state.furnaces.C = true;
-        showBanner('FURNACE C DISABLED', 'Production halted. The Foreman is close.', 2.4);
-      }
-    }
+    // Micropass 57: furnace shutdown is now driven by player damage to
+    // furnace cores, not by segment progress. See updateFurnace().
   }
 
   // Micropass 25: reaching the Foreman Gate triggers the boss, not completion.
@@ -4914,6 +5228,7 @@ function handleShotBubbleCollisions() {
           'Most light energy passed through.', 'transmit');
         state.counts.transparent += 1;
         SFX.transparent();
+        sh.transmitted = true; // Micropass 57: marks photon as transmitted for furnace damage rules
         spawnShards(b.x, b.y, SHARD_REWARDS.transparent, 'cyan');
         if (state.level === 2) {
           sh.didTransmit = true;
@@ -4942,6 +5257,7 @@ function handleShotBubbleCollisions() {
           'Light passed through but spread out.', 'transmit');
         state.counts.translucent += 1;
         SFX.translucent();
+        sh.transmitted = true; // Micropass 57: translucent scatter still counts as transmission
         spawnShards(b.x, b.y, SHARD_REWARDS.translucent, 'cyan');
         if (state.level === 2) {
           sh.didTransmit = true;
@@ -5342,6 +5658,13 @@ const TEACH_CARD = {
     tone:  'tone-reflect',
     body:  'Your photon bounced off a reflective material and returned to your ship.',
     line:  '<b>Science:</b> Reflection occurs when light changes direction after striking a surface. The photon still carries energy, but now travels along a different path.',
+    shardHTML: null
+  },
+  reflectedLight: {
+    title: 'Reflected Light',
+    tone:  'tone-reflect',
+    body:  'Reflection changes the direction of light.',
+    line:  'A reflected photon can reach places a direct photon cannot. Use reflection to strike protected targets.',
     shardHTML: null
   },
   shards: {
@@ -6208,11 +6531,11 @@ function updateLevel2Stream(dt) {
 }
 
 function drawAimGhosts() {
-  // Micropass 23: aimGhost is now gated by the flag on the bubble itself,
-  // which only exists in the Bounce Hall segment's first reflective target.
+  // Micropass 57: angle-line aim ghosts removed. All reflective bubbles
+  // behave identically with no per-bubble bank-shot indicator.
+  return;
+  // eslint-disable-next-line no-unreachable
   if (state.level !== 3) return;
-  // Show a faint dashed bank-shot line from the ship through the first reflective
-  // bubble (the one tagged aimGhost). Skeleton training aid.
   const target = state.bubbles.find(b => b.aimGhost && !b.dead);
   if (!target) return;
   const s = state.ship;
@@ -6841,17 +7164,25 @@ function drawBubble(b) {
     ctx.stroke();
   }
   else if (b.type === 'reflective') {
+    // Micropass 57: consistent visual for every reflective bubble.
+    // No angle indicators; subtle bright rim + animated highlight.
+    const rim = 0.7 + 0.3 * Math.sin(state.elapsed * 3 + b.x * 0.02);
     ctx.shadowColor = 'rgba(59,200,232,0.6)';
-    ctx.shadowBlur = 16 + flash * 30;
+    ctx.shadowBlur = 18 + flash * 30;
     const grad = ctx.createRadialGradient(b.x - b.r*0.3, b.y - b.r*0.3, 4, b.x, b.y, b.r);
     grad.addColorStop(0, 'rgba(220,250,255,0.95)');
     grad.addColorStop(0.5, 'rgba(59,200,232,0.65)');
     grad.addColorStop(1, 'rgba(26,90,120,0.85)');
     ctx.fillStyle = grad;
-    ctx.strokeStyle = 'rgba(180,235,250,0.9)';
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = 'rgba(180,235,250,' + (0.65 + 0.3 * rim) + ')';
+    ctx.lineWidth = 2.8;
     ctx.beginPath(); ctx.arc(b.x, b.y, b.r * pulse, 0, Math.PI * 2);
     ctx.fill(); ctx.stroke();
+    // Bright rim halo.
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(220,250,255,' + (0.35 + 0.25 * rim) + ')';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r * pulse + 3, 0, Math.PI * 2); ctx.stroke();
   }
   else if (b.type === 'mixed') {
     // Three-color conic-ish fill via concentric arcs proportional to ratios.
@@ -7041,6 +7372,7 @@ function render() {
   drawBubbles();
   drawEnemies();
   drawForeman();
+  drawFurnace();
   drawRings();
   drawShots();
   drawEnemyShots();
@@ -7053,6 +7385,7 @@ function render() {
   ctx.restore();
   // HUD overlay outside the shake transform.
   if (state.bossActive) drawForemanHpBar();
+  if (state.furnaceActive) drawFurnaceHpBar();
 }
 
 /* ---------- HUD UPDATE ---------- */
@@ -7214,11 +7547,23 @@ const frLivesEl    = document.getElementById('frLives');
 const frBestEl     = document.getElementById('frBest');
 const frGoalEl     = document.getElementById('frGoal');
 
-function setFurnaceRow(el, disabled) {
+function setFurnaceRow(el, core, disabled, isActive) {
   if (!el) return;
   el.classList.toggle('disabled', !!disabled);
+  el.classList.toggle('active', !!isActive && !disabled);
   const v = el.querySelector('.fr-furnace-v');
-  if (v) v.textContent = disabled ? 'DISABLED' : 'ONLINE';
+  const bar = el.querySelector('.fr-furnace-hp > span');
+  if (disabled) {
+    if (v) v.textContent = 'DISABLED';
+    if (bar) bar.style.width = '0%';
+  } else if (core) {
+    const pct = Math.max(0, Math.min(100, (core.hp / core.maxHp) * 100));
+    if (v) v.textContent = isActive ? Math.ceil(core.hp) + ' / ' + core.maxHp : 'ONLINE';
+    if (bar) bar.style.width = pct.toFixed(0) + '%';
+  } else {
+    if (v) v.textContent = 'ONLINE';
+    if (bar) bar.style.width = '100%';
+  }
 }
 
 function updateFoundrySidebar() {
@@ -7228,9 +7573,12 @@ function updateFoundrySidebar() {
   if (!isL3) return;
 
   const f = state.furnaces || {};
-  setFurnaceRow(frFurnaceAEl, !!f.A);
-  setFurnaceRow(frFurnaceBEl, !!f.B);
-  setFurnaceRow(frFurnaceCEl, !!f.C);
+  const cores = state.furnaceCores || [];
+  const coreOf = id => cores.find(c => c.id === id);
+  const active = state.activeFurnaceId;
+  setFurnaceRow(frFurnaceAEl, coreOf('A'), !!f.A, active === 'A');
+  setFurnaceRow(frFurnaceBEl, coreOf('B'), !!f.B, active === 'B');
+  setFurnaceRow(frFurnaceCEl, coreOf('C'), !!f.C, active === 'C');
 
   // Lives hearts.
   const lives = Math.max(0, state.lives || 0);
@@ -7367,6 +7715,16 @@ function enterLevel3() {
   state.segmentScored  = {};
   // Micropass 56: factory shutdown objective state.
   state.furnaces = { A: false, B: false, C: false };
+  // Micropass 57: furnace mini-boss cores, player-damage driven.
+  state.furnaceCores = FURNACE_DEFS.map(d => ({
+    id: d.id, label: d.label, triggerX: d.triggerX,
+    hp: d.hp, maxHp: d.hp,
+    triggered: false, defeated: false, alive: false,
+    x: FURNACE_LAYOUT.cx, y: ARENA_H / 2, vy: FURNACE_LAYOUT.speedY,
+    hitFlash: 0, firstReflectShown: false
+  }));
+  state.furnaceActive   = false;
+  state.activeFurnaceId = null;
   setMissionGoalForLevel3();
 
   // Prime the spawn window so segment 1 content is on screen at frame 0.
