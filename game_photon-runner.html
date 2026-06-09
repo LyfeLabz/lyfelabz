@@ -7918,6 +7918,43 @@ function respawnFoundry() {
     // Sweep stray embers/sparks the boss has summoned.
     state.enemies = state.enemies.filter(e => e.bossPanel);
     showBanner('RESPAWN', 'Lives remaining: ' + state.lives, 1.8);
+  } else if (state.furnaceActive) {
+    const core = activeFurnaceCore();
+    if (core) {
+      // Clear immediate threats.
+      state.shots = [];
+      state.enemyShots = [];
+      state.enemies = [];
+      state.particles = [];
+      state.rings = [];
+      // Remove existing furnace prop bubbles without wiping regular bubbles.
+      state.bubbles = state.bubbles.filter(b => !b.furnaceProp);
+      // Reset the core encounter.
+      core.hp = core.maxHp;
+      core.alive = true;
+      core.defeated = false;
+      core.x = FURNACE_LAYOUT.cx;
+      core.y = ARENA_H / 2;
+      core.vy = FURNACE_LAYOUT.speedY;
+      core.hitFlash = 0;
+      core.firstBlockShown = false;
+      core.firstReflectShown = false;
+      // Respawn the puzzle bubbles for this furnace.
+      const props = spawnFurnaceBubbles(core.id);
+      for (const b of props) { b.id = state.nextBubbleId++; state.bubbles.push(b); }
+      // Keep furnace flags active.
+      state.furnaceActive = true;
+      state.activeFurnaceId = core.id;
+      core.triggered = true;
+      showBanner('RESPAWN', 'Furnace ' + core.id + ' reset. Lives remaining: ' + state.lives, 1.8);
+      return;
+    }
+    // Defensive fallback only: invalid furnace state. Clear the furnace flag and let gameplay continue.
+    state.furnaceActive = false;
+    state.activeFurnaceId = null;
+    state.enemies = [];
+    state.bubbles = [];
+    showBanner('RESPAWN', 'Lives remaining: ' + state.lives, 1.8);
   } else {
     // Rewind to the start of the current segment so the player picks up
     // near where they fell instead of restarting the level.
