@@ -1566,53 +1566,160 @@
     letter-spacing: 0.18em;
   }
 
-  /* ===== MISSION BRIEFING (Micropass 54) ===== */
+  /* ===== MISSION BRIEFING (Micropass 54, retuned Micropass 54.1) =====
+     Compact two-column card. Left holds the narrative; right holds the
+     target chip and the action button. Both columns collapse vertically
+     on narrow screens. Sized so the whole card fits in the viewport
+     with no scrolling. */
   .overlay .level-tag.warn {
     background: rgba(232,76,61,0.14);
     border-color: rgba(232,76,61,0.55);
     color: var(--absorb);
   }
-  .briefing-body {
-    max-width: 520px;
-    margin: 0.35rem auto 0.7rem;
-    color: var(--text);
-    font-size: 0.92rem;
-    line-height: 1.55;
+  .brief-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    padding: 0.6rem 0.8rem;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .briefing-card {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1rem;
+    width: min(760px, 100%);
+    max-height: calc(100vh - 40px);
+    padding: 0.9rem 1rem;
+    background: rgba(12,20,38,0.78);
+    border: 1px solid rgba(89,112,170,0.32);
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.4);
     text-align: left;
   }
-  .briefing-body p { margin: 0.35rem 0; color: var(--text-muted); text-align: left; }
-  .briefing-body ul {
-    list-style: none;
-    padding: 0;
-    margin: 0.4rem 0 0.5rem;
+  .briefing-card .brief-left {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
   }
-  .briefing-body li {
-    color: var(--text-muted);
-    margin: 0.22rem 0;
-    padding-left: 1.1rem;
-    position: relative;
-    font-size: 0.9rem;
+  .briefing-card .brief-right {
+    flex: 0 0 168px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.7rem;
+    border-left: 1px solid rgba(89,112,170,0.28);
   }
-  .briefing-body li::before {
-    content: '\25C6';
-    position: absolute;
-    left: 0;
-    color: var(--gold);
-    font-size: 0.7rem;
-    top: 0.18rem;
+  .briefing-card .level-tag { margin-bottom: 0.15rem; font-size: 0.62rem; }
+  .briefing-card h2 {
+    font-size: clamp(1.1rem, 2.4vw, 1.55rem);
+    margin: 0.1rem 0 0.2rem;
+    line-height: 1.05;
   }
-  .briefing-target {
-    display: inline-block;
-    margin: 0.3rem 0 0.6rem;
-    padding: 0.35rem 0.9rem;
-    border-radius: 10px;
-    background: rgba(245,200,66,0.10);
-    border: 1px solid rgba(245,200,66,0.45);
+  .briefing-card .brief-lede {
+    color: var(--text);
+    font-size: 0.84rem;
+    margin: 0 0 0.25rem;
+    line-height: 1.35;
+    text-align: left;
+    max-width: 100%;
+  }
+  .briefing-card .brief-subhead {
     color: var(--gold);
     font-family: 'Orbitron', sans-serif;
     font-weight: 800;
+    letter-spacing: 0.16em;
+    font-size: 0.62rem;
+    margin-top: 0.2rem;
+  }
+  .briefing-card .brief-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.2rem 0 0.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.16rem;
+  }
+  .briefing-card .brief-list li {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    line-height: 1.3;
+    padding-left: 0.9rem;
+    position: relative;
+  }
+  .briefing-card .brief-list li::before {
+    content: '\25C6';
+    position: absolute;
+    left: 0;
+    top: 0.12rem;
+    color: var(--gold);
+    font-size: 0.6rem;
+  }
+  .briefing-card .brief-close {
+    color: var(--text);
+    font-size: 0.8rem;
+    margin: 0.15rem 0 0;
+    text-align: left;
+    max-width: 100%;
+  }
+  .briefing-card .brief-target-tag {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    font-size: 0.6rem;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .briefing-card .brief-target-tag.brief-target-warn { color: var(--absorb); }
+  .briefing-card .brief-target-val {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--gold);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+  }
+  .briefing-card .brief-target-val span {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 800;
     letter-spacing: 0.14em;
-    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .briefing-card .brief-target-val.brief-target-sm { font-size: 1.2rem; }
+  .briefing-card .brief-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.82rem;
+  }
+  @media (max-width: 640px), (max-height: 520px) {
+    .briefing-card {
+      flex-direction: column;
+      gap: 0.55rem;
+      padding: 0.7rem 0.8rem;
+    }
+    .briefing-card .brief-right {
+      flex: 0 0 auto;
+      flex-direction: row;
+      justify-content: space-between;
+      border-left: none;
+      border-top: 1px solid rgba(89,112,170,0.28);
+      padding: 0.5rem 0.2rem 0;
+      gap: 0.6rem;
+    }
+    .briefing-card .brief-target-val { font-size: 1.5rem; flex-direction: row; gap: 0.4rem; align-items: baseline; }
+    .briefing-card .brief-target-val.brief-target-sm { font-size: 1rem; }
+    .briefing-card .brief-btn { width: auto; flex: 1; }
   }
 
   /* ===== MIXED TAKEAWAY (win recap) ===== */
@@ -1772,6 +1879,39 @@
     letter-spacing: 0.02em;
     line-height: 1.35;
   }
+  /* Micropass 56: Furnace shutdown status rows. */
+  .foundry-run-card .fr-furnaces {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 2px 0 6px;
+  }
+  .foundry-run-card .fr-furnace {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+  }
+  .foundry-run-card .fr-furnace-k {
+    color: #b2c0d2;
+    font-weight: 700;
+  }
+  .foundry-run-card .fr-furnace-v {
+    color: #6ee7f5;
+    font-weight: 800;
+    font-size: 0.68rem;
+  }
+  .foundry-run-card .fr-furnace.disabled {
+    background: rgba(245,200,66,0.12);
+    border-color: rgba(245,200,66,0.45);
+  }
+  .foundry-run-card .fr-furnace.disabled .fr-furnace-k { color: #f5e29a; }
+  .foundry-run-card .fr-furnace.disabled .fr-furnace-v { color: var(--gold); }
 
   /* ===== CLASSROOM SHORT-VIEWPORT TIGHTENING ===== */
   @media (max-height: 920px) {
@@ -1984,53 +2124,68 @@
           </div>
         </div>
 
-        <!-- Micropass 54: Mission briefings (Solar Array, Glass Foundry, Foreman). -->
-        <div class="overlay hidden" id="overlayBriefSolar">
-          <div class="level-tag">MISSION BRIEFING</div>
-          <h2>SOLAR ARRAY</h2>
-          <div class="briefing-body">
-            <p>The city's Solar Array is failing.</p>
-            <p>Light energy is no longer reaching the power grid.</p>
-            <p><b>Your mission:</b></p>
-            <ul>
-              <li>Shoot photons through transparent materials to deliver energy.</li>
-              <li>Translucent materials deliver less energy.</li>
-              <li>Opaque materials block light, but contain photon shards.</li>
-              <li>Enemies interfere with energy collection.</li>
-            </ul>
-            <p>Restore all three solar panels.</p>
-          </div>
-          <div class="briefing-target">TARGET: 300 ENERGY</div>
-          <div class="end-actions">
-            <button class="btn" id="btnBriefSolar" type="button">BEGIN MISSION</button>
-          </div>
-        </div>
-
-        <div class="overlay hidden" id="overlayBriefFoundry">
-          <div class="level-tag">MISSION BRIEFING</div>
-          <h2>GLASS FOUNDRY</h2>
-          <div class="briefing-body">
-            <p>The Foreman has redirected the flow of light.</p>
-            <p>Dangerous machinery and enemies are disrupting the system.</p>
-            <p>Fight through the Foundry.</p>
-            <p>Survive long enough to reach the Foreman.</p>
-          </div>
-          <div class="end-actions">
-            <button class="btn" id="btnBriefFoundry" type="button">ENTER FOUNDRY</button>
+        <!-- Micropass 54 / 54.1: compact mission briefings (Solar, Foundry, Foreman). -->
+        <div class="overlay hidden brief-overlay" id="overlayBriefSolar">
+          <div class="briefing-card">
+            <div class="brief-left">
+              <div class="level-tag">MISSION BRIEFING</div>
+              <h2>SOLAR ARRAY</h2>
+              <p class="brief-lede">The city's Solar Array is failing.</p>
+              <div class="brief-subhead">YOUR MISSION</div>
+              <ul class="brief-list">
+                <li>Shoot through transparent materials for maximum energy.</li>
+                <li>Translucent materials deliver less energy.</li>
+                <li>Destroy opaque materials for photon shards.</li>
+                <li>Stop enemies from disrupting the array.</li>
+              </ul>
+              <p class="brief-close">Restore all 3 panels.</p>
+            </div>
+            <div class="brief-right">
+              <div class="brief-target-tag">TARGET</div>
+              <div class="brief-target-val">300<span>ENERGY</span></div>
+              <button class="btn brief-btn" id="btnBriefSolar" type="button">BEGIN MISSION</button>
+            </div>
           </div>
         </div>
 
-        <div class="overlay hidden" id="overlayBriefForeman">
-          <div class="level-tag warn">WARNING</div>
-          <h2>FOREMAN DETECTED</h2>
-          <div class="briefing-body">
-            <p>The Foreman controls the flow of light inside the Foundry.</p>
-            <p>Study each phase.</p>
-            <p>Use your powers wisely.</p>
-            <p>Defeat the Foreman and restore the system.</p>
+        <div class="overlay hidden brief-overlay" id="overlayBriefFoundry">
+          <div class="briefing-card">
+            <div class="brief-left">
+              <div class="level-tag">MISSION BRIEFING</div>
+              <h2>GLASS FOUNDRY</h2>
+              <p class="brief-lede">The Foreman has redirected the city's light energy into a factory producing reflective glass.</p>
+              <div class="brief-subhead">YOUR MISSION</div>
+              <ul class="brief-list">
+                <li>Shut down all three furnaces before the operation is complete.</li>
+                <li>Fight through the Foundry and confront the Foreman.</li>
+              </ul>
+            </div>
+            <div class="brief-right">
+              <div class="brief-target-tag">OBJECTIVE</div>
+              <div class="brief-target-val brief-target-sm">SHUT DOWN<span>3 FURNACES</span></div>
+              <button class="btn brief-btn" id="btnBriefFoundry" type="button">ENTER FOUNDRY</button>
+            </div>
           </div>
-          <div class="end-actions">
-            <button class="btn" id="btnBriefForeman" type="button">BEGIN BATTLE</button>
+        </div>
+
+        <div class="overlay hidden brief-overlay" id="overlayBriefForeman">
+          <div class="briefing-card">
+            <div class="brief-left">
+              <div class="level-tag warn">WARNING</div>
+              <h2>FOREMAN DETECTED</h2>
+              <p class="brief-lede">The Foreman controls the flow of light.</p>
+              <div class="brief-subhead">YOUR MISSION</div>
+              <ul class="brief-list">
+                <li>Study each phase.</li>
+                <li>Use your powers wisely.</li>
+                <li>Defeat the Foreman.</li>
+              </ul>
+            </div>
+            <div class="brief-right">
+              <div class="brief-target-tag brief-target-warn">THREAT</div>
+              <div class="brief-target-val brief-target-sm">3<span>PHASES</span></div>
+              <button class="btn brief-btn" id="btnBriefForeman" type="button">BEGIN BATTLE</button>
+            </div>
           </div>
         </div>
 
@@ -2183,15 +2338,25 @@
         </div>
       </div>
 
-      <!-- Micropass 30: Level 3 only - Foundry run context card -->
+      <!-- Micropass 30: Level 3 only - Foundry run context card.
+           Micropass 56: factory shutdown display (Furnace A/B/C). -->
       <div id="foundryRunSection" class="hidden-section">
-        <div class="panel-sub">Foundry Run</div>
+        <div class="panel-sub">Glass Foundry</div>
         <div class="foundry-run-card">
-          <div class="fr-row">
-            <span class="fr-k">Segment</span>
-            <span class="fr-v" id="frSegment">Catwalk</span>
+          <div class="fr-furnaces" id="frFurnaces">
+            <div class="fr-furnace" id="frFurnaceA">
+              <span class="fr-furnace-k">Furnace A</span>
+              <span class="fr-furnace-v">ONLINE</span>
+            </div>
+            <div class="fr-furnace" id="frFurnaceB">
+              <span class="fr-furnace-k">Furnace B</span>
+              <span class="fr-furnace-v">ONLINE</span>
+            </div>
+            <div class="fr-furnace" id="frFurnaceC">
+              <span class="fr-furnace-k">Furnace C</span>
+              <span class="fr-furnace-v">ONLINE</span>
+            </div>
           </div>
-          <div class="fr-pips" id="frPips"></div>
           <div class="fr-row">
             <span class="fr-k">Lives</span>
             <span class="fr-v fr-lives" id="frLives">&#10084;&#10084;&#10084;</span>
@@ -2200,7 +2365,7 @@
             <span class="fr-k">Best</span>
             <span class="fr-v" id="frBest">0</span>
           </div>
-          <div class="fr-goal" id="frGoal">Reach and defeat the Foreman</div>
+          <div class="fr-goal" id="frGoal">Shut down the furnaces, then confront the Foreman</div>
         </div>
       </div>
     </div>
@@ -3172,6 +3337,22 @@ function updateLevel3Scroll(dt) {
     state.beat = segNow;
     const seg = L3_SEGMENTS[segNow - 1];
     showBanner('SEGMENT ' + segNow + ' / 5', seg.name, 2.4);
+    // Micropass 56: tie factory-shutdown beats to segment progress.
+    // ~1/3, ~2/3, and near-boss disable Furnace A / B / C respectively.
+    if (state.furnaces) {
+      if (segNow === 2 && !state.furnaces.A) {
+        state.furnaces.A = true;
+        showBanner('FURNACE A DISABLED', 'Two furnaces still producing reflective glass.', 2.4);
+      }
+      if (segNow === 4 && !state.furnaces.B) {
+        state.furnaces.B = true;
+        showBanner('FURNACE B DISABLED', 'One furnace remains. Push forward.', 2.4);
+      }
+      if (segNow === 5 && !state.furnaces.C) {
+        state.furnaces.C = true;
+        showBanner('FURNACE C DISABLED', 'Production halted. The Foreman is close.', 2.4);
+      }
+    }
   }
 
   // Micropass 25: reaching the Foreman Gate triggers the boss, not completion.
@@ -7026,13 +7207,19 @@ function updateFoundryHud() {
    (1-5 + Boss), lives remaining, best score, and goal copy. Updates through
    updateHUD() so it stays in sync with the main HUD pass. */
 const foundryRunSection = document.getElementById('foundryRunSection');
-const frSegmentEl  = document.getElementById('frSegment');
-const frPipsEl     = document.getElementById('frPips');
+const frFurnaceAEl = document.getElementById('frFurnaceA');
+const frFurnaceBEl = document.getElementById('frFurnaceB');
+const frFurnaceCEl = document.getElementById('frFurnaceC');
 const frLivesEl    = document.getElementById('frLives');
 const frBestEl     = document.getElementById('frBest');
 const frGoalEl     = document.getElementById('frGoal');
 
-const L3_SEG_DISPLAY = ['Catwalk', 'The Pour', 'Bounce Hall', 'Cooling Yard', 'Foreman Gate'];
+function setFurnaceRow(el, disabled) {
+  if (!el) return;
+  el.classList.toggle('disabled', !!disabled);
+  const v = el.querySelector('.fr-furnace-v');
+  if (v) v.textContent = disabled ? 'DISABLED' : 'ONLINE';
+}
 
 function updateFoundrySidebar() {
   if (!foundryRunSection) return;
@@ -7040,28 +7227,10 @@ function updateFoundrySidebar() {
   foundryRunSection.classList.toggle('hidden-section', !isL3);
   if (!isL3) return;
 
-  // Segment name - show "Foreman" during boss fight.
-  const inBoss = state.bossActive || (state.bossDefeated && state.l3Complete);
-  const segIdx = Math.max(0, Math.min(4, (state.beat || 1) - 1));
-  frSegmentEl.textContent = inBoss ? 'Foreman' : (L3_SEG_DISPLAY[segIdx] || 'Catwalk');
-
-  // Segment pip row: 1 2 3 4 5 B
-  const pipLabels = ['1', '2', '3', '4', '5', 'B'];
-  let pipsHtml = '';
-  for (let i = 0; i < 6; i++) {
-    const isBossPip = i === 5;
-    let cls = 'fr-pip';
-    if (isBossPip) {
-      if (state.bossDefeated)  cls += ' done';
-      else if (state.bossActive) cls += ' active';
-    } else {
-      const pipSeg = i + 1;
-      if (state.segmentScored && state.segmentScored[pipSeg]) cls += ' done';
-      else if (!state.bossActive && pipSeg === (state.beat || 1))  cls += ' active';
-    }
-    pipsHtml += '<span class="' + cls + '">' + pipLabels[i] + '</span>';
-  }
-  frPipsEl.innerHTML = pipsHtml;
+  const f = state.furnaces || {};
+  setFurnaceRow(frFurnaceAEl, !!f.A);
+  setFurnaceRow(frFurnaceBEl, !!f.B);
+  setFurnaceRow(frFurnaceCEl, !!f.C);
 
   // Lives hearts.
   const lives = Math.max(0, state.lives || 0);
@@ -7074,9 +7243,12 @@ function updateFoundrySidebar() {
 
   // Best score + goal copy.
   frBestEl.textContent = state.foundryBest || 0;
+  const f2 = state.furnaces || {};
+  const allDown = f2.A && f2.B && f2.C;
   frGoalEl.textContent = state.bossDefeated
     ? 'Foreman defeated!'
-    : 'Reach and defeat the Foreman';
+    : (allDown ? 'Furnaces down. Confront the Foreman.'
+               : 'Shut down the furnaces, then confront the Foreman');
 }
 
 function updatePowerBarSlots() {
@@ -7193,6 +7365,8 @@ function enterLevel3() {
   state.foundryCombo   = 0;
   state.comboTimer     = 0;
   state.segmentScored  = {};
+  // Micropass 56: factory shutdown objective state.
+  state.furnaces = { A: false, B: false, C: false };
   setMissionGoalForLevel3();
 
   // Prime the spawn window so segment 1 content is on screen at frame 0.
