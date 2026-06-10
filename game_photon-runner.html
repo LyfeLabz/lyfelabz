@@ -16,6 +16,8 @@
 <meta name="description" content="Pilot a photon ship through the Photon Academy and Solar Array. Photon Runner teaches reflection, absorption, and transmission with real materials and student predictions.">
 <title>LyfeLabz | Photon Runner</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<!-- Micropass 59: jsPDF for printable certificate generation. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
   html { font-size: 18px; }
@@ -1965,6 +1967,124 @@
     .lab-tracker .track-ratio { font-size: 0.64rem; }
     .lab-tracker .track-sub { font-size: 0.62rem; padding: 0 0 3px 24px; }
   }
+  /* Micropass 59: Photon Academy Certification Exam overlay. */
+  .pa-cert-card {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  .pa-cert-title {
+    font-family: 'Orbitron', sans-serif;
+    color: #ffd76b;
+    letter-spacing: 0.06em;
+    font-size: 1.6rem;
+    text-align: center;
+    margin: 0 0 0.25rem;
+  }
+  .pa-cert-sub {
+    text-align: center;
+    color: #cfd6e4;
+    margin: 0 0 1.1rem;
+  }
+  .pa-cert-progress {
+    text-align: center;
+    color: #8aa0bf;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    font-size: 0.85rem;
+    margin-bottom: 0.6rem;
+  }
+  .pa-cert-question {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+    margin: 0 0 1rem;
+    min-height: 2.4rem;
+  }
+  .pa-cert-answers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .pa-cert-ans {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    border: 2px solid rgba(255,215,107,0.35);
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.12s, border-color 0.12s, transform 0.05s;
+  }
+  .pa-cert-ans:hover { background: rgba(255,215,107,0.12); border-color: rgba(255,215,107,0.7); }
+  .pa-cert-ans:active { transform: translateY(1px); }
+  .pa-cert-ans.correct { background: rgba(46,204,113,0.22); border-color: #2ecc71; }
+  .pa-cert-ans.wrong   { background: rgba(231,76,60,0.22); border-color: #e74c3c; }
+  .pa-cert-ans.disabled { pointer-events: none; opacity: 0.78; }
+  .pa-cert-feedback {
+    text-align: center;
+    min-height: 1.4rem;
+    color: #cfd6e4;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+  }
+  .pa-cert-feedback.is-correct { color: #2ecc71; }
+  .pa-cert-feedback.is-wrong   { color: #e74c3c; }
+  .pa-cert-actions {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .pa-cert-result-score {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.4rem;
+    color: #ffd76b;
+    text-align: center;
+    margin: 0.4rem 0 0.6rem;
+  }
+  .pa-cert-result-msg {
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .pa-cert-name-row {
+    display: flex;
+    justify-content: center;
+    margin: 0.8rem 0 1rem;
+  }
+  .pa-cert-name-input {
+    width: 100%;
+    max-width: 360px;
+    padding: 0.7rem 0.9rem;
+    font-size: 1.05rem;
+    border-radius: 8px;
+    border: 2px solid rgba(255,215,107,0.5);
+    background: rgba(0,0,0,0.35);
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+    font-family: inherit;
+  }
+  .pa-cert-name-input:focus {
+    outline: none;
+    border-color: #ffd76b;
+    box-shadow: 0 0 0 3px rgba(255,215,107,0.25);
+  }
+  .pa-cert-error {
+    color: #e74c3c;
+    text-align: center;
+    min-height: 1.2rem;
+    margin-bottom: 0.4rem;
+    font-weight: 700;
+  }
+  @media (max-width: 600px) {
+    .pa-cert-answers { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -2131,12 +2251,67 @@
         </div>
 
         <div class="overlay hidden" id="overlayLevel3Complete">
-          <div class="level-tag">LEVEL 3 COMPLETE</div>
+          <div class="level-tag">FOREMAN DEFEATED</div>
           <h2>Glass Foundry Complete!</h2>
-          <p>You slipped through transparent paths, pushed through translucent barriers, and avoided opaque blocks.</p>
+          <p>You slipped through transparent paths, pushed through translucent barriers, and shattered the Foreman with absorbed light.</p>
           <div id="foundryRunSummary"></div>
           <div class="end-actions">
+            <button class="btn" id="btnStartExam">Begin Certification Exam</button>
             <button class="btn btn-teal" id="btnReplayFromL3">Replay Game</button>
+          </div>
+        </div>
+
+        <!-- Micropass 59: Photon Academy Certification Exam. -->
+        <div class="overlay hidden" id="overlayCertExam">
+          <div class="pa-cert-card">
+            <div class="level-tag" style="text-align:center;">CERTIFICATION</div>
+            <h2 class="pa-cert-title">PHOTON ACADEMY CERTIFICATION EXAM</h2>
+            <p class="pa-cert-sub">Complete your training to earn certification.</p>
+            <div class="pa-cert-progress" id="certExamProgress">QUESTION 1 OF 5</div>
+            <div class="pa-cert-question" id="certExamQuestion"></div>
+            <div class="pa-cert-answers" id="certExamAnswers"></div>
+            <div class="pa-cert-feedback" id="certExamFeedback"></div>
+            <div class="pa-cert-actions">
+              <button class="btn" id="btnCertExamNext" style="display:none;">Next</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="overlayCertResult">
+          <div class="pa-cert-card">
+            <div class="level-tag" style="text-align:center;">EXAM RESULT</div>
+            <h2 class="pa-cert-title" id="certResultTitle">CERTIFICATION COMPLETE</h2>
+            <div class="pa-cert-result-score" id="certResultScore">0 / 5</div>
+            <p class="pa-cert-result-msg" id="certResultMsg"></p>
+            <div class="pa-cert-actions" id="certResultActions"></div>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="overlayCertName">
+          <div class="pa-cert-card">
+            <div class="level-tag" style="text-align:center;">CONGRATULATIONS</div>
+            <h2 class="pa-cert-title">PHOTON ACADEMY CERTIFICATION COMPLETE</h2>
+            <p class="pa-cert-sub">Enter your name to generate your certificate.</p>
+            <div class="pa-cert-name-row">
+              <input type="text" id="certNameInput" class="pa-cert-name-input"
+                     maxlength="30" autocomplete="off" spellcheck="false"
+                     placeholder="Your name" aria-label="Student name">
+            </div>
+            <div class="pa-cert-error" id="certNameError"></div>
+            <div class="pa-cert-actions">
+              <button class="btn" id="btnCertGenerate">Generate Certificate</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="overlayCertDone">
+          <div class="pa-cert-card">
+            <div class="level-tag" style="text-align:center;">CERTIFIED</div>
+            <h2 class="pa-cert-title">PHOTON SPECIALIST CERTIFIED</h2>
+            <p class="pa-cert-sub">Certificate successfully generated.</p>
+            <div class="pa-cert-actions">
+              <button class="btn btn-teal" id="btnCertReplay">Replay Game</button>
+            </div>
           </div>
         </div>
 
@@ -4112,6 +4287,15 @@ function handleShotBossCollisions() {
     const hitWeak = (dwx * dwx + dwy * dwy <= wp.r * wp.r);
 
     if (b.phase === 1) {
+      // Check the weak point FIRST so a hit registers even though the
+      // weak-point disc sits inside the body shell.
+      if (hitWeak && bossPhase1ShieldOpen()) {
+        damageBoss(1, sh.x, sh.y);
+        spawnBossDamageFloater(sh.x, sh.y);
+        showBossMessage('p1Hit', 'WEAK POINT HIT', 'transmit');
+        sh.life = 0;
+        continue;
+      }
       if (!bossPhase1ShieldOpen()) {
         // Mirror shield closed - every direct shot reflects off the shield.
         spawnImpact && spawnImpact(sh.x, sh.y);
@@ -4121,25 +4305,18 @@ function handleShotBossCollisions() {
         sh.life = 0;
         continue;
       }
-      // Shield open - weak point can take damage.
-      if (hitWeak) {
-        damageBoss(1, sh.x, sh.y);
-        spawnBossDamageFloater(sh.x, sh.y);
-        showBossMessage('p1Hit', 'WEAK POINT HIT', 'transmit');
-      } else {
-        spawnImpact && spawnImpact(sh.x, sh.y);
-      }
-      sh.life = 0;
+      // Shield open and not yet at the weak point - let the shot keep
+      // travelling through the body so it can reach the weak point.
     } else if (b.phase === 2) {
       if (b.p2Vulnerable) {
+        // Vulnerable window - weak-point hit lands; otherwise the shot keeps
+        // flying through the body so the player can actually reach the core.
         if (hitWeak) {
           damageBoss(1, sh.x, sh.y);
           spawnBossDamageFloater(sh.x, sh.y);
           showBossMessage('p2Hit', 'WEAK POINT HIT', 'transmit');
-        } else {
-          spawnImpact && spawnImpact(sh.x, sh.y);
+          sh.life = 0;
         }
-        sh.life = 0;
       } else {
         // Armor active - direct shot is absorbed and feeds the meter.
         const before = b.p2AbsorbMeter;
@@ -5251,6 +5428,7 @@ function freshState() {
     foundryScore:    0,       // run score for Glass Foundry
     foundryBest:     loadFoundryBest(), // best run score (localStorage-backed)
     foundryCombo:    0,       // current combo (shards collected since last damage / decay)
+    foundryComboHighest: 0,   // Micropass 59: highest combo reached (used on cert)
     comboTimer:      0,       // seconds since last shard pickup
     segmentScored:   {},      // segNum -> true once segment-complete bonus paid
     // Micropass 28: feedback polish (floating score popups + combo banners).
@@ -6975,6 +7153,9 @@ function collectShard(sh) {
   // Micropass 27: Foundry combo + run score (L3 only). Power Bar logic unchanged.
   if (state.level === 3) {
     state.foundryCombo += 1;
+    if (state.foundryCombo > (state.foundryComboHighest || 0)) {
+      state.foundryComboHighest = state.foundryCombo;
+    }
     state.comboTimer = 0;
     const base = sh.kind === 'gold' ? FOUNDRY_RUN.scoreGold : FOUNDRY_RUN.scoreCyan;
     const mult = foundryComboMult();
@@ -8015,6 +8196,11 @@ function winLevel1() {
 function winLevel2() {
   // Solar Array cleared. Hand off to the Glass Foundry transition rather than ending the run.
   state.won = true;
+  // Micropass 59: capture final Solar Array efficiency for the certificate.
+  if (state.shotsFired > 0) {
+    const eff = (state.solarEnergy / (state.shotsFired * SOLAR_ENERGY_TRANSPARENT)) * 100;
+    state.solarEfficiencyFinal = Math.min(999, Math.max(0, eff));
+  }
   clearPause();
   SFX.win();
   showLevel3Intro();
@@ -8778,6 +8964,340 @@ function loop(now) {
     if (notice) notice.hidden = false;
   }
 })();
+
+/* ===== Micropass 59: Photon Academy Certification Exam ===== */
+const PA_CERT_QUESTIONS = [
+  {
+    q: 'Which material scatters light as it passes through?',
+    answers: ['Transparent', 'Reflective', 'Translucent', 'Opaque'],
+    correct: 'Translucent'
+  },
+  {
+    q: 'Which material absorbs most incoming light energy?',
+    answers: ['Reflective', 'Opaque', 'Transparent', 'Translucent'],
+    correct: 'Opaque'
+  },
+  {
+    q: 'During the Foreman battle, what cracked the armor?',
+    answers: ['Reflected photons', 'Absorbed light energy', 'Transparent bubbles', 'Shield powers'],
+    correct: 'Absorbed light energy'
+  },
+  {
+    q: 'Why were reflective bubbles needed during the final phase?',
+    answers: ['To slow photons', 'To absorb photons', 'To redirect photons to the rear core', 'To create shards'],
+    correct: 'To redirect photons to the rear core'
+  },
+  {
+    q: 'Which material allows the most light to pass through?',
+    answers: ['Transparent', 'Opaque', 'Reflective', 'Translucent'],
+    correct: 'Transparent'
+  }
+];
+
+const certExam = {
+  index: 0,
+  score: 0,
+  answered: false,
+  shuffled: []
+};
+
+function shuffleArr(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const overlayCertExam   = document.getElementById('overlayCertExam');
+const overlayCertResult = document.getElementById('overlayCertResult');
+const overlayCertName   = document.getElementById('overlayCertName');
+const overlayCertDone   = document.getElementById('overlayCertDone');
+const certExamProgress  = document.getElementById('certExamProgress');
+const certExamQuestionEl= document.getElementById('certExamQuestion');
+const certExamAnswersEl = document.getElementById('certExamAnswers');
+const certExamFeedback  = document.getElementById('certExamFeedback');
+const certExamNextBtn   = document.getElementById('btnCertExamNext');
+
+function hideAllCertOverlays() {
+  overlayCertExam.classList.add('hidden');
+  overlayCertResult.classList.add('hidden');
+  overlayCertName.classList.add('hidden');
+  overlayCertDone.classList.add('hidden');
+}
+
+function startCertExam() {
+  certExam.index = 0;
+  certExam.score = 0;
+  certExam.answered = false;
+  overlayLevel3Complete.classList.add('hidden');
+  hideAllCertOverlays();
+  overlayCertExam.classList.remove('hidden');
+  renderCertQuestion();
+}
+
+function renderCertQuestion() {
+  const q = PA_CERT_QUESTIONS[certExam.index];
+  certExam.answered = false;
+  certExamProgress.textContent = 'QUESTION ' + (certExam.index + 1) + ' OF ' + PA_CERT_QUESTIONS.length;
+  certExamQuestionEl.textContent = q.q;
+  certExamFeedback.textContent = '';
+  certExamFeedback.className = 'pa-cert-feedback';
+  certExamNextBtn.style.display = 'none';
+  certExamAnswersEl.innerHTML = '';
+  const shuffled = shuffleArr(q.answers);
+  shuffled.forEach(ans => {
+    const btn = document.createElement('button');
+    btn.className = 'pa-cert-ans';
+    btn.type = 'button';
+    btn.textContent = ans;
+    btn.addEventListener('click', () => handleCertAnswer(btn, ans, q.correct));
+    certExamAnswersEl.appendChild(btn);
+  });
+}
+
+function handleCertAnswer(btn, chosen, correct) {
+  if (certExam.answered) return;
+  certExam.answered = true;
+  const allBtns = certExamAnswersEl.querySelectorAll('.pa-cert-ans');
+  allBtns.forEach(b => {
+    b.classList.add('disabled');
+    if (b.textContent === correct) b.classList.add('correct');
+  });
+  if (chosen === correct) {
+    certExam.score += 1;
+    certExamFeedback.textContent = 'Correct!';
+    certExamFeedback.className = 'pa-cert-feedback is-correct';
+  } else {
+    btn.classList.add('wrong');
+    certExamFeedback.textContent = 'Not quite. Correct answer: ' + correct;
+    certExamFeedback.className = 'pa-cert-feedback is-wrong';
+  }
+  const isLast = certExam.index >= PA_CERT_QUESTIONS.length - 1;
+  certExamNextBtn.textContent = isLast ? 'See Results' : 'Next Question';
+  certExamNextBtn.style.display = '';
+}
+
+certExamNextBtn.addEventListener('click', () => {
+  if (certExam.index >= PA_CERT_QUESTIONS.length - 1) {
+    showCertResult();
+  } else {
+    certExam.index += 1;
+    renderCertQuestion();
+  }
+});
+
+function showCertResult() {
+  hideAllCertOverlays();
+  overlayCertResult.classList.remove('hidden');
+  const total = PA_CERT_QUESTIONS.length;
+  const passed = certExam.score >= 4;
+  document.getElementById('certResultScore').textContent = certExam.score + ' / ' + total;
+  const titleEl = document.getElementById('certResultTitle');
+  const msgEl   = document.getElementById('certResultMsg');
+  const actions = document.getElementById('certResultActions');
+  actions.innerHTML = '';
+  if (passed) {
+    titleEl.textContent = 'CERTIFICATION PASSED';
+    msgEl.textContent = 'Outstanding work, cadet. You are ready to receive your certificate.';
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.textContent = 'Continue';
+    btn.addEventListener('click', () => {
+      hideAllCertOverlays();
+      overlayCertName.classList.remove('hidden');
+      const inp = document.getElementById('certNameInput');
+      document.getElementById('certNameError').textContent = '';
+      inp.value = '';
+      setTimeout(() => { try { inp.focus(); } catch (e) {} }, 30);
+    });
+    actions.appendChild(btn);
+  } else {
+    titleEl.textContent = 'ADDITIONAL TRAINING RECOMMENDED';
+    msgEl.textContent = 'Review the materials and try the exam again. You do not need to replay the mission.';
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-teal';
+    btn.textContent = 'Try Exam Again';
+    btn.addEventListener('click', startCertExam);
+    actions.appendChild(btn);
+  }
+}
+
+function sanitizeStudentName(raw) {
+  if (typeof raw !== 'string') return '';
+  let s = raw.replace(/\s+/g, ' ').trim();
+  if (s.length > 30) s = s.slice(0, 30);
+  // Keep letters (incl. unicode), spaces, hyphens, apostrophes.
+  s = s.replace(/[^\p{L} '\-]/gu, '');
+  return s;
+}
+
+document.getElementById('btnCertGenerate').addEventListener('click', () => {
+  const inp = document.getElementById('certNameInput');
+  const err = document.getElementById('certNameError');
+  const name = sanitizeStudentName(inp.value);
+  if (!name) {
+    err.textContent = 'Please enter your name to continue.';
+    inp.focus();
+    return;
+  }
+  err.textContent = '';
+  certExam.studentName = name;
+  try { generateCertificatePDF(); } catch (e) { console.error(e); }
+  hideAllCertOverlays();
+  overlayCertDone.classList.remove('hidden');
+});
+
+document.getElementById('certNameInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    document.getElementById('btnCertGenerate').click();
+  }
+});
+
+function collectCertStats() {
+  const stats = {
+    score: 'Not recorded',
+    combo: 'Not recorded',
+    efficiency: 'Not recorded'
+  };
+  try {
+    if (state && typeof state.foundryScore === 'number') {
+      stats.score = String(state.foundryScore);
+    }
+  } catch (e) {}
+  try {
+    if (state && typeof state.foundryComboHighest === 'number' && state.foundryComboHighest > 0) {
+      stats.combo = String(state.foundryComboHighest);
+    }
+  } catch (e) {}
+  try {
+    if (state && typeof state.solarEfficiencyFinal === 'number') {
+      stats.efficiency = Math.round(state.solarEfficiencyFinal) + '%';
+    }
+  } catch (e) {}
+  return stats;
+}
+
+function formatCertDate(d) {
+  const months = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+}
+
+function generateCertificatePDF() {
+  const ns = window.jspdf;
+  if (!ns || !ns.jsPDF) {
+    alert('Certificate library failed to load. Please check your connection and try again.');
+    return;
+  }
+  const doc = new ns.jsPDF({ orientation: 'landscape', unit: 'pt', format: 'letter' });
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+
+  // Background
+  doc.setFillColor(11, 20, 36);
+  doc.rect(0, 0, W, H, 'F');
+
+  // Outer gold border
+  doc.setDrawColor(255, 215, 107);
+  doc.setLineWidth(4);
+  doc.rect(22, 22, W - 44, H - 44);
+  doc.setLineWidth(1);
+  doc.rect(34, 34, W - 68, H - 68);
+
+  // Title
+  doc.setTextColor(255, 215, 107);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(34);
+  doc.text('PHOTON ACADEMY', W / 2, 100, { align: 'center' });
+
+  doc.setTextColor(220, 230, 245);
+  doc.setFontSize(18);
+  doc.text('CERTIFICATE OF COMPLETION', W / 2, 132, { align: 'center' });
+
+  // Divider
+  doc.setDrawColor(255, 215, 107);
+  doc.setLineWidth(1);
+  doc.line(W / 2 - 120, 148, W / 2 + 120, 148);
+
+  // Body
+  doc.setTextColor(220, 230, 245);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(14);
+  doc.text('This certifies that', W / 2, 188, { align: 'center' });
+
+  // Student name
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(30);
+  doc.text(certExam.studentName || 'Cadet', W / 2, 226, { align: 'center' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(14);
+  doc.setTextColor(220, 230, 245);
+  doc.text('has successfully completed', W / 2, 256, { align: 'center' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(59, 200, 232);
+  doc.setFontSize(22);
+  doc.text('PHOTON RUNNER', W / 2, 286, { align: 'center' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(220, 230, 245);
+  doc.setFontSize(13);
+  doc.text('and demonstrated mastery of:', W / 2, 312, { align: 'center' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(15);
+  doc.setTextColor(255, 215, 107);
+  doc.text('Transmission     Absorption     Reflection', W / 2, 338, { align: 'center' });
+
+  // Stats row
+  const stats = collectCertStats();
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(138, 160, 191);
+  const y1 = 392;
+  const y2 = 412;
+  const colXs = [W * 0.22, W * 0.5, W * 0.78];
+  doc.text('FINAL SCORE',       colXs[0], y1, { align: 'center' });
+  doc.text('HIGHEST COMBO',     colXs[1], y1, { align: 'center' });
+  doc.text('SOLAR EFFICIENCY',  colXs[2], y1, { align: 'center' });
+
+  doc.setFontSize(15);
+  doc.setTextColor(255, 255, 255);
+  doc.text(stats.score,      colXs[0], y2, { align: 'center' });
+  doc.text(stats.combo,      colXs[1], y2, { align: 'center' });
+  doc.text(stats.efficiency, colXs[2], y2, { align: 'center' });
+
+  // Footer
+  const dateStr = formatCertDate(new Date());
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.setTextColor(138, 160, 191);
+  doc.text('DATE', 80, H - 70);
+  doc.text('ISSUED BY', W - 80, H - 70, { align: 'right' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255);
+  doc.text(dateStr, 80, H - 50);
+  doc.setTextColor(255, 215, 107);
+  doc.text('LyfeLabz', W - 80, H - 50, { align: 'right' });
+
+  const safeName = (certExam.studentName || 'Cadet').replace(/[^A-Za-z0-9\-]+/g, '_');
+  doc.save('PhotonAcademy_Certificate_' + safeName + '.pdf');
+}
+
+document.getElementById('btnCertReplay').addEventListener('click', () => {
+  hideAllCertOverlays();
+  if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+  startGame();
+});
+
+document.getElementById('btnStartExam').addEventListener('click', startCertExam);
 
 /* ---------- BOOT: draw idle frame behind start overlay ---------- */
 state = freshState();
