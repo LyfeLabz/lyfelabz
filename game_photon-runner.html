@@ -2199,13 +2199,14 @@
             <div class="brief-left">
               <div class="level-tag warn">WARNING</div>
               <h2>FOREMAN DETECTED</h2>
-              <p class="brief-lede">The Foreman controls the flow of light.</p>
+              <p class="brief-lede">The Foreman controls the flow of light inside the Foundry.</p>
               <div class="brief-subhead">YOUR MISSION</div>
               <ul class="brief-list">
-                <li>Study each phase.</li>
-                <li>Use your powers wisely.</li>
-                <li>Defeat the Foreman.</li>
+                <li><b>Phase 1:</b> Wait for the mirror shield to open.</li>
+                <li><b>Phase 2:</b> Absorbed light cracks the armor.</li>
+                <li><b>Phase 3:</b> Use reflection to reach the rear core.</li>
               </ul>
+              <p class="brief-close">Defeat the Foreman and restore the system.</p>
             </div>
             <div class="brief-right">
               <div class="brief-target-tag brief-target-warn">THREAT</div>
@@ -3733,44 +3734,39 @@ function updateLevel3Scroll(dt) {
   }
 }
 
-/* ---------- Micropass 25: FOREMAN BOSS ----------
-   Vertical-slice boss for Glass Foundry. Three phases test the three core
-   wave behaviors through pure gameplay:
-     Phase 1 - Reflection Cage : direct shots blocked by mirror plating;
-               two reflective panels in the arena let the player bank shots
-               into a transparent lens weak point.
-     Phase 2 - Absorption Wall : matte black plating drinks direct shots; a
-               transparent window opens on a timer. Photon Burst briefly
-               strips the plating for a free volley.
-     Phase 3 - Transmission Pour : the core is exposed but a cycling material
-               panel (opaque -> translucent -> transparent) gates damage by
-               the player's read of state.
+/* ---------- Micropass 25 / 58: FOREMAN BOSS ----------
+   Vertical-slice boss for Glass Foundry. Three phases each teach one wave
+   behavior through visible rules students can read in real time:
+     Phase 1 - Mirror Shield     : a teal half-moon shield blocks direct
+               shots. The shield periodically opens on a timer, exposing a
+               glowing weak point. Direct hits in the open window damage HP.
+     Phase 2 - Absorption Armor  : an orange charge meter fills as direct
+               shots are absorbed. When full, the armor cracks open and the
+               core is vulnerable for a short window before the armor resets.
+     Phase 3 - Rear Core         : a front shield blocks all direct photons.
+               Reflective bubbles in the arena bend photons around the shield
+               toward a rear weak point on the far side of the body.
    Boss state lives on state.boss; spawn/defeat manage state.bossActive and
    state.bossDefeated for the scrolling and completion hand-off. */
 const FOREMAN = {
   // Layout (the boss sits in the right third of the arena).
-  cx:           ARENA_W - 250,
-  cy:           ARENA_H / 2,
-  bodyR:        110,    // outer body radius
-  weakR:        26,     // weak-point lens radius
-  phaseHp:      [10, 10, 8],   // hp budget per phase (total ~28 hits)
-  // Phase 1: two reflective panels framing the arena center.
-  panelTopY:    180,
-  panelBotY:    ARENA_H - 180,
-  panelX:       ARENA_W - 560,
-  panelR:       46,
-  // Phase 2: the absorption window timing.
-  p2WindowOn:   1.6,    // sec window is open and core is hittable
-  p2WindowOff:  2.4,    // sec window is closed (direct shots absorbed)
-  p2BurstStun:  1.5,    // sec the plating is stripped after a Photon Burst
-  // Phase 3: cycling panel timing.
-  p3OpaqueT:    1.6,
-  p3TransluT:   1.6,
-  p3TranspT:    1.8,    // transparent window is the longest, generous on purpose
+  cx:            ARENA_W - 250,
+  cy:            ARENA_H / 2,
+  bodyR:         110,    // outer body radius
+  weakR:         30,     // weak-point lens radius (Micropass 58: bigger target)
+  phaseHp:       [6, 5, 5],   // hp budget per phase (Micropass 58: openings are clearer, fewer hits needed)
+  // Phase 1: mirror shield open/close cycle.
+  p1ShieldOff:   2.6,    // sec the shield is closed (direct shots reflect)
+  p1ShieldOn:   1.8,    // sec the shield is open (weak point exposed)
+  // Phase 2: absorption armor charge + vulnerable window.
+  p2AbsorbCap:   5,      // direct shots needed to crack the armor
+  p2VulnDur:     2.6,    // sec the core stays vulnerable after a crack
+  // Phase 3: rear core is only hit by reflected photons.
+  p3WeakOffX:    0.78,   // weak-point offset on the rear (right) side of the body
   // Attack pacing.
-  p1FireEvery:  2.4,
-  p2FireEvery:  3.0,
-  p3SparkEvery: 1.5
+  p1FireEvery:   2.4,
+  p2FireEvery:   3.0,
+  p3SparkEvery:  1.5
 };
 
 function spawnForeman() {
@@ -3785,51 +3781,114 @@ function spawnForeman() {
     maxHp:        FOREMAN.phaseHp[0],
     hitFlash:     0,
     iframes:      0,
-    // Phase 1.
-    p1FireTimer:  FOREMAN.p1FireEvery,
-    // Phase 2.
-    p2Timer:      0,       // counts up; window opens/closes by modulo
-    p2BurstUntil: 0,       // state.elapsed value while plating is stripped
-    p2FireTimer:  FOREMAN.p2FireEvery,
-    // Phase 3.
-    p3Timer:      0,
-    p3State:      'opaque',
-    p3SparkTimer: FOREMAN.p3SparkEvery,
+    // Phase 1: mirror shield window.
+    p1ShieldT:        0,            // counts up; open/close by modulo
+    p1ShieldWasOpen:  false,        // edge detection for shield-open chime
+    p1FireTimer:      FOREMAN.p1FireEvery,
+    p1GlowActive:     false,        // amber glow on arm tips before Phase 1 fires
+    p1TelegraphPlayed:false,
+    // Phase 2: absorption armor charge.
+    p2AbsorbMeter:    0,            // 0 .. p2AbsorbCap; fills from direct shots
+    p2AbsorbFlash:    0,            // brief flash when meter ticks up
+    p2Vulnerable:     false,        // true while armor cracked open
+    p2VulnTimer:      0,            // sec remaining in vulnerable window
+    p2CrackFlash:     0,            // flash on the crack event
+    p2FireTimer:      FOREMAN.p2FireEvery,
+    // Phase 3: rear core / reflection.
+    p3SparkTimer:     FOREMAN.p3SparkEvery,
+    p3BubblesSpawned: false,
+    // Shared shield-deflect flash used by Phase 1 closed shield + Phase 3 front shield.
+    shieldSparkFlash: 0,
     // Death.
-    dying:        false,
-    deathAge:     0,
-    // Polish fields (Micropass 26).
-    p1GlowActive:      false,   // amber glow on arm tips before Phase 1 fires
-    p1TelegraphPlayed: false,   // chime plays once per charge cycle
-    p2WindowWasOpen:   false,   // edge detection for window-open event
-    p3StateFlash:      0,       // brief lens flash on material state change
-    phaseTransTimer:   0,       // >0 = boss attacks paused during transition beat
-    _deathRing1:       false,   // ring + shake at ~0.8 s into death
-    _deathRing2:       false    // final ring + defeat SFX at ~1.5 s
+    dying:            false,
+    deathAge:         0,
+    phaseTransTimer:  0,            // >0 = boss attacks paused during transition beat
+    _deathRing1:      false,
+    _deathRing2:      false
   };
   state.bossActive = true;
   state.bossDefeated = false;
   state.bossSpawnT = state.elapsed;
-  // Phase 1 reflective panels live as enemies of type 'mirror' so existing
-  // shot/mirror reflection geometry handles them with no new collision code.
-  // hp is set very high so the player cannot break them during the fight.
-  const panelTop = makeMirror(FOREMAN.panelX, FOREMAN.panelTopY);
-  panelTop.hp = panelTop.maxHp = 999; panelTop.bossPanel = true;
-  const panelBot = makeMirror(FOREMAN.panelX, FOREMAN.panelBotY);
-  panelBot.hp = panelBot.maxHp = 999; panelBot.bossPanel = true;
-  state.enemies.push(panelTop, panelBot);
 
-  showBanner('REFLECTION CAGE', 'Bank your shots off the mirrors to hit the lens.', 2.6);
+  showBanner('PHASE 1: MIRROR SHIELD', 'Wait for the shield to open, then hit the weak point.', 2.6);
   SFX.win && SFX.win(); // brief sting; reuses the existing chime
 }
 
+/* Spawn the reflective bubbles used in Phase 3. Generous lanes so any
+   sensible angle the player tries will redirect toward the rear core. */
+function spawnForemanReflectorBubbles() {
+  const layout = [
+    { x: FOREMAN.cx - 540, y: 180 },
+    { x: FOREMAN.cx - 540, y: ARENA_H - 180 },
+    { x: FOREMAN.cx - 380, y: 110 },
+    { x: FOREMAN.cx - 380, y: ARENA_H - 110 },
+    { x: FOREMAN.cx - 260, y: FOREMAN.cy - 230 },
+    { x: FOREMAN.cx - 260, y: FOREMAN.cy + 230 }
+  ];
+  for (const p of layout) {
+    state.bubbles.push({
+      type: 'reflective',
+      x: p.x, y: p.y, r: 48,
+      redirect: true,
+      bossRedirect: true,
+      id: state.nextBubbleId++,
+      flash: 0
+    });
+  }
+}
+
 function bossWeakPoint() {
-  // The lens weak point is just to the left of the boss center, where the
-  // player will naturally aim. Phase 3 moves it slightly to read as exposed.
+  // Phases 1 and 2 show a front-facing weak point (left side, where the
+  // player naturally aims). Phase 3 puts the weak point on the rear (right)
+  // side, behind the front shield, so only reflected photons can reach it.
   const b = state.boss;
   if (!b) return null;
-  const off = (b.phase === 3) ? -FOREMAN.bodyR * 0.65 : -FOREMAN.bodyR * 0.55;
+  const off = (b.phase === 3)
+    ? FOREMAN.bodyR * FOREMAN.p3WeakOffX
+    : -FOREMAN.bodyR * 0.55;
   return { x: FOREMAN.cx + off, y: FOREMAN.cy, r: FOREMAN.weakR };
+}
+
+/* True while the Phase 1 mirror shield is open (weak point exposed). */
+function bossPhase1ShieldOpen() {
+  const b = state.boss;
+  if (!b || b.phase !== 1) return false;
+  const cyc = FOREMAN.p1ShieldOff + FOREMAN.p1ShieldOn;
+  const t = b.p1ShieldT % cyc;
+  return t >= FOREMAN.p1ShieldOff;
+}
+
+/* Boss-side feedback throttle so the same explanation does not spam each
+   shot, but new mechanics still surface clearly. */
+let _bossMsgKey = null;
+let _bossMsgTime = -999;
+function showBossMessage(key, text, tone) {
+  const now = (state && state.elapsed) || 0;
+  if (key === _bossMsgKey && now - _bossMsgTime < 1.6) return;
+  _bossMsgKey  = key;
+  _bossMsgTime = now;
+  showFeedbackText(text, tone || 'transmit');
+}
+
+/* Small floating "+1" tag near the hit point so HP changes read at a glance. */
+function spawnBossDamageFloater(x, y) {
+  spawnScorePop && spawnScorePop(x, y - 14, '-1 HP',
+    { color: '#ffe98a', size: 14, life: 0.9, vy: -32 });
+}
+
+/* Open the Phase 2 vulnerable window once the absorption meter is full. */
+function enterPhase2Vulnerable(b) {
+  b.p2Vulnerable = true;
+  b.p2VulnTimer  = FOREMAN.p2VulnDur;
+  b.p2CrackFlash = 0.55;
+  showBanner('ARMOR CRACKED!', 'Hit the core!', 1.6);
+  showBossMessage('p2Crack', 'Armor cracked. Hit the core!', 'absorb');
+  state.rings.push({
+    x: FOREMAN.cx, y: FOREMAN.cy, radius: FOREMAN.bodyR * 0.55,
+    speed: 320, life: 0.55, maxLife: 0.55, color: 'rgba(255,180,90,'
+  });
+  state.shake = Math.max(state.shake, 8);
+  SFX.p2WindowOpen && SFX.p2WindowOpen();
 }
 
 function bossFireGlob(speed, life) {
@@ -3858,9 +3917,11 @@ function bossFireSpark() {
 function updateForeman(dt) {
   if (!state.boss) return;
   const b = state.boss;
-  b.hitFlash = Math.max(0, b.hitFlash - dt);
-  b.iframes  = Math.max(0, b.iframes  - dt);
-  if (b.p3StateFlash) b.p3StateFlash = Math.max(0, b.p3StateFlash - dt);
+  b.hitFlash         = Math.max(0, b.hitFlash         - dt);
+  b.iframes          = Math.max(0, b.iframes          - dt);
+  b.shieldSparkFlash = Math.max(0, (b.shieldSparkFlash || 0) - dt);
+  b.p2AbsorbFlash    = Math.max(0, (b.p2AbsorbFlash    || 0) - dt);
+  b.p2CrackFlash     = Math.max(0, (b.p2CrackFlash     || 0) - dt);
 
   if (b.dying) {
     b.deathAge += dt;
@@ -3905,6 +3966,7 @@ function updateForeman(dt) {
   }
 
   if (b.phase === 1) {
+    b.p1ShieldT  += dt;
     b.p1FireTimer -= dt;
     // Telegraph: arm tips glow amber in the 0.8 s window before each glob.
     b.p1GlowActive = (b.p1FireTimer > 0 && b.p1FireTimer <= 0.8);
@@ -3918,38 +3980,37 @@ function updateForeman(dt) {
       b.p1TelegraphPlayed = false;
       bossFireGlob(150, 4.0);
     }
-  } else if (b.phase === 2) {
-    b.p2Timer += dt;
-    b.p2FireTimer -= dt;
-    // Detect window-open edge and play a cue.
-    const nowOpen = bossPhase2WindowOpen();
-    if (nowOpen && !b.p2WindowWasOpen) {
+    // Edge-detect the shield opening so the open chime + ring play once.
+    const nowOpen = bossPhase1ShieldOpen();
+    if (nowOpen && !b.p1ShieldWasOpen) {
       SFX.p2WindowOpen && SFX.p2WindowOpen();
       const wp = bossWeakPoint();
       if (wp) {
-        state.rings.push({ x: wp.x, y: wp.y, radius: FOREMAN.weakR,
-          speed: 170, life: 0.42, maxLife: 0.42, color: 'rgba(255,220,140,' });
+        state.rings.push({
+          x: wp.x, y: wp.y, radius: FOREMAN.weakR,
+          speed: 170, life: 0.42, maxLife: 0.42, color: 'rgba(180,235,250,'
+        });
       }
     }
-    b.p2WindowWasOpen = nowOpen;
+    b.p1ShieldWasOpen = nowOpen;
+  } else if (b.phase === 2) {
+    b.p2FireTimer -= dt;
+    if (b.p2Vulnerable) {
+      b.p2VulnTimer -= dt;
+      if (b.p2VulnTimer <= 0) {
+        b.p2Vulnerable  = false;
+        b.p2AbsorbMeter = 0;       // armor reforms; meter resets
+        showBossMessage('p2Reset', 'Absorption armor is charging.', 'absorb');
+      }
+    }
     if (b.p2FireTimer <= 0) {
       b.p2FireTimer = FOREMAN.p2FireEvery + Math.random() * 0.6;
       bossFireGlob(135, 4.2);
     }
   } else if (b.phase === 3) {
-    b.p3Timer += dt;
-    const cyc = FOREMAN.p3OpaqueT + FOREMAN.p3TransluT + FOREMAN.p3TranspT;
-    const t = b.p3Timer % cyc;
-    const prevState = b.p3State;
-    if (t < FOREMAN.p3OpaqueT) b.p3State = 'opaque';
-    else if (t < FOREMAN.p3OpaqueT + FOREMAN.p3TransluT) b.p3State = 'translucent';
-    else b.p3State = 'transparent';
-    // Detect material state change - flash lens and play audio cue.
-    if (b.p3State !== prevState) {
-      b.p3StateFlash = 0.30;
-      SFX.p3StateChange && SFX.p3StateChange();
-      // Extra open-window chime when the vulnerable transparent window arrives.
-      if (b.p3State === 'transparent') SFX.p2WindowOpen && SFX.p2WindowOpen();
+    if (!b.p3BubblesSpawned) {
+      b.p3BubblesSpawned = true;
+      spawnForemanReflectorBubbles();
     }
     b.p3SparkTimer -= dt;
     if (b.p3SparkTimer <= 0) {
@@ -3957,34 +4018,6 @@ function updateForeman(dt) {
       bossFireSpark();
     }
   }
-}
-
-function bossPhase2WindowOpen() {
-  const b = state.boss;
-  if (!b || b.phase !== 2) return false;
-  if (state.elapsed < b.p2BurstUntil) return true;
-  const cyc = FOREMAN.p2WindowOn + FOREMAN.p2WindowOff;
-  const t = b.p2Timer % cyc;
-  return t < FOREMAN.p2WindowOn;
-}
-
-/* Returns a damage multiplier the boss takes for this shot, or 0 if blocked. */
-function bossDamageFromShot(sh) {
-  const b = state.boss;
-  if (!b) return 0;
-  if (b.phase === 1) {
-    // Only reflected (banked) shots damage the boss in Phase 1.
-    return sh.reflected ? 1 : 0;
-  }
-  if (b.phase === 2) {
-    return bossPhase2WindowOpen() ? 1 : 0;
-  }
-  if (b.phase === 3) {
-    if (b.p3State === 'opaque')      return 0;
-    if (b.p3State === 'translucent') return 0.5;
-    return 1; // transparent
-  }
-  return 0;
 }
 
 function damageBoss(amt, hx, hy) {
@@ -4034,12 +4067,14 @@ function advanceBossPhase() {
     });
     state.shake = Math.max(state.shake, 14);
     // Phase labels name the mechanic the player is about to face.
-    const label = (b.phase === 2) ? 'ABSORPTION WALL' : 'TRANSMISSION POUR';
+    const label = (b.phase === 2) ? 'PHASE 2: ABSORPTION ARMOR' : 'PHASE 3: REAR CORE';
     const hint  = (b.phase === 2)
-      ? 'Wait for the window. Burst opens the plating.'
-      : 'Read the cycle. Strike when the panel turns clear.';
-    showBanner(label, hint, 2.4);
+      ? 'Charge the armor with direct shots, then hit the core.'
+      : 'Use reflection to hit behind the shield.';
+    showBanner(label, hint, 2.6);
     SFX.bossPhaseTransition && SFX.bossPhaseTransition();
+    // Reset throttle so the new phase explanation surfaces immediately.
+    _bossMsgKey = null; _bossMsgTime = -999;
   } else {
     // Phase 3 cleared: start the staged death sequence.
     b.dying = true;
@@ -4060,50 +4095,117 @@ function advanceBossPhase() {
   }
 }
 
-/* Boss vs player-shot collision. Mirror panels are still handled by the
-   existing handleShotEnemyCollisions; here we only check the weak-point hit
-   against the boss body. */
+/* Boss vs player-shot collision (Micropass 58).
+   Each phase has its own clear damage rule so blocked shots show why they
+   failed and valid hits flash + drop HP in the same beat. */
 function handleShotBossCollisions() {
   if (!state.boss || state.boss.dying) return;
   const b = state.boss;
   const wp = bossWeakPoint();
   for (const sh of state.shots) {
     if (sh.life <= 0) continue;
-    // Body absorbs shots that miss the weak point (so the boss reads as solid).
     const dbx = sh.x - FOREMAN.cx, dby = sh.y - FOREMAN.cy;
-    if (dbx * dbx + dby * dby > FOREMAN.bodyR * FOREMAN.bodyR) continue;
+    const inBody = (dbx * dbx + dby * dby <= FOREMAN.bodyR * FOREMAN.bodyR);
+    if (!inBody) continue;
+
     const dwx = sh.x - wp.x, dwy = sh.y - wp.y;
     const hitWeak = (dwx * dwx + dwy * dwy <= wp.r * wp.r);
-    if (hitWeak) {
-      const mult = bossDamageFromShot(sh);
-      if (mult > 0) {
-        damageBoss(mult, sh.x, sh.y);
-      } else {
-        // Plating/cycle blocked the shot. Visible spark, shot dies.
+
+    if (b.phase === 1) {
+      if (!bossPhase1ShieldOpen()) {
+        // Mirror shield closed - every direct shot reflects off the shield.
         spawnImpact && spawnImpact(sh.x, sh.y);
-        SFX.opaque && SFX.opaque();
+        SFX.reflective && SFX.reflective();
+        b.shieldSparkFlash = 0.35;
+        showBossMessage('p1Block', 'Mirror shield reflected your photon.', 'reflect');
+        sh.life = 0;
+        continue;
+      }
+      // Shield open - weak point can take damage.
+      if (hitWeak) {
+        damageBoss(1, sh.x, sh.y);
+        spawnBossDamageFloater(sh.x, sh.y);
+        showBossMessage('p1Hit', 'WEAK POINT HIT', 'transmit');
+      } else {
+        spawnImpact && spawnImpact(sh.x, sh.y);
       }
       sh.life = 0;
-    } else {
-      // Hit the body shell, never the lens. Absorbed.
-      spawnImpact && spawnImpact(sh.x, sh.y);
-      sh.life = 0;
+    } else if (b.phase === 2) {
+      if (b.p2Vulnerable) {
+        if (hitWeak) {
+          damageBoss(1, sh.x, sh.y);
+          spawnBossDamageFloater(sh.x, sh.y);
+          showBossMessage('p2Hit', 'WEAK POINT HIT', 'transmit');
+        } else {
+          spawnImpact && spawnImpact(sh.x, sh.y);
+        }
+        sh.life = 0;
+      } else {
+        // Armor active - direct shot is absorbed and feeds the meter.
+        const before = b.p2AbsorbMeter;
+        b.p2AbsorbMeter = Math.min(FOREMAN.p2AbsorbCap, b.p2AbsorbMeter + 1);
+        b.p2AbsorbFlash = 0.35;
+        spawnImpact && spawnImpact(sh.x, sh.y);
+        SFX.opaque && SFX.opaque();
+        showBossMessage('p2Charge' + b.p2AbsorbMeter, 'Absorbing light - ' + b.p2AbsorbMeter + ' / ' + FOREMAN.p2AbsorbCap, 'absorb');
+        if (before < FOREMAN.p2AbsorbCap && b.p2AbsorbMeter >= FOREMAN.p2AbsorbCap) {
+          enterPhase2Vulnerable(b);
+        }
+        sh.life = 0;
+      }
+    } else if (b.phase === 3) {
+      if (!sh.reflected) {
+        // Front shield blocks every direct photon.
+        spawnImpact && spawnImpact(sh.x, sh.y);
+        SFX.opaque && SFX.opaque();
+        b.shieldSparkFlash = 0.35;
+        showBossMessage('p3Block', 'Front shield blocks direct photons.', 'reflect');
+        sh.life = 0;
+        continue;
+      }
+      // Reflected photons can only damage by reaching the rear weak point.
+      if (hitWeak) {
+        damageBoss(1, sh.x, sh.y);
+        spawnBossDamageFloater(sh.x, sh.y);
+        showBossMessage('p3Reach', 'Reflection reached the rear core!', 'reflect');
+        sh.life = 0;
+      }
+      // Otherwise the reflected shot keeps travelling through the body - it
+      // will either reach the rear weak point or expire on its own.
     }
   }
 }
 
-/* Boss vs Photon Burst: strip the absorption plating in phase 2 briefly. */
+/* Boss vs Photon Burst (Micropass 58).
+   Burst now nudges the current phase opening: charges absorption armor and
+   gives a small damage tick during open windows. Never destructive enough to
+   bypass the readable rule each phase is teaching. */
 function bossOnPhotonBurst(burstX, burstY, radius) {
   if (!state.boss || state.boss.dying) return;
   const b = state.boss;
   const dx = FOREMAN.cx - burstX, dy = FOREMAN.cy - burstY;
   if (dx * dx + dy * dy > (radius + FOREMAN.bodyR) * (radius + FOREMAN.bodyR)) return;
-  if (b.phase === 2) {
-    b.p2BurstUntil = state.elapsed + FOREMAN.p2BurstStun;
-    damageBoss(2, FOREMAN.cx - FOREMAN.bodyR * 0.5, FOREMAN.cy);
-  } else if (b.phase === 1 || b.phase === 3) {
-    // Modest contribution outside phase 2 so Burst is never useless.
-    damageBoss(1, FOREMAN.cx - FOREMAN.bodyR * 0.5, FOREMAN.cy);
+  if (b.phase === 1) {
+    if (bossPhase1ShieldOpen()) {
+      damageBoss(1, FOREMAN.cx - FOREMAN.bodyR * 0.5, FOREMAN.cy);
+    } else {
+      b.shieldSparkFlash = 0.5;
+      SFX.reflective && SFX.reflective();
+    }
+  } else if (b.phase === 2) {
+    if (b.p2Vulnerable) {
+      damageBoss(2, FOREMAN.cx - FOREMAN.bodyR * 0.5, FOREMAN.cy);
+    } else {
+      // Burst fills most of the absorb meter, cracking the armor open.
+      b.p2AbsorbMeter = Math.min(FOREMAN.p2AbsorbCap, b.p2AbsorbMeter + Math.ceil(FOREMAN.p2AbsorbCap * 0.7));
+      b.p2AbsorbFlash = 0.5;
+      if (b.p2AbsorbMeter >= FOREMAN.p2AbsorbCap) enterPhase2Vulnerable(b);
+    }
+  } else if (b.phase === 3) {
+    // Burst alone cannot pierce the front shield - feedback only.
+    b.shieldSparkFlash = 0.5;
+    SFX.reflective && SFX.reflective();
+    showBossMessage('p3Block', 'Front shield blocks direct photons.', 'reflect');
   }
 }
 
@@ -4156,7 +4258,24 @@ function finishForemanDefeat() {
   }
 }
 
-/* ---------- Foreman rendering (Micropass 26 polish) ---------- */
+/* Glowing weak-point lens shared by every Foreman phase that exposes a core. */
+function drawBossWeakPointLens(wp, innerTint, edgeColor) {
+  if (!wp) return;
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,200,90,0.9)';
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = (innerTint || 'rgba(255,220,140,') + '0.65)';
+  ctx.strokeStyle = edgeColor || 'rgba(255,233,138,0.98)';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r, 0, Math.PI * 2);
+  ctx.fill(); ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = (innerTint || 'rgba(255,220,140,') + '0.95)';
+  ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r * 0.55, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+/* ---------- Foreman rendering (Micropass 58 readability) ---------- */
 function drawForeman() {
   if (!state.boss) return;
   const b = state.boss;
@@ -4165,9 +4284,9 @@ function drawForeman() {
   const armT = state.elapsed * 0.6;
   ctx.save();
 
-  // Soft furnace heat-haze halo. Phase 2 is darker; Phase 3 is amber-warm.
-  const haloAlpha = b.phase === 2 ? 0.20 : 0.35;
-  const haloColor = b.phase === 2 ? '160,90,60' : '255,180,90';
+  // Soft heat-haze halo. Phase 2 is darker/orange; Phase 3 is amber-warm.
+  const haloAlpha = b.phase === 2 ? 0.22 : 0.35;
+  const haloColor = b.phase === 2 ? '230,126,34' : '255,180,90';
   const halo = ctx.createRadialGradient(cx, cy, FOREMAN.bodyR * 0.4, cx, cy, FOREMAN.bodyR * 1.6);
   halo.addColorStop(0, `rgba(${haloColor},${haloAlpha})`);
   halo.addColorStop(1, `rgba(${haloColor},0.0)`);
@@ -4184,7 +4303,7 @@ function drawForeman() {
     const x2 = cx + Math.cos(ang) * (FOREMAN.bodyR * 1.35);
     const y2 = cy + Math.sin(ang) * (FOREMAN.bodyR * 1.35);
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-    // Tool tip - glows amber when Phase 1 is charging.
+    // Tool tip - glows amber when Phase 1 is charging an attack.
     if (b.phase === 1 && b.p1GlowActive) {
       const glowPct = 1 - (b.p1FireTimer / 0.8);
       ctx.save();
@@ -4199,15 +4318,24 @@ function drawForeman() {
     }
   }
 
-  // Body shell tinted by phase.
+  // Body shell tinted by phase. Phase 2 also tints by armor charge.
   let shellFill, shellEdge;
   if (b.phase === 1) {
-    shellFill = 'rgba(190,210,225,0.55)';
-    shellEdge = 'rgba(220,235,250,0.95)';
+    shellFill = 'rgba(80,140,170,0.55)';
+    shellEdge = 'rgba(180,235,250,0.95)';
   } else if (b.phase === 2) {
-    const stripped = state.elapsed < b.p2BurstUntil;
-    shellFill = stripped ? 'rgba(120,90,70,0.85)' : 'rgba(30,28,32,0.95)';
-    shellEdge = stripped ? 'rgba(255,210,150,0.95)' : 'rgba(80,70,80,0.9)';
+    if (b.p2Vulnerable) {
+      // Armor cracked - the body glows hot and orange.
+      shellFill = 'rgba(255,170,80,0.85)';
+      shellEdge = 'rgba(255,220,160,0.98)';
+    } else {
+      const charge = (b.p2AbsorbMeter || 0) / FOREMAN.p2AbsorbCap;
+      const r = Math.floor(60 + charge * 140);
+      const g = Math.floor(50 + charge * 60);
+      const blu = Math.floor(50 + charge * 20);
+      shellFill = `rgba(${r},${g},${blu},0.92)`;
+      shellEdge = 'rgba(230,126,34,0.95)';
+    }
   } else {
     shellFill = 'rgba(255,180,90,0.45)';
     shellEdge = 'rgba(255,210,150,0.95)';
@@ -4221,108 +4349,193 @@ function drawForeman() {
   ctx.lineWidth = 3;
   ctx.beginPath(); ctx.arc(cx, cy, FOREMAN.bodyR, 0, Math.PI * 2); ctx.stroke();
 
-  // Furnace core visibility.
-  let coreVisible = true;
-  let coreTint = 'rgba(255,210,90,';
-  if (b.phase === 2) {
-    coreVisible = bossPhase2WindowOpen();
-  } else if (b.phase === 3) {
-    if (b.p3State === 'opaque')           { coreVisible = false; }
-    else if (b.p3State === 'translucent') { coreTint = 'rgba(255,200,140,'; }
-  }
-
-  // Weak-point lens.
   const wp = bossWeakPoint();
-  ctx.save();
 
-  // Phase 2: pulsing ring around the window when it is open (telegraph).
-  if (b.phase === 2 && coreVisible) {
-    const wpPulse = 0.75 + 0.25 * Math.sin(state.elapsed * 9);
-    ctx.shadowColor = 'rgba(255,220,140,0.9)';
-    ctx.shadowBlur = 18 * wpPulse;
-    ctx.strokeStyle = `rgba(255,220,140,${(0.65 + 0.35 * wpPulse).toFixed(3)})`;
-    ctx.lineWidth = 2.5;
-    ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r + 8 + wpPulse * 4, 0, Math.PI * 2); ctx.stroke();
-    ctx.shadowBlur = 0;
-  }
-
-  // Phase 3: material state indicator ring around the lens.
-  if (b.phase === 3) {
-    let stateColor, stateDash;
-    if (b.p3State === 'opaque')           { stateColor = 'rgba(230,126,34,0.80)'; stateDash = [4, 4]; }
-    else if (b.p3State === 'translucent') { stateColor = 'rgba(220,200,160,0.70)'; stateDash = [7, 3]; }
-    else                                  { stateColor = 'rgba(140,250,190,0.95)'; stateDash = []; }
-    const p3Pulse = 0.85 + 0.15 * Math.sin(state.elapsed * 7);
-    ctx.shadowColor = stateColor;
-    ctx.shadowBlur = (b.p3State === 'transparent') ? 16 : 8;
-    ctx.strokeStyle = stateColor;
-    ctx.lineWidth = 2.5;
-    ctx.setLineDash(stateDash);
-    ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r + 10 * p3Pulse, 0, Math.PI * 2); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.shadowBlur = 0;
-  }
-
-  // Lens state flash (brief bright overlay on material state change).
-  if (b.p3StateFlash > 0) {
-    ctx.globalAlpha = (b.p3StateFlash / 0.30) * 0.55;
-    ctx.fillStyle = 'rgba(255,250,220,1)';
-    ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r * 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-
-  // Lens fill and stroke.
-  ctx.shadowColor = 'rgba(255,200,90,0.9)';
-  ctx.shadowBlur = 20;
+  // ---- Phase 1: mirror shield (front, teal half-moon). ----
   if (b.phase === 1) {
-    ctx.fillStyle = 'rgba(140,250,190,0.28)';
-    ctx.strokeStyle = 'rgba(180,255,210,0.98)';
-  } else if (b.phase === 2) {
-    if (coreVisible) {
-      ctx.fillStyle = 'rgba(255,220,140,0.60)';
-      ctx.strokeStyle = 'rgba(255,233,138,0.98)';
+    const shieldOpen = bossPhase1ShieldOpen();
+    const cyc = FOREMAN.p1ShieldOff + FOREMAN.p1ShieldOn;
+    const t = b.p1ShieldT % cyc;
+    // Smooth opacity so students can see the shield is about to open/close.
+    let shieldAlpha;
+    if (shieldOpen) {
+      const into = t - FOREMAN.p1ShieldOff;
+      const left = FOREMAN.p1ShieldOn - into;
+      shieldAlpha = Math.min(0.25, into * 0.6, left * 0.6);
     } else {
-      ctx.fillStyle = 'rgba(20,18,22,0.92)';
-      ctx.strokeStyle = 'rgba(60,55,65,0.95)';
+      const into = t;
+      const left = FOREMAN.p1ShieldOff - into;
+      shieldAlpha = Math.min(0.95, 0.55 + into * 0.4, 0.55 + left * 0.4);
     }
-  } else {
-    if (b.p3State === 'opaque') {
-      ctx.fillStyle = 'rgba(40,30,30,0.95)';
-      ctx.strokeStyle = 'rgba(120,90,70,0.95)';
-    } else if (b.p3State === 'translucent') {
-      ctx.fillStyle = 'rgba(220,200,170,0.58)';
-      ctx.strokeStyle = 'rgba(245,225,190,0.95)';
-    } else {
-      ctx.fillStyle = 'rgba(140,250,190,0.32)';
-      ctx.strokeStyle = 'rgba(180,255,210,0.98)';
-    }
-  }
-  ctx.lineWidth = 2.5;
-  ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  // Inner core glow when visible.
-  if (coreVisible) {
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = coreTint + '0.88)';
-    ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r * 0.55, 0, Math.PI * 2); ctx.fill();
-  }
-  ctx.restore();
-
-  // Phase 1: bank-shot hint dashes. Full-alpha for the first 3.5 s, then
-  // Micropass 30: persist at low alpha throughout Phase 1 so the cue never
-  // vanishes entirely for students who haven't solved the mechanic yet.
-  if (b.phase === 1) {
-    const hintAge = state.elapsed - (state.bossSpawnT || 0);
-    const lineAlpha = hintAge < 3.5 ? 0.35 : 0.12;
-    ctx.strokeStyle = 'rgba(180,255,210,' + lineAlpha + ')';
-    ctx.setLineDash([6, 8]);
-    ctx.lineWidth = 1.5;
+    if (b.shieldSparkFlash > 0) shieldAlpha = Math.max(shieldAlpha, 0.9);
+    ctx.save();
+    ctx.shadowColor = 'rgba(59,200,232,0.7)';
+    ctx.shadowBlur  = 20;
+    const shieldR  = FOREMAN.bodyR * 1.18;
+    const grad = ctx.createRadialGradient(cx - 10, cy, 8, cx - 10, cy, shieldR);
+    grad.addColorStop(0, `rgba(220,250,255,${(0.55 * shieldAlpha).toFixed(3)})`);
+    grad.addColorStop(0.55, `rgba(59,200,232,${(0.50 * shieldAlpha).toFixed(3)})`);
+    grad.addColorStop(1, 'rgba(59,200,232,0)');
+    ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.moveTo(FOREMAN.panelX, FOREMAN.panelTopY);
-    ctx.lineTo(wp.x, wp.y);
-    ctx.moveTo(FOREMAN.panelX, FOREMAN.panelBotY);
-    ctx.lineTo(wp.x, wp.y);
+    ctx.arc(cx, cy, shieldR, Math.PI * 0.5, Math.PI * 1.5);
+    ctx.closePath();
+    ctx.fill();
+    // Shield rim - brighter and more solid when closed.
+    ctx.strokeStyle = `rgba(170,240,255,${(0.85 * shieldAlpha).toFixed(3)})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy, shieldR, Math.PI * 0.55, Math.PI * 1.45);
     ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.restore();
+
+    // "OPEN" / "CLOSED" tag floats just above the boss.
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.font = '700 12px Orbitron, sans-serif';
+    ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 4;
+    if (shieldOpen) {
+      ctx.fillStyle = 'rgba(255,233,138,0.95)';
+      ctx.fillText('SHIELD OPEN', cx, cy - FOREMAN.bodyR - 14);
+    } else {
+      ctx.fillStyle = 'rgba(180,235,250,0.95)';
+      ctx.fillText('SHIELD CLOSED', cx, cy - FOREMAN.bodyR - 14);
+    }
+    ctx.restore();
+
+    // Weak point lens (only visible while shield is open).
+    if (shieldOpen) drawBossWeakPointLens(wp, 'rgba(255,220,140,', 'rgba(255,233,138,0.98)');
+  }
+
+  // ---- Phase 2: absorption armor + charge meter. ----
+  if (b.phase === 2) {
+    // Charge meter rendered as an arc ring around the body. Fills clockwise.
+    const charge = Math.max(0, Math.min(1, (b.p2AbsorbMeter || 0) / FOREMAN.p2AbsorbCap));
+    ctx.save();
+    // Track behind the meter.
+    ctx.strokeStyle = 'rgba(40,28,18,0.85)';
+    ctx.lineWidth = 9;
+    ctx.beginPath();
+    ctx.arc(cx, cy, FOREMAN.bodyR + 14, 0, Math.PI * 2);
+    ctx.stroke();
+    // Filled portion.
+    if (charge > 0) {
+      const pulse = 0.85 + 0.15 * Math.sin(state.elapsed * 8);
+      const meterColor = b.p2Vulnerable
+        ? 'rgba(255,210,120,0.98)'
+        : `rgba(255,${Math.floor(140 + charge * 60)},60,${(0.90 * pulse).toFixed(3)})`;
+      ctx.strokeStyle = meterColor;
+      ctx.shadowColor = meterColor;
+      ctx.shadowBlur = 12;
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.arc(cx, cy, FOREMAN.bodyR + 14, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * charge);
+      ctx.stroke();
+    }
+    // Brief absorb-flash highlight when a shot was just consumed.
+    if (b.p2AbsorbFlash > 0) {
+      ctx.globalAlpha = b.p2AbsorbFlash / 0.35 * 0.75;
+      ctx.shadowBlur = 18;
+      ctx.strokeStyle = 'rgba(255,220,150,1)';
+      ctx.lineWidth = 12;
+      ctx.beginPath();
+      ctx.arc(cx, cy, FOREMAN.bodyR + 14, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+
+    // Meter readout label - two-line stack so the absorption count reads at a glance.
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 5;
+    if (b.p2Vulnerable) {
+      // Pulsing call-to-action while the core is exposed.
+      const pulse = 0.85 + 0.15 * Math.sin(state.elapsed * 9);
+      ctx.fillStyle = `rgba(255,233,138,${(0.95 * pulse).toFixed(3)})`;
+      ctx.font = '800 18px Orbitron, sans-serif';
+      ctx.fillText('HIT THE CORE!', cx, cy - FOREMAN.bodyR - 26);
+    } else {
+      ctx.fillStyle = 'rgba(255,180,90,0.98)';
+      ctx.font = '700 13px Orbitron, sans-serif';
+      ctx.fillText('ABSORBING LIGHT', cx, cy - FOREMAN.bodyR - 36);
+      ctx.fillStyle = 'rgba(255,220,140,0.98)';
+      ctx.font = '800 18px Orbitron, sans-serif';
+      ctx.fillText((b.p2AbsorbMeter || 0) + ' / ' + FOREMAN.p2AbsorbCap,
+                   cx, cy - FOREMAN.bodyR - 18);
+    }
+    ctx.restore();
+
+    // Crack flash burst.
+    if (b.p2CrackFlash > 0) {
+      ctx.save();
+      ctx.globalAlpha = b.p2CrackFlash / 0.55 * 0.7;
+      ctx.fillStyle = 'rgba(255,210,120,1)';
+      ctx.beginPath(); ctx.arc(cx, cy, FOREMAN.bodyR * 1.1, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    // Weak point lens (only visible during the vulnerable window).
+    if (b.p2Vulnerable) {
+      drawBossWeakPointLens(wp, 'rgba(255,220,140,', 'rgba(255,233,138,0.98)');
+      // Pulse-ring telegraph around the open weak point.
+      ctx.save();
+      const wpPulse = 0.7 + 0.3 * Math.sin(state.elapsed * 9);
+      ctx.shadowColor = 'rgba(255,220,140,0.9)';
+      ctx.shadowBlur = 16 * wpPulse;
+      ctx.strokeStyle = `rgba(255,220,140,${(0.55 + 0.35 * wpPulse).toFixed(3)})`;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r + 8 + wpPulse * 4, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // ---- Phase 3: front shield (left) + glowing rear weak point (right). ----
+  if (b.phase === 3) {
+    const sparkBoost = Math.min(0.3, b.shieldSparkFlash || 0);
+    const pulse = 0.7 + 0.2 * Math.sin(state.elapsed * 4);
+    ctx.save();
+    ctx.shadowColor = 'rgba(59,200,232,0.7)';
+    ctx.shadowBlur  = 22;
+    const shieldR = FOREMAN.bodyR * 1.18;
+    const grad = ctx.createRadialGradient(cx - 10, cy, 8, cx - 10, cy, shieldR);
+    grad.addColorStop(0, `rgba(220,250,255,${(0.55 * pulse + sparkBoost).toFixed(3)})`);
+    grad.addColorStop(0.55, `rgba(59,200,232,${(0.50 * pulse + sparkBoost).toFixed(3)})`);
+    grad.addColorStop(1, 'rgba(59,200,232,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, shieldR, Math.PI * 0.5, Math.PI * 1.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = `rgba(170,240,255,${(0.85 * pulse + sparkBoost).toFixed(3)})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy, shieldR, Math.PI * 0.55, Math.PI * 1.45);
+    ctx.stroke();
+    ctx.restore();
+
+    // Front shield label (above) + rear core label (right).
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.font = '700 12px Orbitron, sans-serif';
+    ctx.shadowColor = 'rgba(0,0,0,0.75)'; ctx.shadowBlur = 4;
+    ctx.fillStyle = 'rgba(180,235,250,0.95)';
+    ctx.fillText('FRONT SHIELD', cx - FOREMAN.bodyR * 0.55, cy - FOREMAN.bodyR - 18);
+    ctx.fillStyle = 'rgba(255,210,120,0.95)';
+    ctx.fillText('REAR CORE', cx + FOREMAN.bodyR * 0.6, cy - FOREMAN.bodyR - 18);
+    ctx.restore();
+
+    // Rear weak point - always visible in Phase 3.
+    drawBossWeakPointLens(wp, 'rgba(255,200,120,', 'rgba(255,233,138,0.98)');
+    // Big breathing halo so it reads as the target.
+    ctx.save();
+    const rearPulse = 0.6 + 0.4 * Math.sin(state.elapsed * 5);
+    const halo3 = ctx.createRadialGradient(wp.x, wp.y, 4, wp.x, wp.y, wp.r * 3.2);
+    halo3.addColorStop(0, `rgba(255,220,150,${(0.5 * rearPulse).toFixed(3)})`);
+    halo3.addColorStop(1, 'rgba(255,180,80,0)');
+    ctx.fillStyle = halo3;
+    ctx.beginPath(); ctx.arc(wp.x, wp.y, wp.r * 3.2, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
   }
 
   ctx.restore();
@@ -4392,39 +4605,72 @@ function drawForeman() {
   }
 }
 
-/* HUD HP bar overlay rendered on the canvas during the boss fight. */
+/* HUD HP bar overlay rendered on the canvas during the boss fight.
+   Micropass 58: phase title + one-line instruction so students always know
+   what to do. */
+const FOREMAN_PHASE_NAMES = [
+  'PHASE 1: MIRROR SHIELD',
+  'PHASE 2: ABSORPTION ARMOR',
+  'PHASE 3: REAR CORE'
+];
+const FOREMAN_PHASE_HINTS = [
+  'Wait for the shield to open.',
+  'Charge the armor, then hit the core.',
+  'Use reflection to hit behind the shield.'
+];
+const FOREMAN_PHASE_COLORS = [
+  'rgba(180,235,250,0.95)',
+  'rgba(230,126,34,0.95)',
+  'rgba(255,210,120,0.95)'
+];
 function drawForemanHpBar() {
   if (!state.boss) return;
   const b = state.boss;
-  const w = 360, h = 12;
+  const w = 380, h = 14;
   const cx = ARENA_W / 2;
   const x  = cx - w / 2;
-  const y  = 62;
+  const y  = 78;
   ctx.save();
   ctx.shadowBlur = 0;
-  ctx.fillStyle = 'rgba(10,12,16,0.7)';
-  ctx.fillRect(x - 6, y - 42, w + 12, h + 48);
-  const phaseNames = ['REFLECTION CAGE', 'ABSORPTION WALL', 'TRANSMISSION POUR'];
-  const phaseHudColors = ['rgba(180,235,250,0.95)', 'rgba(230,126,34,0.95)', 'rgba(255,210,120,0.95)'];
+  ctx.fillStyle = 'rgba(10,12,16,0.78)';
+  ctx.fillRect(x - 8, y - 62, w + 16, h + 70);
   ctx.font = 'bold 13px system-ui, sans-serif';
   ctx.textBaseline = 'top';
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgba(245,200,66,0.95)';
-  ctx.fillText('FOREMAN', cx, y - 36);
-  ctx.fillStyle = phaseHudColors[b.phase - 1];
-  ctx.fillText(phaseNames[b.phase - 1], cx, y - 20);
+  ctx.fillText('FOREMAN', cx, y - 56);
+  ctx.fillStyle = FOREMAN_PHASE_COLORS[b.phase - 1];
+  ctx.font = 'bold 14px system-ui, sans-serif';
+  ctx.fillText(FOREMAN_PHASE_NAMES[b.phase - 1], cx, y - 40);
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(220,235,250,0.85)';
+  ctx.fillText(FOREMAN_PHASE_HINTS[b.phase - 1], cx, y - 22);
   ctx.textAlign = 'left';
   ctx.fillStyle = 'rgba(40,30,30,0.85)';
   ctx.fillRect(x, y, w, h);
   const frac = Math.max(0, b.hp / b.maxHp);
-  const tint = b.phase === 1 ? 'rgba(180,235,250,0.95)'
-             : b.phase === 2 ? 'rgba(230,126,34,0.95)'
-             :                  'rgba(255,210,120,0.95)';
-  ctx.fillStyle = tint;
+  ctx.fillStyle = FOREMAN_PHASE_COLORS[b.phase - 1];
   ctx.fillRect(x, y, w * frac, h);
   ctx.strokeStyle = 'rgba(255,233,138,0.85)';
   ctx.lineWidth = 1;
   ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  // Pip ticks at each HP unit so progress is visible even with a fractional bar.
+  if (b.maxHp > 1) {
+    ctx.strokeStyle = 'rgba(10,12,16,0.55)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < b.maxHp; i++) {
+      const tx = x + (w * i) / b.maxHp;
+      ctx.beginPath();
+      ctx.moveTo(tx, y);
+      ctx.lineTo(tx, y + h);
+      ctx.stroke();
+    }
+  }
+  // HP readout right of the bar.
+  ctx.textAlign = 'right';
+  ctx.fillStyle = 'rgba(245,200,66,0.95)';
+  ctx.font = 'bold 11px system-ui, sans-serif';
+  ctx.fillText(Math.max(0, Math.ceil(b.hp)) + ' / ' + b.maxHp, x + w - 4, y + h + 4);
   ctx.restore();
 }
 
@@ -4556,24 +4802,6 @@ function handleShotEnemyCollisions() {
       if (dist2(sh.x, sh.y, e.x, e.y) > rr * rr) continue;
 
       if (e.type === 'mirror') {
-        // Boss reflective panels in Phase 1: redirect the shot toward the
-        // weak point so banking actually closes the loop. The shot is marked
-        // as reflected so bossDamageFromShot accepts it.
-        if (e.bossPanel && state.boss && state.boss.phase === 1) {
-          const wp = bossWeakPoint();
-          if (wp) {
-            const dx = wp.x - e.x, dy = wp.y - e.y;
-            const d = Math.hypot(dx, dy) || 1;
-            sh.vx = dx / d * SHOT.speed;
-            sh.vy = dy / d * SHOT.speed;
-            sh.reflected = true;
-            sh.life = Math.max(sh.life, 1.0);
-            e.hitFlash = 0.25;
-            SFX.reflective();
-            spawnBounceSparkle(e.x, e.y);
-          }
-          break;
-        }
         // Front arc = shot moving right (vx > 0) AND vertical offset within band.
         const dy = sh.y - e.y;
         const frontHit = (sh.vx > 0) && Math.abs(dy) < e.r * 0.55;
@@ -5505,6 +5733,35 @@ function handleShotBubbleCollisions() {
             }
             break;
           }
+        }
+
+        // Micropass 58: Foreman Phase 3 redirector. Same idea as Furnace C -
+        // bend the photon around the front shield and aim at the rear core
+        // so the reflection lesson stays intact in the final fight.
+        if (b.bossRedirect && state.bossActive && state.boss && state.boss.phase === 3 && !state.boss.dying) {
+          sh.reflected = true;
+          const wp = bossWeakPoint();
+          const targetX = wp ? wp.x : (FOREMAN.cx + FOREMAN.bodyR * 0.7);
+          const targetY = wp ? wp.y : FOREMAN.cy;
+          const dxv = targetX - sh.x;
+          const dyv = targetY - sh.y;
+          const sp = Math.hypot(dxv, dyv) || 1;
+          sh.vx = (dxv / sp) * SHOT.speed;
+          sh.vy = (dyv / sp) * SHOT.speed;
+          sh.life = Math.min(sh.life + 0.5, 2.2);
+          sh.bounceCount += 1;
+          b.flash = 0.5;
+          addScore(3);
+          state.energy.reflect += 12;
+          state.counts.reflective += 1;
+          SFX.reflective();
+          setLastInteraction('Reflective Bubble', 'Redirected',
+            'Reflection bent the photon around the shield toward the rear core.', 'reflect');
+          if (sh.bounceCount > BOUNCE_LIMIT) {
+            spawnBounceSparkle(sh.x, sh.y);
+            sh.life = 0;
+          }
+          break;
         }
 
         if (sh.reflected) {
@@ -7948,7 +8205,14 @@ function respawnFoundry() {
     b.iframes = 0.6;
     b.hitFlash = 0;
     b.phaseTransTimer = 0;
-    // Sweep stray embers/sparks the boss has summoned.
+    // Phase 2: reset the absorption charge so the player can re-read the mechanic.
+    b.p2AbsorbMeter = 0;
+    b.p2Vulnerable  = false;
+    b.p2VulnTimer   = 0;
+    // Phase 1: re-arm the shield window from scratch.
+    b.p1ShieldT       = 0;
+    b.p1ShieldWasOpen = false;
+    // Sweep stray embers/sparks the boss has summoned (keep reflective bubbles).
     state.enemies = state.enemies.filter(e => e.bossPanel);
     showBanner('RESPAWN', 'Lives remaining: ' + state.lives, 1.8);
   } else if (state.furnaceActive) {
@@ -8094,7 +8358,7 @@ function showEnd(won) {
   let loseMsg;
   if (state.level === 3) {
     loseMsg = state.bossActive
-      ? 'The Foreman overwhelmed your shields. Read the phase, use the reflection panels, and wait for openings.'
+      ? 'The Foreman overwhelmed your shields. Read each phase: wait for the mirror shield to open, charge the absorption armor, then use reflection to reach the rear core.'
       : 'You ran out of lives in the Glass Foundry. Watch enemy telegraphs, protect your shields, and use your Power Bar before the next big wave.';
   } else if (state.level === 2) {
     loseMsg = 'Your shields took damage in the Solar Array. Try to dodge reflected beams while testing each material.';
