@@ -2085,6 +2085,157 @@
   @media (max-width: 600px) {
     .pa-cert-answers { grid-template-columns: 1fr; }
   }
+
+  /* Micropass 61: Hall of Fame profile + live leaderboard. */
+  .pr-profile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+    margin: 0.4rem 0 0.6rem;
+  }
+  .pr-profile-field { display: flex; flex-direction: column; gap: 0.3rem; text-align: left; }
+  .pr-profile-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .pr-profile-input,
+  .pr-profile-select {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    border: 2px solid rgba(255,215,107,0.45);
+    background: rgba(0,0,0,0.35);
+    color: #fff;
+    font-weight: 700;
+    font-family: inherit;
+  }
+  .pr-profile-select { appearance: none; -webkit-appearance: none; cursor: pointer; }
+  .pr-profile-input:focus,
+  .pr-profile-select:focus {
+    outline: none;
+    border-color: #ffd76b;
+    box-shadow: 0 0 0 3px rgba(255,215,107,0.25);
+  }
+  @media (max-width: 720px) {
+    .pr-profile-grid { grid-template-columns: 1fr; }
+  }
+
+  .pr-leaderboard-card {
+    max-width: 880px;
+    width: min(880px, 96vw);
+    text-align: left;
+    background: rgba(14,24,42,0.92);
+    border: 1px solid rgba(245,200,66,0.35);
+    border-radius: 18px;
+    padding: 1.1rem 1.2rem 1.2rem;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 30px rgba(245,200,66,0.12);
+  }
+  .pr-leaderboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+  .pr-leaderboard-close {
+    padding: 0.45rem 0.95rem !important;
+    font-size: 0.82rem !important;
+  }
+  .pr-leaderboard-pills {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin: 0.2rem 0 0.8rem;
+  }
+  .pr-storage-pill {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    background: rgba(59,200,232,0.12);
+    border: 1px solid rgba(59,200,232,0.35);
+    border-radius: 999px;
+    color: var(--teal);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .pr-storage-pill.pr-pill-muted {
+    background: rgba(138,175,202,0.08);
+    border-color: rgba(138,175,202,0.25);
+    color: var(--text-muted);
+  }
+  .pr-leaderboard-tabs {
+    display: flex;
+    gap: 0.35rem;
+    border-bottom: 1px solid rgba(89,112,170,0.25);
+    margin-bottom: 0.7rem;
+    flex-wrap: wrap;
+  }
+  .pr-leaderboard-tab {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.55rem 0.85rem;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.12s, border-color 0.12s;
+  }
+  .pr-leaderboard-tab:hover { color: var(--gold); }
+  .pr-leaderboard-tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+  .pr-leaderboard-body {
+    max-height: 52vh;
+    overflow: auto;
+    border-radius: 10px;
+  }
+  .pr-leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    font-family: 'Nunito', sans-serif;
+  }
+  .pr-leaderboard-table th,
+  .pr-leaderboard-table td {
+    padding: 0.5rem 0.55rem;
+    border-bottom: 1px solid rgba(89,112,170,0.18);
+    text-align: left;
+  }
+  .pr-leaderboard-table th {
+    color: #bdd4ff;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    background: rgba(8,14,26,0.6);
+    position: sticky;
+    top: 0;
+  }
+  .pr-leaderboard-table td.pr-num { color: var(--teal); font-weight: 800; }
+  .pr-leaderboard-table td.pr-name { color: #fff; font-weight: 800; }
+  .pr-leaderboard-table td.pr-gold { color: var(--gold); font-weight: 800; }
+  .pr-leaderboard-table td.pr-medal { font-size: 1.1rem; text-align: center; width: 2.4rem; }
+  .pr-leaderboard-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 1.3rem 0.6rem;
+    font-weight: 700;
+  }
+  @media (max-width: 600px) {
+    .pr-leaderboard-table { font-size: 0.78rem; }
+    .pr-leaderboard-table th,
+    .pr-leaderboard-table td { padding: 0.4rem 0.35rem; }
+  }
 </style>
 </head>
 <body>
@@ -2306,11 +2457,83 @@
 
         <div class="overlay hidden" id="overlayCertDone">
           <div class="pa-cert-card">
-            <div class="level-tag" style="text-align:center;">CERTIFIED</div>
-            <h2 class="pa-cert-title">PHOTON SPECIALIST CERTIFIED</h2>
+            <div class="level-tag" style="text-align:center;" id="certDoneTag">CERTIFIED</div>
+            <h2 class="pa-cert-title" id="certDoneTitle">PHOTON SPECIALIST CERTIFIED</h2>
             <p class="pa-cert-sub">Certificate successfully generated.</p>
+            <p class="pa-cert-sub" style="margin-top:0.4rem;">Would you like to enter the Hall of Fame?</p>
             <div class="pa-cert-actions">
+              <button class="btn" id="btnEnterHallOfFame">Enter Hall of Fame</button>
               <button class="btn btn-teal" id="btnCertReplay">Replay Game</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Micropass 61: Hall of Fame profile entry. -->
+        <div class="overlay hidden" id="overlayProfile">
+          <div class="pa-cert-card">
+            <div class="level-tag" style="text-align:center;">HALL OF FAME</div>
+            <h2 class="pa-cert-title">ENTER THE HALL OF FAME</h2>
+            <p class="pa-cert-sub">Save your run to the live leaderboard.</p>
+            <div class="pr-profile-grid">
+              <div class="pr-profile-field">
+                <label class="pr-profile-label" for="profileName">Student Name</label>
+                <input type="text" id="profileName" class="pr-profile-input"
+                       maxlength="30" autocomplete="off" spellcheck="false"
+                       placeholder="First name + last initial" aria-label="Student name">
+              </div>
+              <div class="pr-profile-field">
+                <label class="pr-profile-label" for="profileTeacher">Teacher</label>
+                <select id="profileTeacher" class="pr-profile-select">
+                  <option value="">Select teacher</option>
+                  <option value="Mr. Brown">Mr. Brown</option>
+                  <option value="Ms. Gay">Ms. Gay</option>
+                </select>
+              </div>
+              <div class="pr-profile-field">
+                <label class="pr-profile-label" for="profileBlock">Block</label>
+                <select id="profileBlock" class="pr-profile-select">
+                  <option value="">Select block</option>
+                  <option>A Block</option>
+                  <option>B Block</option>
+                  <option>C Block</option>
+                  <option>D Block</option>
+                  <option>E Block</option>
+                  <option>F Block</option>
+                  <option>G Block</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="pa-cert-error" id="profileError"></div>
+            <div class="pa-cert-actions">
+              <button class="btn" id="btnProfileSubmit">Submit and View Leaderboard</button>
+              <button class="btn btn-teal" id="btnProfileCancel">Skip</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Micropass 61: Live leaderboard modal. -->
+        <div class="overlay hidden" id="overlayLeaderboard">
+          <div class="pa-cert-card pr-leaderboard-card">
+            <div class="pr-leaderboard-header">
+              <div>
+                <div class="level-tag">HALL OF FAME</div>
+                <h2 class="pa-cert-title" style="text-align:left;margin:0.15rem 0 0;">PHOTON RUNNER LEADERBOARD</h2>
+              </div>
+              <button class="btn btn-teal pr-leaderboard-close" id="btnLeaderboardClose">Close</button>
+            </div>
+            <div class="pr-leaderboard-pills">
+              <span class="pr-storage-pill" id="prSaveStatusPill">Storage: local only</span>
+              <span class="pr-storage-pill pr-pill-muted">Live refresh every 4s</span>
+            </div>
+            <div class="pr-leaderboard-tabs" role="tablist">
+              <button class="pr-leaderboard-tab active" data-lb-tab="runners" type="button">Top Photon Runners</button>
+              <button class="pr-leaderboard-tab" data-lb-tab="solar" type="button">Best Solar Engineers</button>
+              <button class="pr-leaderboard-tab" data-lb-tab="foreman" type="button">Foreman Slayers</button>
+            </div>
+            <div class="pr-leaderboard-body" id="prLeaderboardBody"></div>
+            <div class="pa-cert-actions" style="margin-top:0.9rem;">
+              <button class="btn btn-teal" id="btnLeaderboardReplay">Replay Game</button>
             </div>
           </div>
         </div>
@@ -4407,6 +4630,11 @@ function handleBossPlayerContact() {
 }
 
 function finishForemanDefeat() {
+  // Micropass 61: capture Foreman fight time for the leaderboard.
+  if (typeof state.bossSpawnT === 'number' && typeof state.elapsed === 'number') {
+    const t = Math.max(0, state.elapsed - state.bossSpawnT);
+    if (isFinite(t)) state.foremanTimeFinal = t;
+  }
   state.bossActive   = false;
   state.bossDefeated = true;
   state.boss = null;
@@ -5429,6 +5657,7 @@ function freshState() {
     foundryBest:     loadFoundryBest(), // best run score (localStorage-backed)
     foundryCombo:    0,       // current combo (shards collected since last damage / decay)
     foundryComboHighest: 0,   // Micropass 59: highest combo reached (used on cert)
+    foremanTimeFinal: null,   // Micropass 61: seconds from Foreman spawn to defeat (leaderboard)
     comboTimer:      0,       // seconds since last shard pickup
     segmentScored:   {},      // segNum -> true once segment-complete bonus paid
     // Micropass 28: feedback polish (floating score popups + combo banners).
@@ -9025,6 +9254,10 @@ function hideAllCertOverlays() {
   overlayCertResult.classList.add('hidden');
   overlayCertName.classList.add('hidden');
   overlayCertDone.classList.add('hidden');
+  const op = document.getElementById('overlayProfile');
+  const ol = document.getElementById('overlayLeaderboard');
+  if (op) op.classList.add('hidden');
+  if (ol) { ol.classList.add('hidden'); stopLeaderboardPolling(); }
 }
 
 function startCertExam() {
@@ -9146,6 +9379,7 @@ document.getElementById('btnCertGenerate').addEventListener('click', () => {
   certExam.studentName = name;
   try { generateCertificatePDF(); } catch (e) { console.error(e); }
   hideAllCertOverlays();
+  updateCertDoneTitle();
   overlayCertDone.classList.remove('hidden');
 });
 
@@ -9196,99 +9430,240 @@ function generateCertificatePDF() {
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
 
-  // Background
-  doc.setFillColor(11, 20, 36);
+  const GOLD = [212, 175, 55];
+  const GOLD_BRIGHT = [255, 215, 107];
+  const NAVY = [11, 20, 36];
+  const NAVY_MID = [20, 34, 58];
+  const WHITE = [255, 255, 255];
+  const BODY = [225, 232, 245];
+  const MUTED = [150, 170, 200];
+  const CYAN = [86, 210, 240];
+
+  // Background fill
+  doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
   doc.rect(0, 0, W, H, 'F');
 
+  // Soft blue glow blobs (faint)
+  doc.setFillColor(NAVY_MID[0], NAVY_MID[1], NAVY_MID[2]);
+  for (let i = 0; i < 4; i++) {
+    const cx = (i + 0.5) * (W / 4);
+    doc.circle(cx, H * 0.55, 160, 'F');
+  }
+
+  // Faint photon lines (diagonal)
+  doc.setDrawColor(40, 70, 110);
+  doc.setLineWidth(0.4);
+  for (let i = -8; i < 20; i++) {
+    const x = i * 60;
+    doc.line(x, 0, x + 220, H);
+  }
+
+  // Tiny stars scattered
+  doc.setFillColor(120, 150, 200);
+  const stars = [
+    [60, 80], [120, 200], [200, 130], [280, 60], [340, 220],
+    [W - 70, 90], [W - 140, 180], [W - 220, 70], [W - 300, 210], [W - 90, 260],
+    [90, H - 110], [200, H - 60], [W - 110, H - 90], [W - 240, H - 140],
+    [W / 2 - 180, 80], [W / 2 + 200, 100], [W / 2 - 240, H - 80], [W / 2 + 260, H - 70]
+  ];
+  stars.forEach(s => doc.circle(s[0], s[1], 1.2, 'F'));
+
+  // Watermark "PHOTON" text behind content
+  doc.setTextColor(22, 38, 64);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(140);
+  doc.text('PHOTON', W / 2, H / 2 + 30, { align: 'center' });
+
   // Outer gold border
-  doc.setDrawColor(255, 215, 107);
+  doc.setDrawColor(GOLD_BRIGHT[0], GOLD_BRIGHT[1], GOLD_BRIGHT[2]);
   doc.setLineWidth(4);
   doc.rect(22, 22, W - 44, H - 44);
+  doc.setDrawColor(GOLD[0], GOLD[1], GOLD[2]);
   doc.setLineWidth(1);
   doc.rect(34, 34, W - 68, H - 68);
 
+  // Corner ornaments
+  const cornerSize = 26;
+  doc.setDrawColor(GOLD_BRIGHT[0], GOLD_BRIGHT[1], GOLD_BRIGHT[2]);
+  doc.setLineWidth(1.5);
+  [[40, 40], [W - 40, 40], [40, H - 40], [W - 40, H - 40]].forEach(([x, y]) => {
+    doc.circle(x, y, 6);
+    doc.circle(x, y, 2, 'F');
+  });
+
   // Title
-  doc.setTextColor(255, 215, 107);
+  doc.setTextColor(GOLD_BRIGHT[0], GOLD_BRIGHT[1], GOLD_BRIGHT[2]);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(34);
-  doc.text('PHOTON ACADEMY', W / 2, 100, { align: 'center' });
+  doc.setFontSize(40);
+  doc.text('PHOTON ACADEMY', W / 2, 92, { align: 'center' });
 
-  doc.setTextColor(220, 230, 245);
-  doc.setFontSize(18);
-  doc.text('CERTIFICATE OF COMPLETION', W / 2, 132, { align: 'center' });
+  // Divider under title
+  doc.setDrawColor(GOLD[0], GOLD[1], GOLD[2]);
+  doc.setLineWidth(0.8);
+  doc.line(W / 2 - 180, 104, W / 2 + 180, 104);
 
-  // Divider
-  doc.setDrawColor(255, 215, 107);
-  doc.setLineWidth(1);
-  doc.line(W / 2 - 120, 148, W / 2 + 120, 148);
+  doc.setTextColor(BODY[0], BODY[1], BODY[2]);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(16);
+  doc.text('CERTIFICATE OF COMPLETION', W / 2, 128, { align: 'center' });
 
   // Body
-  doc.setTextColor(220, 230, 245);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(14);
-  doc.text('This certifies that', W / 2, 188, { align: 'center' });
-
-  // Student name
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(30);
-  doc.text(certExam.studentName || 'Cadet', W / 2, 226, { align: 'center' });
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(14);
-  doc.setTextColor(220, 230, 245);
-  doc.text('has successfully completed', W / 2, 256, { align: 'center' });
-
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(59, 200, 232);
-  doc.setFontSize(22);
-  doc.text('PHOTON RUNNER', W / 2, 286, { align: 'center' });
-
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(220, 230, 245);
-  doc.setFontSize(13);
-  doc.text('and demonstrated mastery of:', W / 2, 312, { align: 'center' });
-
-  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+  doc.setFont('helvetica', 'italic');
   doc.setFontSize(15);
-  doc.setTextColor(255, 215, 107);
-  doc.text('Transmission     Absorption     Reflection', W / 2, 338, { align: 'center' });
+  doc.text('This certifies that', W / 2, 180, { align: 'center' });
+
+  // Student name (largest text)
+  const studentName = certExam.studentName || 'Cadet';
+  doc.setTextColor(WHITE[0], WHITE[1], WHITE[2]);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(52);
+  doc.text(studentName, W / 2, 238, { align: 'center' });
+
+  // Name underline
+  const nameWidth = doc.getTextWidth(studentName);
+  const underlineW = Math.min(Math.max(nameWidth + 60, 260), W - 200);
+  doc.setDrawColor(GOLD_BRIGHT[0], GOLD_BRIGHT[1], GOLD_BRIGHT[2]);
+  doc.setLineWidth(1);
+  doc.line(W / 2 - underlineW / 2, 252, W / 2 + underlineW / 2, 252);
+
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(14);
+  doc.setTextColor(BODY[0], BODY[1], BODY[2]);
+  doc.text('has successfully completed', W / 2, 278, { align: 'center' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(CYAN[0], CYAN[1], CYAN[2]);
+  doc.setFontSize(26);
+  doc.text('PHOTON RUNNER', W / 2, 310, { align: 'center' });
+
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(BODY[0], BODY[1], BODY[2]);
+  doc.setFontSize(13);
+  doc.text('and demonstrated mastery of', W / 2, 334, { align: 'center' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(GOLD_BRIGHT[0], GOLD_BRIGHT[1], GOLD_BRIGHT[2]);
+  const masteryY = 360;
+  const masteryItems = ['Transmission', 'Absorption', 'Reflection'];
+  const masteryXs = [W * 0.32, W * 0.5, W * 0.68];
+  masteryItems.forEach((label, i) => {
+    doc.text(String.fromCharCode(0x2713) + '  ' + label, masteryXs[i], masteryY, { align: 'center' });
+  });
+
+  // Seal (top-right area, above stats)
+  const sealX = W - 110;
+  const sealY = 200;
+  // Outer ring
+  doc.setDrawColor(GOLD_BRIGHT[0], GOLD_BRIGHT[1], GOLD_BRIGHT[2]);
+  doc.setFillColor(GOLD[0], GOLD[1], GOLD[2]);
+  doc.setLineWidth(2);
+  doc.circle(sealX, sealY, 58, 'FD');
+  // Inner navy disc
+  doc.setFillColor(NAVY[0], NAVY[1], NAVY[2]);
+  doc.setDrawColor(GOLD_BRIGHT[0], GOLD_BRIGHT[1], GOLD_BRIGHT[2]);
+  doc.setLineWidth(1);
+  doc.circle(sealX, sealY, 48, 'FD');
+  // Inner accent ring
+  doc.setDrawColor(GOLD[0], GOLD[1], GOLD[2]);
+  doc.setLineWidth(0.5);
+  doc.circle(sealX, sealY, 40);
+  // Star burst rays
+  doc.setDrawColor(GOLD_BRIGHT[0], GOLD_BRIGHT[1], GOLD_BRIGHT[2]);
+  doc.setLineWidth(0.8);
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const r1 = 48, r2 = 56;
+    doc.line(sealX + Math.cos(a) * r1, sealY + Math.sin(a) * r1,
+             sealX + Math.cos(a) * r2, sealY + Math.sin(a) * r2);
+  }
+  // Seal text
+  doc.setTextColor(GOLD_BRIGHT[0], GOLD_BRIGHT[1], GOLD_BRIGHT[2]);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('PHOTON', sealX, sealY - 8, { align: 'center' });
+  doc.text('SPECIALIST', sealX, sealY + 6, { align: 'center' });
+  // Star icon under text
+  doc.setFontSize(14);
+  doc.text(String.fromCharCode(0x2605), sealX, sealY + 24, { align: 'center' });
+  // Ribbon tails
+  doc.setFillColor(GOLD[0], GOLD[1], GOLD[2]);
+  doc.triangle(sealX - 18, sealY + 50, sealX - 6, sealY + 50, sealX - 12, sealY + 78, 'F');
+  doc.triangle(sealX + 6, sealY + 50, sealX + 18, sealY + 50, sealX + 12, sealY + 78, 'F');
 
   // Stats row
   const stats = collectCertStats();
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(138, 160, 191);
-  const y1 = 392;
-  const y2 = 412;
-  const colXs = [W * 0.22, W * 0.5, W * 0.78];
-  doc.text('FINAL SCORE',       colXs[0], y1, { align: 'center' });
-  doc.text('HIGHEST COMBO',     colXs[1], y1, { align: 'center' });
-  doc.text('SOLAR EFFICIENCY',  colXs[2], y1, { align: 'center' });
+  const dateStr = formatCertDate(new Date());
+  const statsY1 = 410;
+  const statsY2 = 432;
+  const statsBoxY = 392;
+  const statsBoxH = 60;
+  const statsBoxX = 90;
+  const statsBoxW = W - 180;
 
-  doc.setFontSize(15);
-  doc.setTextColor(255, 255, 255);
-  doc.text(stats.score,      colXs[0], y2, { align: 'center' });
-  doc.text(stats.combo,      colXs[1], y2, { align: 'center' });
-  doc.text(stats.efficiency, colXs[2], y2, { align: 'center' });
+  // Stats panel background
+  doc.setFillColor(NAVY_MID[0], NAVY_MID[1], NAVY_MID[2]);
+  doc.rect(statsBoxX, statsBoxY, statsBoxW, statsBoxH, 'F');
+  doc.setDrawColor(GOLD[0], GOLD[1], GOLD[2]);
+  doc.setLineWidth(0.6);
+  doc.rect(statsBoxX, statsBoxY, statsBoxW, statsBoxH);
+
+  const colXs = [
+    statsBoxX + statsBoxW * 0.125,
+    statsBoxX + statsBoxW * 0.375,
+    statsBoxX + statsBoxW * 0.625,
+    statsBoxX + statsBoxW * 0.875
+  ];
+  // Divider lines between columns
+  doc.setDrawColor(GOLD[0], GOLD[1], GOLD[2]);
+  doc.setLineWidth(0.3);
+  for (let i = 1; i < 4; i++) {
+    const x = statsBoxX + (statsBoxW * i) / 4;
+    doc.line(x, statsBoxY + 10, x, statsBoxY + statsBoxH - 10);
+  }
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+  doc.text('FINAL SCORE',      colXs[0], statsY1, { align: 'center' });
+  doc.text('HIGHEST COMBO',    colXs[1], statsY1, { align: 'center' });
+  doc.text('SOLAR EFFICIENCY', colXs[2], statsY1, { align: 'center' });
+  doc.text('DATE',             colXs[3], statsY1, { align: 'center' });
+
+  doc.setFontSize(14);
+  doc.setTextColor(WHITE[0], WHITE[1], WHITE[2]);
+  doc.text(String(stats.score || 'Not recorded'),      colXs[0], statsY2, { align: 'center' });
+  doc.text(String(stats.combo || 'Not recorded'),      colXs[1], statsY2, { align: 'center' });
+  doc.text(String(stats.efficiency || 'Not recorded'), colXs[2], statsY2, { align: 'center' });
+  doc.text(dateStr,                                    colXs[3], statsY2, { align: 'center' });
 
   // Footer
-  const dateStr = formatCertDate(new Date());
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(11);
-  doc.setTextColor(138, 160, 191);
-  doc.text('DATE', 80, H - 70);
-  doc.text('ISSUED BY', W - 80, H - 70, { align: 'right' });
+  const footY = H - 70;
+  doc.setDrawColor(GOLD[0], GOLD[1], GOLD[2]);
+  doc.setLineWidth(0.5);
+  doc.line(W / 2 - 140, footY - 18, W / 2 + 140, footY - 18);
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(255, 255, 255);
-  doc.text(dateStr, 80, H - 50);
-  doc.setTextColor(255, 215, 107);
-  doc.text('LyfeLabz', W - 80, H - 50, { align: 'right' });
+  doc.setFontSize(10);
+  doc.setTextColor(GOLD_BRIGHT[0], GOLD_BRIGHT[1], GOLD_BRIGHT[2]);
+  doc.text('Photon Specialist Certification', W / 2, footY - 4, { align: 'center' });
 
-  const safeName = (certExam.studentName || 'Cadet').replace(/[^A-Za-z0-9\-]+/g, '_');
-  doc.save('PhotonAcademy_Certificate_' + safeName + '.pdf');
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(BODY[0], BODY[1], BODY[2]);
+  doc.text('Instructor  ' + String.fromCharCode(0x2022) + '  Weston Middle School  ' + String.fromCharCode(0x2022) + '  LyfeLabz',
+    W / 2, footY + 10, { align: 'center' });
+
+  // Filename
+  const rawName = (certExam.studentName || 'cadet').toString();
+  const safeName = rawName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]+/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-') || 'cadet';
+  doc.save('photon-academy-certificate-' + safeName + '.pdf');
 }
 
 document.getElementById('btnCertReplay').addEventListener('click', () => {
@@ -9298,6 +9673,382 @@ document.getElementById('btnCertReplay').addEventListener('click', () => {
 });
 
 document.getElementById('btnStartExam').addEventListener('click', startCertExam);
+
+/* ---------- Micropass 61: HALL OF FAME / LIVE LEADERBOARD ---------- */
+/* Paste your Photon Runner Apps Script deployment URL between the quotes.
+   Leave empty ("") to run in local-only mode. The deployment should support:
+     GET ?action=submitScore&game=photon-runner&name=...&teacher=...&block=...
+     GET ?action=getScores&game=photon-runner
+   See LyfeLabz_GScript.js for the existing Evolution Clicker pattern. */
+const APPS_SCRIPT_URL = "";
+
+const PR_LB_STORE_KEY = 'photon-runner-leaderboard-v1';
+const PR_PROFILE_STORE_KEY = 'photon-runner-profile-v1';
+const PR_LB_POLL_MS = 4000;
+
+let prLeaderboardPollId = null;
+let prCurrentLbTab = 'runners';
+let prProfile = loadProfile();
+
+const overlayProfile     = document.getElementById('overlayProfile');
+const overlayLeaderboard = document.getElementById('overlayLeaderboard');
+const profileNameEl      = document.getElementById('profileName');
+const profileTeacherEl   = document.getElementById('profileTeacher');
+const profileBlockEl     = document.getElementById('profileBlock');
+const profileErrorEl     = document.getElementById('profileError');
+const prSaveStatusPill   = document.getElementById('prSaveStatusPill');
+const prLeaderboardBody  = document.getElementById('prLeaderboardBody');
+const certDoneTagEl      = document.getElementById('certDoneTag');
+const certDoneTitleEl    = document.getElementById('certDoneTitle');
+
+function getCertRankTitle() {
+  const s = (certExam && typeof certExam.score === 'number') ? certExam.score : 0;
+  if (s >= 5) return 'Photon Master';
+  if (s >= 4) return 'Photon Specialist';
+  return 'Additional Training Recommended';
+}
+
+function updateCertDoneTitle() {
+  if (!certDoneTagEl || !certDoneTitleEl) return;
+  const rank = getCertRankTitle();
+  const passed = (certExam && typeof certExam.score === 'number' && certExam.score >= 4);
+  certDoneTagEl.textContent = passed ? 'CERTIFIED' : 'TRAINING';
+  certDoneTitleEl.textContent = passed ? (rank.toUpperCase() + ' CERTIFIED') : rank.toUpperCase();
+}
+
+function escapeHtmlPR(s) {
+  return String(s == null ? '' : s)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function sanitizeProfileName(raw) {
+  if (typeof raw !== 'string') return '';
+  let s = raw.replace(/\s+/g, ' ').trim();
+  if (s.length > 30) s = s.slice(0, 30);
+  s = s.replace(/[^\p{L} '\-\.]/gu, '');
+  return s;
+}
+
+function loadProfile() {
+  try {
+    const raw = localStorage.getItem(PR_PROFILE_STORE_KEY);
+    if (!raw) return { name: '', teacher: '', block: '' };
+    const j = JSON.parse(raw);
+    return {
+      name: typeof j.name === 'string' ? j.name : '',
+      teacher: typeof j.teacher === 'string' ? j.teacher : '',
+      block: typeof j.block === 'string' ? j.block : ''
+    };
+  } catch (e) { return { name: '', teacher: '', block: '' }; }
+}
+
+function saveProfile(p) {
+  try { localStorage.setItem(PR_PROFILE_STORE_KEY, JSON.stringify(p)); } catch (e) {}
+}
+
+function getLocalScores() {
+  try { return JSON.parse(localStorage.getItem(PR_LB_STORE_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+
+function setLocalScores(arr) {
+  try { localStorage.setItem(PR_LB_STORE_KEY, JSON.stringify(arr)); } catch (e) {}
+}
+
+function formatScoreVal(n) {
+  const v = Number(n) || 0;
+  return v.toLocaleString();
+}
+
+function formatEfficiencyVal(n) {
+  const v = Number(n);
+  if (!isFinite(v)) return '--';
+  return Math.round(v) + '%';
+}
+
+function formatForemanTime(secs) {
+  const v = Number(secs);
+  if (!isFinite(v) || v <= 0) return null;
+  const total = Math.round(v * 10) / 10;
+  const m = Math.floor(total / 60);
+  const s = total - m * 60;
+  if (m > 0) return m + ':' + s.toFixed(1).padStart(4, '0');
+  return s.toFixed(1) + 's';
+}
+
+function getScorePayload() {
+  const efficiency = (state && typeof state.solarEfficiencyFinal === 'number')
+    ? Math.round(state.solarEfficiencyFinal) : null;
+  const combo = (state && typeof state.foundryComboHighest === 'number')
+    ? state.foundryComboHighest : 0;
+  const finalScore = (state && typeof state.foundryScore === 'number')
+    ? Math.floor(state.foundryScore) : 0;
+  const foremanT = (state && typeof state.foremanTimeFinal === 'number' && state.foremanTimeFinal > 0)
+    ? Math.round(state.foremanTimeFinal * 10) / 10 : null;
+  return {
+    game:             'photon-runner',
+    name:             prProfile.name || '',
+    teacher:          prProfile.teacher || '',
+    block:            prProfile.block || '',
+    score:            finalScore,
+    solarEfficiency:  efficiency == null ? '' : efficiency,
+    highestCombo:     combo,
+    foremanTime:      foremanT == null ? '' : foremanT,
+    certScore:        (certExam && typeof certExam.score === 'number') ? certExam.score : 0,
+    certRank:         getCertRankTitle(),
+    updatedAt:        new Date().toISOString()
+  };
+}
+
+async function pushScore() {
+  const p = getScorePayload();
+  if (!p.name) return;
+
+  const local = getLocalScores();
+  const key = p.name + '|' + p.teacher + '|' + p.block;
+  const idx = local.findIndex(s => (s.name + '|' + s.teacher + '|' + s.block) === key);
+  if (idx >= 0) {
+    if ((p.score || 0) >= (local[idx].score || 0)) local[idx] = p;
+  } else {
+    local.push(p);
+  }
+  local.sort((a, b) => (b.score || 0) - (a.score || 0));
+  setLocalScores(local.slice(0, 50));
+
+  if (APPS_SCRIPT_URL) {
+    try {
+      const params = new URLSearchParams({
+        action:          'submitScore',
+        game:            p.game,
+        name:            p.name,
+        teacher:         p.teacher,
+        block:           p.block,
+        score:           String(p.score),
+        solarEfficiency: String(p.solarEfficiency),
+        highestCombo:    String(p.highestCombo),
+        foremanTime:     String(p.foremanTime),
+        certScore:       String(p.certScore),
+        certRank:        p.certRank,
+        updatedAt:       p.updatedAt
+      });
+      await fetch(APPS_SCRIPT_URL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
+      if (prSaveStatusPill) prSaveStatusPill.textContent = 'Storage: cloud + local';
+    } catch (e) {
+      if (prSaveStatusPill) prSaveStatusPill.textContent = 'Storage: local fallback';
+    }
+  } else {
+    if (prSaveStatusPill) prSaveStatusPill.textContent = 'Storage: local only';
+  }
+}
+
+async function fetchCloudScores() {
+  if (!APPS_SCRIPT_URL) {
+    if (prSaveStatusPill) prSaveStatusPill.textContent = 'Storage: local only';
+    return getLocalScores();
+  }
+  try {
+    const url = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.includes('?') ? '&' : '?')
+              + 'action=getScores&game=photon-runner';
+    const res  = await fetch(url, { method: 'GET', mode: 'cors' });
+    const data = await res.json();
+    if (prSaveStatusPill) prSaveStatusPill.textContent = 'Storage: cloud + local';
+    return Array.isArray(data.scores) ? data.scores : getLocalScores();
+  } catch (e) {
+    if (prSaveStatusPill) prSaveStatusPill.textContent = 'Storage: local fallback';
+    return getLocalScores();
+  }
+}
+
+function medalFor(i) { return i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : String(i + 1); }
+
+function renderLeaderboardRows(scores) {
+  if (!prLeaderboardBody) return;
+  const list = Array.isArray(scores) ? scores.slice() : [];
+
+  let html = '';
+  if (prCurrentLbTab === 'runners') {
+    const sorted = list.sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0)).slice(0, 20);
+    html += '<table class="pr-leaderboard-table"><thead><tr>'
+         +  '<th>Rank</th><th>Name</th><th>Teacher</th><th>Block</th><th>Score</th><th>Cert</th>'
+         +  '</tr></thead><tbody>';
+    if (!sorted.length) {
+      html += '<tr><td colspan="6"><div class="pr-leaderboard-empty">No runs yet, be the first to enter the Hall of Fame.</div></td></tr>';
+    } else {
+      sorted.forEach((row, i) => {
+        html += '<tr>'
+             + '<td class="pr-medal">' + medalFor(i) + '</td>'
+             + '<td class="pr-name">' + escapeHtmlPR(row.name || 'Anon') + '</td>'
+             + '<td>' + escapeHtmlPR(row.teacher || '') + '</td>'
+             + '<td>' + escapeHtmlPR(row.block || '') + '</td>'
+             + '<td class="pr-gold">' + formatScoreVal(row.score || 0) + '</td>'
+             + '<td>' + escapeHtmlPR(row.certRank || '') + '</td>'
+             + '</tr>';
+      });
+    }
+    html += '</tbody></table>';
+  } else if (prCurrentLbTab === 'solar') {
+    const withEff = list.filter(r => {
+      const v = Number(r.solarEfficiency);
+      return isFinite(v) && v > 0;
+    });
+    const sorted = withEff.sort((a, b) => (Number(b.solarEfficiency) || 0) - (Number(a.solarEfficiency) || 0)).slice(0, 20);
+    html += '<table class="pr-leaderboard-table"><thead><tr>'
+         +  '<th>Rank</th><th>Name</th><th>Teacher</th><th>Block</th><th>Efficiency</th><th>Score</th>'
+         +  '</tr></thead><tbody>';
+    if (!sorted.length) {
+      html += '<tr><td colspan="6"><div class="pr-leaderboard-empty">No solar efficiency runs recorded yet.</div></td></tr>';
+    } else {
+      sorted.forEach((row, i) => {
+        html += '<tr>'
+             + '<td class="pr-medal">' + medalFor(i) + '</td>'
+             + '<td class="pr-name">' + escapeHtmlPR(row.name || 'Anon') + '</td>'
+             + '<td>' + escapeHtmlPR(row.teacher || '') + '</td>'
+             + '<td>' + escapeHtmlPR(row.block || '') + '</td>'
+             + '<td class="pr-gold">' + formatEfficiencyVal(row.solarEfficiency) + '</td>'
+             + '<td class="pr-num">' + formatScoreVal(row.score || 0) + '</td>'
+             + '</tr>';
+      });
+    }
+    html += '</tbody></table>';
+  } else {
+    const withTime = list.filter(r => {
+      const v = Number(r.foremanTime);
+      return isFinite(v) && v > 0;
+    });
+    const sorted = withTime.sort((a, b) => (Number(a.foremanTime) || 0) - (Number(b.foremanTime) || 0)).slice(0, 20);
+    html += '<table class="pr-leaderboard-table"><thead><tr>'
+         +  '<th>Rank</th><th>Name</th><th>Teacher</th><th>Block</th><th>Foreman Time</th><th>Score</th>'
+         +  '</tr></thead><tbody>';
+    if (!sorted.length) {
+      html += '<tr><td colspan="6"><div class="pr-leaderboard-empty">Foreman time not recorded yet.</div></td></tr>';
+    } else {
+      sorted.forEach((row, i) => {
+        const t = formatForemanTime(row.foremanTime) || '--';
+        html += '<tr>'
+             + '<td class="pr-medal">' + medalFor(i) + '</td>'
+             + '<td class="pr-name">' + escapeHtmlPR(row.name || 'Anon') + '</td>'
+             + '<td>' + escapeHtmlPR(row.teacher || '') + '</td>'
+             + '<td>' + escapeHtmlPR(row.block || '') + '</td>'
+             + '<td class="pr-gold">' + t + '</td>'
+             + '<td class="pr-num">' + formatScoreVal(row.score || 0) + '</td>'
+             + '</tr>';
+      });
+    }
+    html += '</tbody></table>';
+  }
+  prLeaderboardBody.innerHTML = html;
+}
+
+async function renderLeaderboard() {
+  await pushScore();
+  const scores = await fetchCloudScores();
+  renderLeaderboardRows(scores);
+}
+
+function startLeaderboardPolling() {
+  stopLeaderboardPolling();
+  prLeaderboardPollId = setInterval(async () => {
+    const scores = await fetchCloudScores();
+    renderLeaderboardRows(scores);
+  }, PR_LB_POLL_MS);
+}
+
+function stopLeaderboardPolling() {
+  if (prLeaderboardPollId) {
+    clearInterval(prLeaderboardPollId);
+    prLeaderboardPollId = null;
+  }
+}
+
+async function openLeaderboardModal() {
+  overlayCertDone.classList.add('hidden');
+  if (overlayProfile) overlayProfile.classList.add('hidden');
+  overlayLeaderboard.classList.remove('hidden');
+  await renderLeaderboard();
+  startLeaderboardPolling();
+}
+
+function openProfileModal() {
+  overlayCertDone.classList.add('hidden');
+  if (!overlayProfile) return;
+  overlayProfile.classList.remove('hidden');
+  if (profileErrorEl) profileErrorEl.textContent = '';
+  if (profileNameEl) {
+    const certName = (certExam && certExam.studentName) ? certExam.studentName : '';
+    profileNameEl.value = certName || prProfile.name || '';
+  }
+  if (profileTeacherEl) profileTeacherEl.value = prProfile.teacher || '';
+  if (profileBlockEl) profileBlockEl.value = prProfile.block || '';
+  setTimeout(() => { try { profileNameEl && profileNameEl.focus(); } catch (e) {} }, 30);
+}
+
+document.getElementById('btnEnterHallOfFame').addEventListener('click', openProfileModal);
+
+document.getElementById('btnProfileSubmit').addEventListener('click', async () => {
+  const name = sanitizeProfileName(profileNameEl ? profileNameEl.value : '');
+  const teacher = profileTeacherEl ? profileTeacherEl.value : '';
+  const block = profileBlockEl ? profileBlockEl.value : '';
+  if (!name) {
+    profileErrorEl.textContent = 'Please enter your name to continue.';
+    profileNameEl && profileNameEl.focus();
+    return;
+  }
+  if (!teacher) {
+    profileErrorEl.textContent = 'Please choose your teacher.';
+    return;
+  }
+  if (!block) {
+    profileErrorEl.textContent = 'Please choose your block.';
+    return;
+  }
+  profileErrorEl.textContent = '';
+  prProfile = { name: name, teacher: teacher, block: block };
+  saveProfile(prProfile);
+  await openLeaderboardModal();
+});
+
+document.getElementById('btnProfileCancel').addEventListener('click', () => {
+  overlayProfile.classList.add('hidden');
+  overlayCertDone.classList.remove('hidden');
+});
+
+profileNameEl && profileNameEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    document.getElementById('btnProfileSubmit').click();
+  }
+});
+
+document.querySelectorAll('.pr-leaderboard-tab').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    document.querySelectorAll('.pr-leaderboard-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    prCurrentLbTab = btn.getAttribute('data-lb-tab') || 'runners';
+    const scores = await fetchCloudScores();
+    renderLeaderboardRows(scores);
+  });
+});
+
+document.getElementById('btnLeaderboardClose').addEventListener('click', () => {
+  stopLeaderboardPolling();
+  overlayLeaderboard.classList.add('hidden');
+  overlayCertDone.classList.remove('hidden');
+});
+
+document.getElementById('btnLeaderboardReplay').addEventListener('click', () => {
+  stopLeaderboardPolling();
+  hideAllCertOverlays();
+  if (audio.ready && audio.ctx.state === 'suspended') audio.ctx.resume();
+  startGame();
+});
+
+if (prSaveStatusPill) {
+  prSaveStatusPill.textContent = APPS_SCRIPT_URL ? 'Storage: cloud ready' : 'Storage: local only';
+}
 
 /* ---------- BOOT: draw idle frame behind start overlay ---------- */
 state = freshState();
