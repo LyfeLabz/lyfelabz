@@ -428,3 +428,33 @@ function testGetEvolutionClickerScores() {
 function testGetPhotonRunnerScores() {
   Logger.log(doGet({ parameter: { action: 'getScores', game: 'photon-runner' } }).getContent());
 }
+
+function testPhotonRunnerSubmit() {
+  var e = {
+    parameter: {
+      action:          'submitScore',
+      game:            'photon-runner',
+      name:            'Apps Script Test',
+      teacher:         'Mr. Brown',
+      block:           'Test Block',
+      score:           '12345',
+      solarEfficiency: '88',
+      highestCombo:    '12',
+      foremanTime:     '45.6',
+      certScore:       '5',
+      certRank:        'Photon Master',
+      updatedAt:       new Date().toISOString()
+    }
+  };
+  Logger.log(doGet(e).getContent());
+}
+
+function testPhotonRunnerGetScores() {
+  var e = {
+    parameter: {
+      action: 'getScores',
+      game:   'photon-runner'
+    }
+  };
+  Logger.log(doGet(e).getContent());
+}
