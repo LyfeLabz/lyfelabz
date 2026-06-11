@@ -625,6 +625,57 @@ body.stem-active .stem-detail {
   .question-pause-text { font-size: 0.9rem; }
 }
 
+/* ── PREDICT BEFORE REVEAL ── */
+/* Reuses the predict-button pattern from lesson_nature-of-waves.html.
+   The question-pause becomes a commitment point: the name-it explanation
+   below stays hidden until the student clicks a prediction. */
+.question-pause.predict-pause {
+  display: block;
+}
+.question-pause.predict-pause .qp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.predict-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+.predict-btn {
+  flex: 1;
+  min-width: 140px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 0.55rem 0.7rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.predict-btn:hover:not(.locked) {
+  border-color: rgba(245,200,66,0.5);
+  background: rgba(245,200,66,0.08);
+}
+.predict-btn.chosen {
+  border-color: var(--gold);
+  background: rgba(245,200,66,0.16);
+  color: var(--gold);
+}
+.question-pause.locked .predict-btn { cursor: default; opacity: 0.45; }
+.question-pause.locked .predict-btn.chosen { opacity: 1; }
+
+.predict-gated { display: none; }
+.predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+@keyframes predictFadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── DEDUCTION SEQUENCE (Absorption) ── */
 .deduction-sequence {
   max-width: 760px;
@@ -872,6 +923,33 @@ body.stem-active .stem-detail {
   font-style: italic;
   color: var(--gold);
   line-height: 1.5;
+}
+
+/* Mystery-card reveal pattern reused from lesson_nature-of-waves.html:
+   cards open with a "Click to look closer" prompt; observation and
+   question appear after a click. */
+.hallway-card { cursor: pointer; user-select: none; }
+.hallway-card:hover:not(.revealed) { border-color: rgba(245,200,66,0.45); }
+.hallway-card.revealed { cursor: default; }
+.hallway-card-prompt {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.4rem 1rem;
+  border: 1px dashed rgba(245,200,66,0.45);
+  border-radius: 99px;
+  margin-top: 0.4rem;
+}
+.hallway-card .hallway-card-observation,
+.hallway-card .hallway-card-question { display: none; }
+.hallway-card.revealed .hallway-card-prompt { display: none; }
+.hallway-card.revealed .hallway-card-observation,
+.hallway-card.revealed .hallway-card-question {
+  display: block;
+  animation: predictFadeUp 0.4s ease both;
 }
 
 /* ── REVIEW CARDS (Section 1) ── */
@@ -1286,33 +1364,36 @@ body.stem-active .stem-detail {
     <div class="hallway-grid">
 
       <!-- DOOR -->
-      <div class="hallway-card door">
+      <div class="hallway-card door" onclick="this.classList.add('revealed')">
         <span class="hallway-card-icon">🚪</span>
         <div class="hallway-card-name">The Wooden Door</div>
         <div class="hallway-card-observation">
           You can hear voices inside, but you cannot see through the door.
         </div>
         <div class="hallway-card-question">Sound gets through. Light doesn't. Why?</div>
+        <div class="hallway-card-prompt">Click to look closer</div>
       </div>
 
       <!-- WINDOW -->
-      <div class="hallway-card window">
+      <div class="hallway-card window" onclick="this.classList.add('revealed')">
         <span class="hallway-card-icon">🪟</span>
         <div class="hallway-card-name">The Window</div>
         <div class="hallway-card-observation">
           You can see inside clearly, and the room sounds a little louder near the glass.
         </div>
         <div class="hallway-card-question">Light passes through easily. Why?</div>
+        <div class="hallway-card-prompt">Click to look closer</div>
       </div>
 
       <!-- WALL -->
-      <div class="hallway-card wall">
+      <div class="hallway-card wall" onclick="this.classList.add('revealed')">
         <span class="hallway-card-icon">🧱</span>
         <div class="hallway-card-name">The Brick Wall</div>
         <div class="hallway-card-observation">
           You cannot see through it, and you barely hear anything.
         </div>
         <div class="hallway-card-question">Most of the energy seems to just... stop. Where does it go?</div>
+        <div class="hallway-card-prompt">Click to look closer</div>
       </div>
 
     </div>
@@ -1398,14 +1479,21 @@ body.stem-active .stem-detail {
       </div>
     </div>
 
-    <!-- Question pause - thinking beat before the reveal -->
-    <div class="question-pause">
-      <span class="question-pause-icon">🤔</span>
-      <div class="question-pause-text"><strong>Think about it:</strong> What do you think is happening to the wave's energy at the moment it hits the surface?</div>
+    <!-- Question pause - prediction required before the reveal -->
+    <div class="question-pause predict-pause" id="qp-reflection">
+      <div class="qp-row">
+        <span class="question-pause-icon">🤔</span>
+        <div class="question-pause-text"><strong>Think about it:</strong> What do you think is happening to the wave's energy at the moment it hits the surface? Make a prediction.</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn">It bounces back off the surface</button>
+        <button class="predict-btn">It passes through the surface</button>
+        <button class="predict-btn">It stays inside the surface</button>
+      </div>
     </div>
 
-    <!-- Name-it reveal -->
-    <div id="reflection-term" class="name-it teal-it">
+    <!-- Name-it reveal - hidden until a prediction is made -->
+    <div id="reflection-term" class="name-it teal-it predict-gated" data-gate="qp-reflection">
       <div class="name-it-label">Now we have a word for it</div>
       <p><strong>Reflection</strong> happens when a wave bounces off a surface instead of passing through it.</p>
     </div>
@@ -1517,14 +1605,21 @@ body.stem-active .stem-detail {
       </div>
     </div>
 
-    <!-- Question pause - thinking beat before the reveal -->
-    <div class="question-pause">
-      <span class="question-pause-icon">🤔</span>
-      <div class="question-pause-text"><strong>Think about it:</strong> The energy didn't bounce back. And the glass didn't heat up. So where did the energy go?</div>
+    <!-- Question pause - prediction required before the reveal -->
+    <div class="question-pause predict-pause" id="qp-transmission">
+      <div class="qp-row">
+        <span class="question-pause-icon">🤔</span>
+        <div class="question-pause-text"><strong>Think about it:</strong> The energy didn't bounce back. And the glass didn't heat up. So where did the energy go? Make a prediction.</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn">It was destroyed</button>
+        <button class="predict-btn">It kept moving through the glass</button>
+        <button class="predict-btn">It went back to the source</button>
+      </div>
     </div>
 
-    <!-- Name-it reveal -->
-    <div id="transmission-term" class="name-it green-it">
+    <!-- Name-it reveal - hidden until a prediction is made -->
+    <div id="transmission-term" class="name-it green-it predict-gated" data-gate="qp-transmission">
       <div class="name-it-label">Now we have a word for it</div>
       <p><strong>Transmission</strong> is what happens when a wave passes through a material. The wave's energy continues moving, through the surface and beyond.</p>
     </div>
@@ -1546,6 +1641,26 @@ body.stem-active .stem-detail {
     </div>
   </div>
 </section>
+
+<script>
+/* Predict-before-reveal for Reflection + Transmission.
+   Pattern reused from lesson_nature-of-waves.html: any choice locks the
+   buttons and reveals the existing name-it explanation. Wrong predictions
+   are allowed; the explanation does the correcting. */
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -1621,6 +1736,47 @@ body.stem-active .stem-detail {
       <p>The window next to the classroom door? <strong>Transparent</strong>: light fully transmits through. The wooden door? <strong>Opaque</strong> to light, but only partially opaque to sound, which is why you can still hear voices. The brick wall? <strong>Opaque</strong> to both.</p>
     </div>
 
+    <!-- ── QUICK RECALL (retrieval checkpoint, pattern from lesson_nature-of-waves.html) ── -->
+    <style>
+    .qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+    .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+    .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+    .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+    .qr-options { display: grid; gap: 0.45rem; }
+    .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+    .qr-options label:hover { border-color: var(--teal); }
+    .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+    .qr-options input[type=radio] { accent-color: var(--teal); }
+    .qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+    .qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+    .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+    .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+    .qr-feedback.visible { display: block; }
+    .qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+    .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+    .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+    .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+    .qr-actions button:hover { transform: translateY(-1px); }
+    .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+    .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+    .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    </style>
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
+      <div class="qr-q" id="qr1Q">You are back in the hallway. Which material is transparent?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Clear glass</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Wax paper</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Brick wall</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
     <div class="bridge-callout orange">
       <strong>Important:</strong> "Opaque" doesn't mean the energy vanished. It means light can't transmit through; the energy reflects or absorbs instead.
       <br><br>
@@ -1630,6 +1786,57 @@ body.stem-active .stem-detail {
     </div>
   </div>
 </section>
+
+<script>
+/* Quick Recall checkpoint - pattern reused from lesson_nature-of-waves.html */
+(function(){
+  const opts = document.getElementById('qr1Opts');
+  const fb = document.getElementById('qr1Feedback');
+  const checkBtn = document.getElementById('qr1Check');
+  const retryBtn = document.getElementById('qr1Retry');
+  const correctIdx = 0;
+  const okMsg = 'Correct! Transparent materials allow most waves to pass through.';
+  const noMsg = 'Not quite. Transparent materials let most waves pass through. Wax paper is translucent and brick walls are opaque.';
+
+  opts.addEventListener('change', e => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+    e.target.closest('label').classList.add('selected');
+  });
+  checkBtn.addEventListener('click', () => {
+    const sel = opts.querySelector('input[type=radio]:checked');
+    if (!sel) {
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = 'Pick an answer first.';
+      return;
+    }
+    const val = parseInt(sel.value, 10);
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    if (val === correctIdx) {
+      sel.closest('label').classList.add('correct');
+      fb.className = 'qr-feedback visible ok';
+      fb.textContent = okMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'none';
+      [...opts.querySelectorAll('input')].forEach(i => i.disabled = true);
+    } else {
+      sel.closest('label').classList.add('wrong');
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = noMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'inline-flex';
+    }
+  });
+  retryBtn.addEventListener('click', () => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    [...opts.querySelectorAll('input')].forEach(i => { i.disabled = false; i.checked = false; });
+    fb.className = 'qr-feedback';
+    fb.textContent = '';
+    retryBtn.style.display = 'none';
+    checkBtn.style.display = 'inline-flex';
+    opts.querySelector('input').focus();
+  });
+})();
+</script>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -2253,8 +2460,8 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="vocab" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Vocabulary</span>
-    <h2 class="section-title">Now We Have Words for It</h2>
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
     <p class="section-desc" style="margin-bottom: 1.5rem;">Click any term to jump back to where it first appeared in the lesson.</p>
 
     <!-- Vocab pills - jump to source section + pulse -->
