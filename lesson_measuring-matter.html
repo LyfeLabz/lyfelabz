@@ -1,0 +1,3127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_measuring-matter.html">
+<meta name="description" content="How can a giant steel ship float while a tiny pebble sinks? Discover mass, volume, and density - and learn to measure matter like a scientist. Grade 6 physical science aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Measuring Matter</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+  html { font-size: 18px; }
+
+  /* ===== CSS VARIABLES ===== */
+  :root {
+    --green:       #2ecc71;
+    --green-dark:  #27ae60;
+    --blue:        #3498db;
+    --blue-dark:   #2980b9;
+    --teal:        #3bc8e8;
+    --teal-deep:   #1abc9c;
+    --purple:      #9b59b6;
+    --red:         #e74c3c;
+    --orange:      #e67e22;
+    --yellow:      #f1c40f;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #1a2535;
+    --dark2:       #243447;
+    --card:        #1e2f42;
+    --text:        #e8f4f8;
+    --text-muted:  #8aafca;
+    --border:      rgba(52,152,219,0.2);
+
+    /* Measuring-matter color system - the three measurements */
+    --mass:        #3bc8e8;   /* teal   - mass */
+    --mass-dim:    rgba(59,200,232,0.08);
+    --mass-border: rgba(59,200,232,0.3);
+
+    --volume:        #2ecc71; /* green  - volume */
+    --volume-dim:    rgba(46,204,113,0.08);
+    --volume-border: rgba(46,204,113,0.3);
+
+    --density:        #e67e22;   /* orange - density */
+    --density-dim:    rgba(230,126,34,0.08);
+    --density-border: rgba(230,126,34,0.3);
+  }
+
+  /* ===== RESET ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ===== STARFIELD ===== */
+  #stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.45;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: color 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-back:hover {
+    background: rgba(245,200,66,0.18);
+    border-color: rgba(245,200,66,0.65);
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0f2535 100%);
+    padding: 6rem 2rem 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(59,200,232,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(46,204,113,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 80%, rgba(230,126,34,0.04) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(245,200,66,0.15);
+    border: 1px solid rgba(245,200,66,0.4);
+    color: var(--gold);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  .hero p.hero-sub {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 620px;
+    margin: 0 auto 2.5rem;
+    position: relative;
+  }
+  .hero-float {
+    position: absolute;
+    font-size: 4.5rem;
+    opacity: 0.045;
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+    filter: blur(0.5px);
+  }
+  .hero-float:nth-child(1) { top: 8%;    left: 4%;   animation-delay: 0s;   font-size: 5rem;   }
+  .hero-float:nth-child(2) { top: 15%;   right: 5%;  animation-delay: 1.5s; font-size: 3.8rem; }
+  .hero-float:nth-child(3) { bottom: 8%; left: 10%;  animation-delay: 3s;   font-size: 3.5rem; }
+  .hero-float:nth-child(4) { bottom: 12%;right: 4%;  animation-delay: 4.5s; font-size: 4.2rem; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* ===== DRIVING QUESTION ===== */
+  .driving-question {
+    max-width: 760px;
+    margin: 1.6rem auto 0;
+    padding: 1.1rem 1.6rem;
+    background: rgba(59,200,232,0.06);
+    border: 1px solid rgba(59,200,232,0.22);
+    border-left: 4px solid var(--teal);
+    border-radius: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    box-sizing: border-box;
+    position: relative;
+  }
+  .dq-icon  { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body  { flex: 1; text-align: left; }
+  .dq-label {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(59,200,232,0.8);
+    margin-bottom: 0.3rem;
+  }
+  .dq-text  { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5rem 2rem; position: relative; scroll-margin-top: 10px; }
+  #quiz { scroll-margin-top: 45px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 760px;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+  }
+
+  /* ===== BRIDGE CALLOUT ===== */
+  .bridge-callout {
+    margin: 2rem auto 0;
+    max-width: 800px;
+    padding: 1.1rem 1.4rem;
+    background: rgba(245,200,66,0.06);
+    border: 1px solid rgba(245,200,66,0.22);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    font-size: 0.98rem;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .bridge-callout strong { color: var(--gold); }
+  .bridge-callout.teal {
+    background: rgba(59,200,232,0.06);
+    border-color: rgba(59,200,232,0.22);
+    border-left-color: var(--teal);
+  }
+  .bridge-callout.teal strong { color: var(--teal); }
+  .bridge-callout.green {
+    background: rgba(46,204,113,0.06);
+    border-color: rgba(46,204,113,0.22);
+    border-left-color: var(--green);
+  }
+  .bridge-callout.green strong { color: var(--green); }
+  .bridge-callout.orange {
+    background: rgba(230,126,34,0.06);
+    border-color: rgba(230,126,34,0.22);
+    border-left-color: var(--orange);
+  }
+  .bridge-callout.orange strong { color: var(--orange); }
+
+  @keyframes termPulse {
+    0%   { background: rgba(46,204,113,0);    box-shadow: none; }
+    20%  { background: rgba(46,204,113,0.32); box-shadow: 0 0 0 6px rgba(46,204,113,0.18); }
+    60%  { background: rgba(46,204,113,0.16); box-shadow: 0 0 0 9px rgba(46,204,113,0.08); }
+    100% { background: rgba(46,204,113,0);    box-shadow: none; }
+  }
+  .pulsing {
+    animation: termPulse 3s ease forwards;
+    border-radius: 6px;
+    -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+  }
+
+  /* ===== FOOTER ===== */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:.08em; color:var(--gold); margin-bottom:.35rem; }
+  footer .footer-tagline { font-size:.83rem; color:rgba(240,228,200,.6); margin-bottom:.6rem; }
+  footer .footer-links { display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:.72rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,.4); background:rgba(245,200,66,.08); padding:.25rem .75rem; border-radius:99px; transition:border-color .2s,background .2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,.7); background:rgba(59,200,232,.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,.22); border-color:rgba(59,200,232,.95); }
+  footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
+
+  /* ===== RESPONSIVE NAV ===== */
+  @media (max-width: 900px) {
+    nav { padding: 0.75rem 1.2rem; flex-wrap: wrap; gap: 0.6rem; }
+    .nav-links { gap: 0.9rem; order: 3; width: 100%; justify-content: center; }
+    .nav-links a { font-size: 0.78rem; }
+  }
+  @media (max-width: 560px) {
+    .hero { padding: 4rem 1.2rem 3.5rem; }
+    section { padding: 3.5rem 1.2rem; }
+  }
+</style>
+
+<!-- ── Learning Science Focus Bar ── -->
+<style>
+.ls-focus { display: none; }
+body.ls-active .ls-focus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+  width: fit-content;
+  max-width: 760px;
+  margin: 0.5rem auto 1.6rem;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 16px;
+  animation: barFadeIn 0.35s ease both;
+}
+@keyframes barFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ls-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(59,200,232,0.8);
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.ls-badge {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: default;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+}
+.ls-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.11);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255,255,255,0.11);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]:hover::after,
+.ls-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after,
+  .ls-badge[data-tip]::before { display: none; }
+  body.ls-active .ls-focus { max-width: calc(100% - 2.4rem); padding: 0.75rem 1rem; gap: 0.4rem 0.5rem; }
+}
+</style>
+
+<!-- ── MA STE Standards Badges ── -->
+<style>
+.stem-focus { display: none; }
+body.stem-active .stem-focus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+  width: fit-content;
+  max-width: 760px;
+  margin: 0.5rem auto 1.6rem;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+  background: rgba(46,204,113,0.05);
+  border: 1px solid rgba(46,204,113,0.2);
+  border-radius: 16px;
+  animation: barFadeIn 0.35s ease both;
+}
+.stem-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(46,204,113,0.75);
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.stem-badge {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: default;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+}
+.stem-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(46,204,113,0.2);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.stem-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(46,204,113,0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.stem-badge[data-tip]:hover::after,
+.stem-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .stem-badge[data-tip]::after,
+  .stem-badge[data-tip]::before { display: none; }
+}
+.stem-detail { display: none; }
+body.stem-active .stem-detail {
+  display: block;
+  width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
+  text-align: center; animation: barFadeIn 0.35s ease both;
+}
+.stem-show-btn {
+  background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
+}
+.stem-show-btn:hover { color: rgba(46,204,113,0.85); }
+.stem-detail-body {
+  display: none; margin-top: 0.5rem;
+  background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
+  border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
+}
+.stem-detail.stem-open .stem-detail-body { display: block; }
+.stem-std-row {
+  display: flex; gap: 0.8rem; align-items: flex-start;
+  padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
+.stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
+.stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
+</style>
+
+<!-- ── Engagement + Content Styles ── -->
+<style>
+
+/* ── QUESTION PAUSE CARD ── */
+.question-pause {
+  max-width: 760px;
+  margin: 0.5rem auto 2rem;
+  padding: 1.2rem 1.5rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.question-pause-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+.question-pause-text {
+  font-size: 0.98rem;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.question-pause-text strong {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 800;
+}
+@media (max-width: 480px) {
+  .question-pause {
+    padding: 0.9rem 1rem;
+    gap: 0.6rem;
+    margin-top: 0;
+  }
+  .question-pause-icon { font-size: 1.2rem; }
+  .question-pause-text { font-size: 0.9rem; }
+}
+
+/* ── PREDICT BEFORE REVEAL ── */
+.question-pause.predict-pause {
+  display: block;
+}
+.question-pause.predict-pause .qp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.predict-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+.predict-btn {
+  flex: 1;
+  min-width: 140px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 0.55rem 0.7rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.predict-btn:hover:not(.locked) {
+  border-color: rgba(245,200,66,0.5);
+  background: rgba(245,200,66,0.08);
+}
+.predict-btn.chosen {
+  border-color: var(--gold);
+  background: rgba(245,200,66,0.16);
+  color: var(--gold);
+}
+.question-pause.locked .predict-btn { cursor: default; opacity: 0.45; }
+.question-pause.locked .predict-btn.chosen { opacity: 1; }
+
+.predict-gated { display: none; }
+.predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+@keyframes predictFadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── HOOK MYSTERY CARDS (Engage) ── */
+.hook-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 720px) { .hook-grid { grid-template-columns: 1fr; } }
+
+.hook-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.8rem 1.4rem 1.6rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  cursor: pointer;
+  user-select: none;
+}
+.hook-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+}
+.hook-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.hook-card.c1::before { background: linear-gradient(90deg, var(--teal), rgba(59,200,232,0.4)); }
+.hook-card.c2::before { background: linear-gradient(90deg, var(--green), rgba(46,204,113,0.4)); }
+.hook-card.c3::before { background: linear-gradient(90deg, var(--orange), rgba(230,126,34,0.4)); }
+
+.hook-card-icon { font-size: 2.8rem; margin-bottom: 0.6rem; display: block; line-height: 1; }
+.hook-card-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+.hook-card-observation {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+.hook-card-question {
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--gold);
+  line-height: 1.5;
+}
+.hook-card:hover:not(.revealed) { border-color: rgba(245,200,66,0.45); }
+.hook-card.revealed { cursor: default; }
+.hook-card-prompt {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.4rem 1rem;
+  border: 1px dashed rgba(245,200,66,0.45);
+  border-radius: 99px;
+  margin-top: 0.4rem;
+}
+.hook-card .hook-card-observation,
+.hook-card .hook-card-question { display: none; }
+.hook-card.revealed .hook-card-prompt { display: none; }
+.hook-card.revealed .hook-card-observation,
+.hook-card.revealed .hook-card-question {
+  display: block;
+  animation: predictFadeUp 0.4s ease both;
+}
+
+/* ── OBSERVE ROW ── */
+.observe-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 560px) { .observe-row { grid-template-columns: 1fr; } }
+.observe-card {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.93rem;
+  line-height: 1.55;
+}
+.observe-icon { font-size: 1.6rem; flex-shrink: 0; }
+.observe-card strong { color: var(--teal); }
+.observe-card.green-card { background: rgba(46,204,113,0.05); border-color: rgba(46,204,113,0.2); }
+.observe-card.green-card strong { color: var(--green); }
+.observe-card.orange-card { background: rgba(230,126,34,0.05); border-color: rgba(230,126,34,0.2); }
+.observe-card.orange-card strong { color: var(--orange); }
+
+/* ── NAME-IT REVEAL ── */
+.name-it {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 14px;
+  padding: 1.4rem 1.6rem;
+  max-width: 760px;
+  margin: 0 auto 2rem;
+}
+.name-it.teal-it { border-left-color: var(--teal); }
+.name-it.green-it { border-left-color: var(--green); }
+.name-it.orange-it { border-left-color: var(--orange); }
+.name-it-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+.name-it.teal-it .name-it-label   { color: var(--teal); }
+.name-it.green-it .name-it-label  { color: var(--green); }
+.name-it.orange-it .name-it-label { color: var(--orange); }
+.name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+.name-it p strong { font-weight: 800; }
+.name-it.teal-it p strong   { color: var(--teal); }
+.name-it.green-it p strong  { color: var(--green); }
+.name-it.orange-it p strong { color: var(--orange); }
+
+/* ── EXAMPLE GRID ── */
+.example-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 600px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
+.example-chip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+/* ── THREE MEASUREMENTS STEP CARDS ── */
+.process-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.2rem;
+  align-items: stretch;
+  margin-bottom: 2rem;
+}
+@media (max-width: 760px) {
+  .process-grid { grid-template-columns: 1fr; }
+}
+.process-card {
+  border-radius: 18px;
+  padding: 1.6rem 1.3rem;
+  text-align: center;
+}
+.process-card.step1 { background: var(--mass-dim);    border: 1px solid var(--mass-border);    }
+.process-card.step2 { background: var(--volume-dim);  border: 1px solid var(--volume-border);  }
+.process-card.step3 { background: var(--density-dim); border: 1px solid var(--density-border); }
+.process-step-label {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.process-card.step1 .process-step-label { color: var(--mass); }
+.process-card.step2 .process-step-label { color: var(--volume); }
+.process-card.step3 .process-step-label { color: var(--density); }
+.process-icon { font-size: 2.4rem; margin-bottom: 0.5rem; display: block; line-height: 1; }
+.process-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+.process-card.step1 .process-name { color: var(--mass); }
+.process-card.step2 .process-name { color: var(--volume); }
+.process-card.step3 .process-name { color: var(--density); }
+.process-body {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.process-body strong { color: var(--text); }
+.process-mini {
+  margin-top: 0.8rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.3rem 0.8rem;
+  border-radius: 99px;
+  display: inline-block;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text-muted);
+}
+
+/* ── TOOL MATCH GAME ── */
+.tool-match {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem 1.8rem;
+  max-width: 860px;
+  margin: 0 auto 2rem;
+}
+.tool-match-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 0.3rem;
+}
+.tool-match-sub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.6;
+}
+.tm-question {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 1rem;
+}
+.tm-q-text {
+  font-weight: 800;
+  font-size: 0.96rem;
+  color: var(--text);
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+}
+.tm-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.tm-btn {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 800;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  padding: 0.5rem 1.1rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tm-btn:hover:not(:disabled) { border-color: rgba(59,200,232,0.55); background: rgba(59,200,232,0.08); }
+.tm-btn.right { border-color: var(--green); background: rgba(46,204,113,0.12); color: var(--green); }
+.tm-btn.wrong { border-color: var(--red);   background: rgba(231,76,60,0.1);   color: #ff9b8e; }
+.tm-fb {
+  display: none;
+  margin-top: 0.7rem;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+}
+.tm-fb.visible { display: block; animation: predictFadeUp 0.35s ease both; }
+.tm-fb.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.tm-fb.no { background: rgba(231,76,60,0.1);  border: 1px solid rgba(231,76,60,0.3);  color: #ecb3b3; }
+.tm-done {
+  display: none;
+  margin-top: 0.6rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.35);
+  color: #a8e6c4;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.tm-done.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+
+/* ── VOLUME BLOCK BUILDER ── */
+.vol-lab {
+  background: var(--card);
+  border: 1px solid rgba(46,204,113,0.25);
+  border-radius: 20px;
+  padding: 2rem 1.8rem;
+  max-width: 860px;
+  margin: 0 auto 2rem;
+}
+.vol-lab-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 0.3rem;
+}
+.vol-lab-sub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.6;
+}
+.vol-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.4rem;
+  align-items: center;
+}
+@media (max-width: 700px) { .vol-grid { grid-template-columns: 1fr; } }
+.vol-sliders { display: flex; flex-direction: column; gap: 1rem; }
+.vol-slider-row { display: flex; align-items: center; gap: 0.8rem; }
+.vol-slider-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  min-width: 64px;
+}
+.vol-slider-row.l .vol-slider-label { color: var(--teal); }
+.vol-slider-row.w .vol-slider-label { color: var(--green); }
+.vol-slider-row.h .vol-slider-label { color: var(--orange); }
+.vol-slider-row input[type=range] { flex: 1; cursor: pointer; }
+.vol-slider-row.l input { accent-color: var(--teal); }
+.vol-slider-row.w input { accent-color: var(--green); }
+.vol-slider-row.h input { accent-color: var(--orange); }
+.vol-slider-val {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: var(--text);
+  min-width: 52px;
+  text-align: right;
+}
+.vol-readout {
+  margin-top: 1.2rem;
+  background: rgba(46,204,113,0.06);
+  border: 1px solid rgba(46,204,113,0.3);
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+.vol-readout strong { color: var(--green); }
+.vol-readout .vol-formula {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.86rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+.vol-svg-wrap { text-align: center; }
+.vol-svg-wrap svg { width: 100%; max-width: 360px; height: auto; }
+
+/* ── DENSITY LAB ── */
+.density-lab {
+  background: var(--card);
+  border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 24px;
+  padding: 2.2rem 2rem 2.4rem;
+  max-width: 860px;
+  margin: 2.5rem auto 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+}
+.density-lab::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 25px;
+  background: linear-gradient(135deg,
+    rgba(59,200,232,0.3) 0%, rgba(245,200,66,0.08) 25%,
+    rgba(46,204,113,0.25) 50%, rgba(245,200,66,0.08) 75%,
+    rgba(230,126,34,0.25) 100%
+  );
+  background-size: 400% 400%;
+  animation: borderFlow 6s ease infinite;
+  z-index: 0;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+}
+@keyframes borderFlow {
+  0%,100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.density-lab > * { position: relative; z-index: 1; }
+.density-lab-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.25rem;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 0.3rem;
+}
+.density-lab-sub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 1.6rem;
+  line-height: 1.6;
+}
+.dl-sliders {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 2rem;
+  max-width: 640px;
+  margin: 0 auto 1.4rem;
+}
+@media (max-width: 640px) { .dl-sliders { grid-template-columns: 1fr; } }
+.dl-slider-row { display: flex; align-items: center; gap: 0.8rem; }
+.dl-slider-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.dl-slider-row.mass-row   .dl-slider-label { color: var(--mass); }
+.dl-slider-row.volume-row .dl-slider-label { color: var(--volume); }
+.dl-slider-row input[type=range] { flex: 1; cursor: pointer; }
+.dl-slider-row.mass-row input   { accent-color: var(--mass); }
+.dl-slider-row.volume-row input { accent-color: var(--volume); }
+.dl-slider-val {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 900;
+  min-width: 78px;
+  text-align: right;
+}
+.dl-slider-row.mass-row   .dl-slider-val { color: var(--mass); }
+.dl-slider-row.volume-row .dl-slider-val { color: var(--volume); }
+.dl-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  align-items: stretch;
+}
+@media (max-width: 640px) { .dl-panels { grid-template-columns: 1fr; } }
+.dl-panel {
+  border-radius: 16px;
+  padding: 1.1rem 1.1rem 1.2rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.dl-panel-name {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+.dl-math {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  text-align: center;
+  line-height: 2;
+  color: var(--text);
+}
+.dl-math .m { color: var(--mass); }
+.dl-math .v { color: var(--volume); }
+.dl-math .d { color: var(--density); font-size: 1.25rem; }
+.dl-tank-svg { width: 100%; max-width: 260px; height: auto; display: block; margin: 0 auto; }
+.dl-verdict {
+  text-align: center;
+  font-size: 0.86rem;
+  font-weight: 800;
+  margin-top: 0.5rem;
+}
+.dl-verdict.float { color: var(--green); }
+.dl-verdict.sink  { color: #ff9b8e; }
+.dl-synthesis {
+  display: none;
+  margin-top: 0.4rem;
+  padding: 1.2rem 1.4rem;
+  border-radius: 12px;
+  background: rgba(46,204,113,0.06);
+  border: 1px solid rgba(46,204,113,0.25);
+  border-left: 4px solid var(--green);
+  font-size: 0.94rem;
+  color: var(--text);
+  line-height: 1.65;
+}
+.dl-synthesis.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+.dl-synthesis strong { color: var(--green); }
+
+/* ── WORKED EXAMPLE STEPPER ── */
+.worked-example {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem 1.8rem;
+  max-width: 860px;
+  margin: 0 auto 2rem;
+}
+.we-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 0.3rem;
+}
+.we-sub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 1.4rem;
+  line-height: 1.6;
+}
+.we-given {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 1.4rem;
+}
+.we-chip {
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 0.35rem 1rem;
+  border-radius: 99px;
+  border: 1px solid;
+}
+.we-chip.mass-chip   { color: var(--mass);   background: var(--mass-dim);   border-color: var(--mass-border); }
+.we-chip.volume-chip { color: var(--volume); background: var(--volume-dim); border-color: var(--volume-border); }
+.we-step {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 0.9rem;
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+.we-step-num {
+  flex-shrink: 0;
+  font-family: 'Fredoka One', cursive;
+  width: 1.8rem; height: 1.8rem;
+  border-radius: 50%;
+  background: rgba(245,200,66,0.12);
+  border: 1px solid rgba(245,200,66,0.35);
+  color: var(--gold);
+  font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 0.1rem;
+}
+.we-step-body { flex: 1; font-size: 0.93rem; line-height: 1.65; color: var(--text-muted); }
+.we-step-body strong { color: var(--text); }
+.we-step-body .we-math {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.88rem;
+  letter-spacing: 0.03em;
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--text);
+}
+.we-step-body .we-math .m { color: var(--mass); }
+.we-step-body .we-math .v { color: var(--volume); }
+.we-step-body .we-math .d { color: var(--density); }
+.we-reveal-btn {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 800;
+  background: rgba(245,200,66,0.08);
+  border: 1px dashed rgba(245,200,66,0.45);
+  color: var(--gold);
+  padding: 0.45rem 1.2rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.4rem;
+}
+.we-reveal-btn:hover { background: rgba(245,200,66,0.16); }
+.we-hidden { display: none; }
+.we-hidden.visible { display: block; animation: predictFadeUp 0.35s ease both; }
+
+/* answer-choice buttons inside practice problem */
+.we-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+.we-opt-btn {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  padding: 0.5rem 1.1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.we-opt-btn:hover:not(:disabled) { border-color: rgba(59,200,232,0.55); background: rgba(59,200,232,0.08); }
+.we-opt-btn.right { border-color: var(--green); background: rgba(46,204,113,0.12); color: var(--green); }
+.we-opt-btn.wrong { border-color: var(--red);   background: rgba(231,76,60,0.1);   color: #ff9b8e; }
+.we-fb {
+  display: none;
+  margin-top: 0.6rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  padding: 0.65rem 0.95rem;
+  border-radius: 10px;
+}
+.we-fb.visible { display: block; animation: predictFadeUp 0.35s ease both; }
+.we-fb.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.we-fb.no { background: rgba(231,76,60,0.1);  border: 1px solid rgba(231,76,60,0.3);  color: #ecb3b3; }
+.we-success {
+  display: none;
+  margin-top: 0.4rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.35);
+  color: #a8e6c4;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.we-success.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+
+/* ── QUICK RECALL ── */
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: var(--teal); }
+.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+.qr-options input[type=radio] { accent-color: var(--teal); }
+.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+/* ── WRAP-UP BEATS ── */
+.wrapup-beats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+@media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+
+.wrapup-beat {
+  border-radius: 16px;
+  padding: 1.4rem 1.3rem;
+  position: relative;
+}
+.wrapup-beat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+.wrapup-beat-1 {
+  background: rgba(245,200,66,0.06);
+  border: 1px solid rgba(245,200,66,0.25);
+}
+.wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+.wrapup-beat-2 {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+}
+.wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+.wrapup-beat-3 {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+
+.wrapup-beat-label {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+.wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+.wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+
+.wrapup-beat-answer {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+.wrapup-beat-body {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+.wrapup-behavior-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+.wbc {
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.22rem 0.65rem;
+  border-radius: 99px;
+  border: 1px solid;
+}
+.wbc-mass    { color: var(--mass);    background: var(--mass-dim);    border-color: var(--mass-border);    }
+.wbc-volume  { color: var(--volume);  background: var(--volume-dim);  border-color: var(--volume-border);  }
+.wbc-density { color: var(--density); background: var(--density-dim); border-color: var(--density-border); }
+
+/* ── SUMMARY TABLES ── */
+.summary-table-wrap { overflow-x: auto; margin-bottom: 2rem; }
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+.summary-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(245,200,66,0.07);
+  padding: 0.8rem 1.2rem;
+  border-bottom: 1px solid rgba(245,200,66,0.25);
+}
+.summary-table td {
+  padding: 0.75rem 1.2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: var(--text-muted);
+  line-height: 1.6;
+  vertical-align: top;
+}
+.summary-table tr:last-child td { border-bottom: none; }
+.summary-table td.term { color: var(--teal); font-weight: 800; white-space: nowrap; }
+</style>
+
+<!-- ── Pilot Layout: Learning Goals + Glossary Cards ── -->
+<style>
+.goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+
+/* Glossary cards: click-to-expand ONLY. Hover gives subtle visual
+   feedback (lift + shadow) but never reveals content. */
+.glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; align-items: start; }
+@media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+.glossary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 16px;
+  padding: 1.2rem 1.3rem 1.3rem;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.35rem; }
+.gc-hint {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
+.glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+.glossary-card.open .gc-hint { display: none; }
+.gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+.gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+.gc-blue   { border-top-color: #7cc8f8;       } .gc-blue .gc-term   { color: #7cc8f8; }
+.gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#hook">Mystery</a></li>
+    <li><a href="#measure">Measuring</a></li>
+    <li><a href="#density">Density</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+  </ul>
+  <a href="index.html#chem" class="nav-back">← Physical Science</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">⚖️</span>
+  <span class="hero-float">🧪</span>
+  <span class="hero-float">📏</span>
+  <span class="hero-float">🚢</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Measuring Matter</h1>
+  <p class="hero-sub">Everything around you - the air, your desk, even you - is made of matter. Scientists describe it with three measurements: mass, volume, and density.</p>
+  <div class="driving-question">
+    <div class="dq-icon">🔍</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">How can a giant steel ship float while a tiny pebble sinks?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real floating-ship mystery before naming any vocabulary. Encountering a genuine puzzle activates curiosity and primes attention for the explanation that follows. (Loewenstein, 1994)">🔍 Phenomenon First</span>
+  <span class="ls-badge" data-tip="Mass, volume, and density are introduced through observable comparisons before their vocabulary labels appear. Students build understanding, then receive the word that names it. (Willingham, 2009)">🏷️ Label After Learning</span>
+  <span class="ls-badge" data-tip="The density calculation is broken into explicit numbered steps, with a fully worked example shown before students try one independently. Stepwise modeling reduces cognitive load for all learners. (Sweller, 1988)">🪜 Stepwise Scaffolds</span>
+  <span class="ls-badge" data-tip="Students adjust mass and volume sliders, build block volumes, and solve a density problem themselves rather than watching a demonstration. Generating answers strengthens memory more than reviewing them. (Bertsch et al., 2007)">✏️ Generation Effect</span>
+  <span class="ls-badge" data-tip="The quiz asks students to calculate volumes and densities for new objects rather than recall definitions. Transfer tasks require deeper processing and reveal real understanding. (Adesope et al., 2017)">✅ Retrieval Practice</span>
+</div>
+
+<!-- MA STE STANDARDS BADGES -->
+<div class="stem-focus">
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
+  <span class="stem-badge" data-tip="Use a particulate model of matter to explain that density is the amount of matter (mass) in a given volume. Apply proportional reasoning to describe, calculate, and compare relative densities of different materials.">6.MS-PS1-7 (MA)</span>
+</div>
+<div class="stem-detail" id="stem-detail-mm">
+  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-mm')">▸ Show standard descriptions</button>
+  <div class="stem-detail-body">
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-PS1-7 (MA)</span>
+      <span class="stem-std-text">Use a particulate model of matter to explain that density is the amount of matter (mass) in a given volume. Apply proportional reasoning to describe, calculate, and compare relative densities of different materials.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">⚖️</span>
+        <div class="goal-text">Define matter and explain how scientists measure it using mass (grams) and volume (cm³ or mL) with the right tools.</div>
+        <span class="goal-std">6.MS-PS1-7 (MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🧮</span>
+        <div class="goal-text">Calculate the density of an object from its mass and volume, and use density to explain why objects sink or float.</div>
+        <span class="goal-std">6.MS-PS1-7 (MA)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards - click to expand only)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Click a card to see what each word means. Click it again to close it. You'll meet every one of these in the lesson below.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-term">Matter</div>
+        <div class="gc-hint">Click to reveal</div>
+        <div class="gc-def">Anything that has mass and takes up space (volume). The most common states of matter are solid, liquid, and gas.</div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Mass</div>
+        <div class="gc-hint">Click to reveal</div>
+        <div class="gc-def">The amount of matter in an object. Mass is measured in grams (g) with a triple beam balance.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Volume</div>
+        <div class="gc-hint">Click to reveal</div>
+        <div class="gc-def">The amount of space an object takes up. Volume is measured in cubic centimeters (cm³) with a ruler or in milliliters (mL) with a graduated cylinder.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-term">Density</div>
+        <div class="gc-hint">Click to reveal</div>
+        <div class="gc-def">A measure of how much matter is packed into a space. Density is the ratio of mass to volume: D = m ÷ V, in g/cm³ or g/mL.</div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Triple Beam Balance</div>
+        <div class="gc-hint">Click to reveal</div>
+        <div class="gc-def">The lab tool scientists use to measure mass in grams. You slide weights along three beams until the pointer balances.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Graduated Cylinder</div>
+        <div class="gc-hint">Click to reveal</div>
+        <div class="gc-def">A tall, marked container used to measure the volume of liquids (and odd-shaped objects) in milliliters (mL).</div>
+      </button>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ENGAGE - THE MYSTERY
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="hook" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage · Mystery</span>
+    <h2 class="section-title">Three Objects. Three Puzzles.</h2>
+    <p class="section-desc">Before you learn a single new word, think like a scientist about these three everyday objects. Click each card and consider the question.</p>
+
+    <div class="hook-grid">
+
+      <div class="hook-card c1" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">🎳</span>
+        <div class="hook-card-name">Two Same-Size Balls</div>
+        <div class="hook-card-observation">
+          A bowling ball and a beach ball can be exactly the same size, but one of them is much, much harder to lift.
+        </div>
+        <div class="hook-card-question">If they take up the same space, what is different inside them?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+      <div class="hook-card c2" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">🎈</span>
+        <div class="hook-card-name">The Invisible Stuff</div>
+        <div class="hook-card-observation">
+          Blow up a balloon and it gets bigger and slightly heavier. But you can't see anything inside it - just air.
+        </div>
+        <div class="hook-card-question">Is air "stuff"? Does it really take up space and have weight?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+      <div class="hook-card c3" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">🚢</span>
+        <div class="hook-card-name">The Floating Giant</div>
+        <div class="hook-card-observation">
+          A steel cargo ship has a mass of millions of kilograms, yet it floats. A pebble has almost no mass, yet it sinks instantly.
+        </div>
+        <div class="hook-card-question">If heaviness decided floating, the ship should sink first. So what really decides?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+    </div>
+
+    <div class="observe-row">
+      <div class="observe-card">
+        <span class="observe-icon">💡</span>
+        <span><strong>One clue:</strong> none of these puzzles can be solved by one measurement alone. You need to compare how much "stuff" an object has with how much space it fills.</span>
+      </div>
+      <div class="observe-card">
+        <span class="observe-icon">🤔</span>
+        <span>Scientists have exact words and tools for "amount of stuff" and "amount of space." By the end of this lesson, you'll use them to solve all three puzzles.</span>
+      </div>
+    </div>
+
+    <div class="bridge-callout">
+      <strong>The question:</strong> Bowling balls, balloons, and cargo ships all follow the same rules of matter. This lesson is about learning to measure those rules.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 1 - WHAT IS MATTER?
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="matter" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore · The Big Idea</span>
+    <h2 class="section-title">What Is Matter?</h2>
+    <p class="section-desc">Look around you. Your desk, your water bottle, the air you're breathing - what do they all have in common?</p>
+
+    <!-- Predict: is air matter? -->
+    <div class="question-pause predict-pause" id="qp-air">
+      <div class="qp-row">
+        <span class="question-pause-icon">🤔</span>
+        <div class="question-pause-text"><strong>Think about it:</strong> A rock is obviously "stuff." But is air stuff too? Make a prediction.</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn">Yes - air is matter just like a rock</button>
+        <button class="predict-btn">No - air is empty space</button>
+        <button class="predict-btn">Air is something in between</button>
+      </div>
+    </div>
+
+    <div class="name-it teal-it predict-gated" data-gate="qp-air">
+      <div class="name-it-label">The key idea</div>
+      <p><strong>Matter</strong> is anything that has <strong>mass</strong> and takes up space (<strong>volume</strong>). That includes air! Air has mass (a filled balloon weighs slightly more than an empty one) and it takes up space (that's why the balloon gets bigger). The most common states of matter are <strong>solid</strong>, <strong>liquid</strong>, and <strong>gas</strong>.</p>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.2rem;">Matter is everywhere, in all three common states:</p>
+    <div class="example-grid">
+      <div class="example-chip"><span class="example-chip-icon">🪨</span>Rock - solid</div>
+      <div class="example-chip"><span class="example-chip-icon">🧊</span>Ice cube - solid</div>
+      <div class="example-chip"><span class="example-chip-icon">💧</span>Water - liquid</div>
+      <div class="example-chip"><span class="example-chip-icon">🥤</span>Juice - liquid</div>
+      <div class="example-chip"><span class="example-chip-icon">🎈</span>Air in a balloon - gas</div>
+      <div class="example-chip"><span class="example-chip-icon">💨</span>Steam - gas</div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>But "has mass and takes up space" raises a question:</strong> how do scientists actually measure those two things, with real numbers and real tools?
+      <br><br>
+      Let's find out.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2 - HOW DO WE MEASURE MATTER?
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="measure" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label" style="color: var(--green); background: var(--volume-dim); border-color: var(--volume-border);">Explore · Three Measurements</span>
+    <h2 class="section-title">How Do We Measure Matter?</h2>
+    <p class="section-desc">Scientists describe matter with three measurements. Follow the color coding through the whole lesson: <span style="color:var(--mass); font-weight:800;">teal is mass</span>, <span style="color:var(--volume); font-weight:800;">green is volume</span>, and <span style="color:var(--density); font-weight:800;">orange is density</span>.</p>
+
+    <div class="process-grid">
+
+      <div class="process-card step1">
+        <div class="process-step-label">Measurement 1</div>
+        <span class="process-icon">⚖️</span>
+        <div id="mass-term" class="process-name">Mass</div>
+        <div class="process-body"><strong>Mass</strong> is the amount of matter in an object. It is measured in <strong>grams (g)</strong> with a <strong>triple beam balance</strong>.</div>
+        <span class="process-mini">Tool: Triple Beam Balance · Unit: g</span>
+      </div>
+
+      <div class="process-card step2">
+        <div class="process-step-label">Measurement 2</div>
+        <span class="process-icon">📦</span>
+        <div id="volume-term" class="process-name">Volume</div>
+        <div class="process-body"><strong>Volume</strong> is the amount of space an object takes up. It is measured in <strong>cubic centimeters (cm³)</strong> with a ruler, or in <strong>milliliters (mL)</strong> with a <strong>graduated cylinder</strong>.</div>
+        <span class="process-mini">Tools: Ruler or Graduated Cylinder · Units: cm³ or mL</span>
+      </div>
+
+      <div class="process-card step3">
+        <div class="process-step-label">Measurement 3</div>
+        <span class="process-icon">🧲</span>
+        <div id="density-term" class="process-name">Density</div>
+        <div class="process-body"><strong>Density</strong> is a measure of how much matter is <strong>packed into a space</strong>. It combines the first two measurements: mass ÷ volume.</div>
+        <span class="process-mini">Units: g/cm³ or g/mL</span>
+      </div>
+
+    </div>
+
+    <!-- Tool match interactive -->
+    <div class="tool-match">
+      <div class="tool-match-title">🧰 Pick the Right Tool</div>
+      <div class="tool-match-sub">A real scientist's first decision is choosing the right tool and unit. Answer all three to prove you're lab-ready.</div>
+
+      <div class="tm-question" data-correct="1">
+        <div class="tm-q-text">1. You need to measure the mass of a wooden block. Which tool do you grab?</div>
+        <div class="tm-options">
+          <button class="tm-btn">Ruler</button>
+          <button class="tm-btn">Triple beam balance</button>
+          <button class="tm-btn">Graduated cylinder</button>
+        </div>
+        <div class="tm-fb"></div>
+      </div>
+
+      <div class="tm-question" data-correct="2">
+        <div class="tm-q-text">2. You need to measure the volume of juice for an experiment. Which tool do you grab?</div>
+        <div class="tm-options">
+          <button class="tm-btn">Triple beam balance</button>
+          <button class="tm-btn">Ruler</button>
+          <button class="tm-btn">Graduated cylinder</button>
+        </div>
+        <div class="tm-fb"></div>
+      </div>
+
+      <div class="tm-question" data-correct="0">
+        <div class="tm-q-text">3. You need the volume of a rectangular block (a solid with straight sides). Which tool do you grab?</div>
+        <div class="tm-options">
+          <button class="tm-btn">Ruler - measure length, width, and height</button>
+          <button class="tm-btn">Triple beam balance</button>
+          <button class="tm-btn">A bigger block to compare</button>
+        </div>
+        <div class="tm-fb"></div>
+      </div>
+
+      <div class="tm-done" id="tm-done">🏆 Three for three! Mass → triple beam balance (g). Liquid volume → graduated cylinder (mL). Block volume → ruler (cm³). You're lab-ready.</div>
+    </div>
+
+    <div class="bridge-callout green">
+      <strong>The ruler trick:</strong> how does measuring length, width, and height with a ruler give you a volume? Let's build a block and see the math happen live.
+    </div>
+
+    <!-- Volume block builder -->
+    <div class="vol-lab" style="margin-top: 2.5rem;">
+      <div class="vol-lab-title">📦 Volume Block Builder</div>
+      <div class="vol-lab-sub">Drag the sliders to resize the block. Volume = length × width × height. Watch the block and the math change together.</div>
+      <div class="vol-grid">
+        <div class="vol-svg-wrap">
+          <svg id="vol-svg" viewBox="0 0 360 240" xmlns="http://www.w3.org/2000/svg" aria-label="A 3D block that resizes as you change length, width, and height">
+            <g id="vol-block"></g>
+          </svg>
+        </div>
+        <div>
+          <div class="vol-sliders">
+            <div class="vol-slider-row l">
+              <span class="vol-slider-label">Length</span>
+              <input type="range" id="vol-l" min="1" max="8" value="5" step="1" aria-label="Block length in centimeters">
+              <span class="vol-slider-val" id="vol-l-val">5 cm</span>
+            </div>
+            <div class="vol-slider-row w">
+              <span class="vol-slider-label">Width</span>
+              <input type="range" id="vol-w" min="1" max="6" value="2" step="1" aria-label="Block width in centimeters">
+              <span class="vol-slider-val" id="vol-w-val">2 cm</span>
+            </div>
+            <div class="vol-slider-row h">
+              <span class="vol-slider-label">Height</span>
+              <input type="range" id="vol-h" min="1" max="6" value="1" step="1" aria-label="Block height in centimeters">
+              <span class="vol-slider-val" id="vol-h-val">1 cm</span>
+            </div>
+          </div>
+          <div class="vol-readout">
+            <span class="vol-formula">V = length × width × height</span>
+            <span id="vol-math">V = 5 × 2 × 1 = <strong>10 cm³</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bridge-callout orange">
+      <strong>You now have two of the three measurements.</strong> Mass tells you how much matter. Volume tells you how much space. The third measurement - density - is where the floating-ship mystery gets solved.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN - DENSITY
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="density" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label" style="color: var(--orange); background: var(--density-dim); border-color: var(--density-border);">Explain · Packing It In</span>
+    <h2 class="section-title">Density: The Ratio of Mass to Volume</h2>
+    <p class="section-desc">Remember the bowling ball and the beach ball? Same size, totally different heft. Density is the measurement that explains why.</p>
+
+    <div class="name-it orange-it">
+      <div class="name-it-label">The key idea</div>
+      <p><strong>Density</strong> is the ratio of <strong style="color:var(--mass);">mass</strong> to <strong style="color:var(--volume);">volume</strong>: how much matter is packed into a space. It can be measured two ways: in <strong>g/cm³</strong> (triple beam balance + ruler) or in <strong>g/mL</strong> (triple beam balance + graduated cylinder).</p>
+    </div>
+
+    <div class="observe-row">
+      <div class="observe-card">
+        <span class="observe-icon">🎳</span>
+        <span><strong>Bowling ball:</strong> lots of mass packed into its volume → high density.</span>
+      </div>
+      <div class="observe-card green-card">
+        <span class="observe-icon">🏖️</span>
+        <span><strong>Beach ball:</strong> almost no mass spread across the same volume → low density.</span>
+      </div>
+    </div>
+
+    <!-- Predict before the density lab -->
+    <div class="question-pause predict-pause" id="qp-density" style="margin-top: 2.5rem;">
+      <div class="qp-row">
+        <span class="question-pause-icon">🧪</span>
+        <div class="question-pause-text"><strong>Density Lab:</strong> Water has a density of 1 g/mL. You're about to build an object and drop it in a tank. What do you think decides whether it floats? Make a prediction to unlock the lab.</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn">Heavy objects always sink</button>
+        <button class="predict-btn">It floats if its density is less than water's</button>
+        <button class="predict-btn">Big objects always float</button>
+      </div>
+    </div>
+
+    <div class="density-lab predict-gated" data-gate="qp-density">
+      <div class="density-lab-title">🎛️ The Density Lab</div>
+      <div class="density-lab-sub">Drag the sliders to set your object's mass and volume. The lab calculates the density live and drops the object into a tank of water (density = 1 g/mL).</div>
+
+      <div class="dl-sliders">
+        <div class="dl-slider-row mass-row">
+          <span class="dl-slider-label">Mass</span>
+          <input type="range" id="dl-mass" min="10" max="200" value="50" step="10" aria-label="Object mass in grams, from 10 to 200">
+          <span class="dl-slider-val" id="dl-mass-val">50 g</span>
+        </div>
+        <div class="dl-slider-row volume-row">
+          <span class="dl-slider-label">Volume</span>
+          <input type="range" id="dl-vol" min="10" max="200" value="100" step="10" aria-label="Object volume in milliliters, from 10 to 200">
+          <span class="dl-slider-val" id="dl-vol-val">100 mL</span>
+        </div>
+      </div>
+
+      <div class="dl-panels">
+        <div class="dl-panel">
+          <div class="dl-panel-name">The Math</div>
+          <div class="dl-math">
+            D = <span class="m" id="dl-m-out">50</span> g ÷ <span class="v" id="dl-v-out">100</span> mL<br>
+            D = <span class="d" id="dl-d-out">0.5 g/mL</span>
+          </div>
+        </div>
+        <div class="dl-panel">
+          <div class="dl-panel-name">The Tank (water = 1 g/mL)</div>
+          <svg class="dl-tank-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg" aria-label="A tank of water showing whether the object floats or sinks">
+            <rect x="10" y="10" width="180" height="130" rx="8" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+            <rect x="12" y="55" width="176" height="83" rx="6" fill="rgba(59,130,246,0.18)"/>
+            <line x1="12" y1="55" x2="188" y2="55" stroke="rgba(124,200,248,0.6)" stroke-width="2"/>
+            <rect id="dl-object" x="80" y="42" width="40" height="28" rx="5" fill="#f5c842" stroke="#e6b32e" stroke-width="2" style="transition: y 0.5s ease;"/>
+          </svg>
+          <div class="dl-verdict float" id="dl-verdict">✓ Floats - density below 1 g/mL</div>
+        </div>
+      </div>
+
+      <div class="dl-synthesis" id="dl-synthesis">
+        <strong>That's the answer to the ship mystery.</strong> Floating isn't decided by mass alone - it's decided by density. A steel ship is huge and full of air, so its overall mass divided by its enormous volume comes out below 1 g/mL, and it floats. A pebble is small but tightly packed, so its density is well above 1 g/mL, and it sinks.
+      </div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Sliders are easy - now do it like a scientist.</strong> In the lab you get a balance, a ruler, and an unknown block. Time to calculate density by hand, step by step.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN - WORKED EXAMPLE + PRACTICE PROBLEM
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="practice" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label" style="color: var(--teal); background: var(--mass-dim); border-color: var(--mass-border);">Explain · Worked Example</span>
+    <h2 class="section-title">Calculating Density, Step by Step</h2>
+    <p class="section-desc">Watch one problem solved completely. Then you solve the next one yourself, with the same two steps every time.</p>
+
+    <!-- Worked example: PDF practice problem 1 -->
+    <div class="worked-example">
+      <div class="we-title">📐 Worked Example</div>
+      <div class="we-sub">A block has a mass of 50 g. You measure it with a ruler: 5 cm long, 2 cm wide, 1 cm tall. What is its density?</div>
+      <div class="we-given">
+        <span class="we-chip mass-chip">Mass = 50 g</span>
+        <span class="we-chip volume-chip">Dimensions = 5 cm × 2 cm × 1 cm</span>
+      </div>
+
+      <div class="we-step">
+        <span class="we-step-num">1</span>
+        <div class="we-step-body">
+          <strong>Find the volume.</strong> A ruler gives you dimensions, not volume - so multiply them.
+          <span class="we-math"><span class="v">V</span> = length × width × height = 5 × 2 × 1 = <span class="v">10 cm³</span></span>
+        </div>
+      </div>
+
+      <div class="we-step">
+        <span class="we-step-num">2</span>
+        <div class="we-step-body">
+          <strong>Use the density formula.</strong> Divide mass by volume.
+          <span class="we-math"><span class="d">D</span> = <span class="m">m</span> ÷ <span class="v">V</span> = <span class="m">50 g</span> ÷ <span class="v">10 cm³</span> = <span class="d">5 g/cm³</span></span>
+        </div>
+      </div>
+
+      <div class="bridge-callout orange" style="margin-top: 1.4rem; max-width: 100%;">
+        <strong>Sanity check:</strong> 5 g/cm³ is much denser than water (1 g/cm³), so this block would sink. Always ask whether your answer makes sense.
+      </div>
+    </div>
+
+    <!-- Practice problem II: student solves with stepwise gates -->
+    <div class="worked-example" style="border-color: rgba(245,200,66,0.3);">
+      <div class="we-title">✏️ Your Turn: Density Practice Problem</div>
+      <div class="we-sub">You have a wooden block with a mass of 60 grams. You measure it with a ruler: 4 cm long, 3 cm wide, and 2 cm tall. What is the density of the wooden block?</div>
+      <div class="we-given">
+        <span class="we-chip mass-chip">Mass = 60 g</span>
+        <span class="we-chip volume-chip">Dimensions = 4 cm × 3 cm × 2 cm</span>
+      </div>
+
+      <div class="we-step">
+        <span class="we-step-num">1</span>
+        <div class="we-step-body">
+          <strong>Find the volume.</strong> V = length × width × height = 4 × 3 × 2 = ?
+          <div class="we-options" id="pp-step1">
+            <button class="we-opt-btn" data-ans="0">9 cm³</button>
+            <button class="we-opt-btn" data-ans="1">24 cm³</button>
+            <button class="we-opt-btn" data-ans="0">12 cm³</button>
+          </div>
+          <div class="we-fb" id="pp-fb1"></div>
+        </div>
+      </div>
+
+      <div class="we-step we-hidden" id="pp-step2-wrap">
+        <span class="we-step-num">2</span>
+        <div class="we-step-body">
+          <strong>Use the density formula.</strong> D = m ÷ V = 60 g ÷ 24 cm³ = ?
+          <div class="we-options" id="pp-step2">
+            <button class="we-opt-btn" data-ans="0">0.4 g/cm³</button>
+            <button class="we-opt-btn" data-ans="0">3.6 g/cm³</button>
+            <button class="we-opt-btn" data-ans="1">2.5 g/cm³</button>
+          </div>
+          <div class="we-fb" id="pp-fb2"></div>
+        </div>
+      </div>
+
+      <div class="we-success" id="pp-success">🏆 You did it! Density = 60 ÷ 24 = 2.5 g/cm³. That's denser than water, so this "wooden" block would sink - it must be a very dense wood, like ebony. You just calculated density exactly the way a scientist does.</div>
+    </div>
+
+    <!-- Quick recall checkpoint -->
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Two cubes are exactly the same size. Cube A has a mass of 270 g, and cube B has a mass of 27 g. Which statement is true?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Cube A has more matter packed into the same space, so it is denser</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Cube B is denser because it is lighter</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>They have the same density because they are the same size</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ELABORATE - BACK TO THE MYSTERY
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="synthesis" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Elaborate · Wrap-Up</span>
+    <h2 class="section-title">Back to the Floating Giant</h2>
+    <p class="section-desc">You started this lesson with three puzzles: same-size balls with different heft, invisible air, and a steel ship that floats. Now you can solve all three.</p>
+
+    <div class="wrapup-beats">
+
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">The Answer</div>
+        <div class="wrapup-beat-answer">The ship floats because its density, not its mass, is less than water's.</div>
+        <div class="wrapup-beat-body">A ship's hull is mostly air, so its total mass divided by its huge volume comes out below 1 g/mL. The pebble's matter is tightly packed, so its density is far above 1 g/mL - down it goes.</div>
+      </div>
+
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">The Three Measurements</div>
+        <div class="wrapup-beat-answer">Every piece of matter can be described with the same three numbers.</div>
+        <div class="wrapup-beat-body">No matter the object, the measurements are:</div>
+        <div class="wrapup-behavior-chips">
+          <span class="wbc wbc-mass">Mass · g</span>
+          <span class="wbc wbc-volume">Volume · cm³ or mL</span>
+          <span class="wbc wbc-density">Density · m ÷ V</span>
+        </div>
+      </div>
+
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">The Other Two Puzzles</div>
+        <div class="wrapup-beat-answer">Same volume, different mass = different density.</div>
+        <div class="wrapup-beat-body">The bowling ball packs far more matter into the same volume as the beach ball - that's <strong>density</strong>. And air? It has mass and takes up space, so air is <strong>matter</strong> too, just a gas with very low density.</div>
+      </div>
+
+    </div>
+
+    <!-- Quick recall 2 -->
+    <div class="qr-card" id="qrCard2" style="margin-top: 2.5rem;">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">One more brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">An ice cube floats in a glass of water. What must be true about the ice?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>Its density is less than the density of liquid water</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Its mass is less than the mass of the water in the glass</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Its volume is bigger than the volume of the water</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EVALUATE - LESSON SUMMARY TABLES
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="summary" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Evaluate · Lesson Summary</span>
+    <h2 class="section-title">Key Vocabulary &amp; Learning Goals</h2>
+    <p class="section-desc">Everything from this lesson in one place: the words to know and the goals you worked toward.</p>
+
+    <div class="summary-table-wrap">
+      <table class="summary-table">
+        <thead>
+          <tr><th>Term</th><th>Student-Friendly Definition</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="term">Matter</td><td>Anything that has mass and takes up space (volume). The most common states are solid, liquid, and gas.</td></tr>
+          <tr><td class="term">Mass</td><td>The amount of matter in an object, measured in grams (g) with a triple beam balance.</td></tr>
+          <tr><td class="term">Volume</td><td>The amount of space an object takes up, measured in cm³ with a ruler (V = l × w × h) or in mL with a graduated cylinder.</td></tr>
+          <tr><td class="term">Density</td><td>How much matter is packed into a space: the ratio of mass to volume (D = m ÷ V), in g/cm³ or g/mL.</td></tr>
+          <tr><td class="term">Triple beam balance</td><td>The lab tool used to measure mass in grams.</td></tr>
+          <tr><td class="term">Graduated cylinder</td><td>The marked container used to measure liquid volume in milliliters.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="summary-table-wrap">
+      <table class="summary-table">
+        <thead>
+          <tr><th>Learning Goals</th><th>How You Showed It</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="term" style="white-space: normal;">Define matter and explain how scientists measure it using mass and volume with the right tools (6.MS-PS1-7 MA).</td>
+            <td>You predicted whether air is matter, matched tools to measurements, and built block volumes with V = l × w × h.</td>
+          </tr>
+          <tr>
+            <td class="term" style="white-space: normal;">Calculate density from mass and volume and use it to explain sinking and floating (6.MS-PS1-7 MA).</td>
+            <td>You ran the Density Lab, solved a two-step density problem by hand, and explained why a steel ship floats while a pebble sinks.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Essential question:</strong> How can a giant steel ship float while a tiny pebble sinks? If you can answer that with the words mass, volume, and density, you own this lesson.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.quiz-section { background: var(--dark); }
+
+.quiz-mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 2rem;
+  background: rgba(122,143,166,0.1);
+  border: 1.5px solid rgba(122,143,166,0.35);
+  border-radius: 14px;
+  padding: 0.35rem;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+}
+.mode-btn {
+  padding: 0.65rem 1.8rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  transition: all 0.22s;
+  color: rgba(122,143,166,0.55);
+  background: transparent;
+}
+.mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+.mode-btn.active {
+  background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+  color: #ddeaf5;
+  border: 1px solid rgba(159,184,204,0.55);
+  box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+  text-shadow: 0 0 12px rgba(159,184,204,0.6);
+}
+.mode-hint {
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: -1.3rem;
+  margin-bottom: 2rem;
+  letter-spacing: 0.01em;
+}
+.mode-hint span         { display: none; }
+.mode-hint span.visible { display: inline; }
+
+.student-info-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 2rem 2.2rem;
+  margin-bottom: 2.5rem;
+  border-top: 3px solid var(--gold);
+}
+.student-info-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.25rem;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+.student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+.info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+.info-field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.info-field input,
+.info-field select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.info-field input:focus,
+.info-field select:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(245,200,66,0.15);
+}
+.info-field select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238aafca' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.2rem;
+}
+.info-field select option { background: #1e2f42; color: var(--text); }
+.info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+.info-error.show { display: block; }
+
+.quiz-progress-sticky {
+  position: sticky;
+  top: 64px;
+  z-index: 100;
+  background: var(--dark);
+  padding: 0.85rem 0 0.75rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.quiz-progress { display: flex; align-items: center; gap: 1rem; }
+.progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--green), var(--orange));
+  border-radius: 99px;
+  transition: width 0.4s;
+  width: 0%;
+}
+.progress-text { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; min-width: 90px; text-align: right; }
+
+.quiz-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.8rem;
+  margin-bottom: 1.2rem;
+}
+.quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+.quiz-num {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  color: var(--text-muted);
+  width: 2rem; height: 2rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.quiz-question-text { font-weight: 800; font-size: 1rem; line-height: 1.55; }
+.quiz-options {
+  display: flex; flex-direction: column; gap: 0.6rem;
+  margin-top: 1rem; padding-left: 3rem;
+}
+.quiz-option {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.02);
+  font-size: 0.95rem; font-weight: 600;
+  font-family: 'Nunito', sans-serif;
+  text-align: left; color: var(--text); width: 100%;
+}
+.quiz-option:hover:not(.selected):not(.disabled) {
+  border-color: rgba(245,200,66,0.5);
+  background: rgba(245,200,66,0.06);
+}
+.quiz-option.selected         { border-color: var(--gold)   !important; background: rgba(245,200,66,0.1)  !important; }
+.quiz-option.correct          { border-color: var(--green)  !important; background: rgba(46,204,113,0.1)  !important; }
+.quiz-option.incorrect        { border-color: var(--red)    !important; background: rgba(231,76,60,0.08)  !important; }
+.quiz-option.disabled         { pointer-events: none; }
+.quiz-option.revealed-correct { border-color: rgba(46,204,113,0.4) !important; background: rgba(46,204,113,0.05) !important; }
+.option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+.option-feedback {
+  display: none; font-size: 0.85rem;
+  margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem;
+  border-radius: 10px; font-weight: 700;
+}
+.option-feedback.correct-fb   { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+.option-feedback.incorrect-fb { display: block; color: #ff8080;     background: rgba(231,76,60,0.08);  border-left: 3px solid var(--red);   }
+
+.quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+.quiz-submit-btn {
+  background: linear-gradient(135deg, var(--gold), #ffd97a);
+  color: #0d1f2d; border: none;
+  padding: 1rem 3rem; border-radius: 14px;
+  font-weight: 900; font-size: 1.05rem;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+  transition: all 0.25s; letter-spacing: 0.04em;
+}
+.quiz-submit-btn:hover    { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(245,200,66,0.4); }
+.quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.score-board {
+  display: none;
+  background: linear-gradient(135deg, rgba(46,204,113,0.1), rgba(26,188,156,0.05));
+  border: 1px solid rgba(46,204,113,0.3);
+  border-radius: 20px; padding: 2.5rem;
+  text-align: center; margin-top: 2rem;
+}
+.score-board.show { display: block; }
+.big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--green); margin-bottom: 0.5rem; }
+.score-board p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
+
+.mystery-loop {
+  max-width: 540px; margin: 0.4rem auto 1.5rem;
+  padding: 1.05rem 1.3rem;
+  background: rgba(245,200,66,0.08);
+  border: 1px solid rgba(245,200,66,0.3);
+  border-left: 4px solid var(--gold);
+  border-radius: 12px; text-align: left;
+  font-size: 0.92rem; line-height: 1.65; color: var(--text);
+}
+.mystery-loop .ml-label {
+  display: block; font-size: 0.66rem; font-weight: 900;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 0.4rem;
+}
+.mystery-loop strong { color: var(--gold); }
+
+.score-submitted {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--green); background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.score-error {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  color: #e87070; background: rgba(231,76,60,0.1);
+  border: 1px solid rgba(231,76,60,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.reset-btn {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  color: #fff; border: none;
+  padding: 0.85rem 2.5rem; border-radius: 12px;
+  font-weight: 800; font-size: 1rem;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+  transition: all 0.25s;
+}
+.reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+@media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .quiz-options { padding-left: 0; }
+  .option-feedback { padding-left: 1rem; }
+}
+</style>
+
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Five questions covering everything you discovered, including a density problem to solve. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="mmSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="mmSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="mm-student-name">Your Name</label>
+          <input type="text" id="mm-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="mm-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="mm-teacher-select">Teacher</label>
+          <select id="mm-teacher-select">
+            <option value="">- Select -</option>
+            <option value="MrBrown">Mr. Brown</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="mm-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="mm-block-select">Block</label>
+          <select id="mm-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="mm-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="mm-progress"></div></div>
+        <div class="progress-text" id="mm-progress-text">0 / 5 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="mm-quiz-questions"></div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="mm-submit-btn" onclick="mmSubmitQuiz()" disabled>Submit Quiz</button>
+    </div>
+
+    <!-- Score Board -->
+    <div class="score-board" id="mm-score">
+      <div class="big-score" id="mm-score-num"></div>
+      <p id="mm-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">🔍 The Mystery You Came In With</span>
+        You started this lesson with one question: <strong>"How can a giant steel ship float while a tiny pebble sinks?"</strong> If you can explain it using mass, volume, and density, you've solved the mystery.
+      </div>
+      <div id="mm-submit-status"></div>
+      <button class="reset-btn" onclick="mmResetQuiz()">Try Again</button>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+#continue { background: var(--dark2); padding-top: 4rem; padding-bottom: 5rem; }
+.continue-intro {
+  text-align: left;
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 720px;
+  margin: 0 auto 2.4rem 0;
+}
+.continue-intro strong { color: var(--gold); }
+.continue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin-top: 0;
+}
+@media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+.cont-card {
+  border-radius: 18px;
+  padding: 1.5rem 1.5rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.cont-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.cont-card.les { background: rgba(245,160,40,0.08);  border: 1px solid rgba(245,160,40,0.35); }
+.cont-card.ext { background: rgba(180,127,255,0.10); border: 1px solid rgba(180,127,255,0.35); }
+.cont-card.les::before { background: linear-gradient(90deg, #f5a028, #f5c842); }
+.cont-card.ext::before { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+.cont-card.les:hover { border-color: rgba(245,160,40,0.65); box-shadow: 0 14px 40px rgba(245,160,40,0.18); transform: translateY(-4px); }
+.cont-card.ext:hover { border-color: rgba(180,127,255,0.65);box-shadow: 0 14px 40px rgba(180,127,255,0.15);transform: translateY(-4px); }
+.cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; }
+.cont-card.les .cont-icon { background: rgba(245,160,40,0.18); }
+.cont-card.ext .cont-icon { background: rgba(180,127,255,0.22);}
+.cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; }
+.cont-card.les .cont-cat { color: #f5a028; }
+.cont-card.ext .cont-cat { color: #b47fff; }
+.cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+.cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+.cont-link { display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-decoration: none; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; transition: all 0.2s; white-space: nowrap; align-self: flex-start; margin-top: auto; }
+.cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
+.cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+</style>
+
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">Measuring matter is the foundation of all of chemistry. <strong>Extension challenges:</strong> find the density of an irregular object at home - measure its mass on a kitchen scale, then drop it into a measuring cup of water and see how many milliliters the water rises (that rise IS its volume). Or rank five household objects from least to most dense, then test your ranking in a sink of water.</p>
+    <div class="continue-grid">
+      <a href="lesson_building-blocks-of-matter.html" class="cont-card les">
+        <div class="cont-icon">🧱</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Building Blocks of Matter</div>
+        <div class="cont-desc">You measured matter from the outside. Now zoom in: what is matter actually made of? Meet atoms and molecules, the particles that explain why density even exists.</div>
+        <span class="cont-link">Continue</span>
+      </a>
+      <a href="lesson_pure-substances-and-mixtures.html" class="cont-card ext">
+        <div class="cont-icon">🧪</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Pure Substances and Mixtures</div>
+        <div class="cont-desc">Density is a fingerprint: every pure substance has its own. Discover how scientists use properties like density to tell pure substances and mixtures apart.</div>
+        <span class="cont-link">Continue</span>
+      </a>
+      <a href="lesson_physical-properties.html" class="cont-card inv">
+        <div class="cont-icon">🔎</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Physical Properties</div>
+        <div class="cont-desc">Density is just one physical property. Explore color, hardness, melting point, conductivity, and the full toolkit scientists use to describe and identify matter.</div>
+        <span class="cont-link">Continue</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ™</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<!-- ===== SESSION TOGGLES (LS + STE bars) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
+function toggleStemDetail(id) {
+  const el  = document.getElementById(id);
+  el.classList.toggle('stem-open');
+  const btn = el.querySelector('.stem-show-btn');
+  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
+}
+</script>
+
+<!-- ===== GLOSSARY CARDS (click to expand only, one open at a time) ===== -->
+<script>
+(function(){
+  var cards = document.querySelectorAll('.glossary-card');
+  cards.forEach(function(card){
+    card.addEventListener('click', function(){
+      var wasOpen = card.classList.contains('open');
+      cards.forEach(function(c){
+        c.classList.remove('open');
+        c.setAttribute('aria-expanded', 'false');
+      });
+      if (!wasOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+})();
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== TOOL MATCH GAME ===== -->
+<script>
+(function(){
+  var questions = document.querySelectorAll('.tm-question');
+  var solved = 0;
+  questions.forEach(function(q){
+    var correct = parseInt(q.getAttribute('data-correct'), 10);
+    var fb = q.querySelector('.tm-fb');
+    var btns = q.querySelectorAll('.tm-btn');
+    var done = false;
+    btns.forEach(function(btn, i){
+      btn.addEventListener('click', function(){
+        if (done) return;
+        if (i === correct) {
+          done = true;
+          solved++;
+          btn.classList.add('right');
+          fb.className = 'tm-fb visible ok';
+          fb.textContent = 'Correct! That\'s the right tool for the job.';
+          btns.forEach(function(b){ b.disabled = true; });
+          if (solved === questions.length) document.getElementById('tm-done').classList.add('visible');
+        } else {
+          btn.classList.add('wrong');
+          btn.disabled = true;
+          fb.className = 'tm-fb visible no';
+          fb.textContent = 'Not quite. Think about what is being measured: amount of matter, liquid space, or block space. Try again.';
+        }
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== VOLUME BLOCK BUILDER ===== -->
+<script>
+(function(){
+  var lIn = document.getElementById('vol-l');
+  var wIn = document.getElementById('vol-w');
+  var hIn = document.getElementById('vol-h');
+  var lVal = document.getElementById('vol-l-val');
+  var wVal = document.getElementById('vol-w-val');
+  var hVal = document.getElementById('vol-h-val');
+  var mathOut = document.getElementById('vol-math');
+  var blockG = document.getElementById('vol-block');
+  var S = 26;            /* px per cm for face width */
+  var DX = 13, DY = 8;   /* isometric depth offsets per cm */
+
+  function render() {
+    var l = parseInt(lIn.value, 10);
+    var w = parseInt(wIn.value, 10);
+    var h = parseInt(hIn.value, 10);
+    lVal.textContent = l + ' cm';
+    wVal.textContent = w + ' cm';
+    hVal.textContent = h + ' cm';
+    var v = l * w * h;
+    mathOut.innerHTML = 'V = ' + l + ' × ' + w + ' × ' + h + ' = <strong>' + v + ' cm³</strong>';
+
+    /* simple cabinet-projection box, anchored bottom-left */
+    var fw = l * S, fh = h * S, dx = w * DX, dy = w * DY;
+    var x0 = (360 - fw - dx) / 2;
+    var y0 = 200;
+    var front = [[x0, y0], [x0 + fw, y0], [x0 + fw, y0 - fh], [x0, y0 - fh]];
+    var top   = [[x0, y0 - fh], [x0 + fw, y0 - fh], [x0 + fw + dx, y0 - fh - dy], [x0 + dx, y0 - fh - dy]];
+    var side  = [[x0 + fw, y0], [x0 + fw + dx, y0 - dy], [x0 + fw + dx, y0 - fh - dy], [x0 + fw, y0 - fh]];
+    function poly(pts, fill) {
+      return '<polygon points="' + pts.map(function(p){ return p.join(','); }).join(' ') +
+             '" fill="' + fill + '" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linejoin="round"/>';
+    }
+    blockG.innerHTML =
+      poly(top,   'rgba(46,204,113,0.35)') +
+      poly(side,  'rgba(230,126,34,0.3)') +
+      poly(front, 'rgba(59,200,232,0.3)') +
+      '<text x="' + (x0 + fw / 2) + '" y="' + (y0 + 22) + '" fill="#3bc8e8" font-size="13" font-weight="800" font-family="Nunito, sans-serif" text-anchor="middle">length ' + l + ' cm</text>' +
+      '<text x="' + (x0 - 10) + '" y="' + (y0 - fh / 2) + '" fill="#e67e22" font-size="13" font-weight="800" font-family="Nunito, sans-serif" text-anchor="end">height ' + h + ' cm</text>' +
+      '<text x="' + (x0 + fw + dx / 2 + 12) + '" y="' + (y0 - dy / 2 + 4) + '" fill="#2ecc71" font-size="13" font-weight="800" font-family="Nunito, sans-serif">width ' + w + ' cm</text>';
+  }
+
+  lIn.addEventListener('input', render);
+  wIn.addEventListener('input', render);
+  hIn.addEventListener('input', render);
+  render();
+})();
+</script>
+
+<!-- ===== DENSITY LAB ===== -->
+<script>
+(function(){
+  var massIn  = document.getElementById('dl-mass');
+  var volIn   = document.getElementById('dl-vol');
+  var massVal = document.getElementById('dl-mass-val');
+  var volVal  = document.getElementById('dl-vol-val');
+  var mOut    = document.getElementById('dl-m-out');
+  var vOut    = document.getElementById('dl-v-out');
+  var dOut    = document.getElementById('dl-d-out');
+  var obj     = document.getElementById('dl-object');
+  var verdict = document.getElementById('dl-verdict');
+  var synth   = document.getElementById('dl-synthesis');
+  var triedBoth = { sink: false, float: false };
+
+  function render() {
+    var m = parseInt(massIn.value, 10);
+    var v = parseInt(volIn.value, 10);
+    massVal.textContent = m + ' g';
+    volVal.textContent  = v + ' mL';
+    mOut.textContent = m;
+    vOut.textContent = v;
+    var d = m / v;
+    dOut.textContent = (Math.round(d * 100) / 100) + ' g/mL';
+
+    if (d < 1) {
+      obj.setAttribute('y', 42);   /* bobbing at the surface (water line y=55) */
+      verdict.className = 'dl-verdict float';
+      verdict.textContent = '✓ Floats - density below 1 g/mL';
+      triedBoth.float = true;
+    } else if (d === 1) {
+      obj.setAttribute('y', 70);
+      verdict.className = 'dl-verdict float';
+      verdict.textContent = '≈ Hovers - density exactly 1 g/mL, same as water';
+    } else {
+      obj.setAttribute('y', 106);  /* resting on the bottom */
+      verdict.className = 'dl-verdict sink';
+      verdict.textContent = '✗ Sinks - density above 1 g/mL';
+      triedBoth.sink = true;
+    }
+    if (triedBoth.sink && triedBoth.float) synth.classList.add('visible');
+  }
+
+  massIn.addEventListener('input', render);
+  volIn.addEventListener('input', render);
+  render();
+})();
+</script>
+
+<!-- ===== PRACTICE PROBLEM STEPPER ===== -->
+<script>
+(function(){
+  function wireStep(optsId, fbId, okMsg, noMsg, onCorrect) {
+    var opts = document.getElementById(optsId);
+    var fb   = document.getElementById(fbId);
+    var done = false;
+    opts.querySelectorAll('.we-opt-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (done) return;
+        if (btn.getAttribute('data-ans') === '1') {
+          done = true;
+          btn.classList.add('right');
+          fb.className = 'we-fb visible ok';
+          fb.textContent = okMsg;
+          opts.querySelectorAll('.we-opt-btn').forEach(function(b){ b.disabled = true; });
+          if (onCorrect) setTimeout(onCorrect, 350);
+        } else {
+          btn.classList.add('wrong');
+          btn.disabled = true;
+          fb.className = 'we-fb visible no';
+          fb.textContent = noMsg;
+        }
+      });
+    });
+  }
+
+  wireStep('pp-step1', 'pp-fb1',
+    'Correct! 4 × 3 × 2 = 24 cm³. Now you have both numbers the formula needs.',
+    'Not quite. Multiply all three dimensions: 4 × 3 first, then × 2. Try again.',
+    function(){ document.getElementById('pp-step2-wrap').classList.add('visible'); });
+
+  wireStep('pp-step2', 'pp-fb2',
+    'Correct! 60 ÷ 24 = 2.5 g/cm³.',
+    'Not quite. Density is mass ÷ volume: 60 ÷ 24. Try again.',
+    function(){ document.getElementById('pp-success').classList.add('visible'); });
+})();
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) {
+        fb.className = 'qr-feedback visible no';
+        fb.textContent = 'Pick an answer first.';
+        return;
+      }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok';
+        fb.textContent = okMsg;
+        checkBtn.style.display = 'none';
+        retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no';
+        fb.textContent = noMsg;
+        checkBtn.style.display = 'none';
+        retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback';
+      fb.textContent = '';
+      retryBtn.style.display = 'none';
+      checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+
+  wireQR('qr1', 0,
+    'Correct! Same volume but ten times the mass means ten times the density. Density compares mass to volume, not just one of them.',
+    'Not quite. Both cubes fill the same space, so the one with more mass has more matter packed in - it is denser.');
+  wireQR('qr2', 0,
+    'Correct! Floating is decided by comparing densities. Ice is slightly less dense than liquid water, so it floats - mass and volume alone don\'t decide it.',
+    'Not quite. Mass alone and volume alone don\'t decide floating. Compare densities: the ice must be less dense than the water.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+var MM_SCRIPT_URLS = {
+  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+
+// ── QUIZ STATE ────────────────────────────────────────────────────────
+var mmQuizState = { selected: [], submitted: false };
+var mmQuizMode  = 'practice';
+
+// ── QUIZ QUESTIONS ────────────────────────────────────────────────────
+var mmQuizQuestions = [
+  {
+    // Q1 - Definition of matter
+    q: "Which statement best describes matter?",
+    options: [
+      "Anything that can be seen with your eyes",
+      "Anything that has mass and takes up space",
+      "Only solids and liquids, because gases are empty space",
+      "Anything that sinks in water"
+    ],
+    correct: 1,
+    explanation: "Matter is anything that has mass and takes up space (volume). That includes gases like air - a filled balloon has more mass than an empty one and takes up more space. The most common states of matter are solid, liquid, and gas."
+  },
+  {
+    // Q2 - Tools and units
+    q: "A scientist needs to measure the mass of a mineral sample and the volume of a liquid. Which tools and units should she use?",
+    options: [
+      "A ruler for mass in cm³, and a balance for volume in grams",
+      "A graduated cylinder for both, in milliliters",
+      "A triple beam balance for mass in grams, and a graduated cylinder for volume in milliliters",
+      "A triple beam balance for both, in grams"
+    ],
+    correct: 2,
+    explanation: "Mass is measured in grams (g) with a triple beam balance. Liquid volume is measured in milliliters (mL) with a graduated cylinder. A ruler measures the volume of regular solids in cm³ using V = length × width × height."
+  },
+  {
+    // Q3 - Volume from dimensions
+    q: "A block is 3 cm long, 2 cm wide, and 2 cm tall. What is its volume?",
+    options: [
+      "7 cm³, because 3 + 2 + 2 = 7",
+      "12 cm³, because 3 × 2 × 2 = 12",
+      "6 cm³, because 3 × 2 = 6",
+      "12 mL, because rulers measure in milliliters"
+    ],
+    correct: 1,
+    explanation: "Volume of a rectangular block = length × width × height = 3 × 2 × 2 = 12 cm³. You multiply the dimensions (not add them), and a ruler measurement gives cubic centimeters, not milliliters."
+  },
+  {
+    // Q4 - Density calculation
+    q: "An object has a mass of 24 g and a volume of 12 cm³. What is its density, and would it sink or float in water (1 g/cm³)?",
+    options: [
+      "2 g/cm³ - it would sink, because its density is greater than water's",
+      "0.5 g/cm³ - it would float, because its density is less than water's",
+      "288 g/cm³ - it would sink, because mass times volume is huge",
+      "12 g/cm³ - it would sink, because volume equals density"
+    ],
+    correct: 0,
+    explanation: "Density = mass ÷ volume = 24 ÷ 12 = 2 g/cm³. Since 2 g/cm³ is greater than water's density of 1 g/cm³, the object sinks. Density is a ratio - you divide, never multiply."
+  },
+  {
+    // Q5 - Apply: same size, different mass
+    q: "Two balls are exactly the same size. Ball A is solid steel and Ball B is hollow plastic. Why is Ball A so much harder to lift?",
+    options: [
+      "Ball A has a bigger volume, so it weighs more",
+      "Ball A has more matter packed into the same space - a higher density and a greater mass",
+      "Ball B has more density spread across less mass",
+      "Same-size objects always have the same mass, so something else must explain it"
+    ],
+    correct: 1,
+    explanation: "The balls have equal volume, but the steel ball contains far more matter, giving it more mass and a much higher density - more matter packed into the same space. That's exactly the bowling ball vs. beach ball mystery from the start of the lesson."
+  }
+];
+
+// ── SET QUIZ MODE ─────────────────────────────────────────────────────
+function mmSetQuizMode(mode) {
+  mmQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+
+// ── URL PARAM - auto-set mode on load ─────────────────────────────────
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') mmSetQuizMode('classroom');
+  else mmSetQuizMode('practice');
+})();
+
+// ── BUILD QUIZ ────────────────────────────────────────────────────────
+function mmBuildQuiz() {
+  var container = document.getElementById('mm-quiz-questions');
+  container.innerHTML = '';
+  mmQuizState.selected  = new Array(mmQuizQuestions.length).fill(null);
+  mmQuizState.submitted = false;
+  document.getElementById('mm-submit-btn').disabled = true;
+  mmUpdateProgress();
+  var letters = ['A','B','C','D'];
+  mmQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="mmSelectAnswer(' + qi + ',' + oi + ')" id="mm-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="mm-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+// ── SELECT ANSWER ─────────────────────────────────────────────────────
+function mmSelectAnswer(qi, chosenIndex) {
+  if (mmQuizState.submitted) return;
+  var prev = mmQuizState.selected[qi];
+  if (prev !== null) document.getElementById('mm-q-' + qi + '-' + prev).classList.remove('selected');
+  mmQuizState.selected[qi] = chosenIndex;
+  document.getElementById('mm-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  mmUpdateProgress();
+  document.getElementById('mm-submit-btn').disabled = !mmQuizState.selected.every(function (s) { return s !== null; });
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────
+function mmUpdateProgress() {
+  var total    = mmQuizQuestions.length;
+  var answered = mmQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('mm-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('mm-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+// ── VALIDATE STUDENT INFO ─────────────────────────────────────────────
+function mmValidateStudentInfo() {
+  var name    = document.getElementById('mm-student-name').value.trim();
+  var teacher = document.getElementById('mm-teacher-select').value;
+  var block   = document.getElementById('mm-block-select').value;
+  document.getElementById('mm-err-name').classList.toggle('show', !name);
+  document.getElementById('mm-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('mm-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+
+// ── SUBMIT QUIZ ───────────────────────────────────────────────────────
+function mmSubmitQuiz() {
+  if (mmQuizState.submitted) return;
+  if (mmQuizMode === 'classroom') {
+    var info = mmValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  mmQuizState.submitted = true;
+  document.getElementById('mm-submit-btn').disabled = true;
+  var correct = 0;
+  mmQuizQuestions.forEach(function (q, qi) {
+    var chosen    = mmQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('mm-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('mm-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('mm-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = mmQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '🏆 Perfect score! You can measure matter like a scientist.'
+    : pct >= 80 ? '🌟 Great work! Review any you missed and you\'re ready for the next lesson.'
+    : pct >= 60 ? '📚 Solid effort. Go back through the lesson and try again.'
+    : '💪 Keep going; review each section carefully and try again!';
+  document.getElementById('mm-score-num').textContent = score;
+  document.getElementById('mm-score-msg').textContent = msg;
+  var sb = document.getElementById('mm-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  if (mmQuizMode === 'practice') {
+    document.getElementById('mm-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+
+  var info2 = mmValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var letters = ['A','B','C','D'];
+  var answerStr = mmQuizState.selected.map(function (idx, i) {
+    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
+  }).join(', ');
+  var params = new URLSearchParams({
+    tab: 'Measuring Matter', studentName: info2.name, teacher: teacherLabel,
+    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+  });
+  fetch(MM_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(function () {
+      document.getElementById('mm-submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+    })
+    .catch(function () {
+      document.getElementById('mm-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+}
+
+// ── RESET QUIZ ────────────────────────────────────────────────────────
+function mmResetQuiz() {
+  document.getElementById('mm-score').classList.remove('show');
+  document.getElementById('mm-submit-status').innerHTML = '';
+  mmBuildQuiz();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+mmBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

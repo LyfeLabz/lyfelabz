@@ -12,6 +12,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3457", "."],
       "port": 3457
+    },
+    {
+      "name": "building-blocks",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3458", "."],
+      "port": 3458
     }
   ]
 }

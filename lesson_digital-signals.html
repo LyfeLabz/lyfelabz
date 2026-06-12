@@ -1,0 +1,3288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_digital-signals.html">
+<meta name="description" content="How can a FaceTime call travel across the world and still sound clear? Discover digital signals, binary code, and the encode-transmit-decode journey. Grade 6 physical science aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Digital Signals</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+  html { font-size: 18px; }
+
+  /* ===== CSS VARIABLES ===== */
+  :root {
+    --green:       #2ecc71;
+    --green-dark:  #27ae60;
+    --blue:        #3498db;
+    --blue-dark:   #2980b9;
+    --teal:        #3bc8e8;
+    --teal-deep:   #1abc9c;
+    --purple:      #9b59b6;
+    --red:         #e74c3c;
+    --orange:      #e67e22;
+    --yellow:      #f1c40f;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #1a2535;
+    --dark2:       #243447;
+    --card:        #1e2f42;
+    --text:        #e8f4f8;
+    --text-muted:  #8aafca;
+    --border:      rgba(52,152,219,0.2);
+
+    /* Digital-signals color system - the three-step journey */
+    --encode:        #3bc8e8;   /* teal   - encoder */
+    --encode-dim:    rgba(59,200,232,0.08);
+    --encode-border: rgba(59,200,232,0.3);
+
+    --transmit:        #2ecc71; /* green  - transmission */
+    --transmit-dim:    rgba(46,204,113,0.08);
+    --transmit-border: rgba(46,204,113,0.3);
+
+    --decode:        #e67e22;   /* orange - decoder */
+    --decode-dim:    rgba(230,126,34,0.08);
+    --decode-border: rgba(230,126,34,0.3);
+  }
+
+  /* ===== RESET ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ===== STARFIELD ===== */
+  #stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.45;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: color 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-back:hover {
+    background: rgba(245,200,66,0.18);
+    border-color: rgba(245,200,66,0.65);
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0f2535 100%);
+    padding: 6rem 2rem 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(59,200,232,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(46,204,113,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 80%, rgba(230,126,34,0.04) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(245,200,66,0.15);
+    border: 1px solid rgba(245,200,66,0.4);
+    color: var(--gold);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  .hero p.hero-sub {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 620px;
+    margin: 0 auto 2.5rem;
+    position: relative;
+  }
+  .hero-float {
+    position: absolute;
+    font-size: 4.5rem;
+    opacity: 0.045;
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+    filter: blur(0.5px);
+  }
+  .hero-float:nth-child(1) { top: 8%;    left: 4%;   animation-delay: 0s;   font-size: 5rem;   }
+  .hero-float:nth-child(2) { top: 15%;   right: 5%;  animation-delay: 1.5s; font-size: 3.8rem; }
+  .hero-float:nth-child(3) { bottom: 8%; left: 10%;  animation-delay: 3s;   font-size: 3.5rem; }
+  .hero-float:nth-child(4) { bottom: 12%;right: 4%;  animation-delay: 4.5s; font-size: 4.2rem; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* ===== DRIVING QUESTION ===== */
+  .driving-question {
+    max-width: 760px;
+    margin: 1.6rem auto 0;
+    padding: 1.1rem 1.6rem;
+    background: rgba(59,200,232,0.06);
+    border: 1px solid rgba(59,200,232,0.22);
+    border-left: 4px solid var(--teal);
+    border-radius: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    box-sizing: border-box;
+    position: relative;
+  }
+  .dq-icon  { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body  { flex: 1; text-align: left; }
+  .dq-label {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(59,200,232,0.8);
+    margin-bottom: 0.3rem;
+  }
+  .dq-text  { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5rem 2rem; position: relative; scroll-margin-top: 10px; }
+  #quiz { scroll-margin-top: 45px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 760px;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+  }
+
+  /* ===== BRIDGE CALLOUT ===== */
+  .bridge-callout {
+    margin: 2rem auto 0;
+    max-width: 800px;
+    padding: 1.1rem 1.4rem;
+    background: rgba(245,200,66,0.06);
+    border: 1px solid rgba(245,200,66,0.22);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    font-size: 0.98rem;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .bridge-callout strong { color: var(--gold); }
+  .bridge-callout.teal {
+    background: rgba(59,200,232,0.06);
+    border-color: rgba(59,200,232,0.22);
+    border-left-color: var(--teal);
+  }
+  .bridge-callout.teal strong { color: var(--teal); }
+  .bridge-callout.green {
+    background: rgba(46,204,113,0.06);
+    border-color: rgba(46,204,113,0.22);
+    border-left-color: var(--green);
+  }
+  .bridge-callout.green strong { color: var(--green); }
+  .bridge-callout.orange {
+    background: rgba(230,126,34,0.06);
+    border-color: rgba(230,126,34,0.22);
+    border-left-color: var(--orange);
+  }
+  .bridge-callout.orange strong { color: var(--orange); }
+
+  /* ===== VOCABULARY PILLS ===== */
+  .concept-tag {
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.4rem 1rem;
+    border-radius: 99px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-block;
+    user-select: none;
+  }
+  .concept-tag:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.15);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  }
+  .ct-green  { color: #2ecc71; background: rgba(46,204,113,0.08);  border-color: rgba(46,204,113,0.3);  }
+  .ct-teal   { color: #3bc8e8; background: rgba(59,200,232,0.08);  border-color: rgba(59,200,232,0.3);  }
+  .ct-blue   { color: #7cc8f8; background: rgba(41,140,212,0.1);   border-color: rgba(41,140,212,0.3);  }
+  .ct-orange { color: #e67e22; background: rgba(230,126,34,0.08);  border-color: rgba(230,126,34,0.3);  }
+  .ct-purple { color: #b47fff; background: rgba(180,127,255,0.08); border-color: rgba(180,127,255,0.3); }
+
+  @keyframes termPulse {
+    0%   { background: rgba(46,204,113,0);    box-shadow: none; }
+    20%  { background: rgba(46,204,113,0.32); box-shadow: 0 0 0 6px rgba(46,204,113,0.18); }
+    60%  { background: rgba(46,204,113,0.16); box-shadow: 0 0 0 9px rgba(46,204,113,0.08); }
+    100% { background: rgba(46,204,113,0);    box-shadow: none; }
+  }
+  .pulsing {
+    animation: termPulse 3s ease forwards;
+    border-radius: 6px;
+    -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+  }
+
+  /* ===== FOOTER ===== */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:.08em; color:var(--gold); margin-bottom:.35rem; }
+  footer .footer-tagline { font-size:.83rem; color:rgba(240,228,200,.6); margin-bottom:.6rem; }
+  footer .footer-links { display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:.72rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,.4); background:rgba(245,200,66,.08); padding:.25rem .75rem; border-radius:99px; transition:border-color .2s,background .2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,.7); background:rgba(59,200,232,.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,.22); border-color:rgba(59,200,232,.95); }
+  footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
+
+  /* ===== RESPONSIVE NAV ===== */
+  @media (max-width: 900px) {
+    nav { padding: 0.75rem 1.2rem; flex-wrap: wrap; gap: 0.6rem; }
+    .nav-links { gap: 0.9rem; order: 3; width: 100%; justify-content: center; }
+    .nav-links a { font-size: 0.78rem; }
+  }
+  @media (max-width: 560px) {
+    .hero { padding: 4rem 1.2rem 3.5rem; }
+    section { padding: 3.5rem 1.2rem; }
+  }
+</style>
+
+<!-- ── Learning Science Focus Bar ── -->
+<style>
+.ls-focus { display: none; }
+body.ls-active .ls-focus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+  width: fit-content;
+  max-width: 760px;
+  margin: 0.5rem auto 1.6rem;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 16px;
+  animation: barFadeIn 0.35s ease both;
+}
+@keyframes barFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ls-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(59,200,232,0.8);
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.ls-badge {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: default;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+}
+.ls-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.11);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255,255,255,0.11);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]:hover::after,
+.ls-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after,
+  .ls-badge[data-tip]::before { display: none; }
+  body.ls-active .ls-focus { max-width: calc(100% - 2.4rem); padding: 0.75rem 1rem; gap: 0.4rem 0.5rem; }
+}
+</style>
+
+<!-- ── MA STE Standards Badges ── -->
+<style>
+.stem-focus { display: none; }
+body.stem-active .stem-focus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+  width: fit-content;
+  max-width: 760px;
+  margin: 0.5rem auto 1.6rem;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+  background: rgba(46,204,113,0.05);
+  border: 1px solid rgba(46,204,113,0.2);
+  border-radius: 16px;
+  animation: barFadeIn 0.35s ease both;
+}
+.stem-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(46,204,113,0.75);
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.stem-badge {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: default;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+}
+.stem-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(46,204,113,0.2);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.stem-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(46,204,113,0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.stem-badge[data-tip]:hover::after,
+.stem-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .stem-badge[data-tip]::after,
+  .stem-badge[data-tip]::before { display: none; }
+}
+.stem-detail { display: none; }
+body.stem-active .stem-detail {
+  display: block;
+  width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
+  text-align: center; animation: barFadeIn 0.35s ease both;
+}
+.stem-show-btn {
+  background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
+}
+.stem-show-btn:hover { color: rgba(46,204,113,0.85); }
+.stem-detail-body {
+  display: none; margin-top: 0.5rem;
+  background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
+  border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
+}
+.stem-detail.stem-open .stem-detail-body { display: block; }
+.stem-std-row {
+  display: flex; gap: 0.8rem; align-items: flex-start;
+  padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
+.stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
+.stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
+</style>
+
+<!-- ── Engagement + Content Styles ── -->
+<style>
+
+/* ── QUESTION PAUSE CARD ── */
+.question-pause {
+  max-width: 760px;
+  margin: 0.5rem auto 2rem;
+  padding: 1.2rem 1.5rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.question-pause-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+.question-pause-text {
+  font-size: 0.98rem;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.question-pause-text strong {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 800;
+}
+@media (max-width: 480px) {
+  .question-pause {
+    padding: 0.9rem 1rem;
+    gap: 0.6rem;
+    margin-top: 0;
+  }
+  .question-pause-icon { font-size: 1.2rem; }
+  .question-pause-text { font-size: 0.9rem; }
+}
+
+/* ── PREDICT BEFORE REVEAL ── */
+.question-pause.predict-pause {
+  display: block;
+}
+.question-pause.predict-pause .qp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.predict-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+.predict-btn {
+  flex: 1;
+  min-width: 140px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 0.55rem 0.7rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.predict-btn:hover:not(.locked) {
+  border-color: rgba(245,200,66,0.5);
+  background: rgba(245,200,66,0.08);
+}
+.predict-btn.chosen {
+  border-color: var(--gold);
+  background: rgba(245,200,66,0.16);
+  color: var(--gold);
+}
+.question-pause.locked .predict-btn { cursor: default; opacity: 0.45; }
+.question-pause.locked .predict-btn.chosen { opacity: 1; }
+
+.predict-gated { display: none; }
+.predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+@keyframes predictFadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── HOOK MYSTERY CARDS (Engage) ── */
+.hook-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 720px) { .hook-grid { grid-template-columns: 1fr; } }
+
+.hook-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.8rem 1.4rem 1.6rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  cursor: pointer;
+  user-select: none;
+}
+.hook-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+}
+.hook-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.hook-card.c1::before { background: linear-gradient(90deg, var(--teal), rgba(59,200,232,0.4)); }
+.hook-card.c2::before { background: linear-gradient(90deg, var(--green), rgba(46,204,113,0.4)); }
+.hook-card.c3::before { background: linear-gradient(90deg, var(--orange), rgba(230,126,34,0.4)); }
+
+.hook-card-icon { font-size: 2.8rem; margin-bottom: 0.6rem; display: block; line-height: 1; }
+.hook-card-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+.hook-card-observation {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+.hook-card-question {
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--gold);
+  line-height: 1.5;
+}
+.hook-card:hover:not(.revealed) { border-color: rgba(245,200,66,0.45); }
+.hook-card.revealed { cursor: default; }
+.hook-card-prompt {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.4rem 1rem;
+  border: 1px dashed rgba(245,200,66,0.45);
+  border-radius: 99px;
+  margin-top: 0.4rem;
+}
+.hook-card .hook-card-observation,
+.hook-card .hook-card-question { display: none; }
+.hook-card.revealed .hook-card-prompt { display: none; }
+.hook-card.revealed .hook-card-observation,
+.hook-card.revealed .hook-card-question {
+  display: block;
+  animation: predictFadeUp 0.4s ease both;
+}
+
+/* ── OBSERVE ROW ── */
+.observe-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 560px) { .observe-row { grid-template-columns: 1fr; } }
+.observe-card {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.93rem;
+  line-height: 1.55;
+}
+.observe-icon { font-size: 1.6rem; flex-shrink: 0; }
+.observe-card strong { color: var(--teal); }
+.observe-card.green-card { background: rgba(46,204,113,0.05); border-color: rgba(46,204,113,0.2); }
+.observe-card.green-card strong { color: var(--green); }
+.observe-card.orange-card { background: rgba(230,126,34,0.05); border-color: rgba(230,126,34,0.2); }
+.observe-card.orange-card strong { color: var(--orange); }
+
+/* ── NAME-IT REVEAL ── */
+.name-it {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 14px;
+  padding: 1.4rem 1.6rem;
+  max-width: 760px;
+  margin: 0 auto 2rem;
+}
+.name-it.teal-it { border-left-color: var(--teal); }
+.name-it.green-it { border-left-color: var(--green); }
+.name-it.orange-it { border-left-color: var(--orange); }
+.name-it-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+.name-it.teal-it .name-it-label   { color: var(--teal); }
+.name-it.green-it .name-it-label  { color: var(--green); }
+.name-it.orange-it .name-it-label { color: var(--orange); }
+.name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+.name-it p strong { font-weight: 800; }
+.name-it.teal-it p strong   { color: var(--teal); }
+.name-it.green-it p strong  { color: var(--green); }
+.name-it.orange-it p strong { color: var(--orange); }
+
+/* ── EXAMPLE GRID ── */
+.example-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 600px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
+.example-chip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+/* ── ANALOG VS DIGITAL COMPARISON ── */
+.avd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 640px) { .avd-grid { grid-template-columns: 1fr; } }
+.avd-card {
+  border-radius: 18px;
+  padding: 1.8rem 1.6rem;
+}
+.avd-card.analog {
+  background: rgba(230,126,34,0.06);
+  border: 1px solid rgba(230,126,34,0.3);
+}
+.avd-card.digital {
+  background: rgba(59,200,232,0.06);
+  border: 1px solid rgba(59,200,232,0.3);
+}
+.avd-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.35rem;
+  margin-bottom: 0.3rem;
+}
+.avd-card.analog .avd-title  { color: var(--orange); }
+.avd-card.digital .avd-title { color: var(--teal); }
+.avd-wave {
+  width: 100%;
+  height: 64px;
+  margin: 0.6rem 0 1rem;
+  display: block;
+}
+.avd-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+.avd-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.avd-list li strong { color: var(--text); }
+.avd-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+.avd-card.analog  .avd-dot { background: var(--orange); }
+.avd-card.digital .avd-dot { background: var(--teal); }
+
+/* ── TRANSMISSION PROCESS STEP CARDS ── */
+.process-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 0.6rem;
+  align-items: stretch;
+  margin-bottom: 2rem;
+}
+@media (max-width: 760px) {
+  .process-grid { grid-template-columns: 1fr; }
+  .process-arrow { transform: rotate(90deg); justify-self: center; }
+}
+.process-card {
+  border-radius: 18px;
+  padding: 1.6rem 1.3rem;
+  text-align: center;
+}
+.process-card.step1 { background: var(--encode-dim);   border: 1px solid var(--encode-border);   }
+.process-card.step2 { background: var(--transmit-dim); border: 1px solid var(--transmit-border); }
+.process-card.step3 { background: var(--decode-dim);   border: 1px solid var(--decode-border);   }
+.process-step-label {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.process-card.step1 .process-step-label { color: var(--encode); }
+.process-card.step2 .process-step-label { color: var(--transmit); }
+.process-card.step3 .process-step-label { color: var(--decode); }
+.process-icon { font-size: 2.4rem; margin-bottom: 0.5rem; display: block; line-height: 1; }
+.process-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+.process-card.step1 .process-name { color: var(--encode); }
+.process-card.step2 .process-name { color: var(--transmit); }
+.process-card.step3 .process-name { color: var(--decode); }
+.process-body {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.process-body strong { color: var(--text); }
+.process-mini {
+  margin-top: 0.8rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.3rem 0.8rem;
+  border-radius: 99px;
+  display: inline-block;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text-muted);
+}
+.process-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: var(--gold);
+  opacity: 0.7;
+}
+
+/* ── BINARY WAVE MODEL (Explore) ── */
+.binary-stage {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem 1.8rem;
+  max-width: 860px;
+  margin: 0 auto 2rem;
+}
+.binary-stage-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.8rem;
+  text-align: center;
+}
+.binary-wave-svg { width: 100%; height: auto; display: block; }
+.binary-key {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+.binary-key span {
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.3rem 0.9rem;
+  border-radius: 99px;
+  border: 1px solid;
+}
+.bk-one  { color: var(--teal);  background: var(--encode-dim);  border-color: var(--encode-border); }
+.bk-zero { color: var(--text-muted); background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.15); }
+.bk-hz   { color: var(--gold);  background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); }
+
+/* read-the-wave practice buttons */
+.wave-read {
+  margin-top: 1.4rem;
+  text-align: center;
+}
+.wave-read-q {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 0.8rem;
+}
+.wave-read-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.wave-read-btn {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  padding: 0.55rem 1.2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.wave-read-btn:hover:not(:disabled) { border-color: rgba(59,200,232,0.55); background: rgba(59,200,232,0.08); }
+.wave-read-btn.right { border-color: var(--green); background: rgba(46,204,113,0.12); color: var(--green); }
+.wave-read-btn.wrong { border-color: var(--red);   background: rgba(231,76,60,0.1);   color: #ff9b8e; }
+.wave-read-fb {
+  display: none;
+  margin-top: 0.85rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+}
+.wave-read-fb.visible { display: block; animation: predictFadeUp 0.35s ease both; }
+.wave-read-fb.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.wave-read-fb.no { background: rgba(231,76,60,0.1);  border: 1px solid rgba(231,76,60,0.3);  color: #ecb3b3; }
+
+/* ── BINARY DECODER (Using Binary Numbers) ── */
+.decoder-card {
+  background: var(--card);
+  border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 24px;
+  padding: 2.2rem 2rem 2.4rem;
+  max-width: 860px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+}
+.decoder-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 25px;
+  background: linear-gradient(135deg,
+    rgba(59,200,232,0.3) 0%, rgba(245,200,66,0.08) 25%,
+    rgba(46,204,113,0.25) 50%, rgba(245,200,66,0.08) 75%,
+    rgba(230,126,34,0.25) 100%
+  );
+  background-size: 400% 400%;
+  animation: borderFlow 6s ease infinite;
+  z-index: 0;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+}
+@keyframes borderFlow {
+  0%,100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.decoder-card > * { position: relative; z-index: 1; }
+
+.decoder-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+  margin-bottom: 1.8rem;
+}
+@media (max-width: 640px) { .decoder-steps { grid-template-columns: 1fr; } }
+.decoder-step {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+.decoder-step strong { color: var(--gold); }
+.decoder-step-num {
+  flex-shrink: 0;
+  font-family: 'Fredoka One', cursive;
+  width: 1.6rem; height: 1.6rem;
+  border-radius: 50%;
+  background: rgba(245,200,66,0.12);
+  border: 1px solid rgba(245,200,66,0.35);
+  color: var(--gold);
+  font-size: 0.8rem;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 0.1rem;
+}
+
+.bit-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+.bit-box {
+  width: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+.bit-value {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+}
+.bit-btn {
+  width: 100%;
+  height: 72px;
+  border-radius: 14px;
+  border: 2px solid rgba(255,255,255,0.15);
+  background: var(--dark2);
+  color: var(--text-muted);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.bit-btn:hover { border-color: rgba(59,200,232,0.5); transform: translateY(-2px); }
+.bit-btn.on {
+  border-color: var(--teal);
+  background: rgba(59,200,232,0.14);
+  color: var(--teal);
+  box-shadow: 0 0 16px rgba(59,200,232,0.25);
+}
+@media (max-width: 540px) {
+  .bit-box { width: 56px; }
+  .bit-btn { height: 56px; font-size: 1.2rem; }
+}
+
+.decoder-readout {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.4rem;
+}
+.readout-chip {
+  background: var(--dark);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.8rem 1.4rem;
+  text-align: center;
+  min-width: 130px;
+}
+.readout-label {
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+.readout-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--gold);
+}
+.readout-value.letter { color: var(--green); font-size: 1.5rem; }
+
+.decoder-challenge {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.22);
+  border-left: 4px solid var(--teal);
+  border-radius: 12px;
+  padding: 1.1rem 1.4rem;
+  font-size: 0.94rem;
+  color: var(--text);
+  line-height: 1.65;
+}
+.decoder-challenge strong { color: var(--teal); }
+.decoder-challenge .dc-word {
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 0.25em;
+  color: var(--gold);
+}
+.decoder-progress {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+}
+.dc-slot {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(255,255,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+.dc-slot.filled {
+  border-style: solid;
+  border-color: var(--green);
+  background: rgba(46,204,113,0.1);
+  color: var(--green);
+}
+.decoder-success {
+  display: none;
+  margin-top: 1rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.35);
+  color: #a8e6c4;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.decoder-success.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+
+/* guided worked-example table */
+.worked-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 860px;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 720px) { .worked-grid { grid-template-columns: 1fr; } }
+.worked-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.2rem 1.3rem;
+  text-align: center;
+}
+.worked-code {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.3em;
+  color: var(--teal);
+  margin-bottom: 0.4rem;
+}
+.worked-math {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.worked-math strong { color: var(--gold); }
+.worked-letter {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.5rem;
+  color: var(--green);
+}
+
+/* ── QUICK RECALL ── */
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: var(--teal); }
+.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+.qr-options input[type=radio] { accent-color: var(--teal); }
+.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+/* ── WRAP-UP BEATS ── */
+.wrapup-beats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+@media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+
+.wrapup-beat {
+  border-radius: 16px;
+  padding: 1.4rem 1.3rem;
+  position: relative;
+}
+.wrapup-beat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+.wrapup-beat-1 {
+  background: rgba(245,200,66,0.06);
+  border: 1px solid rgba(245,200,66,0.25);
+}
+.wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+.wrapup-beat-2 {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+}
+.wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+.wrapup-beat-3 {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+
+.wrapup-beat-label {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+.wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+.wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+
+.wrapup-beat-answer {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+.wrapup-beat-body {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+.wrapup-behavior-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+.wbc {
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.22rem 0.65rem;
+  border-radius: 99px;
+  border: 1px solid;
+}
+.wbc-encode   { color: var(--teal);   background: var(--encode-dim);   border-color: var(--encode-border);   }
+.wbc-transmit { color: var(--green);  background: var(--transmit-dim); border-color: var(--transmit-border); }
+.wbc-decode   { color: var(--orange); background: var(--decode-dim);   border-color: var(--decode-border);   }
+
+/* ── SUMMARY TABLES ── */
+.summary-table-wrap { overflow-x: auto; margin-bottom: 2rem; }
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+.summary-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(245,200,66,0.07);
+  padding: 0.8rem 1.2rem;
+  border-bottom: 1px solid rgba(245,200,66,0.25);
+}
+.summary-table td {
+  padding: 0.75rem 1.2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: var(--text-muted);
+  line-height: 1.6;
+  vertical-align: top;
+}
+.summary-table tr:last-child td { border-bottom: none; }
+.summary-table td.term { color: var(--teal); font-weight: 800; white-space: nowrap; }
+</style>
+
+<!-- ── Pilot Layout: Learning Goals + Glossary Cards ── -->
+<style>
+.goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+
+.glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+.glossary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 16px;
+  padding: 1.2rem 1.3rem 1.3rem;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.35rem; }
+.gc-hint {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
+.glossary-card:hover .gc-def,
+.glossary-card:focus .gc-def,
+.glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+.glossary-card:hover .gc-hint,
+.glossary-card:focus .gc-hint,
+.glossary-card.open .gc-hint { display: none; }
+.gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+.gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+.gc-blue   { border-top-color: #7cc8f8;       } .gc-blue .gc-term   { color: #7cc8f8; }
+.gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#hook">Mystery</a></li>
+    <li><a href="#process">The Journey</a></li>
+    <li><a href="#decoder">Decoder</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+  </ul>
+  <a href="index.html#chem" class="nav-back">← Physical Science</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">📱</span>
+  <span class="hero-float">🛰️</span>
+  <span class="hero-float">🔢</span>
+  <span class="hero-float">🎵</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Digital Signals</h1>
+  <p class="hero-sub">Your voice becomes a stream of 0s and 1s, crosses an ocean as wave pulses, and turns back into your voice - all in a fraction of a second. How?</p>
+  <div class="driving-question">
+    <div class="dq-icon">🔍</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">How can a FaceTime call travel across the world and still sound clear?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real FaceTime call mystery before naming any vocabulary. Encountering a genuine puzzle activates curiosity and primes attention for the explanation that follows. (Loewenstein, 1994)">🔍 Phenomenon First</span>
+  <span class="ls-badge" data-tip="Binary code, encoders, and decoders are introduced through observable wave models before their vocabulary labels appear. Students build understanding, then receive the word that names it. (Willingham, 2009)">🏷️ Label After Learning</span>
+  <span class="ls-badge" data-tip="The decoding process is broken into three explicit numbered steps, with each worked example shown before students try one independently. Stepwise modeling reduces cognitive load for all learners. (Sweller, 1988)">🪜 Stepwise Scaffolds</span>
+  <span class="ls-badge" data-tip="Students read wave pulses and decode binary letters themselves rather than watching a demonstration. Generating answers strengthens memory more than reviewing them. (Bertsch et al., 2007)">✏️ Generation Effect</span>
+  <span class="ls-badge" data-tip="The quiz asks students to decode new signals and apply concepts to new scenarios rather than recall definitions. Transfer tasks require deeper processing and reveal real understanding. (Adesope et al., 2017)">✅ Retrieval Practice</span>
+</div>
+
+<!-- MA STE STANDARDS BADGES -->
+<div class="stem-focus">
+  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
+  <span class="stem-badge" data-tip="Present qualitative scientific and technical information to support the claim that digitized signals (sent as wave pulses) are a more reliable way to encode and transmit information.">6.MS-PS4-3</span>
+  <span class="stem-badge" data-tip="Use diagrams and other representations to show that both light and sound are waves that move and transfer energy.">6.MS-PS4-1</span>
+</div>
+<div class="stem-detail" id="stem-detail-ds">
+  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-ds')">▸ Show standard descriptions</button>
+  <div class="stem-detail-body">
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-PS4-3</span>
+      <span class="stem-std-text">Present qualitative scientific and technical information to support the claim that digitized signals (sent as wave pulses) are a more reliable way to encode and transmit information.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">6.MS-PS4-1</span>
+      <span class="stem-std-text">Use diagrams and other representations to show that both light and sound are waves that move and transfer energy.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🎯</span>
+        <div class="goal-text">Explain why digitized signals are a more reliable way to encode and transmit information than analog signals.</div>
+        <span class="goal-std">6.MS-PS4-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🌊</span>
+        <div class="goal-text">Model how information travels as wave pulses through the encode → transmit → decode process.</div>
+        <span class="goal-std">6.MS-PS4-1</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Hover over a card (or tap it) to see what each word means. You'll meet every one of these in the lesson below.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Digital Signal</div>
+        <div class="gc-hint">Hover or tap to reveal</div>
+        <div class="gc-def">Information encoded in packets of 0s and 1s that can travel long distances and be decoded back into sounds, images, or videos.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-term">Analog Signal</div>
+        <div class="gc-hint">Hover or tap to reveal</div>
+        <div class="gc-def">A continuous signal that can have any value. It is more affected by noise, and its quality can degrade over distance or copying.</div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Binary Code</div>
+        <div class="gc-hint">Hover or tap to reveal</div>
+        <div class="gc-def">The two-symbol language (0 and 1) that digital devices use to represent all information.</div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-term">Encoder</div>
+        <div class="gc-hint">Hover or tap to reveal</div>
+        <div class="gc-def">The part of a device that converts sounds, images, or text into patterns of 0s and 1s.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Transmission</div>
+        <div class="gc-hint">Hover or tap to reveal</div>
+        <div class="gc-def">The process of sending encoded information through electromagnetic waves, wires, or fiber optic cables.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-term">Decoder</div>
+        <div class="gc-hint">Hover or tap to reveal</div>
+        <div class="gc-def">The part of a device that converts binary code back into sound, images, or video.</div>
+      </button>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 0 - ENGAGE: THE MYSTERY
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="hook" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage · Mystery</span>
+    <h2 class="section-title">One Call. Three Puzzles.</h2>
+    <p class="section-desc">You FaceTime a cousin who lives 5,000 miles away. The call connects in seconds, the picture is sharp, and the sound is clear. Think about what just had to happen for that to work.</p>
+
+    <div class="hook-grid">
+
+      <div class="hook-card c1" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">🎤</span>
+        <div class="hook-card-name">Your Voice Leaves</div>
+        <div class="hook-card-observation">
+          Your voice is a sound wave: vibrating air. But air vibrations can't travel through a phone cable or across an ocean.
+        </div>
+        <div class="hook-card-question">What does the phone turn your voice into?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+      <div class="hook-card c2" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">🌎</span>
+        <div class="hook-card-name">The Journey</div>
+        <div class="hook-card-observation">
+          The signal travels thousands of miles through cell towers, undersea cables, and satellites, passing through storms and interference along the way.
+        </div>
+        <div class="hook-card-question">Why doesn't the message get scrambled on the trip?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+      <div class="hook-card c3" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">🔊</span>
+        <div class="hook-card-name">The Arrival</div>
+        <div class="hook-card-observation">
+          Your cousin's phone receives the signal and plays your voice out of its speaker - sounding just like you.
+        </div>
+        <div class="hook-card-question">How does a phone turn a signal back into a voice?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+    </div>
+
+    <div class="observe-row">
+      <div class="observe-card">
+        <span class="observe-icon">💡</span>
+        <span><strong>One clue:</strong> the signal that makes the trip is not your voice at all. It's something much simpler - so simple it's almost impossible to scramble.</span>
+      </div>
+      <div class="observe-card">
+        <span class="observe-icon">🤔</span>
+        <span>What kind of message could survive a 5,000-mile journey through cables, towers, and space without losing quality?</span>
+      </div>
+    </div>
+
+    <div class="bridge-callout">
+      <strong>The question:</strong> Phones, Wi-Fi, music streaming, and text messages all use the same trick to send information cleanly across huge distances. This lesson is about discovering that trick.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 1 - WHAT ARE DIGITAL SIGNALS?
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="digital" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore · The Big Idea</span>
+    <h2 class="section-title">A Language With Only Two Letters</h2>
+    <p class="section-desc">Every photo, song, and video call you've ever sent was first translated into the simplest possible alphabet: just 0 and 1.</p>
+
+    <!-- Name-it: digital signal + binary code -->
+    <div id="digital-signal-term" class="name-it teal-it">
+      <div class="name-it-label">The key idea</div>
+      <p>A <strong>digital signal</strong> is information that has been encoded into packets of 0s and 1s, known as <strong>binary code</strong>. Encoded data can be transmitted over long distances and decoded back into sounds, images, or videos.</p>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.2rem;">You use digital signals every single day:</p>
+    <div class="example-grid">
+      <div class="example-chip"><span class="example-chip-icon">💬</span>Text messages</div>
+      <div class="example-chip"><span class="example-chip-icon">🎵</span>Music streaming</div>
+      <div class="example-chip"><span class="example-chip-icon">📶</span>Wi-Fi</div>
+      <div class="example-chip"><span class="example-chip-icon">📞</span>Phone calls</div>
+      <div class="example-chip"><span class="example-chip-icon">📹</span>FaceTime and video chat</div>
+      <div class="example-chip"><span class="example-chip-icon">🎮</span>Online games</div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>But wait:</strong> signals existed long before smartphones. Old radios and vinyl records carried sound too, just in a different way.
+      <br><br>
+      So what makes digital special? Let's compare.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 2 - ANALOG VS DIGITAL (slide 3)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="analog" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label" style="color: var(--orange); background: var(--decode-dim); border-color: var(--decode-border);">Explore · Two Kinds of Signals</span>
+    <h2 class="section-title">Analog vs. Digital</h2>
+    <p class="section-desc">Compare the two signal shapes below. The analog wave changes smoothly and continuously, like a hill. The digital wave snaps between just two levels, like stairs.</p>
+
+    <div class="avd-grid">
+
+      <!-- ANALOG -->
+      <div class="avd-card analog">
+        <div id="analog-signal-term" class="avd-title">Analog Signal</div>
+        <svg class="avd-wave" viewBox="0 0 300 64" xmlns="http://www.w3.org/2000/svg" aria-label="A smooth continuous wave">
+          <path d="M0,32 C20,4 40,4 60,32 C80,60 100,60 120,32 C140,4 160,4 180,32 C200,60 220,60 240,32 C260,4 280,4 300,32"
+                fill="none" stroke="#e67e22" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+        </svg>
+        <ul class="avd-list">
+          <li><span class="avd-dot"></span><span>A <strong>continuous signal</strong> that can have any value</span></li>
+          <li><span class="avd-dot"></span><span><strong>More affected by noise</strong>: static and interference blend into the signal</span></li>
+          <li><span class="avd-dot"></span><span>Quality can <strong>degrade</strong> when copied or sent far</span></li>
+          <li><span class="avd-dot"></span><span>Examples: <strong>vinyl record</strong>, <strong>FM radio</strong></span></li>
+        </ul>
+      </div>
+
+      <!-- DIGITAL -->
+      <div class="avd-card digital">
+        <div class="avd-title">Digital Signal</div>
+        <svg class="avd-wave" viewBox="0 0 300 64" xmlns="http://www.w3.org/2000/svg" aria-label="A square wave snapping between two levels representing 0s and 1s">
+          <path d="M0,54 H30 V10 H75 V54 H120 V10 H150 V54 H195 V10 H240 V54 H270 V10 H300"
+                fill="none" stroke="#3bc8e8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+        </svg>
+        <ul class="avd-list">
+          <li><span class="avd-dot"></span><span>Made of only <strong>0s and 1s</strong>: two clear levels, nothing in between</span></li>
+          <li><span class="avd-dot"></span><span><strong>Less affected by noise</strong>: a 1 is still clearly a 1 even with some static</span></li>
+          <li><span class="avd-dot"></span><span>Can be <strong>copied with little loss</strong>, again and again</span></li>
+          <li><span class="avd-dot"></span><span>Examples: <strong>MP3 file</strong>, <strong>streaming music</strong></span></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Predict pause from slide 3's question -->
+    <div class="question-pause predict-pause" id="qp-analog">
+      <div class="qp-row">
+        <span class="question-pause-icon">🤔</span>
+        <div class="question-pause-text"><strong>Think about it:</strong> Which type of signal would better maintain quality over long distances? Make a prediction.</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn">Analog - smooth waves carry more detail</button>
+        <button class="predict-btn">Digital - 0s and 1s are harder to scramble</button>
+        <button class="predict-btn">Both would lose the same amount of quality</button>
+      </div>
+    </div>
+
+    <div class="name-it teal-it predict-gated" data-gate="qp-analog">
+      <div class="name-it-label">Here's why digital wins</div>
+      <p>Over a long journey, every signal picks up <strong>noise</strong> - tiny bits of random interference. Noise blends into an analog wave and permanently changes it. But a digital signal only has two possible values, so even a noisy 1 is still obviously a 1. The receiving device can rebuild the signal perfectly. <strong>That's the secret of the crystal-clear FaceTime call.</strong></p>
+    </div>
+
+    <!-- ── NOISE LAB (6.MS-PS4-3 interactive) ── -->
+    <style>
+    .noise-lab {
+      background: var(--card);
+      border: 1px solid rgba(245,200,66,0.22);
+      border-radius: 24px;
+      padding: 2.2rem 2rem 2.4rem;
+      max-width: 860px;
+      margin: 2.5rem auto 0;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+    }
+    .noise-lab::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 25px;
+      background: linear-gradient(135deg,
+        rgba(230,126,34,0.3) 0%, rgba(245,200,66,0.08) 25%,
+        rgba(59,200,232,0.25) 50%, rgba(245,200,66,0.08) 75%,
+        rgba(46,204,113,0.25) 100%
+      );
+      background-size: 400% 400%;
+      animation: borderFlow 6s ease infinite;
+      z-index: 0;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      padding: 1px;
+    }
+    .noise-lab > * { position: relative; z-index: 1; }
+    .noise-lab-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.25rem;
+      color: var(--text);
+      text-align: center;
+      margin-bottom: 0.3rem;
+    }
+    .noise-lab-sub {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 620px;
+      margin: 0 auto 1.6rem;
+      line-height: 1.6;
+    }
+    .nl-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      max-width: 560px;
+      margin: 0 auto 1.6rem;
+    }
+    .nl-slider-label {
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .nl-slider-row input[type=range] {
+      flex: 1;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+    .nl-slider-pct {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: var(--gold);
+      min-width: 56px;
+      text-align: right;
+    }
+    .nl-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+    @media (max-width: 640px) { .nl-panels { grid-template-columns: 1fr; } }
+    .nl-panel {
+      border-radius: 16px;
+      padding: 1.1rem 1.1rem 1.2rem;
+    }
+    .nl-panel.analog  { background: rgba(230,126,34,0.06); border: 1px solid rgba(230,126,34,0.3); }
+    .nl-panel.digital { background: rgba(59,200,232,0.06); border: 1px solid rgba(59,200,232,0.3); }
+    .nl-panel-name {
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .nl-panel.analog  .nl-panel-name { color: var(--orange); }
+    .nl-panel.digital .nl-panel-name { color: var(--teal); }
+    .nl-panel svg { width: 100%; height: auto; display: block; background: var(--dark); border-radius: 10px; }
+    .nl-readout {
+      margin-top: 0.7rem;
+      font-size: 0.84rem;
+      font-weight: 700;
+      line-height: 1.55;
+      color: var(--text-muted);
+      min-height: 3.2rem;
+    }
+    .nl-readout strong { color: var(--text); }
+    .nl-bits {
+      display: inline-flex;
+      gap: 0.3rem;
+      margin-top: 0.35rem;
+    }
+    .nl-bit {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 900;
+      width: 26px; height: 26px;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid;
+    }
+    .nl-bit.ok  { color: var(--green); background: rgba(46,204,113,0.1); border-color: rgba(46,204,113,0.4); }
+    .nl-bit.bad { color: #ff8080;      background: rgba(231,76,60,0.1);  border-color: rgba(231,76,60,0.45); }
+    .nl-verdict {
+      margin-top: 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+    .nl-verdict.ok  { color: var(--green); }
+    .nl-verdict.bad { color: #ff8080; }
+    .nl-synthesis {
+      display: none;
+      margin-top: 0.4rem;
+      padding: 1.2rem 1.4rem;
+      border-radius: 12px;
+      background: rgba(46,204,113,0.06);
+      border: 1px solid rgba(46,204,113,0.25);
+      border-left: 4px solid var(--green);
+      font-size: 0.94rem;
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .nl-synthesis.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+    .nl-synthesis strong { color: var(--green); }
+    .nl-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.7rem;
+    }
+    .nl-chip {
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 0.25rem 0.75rem;
+      border-radius: 99px;
+      color: var(--teal);
+      background: var(--encode-dim);
+      border: 1px solid var(--encode-border);
+    }
+    </style>
+
+    <!-- Predict before the lab unlocks -->
+    <div class="question-pause predict-pause" id="qp-noise" style="margin-top: 2.5rem;">
+      <div class="qp-row">
+        <span class="question-pause-icon">🧪</span>
+        <div class="question-pause-text"><strong>Noise Lab:</strong> Two copies of the same message are about to travel a long, noisy journey - one as an analog wave, one as digital binary. At 60% noise, which message will arrive correctly? Make a prediction to unlock the lab.</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn">The analog message</button>
+        <button class="predict-btn">The digital message</button>
+        <button class="predict-btn">Neither will survive</button>
+      </div>
+    </div>
+
+    <div class="noise-lab predict-gated" data-gate="qp-noise">
+      <div class="noise-lab-title">🎛️ The Noise Lab</div>
+      <div class="noise-lab-sub">Drag the slider to add interference - the kind a real signal picks up from storms, distance, and crowded airwaves. Watch what each signal looks like when it arrives.</div>
+
+      <div class="nl-slider-row">
+        <span class="nl-slider-label">Noise on the journey</span>
+        <input type="range" id="nl-slider" min="0" max="100" value="0" step="5" aria-label="Amount of noise added to both signals, from 0 to 100 percent">
+        <span class="nl-slider-pct" id="nl-pct">0%</span>
+      </div>
+
+      <div class="nl-panels">
+        <div class="nl-panel analog">
+          <div class="nl-panel-name">Analog · arrives as-is</div>
+          <svg id="nl-analog-svg" viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg" aria-label="Analog wave that distorts as noise increases">
+            <polyline id="nl-analog-line" fill="none" stroke="#e67e22" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="nl-readout" id="nl-analog-readout"><strong>Signal quality: 100%</strong><br>A perfect copy of the original wave.</div>
+        </div>
+        <div class="nl-panel digital">
+          <div class="nl-panel-name">Digital · rebuilt on arrival</div>
+          <svg id="nl-digital-svg" viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg" aria-label="Digital signal that stays readable as 0s and 1s despite noise">
+            <line x1="0" y1="55" x2="320" y2="55" stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="4 4"/>
+            <polyline id="nl-digital-line" fill="none" stroke="#3bc8e8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="nl-readout" id="nl-digital-readout"><strong>Decoded message:</strong><div class="nl-bits" id="nl-bits"></div><div class="nl-verdict ok" id="nl-verdict">✓ Rebuilt perfectly</div></div>
+        </div>
+      </div>
+
+      <div class="nl-synthesis" id="nl-synthesis">
+        <strong>That's the answer to the mystery.</strong> Noise becomes a permanent part of an analog wave - there's no way to know what the original looked like. But a digital receiver only asks one question about each pulse: is it above or below the line? As long as a 1 still looks more like a 1 than a 0, the message is rebuilt perfectly, like new.
+        <br><br>
+        This is why your everyday tech sounds and looks clean after a 5,000-mile trip:
+        <div class="nl-chips">
+          <span class="nl-chip">📹 FaceTime calls</span>
+          <span class="nl-chip">🎵 Streaming music</span>
+          <span class="nl-chip">💬 Text messages</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    /* Noise Lab - shows analog degradation vs digital rebuild (6.MS-PS4-3) */
+    (function(){
+      var slider   = document.getElementById('nl-slider');
+      var pctOut   = document.getElementById('nl-pct');
+      var aLine    = document.getElementById('nl-analog-line');
+      var dLine    = document.getElementById('nl-digital-line');
+      var aReadout = document.getElementById('nl-analog-readout');
+      var bitsEl   = document.getElementById('nl-bits');
+      var verdict  = document.getElementById('nl-verdict');
+      var synth    = document.getElementById('nl-synthesis');
+      var MESSAGE  = [0, 1, 1, 0, 1];          /* same bits as Signal C */
+      var MID = 55, HI = 22, LO = 88;          /* digital levels in SVG coords */
+      var synthShown = false;
+
+      /* deterministic pseudo-random so each noise level looks stable */
+      function noiseAt(i, amt, seed) {
+        var x = Math.sin(i * 12.9898 + seed * 78.233) * 43758.5453;
+        return (x - Math.floor(x) - 0.5) * amt * 0.9;
+      }
+
+      function render() {
+        var amt = parseInt(slider.value, 10);
+        pctOut.textContent = amt + '%';
+
+        /* analog: smooth sine + noise baked in */
+        var aPts = [];
+        for (var i = 0; i <= 80; i++) {
+          var x = i * 4;
+          var y = MID - 34 * Math.sin(i * 0.32) + noiseAt(i, amt, 1);
+          aPts.push(x + ',' + Math.max(4, Math.min(106, y)).toFixed(1));
+        }
+        aLine.setAttribute('points', aPts.join(' '));
+
+        var quality = 100 - amt;
+        aReadout.innerHTML = '<strong>Signal quality: ' + quality + '%</strong><br>' +
+          (amt === 0 ? 'A perfect copy of the original wave.' :
+           amt < 40  ? 'Noise is blending into the wave. It is now part of the message.' :
+           amt < 75  ? 'Badly distorted. The original wave cannot be recovered.' :
+                       'The message is buried in static. It is gone for good.');
+
+        /* digital: square wave + same noise, then decoded by threshold */
+        var dPts = [];
+        var decoded = [];
+        for (var b = 0; b < 5; b++) {
+          var level = MESSAGE[b] === 1 ? HI : LO;
+          for (var j = 0; j <= 16; j++) {
+            var xi = b * 64 + j * 4;
+            var yi = level + noiseAt(b * 17 + j, amt, 2);
+            dPts.push(xi + ',' + Math.max(4, Math.min(106, yi)).toFixed(1));
+          }
+          /* receiver samples the middle of the pulse and asks: above or below the line? */
+          var sample = level + noiseAt(b * 17 + 8, amt, 2);
+          decoded.push(sample < MID ? 1 : 0);
+        }
+        dLine.setAttribute('points', dPts.join(' '));
+
+        var allOk = true;
+        bitsEl.innerHTML = decoded.map(function(bit, i){
+          var ok = bit === MESSAGE[i];
+          if (!ok) allOk = false;
+          return '<span class="nl-bit ' + (ok ? 'ok' : 'bad') + '">' + bit + '</span>';
+        }).join('');
+        verdict.className = 'nl-verdict ' + (allOk ? 'ok' : 'bad');
+        verdict.textContent = allOk
+          ? '✓ Rebuilt perfectly: every pulse is still clearly a 0 or a 1'
+          : '✗ Extreme noise finally flipped a bit - even digital has limits';
+
+        /* reveal the synthesis once the student tests serious noise */
+        if (!synthShown && amt >= 60) {
+          synthShown = true;
+          synth.classList.add('visible');
+        }
+      }
+
+      slider.addEventListener('input', render);
+      render();
+    })();
+    </script>
+
+    <div class="bridge-callout green">
+      <strong>So digital signals survive the trip.</strong> But what does binary code actually look like when it travels as a wave?
+      <br><br>
+      Let's build a model you can read with your own eyes.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 3 - EXPLORE: A MODEL OF BINARY SIGNALS (slides 7-9)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="model" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label" style="color: var(--teal); background: var(--encode-dim); border-color: var(--encode-border);">Explore · Wave Models</span>
+    <h2 class="section-title">A Model of Binary Signals</h2>
+    <p class="section-desc">In this model, <strong style="color:var(--teal);">larger waves represent 1</strong> and <strong style="color:var(--text-muted);">smaller waves represent 0</strong>. Each second carries five wave pulses - that's a frequency of 5 Hz. Digital information can be represented in many different ways; this is just one model.</p>
+
+    <!-- All zeros (slide 7) -->
+    <div class="binary-stage">
+      <div class="binary-stage-label">Signal A · 1 second = 5 Hz</div>
+      <svg class="binary-wave-svg" viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg" aria-label="Five small wave pulses representing 0 0 0 0 0">
+        <line x1="0" y1="90" x2="700" y2="90" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <path d="M10,90 Q45,60 80,90 M150,90 Q185,60 220,90 M290,90 Q325,60 360,90 M430,90 Q465,60 500,90 M570,90 Q605,60 640,90"
+              fill="none" stroke="#8aafca" stroke-width="3.5" stroke-linecap="round"/>
+        <text x="45"  y="118" fill="#8aafca" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">0</text>
+        <text x="185" y="118" fill="#8aafca" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">0</text>
+        <text x="325" y="118" fill="#8aafca" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">0</text>
+        <text x="465" y="118" fill="#8aafca" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">0</text>
+        <text x="605" y="118" fill="#8aafca" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">0</text>
+      </svg>
+      <div class="binary-key">
+        <span class="bk-zero">Small wave = 0</span>
+        <span class="bk-hz">All five pulses are small → 0 0 0 0 0</span>
+      </div>
+    </div>
+
+    <!-- All ones (slide 8) -->
+    <div class="binary-stage">
+      <div class="binary-stage-label">Signal B · 1 second = 5 Hz</div>
+      <svg class="binary-wave-svg" viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg" aria-label="Five large wave pulses representing 1 1 1 1 1">
+        <line x1="0" y1="90" x2="700" y2="90" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <path d="M10,90 Q45,8 80,90 M150,90 Q185,8 220,90 M290,90 Q325,8 360,90 M430,90 Q465,8 500,90 M570,90 Q605,8 640,90"
+              fill="none" stroke="#3bc8e8" stroke-width="3.5" stroke-linecap="round"/>
+        <text x="45"  y="118" fill="#3bc8e8" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">1</text>
+        <text x="185" y="118" fill="#3bc8e8" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">1</text>
+        <text x="325" y="118" fill="#3bc8e8" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">1</text>
+        <text x="465" y="118" fill="#3bc8e8" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">1</text>
+        <text x="605" y="118" fill="#3bc8e8" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">1</text>
+      </svg>
+      <div class="binary-key">
+        <span class="bk-one">Large wave = 1</span>
+        <span class="bk-hz">All five pulses are large → 1 1 1 1 1</span>
+      </div>
+    </div>
+
+    <!-- Mixed signal: student reads it (slide 9) -->
+    <div class="binary-stage">
+      <div class="binary-stage-label">Signal C · You read this one</div>
+      <svg class="binary-wave-svg" viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg" aria-label="A mixed signal of large and small wave pulses for students to decode">
+        <line x1="0" y1="90" x2="700" y2="90" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <path d="M10,90 Q45,60 80,90" fill="none" stroke="#8aafca" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M150,90 Q185,8 220,90" fill="none" stroke="#3bc8e8" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M290,90 Q325,8 360,90" fill="none" stroke="#3bc8e8" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M430,90 Q465,60 500,90" fill="none" stroke="#8aafca" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M570,90 Q605,8 640,90" fill="none" stroke="#3bc8e8" stroke-width="3.5" stroke-linecap="round"/>
+        <text x="45"  y="118" fill="rgba(255,255,255,0.35)" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">?</text>
+        <text x="185" y="118" fill="rgba(255,255,255,0.35)" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">?</text>
+        <text x="325" y="118" fill="rgba(255,255,255,0.35)" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">?</text>
+        <text x="465" y="118" fill="rgba(255,255,255,0.35)" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">?</text>
+        <text x="605" y="118" fill="rgba(255,255,255,0.35)" font-size="20" font-family="Orbitron, sans-serif" text-anchor="middle">?</text>
+      </svg>
+      <div class="wave-read">
+        <div class="wave-read-q">Read the pulses left to right. Which binary pattern is this?</div>
+        <div class="wave-read-options" id="waveReadOpts">
+          <button class="wave-read-btn" data-ans="0">1 1 0 1 0</button>
+          <button class="wave-read-btn" data-ans="1">0 1 1 0 1</button>
+          <button class="wave-read-btn" data-ans="2">0 1 1 0 0</button>
+        </div>
+        <div class="wave-read-fb" id="waveReadFb"></div>
+      </div>
+    </div>
+
+    <div class="bridge-callout green">
+      <strong>You just read a digital signal</strong> the same way a phone does: by checking the size of each wave pulse.
+      <br><br>
+      So how does a voice become wave pulses in the first place, and how does it turn back? Time to follow the signal step by step.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 4 - EXPLAIN: THE TRANSMISSION PROCESS (slides 4-6)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="process" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label" style="color: var(--green); background: var(--transmit-dim); border-color: var(--transmit-border);">Explain · The Journey</span>
+    <h2 class="section-title">The Transmission Process</h2>
+    <p class="section-desc">Every digital message makes the same three-step journey. Follow the color coding: <span style="color:var(--encode); font-weight:800;">teal is encoding</span>, <span style="color:var(--transmit); font-weight:800;">green is transmission</span>, and <span style="color:var(--decode); font-weight:800;">orange is decoding</span>.</p>
+
+    <div class="process-grid">
+
+      <!-- STEP 1: ENCODER -->
+      <div class="process-card step1">
+        <div class="process-step-label">Step 1</div>
+        <span class="process-icon">🎤</span>
+        <div id="encoder-term" class="process-name">Encoder</div>
+        <div class="process-body">The <strong>encoder</strong> converts sounds, images, or text into patterns of 0s and 1s.</div>
+        <span class="process-mini">Sound → Binary Code</span>
+      </div>
+
+      <div class="process-arrow">➜</div>
+
+      <!-- STEP 2: TRANSMISSION -->
+      <div class="process-card step2">
+        <div class="process-step-label">Step 2</div>
+        <span class="process-icon">🛰️</span>
+        <div id="transmission-term" class="process-name">Transmission</div>
+        <div class="process-body"><strong>Transmission</strong> is the process of sending encoded information through electromagnetic waves, wires, or fiber optic cables.</div>
+        <span class="process-mini">Binary Code as a Wave</span>
+      </div>
+
+      <div class="process-arrow">➜</div>
+
+      <!-- STEP 3: DECODER -->
+      <div class="process-card step3">
+        <div class="process-step-label">Step 3</div>
+        <span class="process-icon">🔊</span>
+        <div id="decoder-term" class="process-name">Decoder</div>
+        <div class="process-body">The <strong>decoder</strong> converts binary code back into sound, images, or video.</div>
+        <span class="process-mini">Binary Code → Sound</span>
+      </div>
+
+    </div>
+
+    <!-- Quick recall checkpoint -->
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Your friend's phone receives your FaceTime signal and plays your voice out of the speaker. Which step just happened?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Encoding - the voice became binary code</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Transmission - the signal traveled through waves or cables</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Decoding - binary code turned back into sound</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Encoder → Transmission → Decoder.</strong> But a string like 0 1 1 0 1 is still just numbers. How does it become a letter, a word, or a voice?
+      <br><br>
+      One more step.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 5 - USING BINARY NUMBERS (slides 10-14) + INTERACTIVE DECODER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="decoder" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label" style="color: var(--orange); background: var(--decode-dim); border-color: var(--decode-border);">Explain · Be the Decoder</span>
+    <h2 class="section-title">Using Binary Numbers</h2>
+    <p class="section-desc">Five bits can make a number, and a number can stand for a letter (1 = a, 2 = b ... 26 = z). Each box has a value: 16, 8, 4, 2, 1. Follow the three steps, exactly like a real decoder does.</p>
+
+    <!-- Worked examples (slides 11-13): b, i, n -->
+    <div class="worked-grid">
+      <div class="worked-card">
+        <div class="worked-code">0 0 0 1 0</div>
+        <div class="worked-math">Only the <strong>2</strong> box has a 1 → total = <strong>2</strong></div>
+        <div class="worked-letter">b</div>
+      </div>
+      <div class="worked-card">
+        <div class="worked-code">0 1 0 0 1</div>
+        <div class="worked-math"><strong>8</strong> + <strong>1</strong> → total = <strong>9</strong></div>
+        <div class="worked-letter">i</div>
+      </div>
+      <div class="worked-card">
+        <div class="worked-code">0 1 1 1 0</div>
+        <div class="worked-math"><strong>8</strong> + <strong>4</strong> + <strong>2</strong> → total = <strong>14</strong></div>
+        <div class="worked-letter">n</div>
+      </div>
+    </div>
+
+    <div class="question-pause">
+      <span class="question-pause-icon">👀</span>
+      <div class="question-pause-text"><strong>Look at the three letters above.</strong> b... i... n... The signal spelled <strong>"bin"</strong> - short for binary! Now it's your turn to build letters yourself.</div>
+    </div>
+
+    <!-- Interactive decoder -->
+    <div class="decoder-card">
+
+      <div class="decoder-steps">
+        <div class="decoder-step"><span class="decoder-step-num">1</span><span>Find every box containing a <strong>1</strong>.</span></div>
+        <div class="decoder-step"><span class="decoder-step-num">2</span><span><strong>Add</strong> those values together.</span></div>
+        <div class="decoder-step"><span class="decoder-step-num">3</span><span><strong>Match</strong> the total to a letter (1 = a ... 26 = z).</span></div>
+      </div>
+
+      <div class="bit-row" role="group" aria-label="Five binary digit toggles with values 16, 8, 4, 2, and 1">
+        <div class="bit-box"><span class="bit-value">16</span><button class="bit-btn" data-val="16" aria-pressed="false">0</button></div>
+        <div class="bit-box"><span class="bit-value">8</span><button class="bit-btn" data-val="8" aria-pressed="false">0</button></div>
+        <div class="bit-box"><span class="bit-value">4</span><button class="bit-btn" data-val="4" aria-pressed="false">0</button></div>
+        <div class="bit-box"><span class="bit-value">2</span><button class="bit-btn" data-val="2" aria-pressed="false">0</button></div>
+        <div class="bit-box"><span class="bit-value">1</span><button class="bit-btn" data-val="1" aria-pressed="false">0</button></div>
+      </div>
+
+      <div class="decoder-readout">
+        <div class="readout-chip">
+          <div class="readout-label">Binary</div>
+          <div class="readout-value" id="dec-binary">00000</div>
+        </div>
+        <div class="readout-chip">
+          <div class="readout-label">Total</div>
+          <div class="readout-value" id="dec-total">0</div>
+        </div>
+        <div class="readout-chip">
+          <div class="readout-label">Letter</div>
+          <div class="readout-value letter" id="dec-letter">-</div>
+        </div>
+      </div>
+
+      <div class="decoder-challenge">
+        <strong>Decoder Challenge:</strong> Use the boxes above to build each letter of the word <span class="dc-word">w i n</span>. Hints: w = 23, i = 9, n = 14. When the letter readout matches, the slot below fills in.
+        <div class="decoder-progress" aria-label="Challenge progress: spell the word win">
+          <div class="dc-slot" id="dc-slot-0">w</div>
+          <div class="dc-slot" id="dc-slot-1">i</div>
+          <div class="dc-slot" id="dc-slot-2">n</div>
+        </div>
+        <div class="decoder-success" id="dc-success">🏆 You decoded "win"! You just did the exact job a phone's decoder does billions of times per second.</div>
+      </div>
+
+    </div>
+
+    <div class="bridge-callout orange">
+      <strong>Letter by letter, the message comes back.</strong> Real devices use 8-bit codes and handle millions of bits per second, but the logic is exactly what you just did by hand.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 6 - ELABORATE: BACK TO THE FACETIME CALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="synthesis" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Elaborate · Wrap-Up</span>
+    <h2 class="section-title">Back to the FaceTime Call</h2>
+    <p class="section-desc">You started this lesson with a call traveling 5,000 miles and arriving crystal clear. Now you can explain every step of that journey.</p>
+
+    <div class="wrapup-beats">
+
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">The Answer</div>
+        <div class="wrapup-beat-answer">The call stays clear because it travels as a digital signal.</div>
+        <div class="wrapup-beat-body">Your voice is encoded into binary code: 0s and 1s. Because there are only two possible values, noise picked up along the way can't blend in and ruin the message. The receiving phone rebuilds the signal perfectly.</div>
+      </div>
+
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">The Journey</div>
+        <div class="wrapup-beat-answer">Every digital message makes the same three-step trip.</div>
+        <div class="wrapup-beat-body">No matter the device or the distance, the process is:</div>
+        <div class="wrapup-behavior-chips">
+          <span class="wbc wbc-encode">1 · Encoder</span>
+          <span class="wbc wbc-transmit">2 · Transmission</span>
+          <span class="wbc wbc-decode">3 · Decoder</span>
+        </div>
+      </div>
+
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">The Connection to Waves</div>
+        <div class="wrapup-beat-answer">Binary code rides on waves.</div>
+        <div class="wrapup-beat-body">The 0s and 1s travel as <strong>wave pulses</strong> - through electromagnetic waves in the air, electricity in wires, or light in fiber optic cables. Digital signals are the Waves unit and the digital world meeting in one idea.</div>
+      </div>
+
+    </div>
+
+    <!-- Quick recall 2 -->
+    <div class="qr-card" id="qrCard2" style="margin-top: 2.5rem;">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">One more brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">A song streamed over Wi-Fi sounds identical every time you play it, but an old vinyl record slowly wears out and gets crackly. Why?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>Digital copies are made of 0s and 1s, so they can be copied with little loss</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Wi-Fi signals are stronger than the needle on a record player</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Streaming services remove the noise from songs before sending them</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 7 - EVALUATE: LESSON SUMMARY TABLES
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="summary" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Evaluate · Lesson Summary</span>
+    <h2 class="section-title">Key Vocabulary &amp; Learning Goals</h2>
+    <p class="section-desc">Everything from this lesson in one place: the words to know and the goals you worked toward.</p>
+
+    <div class="summary-table-wrap">
+      <table class="summary-table">
+        <thead>
+          <tr><th>Term</th><th>Student-Friendly Definition</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="term">Digital signal</td><td>Information encoded in packets of 0s and 1s that can travel long distances and be decoded back into sounds, images, or videos.</td></tr>
+          <tr><td class="term">Binary code</td><td>The two-symbol language (0 and 1) that digital devices use to represent all information.</td></tr>
+          <tr><td class="term">Analog signal</td><td>A continuous signal that can have any value. It is more affected by noise, and its quality can degrade over distance or copying.</td></tr>
+          <tr><td class="term">Encoder</td><td>The part of a device that converts sounds, images, or text into patterns of 0s and 1s.</td></tr>
+          <tr><td class="term">Transmission</td><td>The process of sending encoded information through electromagnetic waves, wires, or fiber optic cables.</td></tr>
+          <tr><td class="term">Decoder</td><td>The part of a device that converts binary code back into sound, images, or video.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="summary-table-wrap">
+      <table class="summary-table">
+        <thead>
+          <tr><th>Learning Goals</th><th>How You Showed It</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="term" style="white-space: normal;">Explain why digitized signals are a more reliable way to encode and transmit information than analog signals (6.MS-PS4-3).</td>
+            <td>You compared analog and digital signals, predicted which keeps its quality over distance, and explained why noise can't easily scramble 0s and 1s.</td>
+          </tr>
+          <tr>
+            <td class="term" style="white-space: normal;">Model how information travels as wave pulses through the encode → transmit → decode process.</td>
+            <td>You read binary signals from wave models (large wave = 1, small wave = 0) and decoded binary numbers into letters yourself.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Essential question:</strong> How can information travel across the world as waves and arrive without losing quality? If you can answer that with the words encoder, binary code, transmission, and decoder, you own this lesson.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 8 - QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.quiz-section { background: var(--dark2); }
+
+.quiz-mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 2rem;
+  background: rgba(122,143,166,0.1);
+  border: 1.5px solid rgba(122,143,166,0.35);
+  border-radius: 14px;
+  padding: 0.35rem;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+}
+.mode-btn {
+  padding: 0.65rem 1.8rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  transition: all 0.22s;
+  color: rgba(122,143,166,0.55);
+  background: transparent;
+}
+.mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+.mode-btn.active {
+  background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+  color: #ddeaf5;
+  border: 1px solid rgba(159,184,204,0.55);
+  box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+  text-shadow: 0 0 12px rgba(159,184,204,0.6);
+}
+.mode-hint {
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: -1.3rem;
+  margin-bottom: 2rem;
+  letter-spacing: 0.01em;
+}
+.mode-hint span         { display: none; }
+.mode-hint span.visible { display: inline; }
+
+.student-info-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 2rem 2.2rem;
+  margin-bottom: 2.5rem;
+  border-top: 3px solid var(--gold);
+}
+.student-info-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.25rem;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+.student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+.info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+.info-field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+.info-field input,
+.info-field select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.info-field input:focus,
+.info-field select:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(245,200,66,0.15);
+}
+.info-field select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238aafca' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.2rem;
+}
+.info-field select option { background: #1e2f42; color: var(--text); }
+.info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+.info-error.show { display: block; }
+
+.quiz-progress-sticky {
+  position: sticky;
+  top: 64px;
+  z-index: 100;
+  background: var(--dark2);
+  padding: 0.85rem 0 0.75rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.quiz-progress { display: flex; align-items: center; gap: 1rem; }
+.progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--green), var(--orange));
+  border-radius: 99px;
+  transition: width 0.4s;
+  width: 0%;
+}
+.progress-text { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; min-width: 90px; text-align: right; }
+
+.quiz-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.8rem;
+  margin-bottom: 1.2rem;
+}
+.quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+.quiz-num {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  color: var(--text-muted);
+  width: 2rem; height: 2rem;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.quiz-question-text { font-weight: 800; font-size: 1rem; line-height: 1.55; }
+.quiz-options {
+  display: flex; flex-direction: column; gap: 0.6rem;
+  margin-top: 1rem; padding-left: 3rem;
+}
+.quiz-option {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.02);
+  font-size: 0.95rem; font-weight: 600;
+  font-family: 'Nunito', sans-serif;
+  text-align: left; color: var(--text); width: 100%;
+}
+.quiz-option:hover:not(.selected):not(.disabled) {
+  border-color: rgba(245,200,66,0.5);
+  background: rgba(245,200,66,0.06);
+}
+.quiz-option.selected         { border-color: var(--gold)   !important; background: rgba(245,200,66,0.1)  !important; }
+.quiz-option.correct          { border-color: var(--green)  !important; background: rgba(46,204,113,0.1)  !important; }
+.quiz-option.incorrect        { border-color: var(--red)    !important; background: rgba(231,76,60,0.08)  !important; }
+.quiz-option.disabled         { pointer-events: none; }
+.quiz-option.revealed-correct { border-color: rgba(46,204,113,0.4) !important; background: rgba(46,204,113,0.05) !important; }
+.option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+.option-feedback {
+  display: none; font-size: 0.85rem;
+  margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem;
+  border-radius: 10px; font-weight: 700;
+}
+.option-feedback.correct-fb   { display: block; color: var(--green); background: rgba(46,204,113,0.08); border-left: 3px solid var(--green); }
+.option-feedback.incorrect-fb { display: block; color: #ff8080;     background: rgba(231,76,60,0.08);  border-left: 3px solid var(--red);   }
+
+.quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+.quiz-submit-btn {
+  background: linear-gradient(135deg, var(--gold), #ffd97a);
+  color: #0d1f2d; border: none;
+  padding: 1rem 3rem; border-radius: 14px;
+  font-weight: 900; font-size: 1.05rem;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+  transition: all 0.25s; letter-spacing: 0.04em;
+}
+.quiz-submit-btn:hover    { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(245,200,66,0.4); }
+.quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.score-board {
+  display: none;
+  background: linear-gradient(135deg, rgba(46,204,113,0.1), rgba(26,188,156,0.05));
+  border: 1px solid rgba(46,204,113,0.3);
+  border-radius: 20px; padding: 2.5rem;
+  text-align: center; margin-top: 2rem;
+}
+.score-board.show { display: block; }
+.big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--green); margin-bottom: 0.5rem; }
+.score-board p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
+
+.mystery-loop {
+  max-width: 540px; margin: 0.4rem auto 1.5rem;
+  padding: 1.05rem 1.3rem;
+  background: rgba(245,200,66,0.08);
+  border: 1px solid rgba(245,200,66,0.3);
+  border-left: 4px solid var(--gold);
+  border-radius: 12px; text-align: left;
+  font-size: 0.92rem; line-height: 1.65; color: var(--text);
+}
+.mystery-loop .ml-label {
+  display: block; font-size: 0.66rem; font-weight: 900;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 0.4rem;
+}
+.mystery-loop strong { color: var(--gold); }
+
+.score-submitted {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--green); background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.score-error {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  color: #e87070; background: rgba(231,76,60,0.1);
+  border: 1px solid rgba(231,76,60,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.reset-btn {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  color: #fff; border: none;
+  padding: 0.85rem 2.5rem; border-radius: 12px;
+  font-weight: 800; font-size: 1rem;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+  transition: all 0.25s;
+}
+.reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+@media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .quiz-options { padding-left: 0; }
+  .option-feedback { padding-left: 1rem; }
+}
+</style>
+
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Five questions covering everything you discovered, including a signal for you to decode. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="dsSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="dsSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="ds-student-name">Your Name</label>
+          <input type="text" id="ds-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="ds-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="ds-teacher-select">Teacher</label>
+          <select id="ds-teacher-select">
+            <option value="">- Select -</option>
+            <option value="MrBrown">Mr. Brown</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="ds-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="ds-block-select">Block</label>
+          <select id="ds-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="ds-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="ds-progress"></div></div>
+        <div class="progress-text" id="ds-progress-text">0 / 5 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="ds-quiz-questions"></div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="ds-submit-btn" onclick="dsSubmitQuiz()" disabled>Submit Quiz</button>
+    </div>
+
+    <!-- Score Board -->
+    <div class="score-board" id="ds-score">
+      <div class="big-score" id="ds-score-num"></div>
+      <p id="ds-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">🔍 The Mystery You Came In With</span>
+        You started this lesson with one question: <strong>"How can a FaceTime call travel across the world and still sound clear?"</strong> If you can explain encode, transmit, and decode, you've solved the mystery.
+      </div>
+      <div id="ds-submit-status"></div>
+      <button class="reset-btn" onclick="dsResetQuiz()">Try Again</button>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+#continue { background: var(--dark); padding-top: 4rem; padding-bottom: 5rem; }
+.continue-intro {
+  text-align: left;
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 720px;
+  margin: 0 auto 2.4rem 0;
+}
+.continue-intro strong { color: var(--gold); }
+.continue-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin-top: 0;
+}
+@media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+.cont-card {
+  border-radius: 18px;
+  padding: 1.5rem 1.5rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.cont-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.cont-card.inv { background: rgba(59,130,246,0.08);  border: 1px solid rgba(59,130,246,0.38); }
+.cont-card.les { background: rgba(245,160,40,0.08);  border: 1px solid rgba(245,160,40,0.35); }
+.cont-card.ext { background: rgba(180,127,255,0.10); border: 1px solid rgba(180,127,255,0.35); }
+.cont-card.inv::before { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
+.cont-card.les::before { background: linear-gradient(90deg, #f5a028, #f5c842); }
+.cont-card.ext::before { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+.cont-card.inv:hover { border-color: rgba(59,130,246,0.7);  box-shadow: 0 14px 40px rgba(59,130,246,0.2);  transform: translateY(-4px); }
+.cont-card.les:hover { border-color: rgba(245,160,40,0.65); box-shadow: 0 14px 40px rgba(245,160,40,0.18); transform: translateY(-4px); }
+.cont-card.ext:hover { border-color: rgba(180,127,255,0.65);box-shadow: 0 14px 40px rgba(180,127,255,0.15);transform: translateY(-4px); }
+.cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; }
+.cont-card.inv .cont-icon { background: rgba(59,130,246,0.2);  }
+.cont-card.les .cont-icon { background: rgba(245,160,40,0.18); }
+.cont-card.ext .cont-icon { background: rgba(180,127,255,0.22);}
+.cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; }
+.cont-card.inv .cont-cat { color: #3B82F6; }
+.cont-card.les .cont-cat { color: #f5a028; }
+.cont-card.ext .cont-cat { color: #b47fff; }
+.cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+.cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+.cont-link { display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-decoration: none; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; transition: all 0.2s; white-space: nowrap; align-self: flex-start; margin-top: auto; }
+.cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
+.cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
+.cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+</style>
+
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">Digital signals connect to everything else in the Waves unit. <strong>Extension challenges:</strong> write your name in 5-bit binary and trade with a partner to decode. Or design a "noisy channel" test: whisper a sentence down a line of classmates (analog), then pass the same message as a written string of 0s and 1s (digital). Which arrives intact, and why?</p>
+    <div class="continue-grid">
+      <a href="investigation_amplitude-challenge.html" class="cont-card inv">
+        <div class="cont-icon">🧪</div>
+        <div class="cont-cat">Investigation</div>
+        <div class="cont-name">Amplitude Challenge</div>
+        <div class="cont-desc">Our binary model used wave size to carry information: large wave = 1, small wave = 0. Wave size has a name - amplitude. Investigate how amplitude affects the energy a wave delivers.</div>
+        <span class="cont-link">Investigate</span>
+      </a>
+      <a href="lesson_wave-behavior.html" class="cont-card les">
+        <div class="cont-icon">🌊</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Wave Behavior</div>
+        <div class="cont-desc">Digital signals transmit through cables, air, and glass fiber. Discover what reflection, absorption, and transmission mean for any wave hitting any material.</div>
+        <span class="cont-link">Review</span>
+      </a>
+      <a href="lesson_nature-of-waves.html" class="cont-card ext">
+        <div class="cont-icon">📡</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Nature of Waves</div>
+        <div class="cont-desc">Frequency, amplitude, and wavelength - the wave properties that make a 5 Hz binary signal possible. Revisit the foundations of the whole unit.</div>
+        <span class="cont-link">Review</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ™</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<!-- ===== SESSION TOGGLES (LS + STE bars) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
+function toggleStemDetail(id) {
+  const el  = document.getElementById(id);
+  el.classList.toggle('stem-open');
+  const btn = el.querySelector('.stem-show-btn');
+  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
+}
+</script>
+
+<!-- ===== VOCAB JUMP ===== -->
+<script>
+function jumpToTerm(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 110;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 500);
+}
+</script>
+
+<!-- ===== GLOSSARY CARDS (tap to reveal on touch devices) ===== -->
+<script>
+document.querySelectorAll('.glossary-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    var open = card.classList.toggle('open');
+    card.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+});
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== READ-THE-WAVE (Signal C) ===== -->
+<script>
+(function(){
+  var opts = document.getElementById('waveReadOpts');
+  var fb   = document.getElementById('waveReadFb');
+  var done = false;
+  opts.querySelectorAll('.wave-read-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if (done) return;
+      var correct = btn.getAttribute('data-ans') === '1';
+      if (correct) {
+        done = true;
+        btn.classList.add('right');
+        fb.className = 'wave-read-fb visible ok';
+        fb.textContent = 'Correct! Small, large, large, small, large reads as 0 1 1 0 1. You just decoded a wave model into binary.';
+        opts.querySelectorAll('.wave-read-btn').forEach(function(b){ b.disabled = true; });
+      } else {
+        btn.classList.add('wrong');
+        btn.disabled = true;
+        fb.className = 'wave-read-fb visible no';
+        fb.textContent = 'Not quite. Check each pulse one at a time: is it small (0) or large (1)? Then try again.';
+      }
+    });
+  });
+})();
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) {
+        fb.className = 'qr-feedback visible no';
+        fb.textContent = 'Pick an answer first.';
+        return;
+      }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok';
+        fb.textContent = okMsg;
+        checkBtn.style.display = 'none';
+        retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no';
+        fb.textContent = noMsg;
+        checkBtn.style.display = 'none';
+        retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback';
+      fb.textContent = '';
+      retryBtn.style.display = 'none';
+      checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+
+  wireQR('qr1', 2,
+    'Correct! The decoder is the last step: it converts binary code back into sound, images, or video.',
+    'Not quite. Receiving the signal and turning it back into sound is the decoder\'s job - the final step of the journey.');
+  wireQR('qr2', 0,
+    'Correct! Digital files are 0s and 1s, so every copy and every playback rebuilds the exact same signal. Analog recordings physically wear down.',
+    'Not quite. The key difference is the signal type: digital signals (0s and 1s) can be copied with little loss, while analog signals degrade.');
+})();
+</script>
+
+<!-- ===== INTERACTIVE BINARY DECODER ===== -->
+<script>
+(function(){
+  var bits = document.querySelectorAll('.bit-btn');
+  var binaryOut = document.getElementById('dec-binary');
+  var totalOut  = document.getElementById('dec-total');
+  var letterOut = document.getElementById('dec-letter');
+  var successEl = document.getElementById('dc-success');
+  var alphabet  = 'abcdefghijklmnopqrstuvwxyz';
+  var target    = ['w','i','n'];
+  var progress  = 0;
+
+  function update() {
+    var binary = '';
+    var total  = 0;
+    bits.forEach(function(b){
+      var on = b.classList.contains('on');
+      binary += on ? '1' : '0';
+      if (on) total += parseInt(b.getAttribute('data-val'), 10);
+    });
+    binaryOut.textContent = binary;
+    totalOut.textContent  = total;
+    var letter = (total >= 1 && total <= 26) ? alphabet[total - 1] : '-';
+    letterOut.textContent = letter;
+
+    // challenge progress
+    if (progress < target.length && letter === target[progress]) {
+      document.getElementById('dc-slot-' + progress).classList.add('filled');
+      progress++;
+      if (progress === target.length) successEl.classList.add('visible');
+    }
+  }
+
+  bits.forEach(function(b){
+    b.addEventListener('click', function(){
+      var on = b.classList.toggle('on');
+      b.textContent = on ? '1' : '0';
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      update();
+    });
+  });
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+var DS_SCRIPT_URLS = {
+  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+
+// ── QUIZ STATE ────────────────────────────────────────────────────────
+var dsQuizState = { selected: [], submitted: false };
+var dsQuizMode  = 'practice';
+
+// ── QUIZ QUESTIONS ────────────────────────────────────────────────────
+var dsQuizQuestions = [
+  {
+    // Q1 - What is a digital signal
+    q: "Which statement best describes a digital signal?",
+    options: [
+      "A continuous wave that can have any value, like a smooth hill",
+      "Information encoded in packets of 0s and 1s known as binary code",
+      "A sound wave that travels through vibrating air particles",
+      "A signal that can only travel through fiber optic cables"
+    ],
+    correct: 1,
+    explanation: "A digital signal is information encoded into 0s and 1s - binary code. It can travel as wave pulses through electromagnetic waves, wires, or fiber optic cables, then be decoded back into sound, images, or video."
+  },
+  {
+    // Q2 - Analog vs digital reliability
+    q: "A family in Boston video-calls relatives in Japan, and the call sounds clear. Why do digital signals keep their quality better than analog signals over long distances?",
+    options: [
+      "Digital signals travel faster than analog signals, so noise can't catch them",
+      "Digital signals are louder, so they drown out any interference",
+      "Digital signals only have two values, so noise can't easily change a 0 into a 1",
+      "Digital signals avoid noise by traveling only through outer space"
+    ],
+    correct: 2,
+    explanation: "Noise blends into an analog signal and permanently changes it. A digital signal has only two clear levels - 0 and 1 - so even after picking up some noise, each pulse is still obviously a 0 or a 1, and the receiver rebuilds the message perfectly."
+  },
+  {
+    // Q3 - Transmission process order
+    q: "Put the transmission process in the correct order.",
+    options: [
+      "Encoder → Transmission → Decoder",
+      "Decoder → Transmission → Encoder",
+      "Transmission → Encoder → Decoder",
+      "Encoder → Decoder → Transmission"
+    ],
+    correct: 0,
+    explanation: "First the encoder converts sound, images, or text into 0s and 1s. Then transmission sends the encoded information through electromagnetic waves, wires, or fiber optic cables. Finally the decoder converts the binary code back into sound, images, or video."
+  },
+  {
+    // Q4 - Decode this signal (wave model)
+    q: "In our wave model, a large wave = 1 and a small wave = 0. A signal arrives as: small, small, large, small, small. Using box values 16-8-4-2-1 and the code 1 = a ... 26 = z, what letter is it?",
+    options: [
+      "d - the binary is 00100, and 4 is the fourth letter",
+      "b - the binary is 00010, and 2 is the second letter",
+      "h - the binary is 01000, and 8 is the eighth letter",
+      "e - the binary is 00001, and 5 is the fifth letter"
+    ],
+    correct: 0,
+    explanation: "Small, small, large, small, small reads as 0 0 1 0 0. The only 1 sits in the 4 box, so the total is 4 - and the fourth letter of the alphabet is d."
+  },
+  {
+    // Q5 - Apply: which device part
+    q: "You speak into your phone during a call. Which part of the system converts your voice into patterns of 0s and 1s?",
+    options: [
+      "The decoder, because it changes the signal's form",
+      "The transmitter, because it sends waves into the air",
+      "The speaker, because it vibrates to match your voice",
+      "The encoder, because it converts sound into binary code"
+    ],
+    correct: 3,
+    explanation: "Converting sounds, images, or text INTO binary code is the encoder's job - step 1 of the journey. The decoder does the reverse at the other end, converting binary code back into sound."
+  }
+];
+
+// ── SET QUIZ MODE ─────────────────────────────────────────────────────
+function dsSetQuizMode(mode) {
+  dsQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+
+// ── URL PARAM - auto-set mode on load ─────────────────────────────────
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') dsSetQuizMode('classroom');
+  else dsSetQuizMode('practice');
+})();
+
+// ── BUILD QUIZ ────────────────────────────────────────────────────────
+function dsBuildQuiz() {
+  var container = document.getElementById('ds-quiz-questions');
+  container.innerHTML = '';
+  dsQuizState.selected  = new Array(dsQuizQuestions.length).fill(null);
+  dsQuizState.submitted = false;
+  document.getElementById('ds-submit-btn').disabled = true;
+  dsUpdateProgress();
+  var letters = ['A','B','C','D'];
+  dsQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="dsSelectAnswer(' + qi + ',' + oi + ')" id="ds-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="ds-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+// ── SELECT ANSWER ─────────────────────────────────────────────────────
+function dsSelectAnswer(qi, chosenIndex) {
+  if (dsQuizState.submitted) return;
+  var prev = dsQuizState.selected[qi];
+  if (prev !== null) document.getElementById('ds-q-' + qi + '-' + prev).classList.remove('selected');
+  dsQuizState.selected[qi] = chosenIndex;
+  document.getElementById('ds-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  dsUpdateProgress();
+  document.getElementById('ds-submit-btn').disabled = !dsQuizState.selected.every(function (s) { return s !== null; });
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────
+function dsUpdateProgress() {
+  var total    = dsQuizQuestions.length;
+  var answered = dsQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('ds-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('ds-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+// ── VALIDATE STUDENT INFO ─────────────────────────────────────────────
+function dsValidateStudentInfo() {
+  var name    = document.getElementById('ds-student-name').value.trim();
+  var teacher = document.getElementById('ds-teacher-select').value;
+  var block   = document.getElementById('ds-block-select').value;
+  document.getElementById('ds-err-name').classList.toggle('show', !name);
+  document.getElementById('ds-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('ds-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+
+// ── SUBMIT QUIZ ───────────────────────────────────────────────────────
+function dsSubmitQuiz() {
+  if (dsQuizState.submitted) return;
+  if (dsQuizMode === 'classroom') {
+    var info = dsValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  dsQuizState.submitted = true;
+  document.getElementById('ds-submit-btn').disabled = true;
+  var correct = 0;
+  dsQuizQuestions.forEach(function (q, qi) {
+    var chosen    = dsQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('ds-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('ds-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('ds-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = dsQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '🏆 Perfect score! You understand digital signals cold.'
+    : pct >= 80 ? '🌟 Great work! Review any you missed and you\'re ready for the next lesson.'
+    : pct >= 60 ? '📚 Solid effort. Go back through the lesson and try again.'
+    : '💪 Keep going; review each section carefully and try again!';
+  document.getElementById('ds-score-num').textContent = score;
+  document.getElementById('ds-score-msg').textContent = msg;
+  var sb = document.getElementById('ds-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  if (dsQuizMode === 'practice') {
+    document.getElementById('ds-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+
+  var info2 = dsValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var letters = ['A','B','C','D'];
+  var answerStr = dsQuizState.selected.map(function (idx, i) {
+    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
+  }).join(', ');
+  var params = new URLSearchParams({
+    tab: 'Digital Signals', studentName: info2.name, teacher: teacherLabel,
+    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+  });
+  fetch(DS_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(function () {
+      document.getElementById('ds-submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+    })
+    .catch(function () {
+      document.getElementById('ds-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+}
+
+// ── RESET QUIZ ────────────────────────────────────────────────────────
+function dsResetQuiz() {
+  document.getElementById('ds-score').classList.remove('show');
+  document.getElementById('ds-submit-status').innerHTML = '';
+  dsBuildQuiz();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+dsBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
