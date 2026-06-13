@@ -1428,16 +1428,24 @@ body.stem-active .stem-detail {
   opacity: 0.7;
 }
 .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
-.glossary-card:hover .gc-def,
-.glossary-card:focus .gc-def,
 .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
-.glossary-card:hover .gc-hint,
-.glossary-card:focus .gc-hint,
 .glossary-card.open .gc-hint { display: none; }
 .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
 .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
 .gc-blue   { border-top-color: #7cc8f8;       } .gc-blue .gc-term   { color: #7cc8f8; }
 .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+.gc-jump {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border-bottom: 1px dashed rgba(245,200,66,0.5);
+  cursor: pointer;
+}
+.gc-jump:hover { border-bottom-style: solid; }
 </style>
 </head>
 <body>
@@ -1541,33 +1549,33 @@ body.stem-active .stem-detail {
     <div class="glossary-grid">
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-term">Digital Signal</div>
-        <div class="gc-hint">Hover or tap to reveal</div>
-        <div class="gc-def">Information encoded in packets of 0s and 1s that can travel long distances and be decoded back into sounds, images, or videos.</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">Information encoded in packets of 0s and 1s that can travel long distances and be decoded back into sounds, images, or videos.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('digital-signal-term')">See it in the lesson ↓</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
         <div class="gc-term">Analog Signal</div>
-        <div class="gc-hint">Hover or tap to reveal</div>
-        <div class="gc-def">A continuous signal that can have any value. It is more affected by noise, and its quality can degrade over distance or copying.</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">A continuous signal that can have any value. It is more affected by noise, and its quality can degrade over distance or copying.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('analog-signal-term')">See it in the lesson ↓</span></div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-term">Binary Code</div>
-        <div class="gc-hint">Hover or tap to reveal</div>
-        <div class="gc-def">The two-symbol language (0 and 1) that digital devices use to represent all information.</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">The two-symbol language (0 and 1) that digital devices use to represent all information.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('digital-signal-term')">See it in the lesson ↓</span></div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
         <div class="gc-term">Encoder</div>
-        <div class="gc-hint">Hover or tap to reveal</div>
-        <div class="gc-def">The part of a device that converts sounds, images, or text into patterns of 0s and 1s.</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">The part of a device that converts sounds, images, or text into patterns of 0s and 1s.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('encoder-term')">See it in the lesson ↓</span></div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
         <div class="gc-term">Transmission</div>
-        <div class="gc-hint">Hover or tap to reveal</div>
-        <div class="gc-def">The process of sending encoded information through electromagnetic waves, wires, or fiber optic cables.</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">The process of sending encoded information through electromagnetic waves, wires, or fiber optic cables.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('transmission-term')">See it in the lesson ↓</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
         <div class="gc-term">Decoder</div>
-        <div class="gc-hint">Hover or tap to reveal</div>
-        <div class="gc-def">The part of a device that converts binary code back into sound, images, or video.</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">The part of a device that converts binary code back into sound, images, or video.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('decoder-term')">See it in the lesson ↓</span></div>
       </button>
     </div>
   </div>

@@ -1294,10 +1294,10 @@ body.stem-active .stem-detail {
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hook">Mystery</a></li>
     <li><a href="#reflection">Behaviors</a></li>
     <li><a href="#interaction">Energy Tracker</a></li>
-    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#quiz">Quiz</a></li>
   </ul>
   <a href="index.html#chem" class="nav-back">← Physical Science</a>
@@ -1350,6 +1350,107 @@ body.stem-active .stem-detail {
     </div>
   </div>
 </div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards, matches Digital Signals)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+.glossary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 16px;
+  padding: 1.2rem 1.3rem 1.3rem;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.35rem; }
+.gc-hint {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
+.glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+.glossary-card.open .gc-hint { display: none; }
+.gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+.gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+.gc-blue   { border-top-color: #7cc8f8;       } .gc-blue .gc-term   { color: #7cc8f8; }
+.gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+.gc-jump {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border-bottom: 1px dashed rgba(245,200,66,0.5);
+  cursor: pointer;
+}
+.gc-jump:hover { border-bottom-style: solid; }
+</style>
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Click a card (or tap it) to see what each word means. You'll meet every one of these in the lesson below.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-term">Mechanical Wave</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">A wave that needs a medium to travel. Sound, water, and seismic waves push matter from particle to particle.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('mechanical-wave')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Electromagnetic Wave</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">A wave that needs no medium at all. Light, radio waves, and X-rays travel as disturbances in electric and magnetic fields.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('electromagnetic-wave')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Reflection</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">What happens when a wave bounces off a surface instead of passing through it.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('reflection-term')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-term">Absorption</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">What happens when a wave's energy transfers into a material, usually converted into thermal energy (heat).<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('absorption-term')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Transmission</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">What happens when a wave passes through a material. Its energy continues moving, through the surface and beyond.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('transmission-term')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Transparent</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">Light passes through clearly and images stay sharp, like window glass or clear water.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('transparent-term')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Translucent</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">Some light passes through and images look blurry, like frosted glass or wax paper.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('translucent-term')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-term">Opaque</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">Light cannot pass through, so no image forms, like a brick wall or a wooden door.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('opaque-term')">See it in the lesson ↓</span></div>
+      </button>
+    </div>
+  </div>
+</section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -2456,30 +2557,6 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 8 - VOCABULARY
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="vocab" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Key Vocabulary</span>
-    <h2 class="section-title">Vocabulary to Know</h2>
-    <p class="section-desc" style="margin-bottom: 1.5rem;">Click any term to jump back to where it first appeared in the lesson.</p>
-
-    <!-- Vocab pills - jump to source section + pulse -->
-    <div style="display: flex; flex-wrap: wrap; gap: 0.65rem;">
-      <span class="concept-tag ct-blue"   onclick="jumpToTerm('mechanical-wave')">Mechanical Wave</span>
-      <span class="concept-tag ct-teal"   onclick="jumpToTerm('electromagnetic-wave')">Electromagnetic Wave</span>
-      <span class="concept-tag ct-teal"   onclick="jumpToTerm('reflection-term')">Reflection</span>
-      <span class="concept-tag ct-orange" onclick="jumpToTerm('absorption-term')">Absorption</span>
-      <span class="concept-tag ct-green"  onclick="jumpToTerm('transmission-term')">Transmission</span>
-      <span class="concept-tag ct-green"  onclick="jumpToTerm('transparent-term')">Transparent</span>
-      <span class="concept-tag ct-green"  onclick="jumpToTerm('translucent-term')">Translucent</span>
-      <span class="concept-tag ct-blue"   onclick="jumpToTerm('opaque-term')">Opaque</span>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
      SECTION 9 - QUIZ  (Pass 4)
      Mirror of Nature of Waves quiz architecture:
        Practice mode (default) + Classroom mode with Google Sheets submission
@@ -3243,6 +3320,14 @@ function jumpToTerm(id) {
     el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
   }, 500);
 }
+
+/* Glossary cards - click to expand (matches Digital Signals) */
+document.querySelectorAll('.glossary-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    var open = card.classList.toggle('open');
+    card.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+});
 </script>
 
 <!-- ===== STARFIELD ===== -->

@@ -515,6 +515,10 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 1.2rem;
   }
+  /* Tech & Engineering pair: side by side on desktop/tablet, stacked on mobile */
+  @media (max-width: 640px) {
+    .te-pair .unit-row { grid-template-columns: 1fr; }
+  }
   .unit-card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -1199,9 +1203,10 @@
         <span class="topic-group-name">Tech &amp; Engineering</span>
       </div>
 
-      <!-- Science Practices - Grade 6 -->
+      <!-- Science Practices & Engineering - Grade 6 -->
       <span id="sci" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
-      <div class="subject-block" data-topic="tech-engineering" data-grades="6">
+      <span id="eng" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
+      <div class="subject-block te-pair" data-topic="tech-engineering" data-grades="6">
         <div class="unit-row">
           <div class="unit-card" id="unit-conducting-experiments">
             <div class="unit-top">
@@ -1212,13 +1217,6 @@
               <a href="lesson_conducting-experiments.html" class="ulink live">Lesson</a>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Engineering - Grade 6 -->
-      <span id="eng" style="display:block; position:relative; top:-80px; visibility:hidden;"></span>
-      <div class="subject-block" data-topic="tech-engineering" data-grades="6">
-        <div class="unit-row">
           <div class="unit-card" id="unit-engineering-design">
             <div class="unit-top">
               <div class="unit-name">Engineering Design</div>

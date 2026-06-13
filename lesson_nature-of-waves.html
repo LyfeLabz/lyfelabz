@@ -568,12 +568,12 @@ body.stem-active .stem-detail {
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#mystery">Mystery</a></li>
     <li><a href="#what-is-wave">What is a Wave?</a></li>
     <li><a href="#em">Types</a></li>
     <li><a href="#parts">Anatomy</a></li>
     <li><a href="#frequency">Measuring</a></li>
-    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -622,6 +622,136 @@ body.stem-active .stem-detail {
     </div>
   </div>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards, matches Digital Signals)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+.glossary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 16px;
+  padding: 1.2rem 1.3rem 1.3rem;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.35rem; }
+.gc-hint {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
+.glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+.glossary-card.open .gc-hint { display: none; }
+@keyframes predictFadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+.gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+.gc-blue   { border-top-color: #7cc8f8;       } .gc-blue .gc-term   { color: #7cc8f8; }
+.gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+.gc-purple { border-top-color: #b47fff;       } .gc-purple .gc-term { color: #b47fff; }
+.gc-jump {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border-bottom: 1px dashed rgba(245,200,66,0.5);
+  cursor: pointer;
+}
+.gc-jump:hover { border-bottom-style: solid; }
+</style>
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Click a card (or tap it) to see what each word means. You'll meet every one of these in the lesson below.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-term">Wave</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">A traveling disturbance that carries energy from one place to another.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-wave')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-term">Disturbance</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">A bump or wiggle that passes through a material while the material itself stays put.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-disturbance')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-term">Energy</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">What a wave actually moves from one end to the other. The particles lift and drop back; the energy travels on.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-energy')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-term">Vibration</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">A back-and-forth motion. A wave moves forward by making particles vibrate against the next particle, and the next.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-vibration')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Mechanical Wave</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">A wave that needs stuff to travel through. Sound is one of these.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-mechanical')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Medium</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">The stuff a wave travels through, like water, air, or a row of particles.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-medium')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Electromagnetic Wave</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">A wave that doesn't need anything at all to travel. Light is one; it can cross completely empty space.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-em')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-term">Crest</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">The highest point of a wave, the top of each peak.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-crest')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-term">Trough</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">The lowest point of a wave, the bottom of each dip.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-trough')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-term">Resting Position</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">The level the wave would sit at if it weren't moving, the calm middle line it rises above and dips below.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-resting')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Wavelength</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">The distance from one peak to the next peak, measured side-to-side along the wave.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-wavelength')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Frequency</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">The number of crests that pass a point in one second, measured in Hertz (Hz).<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-frequency')">See it in the lesson ↓</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Amplitude</div>
+        <div class="gc-hint">Click or tap to reveal</div>
+        <div class="gc-def">The height of a wave from the resting line to the crest. The bigger the amplitude, the more energy the wave carries.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-amplitude')">See it in the lesson ↓</span></div>
+      </button>
+    </div>
+  </div>
+</section>
 
 <!-- ════════════════════════════════════════════════════════════════════
      SECTION STUBS, populated in subsequent micropasses.
@@ -2579,7 +2709,7 @@ window.revealWavelength = function() {
 
     <!-- ── CONTROLS ── -->
     <div class="freq-controls">
-      <button class="freq-btn" id="freq-start" onclick="startFreqRun()">▶ Start &mdash; 1 Second</button>
+      <button class="freq-btn" id="freq-start" onclick="startFreqRun()">▶ Start - 1 Second</button>
       <span class="freq-timer" id="freq-timer">0.00 s</span>
       <button class="freq-btn freq-btn-outline" id="freq-reset" onclick="resetFreqRun()" disabled>Reset</button>
     </div>
@@ -4673,34 +4803,6 @@ window.toggleSpectrumNumbers = function() {
 }
 </style>
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     VOCABULARY , pill navigation back to where each term was taught
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="vocab" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Key Vocabulary</span>
-    <h2 class="section-title">Vocabulary to Know</h2>
-    <p class="section-desc" style="margin-bottom: 1.5rem;">Use these terms to jump back to where each idea was explained. Some links may reveal hidden explanations so you can review them.</p>
-
-    <div style="display: flex; flex-wrap: wrap; gap: 0.65rem;">
-      <span class="concept-tag ct-blue"   onclick="vocabJump('vocab-wave')">Wave</span>
-      <span class="concept-tag ct-blue"   onclick="vocabJump('vocab-disturbance')">Disturbance</span>
-      <span class="concept-tag ct-blue"   onclick="vocabJump('vocab-energy')">Energy</span>
-      <span class="concept-tag ct-blue"   onclick="vocabJump('vocab-vibration')">Vibration</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-mechanical')">Mechanical Wave</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-medium')">Medium</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-em')">Electromagnetic Wave</span>
-      <span class="concept-tag ct-purple" onclick="vocabJump('vocab-crest')">Crest</span>
-      <span class="concept-tag ct-purple" onclick="vocabJump('vocab-trough')">Trough</span>
-      <span class="concept-tag ct-purple" onclick="vocabJump('vocab-resting')">Resting Position</span>
-      <span class="concept-tag ct-green"  onclick="vocabJump('vocab-wavelength')">Wavelength</span>
-      <span class="concept-tag ct-green"  onclick="vocabJump('vocab-frequency')">Frequency</span>
-      <span class="concept-tag ct-green"  onclick="vocabJump('vocab-amplitude')">Amplitude</span>
-    </div>
-
-  </div>
-</section>
-
 <script>
 /* vocabJump, smooth scroll to the exact term, with three smart behaviors:
    1. If the term lives inside a "reveal-content" block that's hidden until
@@ -4745,6 +4847,14 @@ function vocabJump(targetId) {
     }, 500);
   }, 60);
 }
+
+/* Glossary cards - click to expand (matches Digital Signals) */
+document.querySelectorAll('.glossary-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    var open = card.classList.toggle('open');
+    card.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+});
 </script>
 
 <section id="quiz" class="quiz-section" style="padding-top: 2.5rem;">
