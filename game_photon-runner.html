@@ -315,13 +315,15 @@
   }
   .photon-hud .ph-chip.ph-gold .ph-val { color: #ffd76b; }
   .photon-hud .ph-power {
-    flex: 1;
+    flex: 1 1 100%;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 8px;
   }
   .photon-hud .ph-slots {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
     display: flex;
     gap: 5px;
   }
@@ -352,6 +354,8 @@
     position: relative;
     z-index: 2;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .photon-hud .ph-slot.is-filled {
     color: #b9eeff;
@@ -447,6 +451,29 @@
   @keyframes heatPulse {
     from { box-shadow: 0 0 0 rgba(232,76,61,0); }
     to   { box-shadow: 0 0 14px rgba(232,76,61,0.55); }
+  }
+  @media (max-width: 760px) {
+    .photon-hud {
+      align-items: stretch;
+    }
+    .photon-hud .ph-power {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+    }
+    .photon-hud .ph-slots {
+      width: 100%;
+    }
+    .photon-hud .ph-hint {
+      white-space: normal;
+      text-align: center;
+    }
+  }
+  @media (max-width: 560px) {
+    .photon-hud .ph-slots {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
   }
 
   /* ===== EFFICIENCY READOUT (Micropass 55) ===== */
@@ -2148,11 +2175,7 @@
     gap: 0.8rem;
     margin-bottom: 0.5rem;
   }
-  .pr-leaderboard-close {
-    padding: 0.45rem 0.95rem !important;
-    font-size: 0.82rem !important;
-  }
-  .pr-leaderboard-pills {
+.pr-leaderboard-pills {
     display: flex;
     gap: 0.4rem;
     flex-wrap: wrap;
@@ -2533,7 +2556,6 @@
                 <div class="level-tag">HALL OF FAME</div>
                 <h2 class="pa-cert-title" style="text-align:left;margin:0.15rem 0 0;">PHOTON RUNNER LEADERBOARD</h2>
               </div>
-              <button class="btn btn-teal pr-leaderboard-close" id="btnLeaderboardClose">Close</button>
             </div>
             <div class="pr-leaderboard-pills">
               <span class="pr-storage-pill" id="prSaveStatusPill">Storage: local only</span>
@@ -2547,6 +2569,7 @@
             <div class="pr-leaderboard-body" id="prLeaderboardBody"></div>
             <div class="pa-cert-actions" style="margin-top:0.9rem;">
               <button class="btn btn-teal" id="btnLeaderboardReplay">Replay Game</button>
+              <button class="btn btn-teal" id="btnLeaderboardClose">Close Leaderboard</button>
             </div>
           </div>
         </div>
@@ -9956,8 +9979,10 @@ function renderLeaderboardRows(scores) {
   prLeaderboardBody.innerHTML = html;
 }
 
-async function renderLeaderboard() {
-  await pushScore();
+async function renderLeaderboard(options = {}) {
+  if (options.push === true) {
+    await pushScore();
+  }
   const scores = await fetchCloudScores();
   renderLeaderboardRows(scores);
 }
@@ -9982,16 +10007,24 @@ let prLeaderboardReturnTarget = 'cert';
 async function openLeaderboardFrom(source) {
   prLeaderboardReturnTarget = source || 'cert';
 
+  const preGameScreen = document.getElementById('preGameScreen');
+  const gameUi = document.getElementById('gameUi');
+
+  if (source === 'start') {
+    if (preGameScreen) preGameScreen.classList.add('hidden');
+    if (gameUi) gameUi.classList.remove('game-ui-hidden');
+  }
+
   if (typeof overlayCertDone !== 'undefined' && overlayCertDone) overlayCertDone.classList.add('hidden');
   if (overlayProfile) overlayProfile.classList.add('hidden');
 
-  if (source === 'start') {
-    const preGameScreen = document.getElementById('preGameScreen');
-    if (preGameScreen) preGameScreen.classList.add('hidden');
+  overlayLeaderboard.classList.remove('hidden');
+
+  if (prLeaderboardBody) {
+    prLeaderboardBody.innerHTML = '<div class="pr-leaderboard-empty">Loading leaderboard...</div>';
   }
 
-  overlayLeaderboard.classList.remove('hidden');
-  await renderLeaderboard();
+  await renderLeaderboard({ push: source === 'cert' });
   startLeaderboardPolling();
 }
 
@@ -10081,6 +10114,8 @@ document.getElementById('btnLeaderboardClose').addEventListener('click', () => {
 
   if (prLeaderboardReturnTarget === 'start') {
     const preGameScreen = document.getElementById('preGameScreen');
+    const gameUi = document.getElementById('gameUi');
+    if (gameUi) gameUi.classList.add('game-ui-hidden');
     if (preGameScreen) preGameScreen.classList.remove('hidden');
     return;
   }
