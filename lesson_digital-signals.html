@@ -2394,6 +2394,13 @@ body.stem-active .stem-detail {
 .cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
 .cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
 .cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+.cont-card.game { background: rgba(61,220,132,0.10); border: 1px solid rgba(61,220,132,0.35); }
+.cont-card.game::before { background: linear-gradient(90deg, #3ddc84, #1de9b6); }
+.cont-card.game:hover { border-color: rgba(61,220,132,0.6); box-shadow: 0 14px 40px rgba(61,220,132,0.12); transform: translateY(-4px); }
+.cont-card.game .cont-icon { background: rgba(61,220,132,0.18); }
+.cont-card.game .cont-cat { color: #3ddc84; }
+.cont-card.game .cont-link { background: rgba(61,220,132,0.1); border-color: rgba(61,220,132,0.3); color: #3ddc84; }
+.cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2); border-color: rgba(61,220,132,0.55); }
 </style>
 
 <section id="continue">
@@ -2422,6 +2429,13 @@ body.stem-active .stem-detail {
         <div class="cont-name">Nature of Waves</div>
         <div class="cont-desc">Frequency, amplitude, and wavelength - the wave properties that make a 5 Hz binary signal possible. Revisit the foundations of the whole unit.</div>
         <span class="cont-link">Review</span>
+      </a>
+      <a href="game_packet-panic.html" class="cont-card game">
+        <div class="cont-icon">🎮</div>
+        <div class="cont-cat">Game</div>
+        <div class="cont-name">Packet Panic</div>
+        <div class="cont-desc">Dodge noise, compare digital and analog signals, and see why digitized information is more reliable over long distances.</div>
+        <span class="cont-link">Play Packet Panic</span>
       </a>
     </div>
   </div>
