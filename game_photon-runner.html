@@ -202,6 +202,13 @@
     line-height: 1.65;
     margin: 0.15rem 0 0.85rem;
   }
+  .dir-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 0.2rem;
+  }
   .dir-card .controls-card {
     margin: 0 0 1rem;
     text-align: left;
@@ -2268,7 +2275,10 @@
         <div class="ctrl-row"><span class="ctrl-lbl">Powers</span><span class="ctrl-keys"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd></span></div>
         <div class="ctrl-row"><span class="ctrl-lbl">Pause</span><span class="ctrl-keys"><kbd>P</kbd></span></div>
       </div>
-      <button class="btn" id="btnStart">Launch Photon Ship</button>
+      <div class="dir-actions">
+        <button class="btn" id="btnStart">Launch Photon Ship</button>
+        <button class="btn btn-teal" id="btnViewLeaderboardStart" type="button">View Leaderboard</button>
+      </div>
     </div>
   </div>
 
@@ -2288,6 +2298,9 @@
     </button>
     <button class="mute-pill" id="btnMute" title="Mute or unmute sound effects" aria-label="Toggle sound">
       <span id="muteIcon">🔊</span><span id="muteText">Sound On</span>
+    </button>
+    <button class="mute-pill" id="btnViewLeaderboardGame" type="button" title="View the Photon Runner leaderboard" aria-label="View leaderboard">
+      <span>🏆</span><span>Leaderboard</span>
     </button>
   </div>
 
@@ -9964,12 +9977,41 @@ function stopLeaderboardPolling() {
   }
 }
 
-async function openLeaderboardModal() {
-  overlayCertDone.classList.add('hidden');
+let prLeaderboardReturnTarget = 'cert';
+
+async function openLeaderboardFrom(source) {
+  prLeaderboardReturnTarget = source || 'cert';
+
+  if (typeof overlayCertDone !== 'undefined' && overlayCertDone) overlayCertDone.classList.add('hidden');
   if (overlayProfile) overlayProfile.classList.add('hidden');
+
+  if (source === 'start') {
+    const preGameScreen = document.getElementById('preGameScreen');
+    if (preGameScreen) preGameScreen.classList.add('hidden');
+  }
+
   overlayLeaderboard.classList.remove('hidden');
   await renderLeaderboard();
   startLeaderboardPolling();
+}
+
+async function openLeaderboardModal() {
+  await openLeaderboardFrom('cert');
+}
+
+const btnViewLeaderboardStart = document.getElementById('btnViewLeaderboardStart');
+if (btnViewLeaderboardStart) {
+  btnViewLeaderboardStart.addEventListener('click', async () => {
+    await openLeaderboardFrom('start');
+  });
+}
+
+const btnViewLeaderboardGame = document.getElementById('btnViewLeaderboardGame');
+if (btnViewLeaderboardGame) {
+  btnViewLeaderboardGame.addEventListener('click', async () => {
+    if (typeof pauseGame === 'function') pauseGame();
+    await openLeaderboardFrom('game');
+  });
 }
 
 function openProfileModal() {
@@ -10036,7 +10078,20 @@ document.querySelectorAll('.pr-leaderboard-tab').forEach(btn => {
 document.getElementById('btnLeaderboardClose').addEventListener('click', () => {
   stopLeaderboardPolling();
   overlayLeaderboard.classList.add('hidden');
-  overlayCertDone.classList.remove('hidden');
+
+  if (prLeaderboardReturnTarget === 'start') {
+    const preGameScreen = document.getElementById('preGameScreen');
+    if (preGameScreen) preGameScreen.classList.remove('hidden');
+    return;
+  }
+
+  if (prLeaderboardReturnTarget === 'game') {
+    return;
+  }
+
+  if (typeof overlayCertDone !== 'undefined' && overlayCertDone) {
+    overlayCertDone.classList.remove('hidden');
+  }
 });
 
 document.getElementById('btnLeaderboardReplay').addEventListener('click', () => {
