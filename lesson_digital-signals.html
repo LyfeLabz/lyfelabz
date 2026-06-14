@@ -1004,237 +1004,9 @@ body.stem-active .stem-detail {
 .wave-read-fb.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
 .wave-read-fb.no { background: rgba(231,76,60,0.1);  border: 1px solid rgba(231,76,60,0.3);  color: #ecb3b3; }
 
-/* ── BINARY DECODER (Using Binary Numbers) ── */
-.decoder-card {
-  background: var(--card);
-  border: 1px solid rgba(245,200,66,0.22);
-  border-radius: 24px;
-  padding: 2.2rem 2rem 2.4rem;
-  max-width: 860px;
-  margin: 0 auto;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
-}
-.decoder-card::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: 25px;
-  background: linear-gradient(135deg,
-    rgba(59,200,232,0.3) 0%, rgba(245,200,66,0.08) 25%,
-    rgba(46,204,113,0.25) 50%, rgba(245,200,66,0.08) 75%,
-    rgba(230,126,34,0.25) 100%
-  );
-  background-size: 400% 400%;
-  animation: borderFlow 6s ease infinite;
-  z-index: 0;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  padding: 1px;
-}
 @keyframes borderFlow {
   0%,100% { background-position: 0% 50%; }
   50%      { background-position: 100% 50%; }
-}
-.decoder-card > * { position: relative; z-index: 1; }
-
-.decoder-steps {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.8rem;
-  margin-bottom: 1.8rem;
-}
-@media (max-width: 640px) { .decoder-steps { grid-template-columns: 1fr; } }
-.decoder-step {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  padding: 0.85rem 1rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  line-height: 1.55;
-  display: flex;
-  gap: 0.6rem;
-  align-items: flex-start;
-}
-.decoder-step strong { color: var(--gold); }
-.decoder-step-num {
-  flex-shrink: 0;
-  font-family: 'Fredoka One', cursive;
-  width: 1.6rem; height: 1.6rem;
-  border-radius: 50%;
-  background: rgba(245,200,66,0.12);
-  border: 1px solid rgba(245,200,66,0.35);
-  color: var(--gold);
-  font-size: 0.8rem;
-  display: flex; align-items: center; justify-content: center;
-  margin-top: 0.1rem;
-}
-
-.bit-row {
-  display: flex;
-  justify-content: center;
-  gap: 0.6rem;
-  margin-bottom: 1.2rem;
-  flex-wrap: wrap;
-}
-.bit-box {
-  width: 84px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-}
-.bit-value {
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  color: var(--gold);
-}
-.bit-btn {
-  width: 100%;
-  height: 72px;
-  border-radius: 14px;
-  border: 2px solid rgba(255,255,255,0.15);
-  background: var(--dark2);
-  color: var(--text-muted);
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1.6rem;
-  font-weight: 900;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.bit-btn:hover { border-color: rgba(59,200,232,0.5); transform: translateY(-2px); }
-.bit-btn.on {
-  border-color: var(--teal);
-  background: rgba(59,200,232,0.14);
-  color: var(--teal);
-  box-shadow: 0 0 16px rgba(59,200,232,0.25);
-}
-@media (max-width: 540px) {
-  .bit-box { width: 56px; }
-  .bit-btn { height: 56px; font-size: 1.2rem; }
-}
-
-.decoder-readout {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  gap: 0.8rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.4rem;
-}
-.readout-chip {
-  background: var(--dark);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 0.8rem 1.4rem;
-  text-align: center;
-  min-width: 130px;
-}
-.readout-label {
-  font-size: 0.64rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 0.2rem;
-}
-.readout-value {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1.3rem;
-  font-weight: 900;
-  color: var(--gold);
-}
-.readout-value.letter { color: var(--green); font-size: 1.5rem; }
-
-.decoder-challenge {
-  background: rgba(59,200,232,0.05);
-  border: 1px solid rgba(59,200,232,0.22);
-  border-left: 4px solid var(--teal);
-  border-radius: 12px;
-  padding: 1.1rem 1.4rem;
-  font-size: 0.94rem;
-  color: var(--text);
-  line-height: 1.65;
-}
-.decoder-challenge strong { color: var(--teal); }
-.decoder-challenge .dc-word {
-  font-family: 'Orbitron', sans-serif;
-  letter-spacing: 0.25em;
-  color: var(--gold);
-}
-.decoder-progress {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.7rem;
-}
-.dc-slot {
-  width: 44px; height: 44px;
-  border-radius: 10px;
-  border: 1.5px dashed rgba(255,255,255,0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Fredoka One', cursive;
-  font-size: 1.2rem;
-  color: var(--text-muted);
-}
-.dc-slot.filled {
-  border-style: solid;
-  border-color: var(--green);
-  background: rgba(46,204,113,0.1);
-  color: var(--green);
-}
-.decoder-success {
-  display: none;
-  margin-top: 1rem;
-  padding: 0.9rem 1.2rem;
-  border-radius: 12px;
-  background: rgba(46,204,113,0.1);
-  border: 1px solid rgba(46,204,113,0.35);
-  color: #a8e6c4;
-  font-size: 0.92rem;
-  font-weight: 700;
-}
-.decoder-success.visible { display: block; animation: predictFadeUp 0.4s ease both; }
-
-/* guided worked-example table */
-.worked-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  max-width: 860px;
-  margin: 0 auto 2rem;
-}
-@media (max-width: 720px) { .worked-grid { grid-template-columns: 1fr; } }
-.worked-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.2rem 1.3rem;
-  text-align: center;
-}
-.worked-code {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1.1rem;
-  letter-spacing: 0.3em;
-  color: var(--teal);
-  margin-bottom: 0.4rem;
-}
-.worked-math {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-bottom: 0.4rem;
-}
-.worked-math strong { color: var(--gold); }
-.worked-letter {
-  font-family: 'Fredoka One', cursive;
-  font-size: 1.5rem;
-  color: var(--green);
 }
 
 /* ── QUICK RECALL ── */
@@ -1340,37 +1112,6 @@ body.stem-active .stem-detail {
 .wbc-transmit { color: var(--green);  background: var(--transmit-dim); border-color: var(--transmit-border); }
 .wbc-decode   { color: var(--orange); background: var(--decode-dim);   border-color: var(--decode-border);   }
 
-/* ── SUMMARY TABLES ── */
-.summary-table-wrap { overflow-x: auto; margin-bottom: 2rem; }
-.summary-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  font-size: 0.9rem;
-}
-.summary-table th {
-  text-align: left;
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold);
-  background: rgba(245,200,66,0.07);
-  padding: 0.8rem 1.2rem;
-  border-bottom: 1px solid rgba(245,200,66,0.25);
-}
-.summary-table td {
-  padding: 0.75rem 1.2rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  color: var(--text-muted);
-  line-height: 1.6;
-  vertical-align: top;
-}
-.summary-table tr:last-child td { border-bottom: none; }
-.summary-table td.term { color: var(--teal); font-weight: 800; white-space: nowrap; }
 </style>
 
 <!-- ── Pilot Layout: Learning Goals + Glossary Cards ── -->
@@ -1459,7 +1200,6 @@ body.stem-active .stem-detail {
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hook">Mystery</a></li>
     <li><a href="#process">The Journey</a></li>
-    <li><a href="#decoder">Decoder</a></li>
     <li><a href="#quiz">Quiz</a></li>
   </ul>
   <a href="index.html#chem" class="nav-back">← Physical Science</a>
@@ -1545,7 +1285,7 @@ body.stem-active .stem-detail {
   <div class="container">
     <span class="section-label">Key Vocabulary</span>
     <h2 class="section-title">Words You'll Meet</h2>
-    <p class="section-desc" style="margin-bottom: 1.8rem;">Hover over a card (or tap it) to see what each word means. You'll meet every one of these in the lesson below.</p>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Click or tap a card to reveal the definition. You'll encounter these terms throughout the lesson.</p>
     <div class="glossary-grid">
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-term">Digital Signal</div>
@@ -2197,89 +1937,6 @@ body.stem-active .stem-detail {
 </section>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 5 - USING BINARY NUMBERS (slides 10-14) + INTERACTIVE DECODER
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="decoder" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label" style="color: var(--orange); background: var(--decode-dim); border-color: var(--decode-border);">Explain · Be the Decoder</span>
-    <h2 class="section-title">Using Binary Numbers</h2>
-    <p class="section-desc">Five bits can make a number, and a number can stand for a letter (1 = a, 2 = b ... 26 = z). Each box has a value: 16, 8, 4, 2, 1. Follow the three steps, exactly like a real decoder does.</p>
-
-    <!-- Worked examples (slides 11-13): b, i, n -->
-    <div class="worked-grid">
-      <div class="worked-card">
-        <div class="worked-code">0 0 0 1 0</div>
-        <div class="worked-math">Only the <strong>2</strong> box has a 1 → total = <strong>2</strong></div>
-        <div class="worked-letter">b</div>
-      </div>
-      <div class="worked-card">
-        <div class="worked-code">0 1 0 0 1</div>
-        <div class="worked-math"><strong>8</strong> + <strong>1</strong> → total = <strong>9</strong></div>
-        <div class="worked-letter">i</div>
-      </div>
-      <div class="worked-card">
-        <div class="worked-code">0 1 1 1 0</div>
-        <div class="worked-math"><strong>8</strong> + <strong>4</strong> + <strong>2</strong> → total = <strong>14</strong></div>
-        <div class="worked-letter">n</div>
-      </div>
-    </div>
-
-    <div class="question-pause">
-      <span class="question-pause-icon">👀</span>
-      <div class="question-pause-text"><strong>Look at the three letters above.</strong> b... i... n... The signal spelled <strong>"bin"</strong> - short for binary! Now it's your turn to build letters yourself.</div>
-    </div>
-
-    <!-- Interactive decoder -->
-    <div class="decoder-card">
-
-      <div class="decoder-steps">
-        <div class="decoder-step"><span class="decoder-step-num">1</span><span>Find every box containing a <strong>1</strong>.</span></div>
-        <div class="decoder-step"><span class="decoder-step-num">2</span><span><strong>Add</strong> those values together.</span></div>
-        <div class="decoder-step"><span class="decoder-step-num">3</span><span><strong>Match</strong> the total to a letter (1 = a ... 26 = z).</span></div>
-      </div>
-
-      <div class="bit-row" role="group" aria-label="Five binary digit toggles with values 16, 8, 4, 2, and 1">
-        <div class="bit-box"><span class="bit-value">16</span><button class="bit-btn" data-val="16" aria-pressed="false">0</button></div>
-        <div class="bit-box"><span class="bit-value">8</span><button class="bit-btn" data-val="8" aria-pressed="false">0</button></div>
-        <div class="bit-box"><span class="bit-value">4</span><button class="bit-btn" data-val="4" aria-pressed="false">0</button></div>
-        <div class="bit-box"><span class="bit-value">2</span><button class="bit-btn" data-val="2" aria-pressed="false">0</button></div>
-        <div class="bit-box"><span class="bit-value">1</span><button class="bit-btn" data-val="1" aria-pressed="false">0</button></div>
-      </div>
-
-      <div class="decoder-readout">
-        <div class="readout-chip">
-          <div class="readout-label">Binary</div>
-          <div class="readout-value" id="dec-binary">00000</div>
-        </div>
-        <div class="readout-chip">
-          <div class="readout-label">Total</div>
-          <div class="readout-value" id="dec-total">0</div>
-        </div>
-        <div class="readout-chip">
-          <div class="readout-label">Letter</div>
-          <div class="readout-value letter" id="dec-letter">-</div>
-        </div>
-      </div>
-
-      <div class="decoder-challenge">
-        <strong>Decoder Challenge:</strong> Use the boxes above to build each letter of the word <span class="dc-word">w i n</span>. Hints: w = 23, i = 9, n = 14. When the letter readout matches, the slot below fills in.
-        <div class="decoder-progress" aria-label="Challenge progress: spell the word win">
-          <div class="dc-slot" id="dc-slot-0">w</div>
-          <div class="dc-slot" id="dc-slot-1">i</div>
-          <div class="dc-slot" id="dc-slot-2">n</div>
-        </div>
-        <div class="decoder-success" id="dc-success">🏆 You decoded "win"! You just did the exact job a phone's decoder does billions of times per second.</div>
-      </div>
-
-    </div>
-
-    <div class="bridge-callout orange">
-      <strong>Letter by letter, the message comes back.</strong> Real devices use 8-bit codes and handle millions of bits per second, but the logic is exactly what you just did by hand.
-    </div>
-  </div>
-</section>
-
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      SECTION 6 - ELABORATE: BACK TO THE FACETIME CALL
@@ -2337,54 +1994,6 @@ body.stem-active .stem-detail {
 </section>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 7 - EVALUATE: LESSON SUMMARY TABLES
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="summary" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Evaluate · Lesson Summary</span>
-    <h2 class="section-title">Key Vocabulary &amp; Learning Goals</h2>
-    <p class="section-desc">Everything from this lesson in one place: the words to know and the goals you worked toward.</p>
-
-    <div class="summary-table-wrap">
-      <table class="summary-table">
-        <thead>
-          <tr><th>Term</th><th>Student-Friendly Definition</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="term">Digital signal</td><td>Information encoded in packets of 0s and 1s that can travel long distances and be decoded back into sounds, images, or videos.</td></tr>
-          <tr><td class="term">Binary code</td><td>The two-symbol language (0 and 1) that digital devices use to represent all information.</td></tr>
-          <tr><td class="term">Analog signal</td><td>A continuous signal that can have any value. It is more affected by noise, and its quality can degrade over distance or copying.</td></tr>
-          <tr><td class="term">Encoder</td><td>The part of a device that converts sounds, images, or text into patterns of 0s and 1s.</td></tr>
-          <tr><td class="term">Transmission</td><td>The process of sending encoded information through electromagnetic waves, wires, or fiber optic cables.</td></tr>
-          <tr><td class="term">Decoder</td><td>The part of a device that converts binary code back into sound, images, or video.</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="summary-table-wrap">
-      <table class="summary-table">
-        <thead>
-          <tr><th>Learning Goals</th><th>How You Showed It</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="term" style="white-space: normal;">Explain why digitized signals are a more reliable way to encode and transmit information than analog signals (6.MS-PS4-3).</td>
-            <td>You compared analog and digital signals, predicted which keeps its quality over distance, and explained why noise can't easily scramble 0s and 1s.</td>
-          </tr>
-          <tr>
-            <td class="term" style="white-space: normal;">Model how information travels as wave pulses through the encode → transmit → decode process.</td>
-            <td>You read binary signals from wave models (large wave = 1, small wave = 0) and decoded binary numbers into letters yourself.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="bridge-callout teal">
-      <strong>Essential question:</strong> How can information travel across the world as waves and arrive without losing quality? If you can answer that with the words encoder, binary code, transmission, and decoder, you own this lesson.
-    </div>
-  </div>
-</section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -2791,7 +2400,7 @@ body.stem-active .stem-detail {
   <div class="container">
     <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="continue-intro">Digital signals connect to everything else in the Waves unit. <strong>Extension challenges:</strong> write your name in 5-bit binary and trade with a partner to decode. Or design a "noisy channel" test: whisper a sentence down a line of classmates (analog), then pass the same message as a written string of 0s and 1s (digital). Which arrives intact, and why?</p>
+    <p class="continue-intro">The lesson is just the beginning. Go deeper, test your skills, or see how it all connects.</p>
     <div class="continue-grid">
       <a href="investigation_amplitude-challenge.html" class="cont-card inv">
         <div class="cont-icon">🧪</div>
@@ -2969,49 +2578,6 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 })();
 </script>
 
-<!-- ===== INTERACTIVE BINARY DECODER ===== -->
-<script>
-(function(){
-  var bits = document.querySelectorAll('.bit-btn');
-  var binaryOut = document.getElementById('dec-binary');
-  var totalOut  = document.getElementById('dec-total');
-  var letterOut = document.getElementById('dec-letter');
-  var successEl = document.getElementById('dc-success');
-  var alphabet  = 'abcdefghijklmnopqrstuvwxyz';
-  var target    = ['w','i','n'];
-  var progress  = 0;
-
-  function update() {
-    var binary = '';
-    var total  = 0;
-    bits.forEach(function(b){
-      var on = b.classList.contains('on');
-      binary += on ? '1' : '0';
-      if (on) total += parseInt(b.getAttribute('data-val'), 10);
-    });
-    binaryOut.textContent = binary;
-    totalOut.textContent  = total;
-    var letter = (total >= 1 && total <= 26) ? alphabet[total - 1] : '-';
-    letterOut.textContent = letter;
-
-    // challenge progress
-    if (progress < target.length && letter === target[progress]) {
-      document.getElementById('dc-slot-' + progress).classList.add('filled');
-      progress++;
-      if (progress === target.length) successEl.classList.add('visible');
-    }
-  }
-
-  bits.forEach(function(b){
-    b.addEventListener('click', function(){
-      var on = b.classList.toggle('on');
-      b.textContent = on ? '1' : '0';
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      update();
-    });
-  });
-})();
-</script>
 
 <!-- ===== QUIZ ===== -->
 <script>
