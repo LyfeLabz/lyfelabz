@@ -18,6 +18,18 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3458", "."],
       "port": 3458
+    },
+    {
+      "name": "packet-panic",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3459", "."],
+      "port": 3459
+    },
+    {
+      "name": "lessons",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3460", "."],
+      "port": 3460
     }
   ]
 }
