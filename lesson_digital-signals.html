@@ -1939,6 +1939,644 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 5 - ELABORATE: PACKET PANIC
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  /* ===== PACKET PANIC (inline lesson activity) ===== */
+  .pp-progress-wrap { max-width: 820px; margin: 0 auto 0.8rem; text-align: left; }
+  .pp-progress-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 800;
+    margin-bottom: 0.3rem;
+  }
+  .pp-progress-track {
+    height: 12px;
+    border-radius: 99px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--dark2);
+    overflow: hidden;
+  }
+  .pp-progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--blue), var(--green));
+    transition: width 0.12s linear;
+  }
+  .pp-stage { position: relative; width: 100%; max-width: 820px; margin: 0 auto; }
+  .pp-stage canvas {
+    width: 100%;
+    height: auto;
+    background: #0e1826;
+    border: 3px solid var(--dark2);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    display: block;
+    touch-action: none;
+  }
+  .pp-touch-controls { display: none; margin-top: 1rem; user-select: none; }
+  .pp-touch-controls .pp-row { display: flex; justify-content: center; gap: 0.8rem; margin: 0.4rem 0; }
+  .pp-tbtn {
+    width: 92px;
+    height: 64px;
+    background: var(--card);
+    border: 2px solid var(--dark2);
+    border-radius: 14px;
+    color: var(--blue);
+    font-size: 1.8rem;
+    font-weight: 900;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .pp-tbtn:active { background: var(--blue); color: #fff; }
+  .pp-hint { margin-top: 0.9rem; color: var(--text-muted); font-size: 0.85rem; text-align: center; }
+  @media (hover: none) and (pointer: coarse) {
+    .pp-touch-controls { display: block; }
+  }
+  .pp-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: none;
+    justify-content: center;
+    overflow-y: auto;
+    background: rgba(14,24,38,0.94);
+    border-radius: 16px;
+  }
+  .pp-overlay.show { display: flex; }
+  .pp-overlay-card { text-align: center; padding: 0.9rem 1.1rem; margin: auto; width: 100%; max-width: 660px; }
+  .pp-delivery-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: clamp(1.05rem, 4vw, 1.5rem);
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 0.7rem;
+  }
+  .pp-result-grid { display: flex; gap: 0.7rem; justify-content: center; flex-wrap: nowrap; margin-bottom: 0.8rem; }
+  .pp-result-card { flex: 1 1 0; min-width: 0; border-radius: 14px; padding: 0.8rem 0.6rem 0.9rem; border: 2px solid; }
+  .pp-result-card.digital { background: rgba(52,152,219,0.12); border-color: rgba(52,152,219,0.6); }
+  .pp-result-card.analog { background: rgba(230,126,34,0.12); border-color: rgba(230,126,34,0.6); }
+  .pp-result-tag { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.72rem; letter-spacing: 2px; margin-bottom: 0.5rem; }
+  .pp-result-card.digital .pp-result-tag { color: #5dade2; }
+  .pp-result-card.analog .pp-result-tag { color: #f0a050; }
+  .pp-result-msg {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: clamp(1.3rem, 5.5vw, 2rem);
+    letter-spacing: 2px;
+    margin-bottom: 0.45rem;
+    word-break: break-all;
+  }
+  .pp-result-card.digital .pp-result-msg { color: #ffffff; }
+  .pp-result-card.analog .pp-result-msg { color: #ffd9a8; }
+  .pp-result-note { font-weight: 700; font-size: 0.82rem; }
+  .pp-result-card.digital .pp-result-note { color: var(--green); }
+  .pp-result-card.analog .pp-result-note { color: var(--red); }
+  .pp-recap {
+    font-weight: 700;
+    font-size: clamp(0.85rem, 2.4vw, 1rem);
+    color: var(--text);
+    background: rgba(52,152,219,0.10);
+    border: 1px solid rgba(52,152,219,0.4);
+    border-radius: 12px;
+    padding: 0.6rem 0.9rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.4;
+  }
+  .pp-over-actions { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+  .pp-btn {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #fff;
+    background: linear-gradient(180deg, rgba(46,204,113,0.9), rgba(39,174,96,0.9));
+    border: none;
+    border-radius: 12px;
+    padding: 0.7rem 1.6rem;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(46,204,113,0.35);
+  }
+  .pp-btn:hover { background: var(--green-dark); }
+  .pp-think { max-width: 800px; margin: 2rem auto 0; text-align: left; }
+  .pp-think ol { margin: 0.6rem 0 0 1.2rem; padding: 0; }
+  .pp-think li { margin-bottom: 0.55rem; line-height: 1.55; color: var(--text); }
+</style>
+<section id="packet-panic">
+  <div class="container">
+    <span class="section-label">Elaborate · Packet Panic</span>
+    <h2 class="section-title">Packet Panic</h2>
+
+    <div class="driving-question">
+      <div class="dq-icon">🔍</div>
+      <div class="dq-body">
+        <div class="dq-label">Driving Question</div>
+        <div class="dq-text">What happens when the same noise affects digital and analog information?</div>
+      </div>
+    </div>
+
+    <p class="section-desc" style="margin-top: 1.8rem;">Both packets carry the same message through the same interference. The digital packet restores its message after noise. The analog packet gradually becomes distorted. Watch what happens when both experience identical interference.</p>
+
+    <div class="pp-progress-wrap">
+      <div class="pp-progress-label">Distance to decoder</div>
+      <div class="pp-progress-track"><div class="pp-progress-fill" id="ppProgressFill"></div></div>
+    </div>
+
+    <div class="pp-stage">
+      <canvas id="ppGame" width="820" height="460"></canvas>
+      <div class="pp-overlay show" id="ppStartOverlay">
+        <div class="pp-overlay-card">
+          <h3 class="pp-delivery-title">PACKET PANIC</h3>
+          <p class="pp-recap">Two packets carry the same message through the same noise. Steer them to the decoders and watch which signal protects the message better.</p>
+          <div class="pp-over-actions">
+            <button class="pp-btn" id="ppStart">Start Transmission</button>
+          </div>
+        </div>
+      </div>
+      <div class="pp-overlay" id="ppOverlay">
+        <div class="pp-overlay-card">
+          <h3 class="pp-delivery-title">MESSAGE DELIVERED</h3>
+          <div class="pp-result-grid">
+            <div class="pp-result-card digital">
+              <div class="pp-result-tag">DIGITAL</div>
+              <div class="pp-result-msg" id="ppDigitalResult">HELLO</div>
+              <div class="pp-result-note">&#10003; Message arrived intact.</div>
+            </div>
+            <div class="pp-result-card analog">
+              <div class="pp-result-tag">ANALOG</div>
+              <div class="pp-result-msg" id="ppAnalogResult">HE??O</div>
+              <div class="pp-result-note">Message was damaged by noise.</div>
+            </div>
+          </div>
+          <p class="pp-recap">Digital information is easier to protect because it is stored as 0s and 1s.</p>
+          <div class="pp-over-actions">
+            <button class="pp-btn" id="ppPlayAgain">Send Again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pp-touch-controls" id="ppTouch">
+      <div class="pp-row">
+        <div class="pp-tbtn" data-dir="up">&#9650;</div>
+      </div>
+      <div class="pp-row">
+        <div class="pp-tbtn" data-dir="down">&#9660;</div>
+      </div>
+    </div>
+
+    <p class="pp-hint">Use &#9650; / &#9660; (or the touch buttons) to steer both packets through the gaps in the noise.</p>
+
+    <div class="pp-think">
+      <div class="dq-label">Think About It</div>
+      <ol>
+        <li>Which message arrived intact?</li>
+        <li>Which message became damaged?</li>
+        <li>Why did the two packets behave differently even though they experienced the same interference?</li>
+        <li>Why are digital signals often better for sending information over long distances?</li>
+      </ol>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Reflection.</strong> In Packet Panic, the digital packet restored itself after noise while the analog packet accumulated damage. How does this help explain why digital signals are commonly used for phones, computers, and streaming video?
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById("ppGame");
+  if (!canvas) return;
+  var ctx = canvas.getContext("2d");
+  var W = canvas.width;
+  var H = canvas.height;
+
+  var progressFill = document.getElementById("ppProgressFill");
+  var overlayEl = document.getElementById("ppOverlay");
+  var digitalResultEl = document.getElementById("ppDigitalResult");
+  var analogResultEl = document.getElementById("ppAnalogResult");
+  var playAgainBtn = document.getElementById("ppPlayAgain");
+  var startOverlayEl = document.getElementById("ppStartOverlay");
+  var startBtn = document.getElementById("ppStart");
+
+  // ===== The payload being protected =====
+  var MESSAGE = "HELLO";
+  // Order characters break in. Middle-out so the damage reads progressively:
+  // HELLO -> HE?LO -> HE??O -> H???O -> ????O -> ?????
+  var CORRUPT_ORDER = [2, 3, 1, 0, 4];
+
+  function analogText(corruptCount) {
+    var chars = MESSAGE.split("");
+    for (var i = 0; i < corruptCount && i < CORRUPT_ORDER.length; i++) {
+      chars[CORRUPT_ORDER[i]] = "?";
+    }
+    return chars.join("");
+  }
+
+  // ===== Lane geometry =====
+  var LANE_H = H / 2;                 // top = digital, bottom = analog
+  var TOP_Y = 0;
+  var BOT_Y = LANE_H;
+  var PACKET_X = 168;                 // packets hold station near the left
+  var PACKET_W = 104;
+  var PACKET_H = 46;
+  var Y_MARGIN = 26;                  // keeps a packet fully inside its lane
+
+  // Shared vertical position in 0..1 (one control drives both packets)
+  var pos = 0.5;
+  var POS_SPEED = 0.022;
+
+  // center y of a packet in a lane, given the shared pos
+  function laneCenterY(laneTop) {
+    return laneTop + Y_MARGIN + PACKET_H / 2 + pos * (LANE_H - 2 * Y_MARGIN - PACKET_H);
+  }
+
+  // ===== Run state =====
+  var TARGET_WALLS = 10;             // run ends after this many noise walls pass
+  var wallsSpawned = 0;
+  var wallsPassed = 0;
+  var corruptCount = 0;             // analog damage, permanent
+  var digitalFlash = 0;            // brief flicker on a hit, then self-corrects
+  var analogShake = 0;
+  var finished = false;
+  var running = false;            // gated by the Start Transmission button
+  var t = 0;
+
+  // ===== Noise (one object type) =====
+  // A noise wall fills the full canvas height except for a gap the player can
+  // steer into. Every 3rd wall is "gapless" - unavoidable - so every run
+  // damages the analog signal at least a few times.
+  var walls = [];
+  var spawnTimer = 0;
+  var SPAWN_INTERVAL = 70;
+  var WALL_VX = -4;
+  var WALL_W = 30;
+  var GAP_H = 150;                  // gap height in one lane (room for the packet)
+
+  function spawnWall() {
+    var gapless = (wallsSpawned % 3 === 2);   // walls 3, 6, 9... cannot be dodged
+    walls.push({
+      x: W + 30,
+      gapless: gapless,
+      gapPos: 0.15 + Math.random() * 0.7,    // relative gap center (0..1) in each lane
+      resolved: false
+    });
+    wallsSpawned++;
+  }
+
+  // gap bounds (top,bottom) for a wall inside a given lane
+  function gapBounds(wall, laneTop) {
+    var center = laneTop + Y_MARGIN + wall.gapPos * (LANE_H - 2 * Y_MARGIN);
+    return { top: center - GAP_H / 2, bottom: center + GAP_H / 2 };
+  }
+
+  function updateWalls() {
+    if (wallsSpawned < TARGET_WALLS) {
+      spawnTimer++;
+      if (spawnTimer >= SPAWN_INTERVAL) {
+        spawnTimer = 0;
+        spawnWall();
+      }
+    }
+
+    for (var i = walls.length - 1; i >= 0; i--) {
+      var wall = walls[i];
+      wall.x += WALL_VX;
+
+      // resolve the hit the moment the wall reaches the packet column
+      if (!wall.resolved && wall.x <= PACKET_X) {
+        wall.resolved = true;
+        wallsPassed++;
+
+        var safe = false;
+        if (!wall.gapless) {
+          // both lanes share pos and gapPos, so the outcome is identical for both
+          var g = gapBounds(wall, TOP_Y);
+          var cy = laneCenterY(TOP_Y);
+          safe = (cy - PACKET_H / 2 >= g.top) && (cy + PACKET_H / 2 <= g.bottom);
+        }
+        if (!safe) {
+          // SAME noise, two different fates
+          digitalFlash = 16;                                   // flickers, then restores
+          corruptCount = Math.min(corruptCount + 1, MESSAGE.length); // permanent
+          analogShake = 16;
+        }
+
+        if (wallsPassed >= TARGET_WALLS) finishRun();
+      }
+
+      if (wall.x < -WALL_W - 40) walls.splice(i, 1);
+    }
+  }
+
+  // ===== Input (vertical only) =====
+  var keys = {};
+  window.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      keys[e.key] = true;
+      e.preventDefault();
+    }
+  });
+  window.addEventListener("keyup", function (e) {
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") keys[e.key] = false;
+  });
+
+  var dirMap = { up: "ArrowUp", down: "ArrowDown" };
+  document.querySelectorAll(".pp-tbtn").forEach(function (btn) {
+    var key = dirMap[btn.getAttribute("data-dir")];
+    var press = function (e) { e.preventDefault(); keys[key] = true; };
+    var release = function (e) { e.preventDefault(); keys[key] = false; };
+    btn.addEventListener("touchstart", press, { passive: false });
+    btn.addEventListener("touchend", release, { passive: false });
+    btn.addEventListener("touchcancel", release, { passive: false });
+    btn.addEventListener("mousedown", press);
+    btn.addEventListener("mouseup", release);
+    btn.addEventListener("mouseleave", release);
+  });
+
+  function update() {
+    if (keys.ArrowUp) pos -= POS_SPEED;
+    if (keys.ArrowDown) pos += POS_SPEED;
+    if (pos < 0) pos = 0;
+    if (pos > 1) pos = 1;
+
+    updateWalls();
+
+    if (digitalFlash > 0) digitalFlash--;
+    if (analogShake > 0) analogShake--;
+
+    progressFill.style.width = Math.round((wallsPassed / TARGET_WALLS) * 100) + "%";
+  }
+
+  // ===== Drawing =====
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function drawGrid() {
+    var spacing = 40;
+    var offset = (t * 0.6) % spacing;
+    ctx.save();
+    ctx.strokeStyle = "rgba(120,170,220,0.07)";
+    ctx.lineWidth = 1;
+    for (var x = -spacing + offset; x < W; x += spacing) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (var y = 0; y < H; y += spacing) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawLanes() {
+    // lane tints
+    ctx.save();
+    ctx.fillStyle = "rgba(52,152,219,0.05)";
+    ctx.fillRect(0, TOP_Y, W, LANE_H);
+    ctx.fillStyle = "rgba(230,126,34,0.05)";
+    ctx.fillRect(0, BOT_Y, W, LANE_H);
+    // seam
+    ctx.strokeStyle = "rgba(180,200,220,0.25)";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, LANE_H); ctx.lineTo(W, LANE_H); ctx.stroke();
+    ctx.restore();
+
+    // lane labels
+    ctx.save();
+    ctx.font = "900 13px Orbitron, sans-serif";
+    ctx.textBaseline = "top";
+    ctx.fillStyle = "rgba(93,173,226,0.85)";
+    ctx.fillText("DIGITAL", 14, TOP_Y + 12);
+    ctx.fillStyle = "rgba(240,160,80,0.85)";
+    ctx.fillText("ANALOG", 14, BOT_Y + 12);
+    ctx.restore();
+  }
+
+  function drawDecoder(laneTop, glow) {
+    var w = 28, h = 120;
+    var x = W - 44, y = laneTop + LANE_H / 2 - h / 2;
+    var pulse = 0.5 + 0.5 * Math.sin(t * 0.06);
+    ctx.save();
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = 12 + pulse * 16;
+    ctx.fillStyle = "#27ae60";
+    roundRect(x, y, w, h, 8); ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.fillStyle = "#2ecc71";
+    roundRect(x + 4, y + 4, w - 8, h - 8, 5); ctx.fill();
+    ctx.fillStyle = "rgba(14,24,38,0.55)";
+    var slots = 5, gap = (h - 16) / slots;
+    for (var i = 0; i < slots; i++) ctx.fillRect(x + 7, y + 10 + i * gap, w - 14, gap * 0.45);
+    ctx.restore();
+  }
+
+  function drawWalls() {
+    for (var i = 0; i < walls.length; i++) {
+      var wall = walls[i];
+      drawWallInLane(wall, TOP_Y);
+      drawWallInLane(wall, BOT_Y);
+    }
+  }
+
+  function drawWallInLane(wall, laneTop) {
+    ctx.save();
+    ctx.shadowColor = "rgba(231,76,60,0.8)";
+    ctx.shadowBlur = 10;
+    // flicker the red a little so it reads as live interference
+    ctx.fillStyle = "#e74c3c";
+    ctx.globalAlpha = 0.78 + Math.random() * 0.22;
+
+    if (wall.gapless) {
+      ctx.fillRect(wall.x, laneTop + 2, WALL_W, LANE_H - 4);
+    } else {
+      var g = gapBounds(wall, laneTop);
+      ctx.fillRect(wall.x, laneTop + 2, WALL_W, g.top - (laneTop + 2));
+      ctx.fillRect(wall.x, g.bottom, WALL_W, (laneTop + LANE_H - 2) - g.bottom);
+    }
+    ctx.restore();
+  }
+
+  // ----- Digital packet: stays readable, self-corrects after a hit -----
+  function scramble(str) {
+    var pool = "01#%&*?";
+    var out = "";
+    for (var i = 0; i < str.length; i++) out += pool[(Math.random() * pool.length) | 0];
+    return out;
+  }
+
+  function drawDigitalPacket() {
+    var cy = laneCenterY(TOP_Y);
+    var x = PACKET_X - PACKET_W / 2;
+    var y = cy - PACKET_H / 2;
+    var hit = digitalFlash > 0;
+
+    ctx.save();
+    ctx.shadowColor = hit ? "rgba(231,76,60,0.9)" : "rgba(52,152,219,0.9)";
+    ctx.shadowBlur = 22;
+    ctx.fillStyle = "#1e3c54";
+    roundRect(x, y, PACKET_W, PACKET_H, 9); ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = hit ? "#e74c3c" : "#5dade2";
+    roundRect(x, y, PACKET_W, PACKET_H, 9); ctx.stroke();
+    ctx.restore();
+
+    // text flickers for the first few frames of a hit, then restores to HELLO
+    var label = (digitalFlash > 9) ? scramble(MESSAGE) : MESSAGE;
+    ctx.save();
+    ctx.font = "900 24px Orbitron, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(label, PACKET_X, cy + 1);
+    ctx.restore();
+  }
+
+  // ----- Analog packet: progressive corruption with supporting texture -----
+  // Four readable degradation tiers (clear / slight / moderate / heavy).
+  var ANALOG_TIERS = [
+    { jitter: 0,   ghosts: 0, ghostSpread: 0,  ghostAlpha: 0,    speckles: 0,  speckleAlpha: 0    },
+    { jitter: 1.5, ghosts: 1, ghostSpread: 8,  ghostAlpha: 0.16, speckles: 8,  speckleAlpha: 0.22 },
+    { jitter: 3.2, ghosts: 2, ghostSpread: 13, ghostAlpha: 0.22, speckles: 16, speckleAlpha: 0.38 },
+    { jitter: 5.5, ghosts: 4, ghostSpread: 18, ghostAlpha: 0.3,  speckles: 26, speckleAlpha: 0.55 }
+  ];
+
+  function analogTierIndex() {
+    if (corruptCount <= 0) return 0;
+    if (corruptCount === 1) return 1;
+    if (corruptCount <= 3) return 2;
+    return 3;
+  }
+
+  function drawAnalogPacket() {
+    var cy = laneCenterY(BOT_Y);
+    var tier = ANALOG_TIERS[analogTierIndex()];
+    var label = analogText(corruptCount);
+
+    // ghost smears behind the core (continuous signal spreading out)
+    if (tier.ghosts > 0) {
+      ctx.save();
+      for (var g = 0; g < tier.ghosts; g++) {
+        ctx.globalAlpha = tier.ghostAlpha;
+        ctx.fillStyle = (g % 2 === 0) ? "#f0a050" : "#cf6a16";
+        var gx = PACKET_X - PACKET_W / 2 + (Math.random() - 0.5) * tier.ghostSpread;
+        var gy = cy - PACKET_H / 2 + (Math.random() - 0.5) * tier.ghostSpread;
+        roundRect(gx, gy, PACKET_W, PACKET_H, 9); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // core card, jittered when degraded
+    var jx = (Math.random() - 0.5) * tier.jitter;
+    var jy = (Math.random() - 0.5) * tier.jitter;
+    var x = PACKET_X - PACKET_W / 2 + jx;
+    var y = cy - PACKET_H / 2 + jy;
+
+    ctx.save();
+    ctx.shadowColor = "rgba(230,126,34,0.9)";
+    ctx.shadowBlur = 22;
+    ctx.fillStyle = "#7a4a18";
+    roundRect(x, y, PACKET_W, PACKET_H, 9); ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#e67e22";
+    roundRect(x, y, PACKET_W, PACKET_H, 9); ctx.stroke();
+    ctx.restore();
+
+    // the corrupted message itself - the main event
+    ctx.save();
+    ctx.font = "900 24px Orbitron, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffe4b4";
+    ctx.fillText(label, PACKET_X + jx, cy + 1 + jy);
+    ctx.restore();
+
+    // static speckle noise grows with degradation
+    if (tier.speckles > 0) {
+      ctx.save();
+      ctx.globalAlpha = tier.speckleAlpha;
+      for (var d = 0; d < tier.speckles; d++) {
+        ctx.fillStyle = (d % 2 === 0) ? "rgba(20,12,4,0.85)" : "rgba(255,230,190,0.7)";
+        var dx = PACKET_X - PACKET_W / 2 + Math.random() * PACKET_W;
+        var dy = cy - PACKET_H / 2 + Math.random() * PACKET_H;
+        ctx.fillRect(dx, dy, 2, 2);
+      }
+      ctx.restore();
+    }
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+    drawGrid();
+    drawLanes();
+    drawDecoder(TOP_Y, "rgba(80,200,255,0.9)");
+    drawDecoder(BOT_Y, "rgba(46,204,113,0.85)");
+    drawWalls();
+    drawDigitalPacket();
+    drawAnalogPacket();
+  }
+
+  // ===== Delivery =====
+  function finishRun() {
+    finished = true;
+    digitalResultEl.textContent = MESSAGE;
+    analogResultEl.textContent = analogText(corruptCount);
+    overlayEl.classList.add("show");
+  }
+
+  function resetRun() {
+    walls.length = 0;
+    wallsSpawned = 0;
+    wallsPassed = 0;
+    spawnTimer = 0;
+    corruptCount = 0;
+    digitalFlash = 0;
+    analogShake = 0;
+    pos = 0.5;
+    finished = false;
+    running = false;
+    progressFill.style.width = "0%";
+    overlayEl.classList.remove("show");
+    startOverlayEl.classList.add("show");
+  }
+
+  function startRun() {
+    resetRun();
+    startOverlayEl.classList.remove("show");
+    running = true;
+  }
+
+  startBtn.addEventListener("click", startRun);
+  playAgainBtn.addEventListener("click", resetRun);
+
+  function loop() {
+    t++;
+    if (running && !finished) update();
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+})();
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
      SECTION 6 - ELABORATE: BACK TO THE FACETIME CALL
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="synthesis" style="background: var(--dark2);">
@@ -2000,7 +2638,7 @@ body.stem-active .stem-detail {
      SECTION 8 - QUIZ
 ═══════════════════════════════════════════════════════════════════════ -->
 <style>
-.quiz-section { background: var(--dark2); }
+.quiz-section { background: var(--dark); }
 
 .quiz-mode-toggle {
   display: flex;
@@ -2429,13 +3067,6 @@ body.stem-active .stem-detail {
         <div class="cont-name">Nature of Waves</div>
         <div class="cont-desc">Frequency, amplitude, and wavelength - the wave properties that make a 5 Hz binary signal possible. Revisit the foundations of the whole unit.</div>
         <span class="cont-link">Review</span>
-      </a>
-      <a href="game_packet-panic.html" class="cont-card game">
-        <div class="cont-icon">🎮</div>
-        <div class="cont-cat">Game</div>
-        <div class="cont-name">Packet Panic</div>
-        <div class="cont-desc">Dodge noise, compare digital and analog signals, and see why digitized information is more reliable over long distances.</div>
-        <span class="cont-link">Play Packet Panic</span>
       </a>
     </div>
   </div>
