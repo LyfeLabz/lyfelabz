@@ -146,7 +146,9 @@ body.ls-active   .badge-bar.ls-bar   { display:flex; }
 /* =========================================================
    SECTION WRAPPER
    ========================================================= */
-.sim-section { max-width:900px; margin:0 auto 2.25rem; padding:0 1.4rem; }
+.sim-section { max-width:900px; margin:0 auto 2.25rem; padding:0 1.4rem; scroll-margin-top:74px; }
+body.stem-active .sim-section, body.ls-active .sim-section { scroll-margin-top:118px; }
+body.stem-active.ls-active .sim-section { scroll-margin-top:158px; }
 .section-label { font-size:0.72rem; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--orange); margin-bottom:0.4rem; }
 .section-title { font-family:'Fredoka One',sans-serif; font-size:clamp(1.5rem,3vw,2rem); line-height:1.15; color:var(--text-primary); margin-bottom:0.55rem; }
 .section-desc  { font-size:1rem; font-weight:600; color:#d6dee6; line-height:1.65; margin-bottom:1.2rem; max-width:900px; }
@@ -190,8 +192,10 @@ input[type=range]::-moz-range-thumb { width:18px; height:18px; border-radius:50%
    PHASE 1, DISCOVERY HOTSPOT TRACKER
    ========================================================= */
 .discover-strip { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1rem; }
-.discover-pill { padding:0.35rem 0.85rem; border-radius:99px; background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-muted); font-size:0.78rem; font-weight:800; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:0.4rem; transition:all 0.3s; }
-.discover-pill.found { background:rgba(46,204,113,0.12); border-color:var(--green); color:var(--green); }
+.discover-pill { padding:0.35rem 0.85rem; border-radius:99px; background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-muted); font-size:0.78rem; font-weight:800; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:0.4rem; transition:all 0.3s; cursor:pointer; }
+.discover-pill[role="button"]:not(.found):hover { border-color:var(--orange); color:var(--text-primary); }
+.discover-pill:focus-visible { outline:2px solid var(--orange); outline-offset:2px; }
+.discover-pill.found { background:rgba(46,204,113,0.12); border-color:var(--green); color:var(--green); cursor:default; }
 .discover-pill .dot { width:8px; height:8px; border-radius:50%; background:currentColor; opacity:0.7; }
 .discover-prompt { margin-top:0.8rem; font-size:0.88rem; color:#c9d1d9; padding:0.7rem 0.95rem; background:var(--bg-secondary); border-left:3px solid var(--orange); border-radius:6px; }
 
@@ -240,6 +244,13 @@ input[type=range]::-moz-range-thumb { width:18px; height:18px; border-radius:50%
 .data-bar-fill { height:100%; width:0; border-radius:99px; transition:width 0.75s cubic-bezier(.2,.7,.2,1); }
 .data-bar.amp .data-bar-fill    { background:linear-gradient(90deg, rgba(59,200,232,0.5), var(--teal)); box-shadow:0 0 7px rgba(59,200,232,0.4); }
 .data-bar.energy .data-bar-fill { background:linear-gradient(90deg, rgba(59,130,246,0.55), var(--orange)); box-shadow:0 0 7px rgba(59,130,246,0.45); }
+/* Narrow screens: let the bar cells shrink so the table never forces horizontal scroll */
+@media (max-width:560px){
+  .data-table th, .data-table td { padding:0.4rem 0.25rem; font-size:0.8rem; }
+  .bar-cell { min-width:0; gap:0.35rem; }
+  .bar-num { min-width:0; }
+  .data-bar { min-width:18px; max-width:70px; }
+}
 
 /* Sufficiency strip - three indicators */
 .sufficiency-strip { display:flex; flex-wrap:wrap; gap:0.45rem; margin-top:0.95rem; align-items:center; }
@@ -663,7 +674,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
   <span class="badge teal">Predict → Test<span class="badge-tip">You commit to a prediction first, then test it against real data, a core scientific habit.</span></span>
   <span class="badge teal">Productive Struggle<span class="badge-tip">Wrong predictions are not failures; they are data you can revise.</span></span>
   <span class="badge teal">Claim · Evidence · Reasoning<span class="badge-tip">You will defend your model with your own collected evidence.</span></span>
-  <span class="badge teal">Worked-Out Discovery<span class="badge-tip">You uncover the amplitude–energy relationship from data, not from being told.</span></span>
+  <span class="badge teal">Worked-Out Discovery<span class="badge-tip">You uncover the amplitude-energy relationship from data, not from being told.</span></span>
   <span class="badge teal">Spaced Retrieval<span class="badge-tip">Checkpoint quizzes between phases reinforce learning by retrieval, not re-reading.</span></span>
 </div>
 
@@ -671,7 +682,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
      HERO
      ====================================================== -->
 <section class="hero">
-  <div class="hero-canvas-wrap"><canvas id="heroCanvas"></canvas></div>
+  <div class="hero-canvas-wrap"><canvas id="heroCanvas" aria-hidden="true"></canvas></div>
   <div class="hero-shell">
     <div class="hero-badge">Investigation</div>
     <h1>Amplitude Challenge</h1>
@@ -738,7 +749,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
 
   <div class="phase-card">
     <div class="phase-canvas-wrap">
-      <canvas id="p1Canvas" width="800" height="320"></canvas>
+      <canvas id="p1Canvas" width="800" height="320" role="img" aria-label="An animated wave with its crest, amplitude, and wavelength labeled. Use the buttons below to identify each part."></canvas>
     </div>
     <div class="phase-controls">
       <div class="control">
@@ -751,11 +762,11 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
       </div>
     </div>
 
-    <div class="discover-prompt" id="p1Prompt">Click on the part of the wave labeled in the prompt above the canvas to identify it. Find all 3 parts to unlock your prediction.</div>
+    <div class="discover-prompt" id="p1Prompt">Click the labeled parts directly on the wave above to identify them. Find all 3 parts to unlock your prediction.</div>
     <div class="discover-strip">
-      <span class="discover-pill" id="discCrest"><span class="dot"></span>Crest</span>
-      <span class="discover-pill" id="discAmp"><span class="dot"></span>Amplitude</span>
-      <span class="discover-pill" id="discWave"><span class="dot"></span>Wavelength</span>
+      <span class="discover-pill" id="discCrest" role="button" tabindex="0" aria-pressed="false" data-disc="crest"><span class="dot"></span>Crest</span>
+      <span class="discover-pill" id="discAmp" role="button" tabindex="0" aria-pressed="false" data-disc="amp"><span class="dot"></span>Amplitude</span>
+      <span class="discover-pill" id="discWave" role="button" tabindex="0" aria-pressed="false" data-disc="wave"><span class="dot"></span>Wavelength</span>
     </div>
 
     <div class="prediction-card" id="p1Prediction" style="display:none;">
@@ -786,6 +797,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
     <div class="checkpoint-actions">
       <button class="btn btn-orange" id="cp1Check">Check Answer</button>
       <button class="btn btn-ghost"  id="cp1Retry" style="display:none;">Try Again</button>
+      <button class="btn btn-orange" id="cp1Continue" style="display:none;">Continue → Amplitude Lab</button>
     </div>
   </div>
 </section>
@@ -801,7 +813,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
 
   <div class="phase-card">
     <div class="phase-canvas-wrap">
-      <canvas id="p2Canvas" width="800" height="280"></canvas>
+      <canvas id="p2Canvas" width="800" height="280" role="img" aria-label="A wave source on the left sends a pulse to an energy detector on the right. The detector shows the energy delivered after each trial; trial results are listed in the data table below."></canvas>
     </div>
     <div class="phase-controls">
       <div class="control">
@@ -942,7 +954,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
 
   <div class="phase-card">
     <div class="phase-canvas-wrap">
-      <canvas id="p4Canvas" width="800" height="420"></canvas>
+      <canvas id="p4Canvas" width="800" height="420" role="img" aria-label="A scatter plot of your trial data with amplitude on the horizontal axis and energy delivered on the vertical axis. The same numbers are listed in the comparison cards below."></canvas>
     </div>
     <div class="plot-controls">
       <button class="plot-toggle linear"  id="toggleLinear">Show Linear Model · E = k · A</button>
@@ -971,7 +983,7 @@ input[type=range]:focus-visible::-moz-range-thumb     { transform: scale(1.18); 
     <div class="cer-wrap">
       <div class="cer-field">
         <div class="cer-label claim">Claim</div>
-        <div class="cer-hint">In one sentence: which model describes the amplitude–energy relationship?</div>
+        <div class="cer-hint">In one sentence: which model describes the amplitude-energy relationship?</div>
         <textarea id="cerClaim" placeholder="The relationship between amplitude and energy is…"></textarea>
         <div class="cer-scaffold" id="claimScaffold"><span class="sc-label">Hint</span>Did your data look like a <strong>straight line</strong>, or did it <strong>curve upward</strong> faster than amplitude grew?</div>
         <div class="cer-counter"><span id="cerClaimCount">0</span> / 25 minimum</div>
@@ -1203,7 +1215,8 @@ function unlockPhase(n){
     target.classList.remove('phase-reveal');
     void target.offsetWidth;
     target.classList.add('phase-reveal');
-    setTimeout(()=>target.scrollIntoView({behavior:'smooth', block:'start'}), 160);
+    // Scrolling is handled by each checkpoint's explicit "Continue" button so the
+    // student stays anchored on the feedback until they choose to advance.
   }
   // Celebratory flash on the step that just completed
   const prev = document.getElementById('step' + (n-1));
@@ -1314,8 +1327,6 @@ function revealVisiblePhases(){
   if (state.phaseUnlocked >= 5) {
     document.getElementById('modeGate').style.display='block';
     if (state.mode === 'classroom') document.getElementById('phase5').style.display='block';
-  } else if (state.phaseUnlocked === 5) {
-    document.getElementById('modeGate').style.display='block';
   }
 }
 
@@ -1404,10 +1415,24 @@ function initPhase1(){
     handleP1Click(x, y);
   });
 
+  // Keyboard-accessible identification: activating a pill identifies that part,
+  // an equivalent path to clicking the labeled spot on the wave.
+  document.querySelectorAll('.discover-pill[data-disc]').forEach(pill => {
+    const act = () => identifyPart(pill.dataset.disc);
+    pill.addEventListener('click', act);
+    pill.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); act(); }
+    });
+  });
+
   // Restore discoveries
-  if (state.discoveries.crest) document.getElementById('discCrest').classList.add('found');
-  if (state.discoveries.amp)   document.getElementById('discAmp').classList.add('found');
-  if (state.discoveries.wave)  document.getElementById('discWave').classList.add('found');
+  ['crest','amp','wave'].forEach(k => {
+    if (state.discoveries[k]){
+      const pill = document.getElementById(k === 'crest' ? 'discCrest' : k === 'amp' ? 'discAmp' : 'discWave');
+      pill.classList.add('found');
+      pill.setAttribute('aria-pressed', 'true');
+    }
+  });
   updateP1Prompt();
 
   // Prediction wiring
@@ -1431,20 +1456,24 @@ function initPhase1(){
     }
   }
 
-  // Loop
+  // Loop - hold the wave still while parts are being identified so the
+  // labels/hotspots are a stationary, easy-to-click target. Once all three
+  // parts are found, the wave resumes its gentle animation.
   function loop(){
     drawP1();
-    p1T += 0.06;
+    const allFound = state.discoveries.crest && state.discoveries.amp && state.discoveries.wave;
+    if (allFound) p1T += 0.06;
     p1RAF = requestAnimationFrame(loop);
   }
   loop();
 
   // Wire checkpoint
-  wireCheckpoint(1, 1,
+  const cont = wireCheckpoint(1, 1,
     'Correct. Amplitude is the height from the rest line up to a crest; it measures how strong the wave is.',
     'Not quite, re-read the labels on the wave. Amplitude is a height measurement, not a distance or a count.',
     () => { unlockPhase(2); }
   );
+  cont.addEventListener('click', () => { const t = document.getElementById('phase2'); if(t) t.scrollIntoView({behavior:'smooth', block:'start'}); });
 }
 
 function drawP1(){
@@ -1508,8 +1537,8 @@ function drawP1(){
 
   // store hotspot positions for click detection
   p1Hotspots = {
-    crest: { x:crestX, y:crestY, r:30 },
-    amp:   { x:ampX,   y:(mid+ampY)/2, r:30 },
+    crest: { x:crestX, y:crestY, r:36 },
+    amp:   { x:ampX,   y:(mid+ampY)/2, r:36 },
     wave:  { x:(wlStart+wlEnd)/2, y:mid+30, r:40 }
   };
 }
@@ -1541,6 +1570,23 @@ function roundRect(ctx, x, y, w, h, r, fill, stroke){
   if (stroke) ctx.stroke();
 }
 
+/* Mark a wave part as identified. Shared by canvas clicks (find it on the wave)
+   and the discovery pills (keyboard-accessible equivalent). */
+function identifyPart(key){
+  if (state.discoveries[key]) return;
+  state.discoveries[key] = true;
+  const pillId = key === 'crest' ? 'discCrest' : key === 'amp' ? 'discAmp' : 'discWave';
+  const pill = document.getElementById(pillId);
+  pill.classList.add('found');
+  pill.classList.add('just-found');
+  pill.setAttribute('aria-pressed', 'true');
+  setTimeout(() => pill.classList.remove('just-found'), 700);
+  const name = key === 'crest' ? 'Crest' : key === 'amp' ? 'Amplitude' : 'Wavelength';
+  toast(name + ' identified.', 'success');
+  saveState();
+  updateP1Prompt();
+}
+
 function handleP1Click(x, y){
   if (!p1Hotspots.crest) return;
   const order = ['crest','amp','wave'];
@@ -1548,19 +1594,7 @@ function handleP1Click(x, y){
     if (state.discoveries[key]) continue;
     const h = p1Hotspots[key];
     const dx = x-h.x, dy = y-h.y;
-    if (dx*dx + dy*dy < h.r*h.r){
-      state.discoveries[key] = true;
-      const pillId = key === 'crest' ? 'discCrest' : key === 'amp' ? 'discAmp' : 'discWave';
-      const pill = document.getElementById(pillId);
-      pill.classList.add('found');
-      pill.classList.add('just-found');
-      setTimeout(() => pill.classList.remove('just-found'), 700);
-      const name = key === 'crest' ? 'Crest' : key === 'amp' ? 'Amplitude' : 'Wavelength';
-      toast(name + ' identified.', 'success');
-      saveState();
-      updateP1Prompt();
-      return;
-    }
+    if (dx*dx + dy*dy < h.r*h.r){ identifyPart(key); return; }
   }
 }
 
@@ -1656,7 +1690,10 @@ function runTrial(){
   btn.dataset.busy = '1';
   btn.disabled = true;
   btn.textContent = 'Wave running…';
-  p2Pulse = { x: 60, amp, energy, startedAt: performance.now() };
+  // The full travel animation is worthwhile the first few times; after that it
+  // becomes a pacing drag, so speed it up once students have seen it.
+  const travel = state.trials.length >= 3 ? 850 : 1400;
+  p2Pulse = { x: 60, amp, energy, startedAt: performance.now(), dur: travel };
   // After wave animation completes, record the trial
   setTimeout(() => {
     state.trials.push({ trial: state.trials.length+1, amplitude: amp, energy });
@@ -1674,7 +1711,7 @@ function runTrial(){
     if (state.trials.length >= 6 && distinct >= 5){
       document.getElementById('p2Checkpoint').classList.add('visible');
     }
-  }, 1700);
+  }, travel + 300);
 }
 
 /* Render the trial data table with inline bars and row markers
@@ -1866,7 +1903,7 @@ function drawP2(){
   let readoutFill = 'rgba(59,200,232,0.4)';
   if (p2Pulse){
     const elapsed = performance.now() - p2Pulse.startedAt;
-    if (elapsed > 1400) {
+    if (elapsed > p2Pulse.dur) {
       readout = p2Pulse.energy + ' J';
       readoutFill = 'rgba(59,130,246,1)';
     }
@@ -1894,7 +1931,7 @@ function drawP2(){
   } else {
     // travelling pulse
     const elapsed = performance.now() - p2Pulse.startedAt;
-    const prog = Math.min(elapsed/1400, 1);
+    const prog = Math.min(elapsed/p2Pulse.dur, 1);
     const pulseX = 60 + prog * (w-160);
     const A_px = p2Pulse.amp * 9;
     const k = 0.04;
@@ -1921,9 +1958,10 @@ function drawP2(){
     ctx.stroke();
     ctx.shadowBlur=0;
 
-    // flash detector on arrival
-    if (elapsed > 1300 && elapsed < 1900){
-      const t = (elapsed - 1300) / 600;
+    // flash detector on arrival (starts just before the pulse reaches it)
+    const flashStart = p2Pulse.dur - 100;
+    if (elapsed > flashStart && elapsed < flashStart + 600){
+      const t = (elapsed - flashStart) / 600;
       const flashA = 1 - t;
       ctx.fillStyle = `rgba(59,130,246,${flashA*0.45})`;
       roundRect(ctx, w-80, mid-50, 60, 100, 8, true, false);
@@ -2085,7 +2123,7 @@ function initPhase4(){
     });
   });
 
-  // Prediction recall
+  // Prediction recall - restate the prediction AND reflect it against the data
   if (state.prediction){
     const map = {
       same:   'It would stay about the same.',
@@ -2093,7 +2131,11 @@ function initPhase4(){
       more:   'It would more than double.',
       less:   'It would be less than before.'
     };
-    document.getElementById('predictionRecallText').textContent = map[state.prediction] || '';
+    const wasRight = state.prediction === 'more';
+    const verdict = wasRight
+      ? ' Your data backed this up: doubling the amplitude more than doubled the energy. Nice prediction.'
+      : ' Your data told a different story: doubling the amplitude more than doubled the energy. A wrong prediction is still useful, it is exactly what good scientists revise.';
+    document.getElementById('predictionRecallText').textContent = (map[state.prediction] || '') + verdict;
     document.getElementById('predictionRecall').classList.add('visible');
   }
 
@@ -2718,7 +2760,7 @@ function scoreQuiz(){
   lockQuizDisplay();
   const banner = document.getElementById('quizResultBanner');
   banner.style.display='block';
-  if (score >= 4){ banner.className='pass'; banner.textContent = `${score} / 5, strong work. The amplitude–energy relationship is clearly clicking.`; }
+  if (score >= 4){ banner.className='pass'; banner.textContent = `${score} / 5, strong work. The amplitude-energy relationship is clearly clicking.`; }
   else if (score >= 3){ banner.className='pass'; banner.textContent = `${score} / 5, solid. Review the missed items and try again to push higher.`; }
   else { banner.className='fail'; banner.textContent = `${score} / 5, re-read the explanations and try again.`; }
   document.getElementById('quizScoreBadge').textContent = `Score: ${score} / 5`;
@@ -2969,7 +3011,7 @@ function boot(){
     document.getElementById('quizResultBanner').style.display='block';
     const banner = document.getElementById('quizResultBanner');
     const score = state.quizScore || 0;
-    if (score >= 4){ banner.className='pass'; banner.textContent = `${score} / 5, strong work. The amplitude–energy relationship is clearly clicking.`; }
+    if (score >= 4){ banner.className='pass'; banner.textContent = `${score} / 5, strong work. The amplitude-energy relationship is clearly clicking.`; }
     else if (score >= 3){ banner.className='pass'; banner.textContent = `${score} / 5, solid. Review the missed items and try again.`; }
     else { banner.className='fail'; banner.textContent = `${score} / 5, re-read the explanations and try again.`; }
     document.getElementById('goFurtherSection').style.display='block';

@@ -41,7 +41,6 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
   body {
     font-family: 'Nunito', sans-serif;
     background: var(--dark);
@@ -131,9 +130,8 @@
   .dq-text  { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
 
   /* SECTIONS */
-  section { padding: 5rem 2rem; position: relative; }
-  #what-is, #science, #spot, #real-life, #defense { scroll-margin-top: 10px; }
-  #quiz { scroll-margin-top: 45px; }
+  section { padding: 5rem 2rem; position: relative; scroll-margin-top: 10px; }
+  #quiz { scroll-margin-top: 3.1rem; }
   .container    { max-width: 1100px; margin: 0 auto; }
   .container-md { max-width: 860px;  margin: 0 auto; }
   .section-label {
@@ -501,6 +499,7 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
     <li><a href="#real-life">Real Life</a></li>
     <li><a href="#defense">Defense Kit</a></li>
     <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
   </ul>
   <a href="index.html#psych" class="nav-back">← Behavioral Science</a>
 </nav>
@@ -971,7 +970,7 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
 <!-- ═══════════════════════════════════ -->
 <!-- SECTION 7 - QUIZ                   -->
 <!-- ═══════════════════════════════════ -->
-<section id="quiz" class="quiz-section" style="padding-top:2.5rem;">
+<section id="quiz" class="quiz-section" style="padding-top:2.5rem; scroll-margin-top: 3.1rem;">
   <div class="container">
     <span class="section-label">Check Your Understanding</span>
     <h2 class="section-title">Don't Take the Bait, Quiz</h2>
@@ -1524,7 +1523,7 @@ const ctx    = canvas.getContext('2d');
 let stars    = [];
 function resize() {
   canvas.width  = window.innerWidth;
-  canvas.height = document.body.scrollHeight;
+  canvas.height = window.innerHeight;
   generateStars();
 }
 function generateStars() {

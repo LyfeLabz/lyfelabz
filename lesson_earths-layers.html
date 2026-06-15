@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_earths-layers.html">
+<meta name="description" content="Explore the four layers of Earth, density and differentiation, the crust, mantle, and core, and how convection currents deep inside Earth drive earthquakes and volcanoes at the surface. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Earth's Layers</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #7a8fa6;
+    --accent-dim:  rgba(122,143,166,0.15);
+    --accent-glow: rgba(122,143,166,0.3);
+    --accent-dark: #5a6e82;
+    --accent2:     #9fb8cc;
+    --teal:        #1de9b6;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --orange:      #e8814a;
+    --green:       #3ddc84;
+    --blue:        #7cc8f8;
+    --red:         #e74c3c;
+    --dark:        #0d1117;
+    --dark2:       #111820;
+    --card:        #161e28;
+    --text:        #e8edf2;
+    --text-muted:  #7a8fa6;
+    --border:      rgba(122,143,166,0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 18px; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.45; }
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(10,14,20,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent2); background: var(--accent-dim);
+    border: 1px solid rgba(122,143,166,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(122,143,166,0.25); border-color: rgba(122,143,166,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0a0e14 0%, #111820 50%, #0d1117 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(100,120,150,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(122,143,166,0.05) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+
+  .hero-badge {
+    display: inline-block; background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45); color: #f5c842;
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,237,242,0.75); max-width: 620px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(122,143,166,0.07); border: 1px solid rgba(122,143,166,0.3);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(159,184,204,0.8); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+  /* ── MA STE STANDARDS ── */
+  .stem-focus { display: none; }
+  body.stem-active .stem-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 0.5rem auto 1.6rem; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(46,204,113,0.05); border: 1px solid rgba(46,204,113,0.2);
+    border-radius: 16px; animation: stemFadeIn 0.35s ease both;
+  }
+  @keyframes stemFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .stem-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(46,204,113,0.75); width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .stem-badge {
+    position: relative; cursor: default; display: inline-flex; align-items: center;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px; padding: 0.35rem 0.9rem; white-space: nowrap;
+  }
+  .stem-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 220px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(46,204,113,0.2); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .stem-badge[data-tip]:hover::after { opacity: 1; }
+  .stem-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(46,204,113,0.2);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .stem-badge[data-tip]:hover::before { opacity: 1; }
+  .stem-detail { display: none; }
+  body.stem-active .stem-detail {
+    width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
+    text-align: center; animation: stemFadeIn 0.35s ease both;
+  }
+  .stem-show-btn {
+    background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
+  }
+  .stem-show-btn:hover { color: rgba(46,204,113,0.85); }
+  .stem-detail-body {
+    display: none; margin-top: 0.5rem;
+    background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
+    border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
+  }
+  .stem-detail.stem-open .stem-detail-body { display: block; }
+  .stem-std-row {
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
+  .stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
+
+  /* ── SECTIONS ── */
+  section { padding: 5rem 2rem; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(232,237,242,0.75); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* ── BRIDGE CALLOUT ── */
+  .bridge-callout {
+    margin: 0 auto; padding: 1.4rem 1.8rem;
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    font-size: 1rem; color: var(--text-muted); max-width: 760px;
+  }
+  .bridge-callout strong { color: var(--text); }
+  .bridge-callout.teal { background: rgba(29,233,182,0.06); border-color: rgba(29,233,182,0.2); border-left-color: var(--teal); }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(122,143,166,0.08) 0%, rgba(122,143,166,0.03) 100%);
+    border: 1.5px solid rgba(122,143,166,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 1.2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 2.6rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .phenomenon-body { flex: 1; min-width: 280px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; margin-bottom: 0.4rem; color: var(--text); line-height: 1.25; }
+  .phenomenon-body p { color: rgba(232,237,242,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-icon { font-size: 1.6rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; line-height: 1.25; }
+  .card-body { color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(159,184,204,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.slate  { background: rgba(122,143,166,0.07); border-left: 3px solid var(--accent2); color: rgba(232,237,242,0.85); }
+  .callout.teal   { background: rgba(29,233,182,0.06);  border-left: 3px solid var(--teal);    color: rgba(232,237,242,0.85); }
+  .callout.gold   { background: rgba(245,200,66,0.07);  border-left: 3px solid var(--gold);    color: rgba(232,237,242,0.85); }
+
+  /* ── LEARNING GOALS ── */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 16px;
+    padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85); background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3); padding: 0.25rem 0.8rem; border-radius: 99px;
+  }
+
+  /* ── GLOSSARY CARDS ── */
+  .glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+  .glossary-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-top: 3px solid var(--teal); border-radius: 16px;
+    padding: 1.2rem 1.3rem 1.3rem; text-align: left; cursor: pointer;
+    font-family: 'Nunito', sans-serif; color: var(--text);
+    transition: transform 0.2s, box-shadow 0.2s; width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; }
+  .gc-chev { font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s; }
+  .glossary-card.open .gc-chev { color: var(--gold); }
+  .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.6rem; }
+  .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+  .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+  .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+  .gc-blue   { border-top-color: var(--blue);   } .gc-blue .gc-term   { color: var(--blue); }
+  .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+  .gc-slate  { border-top-color: var(--accent2);} .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-jump {
+    display: inline-block; margin-top: 0.55rem; font-size: 0.74rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px dashed rgba(245,200,66,0.5); cursor: pointer;
+  }
+  .gc-jump:hover { border-bottom-style: solid; }
+
+  /* ── PREDICT BEFORE REVEAL ── */
+  .question-pause {
+    max-width: 760px; margin: 0.5rem auto 2rem; padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 14px;
+  }
+  .question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+  .question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+  .question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+  .question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+  .predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .predict-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+  .predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+  .predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+  .predict-btn.chosen .pb-letter { color: var(--gold); }
+  .question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+  .question-pause.locked .predict-btn.chosen { opacity: 1; }
+  .predict-gated { display: none; }
+  .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+  @keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── NAME-IT REVEAL ── */
+  .name-it {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 14px;
+    padding: 1.4rem 1.6rem; max-width: 820px; margin: 0 auto 2rem;
+  }
+  .name-it.teal-it { border-left-color: var(--teal); }
+  .name-it.green-it { border-left-color: var(--green); }
+  .name-it.orange-it { border-left-color: var(--orange); }
+  .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .name-it.teal-it .name-it-label   { color: var(--teal); }
+  .name-it.green-it .name-it-label  { color: var(--green); }
+  .name-it.orange-it .name-it-label { color: var(--orange); }
+  .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+  .name-it p strong { font-weight: 800; }
+  .name-it.teal-it p strong   { color: var(--teal); }
+  .name-it.green-it p strong  { color: var(--green); }
+  .name-it.orange-it p strong { color: var(--orange); }
+  .name-it.slate-it p strong  { color: var(--accent2); }
+
+  /* ── EXAMPLE GRID ── */
+  .example-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin: 0 auto 2rem; }
+  @media (max-width: 700px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
+  .example-chip {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.6rem;
+    font-size: 0.88rem; font-weight: 700; color: var(--text-muted); line-height: 1.4;
+  }
+  .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+  /* ── LAYER SELECTOR (interactive cross-section) ── */
+  .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .layer-figure { flex: 0 0 auto; width: 280px; max-width: 100%; margin: 0 auto; }
+  .layer-figure svg { width: 100%; height: auto; display: block; }
+  .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
+  .layer-list { display: flex; flex-direction: column; gap: 4px; }
+  .layer-row {
+    width: 100%; padding: 0.75rem 1.1rem; display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem; font-weight: 800; border-radius: 8px; cursor: pointer;
+    transition: filter 0.2s; position: relative; border: none; text-align: left;
+    font-family: 'Nunito', sans-serif;
+  }
+  .layer-row:hover { filter: brightness(1.18); }
+  .layer-row .layer-tag { opacity: 0.75; font-size: 0.7rem; font-weight: 700; }
+  .layer-detail-panel {
+    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
+    min-height: 150px; display: flex; align-items: center;
+  }
+  .ld-inner { width: 100%; }
+  .ld-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(159,184,204,0.8); margin-bottom: 0.4rem; }
+  .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+  .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
+
+  /* ── CRUST COMPARISON ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .crust-card.oceanic { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
+  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
+  .crust-card.oceanic .crust-title { color: var(--blue); }
+  .crust-card.continental .crust-title { color: var(--orange); }
+  .crust-bar-track { height: 14px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; margin: 0.7rem 0 0.4rem; }
+  .crust-bar { height: 100%; border-radius: 99px; }
+  .crust-card.oceanic .crust-bar { background: linear-gradient(90deg, var(--blue), rgba(124,200,248,0.5)); width: 16%; }
+  .crust-card.continental .crust-bar { background: linear-gradient(90deg, var(--orange), rgba(232,129,74,0.5)); width: 100%; }
+  .crust-bar-label { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .crust-list li strong { color: var(--text); }
+  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .crust-card.oceanic .crust-dot { background: var(--blue); }
+  .crust-card.continental .crust-dot { background: var(--orange); }
+
+  /* ── CONVECTION FIGURE ── */
+  .figure-box {
+    background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
+    border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
+  }
+  .figure-box svg { width: 100%; height: auto; display: block; }
+  .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(159,184,204,0.7); margin-top: 0.8rem; }
+
+  /* ── QUICK RECALL ── */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,233,182,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(29,233,182,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  /* ── WRAP-UP BEATS ── */
+  .wrapup-beats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 auto; }
+  @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+  .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
+  .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .wrapup-beat-1 { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+  .wrapup-beat-2 { background: rgba(29,233,182,0.05); border: 1px solid rgba(29,233,182,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+  .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
+  .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+  .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+  .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
+  .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+  .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+  .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
+  .wuc-1 { color: var(--gold);   background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); }
+  .wuc-2 { color: var(--teal);   background: rgba(29,233,182,0.08); border-color: rgba(29,233,182,0.3); }
+  .wuc-3 { color: var(--orange); background: rgba(232,129,74,0.08);  border-color: rgba(232,129,74,0.3); }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+  .quiz-mode-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 2rem;
+    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
+    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
+    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+  }
+  .mode-btn {
+    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(122,143,166,0.55); background: transparent;
+  }
+  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+    color: #ddeaf5; border: 1px solid rgba(159,184,204,0.55);
+    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+    text-shadow: 0 0 12px rgba(159,184,204,0.6);
+  }
+  .mode-hint { text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem; letter-spacing: 0.01em; }
+  .mode-hint span { display: none; }
+  .mode-hint span.visible { display: inline; }
+  .student-info-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 2rem 2.2rem; margin-bottom: 2.5rem; border-top: 3px solid var(--accent2);
+  }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .info-field input, .info-field select {
+    width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--border); border-radius: 10px; color: var(--text);
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600;
+    transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+  }
+  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(122,143,166,0.15); }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8fa6' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #161e28; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); white-space: nowrap; }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted); width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02); font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif; text-align: left; color: rgba(232,237,242,0.9); width: 100%; }
+  .quiz-option:hover:not(.disabled):not(.selected) { border-color: rgba(122,143,166,0.5); background: rgba(122,143,166,0.06); }
+  .quiz-option.selected  { border-color: var(--accent2) !important; background: rgba(159,184,204,0.1) !important; }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(29,233,182,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(29,233,182,0.4) !important; background: rgba(29,233,182,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback { display: none; font-size: 0.85rem; margin-top: 0.8rem; padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700; }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(29,233,182,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(122,143,166,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-board { display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3); border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 24px rgba(122,143,166,0.08); }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent2); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1rem; }
+  .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
+  .mystery-loop strong { color: var(--text); }
+  .ml-label { display: block; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.4rem; }
+  .score-submitted { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: rgba(29,233,182,0.1); border: 1px solid rgba(29,233,182,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .score-error { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; }
+  .reset-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,143,166,0.4); }
+
+  /* ── GO FURTHER ── */
+  #continue { background: var(--dark); }
+  .continue-intro { text-align: left; font-size: 1rem; color: var(--text-muted); line-height: 1.7; max-width: 720px; margin: 0 0 2.4rem; }
+  .continue-intro strong { color: var(--gold); }
+  .continue-grid { display: grid; grid-template-columns: 1fr; gap: 1.2rem; margin-top: 0; }
+  .cont-card { border-radius: 18px; padding: 1.6rem 1.7rem; display: flex; align-items: flex-start; gap: 1.2rem; position: relative; overflow: hidden; }
+  .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; background: rgba(122,143,166,0.14); }
+  .cont-body { flex: 1; }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; margin-bottom: 0.3rem; }
+  .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; }
+  .coming-soon-tag { display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.8rem; border-radius: 99px; border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted); background: rgba(122,143,166,0.06); margin-top: 0.7rem; }
+
+  /* ── VOCAB HIGHLIGHT PULSE ── */
+  @keyframes vocabPulse {
+    0%   { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+    15%  { background: rgba(159,184,204,0.32); box-shadow: 0 0 0 5px rgba(159,184,204,0.2); border-radius: 4px; }
+    55%  { background: rgba(159,184,204,0.2);  box-shadow: 0 0 0 7px rgba(159,184,204,0.1); border-radius: 4px; }
+    100% { background: rgba(159,184,204,0);    box-shadow: none; border-radius: 4px; }
+  }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .name-it.pulsing { animation: vocabPulse 3s ease forwards; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+    nav { padding: 0.85rem 1.2rem; }
+    section { padding: 4rem 1.2rem; }
+  }
+
+  /* ── FOOTER ── */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:0.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+  footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+  footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); border-color:rgba(59,200,232,0.95); }
+  footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#engage">Engage</a></li>
+    <li><a href="#explore">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+  </ul>
+  <a href="index.html#geo" class="nav-back">&#8592; Earth &amp; Space</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">&#127757;</span>
+  <span class="hero-float">&#127755;</span>
+  <span class="hero-float">&#9968;&#65039;</span>
+  <span class="hero-float">&#129517;</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Earth's Layers</h1>
+  <p>Earthquakes shake the ground and volcanoes erupt at the surface, but the forces behind them begin thousands of kilometers below your feet.</p>
+  <div class="driving-question">
+    <div class="dq-icon">&#128269;</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">How does Earth's internal structure cause changes on Earth's surface?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">&#128300; Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the layers into small, sequenced sections keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each layer with an interactive cross-section diagram builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
+  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and density inside Earth to surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+</div>
+
+<!-- MA STE STANDARDS -->
+<div class="stem-focus">
+  <span class="stem-focus-label">&#128203; MA STE Standards &middot; Grade 7</span>
+  <span class="stem-badge" data-tip="Construct an explanation based on evidence for how Earth's surface has changed over scales ranging from local to global.">7.MS-ESS2-2</span>
+  <span class="stem-badge" data-tip="Use a model to illustrate that energy from Earth's interior drives convection that cycles Earth's crust, leading to melting, crystallization, weathering, and deformation of rock.">7.MS-ESS2-1</span>
+</div>
+<div class="stem-detail" id="stem-detail-el">
+  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-el')">&#9656; Show standard descriptions</button>
+  <div class="stem-detail-body">
+    <div class="stem-std-row">
+      <span class="stem-std-code">7.MS-ESS2-2</span>
+      <span class="stem-std-text">Construct an explanation based on evidence for how Earth's surface has changed over scales ranging from local to global.</span>
+    </div>
+    <div class="stem-std-row">
+      <span class="stem-std-code">7.MS-ESS2-1</span>
+      <span class="stem-std-text">Use a model to illustrate that energy from Earth's interior drives convection that cycles Earth's crust, leading to melting, crystallization, weathering, and deformation of large amounts of rock.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">&#127757;</span>
+        <div class="goal-text">I can describe the four main layers of Earth and their physical properties.</div>
+        <span class="goal-std">7.MS-ESS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#9878;&#65039;</span>
+        <div class="goal-text">I can explain how density and differentiation shaped Earth's layered structure.</div>
+        <span class="goal-std">7.MS-ESS2-1</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#127759;</span>
+        <div class="goal-text">I can compare oceanic crust and continental crust.</div>
+        <span class="goal-std">7.MS-ESS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#128293;</span>
+        <div class="goal-text">I can explain how convection currents inside Earth drive surface changes like earthquakes and volcanoes.</div>
+        <span class="goal-std">7.MS-ESS2-1</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Vocabulary to Know</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Click or tap a card to reveal the definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Density</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">How much mass is packed into a given space. Denser materials sink below less dense materials.</div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Differentiation</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The process in which a molten Earth separated into layers by density, with heavy materials sinking and light materials rising.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Crust</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The thin, brittle outer layer of Earth that you live on. It is the least dense layer.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-crust')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Mantle</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The largest layer of Earth, made of hot, dense rock that slowly flows.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-mantle')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Core</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Earth's center, made of iron and nickel. It has a liquid outer core and a solid inner core.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-core')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Lithosphere</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The solid outer section of Earth that includes the crust and the upper part of the mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Asthenosphere</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The region of the upper mantle that flows like soft plastic. It is responsible for convection currents.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-astheno')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Convection Current</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The looping flow of hot rock that rises, cools, and sinks again. It moves Earth's plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Oceanic Crust</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Crust made of basalt, about 4 miles thick. It is older and more dense than continental crust.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-crusttype')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Continental Crust</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Crust made of granite, about 25 miles thick. It is younger and less dense than oceanic crust.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-crusttype')">See it in the lesson &#8595;</span></div>
+      </button>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ENGAGE: THE PHENOMENON
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="engage" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage &middot; Phenomenon</span>
+    <h2 class="section-title">The Surface Shakes, but Why?</h2>
+    <p class="section-desc">Earthquakes and volcanoes happen at the surface, the part of Earth we can see and stand on. But their causes begin deep inside, in layers no person has ever reached.</p>
+
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">&#127755;</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Real World Phenomenon</div>
+        <h3>Energy From the Deep</h3>
+        <p>The ground feels solid and still. Yet some places shake apart in earthquakes, and others spill out molten rock through volcanoes. The deepest hole humans have ever drilled reaches only a tiny fraction of the way down. So how can something happening thousands of kilometers below the surface shape the land we live on?</p>
+      </div>
+    </div>
+
+    <!-- Cross-section image -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A cutaway of Earth showing a volcano and earthquake at the surface connected to hot interior layers below">
+        <defs>
+          <radialGradient id="coreGlow" cx="50%" cy="100%" r="90%">
+            <stop offset="0%" stop-color="#ffcf6b"/>
+            <stop offset="35%" stop-color="#e8814a"/>
+            <stop offset="70%" stop-color="#a8482e"/>
+            <stop offset="100%" stop-color="#3a2030"/>
+          </radialGradient>
+        </defs>
+        <!-- interior glow -->
+        <rect x="0" y="60" width="600" height="260" fill="url(#coreGlow)" opacity="0.85"/>
+        <!-- crust band -->
+        <rect x="0" y="60" width="600" height="26" fill="#6a7d52"/>
+        <rect x="0" y="86" width="600" height="6" fill="rgba(0,0,0,0.25)"/>
+        <!-- mountains/land -->
+        <path d="M0,60 L70,40 L120,60 Z" fill="#7a8f5a"/>
+        <path d="M150,60 L210,32 L270,60 Z" fill="#7a8f5a"/>
+        <!-- volcano -->
+        <path d="M400,60 L450,18 L500,60 Z" fill="#5a4a3a"/>
+        <path d="M438,30 L450,18 L462,30 L470,60 L430,60 Z" fill="#3a2e26"/>
+        <path d="M450,18 C446,8 454,8 450,0 C456,8 462,12 458,22 C452,18 452,26 450,18 Z" fill="#ff8a3c"/>
+        <circle cx="445" cy="14" r="3" fill="#ffce5a"/>
+        <circle cx="458" cy="20" r="2.5" fill="#ffb347"/>
+        <!-- earthquake crack -->
+        <path d="M170,60 L162,86 L178,110 L168,140" fill="none" stroke="#1a1410" stroke-width="3"/>
+        <text x="120" y="50" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#dfe7ee">Earthquake</text>
+        <text x="412" y="50" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#dfe7ee">Volcano</text>
+        <!-- magma channel under volcano -->
+        <path d="M450,86 C448,150 470,200 450,300" fill="none" stroke="rgba(255,180,80,0.55)" stroke-width="10" stroke-linecap="round"/>
+        <!-- layer labels -->
+        <text x="20" y="78" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#23301c">CRUST</text>
+        <text x="20" y="150" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="rgba(255,255,255,0.75)">MANTLE</text>
+        <text x="20" y="295" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="rgba(255,255,255,0.85)">CORE (deepest, hottest)</text>
+      </svg>
+      <div class="figure-caption">The same heat deep inside Earth that glows in this cutaway is the engine behind surface events.</div>
+    </div>
+
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-engage">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> How can something happening thousands of kilometers below Earth affect earthquakes and volcanoes at the surface?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>Earth's center has no effect on the surface.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Processes deep inside Earth influence the surface.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes only occur in the crust, with no deeper cause.</button>
+      </div>
+    </div>
+
+    <div class="name-it slate-it predict-gated" data-gate="qp-engage">
+      <div class="name-it-label">Here's the big idea</div>
+      <p>The best answer is <strong>B</strong>. Earth is not one solid ball. It is built from layers, and the deepest layers are extremely hot. That heat keeps the rock inside slowly moving. As deep rock flows, it drags the surface, builds pressure, and feeds volcanoes. To understand earthquakes and volcanoes, we have to look inside. That is exactly where this lesson goes next.</p>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2rem;">
+      <strong>Where we're headed:</strong> First we'll see how Earth got its layers in the first place. Then we'll travel from the surface all the way to the center, and finally connect what we find back to the shaking ground above.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 1: HOW EARTH GOT ITS LAYERS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explore" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Formation</span>
+    <h2 class="section-title">How Earth Got Its Layers</h2>
+    <p class="section-desc">Earth did not start out with neat layers. They formed billions of years ago, while the young planet was a glowing ball of molten rock and metal.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9728;&#65039;</span>
+        <div class="card-title">A Molten Beginning</div>
+      </div>
+      <div class="card-body">
+        <p>Early in its history, Earth formed from dust and rock left over after the Sun formed. As Earth grew, collisions released a huge amount of heat that melted much of the planet.</p>
+        <p>While Earth was molten, materials were free to move. Heavy materials could sink and light materials could rise. This set the stage for Earth to sort itself into layers.</p>
+      </div>
+    </div>
+
+    <div id="term-density" class="name-it slate-it">
+      <div class="name-it-label">Name it: Density</div>
+      <p><strong>Density</strong> is how much mass is packed into a given space. When materials can move freely, denser materials sink below less dense materials, just like a steel marble sinks in water.</p>
+    </div>
+
+    <div id="term-differentiation" class="name-it" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Name it: Differentiation</div>
+      <p>Because of density, the molten Earth separated into layers in a process called <strong style="color: var(--gold);">differentiation</strong>. Heavy metals like iron and nickel sank to the center to form the core, while lighter materials rose to form the mantle and crust. As Earth slowly cooled, these layers solidified into the structure we observe today.</p>
+    </div>
+
+    <!-- Differentiation figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three stages showing heavy material sinking to the center as a molten planet separates into layers by density">
+        <!-- stage 1 mixed -->
+        <g>
+          <circle cx="90" cy="100" r="62" fill="#5a4636"/>
+          <g fill="#c9d0d8">
+            <circle cx="70" cy="80" r="6"/><circle cx="110" cy="70" r="6"/><circle cx="95" cy="110" r="6"/>
+            <circle cx="65" cy="120" r="6"/><circle cx="120" cy="115" r="6"/><circle cx="88" cy="90" r="6"/>
+          </g>
+          <text x="90" y="182" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">1. Molten, all mixed</text>
+        </g>
+        <text x="195" y="105" text-anchor="middle" font-size="26" fill="#7a8fa6">&#8594;</text>
+        <!-- stage 2 sinking -->
+        <g>
+          <circle cx="280" cy="100" r="62" fill="#5a4636"/>
+          <g fill="#c9d0d8">
+            <circle cx="280" cy="120" r="6"/><circle cx="266" cy="108" r="6"/><circle cx="294" cy="108" r="6"/>
+            <circle cx="280" cy="96" r="6"/><circle cx="270" cy="86" r="5"/><circle cx="292" cy="88" r="5"/>
+          </g>
+          <text x="280" y="182" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">2. Heavy metal sinks</text>
+        </g>
+        <text x="385" y="105" text-anchor="middle" font-size="26" fill="#7a8fa6">&#8594;</text>
+        <!-- stage 3 layered -->
+        <g>
+          <circle cx="470" cy="100" r="62" fill="#6a7d52"/>
+          <circle cx="470" cy="100" r="50" fill="#9a5e3a"/>
+          <circle cx="470" cy="100" r="24" fill="#d0d6dc"/>
+          <circle cx="470" cy="100" r="11" fill="#aeb6bf"/>
+          <text x="470" y="182" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">3. Layers form</text>
+        </g>
+      </svg>
+      <div class="figure-caption">Differentiation: heavy iron and nickel sink to the center, lighter rock rises to the outside.</div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The key pattern:</strong> Density decides the order. The densest material ended up deepest. That single rule explains why the layers are arranged the way they are, from the heavy metal core to the light, brittle crust.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2: THE FOUR LAYERS (interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="layers" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Four Layers</span>
+    <h2 class="section-title">A Journey to the Center</h2>
+    <p class="section-desc">Earth is divided into four main layers. Starting at the surface, each one is deeper, hotter, and more dense than the one above it. Click a layer to explore it.</p>
+
+    <div class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A cross-section of Earth with four nested layers: crust, mantle, outer core, and inner core">
+          <circle cx="120" cy="120" r="116" fill="#6a7d52"/>
+          <circle cx="120" cy="120" r="108" fill="#9a5e3a"/>
+          <circle cx="120" cy="120" r="56" fill="#e89a4a"/>
+          <circle cx="120" cy="120" r="26" fill="#d6dce2"/>
+          <text x="120" y="22" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#23301c">CRUST</text>
+          <text x="120" y="78" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="rgba(255,255,255,0.85)">MANTLE</text>
+          <text x="120" y="105" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#5a3018">OUTER</text>
+          <text x="120" y="116" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#5a3018">CORE</text>
+          <text x="120" y="124" text-anchor="middle" font-family="Nunito,sans-serif" font-size="8" font-weight="800" fill="#3a4450">INNER</text>
+          <text x="120" y="133" text-anchor="middle" font-family="Nunito,sans-serif" font-size="8" font-weight="800" fill="#3a4450">CORE</text>
+        </svg>
+      </div>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(106,125,82,0.30); color: #c4d4a2;" onclick="layerClick(1)" id="term-crust">
+            <span>1 &middot; Crust</span><span class="layer-tag">thinnest &middot; least dense</span>
+          </div>
+          <div class="layer-row" style="background: rgba(154,94,58,0.32); color: #e0a878;" onclick="layerClick(2)" id="term-mantle">
+            <span>2 &middot; Mantle</span><span class="layer-tag">largest layer</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,154,74,0.30); color: #f2b86a;" onclick="layerClick(3)">
+            <span>3 &middot; Outer Core</span><span class="layer-tag">liquid metal</span>
+          </div>
+          <div class="layer-row" style="background: rgba(190,198,206,0.30); color: #d6dce2;" onclick="layerClick(4)" id="term-core">
+            <span>4 &middot; Inner Core</span><span class="layer-tag">solid &middot; densest</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="ld-label">Click a layer</div>
+            <div class="ld-title" id="ld-title">Start at the surface &#8594;</div>
+            <div class="ld-body" id="ld-body">Each layer has its own state, thickness, and density. Click any layer to find out what makes it different, and how deep you would have to dig to reach it.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#128207;</span>
+      <div class="callout-body"><strong>A clear trend:</strong> Density, temperature, and pressure all increase as you move from the crust to the inner core. The deeper you go, the heavier, hotter, and more squeezed the material becomes.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: A CLOSER LOOK AT THE CRUST
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="crust" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Crust</span>
+    <h2 class="section-title">The Layer You Live On</h2>
+    <p class="section-desc">The crust is the most studied and best understood layer, because it is the one we can actually reach. It is also where earthquakes and volcanoes break through.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127822;</span>
+        <div class="card-title">Thin as an Apple's Skin</div>
+      </div>
+      <div class="card-body">
+        <p>The crust is like the skin of an apple. It is very thin compared to the other three layers, only about 4 to 25 miles thick. It is the <strong>least dense</strong> layer, made mostly of rock and soil that is <strong>brittle</strong>, meaning it breaks easily.</p>
+        <p>The crust is not one solid shell. It is broken into many large pieces called <span class="vocab">plates</span>. These plates rest on the soft mantle just below and slowly move.</p>
+        <div class="callout slate">
+          <span class="callout-icon">&#9889;</span>
+          <div class="callout-body"><strong>How earthquakes start:</strong> Plates usually slide along smoothly, but sometimes they get stuck and pressure builds up. When that pressure is finally released, it travels out as energy that shakes the crust. That shaking is an earthquake.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 id="term-crusttype" style="font-family: 'Fredoka One', cursive; font-size: 1.4rem; margin: 2.5rem 0 0.6rem; color: var(--text);">Two Kinds of Crust</h3>
+    <p class="section-desc" style="margin-bottom: 1.4rem;">Not all crust is the same. The crust under the oceans is different from the crust that makes up the continents.</p>
+
+    <div class="crust-grid">
+      <div class="crust-card oceanic">
+        <div class="crust-title">Oceanic Crust</div>
+        <div class="crust-bar-track"><div class="crust-bar"></div></div>
+        <div class="crust-bar-label">Average 4 miles thick</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>Made of <strong>basalt</strong></span></li>
+          <li><span class="crust-dot"></span><span><strong>Thinner</strong> than continental crust</span></li>
+          <li><span class="crust-dot"></span><span><strong>Older</strong> and <strong>more dense</strong></span></li>
+        </ul>
+      </div>
+      <div class="crust-card continental">
+        <div class="crust-title">Continental Crust</div>
+        <div class="crust-bar-track"><div class="crust-bar"></div></div>
+        <div class="crust-bar-label">Average 25 miles thick</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>Made of <strong>granite</strong></span></li>
+          <li><span class="crust-dot"></span><span><strong>Thicker</strong> than oceanic crust</span></li>
+          <li><span class="crust-dot"></span><span><strong>Younger</strong> and <strong>less dense</strong></span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Remember the density rule?</strong> It still applies here. Oceanic crust is more dense than continental crust, so where the two meet, the heavier oceanic crust tends to sink beneath the lighter continental crust.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: INSIDE THE MANTLE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="mantle-zone" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Mantle</span>
+    <h2 class="section-title">The Engine Inside Earth</h2>
+    <p class="section-desc">The mantle is the largest layer of Earth and the key to the whole mystery. Even though it is solid rock, it slowly flows, and that flow is what moves the surface.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127855;</span>
+        <div class="card-title">Rock That Flows Like Toothpaste</div>
+      </div>
+      <div class="card-body">
+        <p>The mantle is made of hot, dense rock and is about 1,800 miles thick. Because of temperature differences inside it, the rock in the mantle flows slowly, like toothpaste squeezed through a tube. Heat and pressure cause the rock to move and bend within this layer.</p>
+        <p>This slow movement matters more than it sounds. <strong>The movement of the mantle creates the movement of Earth's plates above it.</strong></p>
+      </div>
+    </div>
+
+    <div id="term-litho" class="name-it slate-it">
+      <div class="name-it-label">Name it: Lithosphere</div>
+      <p>The <strong>lithosphere</strong> is the solid outer section of Earth. It includes Earth's crust and the upper part of the mantle. The lithosphere is the rigid material that is broken into the plates.</p>
+    </div>
+
+    <div id="term-astheno" class="name-it teal-it">
+      <div class="name-it-label">Name it: Asthenosphere</div>
+      <p>Just below the lithosphere is the <strong>asthenosphere</strong>, the region of the upper mantle that flows. This flowing, bendable quality is called plastic behavior, and the asthenosphere is responsible for <strong>convection currents</strong>.</p>
+    </div>
+
+    <div id="term-convection" class="name-it" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Name it: Convection Current</div>
+      <p>A <strong style="color: var(--gold);">convection current</strong> is a looping flow caused by heat. Hot rock near the bottom of the mantle is less dense, so it rises. Near the top it cools, becomes more dense, and sinks again. This endless loop drags the plates on top, slowly moving the continents and the seafloor.</p>
+    </div>
+
+    <!-- Convection figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Convection currents in the mantle: hot rock rises in the middle, spreads sideways, and sinks at the edges, pushing two plates apart at the surface">
+        <!-- mantle background -->
+        <rect x="20" y="40" width="560" height="200" rx="10" fill="#7a3a2a" opacity="0.85"/>
+        <rect x="20" y="40" width="560" height="200" rx="10" fill="url(#mantleGrad)"/>
+        <defs>
+          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.1"/>
+          </linearGradient>
+        </defs>
+        <!-- plates -->
+        <rect x="40" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
+        <rect x="320" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
+        <text x="150" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
+        <text x="450" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
+        <!-- spreading arrows at surface -->
+        <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
+        <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
+        <!-- convection loops -->
+        <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
+        <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
+        <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
+        <path d="M400,210 C400,160 340,150 310,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
+        <defs>
+          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
+          <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd27a"/></marker>
+        </defs>
+        <text x="300" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">Hot rock rises in the middle, cools, and sinks at the sides</text>
+      </svg>
+      <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 5: THE CORE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="core" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Core</span>
+    <h2 class="section-title">Iron at the Center</h2>
+    <p class="section-desc">At Earth's center sits the core, the densest and hottest region of all. It is split into two parts: a liquid outer core and a solid inner core.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127754;</span>
+        <div class="card-title">Outer Core: A Sea of Liquid Metal</div>
+      </div>
+      <div class="card-body">
+        <p>The outer core is the only liquid layer, about 1,400 miles thick, made of liquid iron and nickel. Scientists know this layer is liquid by studying earthquakes and how seismic waves move through Earth.</p>
+        <p>The flowing of liquid metal in the outer core creates Earth's <strong>magnetic field</strong>, the invisible force that makes a compass needle point north.</p>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9899;</span>
+        <div class="card-title">Inner Core: A Solid Ball of Iron</div>
+      </div>
+      <div class="card-body">
+        <p>The inner core is the center layer of Earth, about 780 miles thick. It is solid metal, a dense ball of iron crystals made of iron and nickel.</p>
+        <p>You might wonder how the inner core can be solid when it is hotter than the liquid outer core. The answer is pressure. The crushing weight of every layer above squeezes the inner core so tightly that the metal cannot become liquid.</p>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128207;</span>
+      <div class="callout-body"><strong>The pattern holds all the way down:</strong> Density, temperature, and pressure increase the entire way from the crust to the inner core. The center of Earth is the heaviest, hottest, and most squeezed place on the planet.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">While Earth was molten, why did iron and nickel end up at the center?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>They were the lightest materials, so they floated down</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>They were the most dense, so they sank during differentiation</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>They were pulled in by Earth's magnetic field</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">Which layer flows like soft plastic and is responsible for convection currents?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>The inner core</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>The brittle crust</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>The asthenosphere in the upper mantle</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">Two plates get stuck, pressure builds, and is suddenly released as energy. What happens at the surface?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>An earthquake shakes the crust</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>Earth's magnetic field switches off</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>The inner core melts into liquid</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN: PUTTING IT TOGETHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="explain" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">From the Deep to the Surface</h2>
+    <p class="section-desc">You started with a question: how can something happening thousands of kilometers down shake the ground above? Now you can trace the whole chain, step by step.</p>
+
+    <div class="wrapup-beats">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">It Starts With Heat</div>
+        <div class="wrapup-beat-answer">Earth's interior is extremely hot.</div>
+        <div class="wrapup-beat-body">Leftover heat from Earth's formation keeps the deep layers hot. Because of <strong>density</strong> differences, hot rock is lighter than cool rock, which keeps the mantle slowly moving.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">Heat Becomes Motion</div>
+        <div class="wrapup-beat-answer">Convection currents move the mantle, and the mantle moves the plates.</div>
+        <div class="wrapup-beat-body">Hot rock rises, cools, and sinks in <strong>convection currents</strong>. This flow drags the plates of the lithosphere, slowly shifting the surface of the planet.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">Motion Reaches the Surface</div>
+        <div class="wrapup-beat-answer">Moving plates produce earthquakes and volcanoes.</div>
+        <div class="wrapup-beat-body">When stuck plates slip, the released energy causes <strong>earthquakes</strong>. Where plates pull apart or one sinks beneath another, melted rock rises and fuels <strong>volcanoes</strong>.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2.5rem;">
+      <strong>The full chain:</strong>
+      <div class="wrapup-chips" style="margin-top: 0.8rem;">
+        <span class="wuc wuc-1">Heat in the core and mantle</span>
+        <span class="wuc wuc-2">Density differences drive convection</span>
+        <span class="wuc wuc-2">Mantle flow moves the plates</span>
+        <span class="wuc wuc-3">Plates shift, stick, and collide</span>
+        <span class="wuc wuc-3">Earthquakes and volcanoes</span>
+      </div>
+      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. The shaking ground above is the surface story of a much deeper one.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EVALUATE: QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you explored, from differentiation to convection currents. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="elSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="elSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="el-student-name">Student Name</label>
+          <input type="text" id="el-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="el-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="el-teacher-select">Teacher</label>
+          <select id="el-teacher-select">
+            <option value="">- Select -</option>
+            <option value="MrKankel">Mr. Kankel</option>
+            <option value="MrRovner">Mr. Rovner</option>
+          </select>
+          <div class="info-error" id="el-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="el-block-select">Class Block</label>
+          <select id="el-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A Block</option><option value="B">B Block</option>
+            <option value="C">C Block</option><option value="D">D Block</option>
+            <option value="E">E Block</option><option value="F">F Block</option>
+            <option value="G">G Block</option>
+          </select>
+          <div class="info-error" id="el-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="el-progress"></div></div>
+        <div class="progress-text" id="el-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="el-quiz-questions"></div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit Score</button>
+    </div>
+
+    <!-- Score Board -->
+    <div class="score-board" id="el-score">
+      <div class="big-score" id="el-score-num"></div>
+      <p id="el-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">&#128269; The Question You Came In With</span>
+        You started this lesson asking: <strong>"How does Earth's internal structure cause changes on Earth's surface?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes, you have answered it.
+      </div>
+      <div id="el-submit-status"></div>
+      <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GO FURTHER
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</p>
+    <div class="continue-grid">
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-body">
+          <div class="cont-name">More Coming Soon</div>
+          <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
+          <span class="coming-soon-tag">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ&#8482;</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+
+<!-- ===== SESSION TOGGLES (LS + STE bars) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
+function toggleStemDetail(id) {
+  const el  = document.getElementById(id);
+  el.classList.toggle('stem-open');
+  const btn = el.querySelector('.stem-show-btn');
+  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
+}
+</script>
+
+<!-- ===== VOCAB JUMP ===== -->
+<script>
+function jumpToTerm(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - 110;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 500);
+}
+</script>
+
+<!-- ===== GLOSSARY CARDS (one open at a time, click to reveal) ===== -->
+<script>
+document.querySelectorAll('.glossary-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    var isOpen = card.classList.contains('open');
+    document.querySelectorAll('.glossary-card.open').forEach(function(c){
+      c.classList.remove('open');
+      c.setAttribute('aria-expanded', 'false');
+      var chev = c.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▾';
+    });
+    if (!isOpen) {
+      card.classList.add('open');
+      card.setAttribute('aria-expanded', 'true');
+      var chev = card.querySelector('.gc-chev'); if (chev) chev.innerHTML = '▴';
+    }
+  });
+});
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== FOUR LAYERS INTERACTIVE ===== -->
+<script>
+const layerData = {
+  1: { label: 'Layer 1 · Surface', title: 'Crust', body: 'The thin, brittle outer layer you live on, only 4 to 25 miles thick. It is the least dense layer, made of rock and soil, and it is broken into moving plates. This is where earthquakes and volcanoes appear.' },
+  2: { label: 'Layer 2 · Below the crust', title: 'Mantle', body: 'The largest layer, about 1,800 miles of hot, dense rock. It is solid but flows slowly like toothpaste because of temperature differences. Its movement drives the plates above. The upper mantle includes the flowing asthenosphere.' },
+  3: { label: 'Layer 3 · Deeper still', title: 'Outer Core', body: 'The only liquid layer, about 1,400 miles thick, made of liquid iron and nickel. The flowing of this liquid metal creates Earth’s magnetic field. Scientists know it is liquid from how seismic waves move through it.' },
+  4: { label: 'Layer 4 · The center', title: 'Inner Core', body: 'The center of Earth, about 780 miles thick. It is a solid, dense ball of iron crystals made of iron and nickel. Even though it is the hottest layer, crushing pressure keeps it solid. Density, temperature, and pressure are all highest here.' }
+};
+function layerClick(n) {
+  const d = layerData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
+    el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
+    el.style.outlineOffset = '1px';
+  });
+}
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 1,
+    'Correct! Iron and nickel are the most dense materials, so they sank to the center during differentiation.',
+    'Not quite. Iron and nickel are very dense, so they sank to the center. Lighter materials rose to form the mantle and crust.');
+  wireQR('qr2', 2,
+    'Correct! The asthenosphere is the region of the upper mantle that flows, and it drives convection currents.',
+    'Not quite. The brittle crust and the solid inner core do not flow. The asthenosphere in the upper mantle is the layer that flows.');
+  wireQR('qr3', 0,
+    'Correct! Stuck plates build pressure, and the released energy shakes the crust as an earthquake.',
+    'Not quite. The released energy travels out as shaking in the crust. That is an earthquake.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+// Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
+// TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
+var EL_SCRIPT_URLS = {
+  MrKankel: 'https://script.google.com/macros/s/REPLACE_WITH_MR_KANKEL_DEPLOYMENT_ID/exec',
+  MrRovner: 'https://script.google.com/macros/s/REPLACE_WITH_MR_ROVNER_DEPLOYMENT_ID/exec'
+};
+
+var elQuizState = { selected: [], submitted: false };
+var elQuizMode  = 'practice';
+
+var elQuizQuestions = [
+  {
+    q: "How many main layers is Earth divided into?",
+    options: ["Two", "Three", "Four", "Six"],
+    correct: 2,
+    explanation: "Earth is divided into four main layers: the crust, the mantle, the outer core, and the inner core."
+  },
+  {
+    q: "While Earth was molten, heavy metals like iron and nickel sank to the center. What is this sorting process called?",
+    options: ["Convection", "Differentiation", "Transmission", "Erosion"],
+    correct: 1,
+    explanation: "Differentiation is the process in which a molten Earth separated into layers by density. Heavy metals sank to form the core, while lighter materials rose to form the mantle and crust."
+  },
+  {
+    q: "Why did the densest materials end up at Earth's center?",
+    options: [
+      "Dense materials are pulled by the magnetic field",
+      "Dense materials sink below less dense materials",
+      "Dense materials are always the hottest",
+      "Dense materials float to the top"
+    ],
+    correct: 1,
+    explanation: "Density decides the order. When materials could move freely in the molten Earth, the densest materials sank deepest and the least dense rose to the surface."
+  },
+  {
+    q: "Which statement best describes the crust?",
+    options: [
+      "It is the thickest and most dense layer",
+      "It is a thin, brittle layer and the least dense",
+      "It is a liquid layer made of iron and nickel",
+      "It is the layer that creates Earth's magnetic field"
+    ],
+    correct: 1,
+    explanation: "The crust is the thin, brittle outer layer, only 4 to 25 miles thick. It is the least dense layer and is the one we live on."
+  },
+  {
+    q: "A geologist compares a sample of oceanic crust to a sample of continental crust. Which is true?",
+    options: [
+      "Oceanic crust is thicker and less dense",
+      "Oceanic crust is thinner, older, and more dense",
+      "Continental crust is thinner and made of basalt",
+      "Both types of crust are exactly the same"
+    ],
+    correct: 1,
+    explanation: "Oceanic crust is made of basalt, averages about 4 miles thick, and is older and more dense. Continental crust is made of granite, averages about 25 miles thick, and is younger and less dense."
+  },
+  {
+    q: "The mantle is solid rock, yet it slowly flows. Why does this matter for the surface?",
+    options: [
+      "The flowing mantle moves the plates above it",
+      "The flowing mantle turns the crust into liquid",
+      "The flowing mantle stops earthquakes from happening",
+      "The flowing mantle has no effect on the surface"
+    ],
+    correct: 0,
+    explanation: "The mantle flows slowly because of temperature differences. The movement of the mantle creates the movement of Earth's plates, which is what changes the surface."
+  },
+  {
+    q: "Which layer flows like soft plastic and is responsible for convection currents?",
+    options: ["The lithosphere", "The asthenosphere", "The inner core", "The oceanic crust"],
+    correct: 1,
+    explanation: "The asthenosphere is the region of the upper mantle that flows, a quality called plastic behavior. It is responsible for convection currents."
+  },
+  {
+    q: "What drives the convection currents inside Earth's mantle?",
+    options: [
+      "Energy and heat from Earth's interior",
+      "The pull of the Moon's gravity",
+      "Wind blowing across the surface",
+      "The spinning of the inner core only"
+    ],
+    correct: 0,
+    explanation: "Energy from Earth's interior heats the rock. Hot rock rises, cools, and sinks in a loop called a convection current, which cycles the mantle and moves the crust."
+  },
+  {
+    q: "Plates usually slide smoothly, but sometimes they get stuck and pressure builds. When the pressure is suddenly released, what happens?",
+    options: [
+      "Earth's magnetic field reverses",
+      "The energy is released as an earthquake in the crust",
+      "The inner core melts",
+      "A new continent instantly forms"
+    ],
+    correct: 1,
+    explanation: "When stuck plates finally slip, the built-up pressure is released as energy that shakes the crust. That shaking is an earthquake."
+  },
+  {
+    q: "Which statement best explains how Earth's internal structure causes changes at the surface?",
+    options: [
+      "Surface changes happen only because of weather, not the interior",
+      "Heat drives convection in the mantle, which moves plates and produces earthquakes and volcanoes",
+      "The crust moves on its own with no connection to deeper layers",
+      "Earthquakes and volcanoes are caused by the magnetic field"
+    ],
+    correct: 1,
+    explanation: "Heat deep inside Earth drives convection currents in the mantle. That flow moves the plates, and the shifting plates produce earthquakes and volcanoes at the surface. Internal structure and energy explain surface change."
+  }
+];
+
+function elSetQuizMode(mode) {
+  elQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') elSetQuizMode('classroom');
+  else elSetQuizMode('practice');
+})();
+
+function elBuildQuiz() {
+  var container = document.getElementById('el-quiz-questions');
+  container.innerHTML = '';
+  elQuizState.selected  = new Array(elQuizQuestions.length).fill(null);
+  elQuizState.submitted = false;
+  document.getElementById('el-submit-btn').disabled = true;
+  elUpdateProgress();
+  var letters = ['A','B','C','D'];
+  elQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="elSelectAnswer(' + qi + ',' + oi + ')" id="el-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="el-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+function elSelectAnswer(qi, chosenIndex) {
+  if (elQuizState.submitted) return;
+  var prev = elQuizState.selected[qi];
+  if (prev !== null) document.getElementById('el-q-' + qi + '-' + prev).classList.remove('selected');
+  elQuizState.selected[qi] = chosenIndex;
+  document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  elUpdateProgress();
+  document.getElementById('el-submit-btn').disabled = !elQuizState.selected.every(function (s) { return s !== null; });
+}
+
+function elUpdateProgress() {
+  var total    = elQuizQuestions.length;
+  var answered = elQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('el-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('el-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+function elValidateStudentInfo() {
+  var name    = document.getElementById('el-student-name').value.trim();
+  var teacher = document.getElementById('el-teacher-select').value;
+  var block   = document.getElementById('el-block-select').value;
+  document.getElementById('el-err-name').classList.toggle('show', !name);
+  document.getElementById('el-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('el-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+
+function elSubmitQuiz() {
+  if (elQuizState.submitted) return;
+  if (elQuizMode === 'classroom') {
+    var info = elValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  elQuizState.submitted = true;
+  document.getElementById('el-submit-btn').disabled = true;
+  var correct = 0;
+  elQuizQuestions.forEach(function (q, qi) {
+    var chosen    = elQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('el-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('el-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('el-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = elQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand Earth’s layers cold.'
+    : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
+    : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
+    : '\u{1F4AA} Keep going; review each section carefully and try again!';
+  document.getElementById('el-score-num').textContent = score;
+  document.getElementById('el-score-msg').textContent = msg;
+  var sb = document.getElementById('el-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  if (elQuizMode === 'practice') {
+    document.getElementById('el-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+
+  var info2 = elValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'MrKankel' ? 'Mr. Kankel' : 'Mr. Rovner';
+  var letters = ['A','B','C','D'];
+  var answerStr = elQuizState.selected.map(function (idx, i) {
+    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
+  }).join(', ');
+  var params = new URLSearchParams({
+    tab: 'Earths Layers', lesson: "Earth's Layers", studentName: info2.name, teacher: teacherLabel,
+    block: info2.block, score: score, total: total, percent: pct + '%',
+    timestamp: new Date().toISOString(), answers: answerStr
+  });
+  fetch(EL_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(function () {
+      document.getElementById('el-submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+    })
+    .catch(function () {
+      document.getElementById('el-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+}
+
+function elResetQuiz() {
+  document.getElementById('el-score').classList.remove('show');
+  document.getElementById('el-submit-status').innerHTML = '';
+  elBuildQuiz();
+}
+
+elBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
