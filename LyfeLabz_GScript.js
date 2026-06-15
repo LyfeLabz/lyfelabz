@@ -1,7 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // LYFELABZ GOOGLE APPS SCRIPT
-// Updated: 2026-06-05
+// Updated: 2026-06-15
 // Changes from previous version:
+//   - sendDailySubmissionDigest: now only sends the morning email when at
+//     least one student submitted in the window (no submissions = no email)
+//   - On silent days the last-sent timestamp is left untouched, so the next
+//     digest's window still reaches back to the last email that went out
+//   - No changes to TAB_CONFIG, historical data, or submission handling
+// ─────────────────────────────────────────────────────────────────────────────
+// Previous changes (2026-06-05):
 //   - TAB_CONFIG: added 2 new entries (Nature of Waves, Wave Behavior)
 //   - Test functions added for both new tabs
 //   - Both lessons use standard score/percent payload (no answer transform needed)
@@ -453,6 +460,15 @@ function sendDailySubmissionDigest() {
   });
 
   submissions.sort(function(a, b) { return a.timestamp - b.timestamp; });
+
+  // Only send a digest when at least one student submitted in the window.
+  // No submissions = no email. We also leave the "last sent" timestamp
+  // untouched so the next digest's window reaches back to the last time an
+  // email actually went out (no submissions get skipped over).
+  if (submissions.length === 0) {
+    Logger.log('No new submissions since the last digest. Email skipped.');
+    return;
+  }
 
   var subject  = 'LyfeLabz Daily Submissions';
   var body     = buildDailyDigestPlainText(submissions, lastSent, now);
