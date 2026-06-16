@@ -33,6 +33,16 @@ When editing, imitate neighboring lessons.
 
 ---
 
+# COPY STANDARD: CONCEPT CARD LABELS
+
+For explanatory concept cards, use `KEY IDEA: [TERM]` instead of `NAME IT: [TERM]`.
+
+Explanatory cards define or explain a concept; they do not ask students to do anything.
+
+Use `NAME IT` only when students are literally identifying, labeling, classifying, or naming something.
+
+---
+
 # GOLD STANDARDS
 
 Grade 6 lesson structure:

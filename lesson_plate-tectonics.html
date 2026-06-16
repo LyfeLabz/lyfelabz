@@ -12,9 +12,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="https://lyfelabz.com/lesson_earths-layers.html">
-<meta name="description" content="Explore the four layers of Earth, density and differentiation, the crust, mantle, and core, and how convection currents deep inside Earth drive earthquakes and volcanoes at the surface. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
-<title>LyfeLabz | Earth's Layers</title>
+<link rel="canonical" href="https://lyfelabz.com/lesson_plate-tectonics.html">
+<meta name="description" content="Discover plate tectonics: continental drift evidence, lithospheric plates, seafloor spreading, convection currents, and the three plate boundaries that build mountains and trigger earthquakes and volcanoes. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Plate Tectonics</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -417,9 +417,9 @@
   }
   .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
 
-  /* ── LAYER SELECTOR (interactive cross-section) ── */
+  /* ── LAYER / BOUNDARY SELECTOR (interactive) ── */
   .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
-  .layer-figure { flex: 0 0 auto; width: 280px; max-width: 100%; margin: 0 auto; }
+  .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
   .layer-figure svg { width: 100%; height: auto; display: block; }
   .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
   .layer-list { display: flex; flex-direction: column; gap: 4px; }
@@ -462,7 +462,7 @@
   .crust-card.oceanic .crust-dot { background: var(--blue); }
   .crust-card.continental .crust-dot { background: var(--orange); }
 
-  /* ── CONVECTION FIGURE ── */
+  /* ── CONVECTION / DIAGRAM FIGURE ── */
   .figure-box {
     background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
@@ -666,13 +666,13 @@
   <span class="hero-float">&#9968;&#65039;</span>
   <span class="hero-float">&#129517;</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Earth's Layers</h1>
-  <p>Earthquakes shake the ground and volcanoes erupt at the surface, but the forces behind them begin thousands of kilometers below your feet.</p>
+  <h1>Plate Tectonics</h1>
+  <p>Earthquakes and volcanoes do not strike at random. They line up in narrow belts that trace the hidden seams of a cracked, moving planet.</p>
   <div class="driving-question">
     <div class="dq-icon">&#128269;</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">How does Earth's internal structure cause changes on Earth's surface?</div>
+      <div class="dq-text">Why does Earth's surface move?</div>
     </div>
   </div>
 </header>
@@ -680,29 +680,29 @@
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">&#128300; Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
-  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the layers into small, sequenced sections keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
-  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each layer with an interactive cross-section diagram builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes in belts) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the story into evidence, plates, motion, and boundaries keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of drift, convection, and boundaries builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and density inside Earth to surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and convection to plate motion and surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
 </div>
 
 <!-- MA STE STANDARDS -->
 <div class="stem-focus">
   <span class="stem-focus-label">&#128203; MA STE Standards &middot; Grade 7</span>
-  <span class="stem-badge" data-tip="Construct an explanation based on evidence for how Earth's surface has changed over scales ranging from local to global.">7.MS-ESS2-2</span>
-  <span class="stem-badge" data-tip="Use a model to illustrate that energy from Earth's interior drives convection that cycles Earth's crust, leading to melting, crystallization, weathering, and deformation of rock.">7.MS-ESS2-1</span>
+  <span class="stem-badge" data-tip="Construct an explanation based on evidence for how Earth's surface has changed over scales that range from local to global in size.">7.MS-ESS2-2</span>
+  <span class="stem-badge" data-tip="The Grade 7 Massachusetts STE theme. Students study systems and cycles, including plate tectonics and how Earth's surface changes over time.">Systems and Cycles</span>
 </div>
 <div class="stem-detail" id="stem-detail-el">
   <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-el')">&#9656; Show standard descriptions</button>
   <div class="stem-detail-body">
     <div class="stem-std-row">
       <span class="stem-std-code">7.MS-ESS2-2</span>
-      <span class="stem-std-text">Construct an explanation based on evidence for how Earth's surface has changed over scales ranging from local to global.</span>
+      <span class="stem-std-text">Construct an explanation based on evidence for how Earth's surface has changed over scales that range from local to global in size.</span>
     </div>
     <div class="stem-std-row">
-      <span class="stem-std-code">7.MS-ESS2-1</span>
-      <span class="stem-std-text">Use a model to illustrate that energy from Earth's interior drives convection that cycles Earth's crust, leading to melting, crystallization, weathering, and deformation of large amounts of rock.</span>
+      <span class="stem-std-code">Systems and Cycles</span>
+      <span class="stem-std-text">The Grade 7 Massachusetts STE theme. Students study systems and cycles, including plate tectonics and how Earth's surface changes over time.</span>
     </div>
   </div>
 </div>
@@ -718,24 +718,24 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
     <div class="goal-grid">
       <div class="goal-card">
-        <span class="goal-icon">&#127757;</span>
-        <div class="goal-text">I can describe the four main layers of Earth and their physical properties.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
-      </div>
-      <div class="goal-card">
-        <span class="goal-icon">&#9878;&#65039;</span>
-        <div class="goal-text">I can explain how density and differentiation shaped Earth's layered structure.</div>
-        <span class="goal-std">7.MS-ESS2-1</span>
-      </div>
-      <div class="goal-card">
-        <span class="goal-icon">&#127759;</span>
-        <div class="goal-text">I can compare oceanic crust and continental crust.</div>
+        <span class="goal-icon">&#129499;</span>
+        <div class="goal-text">I can describe the evidence Wegener used to support the idea of continental drift.</div>
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
       <div class="goal-card">
         <span class="goal-icon">&#128293;</span>
-        <div class="goal-text">I can explain how convection currents inside Earth drive surface changes like earthquakes and volcanoes.</div>
-        <span class="goal-std">7.MS-ESS2-1</span>
+        <div class="goal-text">I can explain how convection currents in the mantle cause tectonic plates to move.</div>
+        <span class="goal-std">7.MS-ESS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#9968;&#65039;</span>
+        <div class="goal-text">I can compare the three types of plate boundaries and the features they build.</div>
+        <span class="goal-std">7.MS-ESS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#127757;</span>
+        <div class="goal-text">I can explain why earthquakes and volcanoes occur in narrow belts rather than randomly.</div>
+        <span class="goal-std">7.MS-ESS2-2</span>
       </div>
     </div>
   </div>
@@ -749,47 +749,55 @@
   <div class="container">
     <span class="section-label">Vocabulary to Know</span>
     <h2 class="section-title">Words You'll Meet</h2>
-    <p class="section-desc" style="margin-bottom: 1.8rem;">Click or tap a card to reveal the definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
     <div class="glossary-grid">
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Density</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">How much mass is packed into a given space. Denser materials sink below less dense materials.</div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Differentiation</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The process in which a molten Earth separated into layers by density, with heavy materials sinking and light materials rising.</div>
+        <div class="gc-head"><span class="gc-term">Continental Drift</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The idea that the continents were once joined and have slowly moved to their present positions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-drift')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Crust</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The thin, brittle outer layer of Earth that you live on. It is the least dense layer.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-crust')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Pangaea</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The single supercontinent that held all of Earth's land about 250 million years ago.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pangaea')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Mantle</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The largest layer of Earth, made of hot, dense rock that slowly flows.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-mantle')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Core</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">Earth's center, made of iron and nickel. It has a liquid outer core and a solid inner core.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-core')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Plate Tectonics</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The theory that Earth's outer shell is broken into moving plates, explaining drift, earthquakes, and volcanoes.</div>
       </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Lithosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The solid outer section of Earth that includes the crust and the upper part of the mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
+        <div class="gc-def">The rigid outer shell of Earth, made of the crust and the upper mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Asthenosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The region of the upper mantle that flows like soft plastic. It is responsible for convection currents.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-astheno')">See it in the lesson &#8595;</span></div>
+        <div class="gc-def">The soft, slowly flowing part of the upper mantle that the plates float on.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Tectonic Plate</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A large slab of lithosphere that moves slowly over the asthenosphere.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-plate')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
         <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Convection Current</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The looping flow of hot rock that rises, cools, and sinks again. It moves Earth's plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
+        <div class="gc-def">A looping flow of hot mantle rock that rises, cools, and sinks, dragging the plates along.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Oceanic Crust</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">Crust made of basalt, about 4 miles thick. It is older and more dense than continental crust.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-crusttype')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Seafloor Spreading</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The process where magma rises at a mid-ocean ridge and cools into new ocean floor.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-seafloor')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Divergent Boundary</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A boundary where two plates move apart and new crust forms in the gap.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Continental Crust</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">Crust made of granite, about 25 miles thick. It is younger and less dense than oceanic crust.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-crusttype')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Convergent Boundary</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A boundary where two plates move together, often forming mountains or volcanoes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Transform Boundary</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A boundary where two plates slide past each other, producing faults and earthquakes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Subduction</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">When a more dense plate sinks beneath a less dense plate at a convergent boundary.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
       </button>
     </div>
   </div>
@@ -802,309 +810,232 @@
 <section id="engage" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Engage &middot; Phenomenon</span>
-    <h2 class="section-title">The Surface Shakes, but Why?</h2>
-    <p class="section-desc">Earthquakes and volcanoes happen at the surface, the part of Earth we can see and stand on. But their causes begin deep inside, in layers no person has ever reached.</p>
+    <h2 class="section-title">A World That Shakes in Lines</h2>
+    <p class="section-desc">If you mapped every earthquake and volcano from the last hundred years, you would not get a random scatter of dots. You would get long, narrow belts that wrap around the planet, like cracks in a shell.</p>
 
     <div class="phenomenon-card">
       <div class="phenomenon-icon">&#127755;</div>
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
-        <h3>Energy From the Deep</h3>
-        <p>The ground feels solid and still. Yet some places shake apart in earthquakes, and others spill out molten rock through volcanoes. The deepest hole humans have ever drilled reaches only a tiny fraction of the way down. So how can something happening thousands of kilometers below the surface shape the land we live on?</p>
+        <h3>The Ring of Fire</h3>
+        <p>A belt of volcanoes and earthquakes called the Ring of Fire traces the edge of the Pacific Ocean. Other belts run down the middle of the Atlantic and across southern Asia. Most of the world's earthquakes and volcanoes happen along these same lines, year after year. Why would Earth's most violent events follow such a clear pattern?</p>
       </div>
     </div>
 
-    <!-- Cross-section image -->
+    <!-- Phenomenon figure: belts vs random -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A cutaway of Earth showing a volcano and earthquake at the surface connected to hot interior layers below">
-        <defs>
-          <radialGradient id="coreGlow" cx="50%" cy="100%" r="90%">
-            <stop offset="0%" stop-color="#ffcf6b"/>
-            <stop offset="35%" stop-color="#e8814a"/>
-            <stop offset="70%" stop-color="#a8482e"/>
-            <stop offset="100%" stop-color="#3a2030"/>
-          </radialGradient>
-        </defs>
-        <!-- interior glow -->
-        <rect x="0" y="60" width="600" height="260" fill="url(#coreGlow)" opacity="0.85"/>
-        <!-- crust band -->
-        <rect x="0" y="60" width="600" height="26" fill="#6a7d52"/>
-        <rect x="0" y="86" width="600" height="6" fill="rgba(0,0,0,0.25)"/>
-        <!-- mountains/land -->
-        <path d="M0,60 L70,40 L120,60 Z" fill="#7a8f5a"/>
-        <path d="M150,60 L210,32 L270,60 Z" fill="#7a8f5a"/>
-        <!-- volcano -->
-        <path d="M400,60 L450,18 L500,60 Z" fill="#5a4a3a"/>
-        <path d="M438,30 L450,18 L462,30 L470,60 L430,60 Z" fill="#3a2e26"/>
-        <path d="M450,18 C446,8 454,8 450,0 C456,8 462,12 458,22 C452,18 452,26 450,18 Z" fill="#ff8a3c"/>
-        <circle cx="445" cy="14" r="3" fill="#ffce5a"/>
-        <circle cx="458" cy="20" r="2.5" fill="#ffb347"/>
-        <!-- earthquake crack -->
-        <path d="M170,60 L162,86 L178,110" fill="none" stroke="#1a1410" stroke-width="3"/>
-        <text x="120" y="50" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#dfe7ee">Earthquake</text>
-        <text x="412" y="50" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#dfe7ee">Volcano</text>
-        <!-- magma channel under volcano -->
-        <path d="M450,86 C448,120 466,150 455,172" fill="none" stroke="rgba(255,180,80,0.55)" stroke-width="10" stroke-linecap="round"/>
-        <!-- layer labels -->
-        <text x="20" y="78" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#23301c">CRUST</text>
-        <text x="20" y="104" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="rgba(255,255,255,0.7)">LITHOSPHERE</text>
-        <text x="20" y="150" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="rgba(255,255,255,0.75)">MANTLE</text>
-        <text x="20" y="295" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="rgba(255,255,255,0.85)">CORE (deepest, hottest)</text>
+      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A stylized world map showing earthquakes and volcanoes clustered along curved belts rather than spread evenly">
+        <rect x="20" y="20" width="560" height="240" rx="16" fill="#10202e"/>
+        <!-- stylized landmasses -->
+        <path d="M70,90 q40,-30 100,-10 q40,15 20,55 q-30,40 -90,30 q-50,-10 -30,-75 Z" fill="#26323f"/>
+        <path d="M300,70 q70,-20 130,10 q40,25 10,80 q-60,45 -130,15 q-40,-50 -20,-105 Z" fill="#26323f"/>
+        <path d="M180,180 q50,-15 90,15 q15,40 -40,55 q-60,5 -50,-70 Z" fill="#26323f"/>
+        <!-- plate-edge belts (dashed) -->
+        <path d="M40,150 C150,90 250,210 360,140 C440,90 520,170 560,120" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
+        <path d="M120,250 C200,200 240,150 300,60" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
+        <!-- earthquake/volcano markers along belts -->
+        <g fill="#e74c3c">
+          <circle cx="60" cy="142" r="5"/><circle cx="120" cy="120" r="5"/><circle cx="180" cy="150" r="5"/>
+          <circle cx="240" cy="180" r="5"/><circle cx="300" cy="158" r="5"/><circle cx="360" cy="140" r="5"/>
+          <circle cx="420" cy="118" r="5"/><circle cx="480" cy="150" r="5"/><circle cx="540" cy="128" r="5"/>
+          <circle cx="150" cy="225" r="5"/><circle cx="210" cy="180" r="5"/><circle cx="260" cy="120" r="5"/><circle cx="292" cy="78" r="5"/>
+        </g>
+        <text x="300" y="252" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">Red marks = earthquakes &amp; volcanoes. Dashed lines = where they line up.</text>
       </svg>
-      <div class="figure-caption">The same heat deep inside Earth that glows in this cutaway is the engine behind surface events.</div>
+      <div class="figure-caption">The dots are not scattered everywhere. They follow the dashed seams that crisscross the globe.</div>
     </div>
 
     <!-- Prediction gate -->
     <div class="question-pause predict-pause" id="qp-engage">
       <div class="qp-row">
         <span class="question-pause-icon">&#129300;</span>
-        <div class="question-pause-text"><strong>Make a prediction:</strong> How can something happening thousands of kilometers below Earth affect earthquakes and volcanoes at the surface?</div>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Why do earthquakes and volcanoes line up in narrow belts instead of spreading out evenly across Earth?</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn"><span class="pb-letter">A</span>Earth's center has no effect on the surface.</button>
-        <button class="predict-btn"><span class="pb-letter">B</span>Processes deep inside Earth influence the surface.</button>
-        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes only occur in the crust, with no deeper cause.</button>
+        <button class="predict-btn"><span class="pb-letter">A</span>Earth's surface is one solid shell that cracks in random spots.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Earth's surface is broken into moving plates, and the edges are where the action happens.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes and volcanoes happen everywhere equally; the belts are a coincidence.</button>
       </div>
     </div>
 
     <div class="name-it slate-it predict-gated" data-gate="qp-engage">
       <div class="name-it-label">Here's the big idea</div>
-      <p>The best answer is <strong>B</strong>. Earth is not one solid ball. It is built from layers, and the deepest layers are extremely hot. That heat keeps the rock inside slowly moving. As deep rock flows, it drags the surface, builds pressure, and feeds volcanoes. To understand earthquakes and volcanoes, we have to look inside. That is exactly where this lesson goes next.</p>
+      <p>The best answer is <strong>B</strong>. Earth's outer shell is not one piece. It is cracked into giant slabs called plates that slowly move. The belts of earthquakes and volcanoes trace the edges where plates meet, pull apart, or grind past one another. To understand the pattern at the surface, we have to understand the plates and what moves them. That is where this lesson goes next.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2rem;">
-      <strong>Where we're headed:</strong> First we'll see how Earth got its layers in the first place. Then we'll travel from the surface all the way to the center, and finally connect what we find back to the shaking ground above.
+      <strong>Where we're headed:</strong> First we'll meet the scientist who noticed the continents fit together. Then we'll see what the plates are, what pushes them, and what happens at the boundaries where they meet.
     </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1: HOW EARTH GOT ITS LAYERS
+     EXPLORE 1: CONTINENTAL DRIFT (Wegener's evidence)
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="explore" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; Formation</span>
-    <h2 class="section-title">How Earth Got Its Layers</h2>
-    <p class="section-desc">Earth did not start out with neat layers. They formed billions of years ago, while the young planet was a glowing ball of molten rock and metal.</p>
+    <span class="section-label">Explore &middot; The First Clue</span>
+    <h2 class="section-title">The Continents That Fit Together</h2>
+    <p class="section-desc">Long before anyone talked about plates, one scientist looked at a map and noticed something strange: the continents looked like pieces of a torn puzzle.</p>
+
+    <div id="term-drift" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129489;&#8205;&#127891;</span>
+        <div class="card-title">Wegener's Big Idea</div>
+      </div>
+      <div class="card-body">
+        <p>In 1912, a German scientist named <strong>Alfred Wegener</strong> proposed the idea of <span class="vocab">continental drift</span>. He claimed the continents are slowly moving, and that about 250 million years ago they were all joined into one giant supercontinent.</p>
+        <p>He named that supercontinent <strong>Pangaea</strong>, meaning "all land." Wegener knew that the way the coastlines fit together was a clue, but a good fit alone is not proof. So he went looking for real evidence.</p>
+      </div>
+    </div>
+
+    <div id="term-pangaea" class="name-it orange-it">
+      <div class="name-it-label">Name it: Pangaea</div>
+      <p><strong>Pangaea</strong> was a single supercontinent that held all of Earth's land roughly 250 million years ago. Over millions of years it broke apart, and the pieces drifted into the continents we know today.</p>
+    </div>
+
+    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Wegener gathered four kinds of evidence. No single clue was enough on its own, but together they told a powerful story.</p>
+
+    <div class="example-grid">
+      <div class="example-chip"><span class="example-chip-icon">&#129460;</span><span>Fossils</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#10052;&#65039;</span><span>Climate</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#9968;&#65039;</span><span>Mountains</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#129522;</span><span>Magnetite</span></div>
+    </div>
 
     <div class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#9728;&#65039;</span>
-        <div class="card-title">A Molten Beginning</div>
+        <span class="card-icon">&#129460;</span>
+        <div class="card-title">Fossil Clues</div>
       </div>
       <div class="card-body">
-        <p>Early in its history, Earth formed from dust and rock left over after the Sun formed. As Earth grew, collisions released a huge amount of heat that melted much of the planet.</p>
-        <p>While Earth was molten, materials were free to move. Heavy materials could sink and light materials could rise. This set the stage for Earth to sort itself into layers.</p>
+        <p>Fossils of the same plant and animal species turned up on continents now separated by thousands of miles of ocean. One example is <em>Glossopteris</em>, a fern-like plant found across South America, Africa, India, and Antarctica.</p>
+        <p>Its seeds were too heavy to drift across an ocean without being destroyed, and the small land animals found with it could not have swum that far. The simplest explanation is that the land was once connected.</p>
       </div>
     </div>
 
-    <div id="term-density" class="name-it slate-it">
-      <div class="name-it-label">Key idea: Density</div>
-      <p><strong>Density</strong> is how much mass is packed into a given space. When materials can move freely, denser materials sink below less dense materials, just like a steel marble sinks in water.</p>
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#10052;&#65039;</span>
+        <div class="card-title">Climate Clues</div>
+      </div>
+      <div class="card-body">
+        <p>Wegener found scratches carved by ancient glaciers on rocks in places that are warm today, like parts of Africa and India. He also found fossils of tropical swamp plants in Antarctica and on islands far to the north.</p>
+        <p>A continent cannot be frozen and tropical at the same time. But if those lands once sat in very different positions, the climate clues suddenly make sense. The southern continents fit together into a region scientists call <strong>Gondwanaland</strong>.</p>
+      </div>
     </div>
 
-    <div id="term-differentiation" class="name-it" style="border-left-color: var(--gold);">
-      <div class="name-it-label" style="color: var(--gold);">Key idea: Differentiation</div>
-      <p>Because of density, the molten Earth separated into layers in a process called <strong style="color: var(--gold);">differentiation</strong>. Heavy metals like iron and nickel sank to the center to form the core, while lighter materials rose to form the mantle and crust. As Earth slowly cooled, these layers solidified into the structure we observe today.</p>
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9968;&#65039;</span>
+        <div class="card-title">Rock and Mountain Clues</div>
+      </div>
+      <div class="card-body">
+        <p>Mountain ranges on different continents line up and contain rocks of the same age and chemistry. The Caledonian Mountains in northwestern Europe match the Appalachian Mountains along the east coast of the United States.</p>
+        <p>Put the continents back together and these ranges form one continuous belt, like a sentence torn across two pages. Rock types and the shapes of the continental shelves match across the ocean as well.</p>
+      </div>
     </div>
 
-    <!-- Differentiation figure -->
-    <div class="figure-box">
-      <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three stages showing heavy material sinking to the center as a molten planet separates into layers by density">
-        <!-- stage 1 mixed -->
-        <g>
-          <circle cx="90" cy="100" r="62" fill="#5a4636"/>
-          <g fill="#c9d0d8">
-            <circle cx="70" cy="80" r="6"/><circle cx="110" cy="70" r="6"/><circle cx="95" cy="110" r="6"/>
-            <circle cx="65" cy="120" r="6"/><circle cx="120" cy="115" r="6"/><circle cx="88" cy="90" r="6"/>
-          </g>
-          <text x="90" y="182" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">1. Molten, all mixed</text>
-        </g>
-        <text x="195" y="105" text-anchor="middle" font-size="26" fill="#7a8fa6">&#8594;</text>
-        <!-- stage 2 sinking -->
-        <g>
-          <circle cx="280" cy="100" r="62" fill="#5a4636"/>
-          <g fill="#c9d0d8">
-            <circle cx="280" cy="120" r="6"/><circle cx="266" cy="108" r="6"/><circle cx="294" cy="108" r="6"/>
-            <circle cx="280" cy="96" r="6"/><circle cx="270" cy="86" r="5"/><circle cx="292" cy="88" r="5"/>
-          </g>
-          <text x="280" y="182" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">2. Heavy metal sinks</text>
-        </g>
-        <text x="385" y="105" text-anchor="middle" font-size="26" fill="#7a8fa6">&#8594;</text>
-        <!-- stage 3 layered -->
-        <g>
-          <circle cx="470" cy="100" r="62" fill="#6a7d52"/>
-          <circle cx="470" cy="100" r="50" fill="#9a5e3a"/>
-          <circle cx="470" cy="100" r="24" fill="#d0d6dc"/>
-          <circle cx="470" cy="100" r="11" fill="#aeb6bf"/>
-          <text x="470" y="182" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">3. Layers form</text>
-        </g>
-      </svg>
-      <div class="figure-caption">Differentiation: heavy iron and nickel sink to the center, lighter rock rises to the outside.</div>
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129522;</span>
+        <div class="card-title">Magnetite Clues</div>
+      </div>
+      <div class="card-body">
+        <p>Some rocks contain <strong>magnetite</strong>, a magnetic iron-oxide mineral and the most magnetic mineral found in nature. When melted rock cools, magnetite crystals line up with Earth's magnetic field and lock in that direction, like tiny frozen compass needles.</p>
+        <p>Rocks of the same age on far-apart continents recorded matching magnetic patterns. That match only makes sense if the rocks formed side by side and later moved apart.</p>
+      </div>
     </div>
 
     <div class="callout gold">
-      <span class="callout-icon">&#128161;</span>
-      <div class="callout-body"><strong>The key pattern:</strong> Density decides the order. The densest material ended up deepest. That single rule explains why the layers are arranged the way they are, from the heavy metal core to the light, brittle crust.</div>
+      <span class="callout-icon">&#9888;&#65039;</span>
+      <div class="callout-body"><strong>The missing piece:</strong> Wegener's evidence was strong, but most scientists rejected his idea for decades. The reason was simple: he could not explain what force could possibly move something as huge as a continent. That answer was still hidden deep inside Earth.</div>
     </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2: THE FOUR LAYERS (interactive)
+     EXPLORE 2: LITHOSPHERIC PLATES
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="layers" style="background: var(--dark2);">
+<section id="plates" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Four Layers</span>
-    <h2 class="section-title">A Journey to the Center</h2>
-    <p class="section-desc">Earth is divided into four main layers. Starting at the surface, each one is deeper, hotter, and more dense than the one above it. Click a layer to explore it.</p>
+    <span class="section-label">Explore &middot; The Plates</span>
+    <h2 class="section-title">A Cracked Shell That Floats</h2>
+    <p class="section-desc">The breakthrough came from understanding Earth's layers. The continents do not plow through the ocean floor on their own. They ride on top of giant moving slabs.</p>
 
-    <div class="layer-wrap">
-      <div class="layer-figure">
-        <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A cross-section of Earth with four nested layers: crust, mantle, outer core, and inner core">
-          <circle cx="120" cy="120" r="116" fill="#6a7d52"/>
-          <circle cx="120" cy="120" r="108" fill="#9a5e3a"/>
-          <circle cx="120" cy="120" r="56" fill="#e89a4a"/>
-          <circle cx="120" cy="120" r="26" fill="#d6dce2"/>
-          <text x="120" y="13" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#23301c">CRUST</text>
-          <text x="70" y="56" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="rgba(255,255,255,0.85)">MANTLE</text>
-          <text x="120" y="76" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#5a3018">OUTER</text>
-          <text x="120" y="86" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#5a3018">CORE</text>
-          <text x="120" y="117" text-anchor="middle" font-family="Nunito,sans-serif" font-size="8" font-weight="800" fill="#3a4450">INNER</text>
-          <text x="120" y="126" text-anchor="middle" font-family="Nunito,sans-serif" font-size="8" font-weight="800" fill="#3a4450">CORE</text>
-        </svg>
-      </div>
-      <div class="layer-controls">
-        <div class="layer-list">
-          <div class="layer-row" style="background: rgba(106,125,82,0.30); color: #c4d4a2;" onclick="layerClick(1)" id="term-crust">
-            <span>1 &middot; Crust</span><span class="layer-tag">thinnest &middot; least dense</span>
-          </div>
-          <div class="layer-row" style="background: rgba(154,94,58,0.32); color: #e0a878;" onclick="layerClick(2)" id="term-mantle">
-            <span>2 &middot; Mantle</span><span class="layer-tag">largest layer</span>
-          </div>
-          <div class="layer-row" style="background: rgba(232,154,74,0.30); color: #f2b86a;" onclick="layerClick(3)">
-            <span>3 &middot; Outer Core</span><span class="layer-tag">liquid metal</span>
-          </div>
-          <div class="layer-row" style="background: rgba(190,198,206,0.30); color: #d6dce2;" onclick="layerClick(4)" id="term-core">
-            <span>4 &middot; Inner Core</span><span class="layer-tag">solid &middot; densest</span>
-          </div>
-        </div>
-        <div class="layer-detail-panel">
-          <div class="ld-inner">
-            <div class="ld-label" id="ld-label">Click a layer</div>
-            <div class="ld-title" id="ld-title">Start at the surface &#8594;</div>
-            <div class="ld-body" id="ld-body">Each layer has its own state, thickness, and density. Click any layer to find out what makes it different, and how deep you would have to dig to reach it.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="callout slate">
-      <span class="callout-icon">&#128207;</span>
-      <div class="callout-body"><strong>A clear trend:</strong> Density, temperature, and pressure all increase as you move from the crust to the inner core. The deeper you go, the heavier, hotter, and more squeezed the material becomes.</div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3: A CLOSER LOOK AT THE CRUST
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="crust" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Crust</span>
-    <h2 class="section-title">The Layer You Live On</h2>
-    <p class="section-desc">The crust is the most studied and best understood layer, because it is the one we can actually reach. It is also where earthquakes and volcanoes break through.</p>
-
-    <div class="content-card">
+    <div id="term-litho" class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#127822;</span>
-        <div class="card-title">Thin as an Apple's Skin</div>
+        <span class="card-icon">&#129513;</span>
+        <div class="card-title">The Lithosphere Rides the Asthenosphere</div>
       </div>
       <div class="card-body">
-        <p>The crust is like the skin of an apple. It is very thin compared to the other three layers, only about 4 to 25 miles thick. It is the <strong>least dense</strong> layer, made mostly of rock and soil that is <strong>brittle</strong>, meaning it breaks easily.</p>
-        <p>The crust is not one solid shell. It is broken into many large pieces called <span class="vocab">plates</span>. These plates rest on the soft mantle just below and slowly move.</p>
-        <div class="callout slate">
-          <span class="callout-icon">&#9889;</span>
-          <div class="callout-body"><strong>How earthquakes start:</strong> Plates usually slide along smoothly, but sometimes they get stuck and pressure builds up. When that pressure is finally released, it travels out as energy that shakes the crust. That shaking is an earthquake.</div>
-        </div>
+        <p>The <span class="vocab">lithosphere</span> is Earth's rigid outer shell, made of the crust plus the upper part of the mantle. It is not one solid piece. It is cracked into many large slabs called <strong>tectonic plates</strong>.</p>
+        <p>Just below sits the <span class="vocab">asthenosphere</span>, a hotter, softer part of the mantle that slowly flows like thick putty. The plates float and slide on the asthenosphere the way rafts drift on the surface of a pool.</p>
       </div>
     </div>
 
-    <h3 id="term-crusttype" style="font-family: 'Fredoka One', cursive; font-size: 1.4rem; margin: 2.5rem 0 0.6rem; color: var(--text);">Two Kinds of Crust</h3>
-    <p class="section-desc" style="margin-bottom: 1.4rem;">Not all crust is the same. The crust under the oceans is different from the crust that makes up the continents.</p>
+    <div id="term-plate" class="name-it slate-it">
+      <div class="name-it-label">Name it: Tectonic Plate</div>
+      <p>A <strong>tectonic plate</strong> is a large slab of lithosphere that moves slowly over the asthenosphere. Most plates carry both ocean floor and continents, so the continents move because the plates they sit on move.</p>
+    </div>
+
+    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Plates are not all the same, because the crust they carry comes in two kinds. The difference in density will matter a lot at the boundaries.</p>
 
     <div class="crust-grid">
       <div class="crust-card oceanic">
         <div class="crust-title">Oceanic Crust</div>
         <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Average 4 miles thick</div>
+        <div class="crust-bar-label">Thinnest layer of crust</div>
         <ul class="crust-list">
           <li><span class="crust-dot"></span><span>Made of <strong>basalt</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thinner</strong> than continental crust</span></li>
-          <li><span class="crust-dot"></span><span><strong>Older</strong> and <strong>more dense</strong></span></li>
+          <li><span class="crust-dot"></span><span><strong>Thinnest</strong> and <strong>most dense</strong></span></li>
+          <li><span class="crust-dot"></span><span>Sinks when it meets lighter crust</span></li>
         </ul>
       </div>
       <div class="crust-card continental">
         <div class="crust-title">Continental Crust</div>
         <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Average 25 miles thick</div>
+        <div class="crust-bar-label">Thickest layer of crust</div>
         <ul class="crust-list">
           <li><span class="crust-dot"></span><span>Made of <strong>granite</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thicker</strong> than oceanic crust</span></li>
-          <li><span class="crust-dot"></span><span><strong>Younger</strong> and <strong>less dense</strong></span></li>
+          <li><span class="crust-dot"></span><span><strong>Thickest</strong> and <strong>least dense</strong></span></li>
+          <li><span class="crust-dot"></span><span>Rides high and does not sink easily</span></li>
         </ul>
       </div>
     </div>
 
     <div class="bridge-callout teal">
-      <strong>Remember the density rule?</strong> It still applies here. Oceanic crust is more dense than continental crust, so where the two meet, the heavier oceanic crust tends to sink beneath the lighter continental crust.
+      <strong>Hold on to the density rule:</strong> oceanic crust is more dense than continental crust. When two plates meet, the heavier oceanic crust tends to sink beneath the lighter continental crust. That single rule will explain a lot of what happens at boundaries.
     </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 4: INSIDE THE MANTLE
+     EXPLORE 3: WHAT MOVES THE PLATES (convection + seafloor spreading)
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="mantle-zone" style="background: var(--dark2);">
+<section id="motion" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Mantle</span>
-    <h2 class="section-title">The Engine Inside Earth</h2>
-    <p class="section-desc">The mantle is the largest layer of Earth and the key to the whole mystery. Even though it is solid rock, it slowly flows, and that flow is what moves the surface.</p>
+    <span class="section-label">Explore &middot; The Engine</span>
+    <h2 class="section-title">What Pushes the Plates?</h2>
+    <p class="section-desc">This is the answer Wegener was missing. The force that moves whole continents comes from heat deep inside Earth, the same heat that drives everything from the inside out.</p>
 
-    <div class="content-card">
+    <div id="term-convection" class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#127855;</span>
-        <div class="card-title">Rock That Flows Like Toothpaste</div>
+        <span class="card-icon">&#128293;</span>
+        <div class="card-title">Convection Currents in the Mantle</div>
       </div>
       <div class="card-body">
-        <p>The mantle is made of hot, dense rock and is about 1,800 miles thick. Because of temperature differences inside it, the rock in the mantle flows slowly, like toothpaste squeezed through a tube. Heat and pressure cause the rock to move and bend within this layer.</p>
-        <p>This slow movement matters more than it sounds. <strong>The movement of the mantle creates the movement of Earth's plates above it.</strong></p>
+        <p>The mantle is extremely hot near the bottom and cooler near the top. Hot rock is less dense, so it slowly rises toward the surface. As it nears the top it cools, becomes more dense, and sinks back down. This endless loop is a <span class="vocab">convection current</span>.</p>
+        <p>These currents flow beneath the lithosphere and drag the plates along, like crackers riding on slowly boiling soup. <strong>The movement of mantle rock creates the movement of the plates above it.</strong></p>
       </div>
-    </div>
-
-    <div id="term-litho" class="name-it slate-it">
-      <div class="name-it-label">Key idea: Lithosphere</div>
-      <p>The <strong>lithosphere</strong> is the solid outer section of Earth. It includes Earth's crust and the upper part of the mantle. The lithosphere is the rigid material that is broken into the plates.</p>
-    </div>
-
-    <div id="term-astheno" class="name-it teal-it">
-      <div class="name-it-label">Key idea: Asthenosphere</div>
-      <p>Just below the lithosphere is the <strong>asthenosphere</strong>, the region of the upper mantle that flows. This flowing, bendable quality is called plastic behavior, and the asthenosphere is responsible for <strong>convection currents</strong>.</p>
-    </div>
-
-    <div id="term-convection" class="name-it" style="border-left-color: var(--gold);">
-      <div class="name-it-label" style="color: var(--gold);">Key idea: Convection Current</div>
-      <p>A <strong style="color: var(--gold);">convection current</strong> is a looping flow caused by heat. Hot rock near the bottom of the mantle is less dense, so it rises. Near the top it cools, becomes more dense, and sinks again. This endless loop drags the plates on top, slowly moving the continents and the seafloor.</p>
     </div>
 
     <!-- Convection figure -->
     <div class="figure-box">
       <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Convection currents in the mantle: hot rock rises in the middle, spreads sideways, and sinks at the edges, pushing two plates apart at the surface">
-        <!-- mantle background -->
         <rect x="20" y="40" width="560" height="200" rx="10" fill="#7a3a2a" opacity="0.85"/>
         <rect x="20" y="40" width="560" height="200" rx="10" fill="url(#mantleGrad)"/>
         <defs>
@@ -1113,15 +1044,12 @@
             <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.1"/>
           </linearGradient>
         </defs>
-        <!-- plates -->
         <rect x="40" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
         <rect x="320" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
         <text x="150" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
         <text x="450" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <!-- spreading arrows at surface -->
         <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
         <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <!-- convection loops -->
         <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
         <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
         <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
@@ -1134,44 +1062,88 @@
       </svg>
       <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
     </div>
+
+    <div id="term-seafloor" class="name-it teal-it">
+      <div class="name-it-label">Name it: Seafloor Spreading</div>
+      <p>Where plates pull apart under the ocean, rising magma fills the gap and cools into brand new ocean floor. This is called <strong>seafloor spreading</strong>. It builds a long underwater mountain chain called a mid-ocean ridge, and the seafloor is youngest right at the ridge and older farther away.</p>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#129522;</span>
+      <div class="callout-body"><strong>Magnetite returns:</strong> as new seafloor cools at a ridge, magnetite minerals record the direction of Earth's magnetic field. The field flips over time, leaving matching, mirror-image stripes on both sides of the ridge. Those symmetric stripes are powerful proof that the seafloor is spreading.</div>
+    </div>
+
+    <div class="bridge-callout teal" style="margin-top: 0.5rem;">
+      <strong>The mystery solved:</strong> convection currents are the engine Wegener could not find. Heat drives the mantle to flow, the flow moves the plates, and the plates carry the continents. Now we can look at exactly what happens where two plates meet.
+    </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 5: THE CORE
+     EXPLORE 4: PLATE BOUNDARIES (interactive)
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="core" style="background: var(--dark);">
+<section id="boundaries-sec" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Core</span>
-    <h2 class="section-title">Iron at the Center</h2>
-    <p class="section-desc">At Earth's center sits the core, the densest and hottest region of all. It is split into two parts: a liquid outer core and a solid inner core.</p>
+    <span class="section-label">Explore &middot; The Boundaries</span>
+    <h2 class="section-title">Where Plates Meet</h2>
+    <p class="section-desc">Almost all of Earth's earthquakes and volcanoes happen at plate boundaries. There are three types, sorted by how the plates move. Open each one to see what it builds.</p>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#127754;</span>
-        <div class="card-title">Outer Core: A Sea of Liquid Metal</div>
+    <div id="term-boundaries" class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three plate boundary types: divergent plates moving apart, convergent plates colliding with one sinking, and transform plates sliding past each other">
+          <!-- Divergent -->
+          <text x="10" y="22" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Divergent</text>
+          <rect x="20" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
+          <rect x="145" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
+          <path d="M118,43 L96,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
+          <path d="M142,43 L164,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
+          <path d="M130,56 L130,86" stroke="#ffb347" stroke-width="6" stroke-linecap="round"/>
+          <!-- Convergent -->
+          <text x="10" y="122" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Convergent</text>
+          <rect x="20" y="130" width="110" height="24" rx="3" fill="#9a5e3a"/>
+          <path d="M130,142 L155,142 L185,170 Z" fill="#7cc8f8"/>
+          <rect x="150" y="130" width="90" height="14" rx="3" fill="#7cc8f8"/>
+          <path d="M138,140 L120,140" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
+          <path d="M150,127 L168,127" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
+          <path d="M40,130 L52,112 L64,130 Z" fill="#8a9a6a"/>
+          <!-- Transform -->
+          <text x="10" y="222" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Transform</text>
+          <rect x="20" y="230" width="100" height="40" rx="3" fill="#6a7d52"/>
+          <rect x="140" y="230" width="100" height="40" rx="3" fill="#5a6e44"/>
+          <line x1="130" y1="226" x2="130" y2="274" stroke="#1a1410" stroke-width="3"/>
+          <path d="M70,222 L70,210" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
+          <path d="M190,278 L190,290" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
+          <defs>
+            <marker id="bh" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
+          </defs>
+        </svg>
       </div>
-      <div class="card-body">
-        <p>The outer core is the only liquid layer, about 1,400 miles thick, made of liquid iron and nickel. Scientists know this layer is liquid by studying earthquakes and how seismic waves move through Earth.</p>
-        <p>The flowing of liquid metal in the outer core creates Earth's <strong>magnetic field</strong>, the invisible force that makes a compass needle point north.</p>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9be8bb;" onclick="boundaryClick(1)">
+            <span>1 &middot; Divergent</span><span class="layer-tag">plates move apart</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b88a;" onclick="boundaryClick(2)">
+            <span>2 &middot; Convergent</span><span class="layer-tag">plates collide</span>
+          </div>
+          <div class="layer-row" style="background: rgba(124,200,248,0.26); color: #aed8f8;" onclick="boundaryClick(3)">
+            <span>3 &middot; Transform</span><span class="layer-tag">plates slide past</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="bd-label">Open a boundary</div>
+            <div class="ld-title" id="bd-title">Three ways plates meet &#8594;</div>
+            <div class="ld-body" id="bd-body">Each boundary type moves in a different way, so each one builds different features at the surface. Open any boundary to see how the plates move and what they create.</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#9899;</span>
-        <div class="card-title">Inner Core: A Solid Ball of Iron</div>
-      </div>
-      <div class="card-body">
-        <p>The inner core is the center layer of Earth, about 780 miles thick. It is solid metal, a dense ball of iron crystals made of iron and nickel.</p>
-        <p>You might wonder how the inner core can be solid when it is hotter than the liquid outer core. The answer is pressure. The crushing weight of every layer above squeezes the inner core so tightly that the metal cannot become liquid.</p>
-      </div>
-    </div>
-
-    <div class="callout gold">
-      <span class="callout-icon">&#128207;</span>
-      <div class="callout-body"><strong>The pattern holds all the way down:</strong> Density, temperature, and pressure increase the entire way from the crust to the inner core. The center of Earth is the heaviest, hottest, and most squeezed place on the planet.</div>
+    <div class="callout teal">
+      <span class="callout-icon">&#9889;</span>
+      <div class="callout-body"><strong>Why the belts exist:</strong> the plate boundaries are exactly the lines you saw on the map. Divergent ridges, convergent trenches and volcanoes, and transform faults are where the crust cracks, melts, and slips, so that is where earthquakes and volcanoes cluster.</div>
     </div>
   </div>
 </section>
@@ -1180,7 +1152,7 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      QUICK RECALL
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="recall" style="background: var(--dark2);">
+<section id="recall" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Quick Recall</span>
     <h2 class="section-title">Brain Check</h2>
@@ -1189,11 +1161,11 @@
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">While Earth was molten, why did iron and nickel end up at the center?</div>
+      <div class="qr-q" id="qr1Q">Wegener's idea of continental drift was rejected for decades. What was missing from his explanation?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>They were the lightest materials, so they floated down</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>They were the most dense, so they sank during differentiation</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>They were pulled in by Earth's magnetic field</span></label>
+        <label><input type="radio" name="qr1" value="0"><span>He had no fossil evidence at all</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>He could not explain what force could move a continent</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>No one believed Pangaea had ever existed</span></label>
       </div>
       <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1205,11 +1177,11 @@
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">Which layer flows like soft plastic and is responsible for convection currents?</div>
+      <div class="qr-q" id="qr2Q">The tectonic plates float and slide on which layer of Earth?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>The inner core</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>The brittle crust</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>The asthenosphere in the upper mantle</span></label>
+        <label><input type="radio" name="qr2" value="0"><span>The solid inner core</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>The brittle surface crust</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>The soft, flowing asthenosphere</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1221,11 +1193,11 @@
     <div class="qr-card" id="qrCard3">
       <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr3Q">Two plates get stuck, pressure builds, and is suddenly released as energy. What happens at the surface?</div>
+      <div class="qr-q" id="qr3Q">Two plates grind past each other along the San Andreas Fault. What does this transform boundary mainly produce?</div>
       <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
-        <label><input type="radio" name="qr3" value="0"><span>An earthquake shakes the crust</span></label>
-        <label><input type="radio" name="qr3" value="1"><span>Earth's magnetic field switches off</span></label>
-        <label><input type="radio" name="qr3" value="2"><span>The inner core melts into liquid</span></label>
+        <label><input type="radio" name="qr3" value="0"><span>Earthquakes</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>Brand new seafloor</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Tall volcanoes</span></label>
       </div>
       <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1240,40 +1212,40 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      EXPLAIN: PUTTING IT TOGETHER
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="explain" style="background: var(--dark);">
+<section id="explain" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Explain &middot; Wrap-Up</span>
-    <h2 class="section-title">From the Deep to the Surface</h2>
-    <p class="section-desc">You started with a question: how can something happening thousands of kilometers down shake the ground above? Now you can trace the whole chain, step by step.</p>
+    <h2 class="section-title">From Deep Heat to Moving Ground</h2>
+    <p class="section-desc">You started with a question: why does Earth's surface move, and why do earthquakes and volcanoes line up in belts? Now you can trace the whole chain, step by step.</p>
 
     <div class="wrapup-beats">
       <div class="wrapup-beat wrapup-beat-1">
         <div class="wrapup-beat-label">It Starts With Heat</div>
-        <div class="wrapup-beat-answer">Earth's interior is extremely hot.</div>
-        <div class="wrapup-beat-body">Leftover heat from Earth's formation keeps the deep layers hot. Because of <strong>density</strong> differences, hot rock is lighter than cool rock, which keeps the mantle slowly moving.</div>
+        <div class="wrapup-beat-answer">Heat inside Earth keeps the mantle slowly flowing.</div>
+        <div class="wrapup-beat-body">Hot rock is less dense, so it rises, cools, and sinks in <strong>convection currents</strong>. This is the engine Wegener was missing.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-2">
         <div class="wrapup-beat-label">Heat Becomes Motion</div>
-        <div class="wrapup-beat-answer">Convection currents move the mantle, and the mantle moves the plates.</div>
-        <div class="wrapup-beat-body">Hot rock rises, cools, and sinks in <strong>convection currents</strong>. This flow drags the plates of the lithosphere, slowly shifting the surface of the planet.</div>
+        <div class="wrapup-beat-answer">Convection drags the plates, and the plates carry the continents.</div>
+        <div class="wrapup-beat-body">The flowing mantle moves the <strong>tectonic plates</strong> of the lithosphere. New seafloor forms where they pull apart, which is why the continents drift over time.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-3">
         <div class="wrapup-beat-label">Motion Reaches the Surface</div>
-        <div class="wrapup-beat-answer">Moving plates produce earthquakes and volcanoes.</div>
-        <div class="wrapup-beat-body">When stuck plates slip, the released energy causes <strong>earthquakes</strong>. Where plates pull apart or one sinks beneath another, melted rock rises and fuels <strong>volcanoes</strong>.</div>
+        <div class="wrapup-beat-answer">Plate boundaries produce earthquakes and volcanoes.</div>
+        <div class="wrapup-beat-body">Where plates diverge, converge, or slide past, the crust cracks, melts, and slips. Those <strong>boundaries</strong> are the belts on the map.</div>
       </div>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
       <strong>The full chain:</strong>
       <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Heat in the core and mantle</span>
-        <span class="wuc wuc-2">Density differences drive convection</span>
-        <span class="wuc wuc-2">Mantle flow moves the plates</span>
-        <span class="wuc wuc-3">Plates shift, stick, and collide</span>
-        <span class="wuc wuc-3">Earthquakes and volcanoes</span>
+        <span class="wuc wuc-1">Heat deep in the mantle</span>
+        <span class="wuc wuc-2">Convection currents flow</span>
+        <span class="wuc wuc-2">Plates move and continents drift</span>
+        <span class="wuc wuc-3">Plates meet at boundaries</span>
+        <span class="wuc wuc-3">Earthquakes and volcanoes in belts</span>
       </div>
-      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. The shaking ground above is the surface story of a much deeper one.</div>
+      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. Wegener saw the puzzle; convection currents and plate tectonics finally explained it.</div>
     </div>
   </div>
 </section>
@@ -1286,7 +1258,7 @@
   <div class="container">
     <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Ten questions covering everything you explored, from differentiation to convection currents. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you explored, from Wegener's evidence to convection currents and plate boundaries. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -1353,7 +1325,7 @@
       <p id="el-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">&#128269; The Question You Came In With</span>
-        You started this lesson asking: <strong>"How does Earth's internal structure cause changes on Earth's surface?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes, you have answered it.
+        You started this lesson asking: <strong>"Why does Earth's surface move?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes at the boundaries, you have answered it.
       </div>
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
@@ -1461,20 +1433,19 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 })();
 </script>
 
-<!-- ===== FOUR LAYERS INTERACTIVE ===== -->
+<!-- ===== PLATE BOUNDARIES INTERACTIVE ===== -->
 <script>
-const layerData = {
-  1: { label: 'Layer 1 · Surface', title: 'Crust', body: 'The thin, brittle outer layer you live on, only 4 to 25 miles thick. It is the least dense layer, made of rock and soil, and it is broken into moving plates. This is where earthquakes and volcanoes appear.' },
-  2: { label: 'Layer 2 · Below the crust', title: 'Mantle', body: 'The largest layer, about 1,800 miles of hot, dense rock. It is solid but flows slowly like toothpaste because of temperature differences. Its movement drives the plates above. The upper mantle includes the flowing asthenosphere.' },
-  3: { label: 'Layer 3 · Deeper still', title: 'Outer Core', body: 'The only liquid layer, about 1,400 miles thick, made of liquid iron and nickel. The flowing of this liquid metal creates Earth’s magnetic field. Scientists know it is liquid from how seismic waves move through it.' },
-  4: { label: 'Layer 4 · The center', title: 'Inner Core', body: 'The center of Earth, about 780 miles thick. It is a solid, dense ball of iron crystals made of iron and nickel. Even though it is the hottest layer, crushing pressure keeps it solid. Density, temperature, and pressure are all highest here.' }
+const boundaryData = {
+  1: { label: 'Boundary 1 · Plates move apart', title: 'Divergent Boundary', body: 'Two plates pull apart and rising magma fills the gap, cooling into new crust. Under the ocean this builds a mid-ocean ridge with a rift valley down the center, like the Mid-Atlantic Ridge. On land it can split a continent, as at the East African Rift.' },
+  2: { label: 'Boundary 2 · Plates collide', title: 'Convergent Boundary', body: 'Two plates push together. The more dense plate subducts (sinks) beneath the less dense one, melting and feeding volcanoes, like the Andes and the Japanese island arc. When both plates are continental and equally light, neither sinks, so they crumple upward into mountains like the Himalayas.' },
+  3: { label: 'Boundary 3 · Plates slide past', title: 'Transform Boundary', body: 'Two plates grind past each other in opposite directions. No crust is made or destroyed, but the plates catch and slip, releasing energy as earthquakes. The San Andreas Fault in California is a famous example.' }
 };
-function layerClick(n) {
-  const d = layerData[n];
-  document.getElementById('ld-label').textContent = d.label;
-  document.getElementById('ld-title').textContent = d.title;
-  document.getElementById('ld-body').textContent  = d.body;
-  document.querySelectorAll('.layer-row').forEach((el, i) => {
+function boundaryClick(n) {
+  const d = boundaryData[n];
+  document.getElementById('bd-label').textContent = d.label;
+  document.getElementById('bd-title').textContent = d.title;
+  document.getElementById('bd-body').textContent  = d.body;
+  document.querySelectorAll('#term-boundaries .layer-row').forEach((el, i) => {
     el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
     el.style.outlineOffset = '1px';
   });
@@ -1518,14 +1489,14 @@ function layerClick(n) {
     });
   }
   wireQR('qr1', 1,
-    'Correct! Iron and nickel are the most dense materials, so they sank to the center during differentiation.',
-    'Not quite. Iron and nickel are very dense, so they sank to the center. Lighter materials rose to form the mantle and crust.');
+    'Correct! His evidence was strong, but he could not explain what force moved the continents. Convection currents were the missing piece.',
+    'Not quite. Wegener had plenty of evidence and believed in Pangaea. What he could not explain was the force that moved the continents.');
   wireQR('qr2', 2,
-    'Correct! The asthenosphere is the region of the upper mantle that flows, and it drives convection currents.',
-    'Not quite. The brittle crust and the solid inner core do not flow. The asthenosphere in the upper mantle is the layer that flows.');
+    'Correct! The plates float and slide on the soft, slowly flowing asthenosphere in the upper mantle.',
+    'Not quite. The crust and inner core do not flow. The plates ride on the soft, flowing asthenosphere.');
   wireQR('qr3', 0,
-    'Correct! Stuck plates build pressure, and the released energy shakes the crust as an earthquake.',
-    'Not quite. The released energy travels out as shaking in the crust. That is an earthquake.');
+    'Correct! Transform boundaries make and destroy no crust, but the plates catch and slip, releasing energy as earthquakes.',
+    'Not quite. New seafloor forms at divergent boundaries and volcanoes at convergent ones. Transform boundaries mainly cause earthquakes.');
 })();
 </script>
 
@@ -1544,99 +1515,104 @@ var elQuizMode  = 'practice';
 
 var elQuizQuestions = [
   {
-    q: "How many main layers is Earth divided into?",
-    options: ["Two", "Three", "Four", "Six"],
+    q: "Who proposed the idea of continental drift, and what did he name the ancient supercontinent?",
+    options: ["Isaac Newton; Gondwana", "Alfred Wegener; Pangaea", "Charles Darwin; Laurasia", "Alfred Wegener; Atlantis"],
+    correct: 1,
+    explanation: "In 1912, the German scientist Alfred Wegener proposed continental drift and named the supercontinent Pangaea, meaning all land."
+  },
+  {
+    q: "Wegener found fossils of the same plant, Glossopteris, on continents now separated by wide oceans. Why is this evidence that the continents were once joined?",
+    options: [
+      "The seeds were too heavy to drift across an ocean and the animals could not swim that far",
+      "Glossopteris still grows on every continent today",
+      "Fossils can float across oceans on currents",
+      "The plant only grew in freezing climates"
+    ],
+    correct: 0,
+    explanation: "Glossopteris seeds could not survive a long ocean drift, and the small land animals found with it could not swim across oceans. The simplest explanation is that the land was once connected."
+  },
+  {
+    q: "The lithosphere is broken into large slabs that float on the asthenosphere. What are these slabs called?",
+    options: ["Convection cells", "Rift valleys", "Tectonic plates", "Continental shelves"],
     correct: 2,
-    explanation: "Earth is divided into four main layers: the crust, the mantle, the outer core, and the inner core."
+    explanation: "The rigid lithosphere is cracked into tectonic plates that slowly move over the soft, flowing asthenosphere."
   },
   {
-    q: "While Earth was molten, heavy metals like iron and nickel sank to the center. What is this sorting process called?",
-    options: ["Convection", "Differentiation", "Transmission", "Erosion"],
-    correct: 1,
-    explanation: "Differentiation is the process in which a molten Earth separated into layers by density. Heavy metals sank to form the core, while lighter materials rose to form the mantle and crust."
-  },
-  {
-    q: "Why did the densest materials end up at Earth's center?",
+    q: "Wegener could not explain what moved the continents. What actually provides the force that moves the plates?",
     options: [
-      "Dense materials are pulled by the magnetic field",
-      "Dense materials sink below less dense materials",
-      "Dense materials are always the hottest",
-      "Dense materials float to the top"
+      "The pull of ocean tides",
+      "The spinning of the inner core",
+      "Wind and weather at the surface",
+      "Convection currents in the mantle"
     ],
-    correct: 1,
-    explanation: "Density decides the order. When materials could move freely in the molten Earth, the densest materials sank deepest and the least dense rose to the surface."
+    correct: 3,
+    explanation: "Heat inside Earth drives convection currents in the mantle. The flowing mantle rock drags the plates, which is the force Wegener was missing."
   },
   {
-    q: "Which statement best describes the crust?",
+    q: "At a divergent boundary two plates move apart. What happens in the gap between them?",
     options: [
-      "It is the thickest and most dense layer",
-      "It is a thin, brittle layer and the least dense",
-      "It is a liquid layer made of iron and nickel",
-      "It is the layer that creates Earth's magnetic field"
-    ],
-    correct: 1,
-    explanation: "The crust is the thin, brittle outer layer, only 4 to 25 miles thick. It is the least dense layer and is the one we live on."
-  },
-  {
-    q: "A geologist compares a sample of oceanic crust to a sample of continental crust. Which is true?",
-    options: [
-      "Oceanic crust is thicker and less dense",
-      "Oceanic crust is thinner, older, and more dense",
-      "Continental crust is thinner and made of basalt",
-      "Both types of crust are exactly the same"
-    ],
-    correct: 1,
-    explanation: "Oceanic crust is made of basalt, averages about 4 miles thick, and is older and more dense. Continental crust is made of granite, averages about 25 miles thick, and is younger and less dense."
-  },
-  {
-    q: "The mantle is solid rock, yet it slowly flows. Why does this matter for the surface?",
-    options: [
-      "The flowing mantle moves the plates above it",
-      "The flowing mantle turns the crust into liquid",
-      "The flowing mantle stops earthquakes from happening",
-      "The flowing mantle has no effect on the surface"
+      "Rising magma fills the gap and cools into new crust",
+      "One plate sinks beneath the other",
+      "The plates grind past each other",
+      "A deep ocean trench forms"
     ],
     correct: 0,
-    explanation: "The mantle flows slowly because of temperature differences. The movement of the mantle creates the movement of Earth's plates, which is what changes the surface."
+    explanation: "As the plates separate, magma rises to fill the gap and cools into new crust. Under the ocean this is seafloor spreading at a mid-ocean ridge."
   },
   {
-    q: "Which layer flows like soft plastic and is responsible for convection currents?",
-    options: ["The lithosphere", "The asthenosphere", "The inner core", "The oceanic crust"],
-    correct: 1,
-    explanation: "The asthenosphere is the region of the upper mantle that flows, a quality called plastic behavior. It is responsible for convection currents."
-  },
-  {
-    q: "What drives the convection currents inside Earth's mantle?",
+    q: "The seafloor of the Atlantic is youngest at the Mid-Atlantic Ridge and older farther away. Which process best explains this?",
     options: [
-      "Energy and heat from Earth's interior",
-      "The pull of the Moon's gravity",
-      "Wind blowing across the surface",
-      "The spinning of the inner core only"
+      "Subduction pulling the crust down",
+      "Seafloor spreading at a divergent boundary",
+      "A transform fault sliding sideways",
+      "Weathering of the ocean floor"
+    ],
+    correct: 1,
+    explanation: "New crust forms at the ridge and moves outward, so the seafloor is youngest at the ridge and gets older with distance. This is seafloor spreading."
+  },
+  {
+    q: "Two oceanic plates collide and the more dense one sinks beneath the other. What is this process called, and what does it tend to build?",
+    options: [
+      "Spreading, building a rift valley",
+      "Erosion, building canyons",
+      "Subduction, building volcanoes and island arcs",
+      "Drifting, building flat plains"
+    ],
+    correct: 2,
+    explanation: "When one plate sinks beneath another it is called subduction. The sinking plate melts and feeds volcanoes, forming features like the Japanese island arc."
+  },
+  {
+    q: "The Himalayas formed where two continental plates of similar density collided. Why did they crumple upward instead of one plate sinking?",
+    options: [
+      "Continental crust is too dense to rise",
+      "One of the plates melted completely",
+      "The boundary is actually a transform boundary",
+      "Neither plate is dense enough to sink, so they push each other up"
+    ],
+    correct: 3,
+    explanation: "Continental crust is light and does not subduct easily. When two continental plates meet, neither sinks, so the crust folds and pushes upward into tall mountains like the Himalayas."
+  },
+  {
+    q: "The San Andreas Fault is a place where two plates slide past each other. What kind of boundary is this, and what is it known for?",
+    options: [
+      "A transform boundary known for earthquakes",
+      "A divergent boundary known for new seafloor",
+      "A convergent boundary known for volcanoes",
+      "A boundary known for building island arcs"
     ],
     correct: 0,
-    explanation: "Energy from Earth's interior heats the rock. Hot rock rises, cools, and sinks in a loop called a convection current, which cycles the mantle and moves the crust."
+    explanation: "Plates sliding past each other form a transform boundary. They catch and slip, releasing energy as earthquakes, like those along the San Andreas Fault."
   },
   {
-    q: "Plates usually slide smoothly, but sometimes they get stuck and pressure builds. When the pressure is suddenly released, what happens?",
+    q: "Why do earthquakes and volcanoes occur in narrow belts around Earth rather than randomly?",
     options: [
-      "Earth's magnetic field reverses",
-      "The energy is released as an earthquake in the crust",
-      "The inner core melts",
-      "A new continent instantly forms"
+      "They follow ocean currents around the globe",
+      "They line up along the edges of the tectonic plates",
+      "They appear wherever the crust is thickest",
+      "They are spread evenly but only reported in cities"
     ],
     correct: 1,
-    explanation: "When stuck plates finally slip, the built-up pressure is released as energy that shakes the crust. That shaking is an earthquake."
-  },
-  {
-    q: "Which statement best explains how Earth's internal structure causes changes at the surface?",
-    options: [
-      "Surface changes happen only because of weather, not the interior",
-      "Heat drives convection in the mantle, which moves plates and produces earthquakes and volcanoes",
-      "The crust moves on its own with no connection to deeper layers",
-      "Earthquakes and volcanoes are caused by the magnetic field"
-    ],
-    correct: 1,
-    explanation: "Heat deep inside Earth drives convection currents in the mantle. That flow moves the plates, and the shifting plates produce earthquakes and volcanoes at the surface. Internal structure and energy explain surface change."
+    explanation: "Almost all earthquakes and volcanoes happen at plate boundaries, where plates pull apart, collide, or slide past. The belts on the map trace those boundaries."
   }
 ];
 
@@ -1751,7 +1727,7 @@ function elSubmitQuiz() {
   var total = elQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
-  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand Earth’s layers cold.'
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand plate tectonics cold.'
     : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
     : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
     : '\u{1F4AA} Keep going; review each section carefully and try again!';
@@ -1774,7 +1750,7 @@ function elSubmitQuiz() {
     return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
   }).join(', ');
   var params = new URLSearchParams({
-    tab: 'Earths Layers', lesson: "Earth's Layers", studentName: info2.name, teacher: teacherLabel,
+    tab: 'Plate Tectonics', lesson: 'Plate Tectonics', studentName: info2.name, teacher: teacherLabel,
     block: info2.block, score: score, total: total, percent: pct + '%',
     timestamp: new Date().toISOString(), answers: answerStr
   });

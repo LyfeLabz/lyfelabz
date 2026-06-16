@@ -12,9 +12,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="https://lyfelabz.com/lesson_earths-layers.html">
-<meta name="description" content="Explore the four layers of Earth, density and differentiation, the crust, mantle, and core, and how convection currents deep inside Earth drive earthquakes and volcanoes at the surface. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
-<title>LyfeLabz | Earth's Layers</title>
+<link rel="canonical" href="https://lyfelabz.com/lesson_hotspot-volcanoes.html">
+<meta name="description" content="Discover hotspot volcanoes: how a fixed mantle plume melts through the middle of a moving plate to build a chain of volcanic islands like Hawaii, why the islands get younger toward the hotspot, and how old islands cool and sink into seamounts. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Hotspot Volcanoes</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -407,9 +407,8 @@
   .name-it.slate-it p strong  { color: var(--accent2); }
 
   /* ── EXAMPLE GRID ── */
-  .example-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin: 0 auto 2rem; }
-  @media (max-width: 700px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
+  .example-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; margin: 0 auto 2rem; }
+  @media (max-width: 700px) { .example-grid { grid-template-columns: 1fr; } }
   .example-chip {
     background: var(--card); border: 1px solid var(--border); border-radius: 14px;
     padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.6rem;
@@ -417,9 +416,9 @@
   }
   .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
 
-  /* ── LAYER SELECTOR (interactive cross-section) ── */
+  /* ── STAGE / SELECTOR (interactive) ── */
   .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
-  .layer-figure { flex: 0 0 auto; width: 280px; max-width: 100%; margin: 0 auto; }
+  .layer-figure { flex: 0 0 auto; width: 340px; max-width: 100%; margin: 0 auto; }
   .layer-figure svg { width: 100%; height: auto; display: block; }
   .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
   .layer-list { display: flex; flex-direction: column; gap: 4px; }
@@ -441,28 +440,25 @@
   .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
   .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
 
-  /* ── CRUST COMPARISON ── */
-  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
-  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
-  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
-  .crust-card.oceanic { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
-  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
-  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
-  .crust-card.oceanic .crust-title { color: var(--blue); }
-  .crust-card.continental .crust-title { color: var(--orange); }
-  .crust-bar-track { height: 14px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; margin: 0.7rem 0 0.4rem; }
-  .crust-bar { height: 100%; border-radius: 99px; }
-  .crust-card.oceanic .crust-bar { background: linear-gradient(90deg, var(--blue), rgba(124,200,248,0.5)); width: 16%; }
-  .crust-card.continental .crust-bar { background: linear-gradient(90deg, var(--orange), rgba(232,129,74,0.5)); width: 100%; }
-  .crust-bar-label { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; }
-  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
-  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
-  .crust-list li strong { color: var(--text); }
-  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
-  .crust-card.oceanic .crust-dot { background: var(--blue); }
-  .crust-card.continental .crust-dot { background: var(--orange); }
+  /* ── FORMATION COMPARISON ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 720px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.6rem 1.5rem; }
+  .crust-card.boundary { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
+  .crust-card.rift     { background: rgba(61,220,132,0.06);  border: 1px solid rgba(61,220,132,0.3); }
+  .crust-card.spot     { background: rgba(245,200,66,0.07);   border: 1px solid rgba(245,200,66,0.35); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .crust-card.boundary .crust-title { color: var(--blue); }
+  .crust-card.rift .crust-title { color: var(--green); }
+  .crust-card.spot .crust-title { color: var(--gold); }
+  .crust-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+  .crust-card p strong { color: var(--text); }
+  .crust-where { display: inline-block; margin-top: 0.8rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.22rem 0.7rem; border-radius: 99px; }
+  .crust-card.boundary .crust-where { color: var(--blue); background: rgba(124,200,248,0.1); border: 1px solid rgba(124,200,248,0.3); }
+  .crust-card.rift .crust-where { color: var(--green); background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); }
+  .crust-card.spot .crust-where { color: var(--gold); background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.35); }
 
-  /* ── CONVECTION FIGURE ── */
+  /* ── DIAGRAM FIGURE ── */
   .figure-box {
     background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
@@ -661,18 +657,18 @@
 
 <!-- HERO -->
 <header class="hero">
-  <span class="hero-float">&#127757;</span>
   <span class="hero-float">&#127755;</span>
-  <span class="hero-float">&#9968;&#65039;</span>
-  <span class="hero-float">&#129517;</span>
+  <span class="hero-float">&#127965;&#65039;</span>
+  <span class="hero-float">&#127754;</span>
+  <span class="hero-float">&#128293;</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Earth's Layers</h1>
-  <p>Earthquakes shake the ground and volcanoes erupt at the surface, but the forces behind them begin thousands of kilometers below your feet.</p>
+  <h1>Hotspot Volcanoes</h1>
+  <p>Most volcanoes erupt along the cracked edges of plates. But a chain of volcanoes runs straight across the middle of the Pacific Ocean, thousands of miles from any boundary.</p>
   <div class="driving-question">
     <div class="dq-icon">&#128269;</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">How does Earth's internal structure cause changes on Earth's surface?</div>
+      <div class="dq-text">How can a chain of volcanoes form in the middle of a plate?</div>
     </div>
   </div>
 </header>
@@ -680,29 +676,29 @@
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">&#128300; Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
-  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the layers into small, sequenced sections keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
-  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each layer with an interactive cross-section diagram builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real puzzle (a chain of volcanoes in the middle of the Pacific) before naming any vocabulary. A genuine mystery activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the story into how volcanoes form, what a hotspot is, the moving conveyor belt, and the island life cycle keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of plumes, island chains, and seamounts builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and density inside Earth to surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat to a plume, a plume to volcanoes, and plate motion to a chain of islands, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
 </div>
 
 <!-- MA STE STANDARDS -->
 <div class="stem-focus">
   <span class="stem-focus-label">&#128203; MA STE Standards &middot; Grade 7</span>
-  <span class="stem-badge" data-tip="Construct an explanation based on evidence for how Earth's surface has changed over scales ranging from local to global.">7.MS-ESS2-2</span>
-  <span class="stem-badge" data-tip="Use a model to illustrate that energy from Earth's interior drives convection that cycles Earth's crust, leading to melting, crystallization, weathering, and deformation of rock.">7.MS-ESS2-1</span>
+  <span class="stem-badge" data-tip="Construct an explanation based on evidence for how Earth's surface has changed over scales that range from local to global in size.">7.MS-ESS2-2</span>
+  <span class="stem-badge" data-tip="The Grade 7 Massachusetts STE theme. Students study systems and cycles, including how Earth's interior heat and plate motion reshape the surface over time.">Systems and Cycles</span>
 </div>
 <div class="stem-detail" id="stem-detail-el">
   <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-el')">&#9656; Show standard descriptions</button>
   <div class="stem-detail-body">
     <div class="stem-std-row">
       <span class="stem-std-code">7.MS-ESS2-2</span>
-      <span class="stem-std-text">Construct an explanation based on evidence for how Earth's surface has changed over scales ranging from local to global.</span>
+      <span class="stem-std-text">Construct an explanation based on evidence for how Earth's surface has changed over scales that range from local to global in size.</span>
     </div>
     <div class="stem-std-row">
-      <span class="stem-std-code">7.MS-ESS2-1</span>
-      <span class="stem-std-text">Use a model to illustrate that energy from Earth's interior drives convection that cycles Earth's crust, leading to melting, crystallization, weathering, and deformation of large amounts of rock.</span>
+      <span class="stem-std-code">Systems and Cycles</span>
+      <span class="stem-std-text">The Grade 7 Massachusetts STE theme. Students study systems and cycles, including how Earth's interior heat and plate motion reshape the surface over time.</span>
     </div>
   </div>
 </div>
@@ -718,24 +714,24 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
     <div class="goal-grid">
       <div class="goal-card">
-        <span class="goal-icon">&#127757;</span>
-        <div class="goal-text">I can describe the four main layers of Earth and their physical properties.</div>
+        <span class="goal-icon">&#127755;</span>
+        <div class="goal-text">I can describe how a hotspot forms a volcano in the middle of a tectonic plate.</div>
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#9878;&#65039;</span>
-        <div class="goal-text">I can explain how density and differentiation shaped Earth's layered structure.</div>
-        <span class="goal-std">7.MS-ESS2-1</span>
-      </div>
-      <div class="goal-card">
-        <span class="goal-icon">&#127759;</span>
-        <div class="goal-text">I can compare oceanic crust and continental crust.</div>
+        <span class="goal-icon">&#127965;&#65039;</span>
+        <div class="goal-text">I can explain how plate motion over a fixed hotspot creates a chain of volcanic islands.</div>
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#128293;</span>
-        <div class="goal-text">I can explain how convection currents inside Earth drive surface changes like earthquakes and volcanoes.</div>
-        <span class="goal-std">7.MS-ESS2-1</span>
+        <span class="goal-icon">&#9203;</span>
+        <div class="goal-text">I can predict the relative ages of islands in a hotspot chain from their positions.</div>
+        <span class="goal-std">7.MS-ESS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#127754;</span>
+        <div class="goal-text">I can explain why old volcanic islands cool, sink, and become seamounts.</div>
+        <span class="goal-std">7.MS-ESS2-2</span>
       </div>
     </div>
   </div>
@@ -749,47 +745,43 @@
   <div class="container">
     <span class="section-label">Vocabulary to Know</span>
     <h2 class="section-title">Words You'll Meet</h2>
-    <p class="section-desc" style="margin-bottom: 1.8rem;">Click or tap a card to reveal the definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
     <div class="glossary-grid">
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Density</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">How much mass is packed into a given space. Denser materials sink below less dense materials.</div>
-      </button>
       <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Differentiation</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The process in which a molten Earth separated into layers by density, with heavy materials sinking and light materials rising.</div>
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Hotspot</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A fixed point in the mantle where heat rises and melts through the crust above, even in the middle of a plate.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-hotspot')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Crust</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The thin, brittle outer layer of Earth that you live on. It is the least dense layer.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-crust')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Mantle Plume</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A column of extremely hot rock that rises from deep in the mantle toward the surface.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-hotspot')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Mantle</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The largest layer of Earth, made of hot, dense rock that slowly flows.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-mantle')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Magma</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Molten rock beneath Earth's surface. It feeds a volcano when it reaches the crust.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-hotspot')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Core</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">Earth's center, made of iron and nickel. It has a liquid outer core and a solid inner core.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-core')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Hotspot Volcano</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A volcano that forms over a hotspot in the middle of a plate, not at a plate boundary.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-hotspot')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Island Chain</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A line of volcanic islands built as a plate slowly moves over a fixed hotspot.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-chain')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Lithosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The solid outer section of Earth that includes the crust and the upper part of the mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Asthenosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The region of the upper mantle that flows like soft plastic. It is responsible for convection currents.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-astheno')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Convection Current</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The looping flow of hot rock that rises, cools, and sinks again. It moves Earth's plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Tectonic Plate</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A large slab of Earth's rigid outer shell that moves slowly over the softer mantle below.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-chain')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Oceanic Crust</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">Crust made of basalt, about 4 miles thick. It is older and more dense than continental crust.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-crusttype')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Seamount</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An underwater mountain that was once a volcanic island before it sank below the surface.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-stages')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Continental Crust</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">Crust made of granite, about 25 miles thick. It is younger and less dense than oceanic crust.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-crusttype')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Subsidence</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The slow sinking of crust as it moves away from a hotspot, cools, and becomes more dense.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-stages')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Extinct Volcano</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A volcano that has moved off its magma source and will not erupt again.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-stages')">See it in the lesson &#8595;</span></div>
       </button>
     </div>
   </div>
@@ -802,376 +794,299 @@
 <section id="engage" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Engage &middot; Phenomenon</span>
-    <h2 class="section-title">The Surface Shakes, but Why?</h2>
-    <p class="section-desc">Earthquakes and volcanoes happen at the surface, the part of Earth we can see and stand on. But their causes begin deep inside, in layers no person has ever reached.</p>
+    <h2 class="section-title">Volcanoes in the Wrong Place</h2>
+    <p class="section-desc">Almost all of Earth's volcanoes line up along the edges of tectonic plates, where the crust cracks, melts, and slips. The Hawaiian Islands break that rule. They sit alone in the middle of the Pacific, far from any boundary.</p>
 
     <div class="phenomenon-card">
       <div class="phenomenon-icon">&#127755;</div>
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
-        <h3>Energy From the Deep</h3>
-        <p>The ground feels solid and still. Yet some places shake apart in earthquakes, and others spill out molten rock through volcanoes. The deepest hole humans have ever drilled reaches only a tiny fraction of the way down. So how can something happening thousands of kilometers below the surface shape the land we live on?</p>
+        <h3>The Hawaiian Islands</h3>
+        <p>The Hawaiian Islands are a chain of volcanoes in the middle of the Pacific Ocean, thousands of miles from the nearest plate boundary. Stranger still, the islands are not all the same age. The southeast end is young and erupting, while the islands to the northwest are old and quiet. Why would a line of volcanoes form in the middle of a plate, and why is one end so much older than the other?</p>
       </div>
     </div>
 
-    <!-- Cross-section image -->
+    <!-- Phenomenon figure: chain in the middle of the plate -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A cutaway of Earth showing a volcano and earthquake at the surface connected to hot interior layers below">
-        <defs>
-          <radialGradient id="coreGlow" cx="50%" cy="100%" r="90%">
-            <stop offset="0%" stop-color="#ffcf6b"/>
-            <stop offset="35%" stop-color="#e8814a"/>
-            <stop offset="70%" stop-color="#a8482e"/>
-            <stop offset="100%" stop-color="#3a2030"/>
-          </radialGradient>
-        </defs>
-        <!-- interior glow -->
-        <rect x="0" y="60" width="600" height="260" fill="url(#coreGlow)" opacity="0.85"/>
-        <!-- crust band -->
-        <rect x="0" y="60" width="600" height="26" fill="#6a7d52"/>
-        <rect x="0" y="86" width="600" height="6" fill="rgba(0,0,0,0.25)"/>
-        <!-- mountains/land -->
-        <path d="M0,60 L70,40 L120,60 Z" fill="#7a8f5a"/>
-        <path d="M150,60 L210,32 L270,60 Z" fill="#7a8f5a"/>
-        <!-- volcano -->
-        <path d="M400,60 L450,18 L500,60 Z" fill="#5a4a3a"/>
-        <path d="M438,30 L450,18 L462,30 L470,60 L430,60 Z" fill="#3a2e26"/>
-        <path d="M450,18 C446,8 454,8 450,0 C456,8 462,12 458,22 C452,18 452,26 450,18 Z" fill="#ff8a3c"/>
-        <circle cx="445" cy="14" r="3" fill="#ffce5a"/>
-        <circle cx="458" cy="20" r="2.5" fill="#ffb347"/>
-        <!-- earthquake crack -->
-        <path d="M170,60 L162,86 L178,110" fill="none" stroke="#1a1410" stroke-width="3"/>
-        <text x="120" y="50" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#dfe7ee">Earthquake</text>
-        <text x="412" y="50" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#dfe7ee">Volcano</text>
-        <!-- magma channel under volcano -->
-        <path d="M450,86 C448,120 466,150 455,172" fill="none" stroke="rgba(255,180,80,0.55)" stroke-width="10" stroke-linecap="round"/>
-        <!-- layer labels -->
-        <text x="20" y="78" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#23301c">CRUST</text>
-        <text x="20" y="104" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="rgba(255,255,255,0.7)">LITHOSPHERE</text>
-        <text x="20" y="150" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="rgba(255,255,255,0.75)">MANTLE</text>
-        <text x="20" y="295" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="rgba(255,255,255,0.85)">CORE (deepest, hottest)</text>
+      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A stylized map of the Pacific Ocean with a line of volcanic islands in the center, getting older toward the northwest and younger toward the southeast">
+        <rect x="20" y="20" width="560" height="240" rx="16" fill="#0e2230"/>
+        <!-- plate edges far away -->
+        <path d="M30,60 C120,80 130,200 40,240" fill="none" stroke="rgba(159,184,204,0.35)" stroke-width="2.5" stroke-dasharray="7 7"/>
+        <path d="M570,55 C500,90 500,200 560,245" fill="none" stroke="rgba(159,184,204,0.35)" stroke-width="2.5" stroke-dasharray="7 7"/>
+        <text x="48" y="45" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">plate edge</text>
+        <text x="512" y="42" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">plate edge</text>
+        <!-- island chain across the middle -->
+        <g>
+          <circle cx="150" cy="110" r="6" fill="#7a8fa6"/>
+          <circle cx="225" cy="135" r="8" fill="#8aa0b6"/>
+          <circle cx="300" cy="158" r="10" fill="#9fb8cc"/>
+          <circle cx="375" cy="178" r="13" fill="#e8814a"/>
+          <circle cx="445" cy="198" r="16" fill="#f5c842"/>
+        </g>
+        <text x="150" y="92" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">oldest</text>
+        <text x="445" y="226" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="#f5c842">youngest &amp; erupting</text>
+        <text x="118" y="250" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">&#8592; Northwest</text>
+        <text x="402" y="250" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#f5c842">Southeast &#8594;</text>
       </svg>
-      <div class="figure-caption">The same heat deep inside Earth that glows in this cutaway is the engine behind surface events.</div>
+      <div class="figure-caption">A line of volcanoes in the middle of the Pacific. The islands get younger and more active toward the southeast.</div>
     </div>
 
     <!-- Prediction gate -->
     <div class="question-pause predict-pause" id="qp-engage">
       <div class="qp-row">
         <span class="question-pause-icon">&#129300;</span>
-        <div class="question-pause-text"><strong>Make a prediction:</strong> How can something happening thousands of kilometers below Earth affect earthquakes and volcanoes at the surface?</div>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Why would a chain of volcanoes form in the middle of a plate, with one end older than the other?</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn"><span class="pb-letter">A</span>Earth's center has no effect on the surface.</button>
-        <button class="predict-btn"><span class="pb-letter">B</span>Processes deep inside Earth influence the surface.</button>
-        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes only occur in the crust, with no deeper cause.</button>
+        <button class="predict-btn"><span class="pb-letter">A</span>A plate boundary secretly runs right through the islands.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>A fixed source of heat in the mantle melts through the moving plate, leaving a trail of volcanoes behind.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>All of the islands erupted at the same moment in a straight line.</button>
       </div>
     </div>
 
     <div class="name-it slate-it predict-gated" data-gate="qp-engage">
       <div class="name-it-label">Here's the big idea</div>
-      <p>The best answer is <strong>B</strong>. Earth is not one solid ball. It is built from layers, and the deepest layers are extremely hot. That heat keeps the rock inside slowly moving. As deep rock flows, it drags the surface, builds pressure, and feeds volcanoes. To understand earthquakes and volcanoes, we have to look inside. That is exactly where this lesson goes next.</p>
+      <p>The best answer is <strong>B</strong>. Deep below Hawaii is a fixed source of heat called a hotspot. It melts through the plate above and builds a volcano. But the plate keeps moving, so the old volcano is carried away and a new one forms over the hotspot. Over millions of years this leaves a trail, which is why the islands line up and grow older toward the northwest. The rest of this lesson explains exactly how that works.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2rem;">
-      <strong>Where we're headed:</strong> First we'll see how Earth got its layers in the first place. Then we'll travel from the surface all the way to the center, and finally connect what we find back to the shaking ground above.
+      <strong>Where we're headed:</strong> First we'll see the few ways volcanoes form, and why Hawaii does not fit the usual pattern. Then we'll meet the hotspot, watch the plate build a chain as it moves, and follow the life of a single island from birth to seamount.
     </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1: HOW EARTH GOT ITS LAYERS
+     EXPLORE 1: WHERE VOLCANOES FORM
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="explore" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; Formation</span>
-    <h2 class="section-title">How Earth Got Its Layers</h2>
-    <p class="section-desc">Earth did not start out with neat layers. They formed billions of years ago, while the young planet was a glowing ball of molten rock and metal.</p>
+    <span class="section-label">Explore &middot; The Puzzle</span>
+    <h2 class="section-title">Three Ways to Build a Volcano</h2>
+    <p class="section-desc">Volcanism is mostly focused at plate margins, the edges where plates meet. But not every volcano sits at a boundary. There are three main ways magma reaches the surface, and only one of them explains Hawaii.</p>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#9728;&#65039;</span>
-        <div class="card-title">A Molten Beginning</div>
+    <div id="term-types" class="crust-grid">
+      <div class="crust-card boundary">
+        <div class="crust-title">Subduction</div>
+        <p>At a <strong>convergent boundary</strong>, one plate sinks beneath another. The sinking plate melts and the magma rises to feed volcanoes, like the ones around the Pacific Ring of Fire.</p>
+        <span class="crust-where">At plate edges</span>
       </div>
-      <div class="card-body">
-        <p>Early in its history, Earth formed from dust and rock left over after the Sun formed. As Earth grew, collisions released a huge amount of heat that melted much of the planet.</p>
-        <p>While Earth was molten, materials were free to move. Heavy materials could sink and light materials could rise. This set the stage for Earth to sort itself into layers.</p>
+      <div class="crust-card rift">
+        <div class="crust-title">Rifting</div>
+        <p>At a <strong>divergent boundary</strong>, two plates pull apart. Magma rises into the gap and erupts, building new crust along mid-ocean ridges and rift valleys.</p>
+        <span class="crust-where">At plate edges</span>
       </div>
-    </div>
-
-    <div id="term-density" class="name-it slate-it">
-      <div class="name-it-label">Key idea: Density</div>
-      <p><strong>Density</strong> is how much mass is packed into a given space. When materials can move freely, denser materials sink below less dense materials, just like a steel marble sinks in water.</p>
-    </div>
-
-    <div id="term-differentiation" class="name-it" style="border-left-color: var(--gold);">
-      <div class="name-it-label" style="color: var(--gold);">Key idea: Differentiation</div>
-      <p>Because of density, the molten Earth separated into layers in a process called <strong style="color: var(--gold);">differentiation</strong>. Heavy metals like iron and nickel sank to the center to form the core, while lighter materials rose to form the mantle and crust. As Earth slowly cooled, these layers solidified into the structure we observe today.</p>
-    </div>
-
-    <!-- Differentiation figure -->
-    <div class="figure-box">
-      <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three stages showing heavy material sinking to the center as a molten planet separates into layers by density">
-        <!-- stage 1 mixed -->
-        <g>
-          <circle cx="90" cy="100" r="62" fill="#5a4636"/>
-          <g fill="#c9d0d8">
-            <circle cx="70" cy="80" r="6"/><circle cx="110" cy="70" r="6"/><circle cx="95" cy="110" r="6"/>
-            <circle cx="65" cy="120" r="6"/><circle cx="120" cy="115" r="6"/><circle cx="88" cy="90" r="6"/>
-          </g>
-          <text x="90" y="182" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">1. Molten, all mixed</text>
-        </g>
-        <text x="195" y="105" text-anchor="middle" font-size="26" fill="#7a8fa6">&#8594;</text>
-        <!-- stage 2 sinking -->
-        <g>
-          <circle cx="280" cy="100" r="62" fill="#5a4636"/>
-          <g fill="#c9d0d8">
-            <circle cx="280" cy="120" r="6"/><circle cx="266" cy="108" r="6"/><circle cx="294" cy="108" r="6"/>
-            <circle cx="280" cy="96" r="6"/><circle cx="270" cy="86" r="5"/><circle cx="292" cy="88" r="5"/>
-          </g>
-          <text x="280" y="182" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">2. Heavy metal sinks</text>
-        </g>
-        <text x="385" y="105" text-anchor="middle" font-size="26" fill="#7a8fa6">&#8594;</text>
-        <!-- stage 3 layered -->
-        <g>
-          <circle cx="470" cy="100" r="62" fill="#6a7d52"/>
-          <circle cx="470" cy="100" r="50" fill="#9a5e3a"/>
-          <circle cx="470" cy="100" r="24" fill="#d0d6dc"/>
-          <circle cx="470" cy="100" r="11" fill="#aeb6bf"/>
-          <text x="470" y="182" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">3. Layers form</text>
-        </g>
-      </svg>
-      <div class="figure-caption">Differentiation: heavy iron and nickel sink to the center, lighter rock rises to the outside.</div>
-    </div>
-
-    <div class="callout gold">
-      <span class="callout-icon">&#128161;</span>
-      <div class="callout-body"><strong>The key pattern:</strong> Density decides the order. The densest material ended up deepest. That single rule explains why the layers are arranged the way they are, from the heavy metal core to the light, brittle crust.</div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2: THE FOUR LAYERS (interactive)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="layers" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Four Layers</span>
-    <h2 class="section-title">A Journey to the Center</h2>
-    <p class="section-desc">Earth is divided into four main layers. Starting at the surface, each one is deeper, hotter, and more dense than the one above it. Click a layer to explore it.</p>
-
-    <div class="layer-wrap">
-      <div class="layer-figure">
-        <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A cross-section of Earth with four nested layers: crust, mantle, outer core, and inner core">
-          <circle cx="120" cy="120" r="116" fill="#6a7d52"/>
-          <circle cx="120" cy="120" r="108" fill="#9a5e3a"/>
-          <circle cx="120" cy="120" r="56" fill="#e89a4a"/>
-          <circle cx="120" cy="120" r="26" fill="#d6dce2"/>
-          <text x="120" y="13" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#23301c">CRUST</text>
-          <text x="70" y="56" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="rgba(255,255,255,0.85)">MANTLE</text>
-          <text x="120" y="76" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#5a3018">OUTER</text>
-          <text x="120" y="86" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#5a3018">CORE</text>
-          <text x="120" y="117" text-anchor="middle" font-family="Nunito,sans-serif" font-size="8" font-weight="800" fill="#3a4450">INNER</text>
-          <text x="120" y="126" text-anchor="middle" font-family="Nunito,sans-serif" font-size="8" font-weight="800" fill="#3a4450">CORE</text>
-        </svg>
-      </div>
-      <div class="layer-controls">
-        <div class="layer-list">
-          <div class="layer-row" style="background: rgba(106,125,82,0.30); color: #c4d4a2;" onclick="layerClick(1)" id="term-crust">
-            <span>1 &middot; Crust</span><span class="layer-tag">thinnest &middot; least dense</span>
-          </div>
-          <div class="layer-row" style="background: rgba(154,94,58,0.32); color: #e0a878;" onclick="layerClick(2)" id="term-mantle">
-            <span>2 &middot; Mantle</span><span class="layer-tag">largest layer</span>
-          </div>
-          <div class="layer-row" style="background: rgba(232,154,74,0.30); color: #f2b86a;" onclick="layerClick(3)">
-            <span>3 &middot; Outer Core</span><span class="layer-tag">liquid metal</span>
-          </div>
-          <div class="layer-row" style="background: rgba(190,198,206,0.30); color: #d6dce2;" onclick="layerClick(4)" id="term-core">
-            <span>4 &middot; Inner Core</span><span class="layer-tag">solid &middot; densest</span>
-          </div>
-        </div>
-        <div class="layer-detail-panel">
-          <div class="ld-inner">
-            <div class="ld-label" id="ld-label">Click a layer</div>
-            <div class="ld-title" id="ld-title">Start at the surface &#8594;</div>
-            <div class="ld-body" id="ld-body">Each layer has its own state, thickness, and density. Click any layer to find out what makes it different, and how deep you would have to dig to reach it.</div>
-          </div>
-        </div>
+      <div class="crust-card spot">
+        <div class="crust-title">Hotspots</div>
+        <p>A few volcanoes form far from any edge. Heat rises from deep in the mantle and melts through the <strong>middle of a plate</strong>. This is what built Hawaii.</p>
+        <span class="crust-where">Middle of a plate</span>
       </div>
     </div>
 
     <div class="callout slate">
-      <span class="callout-icon">&#128207;</span>
-      <div class="callout-body"><strong>A clear trend:</strong> Density, temperature, and pressure all increase as you move from the crust to the inner core. The deeper you go, the heavier, hotter, and more squeezed the material becomes.</div>
+      <span class="callout-icon">&#127757;</span>
+      <div class="callout-body"><strong>The odd one out:</strong> subduction and rifting both happen at plate boundaries, so their volcanoes line up along the edges. Hotspot volcanoes are different. They appear in the middle of a plate, which is exactly why the Hawaiian Islands looked so out of place.</div>
+    </div>
+
+    <div class="bridge-callout teal" style="margin-top: 0.5rem;">
+      <strong>The question that remains:</strong> if there is no boundary under Hawaii to crack and melt the crust, what is providing the heat? The answer comes from far below the plate.
     </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3: A CLOSER LOOK AT THE CRUST
+     EXPLORE 2: WHAT IS A HOTSPOT
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="crust" style="background: var(--dark);">
+<section id="hotspot-sec" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Crust</span>
-    <h2 class="section-title">The Layer You Live On</h2>
-    <p class="section-desc">The crust is the most studied and best understood layer, because it is the one we can actually reach. It is also where earthquakes and volcanoes break through.</p>
+    <span class="section-label">Explore &middot; The Source</span>
+    <h2 class="section-title">A Hidden Plume of Heat</h2>
+    <p class="section-desc">The heat under Hawaii does not come from the edges of the plate. It comes from deep inside the mantle, rising in a narrow column that stays in roughly the same place for millions of years.</p>
 
-    <div class="content-card">
+    <div id="term-hotspot" class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#127822;</span>
-        <div class="card-title">Thin as an Apple's Skin</div>
+        <span class="card-icon">&#128293;</span>
+        <div class="card-title">Plume, Hotspot, Volcano</div>
       </div>
       <div class="card-body">
-        <p>The crust is like the skin of an apple. It is very thin compared to the other three layers, only about 4 to 25 miles thick. It is the <strong>least dense</strong> layer, made mostly of rock and soil that is <strong>brittle</strong>, meaning it breaks easily.</p>
-        <p>The crust is not one solid shell. It is broken into many large pieces called <span class="vocab">plates</span>. These plates rest on the soft mantle just below and slowly move.</p>
-        <div class="callout slate">
-          <span class="callout-icon">&#9889;</span>
-          <div class="callout-body"><strong>How earthquakes start:</strong> Plates usually slide along smoothly, but sometimes they get stuck and pressure builds up. When that pressure is finally released, it travels out as energy that shakes the crust. That shaking is an earthquake.</div>
+        <p>Deep in the mantle, a tall column of extremely hot rock rises slowly toward the surface. This column is a <span class="vocab">mantle plume</span>. The plume stays fixed in place while the plate slides over the top of it.</p>
+        <p>The point on the crust right above the plume is a <span class="vocab">hotspot</span>. Heat from the mantle, and some <span class="vocab">magma</span>, rises to the hotspot and melts through the plate above. When that magma breaks the surface, it builds a <span class="vocab">hotspot volcano</span>.</p>
+        <p>The Hawaiian Islands are classic hotspot volcanoes. They formed where a mantle plume punched through the middle of the Pacific plate, far from any boundary.</p>
+      </div>
+    </div>
+
+    <!-- Plume cross-section figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cross section showing a mantle plume rising from deep in the mantle to a hotspot, which melts through the plate and feeds a volcano at the surface">
+        <!-- mantle -->
+        <rect x="20" y="20" width="560" height="260" rx="12" fill="#7a3a2a" opacity="0.85"/>
+        <rect x="20" y="20" width="560" height="260" rx="12" fill="url(#mantleGrad)"/>
+        <defs>
+          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.08"/>
+          </linearGradient>
+          <marker id="upArrow" markerWidth="9" markerHeight="9" refX="4.5" refY="2" orient="auto"><path d="M4.5,0 L9,8 L0,8 Z" fill="#ffd27a"/></marker>
+        </defs>
+        <!-- ocean -->
+        <rect x="20" y="20" width="560" height="48" fill="#1e4258" opacity="0.85"/>
+        <text x="540" y="40" text-anchor="end" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fcbe0">ocean</text>
+        <!-- plate / crust -->
+        <rect x="20" y="62" width="560" height="22" fill="#6a7d52"/>
+        <text x="40" y="78" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#1a1f14">tectonic plate (crust)</text>
+        <!-- plume column -->
+        <path d="M285,260 C275,180 290,140 295,92 L305,92 C310,140 325,180 315,260 Z" fill="#ffce6a" opacity="0.75"/>
+        <line x1="300" y1="250" x2="300" y2="120" stroke="#ffd27a" stroke-width="3" marker-end="url(#upArrow)"/>
+        <text x="300" y="275" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">mantle plume rises</text>
+        <!-- hotspot marker -->
+        <circle cx="300" cy="73" r="9" fill="#e74c3c"/>
+        <text x="332" y="77" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="#ffb0a0">hotspot</text>
+        <!-- volcano on surface -->
+        <path d="M270,62 L300,26 L330,62 Z" fill="#8a9a6a"/>
+        <path d="M291,40 L300,26 L309,40 Z" fill="#e8814a"/>
+        <text x="300" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="#f5c842">volcano</text>
+      </svg>
+      <div class="figure-caption">A fixed mantle plume rises to a hotspot, melts through the plate, and feeds a volcano at the surface.</div>
+    </div>
+
+    <div class="name-it gold-it" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Name it: Hotspot</div>
+      <p>A <strong style="color: var(--gold);">hotspot</strong> is a point on the crust directly above a hot plume in the mantle. Because the plume stays fixed while the plate moves, the hotspot acts like a torch held still under a sheet of moving paper. It keeps burning through in the same spot, even as the surface above it slides by.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: THE MOVING PLATE BUILDS A CHAIN
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="chain-sec" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Conveyor Belt</span>
+    <h2 class="section-title">One Hotspot, Many Islands</h2>
+    <p class="section-desc">If the hotspot stays put and the plate moves, a single volcano cannot stay over the heat forever. That simple fact is what turns one hotspot into a whole chain of islands.</p>
+
+    <div id="term-chain" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127965;&#65039;</span>
+        <div class="card-title">A Trail of Volcanoes</div>
+      </div>
+      <div class="card-body">
+        <p>The <span class="vocab">tectonic plate</span> moves over the fixed hotspot, so each volcano is slowly carried away from its heat source. As one volcano drifts off the hotspot, a brand new one starts to grow in its place. Repeat this for millions of years and you build an <span class="vocab">island chain</span>.</p>
+        <p>This gives the chain a clear age pattern. <strong>The islands get younger the closer you are to the hotspot.</strong> The island sitting over the hotspot right now is the youngest, and the islands far away are the oldest.</p>
+        <p>The Pacific plate is moving toward the northwest. That is why the Hawaiian Islands have active volcanoes on the southeast end, near the hotspot, and older, quiet islands stretching to the northwest.</p>
+      </div>
+    </div>
+
+    <!-- Conveyor figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A plate moving northwest over a fixed hotspot builds a row of volcanoes that get older with distance from the hotspot">
+        <rect x="20" y="20" width="560" height="240" rx="12" fill="#0e2230"/>
+        <!-- ocean band -->
+        <rect x="20" y="120" width="560" height="60" fill="#1e4258" opacity="0.7"/>
+        <!-- plate -->
+        <rect x="20" y="178" width="560" height="62" fill="#6a7d52"/>
+        <text x="40" y="232" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#1a1f14">tectonic plate</text>
+        <!-- plate motion arrow -->
+        <line x1="430" y1="46" x2="150" y2="46" stroke="#dfe7ee" stroke-width="3" marker-end="url(#mvArrow)"/>
+        <defs><marker id="mvArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#dfe7ee"/></marker></defs>
+        <text x="290" y="38" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#dfe7ee">plate moves northwest &#8594;</text>
+        <!-- volcanoes: oldest left (eroded, low), youngest right over hotspot (tall, erupting) -->
+        <path d="M95,178 L120,150 L145,178 Z" fill="#566b7e"/>
+        <path d="M185,178 L215,140 L245,178 Z" fill="#6b7e92"/>
+        <path d="M285,178 L320,120 L355,178 Z" fill="#8a9a6a"/>
+        <path d="M395,178 L440,96 L485,178 Z" fill="#8a9a6a"/>
+        <path d="M430,118 L440,96 L450,118 Z" fill="#e8814a"/>
+        <!-- hotspot + plume under the youngest -->
+        <circle cx="440" cy="178" r="8" fill="#e74c3c"/>
+        <line x1="440" y1="258" x2="440" y2="190" stroke="#ffd27a" stroke-width="4"/>
+        <text x="440" y="274" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="#ffce8a">fixed hotspot</text>
+        <!-- age labels -->
+        <text x="120" y="142" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">oldest</text>
+        <text x="440" y="88" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="#f5c842">youngest</text>
+      </svg>
+      <div class="figure-caption">The hotspot stays still while the plate slides over it, leaving a row of volcanoes that ages with distance from the heat.</div>
+    </div>
+
+    <div id="term-chain-name" class="name-it green-it">
+      <div class="name-it-label">Name it: Island Chain</div>
+      <p>An <strong>island chain</strong> is a line of volcanic islands built one after another as a plate moves over a single hotspot. Reading the chain is like reading tree rings. The order and ages of the islands record the direction the plate has traveled, which makes the chain real evidence of plate motion.</p>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#129517;</span>
+      <div class="callout-body"><strong>Think of it this way:</strong> hold a candle still and pull a sheet of paper slowly across the flame. The flame stays in one place, but it scorches a line of marks across the moving paper. The hotspot is the flame, the plate is the paper, and the islands are the marks.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: THE LIFE OF A HOTSPOT ISLAND (interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="stages-sec" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Life Cycle</span>
+    <h2 class="section-title">Birth, Drift, and Sinking</h2>
+    <p class="section-desc">Follow a single Hawaiian volcano from the moment it is born over the hotspot to the day it disappears beneath the waves. Open each stage to see what happens and where it is happening in Hawaii right now.</p>
+
+    <div id="term-stages" class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 280 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four stages of a hotspot island: a new volcano forming under the sea, an active island over the hotspot, an extinct island carried away, and an old island sunk into a seamount">
+          <!-- water -->
+          <rect x="10" y="10" width="260" height="300" rx="10" fill="#0e2230"/>
+          <rect x="10" y="40" width="260" height="270" fill="#1e4258" opacity="0.55"/>
+          <line x1="10" y1="40" x2="270" y2="40" stroke="#9fcbe0" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6"/>
+          <text x="20" y="32" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#9fcbe0">sea level</text>
+          <!-- plate -->
+          <rect x="10" y="250" width="260" height="60" fill="#6a7d52"/>
+          <!-- Stage 4: seamount (far left, fully submerged) -->
+          <path d="M30,250 L55,200 L80,250 Z" fill="#566b7e"/>
+          <text x="55" y="270" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="#9fb8cc">4</text>
+          <!-- Stage 3: extinct island (low, just above water) -->
+          <path d="M95,250 L125,150 L155,250 Z" fill="#6b7e92"/>
+          <text x="125" y="270" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="#cfe0ee">3</text>
+          <!-- Stage 2: active island (tall, over hotspot) -->
+          <path d="M160,250 L200,70 L240,250 Z" fill="#8a9a6a"/>
+          <path d="M190,110 L200,70 L210,110 Z" fill="#e8814a"/>
+          <text x="182" y="270" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="#1a1f14">2</text>
+          <!-- Stage 1: Loihi (small, submerged, right of hotspot) -->
+          <path d="M230,250 L248,212 L266,250 Z" fill="#7a8a5a"/>
+          <text x="248" y="244" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="#dfe7ee">1</text>
+          <!-- hotspot + plume under stage 2 -->
+          <circle cx="200" cy="250" r="7" fill="#e74c3c"/>
+          <line x1="200" y1="308" x2="200" y2="258" stroke="#ffd27a" stroke-width="4"/>
+        </svg>
+      </div>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(124,200,248,0.26); color: #aed8f8;" onclick="stageClick(1)">
+            <span>1 &middot; Birth</span><span class="layer-tag">a new volcano rises</span>
+          </div>
+          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f3d98a;" onclick="stageClick(2)">
+            <span>2 &middot; Active</span><span class="layer-tag">sits over the hotspot</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b88a;" onclick="stageClick(3)">
+            <span>3 &middot; Extinct</span><span class="layer-tag">carried off the hotspot</span>
+          </div>
+          <div class="layer-row" style="background: rgba(122,143,166,0.3); color: #c4d3e0;" onclick="stageClick(4)">
+            <span>4 &middot; Seamount</span><span class="layer-tag">cooled and sunk</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="st-label">Open a stage</div>
+            <div class="ld-title" id="st-title">The life of an island &#8594;</div>
+            <div class="ld-body" id="st-body">Every Hawaiian island travels the same path, from a young volcano over the hotspot to an old mountain beneath the sea. Open any stage to follow one island through its life.</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <h3 id="term-crusttype" style="font-family: 'Fredoka One', cursive; font-size: 1.4rem; margin: 2.5rem 0 0.6rem; color: var(--text);">Two Kinds of Crust</h3>
-    <p class="section-desc" style="margin-bottom: 1.4rem;">Not all crust is the same. The crust under the oceans is different from the crust that makes up the continents.</p>
-
-    <div class="crust-grid">
-      <div class="crust-card oceanic">
-        <div class="crust-title">Oceanic Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Average 4 miles thick</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>basalt</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thinner</strong> than continental crust</span></li>
-          <li><span class="crust-dot"></span><span><strong>Older</strong> and <strong>more dense</strong></span></li>
-        </ul>
-      </div>
-      <div class="crust-card continental">
-        <div class="crust-title">Continental Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Average 25 miles thick</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>granite</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thicker</strong> than oceanic crust</span></li>
-          <li><span class="crust-dot"></span><span><strong>Younger</strong> and <strong>less dense</strong></span></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="bridge-callout teal">
-      <strong>Remember the density rule?</strong> It still applies here. Oceanic crust is more dense than continental crust, so where the two meet, the heavier oceanic crust tends to sink beneath the lighter continental crust.
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 4: INSIDE THE MANTLE
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="mantle-zone" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Mantle</span>
-    <h2 class="section-title">The Engine Inside Earth</h2>
-    <p class="section-desc">The mantle is the largest layer of Earth and the key to the whole mystery. Even though it is solid rock, it slowly flows, and that flow is what moves the surface.</p>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#127855;</span>
-        <div class="card-title">Rock That Flows Like Toothpaste</div>
-      </div>
-      <div class="card-body">
-        <p>The mantle is made of hot, dense rock and is about 1,800 miles thick. Because of temperature differences inside it, the rock in the mantle flows slowly, like toothpaste squeezed through a tube. Heat and pressure cause the rock to move and bend within this layer.</p>
-        <p>This slow movement matters more than it sounds. <strong>The movement of the mantle creates the movement of Earth's plates above it.</strong></p>
-      </div>
-    </div>
-
-    <div id="term-litho" class="name-it slate-it">
-      <div class="name-it-label">Key idea: Lithosphere</div>
-      <p>The <strong>lithosphere</strong> is the solid outer section of Earth. It includes Earth's crust and the upper part of the mantle. The lithosphere is the rigid material that is broken into the plates.</p>
-    </div>
-
-    <div id="term-astheno" class="name-it teal-it">
-      <div class="name-it-label">Key idea: Asthenosphere</div>
-      <p>Just below the lithosphere is the <strong>asthenosphere</strong>, the region of the upper mantle that flows. This flowing, bendable quality is called plastic behavior, and the asthenosphere is responsible for <strong>convection currents</strong>.</p>
-    </div>
-
-    <div id="term-convection" class="name-it" style="border-left-color: var(--gold);">
-      <div class="name-it-label" style="color: var(--gold);">Key idea: Convection Current</div>
-      <p>A <strong style="color: var(--gold);">convection current</strong> is a looping flow caused by heat. Hot rock near the bottom of the mantle is less dense, so it rises. Near the top it cools, becomes more dense, and sinks again. This endless loop drags the plates on top, slowly moving the continents and the seafloor.</p>
-    </div>
-
-    <!-- Convection figure -->
-    <div class="figure-box">
-      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Convection currents in the mantle: hot rock rises in the middle, spreads sideways, and sinks at the edges, pushing two plates apart at the surface">
-        <!-- mantle background -->
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="#7a3a2a" opacity="0.85"/>
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="url(#mantleGrad)"/>
-        <defs>
-          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.1"/>
-          </linearGradient>
-        </defs>
-        <!-- plates -->
-        <rect x="40" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <rect x="320" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <text x="150" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <text x="450" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <!-- spreading arrows at surface -->
-        <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <!-- convection loops -->
-        <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <path d="M400,210 C400,160 340,150 310,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <defs>
-          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd27a"/></marker>
-        </defs>
-        <text x="300" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">Hot rock rises in the middle, cools, and sinks at the sides</text>
-      </svg>
-      <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 5: THE CORE
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="core" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Core</span>
-    <h2 class="section-title">Iron at the Center</h2>
-    <p class="section-desc">At Earth's center sits the core, the densest and hottest region of all. It is split into two parts: a liquid outer core and a solid inner core.</p>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#127754;</span>
-        <div class="card-title">Outer Core: A Sea of Liquid Metal</div>
-      </div>
-      <div class="card-body">
-        <p>The outer core is the only liquid layer, about 1,400 miles thick, made of liquid iron and nickel. Scientists know this layer is liquid by studying earthquakes and how seismic waves move through Earth.</p>
-        <p>The flowing of liquid metal in the outer core creates Earth's <strong>magnetic field</strong>, the invisible force that makes a compass needle point north.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#9899;</span>
-        <div class="card-title">Inner Core: A Solid Ball of Iron</div>
-      </div>
-      <div class="card-body">
-        <p>The inner core is the center layer of Earth, about 780 miles thick. It is solid metal, a dense ball of iron crystals made of iron and nickel.</p>
-        <p>You might wonder how the inner core can be solid when it is hotter than the liquid outer core. The answer is pressure. The crushing weight of every layer above squeezes the inner core so tightly that the metal cannot become liquid.</p>
-      </div>
-    </div>
-
-    <div class="callout gold">
-      <span class="callout-icon">&#128207;</span>
-      <div class="callout-body"><strong>The pattern holds all the way down:</strong> Density, temperature, and pressure increase the entire way from the crust to the inner core. The center of Earth is the heaviest, hottest, and most squeezed place on the planet.</div>
+    <div class="callout teal">
+      <span class="callout-icon">&#127754;</span>
+      <div class="callout-body"><strong>Why the chain sinks:</strong> as crust moves away from the hotspot it ages, cools, and becomes more dense. Denser crust rides lower, so the old islands slowly subside. Add millions of years of erosion and an island that once towered above the sea ends up as a seamount hidden below it.</div>
     </div>
   </div>
 </section>
@@ -1180,7 +1095,7 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      QUICK RECALL
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="recall" style="background: var(--dark2);">
+<section id="recall" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Quick Recall</span>
     <h2 class="section-title">Brain Check</h2>
@@ -1189,11 +1104,11 @@
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">While Earth was molten, why did iron and nickel end up at the center?</div>
+      <div class="qr-q" id="qr1Q">The Hawaiian Islands sit in the middle of the Pacific plate, far from any boundary. What melts through the crust to form them?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>They were the lightest materials, so they floated down</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>They were the most dense, so they sank during differentiation</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>They were pulled in by Earth's magnetic field</span></label>
+        <label><input type="radio" name="qr1" value="0"><span>A subduction trench at the plate edge</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>A hotspot fed by a rising mantle plume</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>A transform fault sliding sideways</span></label>
       </div>
       <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1205,11 +1120,11 @@
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">Which layer flows like soft plastic and is responsible for convection currents?</div>
+      <div class="qr-q" id="qr2Q">In a hotspot island chain, which island is the youngest?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>The inner core</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>The brittle crust</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>The asthenosphere in the upper mantle</span></label>
+        <label><input type="radio" name="qr2" value="0"><span>The one farthest from the hotspot</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>The one sitting directly over the hotspot</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>They are all exactly the same age</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1221,11 +1136,11 @@
     <div class="qr-card" id="qrCard3">
       <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr3Q">Two plates get stuck, pressure builds, and is suddenly released as energy. What happens at the surface?</div>
+      <div class="qr-q" id="qr3Q">Old Hawaiian islands slowly sink and become seamounts. Why?</div>
       <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
-        <label><input type="radio" name="qr3" value="0"><span>An earthquake shakes the crust</span></label>
-        <label><input type="radio" name="qr3" value="1"><span>Earth's magnetic field switches off</span></label>
-        <label><input type="radio" name="qr3" value="2"><span>The inner core melts into liquid</span></label>
+        <label><input type="radio" name="qr3" value="0"><span>As the crust moves away from the hotspot it cools, grows more dense, and subsides</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>The hotspot reaches up and drags them under</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Ocean waves erode them away in just a few years</span></label>
       </div>
       <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1240,40 +1155,40 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      EXPLAIN: PUTTING IT TOGETHER
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="explain" style="background: var(--dark);">
+<section id="explain" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Explain &middot; Wrap-Up</span>
-    <h2 class="section-title">From the Deep to the Surface</h2>
-    <p class="section-desc">You started with a question: how can something happening thousands of kilometers down shake the ground above? Now you can trace the whole chain, step by step.</p>
+    <h2 class="section-title">From Deep Plume to Island Trail</h2>
+    <p class="section-desc">You started with a puzzle: why does a chain of volcanoes cross the middle of the Pacific, with one end older than the other? Now you can trace the whole chain of cause and effect, step by step.</p>
 
     <div class="wrapup-beats">
       <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">It Starts With Heat</div>
-        <div class="wrapup-beat-answer">Earth's interior is extremely hot.</div>
-        <div class="wrapup-beat-body">Leftover heat from Earth's formation keeps the deep layers hot. Because of <strong>density</strong> differences, hot rock is lighter than cool rock, which keeps the mantle slowly moving.</div>
+        <div class="wrapup-beat-label">It Starts With a Plume</div>
+        <div class="wrapup-beat-answer">A fixed plume of heat melts through the middle of the plate.</div>
+        <div class="wrapup-beat-body">A <strong>mantle plume</strong> rises to a <strong>hotspot</strong> and feeds a volcano, even though there is no plate boundary anywhere nearby.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">Heat Becomes Motion</div>
-        <div class="wrapup-beat-answer">Convection currents move the mantle, and the mantle moves the plates.</div>
-        <div class="wrapup-beat-body">Hot rock rises, cools, and sinks in <strong>convection currents</strong>. This flow drags the plates of the lithosphere, slowly shifting the surface of the planet.</div>
+        <div class="wrapup-beat-label">The Plate Keeps Moving</div>
+        <div class="wrapup-beat-answer">Plate motion carries each volcano off the hotspot and a new one forms.</div>
+        <div class="wrapup-beat-body">Because the plate slides while the hotspot stays put, the volcanoes line up into an <strong>island chain</strong> that grows younger toward the hotspot.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">Motion Reaches the Surface</div>
-        <div class="wrapup-beat-answer">Moving plates produce earthquakes and volcanoes.</div>
-        <div class="wrapup-beat-body">When stuck plates slip, the released energy causes <strong>earthquakes</strong>. Where plates pull apart or one sinks beneath another, melted rock rises and fuels <strong>volcanoes</strong>.</div>
+        <div class="wrapup-beat-label">Old Islands Sink</div>
+        <div class="wrapup-beat-answer">As the crust ages it cools, becomes dense, and subsides into seamounts.</div>
+        <div class="wrapup-beat-body">The oldest islands lose their magma source, go <strong>extinct</strong>, and slowly sink below the sea. Loihi, southeast of Hawaii, is the next island rising.</div>
       </div>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
       <strong>The full chain:</strong>
       <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Heat in the core and mantle</span>
-        <span class="wuc wuc-2">Density differences drive convection</span>
-        <span class="wuc wuc-2">Mantle flow moves the plates</span>
-        <span class="wuc wuc-3">Plates shift, stick, and collide</span>
-        <span class="wuc wuc-3">Earthquakes and volcanoes</span>
+        <span class="wuc wuc-1">Heat rises as a mantle plume</span>
+        <span class="wuc wuc-1">Hotspot melts through the plate</span>
+        <span class="wuc wuc-2">Plate moves over the fixed hotspot</span>
+        <span class="wuc wuc-2">Volcanoes line up youngest to oldest</span>
+        <span class="wuc wuc-3">Old islands cool and sink to seamounts</span>
       </div>
-      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. The shaking ground above is the surface story of a much deeper one.</div>
+      <div style="margin-top: 1rem;">Hawaii is not in the wrong place after all. A fixed hotspot and a moving plate worked together over millions of years to build a chain of islands. That chain is a record of how Earth's surface has changed, from a single volcano to a trail stretching across the Pacific.</div>
     </div>
   </div>
 </section>
@@ -1286,7 +1201,7 @@
   <div class="container">
     <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Ten questions covering everything you explored, from differentiation to convection currents. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you explored, from the mantle plume to the island chain and the life of a seamount. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -1353,7 +1268,7 @@
       <p id="el-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">&#128269; The Question You Came In With</span>
-        You started this lesson asking: <strong>"How does Earth's internal structure cause changes on Earth's surface?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes, you have answered it.
+        You started this lesson asking: <strong>"How can a chain of volcanoes form in the middle of a plate?"</strong> If you can trace a mantle plume to a hotspot, a moving plate to an island chain, and an aging island to a seamount, you have answered it.
       </div>
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
@@ -1461,20 +1376,20 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 })();
 </script>
 
-<!-- ===== FOUR LAYERS INTERACTIVE ===== -->
+<!-- ===== HOTSPOT ISLAND STAGES INTERACTIVE ===== -->
 <script>
-const layerData = {
-  1: { label: 'Layer 1 · Surface', title: 'Crust', body: 'The thin, brittle outer layer you live on, only 4 to 25 miles thick. It is the least dense layer, made of rock and soil, and it is broken into moving plates. This is where earthquakes and volcanoes appear.' },
-  2: { label: 'Layer 2 · Below the crust', title: 'Mantle', body: 'The largest layer, about 1,800 miles of hot, dense rock. It is solid but flows slowly like toothpaste because of temperature differences. Its movement drives the plates above. The upper mantle includes the flowing asthenosphere.' },
-  3: { label: 'Layer 3 · Deeper still', title: 'Outer Core', body: 'The only liquid layer, about 1,400 miles thick, made of liquid iron and nickel. The flowing of this liquid metal creates Earth’s magnetic field. Scientists know it is liquid from how seismic waves move through it.' },
-  4: { label: 'Layer 4 · The center', title: 'Inner Core', body: 'The center of Earth, about 780 miles thick. It is a solid, dense ball of iron crystals made of iron and nickel. Even though it is the hottest layer, crushing pressure keeps it solid. Density, temperature, and pressure are all highest here.' }
+const stageData = {
+  1: { label: 'Stage 1 · A new island is born', title: 'Birth Over the Hotspot', body: 'Magma from the plume builds a brand new volcano on the seafloor. At first it is hidden under the ocean. Just southeast of the Big Island, an undersea volcano called Loihi (also named Kamaehuakanaloa) is growing over the hotspot right now. One day it may rise tall enough to become the next Hawaiian island.' },
+  2: { label: 'Stage 2 · Sitting over the hotspot', title: 'An Active Island', body: 'The volcano sits directly over the hotspot, so the plume keeps feeding it magma. Its volcanoes erupt and the island grows tall above the sea. The Big Island of Hawaii is at this stage now, with active volcanoes like Kilauea and Mauna Loa.' },
+  3: { label: 'Stage 3 · Carried off the hotspot', title: 'Cut Off and Extinct', body: 'The moving plate carries the island away from the fixed hotspot. With no magma source left, its volcanoes stop erupting and the island goes extinct. The older islands northwest of Hawaii, such as Oahu and Kauai, have already drifted past this point.' },
+  4: { label: 'Stage 4 · Cooled and sunk', title: 'A Submerged Seamount', body: 'As the crust moves farther from the hotspot it cools, becomes more dense, and slowly subsides. Erosion wears the old island down, and over millions of years it sinks below the waves to become a seamount, an underwater mountain that was once an island.' }
 };
-function layerClick(n) {
-  const d = layerData[n];
-  document.getElementById('ld-label').textContent = d.label;
-  document.getElementById('ld-title').textContent = d.title;
-  document.getElementById('ld-body').textContent  = d.body;
-  document.querySelectorAll('.layer-row').forEach((el, i) => {
+function stageClick(n) {
+  const d = stageData[n];
+  document.getElementById('st-label').textContent = d.label;
+  document.getElementById('st-title').textContent = d.title;
+  document.getElementById('st-body').textContent  = d.body;
+  document.querySelectorAll('#term-stages .layer-row').forEach((el, i) => {
     el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
     el.style.outlineOffset = '1px';
   });
@@ -1518,14 +1433,14 @@ function layerClick(n) {
     });
   }
   wireQR('qr1', 1,
-    'Correct! Iron and nickel are the most dense materials, so they sank to the center during differentiation.',
-    'Not quite. Iron and nickel are very dense, so they sank to the center. Lighter materials rose to form the mantle and crust.');
-  wireQR('qr2', 2,
-    'Correct! The asthenosphere is the region of the upper mantle that flows, and it drives convection currents.',
-    'Not quite. The brittle crust and the solid inner core do not flow. The asthenosphere in the upper mantle is the layer that flows.');
+    'Correct! A mantle plume rises to a hotspot and melts through the middle of the plate, with no boundary needed.',
+    'Not quite. There is no boundary under Hawaii. The heat comes from a hotspot fed by a rising mantle plume.');
+  wireQR('qr2', 1,
+    'Correct! The island sitting over the hotspot is the youngest, because that is where new volcanoes are forming.',
+    'Not quite. New volcanoes form over the hotspot, so the island over the hotspot is the youngest, not the oldest.');
   wireQR('qr3', 0,
-    'Correct! Stuck plates build pressure, and the released energy shakes the crust as an earthquake.',
-    'Not quite. The released energy travels out as shaking in the crust. That is an earthquake.');
+    'Correct! Moving away from the hotspot, the crust cools and grows denser, so it rides lower and subsides into a seamount.',
+    'Not quite. The hotspot does not pull islands down, and erosion takes millions of years. The crust cools, grows dense, and subsides.');
 })();
 </script>
 
@@ -1544,99 +1459,114 @@ var elQuizMode  = 'practice';
 
 var elQuizQuestions = [
   {
-    q: "How many main layers is Earth divided into?",
-    options: ["Two", "Three", "Four", "Six"],
+    q: "A hotspot is best described as:",
+    options: [
+      "A boundary where two plates collide and one sinks",
+      "A fixed point in the mantle where heat rises and melts through the crust above",
+      "A trench where ocean crust is destroyed",
+      "A crack where a continent is splitting apart"
+    ],
+    correct: 1,
+    explanation: "A hotspot is a point on the crust directly above a fixed mantle plume. Heat rises there and melts through the plate, even in the middle of a plate."
+  },
+  {
+    q: "Most of Earth's volcanoes form at plate boundaries. Where do the Hawaiian Islands sit?",
+    options: [
+      "Along a deep-sea subduction trench",
+      "At a divergent mid-ocean ridge",
+      "On the edge of the Pacific plate",
+      "In the middle of the Pacific plate"
+    ],
+    correct: 3,
+    explanation: "The Hawaiian Islands sit in the middle of the Pacific plate, far from any boundary. That is what makes them hotspot volcanoes."
+  },
+  {
+    q: "As the Pacific plate moves over the fixed hotspot, what happens to the volcanoes it carries?",
+    options: [
+      "Each volcano is carried away from the hotspot and a new one forms, building a chain",
+      "Every volcano stays over the hotspot and keeps growing taller",
+      "The volcanoes drag the hotspot along with them",
+      "The volcanoes sink the moment they form"
+    ],
+    correct: 0,
+    explanation: "The plate moves while the hotspot stays fixed, so each volcano drifts off the heat and a new one grows in its place. Repeated over time, this builds an island chain."
+  },
+  {
+    q: "In a hotspot island chain, which island is the youngest?",
+    options: [
+      "The one farthest from the hotspot",
+      "They are all exactly the same age",
+      "The one sitting directly over the hotspot",
+      "The one that has already become a seamount"
+    ],
     correct: 2,
-    explanation: "Earth is divided into four main layers: the crust, the mantle, the outer core, and the inner core."
+    explanation: "New volcanoes form over the hotspot, so the island sitting over it is the youngest. Islands get older with distance from the hotspot."
   },
   {
-    q: "While Earth was molten, heavy metals like iron and nickel sank to the center. What is this sorting process called?",
-    options: ["Convection", "Differentiation", "Transmission", "Erosion"],
-    correct: 1,
-    explanation: "Differentiation is the process in which a molten Earth separated into layers by density. Heavy metals sank to form the core, while lighter materials rose to form the mantle and crust."
-  },
-  {
-    q: "Why did the densest materials end up at Earth's center?",
+    q: "On the Big Island of Hawaii the volcanoes are active, but the islands to the northwest are quiet. Why?",
     options: [
-      "Dense materials are pulled by the magnetic field",
-      "Dense materials sink below less dense materials",
-      "Dense materials are always the hottest",
-      "Dense materials float to the top"
+      "The northwest islands were built by a completely different hotspot",
+      "The northwest islands have drifted off the hotspot and lost their magma source",
+      "The northwest islands are actually much younger",
+      "The hotspot itself slowly moved to the northwest"
     ],
     correct: 1,
-    explanation: "Density decides the order. When materials could move freely in the molten Earth, the densest materials sank deepest and the least dense rose to the surface."
+    explanation: "The northwest islands have been carried away from the hotspot. Cut off from the plume's magma, their volcanoes went extinct, while the Big Island still sits over the heat."
   },
   {
-    q: "Which statement best describes the crust?",
+    q: "The Pacific plate moves toward the northwest, and the islands grow older in that direction. Compared to the oldest islands, where is the hotspot today?",
     options: [
-      "It is the thickest and most dense layer",
-      "It is a thin, brittle layer and the least dense",
-      "It is a liquid layer made of iron and nickel",
-      "It is the layer that creates Earth's magnetic field"
-    ],
-    correct: 1,
-    explanation: "The crust is the thin, brittle outer layer, only 4 to 25 miles thick. It is the least dense layer and is the one we live on."
-  },
-  {
-    q: "A geologist compares a sample of oceanic crust to a sample of continental crust. Which is true?",
-    options: [
-      "Oceanic crust is thicker and less dense",
-      "Oceanic crust is thinner, older, and more dense",
-      "Continental crust is thinner and made of basalt",
-      "Both types of crust are exactly the same"
-    ],
-    correct: 1,
-    explanation: "Oceanic crust is made of basalt, averages about 4 miles thick, and is older and more dense. Continental crust is made of granite, averages about 25 miles thick, and is younger and less dense."
-  },
-  {
-    q: "The mantle is solid rock, yet it slowly flows. Why does this matter for the surface?",
-    options: [
-      "The flowing mantle moves the plates above it",
-      "The flowing mantle turns the crust into liquid",
-      "The flowing mantle stops earthquakes from happening",
-      "The flowing mantle has no effect on the surface"
+      "To the southeast, where the youngest islands and Loihi are",
+      "To the northwest, beneath the oldest islands",
+      "Directly under the single oldest island",
+      "There is no consistent pattern to the island ages"
     ],
     correct: 0,
-    explanation: "The mantle flows slowly because of temperature differences. The movement of the mantle creates the movement of Earth's plates, which is what changes the surface."
+    explanation: "The youngest, active volcanoes mark the hotspot. Since the plate moves northwest, the hotspot is at the southeast end, near the Big Island and Loihi."
   },
   {
-    q: "Which layer flows like soft plastic and is responsible for convection currents?",
-    options: ["The lithosphere", "The asthenosphere", "The inner core", "The oceanic crust"],
-    correct: 1,
-    explanation: "The asthenosphere is the region of the upper mantle that flows, a quality called plastic behavior. It is responsible for convection currents."
-  },
-  {
-    q: "What drives the convection currents inside Earth's mantle?",
+    q: "An underwater mountain that was once a volcanic island above the sea is called a:",
     options: [
-      "Energy and heat from Earth's interior",
-      "The pull of the Moon's gravity",
-      "Wind blowing across the surface",
-      "The spinning of the inner core only"
+      "Mid-ocean ridge",
+      "Rift valley",
+      "Subduction trench",
+      "Seamount"
+    ],
+    correct: 3,
+    explanation: "A seamount is a submerged, extinct volcanic island. Old hotspot islands sink and become seamounts as the crust they ride on cools and subsides."
+  },
+  {
+    q: "Why do old hotspot islands slowly sink below the ocean surface over millions of years?",
+    options: [
+      "The hotspot reaches up and pulls them down as it cools",
+      "As the crust moves away from the hotspot it cools, becomes more dense, and subsides",
+      "Rising sea levels bury them within a single year",
+      "Newer islands physically push them underwater"
+    ],
+    correct: 1,
+    explanation: "Crust that moves away from the hotspot cools and grows denser. Denser crust rides lower, so the old islands subside, and erosion wears them down into seamounts."
+  },
+  {
+    q: "Loihi (Kamaehuakanaloa) is an undersea volcano just southeast of the Big Island. What does it most likely represent?",
+    options: [
+      "The oldest volcano in the entire chain",
+      "A volcano formed at a subduction zone",
+      "The next Hawaiian island, now forming over the hotspot",
+      "A seamount that has finished sinking"
+    ],
+    correct: 2,
+    explanation: "Loihi sits over the hotspot at the southeast end of the chain, so it is the youngest volcano and the likely next Hawaiian island."
+  },
+  {
+    q: "How does a hotspot island chain provide evidence that a tectonic plate has moved?",
+    options: [
+      "The line of islands and their ages record the direction and path the plate traveled over the fixed hotspot",
+      "The islands all erupted at once, proving the plate never moves",
+      "The islands show that the hotspot moves while the plate stays still",
+      "The islands prove that volcanoes can only form at plate boundaries"
     ],
     correct: 0,
-    explanation: "Energy from Earth's interior heats the rock. Hot rock rises, cools, and sinks in a loop called a convection current, which cycles the mantle and moves the crust."
-  },
-  {
-    q: "Plates usually slide smoothly, but sometimes they get stuck and pressure builds. When the pressure is suddenly released, what happens?",
-    options: [
-      "Earth's magnetic field reverses",
-      "The energy is released as an earthquake in the crust",
-      "The inner core melts",
-      "A new continent instantly forms"
-    ],
-    correct: 1,
-    explanation: "When stuck plates finally slip, the built-up pressure is released as energy that shakes the crust. That shaking is an earthquake."
-  },
-  {
-    q: "Which statement best explains how Earth's internal structure causes changes at the surface?",
-    options: [
-      "Surface changes happen only because of weather, not the interior",
-      "Heat drives convection in the mantle, which moves plates and produces earthquakes and volcanoes",
-      "The crust moves on its own with no connection to deeper layers",
-      "Earthquakes and volcanoes are caused by the magnetic field"
-    ],
-    correct: 1,
-    explanation: "Heat deep inside Earth drives convection currents in the mantle. That flow moves the plates, and the shifting plates produce earthquakes and volcanoes at the surface. Internal structure and energy explain surface change."
+    explanation: "Because the hotspot stays fixed, the chain records plate motion. The order and ages of the islands trace the direction the plate has traveled."
   }
 ];
 
@@ -1751,7 +1681,7 @@ function elSubmitQuiz() {
   var total = elQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
-  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand Earth’s layers cold.'
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand hotspot volcanoes cold.'
     : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
     : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
     : '\u{1F4AA} Keep going; review each section carefully and try again!';
@@ -1774,7 +1704,7 @@ function elSubmitQuiz() {
     return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
   }).join(', ');
   var params = new URLSearchParams({
-    tab: 'Earths Layers', lesson: "Earth's Layers", studentName: info2.name, teacher: teacherLabel,
+    tab: 'Hotspot Volcanoes', lesson: 'Hotspot Volcanoes', studentName: info2.name, teacher: teacherLabel,
     block: info2.block, score: score, total: total, percent: pct + '%',
     timestamp: new Date().toISOString(), answers: answerStr
   });
