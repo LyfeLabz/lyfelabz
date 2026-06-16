@@ -338,6 +338,28 @@
     font-weight: 800;
   }
 
+  /* Reset filters */
+  .cp-reset {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 1rem;
+    padding: 0.34rem 0.9rem;
+    border-radius: 99px;
+    border: 1.5px solid rgba(255,255,255,0.14);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .cp-reset:hover {
+    color: var(--text);
+    border-color: rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.05);
+  }
+
   /* No-results state */
   .filter-empty {
     display: none;
@@ -935,8 +957,8 @@
     <hr class="cp-divider">
     <div class="cp-row-label">Grade</div>
     <div class="cp-pills" id="grade-filters">
-      <button class="filter-pill fp-grade" data-grade="all">All Grades</button>
-      <button class="filter-pill fp-grade active" data-grade="6">Grade 6</button>
+      <button class="filter-pill fp-grade active" data-grade="all">All Grades</button>
+      <button class="filter-pill fp-grade" data-grade="6">Grade 6</button>
       <button class="filter-pill fp-grade" data-grade="7">Grade 7</button>
       <button class="filter-pill fp-grade" data-grade="8">Grade 8</button>
     </div>
@@ -950,6 +972,7 @@
       <button class="filter-pill fp-topic" data-topic="tech-engineering">Tech &amp; Engineering</button>
       <button class="filter-pill fp-topic psych-locked" data-topic="behavioral-science">Behavioral Science</button>
     </div>
+    <button class="cp-reset" id="filter-reset" type="button">Reset Filters · Show All</button>
   </div>
 
 </section>
@@ -1396,8 +1419,65 @@
 
 <!-- ===== FILTER LOGIC ===== -->
 <script>
-var activeGrade = '6';
+var activeGrade = 'all';
 var activeTopics = new Set(['all']);
+
+// ----- Persistent filter memory (homepage display preferences only) -----
+var STORE_GRADE  = 'lyfelabz.filter.grade';
+var STORE_TOPICS = 'lyfelabz.filter.topics';
+
+function safeGet(key)      { try { return window.localStorage.getItem(key); } catch (e) { return null; } }
+function safeSet(key, val) { try { window.localStorage.setItem(key, val); } catch (e) {} }
+
+function saveFilters() {
+  safeSet(STORE_GRADE, activeGrade);
+  safeSet(STORE_TOPICS, JSON.stringify(Array.from(activeTopics)));
+}
+
+function applyGradeUI() {
+  document.querySelectorAll('.fp-grade').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.grade === activeGrade);
+  });
+}
+function applyTopicUI() {
+  document.querySelectorAll('.fp-topic').forEach(function (b) {
+    b.classList.toggle('active', activeTopics.has(b.dataset.topic));
+  });
+}
+
+function restoreFilters() {
+  var validGrades = ['all', '6', '7', '8'];
+  var g = safeGet(STORE_GRADE);
+  if (g && validGrades.indexOf(g) > -1) activeGrade = g;
+
+  var validTopics = {};
+  document.querySelectorAll('.fp-topic').forEach(function (b) { validTopics[b.dataset.topic] = true; });
+
+  var raw = safeGet(STORE_TOPICS);
+  if (raw) {
+    try {
+      var arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        var kept = arr.filter(function (x) { return validTopics[x]; });
+        if (kept.length) {
+          activeTopics = (kept.indexOf('all') > -1) ? new Set(['all']) : new Set(kept);
+        }
+      }
+    } catch (e) {}
+  }
+
+  applyGradeUI();
+  applyTopicUI();
+}
+
+function resetFilters() {
+  activeGrade = 'all';
+  activeTopics = new Set(['all']);
+  applyGradeUI();
+  applyTopicUI();
+  saveFilters();
+  runFilter();
+}
 
 function runFilter() {
   var blocks  = document.querySelectorAll('.subject-block');
@@ -1437,6 +1517,7 @@ document.querySelectorAll('.fp-grade').forEach(function(btn) {
     document.querySelectorAll('.fp-grade').forEach(function(b){ b.classList.remove('active'); });
     btn.classList.add('active');
     activeGrade = btn.dataset.grade;
+    saveFilters();
     runFilter();
   });
 });
@@ -1468,9 +1549,18 @@ document.querySelectorAll('.fp-topic').forEach(function(btn) {
         btn.classList.add('active');
       }
     }
+    saveFilters();
     runFilter();
   });
 });
+
+// Reset filters - return to the full homepage
+var resetBtn = document.getElementById('filter-reset');
+if (resetBtn) resetBtn.addEventListener('click', resetFilters);
+
+// Restore saved filters before first render
+restoreFilters();
+runFilter();
 </script>
 
 <!-- ===== EDUCATOR MODE ===== -->
