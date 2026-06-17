@@ -1199,6 +1199,7 @@ body.stem-active .stem-detail {
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hook">Mystery</a></li>
     <li><a href="#process">The Journey</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -1872,7 +1873,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="process" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: var(--green); background: var(--transmit-dim); border-color: var(--transmit-border);">Explain · The Journey</span>
+    <span class="section-label" style="color: var(--green); background: var(--transmit-dim); border-color: var(--transmit-border);">Explore · The Journey</span>
     <h2 class="section-title">The Transmission Process</h2>
     <p class="section-desc">Every digital message makes the same three-step journey. Follow the color coding: <span style="color:var(--encode); font-weight:800;">teal is encoding</span>, <span style="color:var(--transmit); font-weight:800;">green is transmission</span>, and <span style="color:var(--decode); font-weight:800;">orange is decoding</span>.</p>
 
@@ -1909,23 +1910,6 @@ body.stem-active .stem-detail {
         <span class="process-mini">Binary Code → Sound</span>
       </div>
 
-    </div>
-
-    <!-- Quick recall checkpoint -->
-    <div class="qr-card" id="qrCard1">
-      <div class="qr-eyebrow">Quick Recall</div>
-      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
-      <div class="qr-q" id="qr1Q">Your friend's phone receives your FaceTime signal and plays your voice out of the speaker. Which step just happened?</div>
-      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>Encoding - the voice became binary code</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>Transmission - the signal traveled through waves or cables</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>Decoding - binary code turned back into sound</span></label>
-      </div>
-      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
-      <div class="qr-actions">
-        <button class="qr-check" id="qr1Check">Check Answer</button>
-        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
-      </div>
     </div>
 
     <div class="bridge-callout teal">
@@ -2071,7 +2055,7 @@ body.stem-active .stem-detail {
 </style>
 <section id="packet-panic">
   <div class="container">
-    <span class="section-label">Elaborate · Packet Panic</span>
+    <span class="section-label">Explore · Packet Panic</span>
     <h2 class="section-title">Packet Panic</h2>
 
     <div class="driving-question">
@@ -2577,11 +2561,55 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 6 - ELABORATE: BACK TO THE FACETIME CALL
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Two quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall · 1 of 2</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Your friend's phone receives your FaceTime signal and plays your voice out of the speaker. Which step just happened?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Encoding - the voice became binary code</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Transmission - the signal traveled through waves or cables</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Decoding - binary code turned back into sound</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall · 2 of 2</div>
+      <div class="qr-sub">One more brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">A song streamed over Wi-Fi sounds identical every time you play it, but an old vinyl record slowly wears out and gets crackly. Why?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>Digital copies are made of 0s and 1s, so they can be copied with little loss</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Wi-Fi signals are stronger than the needle on a record player</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Streaming services remove the noise from songs before sending them</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN - BACK TO THE FACETIME CALL
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="synthesis" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Elaborate · Wrap-Up</span>
+    <span class="section-label">Explain · Wrap-Up</span>
     <h2 class="section-title">Back to the FaceTime Call</h2>
     <p class="section-desc">You started this lesson with a call traveling 5,000 miles and arriving crystal clear. Now you can explain every step of that journey.</p>
 
@@ -2612,22 +2640,6 @@ body.stem-active .stem-detail {
 
     </div>
 
-    <!-- Quick recall 2 -->
-    <div class="qr-card" id="qrCard2" style="margin-top: 2.5rem;">
-      <div class="qr-eyebrow">Quick Recall</div>
-      <div class="qr-sub">One more brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">A song streamed over Wi-Fi sounds identical every time you play it, but an old vinyl record slowly wears out and gets crackly. Why?</div>
-      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>Digital copies are made of 0s and 1s, so they can be copied with little loss</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>Wi-Fi signals are stronger than the needle on a record player</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>Streaming services remove the noise from songs before sending them</span></label>
-      </div>
-      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
-      <div class="qr-actions">
-        <button class="qr-check" id="qr2Check">Check Answer</button>
-        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -2889,9 +2901,9 @@ body.stem-active .stem-detail {
 
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">Evaluate · Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Five questions covering everything you discovered, including a signal for you to decode. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you discovered, including a signal for you to decode. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -3297,6 +3309,66 @@ var dsQuizQuestions = [
     ],
     correct: 3,
     explanation: "Converting sounds, images, or text INTO binary code is the encoder's job - step 1 of the journey. The decoder does the reverse at the other end, converting binary code back into sound."
+  },
+  {
+    // Q6 - what the encoder does (DOK 1)
+    q: "What is the job of the encoder in a digital communication system?",
+    options: [
+      "It sends the finished signal through the air as radio waves",
+      "It converts sound, images, or text into binary code (0s and 1s)",
+      "It turns binary code back into sound you can actually hear",
+      "It removes any noise the signal picks up along the way"
+    ],
+    correct: 1,
+    explanation: "The encoder is step 1: it converts sound, images, or text INTO binary code. Transmission then carries that code, and the decoder converts it back at the other end."
+  },
+  {
+    // Q7 - identify an analog signal (DOK 2)
+    q: "Which of these is the best example of an ANALOG signal?",
+    options: [
+      "A text message stored on a phone as 0s and 1s",
+      "A photo saved as a digital file",
+      "Sound waves traveling straight through the air from a person's voice",
+      "A song streamed to your earbuds over Wi-Fi"
+    ],
+    correct: 2,
+    explanation: "An analog signal is continuous and can take any value, like sound waves moving through the air. The other three are digital - information stored or sent as 0s and 1s."
+  },
+  {
+    // Q8 - why binary resists noise (DOK 2)
+    q: "Why does a digital signal made of only 0s and 1s resist noise so well?",
+    options: [
+      "Because noise cannot travel through wires or cables at all",
+      "Because each pulse is clearly a 0 or a 1, so small noise does not change which one it is",
+      "Because digital signals are always louder than the noise around them",
+      "Because the encoder removes all noise before the signal is sent"
+    ],
+    correct: 1,
+    explanation: "With only two possible values, a pulse with a little noise added is still obviously a 0 or a 1. The receiver rebuilds the exact message. Analog signals have no such clean levels, so noise blends in permanently."
+  },
+  {
+    // Q9 - decode binary from the wave model (DOK 2)
+    q: "In the wave model, a large wave = 1 and a small wave = 0. Using box values 16-8-4-2-1, what number does this signal represent: small, large, small, small, large?",
+    options: [
+      "5, because two of the waves are large",
+      "17, because the first and last boxes are filled",
+      "9, because the 8 box and the 1 box are filled",
+      "18, because the 16 box and the 2 box are filled"
+    ],
+    correct: 2,
+    explanation: "Small, large, small, small, large reads as 0 1 0 0 1. The large waves sit in the 8 box and the 1 box, so 8 + 1 = 9."
+  },
+  {
+    // Q10 - how bits travel (DOK 1)
+    q: "Once your voice is encoded into 0s and 1s, how do those bits actually travel to the other phone?",
+    options: [
+      "They stay inside your phone and never really move",
+      "They travel only as sound waves through the open air",
+      "They are carried by the decoder before they are encoded",
+      "They ride as wave pulses through electromagnetic waves, wires, or fiber optic cables"
+    ],
+    correct: 3,
+    explanation: "Binary code travels as wave pulses - through electromagnetic waves in the air, electricity in wires, or light in fiber optic cables. That is the transmission step connecting the encoder and the decoder."
   }
 ];
 

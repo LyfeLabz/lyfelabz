@@ -1491,6 +1491,7 @@ body.stem-active .stem-detail {
     <li><a href="#hook">Mystery</a></li>
     <li><a href="#measure">Measuring</a></li>
     <li><a href="#density">Density</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -1843,7 +1844,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="density" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label" style="color: var(--orange); background: var(--density-dim); border-color: var(--density-border);">Explain · Packing It In</span>
+    <span class="section-label" style="color: var(--orange); background: var(--density-dim); border-color: var(--density-border);">Explore · Packing It In</span>
     <h2 class="section-title">Density: The Ratio of Mass to Volume</h2>
     <p class="section-desc">Remember the bowling ball and the beach ball? Same size, totally different heft. Density is the measurement that explains why.</p>
 
@@ -1930,7 +1931,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="practice" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: var(--teal); background: var(--mass-dim); border-color: var(--mass-border);">Explain · Worked Example</span>
+    <span class="section-label" style="color: var(--teal); background: var(--mass-dim); border-color: var(--mass-border);">Explore · Worked Example</span>
     <h2 class="section-title">Calculating Density, Step by Step</h2>
     <p class="section-desc">Watch one problem solved completely. Then you solve the next one yourself, with the same two steps every time.</p>
 
@@ -2002,10 +2003,25 @@ body.stem-active .stem-detail {
       <div class="we-success" id="pp-success">🏆 You did it! Density = 60 ÷ 24 = 2.5 g/cm³. That's denser than water, so this "wooden" block would sink - it must be a very dense wood, like ebony. You just calculated density exactly the way a scientist does.</div>
     </div>
 
-    <!-- Quick recall checkpoint -->
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ELABORATE - BACK TO THE MYSTERY
+═══════════════════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Two quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
     <div class="qr-card" id="qrCard1">
-      <div class="qr-eyebrow">Quick Recall</div>
-      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
+      <div class="qr-eyebrow">Quick Recall · 1 of 2</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
       <div class="qr-q" id="qr1Q">Two cubes are exactly the same size. Cube A has a mass of 270 g, and cube B has a mass of 27 g. Which statement is true?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
         <label><input type="radio" name="qr1" value="0"><span>Cube A has more matter packed into the same space, so it is denser</span></label>
@@ -2019,16 +2035,31 @@ body.stem-active .stem-detail {
       </div>
     </div>
 
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall · 2 of 2</div>
+      <div class="qr-sub">One more brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">An ice cube floats in a glass of water. What must be true about the ice?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>Its density is less than the density of liquid water</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Its mass is less than the mass of the water in the glass</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Its volume is bigger than the volume of the water</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     ELABORATE - BACK TO THE MYSTERY
+     EXPLAIN - BACK TO THE MYSTERY (wrap-up + folded lesson summary)
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="synthesis" style="background: var(--dark);">
+<section id="synthesis" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Elaborate · Wrap-Up</span>
+    <span class="section-label">Explain · Wrap-Up</span>
     <h2 class="section-title">Back to the Floating Giant</h2>
     <p class="section-desc">You started this lesson with three puzzles: same-size balls with different heft, invisible air, and a steel ship that floats. Now you can solve all three.</p>
 
@@ -2059,34 +2090,11 @@ body.stem-active .stem-detail {
 
     </div>
 
-    <!-- Quick recall 2 -->
-    <div class="qr-card" id="qrCard2" style="margin-top: 2.5rem;">
-      <div class="qr-eyebrow">Quick Recall</div>
-      <div class="qr-sub">One more brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">An ice cube floats in a glass of water. What must be true about the ice?</div>
-      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>Its density is less than the density of liquid water</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>Its mass is less than the mass of the water in the glass</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>Its volume is bigger than the volume of the water</span></label>
-      </div>
-      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
-      <div class="qr-actions">
-        <button class="qr-check" id="qr2Check">Check Answer</button>
-        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
-      </div>
+    <!-- Lesson recap (folded into the wrap-up) -->
+    <div style="margin-top: 3rem; margin-bottom: 1rem;">
+      <h3 style="font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: var(--text); margin-bottom: 0.4rem;">Everything in One Place</h3>
+      <p class="section-desc" style="margin-bottom: 0;">The words to know and the goals you worked toward, gathered in one spot.</p>
     </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EVALUATE - LESSON SUMMARY TABLES
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="summary" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Evaluate · Lesson Summary</span>
-    <h2 class="section-title">Key Vocabulary &amp; Learning Goals</h2>
-    <p class="section-desc">Everything from this lesson in one place: the words to know and the goals you worked toward.</p>
 
     <div class="summary-table-wrap">
       <table class="summary-table">
@@ -2384,9 +2392,9 @@ body.stem-active .stem-detail {
 
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">Evaluate · Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Five questions covering everything you discovered, including a density problem to solve. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you discovered, including density problems to solve. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -2917,6 +2925,66 @@ var mmQuizQuestions = [
     ],
     correct: 1,
     explanation: "The balls have equal volume, but the steel ball contains far more matter, giving it more mass and a much higher density - more matter packed into the same space. That's exactly the bowling ball vs. beach ball mystery from the start of the lesson."
+  },
+  {
+    // Q6 - is air matter? (DOK 2)
+    q: "A balloon is weighed empty, then weighed again after being filled with air. The filled balloon has more mass. What does this show?",
+    options: [
+      "Air has volume but no mass at all",
+      "The balloon rubber got heavier as it stretched",
+      "Mass was created by the act of blowing it up",
+      "Air is matter, because it has mass and takes up space"
+    ],
+    correct: 3,
+    explanation: "Air is matter. The filled balloon has more mass because the air inside it has mass, and the air also takes up space (volume). Anything with mass and volume is matter, including gases."
+  },
+  {
+    // Q7 - what density measures (DOK 1)
+    q: "What does density actually measure?",
+    options: [
+      "The total weight of an object sitting on a balance",
+      "The amount of space an object takes up",
+      "How much matter is packed into a given amount of space",
+      "Whether an object is a solid, a liquid, or a gas"
+    ],
+    correct: 2,
+    explanation: "Density is how much matter (mass) is packed into a given volume: D = m ÷ V. It is not the same as mass alone or volume alone - it is the ratio of the two."
+  },
+  {
+    // Q8 - sink/float reasoning (DOK 2)
+    q: "A solid object is dropped into water and floats. What must be true about it?",
+    options: [
+      "Its mass is less than the mass of all the water",
+      "Its volume is smaller than the container holding the water",
+      "It has to be hollow somewhere inside",
+      "Its density is less than the density of water"
+    ],
+    correct: 3,
+    explanation: "Floating and sinking depend on density, not mass alone. An object floats when its density is less than the density of water (1 g/cm³). A huge steel ship floats because its overall density is low."
+  },
+  {
+    // Q9 - measuring an irregular solid (DOK 2)
+    q: "How would you best measure the volume of a small, irregularly shaped rock?",
+    options: [
+      "Lower it into a graduated cylinder of water and measure how much the water rises",
+      "Multiply its length, width, and height with a ruler",
+      "Place it on a triple beam balance and read the grams",
+      "Estimate it by eye, since irregular shapes cannot be measured"
+    ],
+    correct: 0,
+    explanation: "An irregular solid has no neat dimensions to multiply, so use water displacement: the rise in water level in a graduated cylinder equals the rock's volume. A balance measures mass, not volume."
+  },
+  {
+    // Q10 - same mass, different volume (DOK 2)
+    q: "Two objects have the same mass, but Object X has a much larger volume than Object Y. Which one has the greater density?",
+    options: [
+      "Object X, because it is bigger overall",
+      "They have equal density because their masses match",
+      "Object Y, because the same mass is squeezed into a smaller volume",
+      "Neither - density can only be compared when the masses differ"
+    ],
+    correct: 2,
+    explanation: "Density is mass ÷ volume. With equal mass, the object with the smaller volume (Object Y) packs that mass into less space, so it has the greater density."
   }
 ];
 

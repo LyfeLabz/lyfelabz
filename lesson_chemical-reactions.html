@@ -1570,6 +1570,7 @@ body.stem-active .stem-detail {
     <li><a href="#equations">Equations</a></li>
     <li><a href="#balance">Atom Lab</a></li>
     <li><a href="#energy">Energy</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -1885,7 +1886,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="equations" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: var(--teal); background: var(--react-dim); border-color: var(--react-border);">Explain · Reading the Recipe</span>
+    <span class="section-label" style="color: var(--teal); background: var(--react-dim); border-color: var(--react-border);">Explore · Reading the Recipe</span>
     <h2 class="section-title">Writing Chemical Reactions</h2>
     <p class="section-desc">A chemical equation is a recipe. Follow the color coding: <span style="color:var(--react); font-weight:800;">teal is the reactants</span> (what you start with), <span style="color:var(--product); font-weight:800;">green is the products</span> (what you end with), and the <span style="color:var(--gold); font-weight:800;">gold arrow</span> means "reacts to form."</p>
 
@@ -1939,7 +1940,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="balance" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label" style="color: var(--green); background: var(--product-dim); border-color: var(--product-border);">Explain · Atom Rearrangement</span>
+    <span class="section-label" style="color: var(--green); background: var(--product-dim); border-color: var(--product-border);">Explore · Atom Rearrangement</span>
     <h2 class="section-title">Atoms Rearrange to Form New Substances</h2>
     <p class="section-desc">Atoms never vanish during a reaction, and they never appear out of nowhere. Every atom that goes in must come out - just regrouped into something new.</p>
 
@@ -2038,7 +2039,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="energy" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: var(--orange); background: var(--energy-dim); border-color: var(--energy-border);">Elaborate · Energy In, Energy Out</span>
+    <span class="section-label" style="color: var(--orange); background: var(--energy-dim); border-color: var(--energy-border);">Explore · Energy In, Energy Out</span>
     <h2 class="section-title">Two Types of Reactions</h2>
     <p class="section-desc">Remember the campfire and the cold pack from the start of the lesson? One blasted heat outward; one pulled heat inward. Every chemical reaction does one or the other.</p>
 
@@ -2190,11 +2191,117 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     ELABORATE - BACK TO THE MYSTERIES
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrcCard1">
+      <div class="qr-eyebrow">Quick Recall · 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qrc1Q">What does conservation of matter tell you about a chemical reaction?</div>
+      <div class="qr-options" id="qrc1Opts" role="group" aria-labelledby="qrc1Q">
+        <label><input type="radio" name="qrc1" value="0"><span>New atoms can appear if enough energy is added</span></label>
+        <label><input type="radio" name="qrc1" value="1"><span>Atoms are rearranged, never created or destroyed</span></label>
+        <label><input type="radio" name="qrc1" value="2"><span>Some matter is destroyed and turned into pure energy</span></label>
+      </div>
+      <div class="qr-feedback" id="qrc1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qrc1Check">Check Answer</button>
+        <button class="qr-retry" id="qrc1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrcCard2">
+      <div class="qr-eyebrow">Quick Recall · 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qrc2Q">What does the arrow (→) in a chemical equation mean?</div>
+      <div class="qr-options" id="qrc2Opts" role="group" aria-labelledby="qrc2Q">
+        <label><input type="radio" name="qrc2" value="0"><span>"reacts to form" - it turns the reactants into the products</span></label>
+        <label><input type="radio" name="qrc2" value="1"><span>"is equal to" - both sides are the same substance</span></label>
+        <label><input type="radio" name="qrc2" value="2"><span>"is mixed with" - nothing actually changes</span></label>
+      </div>
+      <div class="qr-feedback" id="qrc2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qrc2Check">Check Answer</button>
+        <button class="qr-retry" id="qrc2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrcCard3">
+      <div class="qr-eyebrow">Quick Recall · 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qrc3Q">An exothermic reaction does what to its surroundings?</div>
+      <div class="qr-options" id="qrc3Opts" role="group" aria-labelledby="qrc3Q">
+        <label><input type="radio" name="qrc3" value="0"><span>Cools them by absorbing heat</span></label>
+        <label><input type="radio" name="qrc3" value="1"><span>Warms them by releasing heat</span></label>
+        <label><input type="radio" name="qrc3" value="2"><span>Leaves the temperature exactly the same</span></label>
+      </div>
+      <div class="qr-feedback" id="qrc3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qrc3Check">Check Answer</button>
+        <button class="qr-retry" id="qrc3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    if (!opts || !checkBtn) return;
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qrc1', 1,
+    'Correct! Atoms are never created or destroyed in a reaction. They only rearrange, which is conservation of matter.',
+    'Not quite. Conservation of matter means atoms are only rearranged, never created or destroyed.');
+  wireQR('qrc2', 0,
+    'Correct! The arrow means "reacts to form." It separates the reactants from the products they become.',
+    'Not quite. The arrow means "reacts to form." It points from the reactants to the products they turn into.');
+  wireQR('qrc3', 1,
+    'Correct! Exothermic reactions release heat, so the surroundings get warmer.',
+    'Not quite. "Exo" means out. Exothermic reactions release heat, warming the surroundings.');
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN - BACK TO THE MYSTERIES
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="synthesis" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Elaborate · Wrap-Up</span>
+    <span class="section-label">Explain · Wrap-Up</span>
     <h2 class="section-title">Back to the Three Mysteries</h2>
     <p class="section-desc">The campfire, the cold pack, and the rusty bike. Now you can explain every one of them like a chemist.</p>
 
@@ -2224,18 +2331,12 @@ body.stem-active .stem-detail {
       </div>
 
     </div>
-  </div>
-</section>
 
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EVALUATE - LESSON SUMMARY
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="summary" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Evaluate · Lesson Summary</span>
-    <h2 class="section-title">Key Vocabulary &amp; Learning Goals</h2>
-    <p class="section-desc">Everything from this lesson in one place: the words to know and the goals you worked toward.</p>
+    <!-- Lesson recap (folded into the wrap-up) -->
+    <div style="margin-top: 3rem; margin-bottom: 1rem;">
+      <h3 style="font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: var(--text); margin-bottom: 0.4rem;">Everything in One Place</h3>
+      <p class="section-desc" style="margin-bottom: 0;">The words to know and the goals you worked toward, gathered in one spot.</p>
+    </div>
 
     <div class="summary-table-wrap">
       <table class="summary-table">
@@ -2542,9 +2643,9 @@ body.stem-active .stem-detail {
 
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">Evaluate · Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Five questions covering everything you discovered, including an equation for you to check. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you discovered, including equations for you to check. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -3008,6 +3109,66 @@ var crQuizQuestions = [
     ],
     correct: 2,
     explanation: "An endothermic reaction absorbs energy from the environment. The reaction inside the pack pulls heat IN from its surroundings - including her skin - so the temperature of the environment decreases. Enter = in!"
+  },
+  {
+    // Q6 - evidence of a reaction (DOK 2)
+    q: "You combine two clear liquids. Bubbles of gas form and the beaker turns warm. What is the best conclusion?",
+    options: [
+      "A chemical reaction is likely, because gas forming and a temperature change are signs a new substance formed",
+      "It is only a physical change, since both starting materials were liquids",
+      "Nothing chemical happened, because the mixture did not change color",
+      "Matter was destroyed, because gas escaped from the beaker"
+    ],
+    correct: 0,
+    explanation: "Gas production and a temperature change are two classic signs that new substances formed. Color change is not required, and matter is never destroyed - the atoms are simply rearranged into new substances, some of which are gases."
+  },
+  {
+    // Q7 - identify an exothermic example (DOK 1)
+    q: "Which of these is an example of an exothermic reaction?",
+    options: [
+      "An instant cold pack that chills your skin",
+      "Ice slowly melting into liquid water",
+      "A puddle of water evaporating on a hot day",
+      "Wood burning in a campfire, giving off heat and light"
+    ],
+    correct: 3,
+    explanation: "Exothermic reactions release energy to the surroundings. A burning campfire gives off heat and light. The cold pack is endothermic, and melting and evaporating are physical changes, not reactions."
+  },
+  {
+    // Q8 - why atoms balance (DOK 2)
+    q: "Why must the same number of each kind of atom appear in the reactants and the products?",
+    options: [
+      "Because matter is conserved, so atoms are only rearranged, never created or destroyed",
+      "Because chemists like equations that look neat and symmetrical",
+      "Because atoms split into smaller atoms as bonds break",
+      "Because energy added during the reaction builds extra atoms"
+    ],
+    correct: 0,
+    explanation: "Conservation of matter means no atoms are created or destroyed in a chemical reaction. The same atoms that start in the reactants end up in the products, just regrouped into new substances."
+  },
+  {
+    // Q9 - read an equation, identify a product (DOK 1)
+    q: "In the reaction CH₄ + 2O₂ → CO₂ + 2H₂O, which substance is a product?",
+    options: [
+      "CH₄, because it is written first in the equation",
+      "O₂, because there are two of it",
+      "CO₂, because it is on the right side of the arrow",
+      "There are no products in this equation"
+    ],
+    correct: 2,
+    explanation: "Products are the substances on the right of the arrow - what the reaction forms. CO₂ and H₂O are the products here. CH₄ and O₂ are the reactants on the left."
+  },
+  {
+    // Q10 - reason about endothermic energy flow (DOK 2)
+    q: "A reaction flask feels cold to the touch while the reaction runs. What is happening to the energy?",
+    options: [
+      "The reaction is making cold and pushing it into the flask",
+      "The reaction is releasing heat into the room around it",
+      "No energy is moving into or out of the reaction at all",
+      "The reaction is absorbing heat from its surroundings, so they cool down"
+    ],
+    correct: 3,
+    explanation: "Cold is not a thing that gets made or moved - it is the absence of heat. The flask feels cold because the endothermic reaction is pulling heat IN from its surroundings, lowering their temperature."
   }
 ];
 

@@ -1465,6 +1465,7 @@ body.stem-active .stem-detail {
     <li><a href="#hook">Mystery</a></li>
     <li><a href="#volume">Volume</a></li>
     <li><a href="#properties">Properties</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -1878,7 +1879,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="buoyancy" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label" style="color: var(--orange); background: var(--buoy-dim); border-color: var(--buoy-border);">Explain · The Upward Push</span>
+    <span class="section-label" style="color: var(--orange); background: var(--buoy-dim); border-color: var(--buoy-border);">Explore · The Upward Push</span>
     <h2 class="section-title">What Is Buoyancy?</h2>
     <p class="section-desc">When an object enters water, it shoves some water out of the way - you just saw that in the displacement lab. The water pushes back with an upward force.</p>
 
@@ -1928,23 +1929,6 @@ body.stem-active .stem-detail {
       </table>
     </div>
 
-    <!-- Quick recall checkpoint -->
-    <div class="qr-card" id="qrCard1">
-      <div class="qr-eyebrow">Quick Recall</div>
-      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
-      <div class="qr-q" id="qr1Q">A solid rubber ball and a hollow rubber ball are the same size. You drop both in a pool. The solid one sinks; the hollow one floats. Why?</div>
-      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>The hollow ball is less dense - same space, less matter packed inside</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>The solid ball is bigger, so gravity pulls it harder</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>Water can't push up on solid objects, only hollow ones</span></label>
-      </div>
-      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
-      <div class="qr-actions">
-        <button class="qr-check" id="qr1Check">Check Answer</button>
-        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
-      </div>
-    </div>
-
     <div class="bridge-callout orange">
       <strong>Density, volume, and buoyancy</strong> are all things you can observe or measure about a material without changing what it is. It turns out there's a whole family of properties like that.
       <br><br>
@@ -1959,7 +1943,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="properties" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: var(--purple); background: var(--prop-dim); border-color: var(--prop-border);">Elaborate · The Whole Family</span>
+    <span class="section-label" style="color: var(--purple); background: var(--prop-dim); border-color: var(--prop-border);">Explore · The Whole Family</span>
     <h2 class="section-title">Physical Properties of Matter</h2>
     <p class="section-desc">A <strong style="color:var(--purple);">physical property</strong> is a characteristic we can observe or measure <strong style="color:var(--purple);">without changing what the material is</strong>. Bending a paperclip doesn't turn it into a different metal. Melting ice doesn't turn it into a different substance. Here are eight properties scientists use to identify and choose materials.</p>
 
@@ -2037,9 +2021,37 @@ body.stem-active .stem-detail {
       <div class="match-success" id="matchSuccess">🏆 Five for five! You just thought like a materials engineer - choosing materials by their physical properties is exactly how real products get designed.</div>
     </div>
 
-    <!-- Quick recall 2 -->
-    <div class="qr-card" id="qrCard2" style="margin-top: 2.5rem;">
-      <div class="qr-eyebrow">Quick Recall</div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Two quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall · 1 of 2</div>
+      <div class="qr-sub">A quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">A solid rubber ball and a hollow rubber ball are the same size. You drop both in a pool. The solid one sinks; the hollow one floats. Why?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>The hollow ball is less dense - same space, less matter packed inside</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>The solid ball is bigger, so gravity pulls it harder</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Water can't push up on solid objects, only hollow ones</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall · 2 of 2</div>
       <div class="qr-sub">One more brain check. Not graded.</div>
       <div class="qr-q" id="qr2Q">A junkyard uses a giant electromagnet to lift steel out of a pile of mixed scrap, leaving the aluminum and plastic behind. Which physical property makes this separation possible?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
@@ -2058,11 +2070,11 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 5 - ELABORATE WRAP-UP: BACK TO THE HARBOR
+     EXPLAIN - WRAP-UP: BACK TO THE HARBOR
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="synthesis" style="background: var(--dark);">
+<section id="synthesis" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Elaborate · Wrap-Up</span>
+    <span class="section-label">Explain · Wrap-Up</span>
     <h2 class="section-title">Back to the Harbor</h2>
     <p class="section-desc">You started this lesson with a floating steel giant, a sinking coin, and ice bobbing on its own liquid. Now you can explain all three.</p>
 
@@ -2092,18 +2104,12 @@ body.stem-active .stem-detail {
       </div>
 
     </div>
-  </div>
-</section>
 
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SECTION 6 - EVALUATE: LESSON SUMMARY TABLES
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="summary" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Evaluate · Lesson Summary</span>
-    <h2 class="section-title">Key Vocabulary &amp; Learning Goals</h2>
-    <p class="section-desc">Everything from this lesson in one place: the words to know and the goals you worked toward.</p>
+    <!-- Lesson recap (folded into the wrap-up) -->
+    <div style="margin-top: 3rem; margin-bottom: 1rem;">
+      <h3 style="font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: var(--text); margin-bottom: 0.4rem;">Everything in One Place</h3>
+      <p class="section-desc" style="margin-bottom: 0;">The words to know and the goals you worked toward, gathered in one spot.</p>
+    </div>
 
     <div class="summary-table-wrap">
       <table class="summary-table">
@@ -2413,9 +2419,9 @@ body.stem-active .stem-detail {
 
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">Evaluate · Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Five questions covering everything you discovered, including a cylinder for you to read. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you discovered, including a cylinder for you to read. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -2962,6 +2968,66 @@ var ppQuizQuestions = [
     ],
     correct: 2,
     explanation: "Electrical conductivity is how easily electric current flows through a material, and ductility is the ability to be stretched into a thin wire. Both are physical properties - you can observe them without changing what copper is."
+  },
+  {
+    // Q6 - physical property definition (DOK 1)
+    q: "What is a physical property?",
+    options: [
+      "A characteristic you can observe or measure without changing what the material is",
+      "A change that creates a brand-new substance with new properties",
+      "The cost of buying the material at a hardware store",
+      "A trait that only liquids and gases can ever have"
+    ],
+    correct: 0,
+    explanation: "A physical property is something you can observe or measure - like density, color, hardness, or magnetism - without changing the material into something else. Forming a new substance would be a chemical change instead."
+  },
+  {
+    // Q7 - why ice floats (DOK 2)
+    q: "Ice floats on its own liquid water. What does this tell you about ice compared to liquid water?",
+    options: [
+      "Ice is heavier than the water sitting beneath it",
+      "Ice is less dense than liquid water, because its particles lock into a spread-out pattern",
+      "Ice has no volume at all until it melts back into water",
+      "Ice is warmer than the liquid water around it"
+    ],
+    correct: 1,
+    explanation: "Floating means less dense. When water freezes, its particles lock into a spread-out crystal pattern, so the same matter takes up more space. That makes ice less dense than liquid water, so it floats."
+  },
+  {
+    // Q8 - when to use displacement (DOK 2)
+    q: "Why would you use the water displacement method instead of a ruler to measure a volume?",
+    options: [
+      "Because rulers cannot measure distances in centimeters at all",
+      "Because displacement is the only way to find the volume of a cube",
+      "Because the method works only on objects that already float",
+      "Because the object has an irregular shape with no straight edges to measure"
+    ],
+    correct: 3,
+    explanation: "A ruler works for regular shapes (length x width x height). For an irregular object like a rock or a toy dinosaur, you drop it in water and measure how much the water rises - that rise is its volume."
+  },
+  {
+    // Q9 - identify the property (DOK 1)
+    q: "A scientist tests an unknown silvery metal and finds that it is attracted to a magnet. Which physical property did she just observe?",
+    options: [
+      "Its density",
+      "Its melting point",
+      "Its magnetism",
+      "Its volume"
+    ],
+    correct: 2,
+    explanation: "Being attracted to a magnet is magnetism, a physical property. Scientists use properties like this to help identify an unknown material without changing it."
+  },
+  {
+    // Q10 - shape and buoyancy (DOK 2)
+    q: "A ball of modeling clay sinks, but the same clay shaped into a wide boat floats. Why does the shape change the result?",
+    options: [
+      "Changing the shape turns the clay into a brand-new material",
+      "The boat shape makes the clay weigh less than the ball did",
+      "Wide shapes are pulled upward by gravity instead of down",
+      "The boat shape pushes aside more water, so the upward buoyant force is large enough to hold it up"
+    ],
+    correct: 3,
+    explanation: "It is the same clay and the same weight, so density of the material did not change - but the boat shape spreads out and pushes aside much more water. That extra displaced water creates a larger buoyant force, enough to keep it afloat."
   }
 ];
 

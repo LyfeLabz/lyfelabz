@@ -1029,6 +1029,7 @@ body.stem-active .stem-detail {
     <li><a href="#hook">Mystery</a></li>
     <li><a href="#ptable">Periodic Table</a></li>
     <li><a href="#builder">Builder</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -1290,7 +1291,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="ptable" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label" style="color: var(--gold); background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.3);">Explain · The Chart of Atoms</span>
+    <span class="section-label" style="color: var(--gold); background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.3);">Explore · The Chart of Atoms</span>
     <h2 class="section-title">The Periodic Table</h2>
     <p class="section-desc">There are many different types of atoms. Each type is defined by a <strong style="color:var(--gold);">name</strong> and a <strong style="color:var(--gold);">symbol</strong> (one or two letters). The periodic table is the chart that organizes every known type. The bigger number on each tile is its <strong style="color:var(--gold);">mass</strong>.</p>
 
@@ -1327,7 +1328,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="elements" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: var(--teal); background: var(--atom-dim); border-color: var(--atom-border);">Explain · One Kind of Atom</span>
+    <span class="section-label" style="color: var(--teal); background: var(--atom-dim); border-color: var(--atom-border);">Explore · One Kind of Atom</span>
     <h2 class="section-title">Elements on the Periodic Table</h2>
     <p class="section-desc">Every tile you just tapped is an element. The idea is simple but powerful.</p>
 
@@ -1343,23 +1344,6 @@ body.stem-active .stem-detail {
       <div class="example-chip"><span class="example-chip-icon">✏️</span>Carbon (only carbon atoms)</div>
     </div>
 
-    <!-- Quick recall 1 -->
-    <div class="qr-card" id="qrCard1">
-      <div class="qr-eyebrow">Quick Recall</div>
-      <div class="qr-sub">A quick brain check before we combine atoms. Not graded.</div>
-      <div class="qr-q" id="qr1Q">A copper wire is made of nothing but copper atoms. What is the best name for copper?</div>
-      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>A compound, because it is a useful material</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>An element, because it is made of only one type of atom</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>A molecule, because the atoms are bonded</span></label>
-      </div>
-      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
-      <div class="qr-actions">
-        <button class="qr-check" id="qr1Check">Check Answer</button>
-        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
-      </div>
-    </div>
-
     <div class="bridge-callout green">
       <strong>Elements are pure: one kind of atom.</strong> But atoms rarely sit alone. They love to join together. When two or more atoms bond, we get something new.
     </div>
@@ -1372,7 +1356,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="molecules" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label" style="color: var(--green); background: var(--molecule-dim); border-color: var(--molecule-border);">Explain · Atoms Join Up</span>
+    <span class="section-label" style="color: var(--green); background: var(--molecule-dim); border-color: var(--molecule-border);">Explore · Atoms Join Up</span>
     <h2 class="section-title">Molecules: Atoms Bonded Together</h2>
     <p class="section-desc">Atoms can join together and act as a single unit. The oxygen you breathe is not lonely single atoms; it travels as pairs.</p>
 
@@ -1419,7 +1403,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="compounds" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: var(--compound); background: var(--compound-dim); border-color: var(--compound-border);">Explain · Different Atoms Join</span>
+    <span class="section-label" style="color: var(--compound); background: var(--compound-dim); border-color: var(--compound-border);">Explore · Different Atoms Join</span>
     <h2 class="section-title">Compounds: A Special Kind of Molecule</h2>
     <p class="section-desc">Remember the mystery? Hydrogen plus oxygen makes water, something completely different from either gas. That is the power of a compound.</p>
 
@@ -1466,7 +1450,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="builder" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label" style="color: var(--gold); background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.3);">Elaborate · Build It Yourself</span>
+    <span class="section-label" style="color: var(--gold); background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.3);">Explore · Build It Yourself</span>
     <h2 class="section-title">The Matter Builder</h2>
     <p class="section-desc">Add atoms to the tray and watch the model decide what you made. Then try to build the three target substances at the bottom. The builder names your creation and tells you whether it is an element or a compound.</p>
 
@@ -1529,11 +1513,55 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     ELABORATE - WRAP UP
+     QUICK RECALL
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="synthesis" style="background: var(--dark2);">
+<section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
-    <span class="section-label">Elaborate · Wrap-Up</span>
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Two quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall · 1 of 2</div>
+      <div class="qr-sub">A quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">A copper wire is made of nothing but copper atoms. What is the best name for copper?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>A compound, because it is a useful material</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>An element, because it is made of only one type of atom</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>A molecule, because the atoms are bonded</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall · 2 of 2</div>
+      <div class="qr-sub">One more brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">Carbon dioxide is written CO₂: one carbon atom bonded to two oxygen atoms. Which two labels both fit carbon dioxide?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>An element and an atom</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>A molecule and a compound</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>An element and a compound</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN - WRAP UP
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="synthesis" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain · Wrap-Up</span>
     <h2 class="section-title">Back to the Cut-It-In-Half Mystery</h2>
     <p class="section-desc">You started by asking what the smallest piece of matter is. Now you can answer that and explain how a few kinds of piece build the whole world.</p>
 
@@ -1564,34 +1592,11 @@ body.stem-active .stem-detail {
 
     </div>
 
-    <!-- Quick recall 2 -->
-    <div class="qr-card" id="qrCard2" style="margin-top: 2.5rem;">
-      <div class="qr-eyebrow">Quick Recall</div>
-      <div class="qr-sub">One more brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">Carbon dioxide is written CO₂: one carbon atom bonded to two oxygen atoms. Which two labels both fit carbon dioxide?</div>
-      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>An element and an atom</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>A molecule and a compound</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>An element and a compound</span></label>
-      </div>
-      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
-      <div class="qr-actions">
-        <button class="qr-check" id="qr2Check">Check Answer</button>
-        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
-      </div>
+    <!-- Lesson recap (folded into the wrap-up) -->
+    <div style="margin-top: 3rem; margin-bottom: 1rem;">
+      <h3 style="font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: var(--text); margin-bottom: 0.4rem;">Everything in One Place</h3>
+      <p class="section-desc" style="margin-bottom: 0;">The words to know and the goals you worked toward, gathered in one spot.</p>
     </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EVALUATE - SUMMARY TABLES
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="summary" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Evaluate · Lesson Summary</span>
-    <h2 class="section-title">Key Vocabulary &amp; Learning Goals</h2>
-    <p class="section-desc">Everything from this lesson in one place: the words to know and the goals you worked toward.</p>
 
     <div class="summary-table-wrap">
       <table class="summary-table">
@@ -1732,9 +1737,9 @@ body.stem-active .stem-detail {
 
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">Evaluate · Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Five questions covering everything you discovered, including substances for you to classify. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you discovered, including substances for you to classify. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -2285,6 +2290,61 @@ var bbQuizQuestions = [
     ],
     correct: 1,
     explanation: "Two or more bonded atoms make a molecule, so O₂ and O₃ are molecules. But a compound needs different types of atoms. These have only oxygen, so each is still the element oxygen."
+  },
+  {
+    q: "What is matter?",
+    options: [
+      "Anything that has mass and takes up space",
+      "Only the solid objects that you can pick up and hold",
+      "The chart that lists all of the known atoms",
+      "Two different kinds of atom bonded together"
+    ],
+    correct: 0,
+    explanation: "Matter is anything that has mass and takes up space (volume). That includes solids, liquids, and gases. All of it is built from atoms."
+  },
+  {
+    q: "What is a molecule?",
+    options: [
+      "A single atom floating all on its own",
+      "A substance that is made of only one type of atom",
+      "The table that organizes all the different atoms",
+      "Two or more atoms bonded together that act as one unit"
+    ],
+    correct: 3,
+    explanation: "A molecule is two or more atoms bonded together acting as one unit, such as O₂ or H₂O. If those atoms are of different types, the molecule is also a compound."
+  },
+  {
+    q: "Which of these is an ELEMENT rather than a compound?",
+    options: [
+      "Helium gas, made only of helium atoms",
+      "Water, written H₂O",
+      "Carbon dioxide, written CO₂",
+      "Table salt, made of sodium and chlorine"
+    ],
+    correct: 0,
+    explanation: "An element is made of only one type of atom. Helium is all helium atoms, so it is an element. Water, carbon dioxide, and salt each contain two different atom types, so they are compounds."
+  },
+  {
+    q: "Sodium is an explosive metal and chlorine is a poisonous gas, yet bonded together they form ordinary table salt. What does this best show?",
+    options: [
+      "Sodium and chlorine are really just the same atom",
+      "Table salt must be an element, not a compound",
+      "When different atoms bond into a compound, the result can be nothing like the atoms alone",
+      "Salt is only a mixture that you could separate by hand"
+    ],
+    correct: 2,
+    explanation: "When different atoms bond into a compound, the new substance can have completely different properties from the atoms it is made of. Dangerous sodium and chlorine combine into harmless salt."
+  },
+  {
+    q: "About how many different types of atom does the periodic table organize?",
+    options: [
+      "Exactly two types, sorted by their price",
+      "Millions of different types, sorted by color",
+      "About ten types, ranked from smallest to largest",
+      "About 100 types, each with its own name and symbol"
+    ],
+    correct: 3,
+    explanation: "There are about 100 known types of atom, and the periodic table organizes every one of them. Each has its own name and one or two letter symbol, like gold (Au) or oxygen (O)."
   }
 ];
 

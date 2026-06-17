@@ -1438,6 +1438,7 @@ body.stem-active .stem-detail {
     <li><a href="#hook">Mystery</a></li>
     <li><a href="#rules">Criteria</a></li>
     <li><a href="#process">The Cycle</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -1725,7 +1726,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="process" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label" style="color: var(--green); background: var(--iterate-dim); border-color: var(--iterate-border);">Explain · The Cycle</span>
+    <span class="section-label" style="color: var(--green); background: var(--iterate-dim); border-color: var(--iterate-border);">Explore · The Cycle</span>
     <h2 class="section-title">The Engineering Design Process</h2>
     <p class="section-desc">Engineers everywhere follow the same seven-step cycle, from sneaker designers to NASA. Click each step to reveal what happens there. Open all seven to complete the cycle.</p>
 
@@ -1800,23 +1801,6 @@ body.stem-active .stem-detail {
       <div class="order-fb" id="orderFb"></div>
     </div>
 
-    <!-- QUICK RECALL 1 -->
-    <div class="qr-card">
-      <div class="qr-eyebrow">⚡ Quick Recall</div>
-      <div class="qr-sub">Answer from memory before scrolling on.</div>
-      <div class="qr-q">Your prototype fails its test. According to the design cycle, what should you do next?</div>
-      <div class="qr-options" id="qr1Opts">
-        <label><input type="radio" name="qr1" value="0"><span>Start completely over with a brand new problem</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>Improve the design, then test it again</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>Share the results anyway, since the building part is done</span></label>
-      </div>
-      <div class="qr-feedback" id="qr1Feedback"></div>
-      <div class="qr-actions">
-        <button class="qr-check" id="qr1Check">Check Answer</button>
-        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
-      </div>
-    </div>
-
     <div class="bridge-callout green">
       <strong>So what does step 4, CREATE, actually produce?</strong> Not the final product. Engineers build something rougher first, on purpose. It has a name, and you saw two famous examples at the start of this lesson.
     </div>
@@ -1829,7 +1813,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="prototype" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: var(--orange); background: var(--constraint-dim); border-color: var(--constraint-border);">Explain · First Drafts</span>
+    <span class="section-label" style="color: var(--orange); background: var(--constraint-dim); border-color: var(--constraint-border);">Explore · First Drafts</span>
     <h2 class="section-title">Prototypes and Iterations</h2>
     <p class="section-desc">Remember the rough Air Jordan and the gray 1991 test console from the start of the lesson? Now you can name what they were.</p>
 
@@ -1911,22 +1895,6 @@ body.stem-active .stem-detail {
       </div>
     </div>
 
-    <!-- QUICK RECALL 2 -->
-    <div class="qr-card">
-      <div class="qr-eyebrow">⚡ Quick Recall</div>
-      <div class="qr-sub">Answer from memory before scrolling on.</div>
-      <div class="qr-q">Why do engineers build a prototype instead of going straight to the final product?</div>
-      <div class="qr-options" id="qr2Opts">
-        <label><input type="radio" name="qr2" value="0"><span>To find and fix problems cheaply before making the real thing</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>Because prototypes are higher quality than final products</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>Because clients prefer to buy unfinished models</span></label>
-      </div>
-      <div class="qr-feedback" id="qr2Feedback"></div>
-      <div class="qr-actions">
-        <button class="qr-check" id="qr2Check">Check Answer</button>
-        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -1936,7 +1904,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="apply" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Elaborate · Your Turn</span>
+    <span class="section-label">Explore · Your Turn</span>
     <h2 class="section-title">A Worked Example: The Locker Organizer</h2>
     <p class="section-desc">Here's the whole process applied to a problem you might actually have: a messy school locker. Read each chunk one at a time and watch how criteria, constraints, prototypes, and iterations all show up.</p>
 
@@ -1971,11 +1939,55 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EVALUATE - LESSON SUMMARY
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Two quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall · 1 of 2</div>
+      <div class="qr-sub">Answer from memory. Not graded.</div>
+      <div class="qr-q">Your prototype fails its test. According to the design cycle, what should you do next?</div>
+      <div class="qr-options" id="qr1Opts">
+        <label><input type="radio" name="qr1" value="0"><span>Start completely over with a brand new problem</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Improve the design, then test it again</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Share the results anyway, since the building part is done</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall · 2 of 2</div>
+      <div class="qr-sub">Answer from memory. Not graded.</div>
+      <div class="qr-q">Why do engineers build a prototype instead of going straight to the final product?</div>
+      <div class="qr-options" id="qr2Opts">
+        <label><input type="radio" name="qr2" value="0"><span>To find and fix problems cheaply before making the real thing</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Because prototypes are higher quality than final products</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Because clients prefer to buy unfinished models</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN - WRAP-UP
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="summary" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Evaluate · Lesson Summary</span>
+    <span class="section-label">Explain · Wrap-Up</span>
     <h2 class="section-title">Pulling It All Together</h2>
     <p class="section-desc">Three beats to remember, then every key term in one table.</p>
 
@@ -2203,9 +2215,9 @@ body.stem-active .stem-detail {
 
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">Evaluate · Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Five questions covering everything you discovered, including brand new design problems to solve. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you discovered, including brand new design problems to solve. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -2706,6 +2718,61 @@ var edQuizQuestions = [
     ],
     correct: 1,
     explanation: "Repeated cycles of designing, testing, and refining are iterations. Each PlayStation generation is one trip around the design cycle, improving on what testing (and millions of players) revealed about the last version."
+  },
+  {
+    q: "What is a criterion in the engineering design process?",
+    options: [
+      "A limit on the time, money, or materials a team can use",
+      "A requirement the design must meet to count as successful",
+      "A rough early model that is built to be tested",
+      "The final step, where the results are shared with others"
+    ],
+    correct: 1,
+    explanation: "A criterion is a requirement a successful design must meet - what it has to DO. A limit on resources is a constraint, and a rough early model is a prototype."
+  },
+  {
+    q: "A team is starting a brand-new design project. What should they do FIRST?",
+    options: [
+      "Build a prototype right away to save time",
+      "Share the idea with the client before planning",
+      "Ask questions to clearly define the problem they are solving",
+      "Test a solution before they have planned one"
+    ],
+    correct: 2,
+    explanation: "The process starts with ASK: defining the problem clearly. You cannot imagine, plan, or build a good solution until you understand exactly what problem you are trying to solve."
+  },
+  {
+    q: "Why is the engineering design process described as a cycle rather than a straight line?",
+    options: [
+      "Because engineers only ever complete it a single time",
+      "Because a failed test sends engineers back to improve or rethink, then try again",
+      "Because the steps can be done in any random order that is convenient",
+      "Because sharing the results is always the very first step"
+    ],
+    correct: 1,
+    explanation: "It is a cycle because testing often reveals problems. When a design fails a test, engineers loop back to IMPROVE (or even IMAGINE) and run through the steps again, getting closer each time."
+  },
+  {
+    q: "A phone case must survive a 2-meter drop AND cost less than $5 to manufacture. Which part is a CONSTRAINT?",
+    options: [
+      "Surviving the 2-meter drop, because that is what the case must do",
+      "Both parts are criteria, since both are requirements",
+      "Costing less than $5 to make, because it limits the team's resources",
+      "Neither part, because phone cases have no constraints"
+    ],
+    correct: 2,
+    explanation: "A constraint is a limit the team must work within, like a budget. The $5 manufacturing limit is a constraint. Surviving the drop is a criterion - something the design must accomplish."
+  },
+  {
+    q: "During TEST, a prototype bridge collapses under the weight it is supposed to hold. What is the best engineering response?",
+    options: [
+      "Abandon the whole project, since the design clearly failed",
+      "Ship the bridge anyway so the team stays on schedule",
+      "Hide the failure so the team still looks successful",
+      "Treat the failure as useful data, improve the design, and test it again"
+    ],
+    correct: 3,
+    explanation: "A failed test is data, not a disaster. Finding the weakness in a cheap prototype is exactly the point - engineers use that information to improve the design and run the cycle again."
   }
 ];
 

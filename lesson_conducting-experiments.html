@@ -1270,6 +1270,7 @@ body.stem-active .stem-detail {
     <li><a href="#hypothesis">Hypothesis</a></li>
     <li><a href="#variables">Variables</a></li>
     <li><a href="#observations">Observations</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -1571,7 +1572,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="variables" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: var(--green); background: var(--cv-dim); border-color: var(--cv-border);">Explain · The Variables</span>
+    <span class="section-label" style="color: var(--green); background: var(--cv-dim); border-color: var(--cv-border);">Explore · The Variables</span>
     <h2 class="section-title">What Are the Variables?</h2>
     <p class="section-desc">Every fair experiment has three kinds of factors. Follow the color coding through the rest of the lesson: <span style="color:var(--iv); font-weight:800;">teal is what you change</span>, <span style="color:var(--dv); font-weight:800;">orange is what responds</span>, and <span style="color:var(--cv); font-weight:800;">green is what stays the same</span>.</p>
 
@@ -1674,22 +1675,6 @@ body.stem-active .stem-detail {
         <div class="sorter-done" id="var-sorter-done">🏆 All sorted! You just identified every variable like a scientist planning a fair test.</div>
       </div>
 
-      <!-- Quick recall checkpoint -->
-      <div class="qr-card" id="qrCard1">
-        <div class="qr-eyebrow">Quick Recall</div>
-        <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
-        <div class="qr-q" id="qr1Q">In the Mentos experiment, you drop the same candy into three different sodas and measure how high each eruption goes. What is the independent variable?</div>
-        <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-          <label><input type="radio" name="qr1" value="0"><span>The height of the eruption</span></label>
-          <label><input type="radio" name="qr1" value="1"><span>The type of soda</span></label>
-          <label><input type="radio" name="qr1" value="2"><span>The number of Mentos dropped in</span></label>
-        </div>
-        <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
-        <div class="qr-actions">
-          <button class="qr-check" id="qr1Check">Check Answer</button>
-          <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
-        </div>
-      </div>
     </div>
 
     <div class="bridge-callout green">
@@ -1704,7 +1689,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="observations" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label" style="color: var(--dv); background: var(--dv-dim); border-color: var(--dv-border);">Explain · Collecting Evidence</span>
+    <span class="section-label" style="color: var(--dv); background: var(--dv-dim); border-color: var(--dv-border);">Explore · Collecting Evidence</span>
     <h2 class="section-title">Two Types of Observations</h2>
     <p class="section-desc">Scientists collect evidence in two flavors: with instruments and numbers, or with their senses and descriptions. Both are useful - but they're not the same.</p>
 
@@ -1780,7 +1765,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="inference" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: #b47fff; background: rgba(180,127,255,0.08); border-color: rgba(180,127,255,0.3);">Elaborate · Reading the Clues</span>
+    <span class="section-label" style="color: #b47fff; background: rgba(180,127,255,0.08); border-color: rgba(180,127,255,0.3);">Explore · Reading the Clues</span>
     <h2 class="section-title">What Is an Inference?</h2>
     <p class="section-desc">Detectives don't see the crime - they see the clues and work out what happened. Scientists do exactly the same thing with observations.</p>
 
@@ -1833,9 +1818,37 @@ body.stem-active .stem-detail {
       </div>
     </div>
 
-    <!-- Quick recall 2 -->
-    <div class="qr-card" id="qrCard2" style="margin-top: 2.5rem;">
-      <div class="qr-eyebrow">Quick Recall</div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Two quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall · 1 of 2</div>
+      <div class="qr-sub">A quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">In the Mentos experiment, you drop the same candy into three different sodas and measure how high each eruption goes. What is the independent variable?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>The height of the eruption</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>The type of soda</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>The number of Mentos dropped in</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall · 2 of 2</div>
       <div class="qr-sub">One more brain check. Not graded.</div>
       <div class="qr-q" id="qr2Q">A student writes in her lab notebook: "The Mentos eruption was probably bigger in diet soda because diet soda holds more dissolved gas." Is that an observation or an inference?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
@@ -1849,9 +1862,17 @@ body.stem-active .stem-detail {
         <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
       </div>
     </div>
+  </div>
+</section>
 
-    <!-- Wrap-up beats -->
-    <h2 class="section-title" style="margin-top: 3rem;">Back to the Eruption</h2>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN: WRAP-UP
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="summary" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explain · Wrap-Up</span>
+    <h2 class="section-title">Back to the Eruption</h2>
     <p class="section-desc">You started with a foamy mystery. Now you have the full scientist's toolkit to solve it - or any mystery.</p>
 
     <div class="wrapup-beats">
@@ -1880,18 +1901,9 @@ body.stem-active .stem-detail {
       </div>
 
     </div>
-  </div>
-</section>
 
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EVALUATE: LESSON SUMMARY TABLES
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="summary" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Evaluate · Lesson Summary</span>
-    <h2 class="section-title">Key Vocabulary &amp; Learning Goals</h2>
-    <p class="section-desc">Everything from this lesson in one place: the words to know and the goals you worked toward.</p>
+    <h3 class="section-title" style="font-size: 1.4rem; margin-top: 3rem;">Everything in One Place</h3>
+    <p class="section-desc">The words to know and the goals you worked toward, all in one spot.</p>
 
     <div class="summary-table-wrap">
       <table class="summary-table">
@@ -1943,7 +1955,7 @@ body.stem-active .stem-detail {
      QUIZ
 ═══════════════════════════════════════════════════════════════════════ -->
 <style>
-.quiz-section { background: var(--dark2); }
+.quiz-section { background: var(--dark); }
 
 .quiz-mode-toggle {
   display: flex;
@@ -2194,9 +2206,9 @@ body.stem-active .stem-detail {
 
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">Evaluate · Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Five questions covering everything you discovered, including a brand-new experiment for you to analyze. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you discovered, including a brand-new experiment for you to analyze. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -2248,7 +2260,7 @@ body.stem-active .stem-detail {
     <div class="quiz-progress-sticky">
       <div class="quiz-progress">
         <div class="progress-bar"><div class="progress-fill" id="ce-progress"></div></div>
-        <div class="progress-text" id="ce-progress-text">0 / 5 selected</div>
+        <div class="progress-text" id="ce-progress-text">0 / 10 selected</div>
       </div>
     </div>
 
@@ -2280,7 +2292,7 @@ body.stem-active .stem-detail {
      GO FURTHER
 ═══════════════════════════════════════════════════════════════════════ -->
 <style>
-#continue { background: var(--dark); padding-top: 4rem; padding-bottom: 5rem; scroll-margin-top: 1.6rem; }
+#continue { background: var(--dark2); padding-top: 4rem; padding-bottom: 5rem; scroll-margin-top: 1.6rem; }
 .continue-intro {
   text-align: left;
   font-size: 1rem;
@@ -2649,6 +2661,66 @@ var ceQuizQuestions = [
     ],
     correct: 1,
     explanation: "What you directly see - open jar, crumbs, lip-licking - are observations. You never saw the dog eat the cookies; that conclusion is an inference, drawn from your observations. It is a reasonable one, but it is still an inference."
+  },
+  {
+    // Q6 - identify the dependent variable (transfer)
+    q: "A gardener tests whether more sunlight makes tomato plants grow taller. She gives plants 2, 6, and 10 hours of light and measures their height after a month. What is the dependent variable?",
+    options: [
+      "The height the plants grow",
+      "The number of hours of light",
+      "The type of tomato plant",
+      "The amount of water given"
+    ],
+    correct: 0,
+    explanation: "The dependent variable is what you measure - the factor that responds to the change. Plant height responds to the light, so it is dependent. Hours of light is the independent variable, and plant type and water are control variables."
+  },
+  {
+    // Q7 - qualitative observation
+    q: "Which of these is a qualitative observation?",
+    options: [
+      "The plant grew 12 centimeters in two weeks",
+      "The experiment ran for exactly 14 days",
+      "The leaves were a deep green and felt waxy",
+      "The pot held 500 milliliters of water"
+    ],
+    correct: 2,
+    explanation: "Qualitative observations use the senses to describe qualities like color and texture - deep green, waxy leaves. The other choices use numbers and measurements, which makes them quantitative."
+  },
+  {
+    // Q8 - why a hypothesis must be testable
+    q: "Why is \"My plant will grow because plants are amazing\" a weak hypothesis?",
+    options: [
+      "It is too long to fit in a lab notebook",
+      "It uses the word because, which is not allowed",
+      "It correctly names the independent and dependent variables",
+      "It is not testable and does not explain a cause-and-effect relationship"
+    ],
+    correct: 3,
+    explanation: "A strong hypothesis is testable and explains how one variable affects another. \"Plants are amazing\" cannot be measured and names no cause and effect, so there is no way to design a fair experiment around it."
+  },
+  {
+    // Q9 - draw an inference (transfer)
+    q: "You observe that the sidewalk is wet but the covered porch under the roof is completely dry. What is the most reasonable inference?",
+    options: [
+      "It rained, and the roof kept the porch dry",
+      "Someone mopped only the sidewalk",
+      "The porch is made of waterproof material",
+      "The sidewalk is always wet in the morning"
+    ],
+    correct: 0,
+    explanation: "An inference is a conclusion drawn from observations. A wet sidewalk plus a dry, covered porch points to rain that the roof blocked. The other choices ignore the clues or add details you never observed."
+  },
+  {
+    // Q10 - identify a control variable (transfer)
+    q: "Two students test whether warmer water dissolves sugar faster. To make it a fair test, which factor should they keep the same?",
+    options: [
+      "The temperature of the water",
+      "How fast the sugar dissolves",
+      "The amount of sugar added to each cup",
+      "Whether the water is warm or cold"
+    ],
+    correct: 2,
+    explanation: "Control variables stay constant so the test stays fair. The amount of sugar must be the same in every cup. Water temperature is the independent variable they change on purpose, and how fast the sugar dissolves is the dependent variable they measure."
   }
 ];
 
