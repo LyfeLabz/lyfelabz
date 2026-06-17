@@ -933,9 +933,12 @@ body.stem-active .stem-detail {
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#city">Cell City</a></li>
     <li><a href="#organelles">Organelles</a></li>
-    <li><a href="#concepts">Vocab</a></li>
+    <li><a href="#recall">Recall</a></li>
+    <li><a href="#plant-vs-animal">Compare</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -986,10 +989,188 @@ body.stem-active .stem-detail {
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: 1.6rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card, #1a2436);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-left: 4px solid var(--gold, #f5c842);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+</style>
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🔬</span>
+        <div class="goal-text">Identify the main organelles in a cell and describe what each one does.</div>
+        <span class="goal-std">6.MS-LS1-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🏙️</span>
+        <div class="goal-text">Use the cell-city analogy to model how organelles work together.</div>
+        <span class="goal-std">6.MS-LS1-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🌿</span>
+        <div class="goal-text">Compare the organelles found in plant cells and animal cells.</div>
+        <span class="goal-std">6.MS-LS1-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🧠</span>
+        <div class="goal-text">Explain how the nucleus directs the cell using its DNA instructions.</div>
+        <span class="goal-std">6.MS-LS1-2</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card, #1a2436);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top: 3px solid #7cc8f8;
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text, #e8eef7);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold, #f5c842); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted, #8aa0bd); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted, #c5d3e6); line-height: 1.55; margin-bottom: 0.5rem; }
+  .gc-jump { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold, #f5c842); border-bottom: 1px dashed currentColor; padding-bottom: 1px; cursor: pointer; }
+  .gc-jump:hover { border-bottom-style: solid; }
+  .gc-blue   { border-top-color: #7cc8f8; } .gc-blue .gc-term   { color: #7cc8f8; }
+  .gc-green  { border-top-color: var(--green, #2ecc71); } .gc-green .gc-term  { color: var(--green, #2ecc71); }
+  .gc-purple { border-top-color: #b47fff; } .gc-purple .gc-term { color: #b47fff; }
+  .gc-orange { border-top-color: var(--orange, #e67e22); } .gc-orange .gc-term { color: var(--orange, #e67e22); }
+</style>
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Every term below appeared somewhere in this lesson. Open a card to reveal what it means, then jump to where it was explained.</p>
+
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Cell Membrane</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Surrounds the cell and controls what enters and leaves it.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-membrane')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Cell Wall</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A rigid outer layer that supports and shapes plant cells. Found in plant cells only.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-wall')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Cytoplasm</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The gel-like fluid that fills the cell and lets organelles move around.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-cytoplasm')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Nucleus</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Holds the cell's DNA, the instructions for everything the cell builds. The control center.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-nucleus')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Mitochondria</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The powerhouse that releases energy (ATP) for the cell.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-mitochondria')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Chloroplasts</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Capture sunlight and make food through photosynthesis. Found in plant cells only.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-chloroplasts')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Ribosomes</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Build proteins using instructions from the nucleus.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-ribosomes')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Rough Endoplasmic Reticulum</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Makes and transports proteins through the cell.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-er')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Golgi Bodies</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Package and ship proteins to where they are needed.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-golgi')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Vacuoles</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Store water and nutrients. Plants have one large vacuole; animals have many small ones.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-vacuoles')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Lysosomes</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Break down waste and keep the cell clean.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('org-lysosomes')">See it in the lesson ↓</span></div>
+      </button>
+
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
 <!-- HOOK -->
-<section id="hook" style="background: var(--dark);">
+<section id="hook" style="background: var(--dark2);">
   <div class="container" style="text-align: center;">
-    <span class="section-label">Opening Phenomenon</span>
+    <span class="section-label">Engage &middot; Phenomenon</span>
     <h2 class="section-title">Something's Running This Cell</h2>
     <p class="section-desc" style="margin: 0 auto 3rem;">
       You already know a cell is the smallest unit of life. But life isn't passive, a cell is constantly building proteins, generating energy, cleaning out waste, reading its own DNA. Something inside is doing all of it. That something has a name.
@@ -1060,9 +1241,9 @@ body.stem-active .stem-detail {
 </section>
 
 <!-- CELL CITY ANALOGY -->
-<section id="city" style="background: var(--dark2);">
+<section id="city" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Cell City Analogy</span>
+    <span class="section-label">Explore &middot; The Cell City</span>
     <h2 class="section-title">The Cell is a City</h2>
     <p class="section-desc">Before naming every organelle, here's a framework that will make them stick. A cell and a city solve the same problem: how do you keep a complex system running when every part depends on every other part? Find the city job first, then the organelle names will follow naturally.</p>
     <div class="city-grid">
@@ -1163,9 +1344,9 @@ body.stem-active .stem-detail {
 </section>
 
 <!-- ORGANELLES REFERENCE SECTION -->
-<section id="organelles">
+<section id="organelles" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Meet the Organelles</span>
+    <span class="section-label">Explore &middot; Meet the Organelles</span>
     <h2 class="section-title">Cell Organelles</h2>
     <p class="section-desc">Every one of those <strong style="color:var(--text);">?</strong> structures has a name and a job. Organelles are specialized parts inside a cell, each one doing something the cell can't survive without.</p>
 
@@ -1320,10 +1501,112 @@ body.stem-active .stem-detail {
   </div>
 </section>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL (retrieval checkpoint between Explore and Explain)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: var(--teal); }
+.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+.qr-options input[type=radio] { accent-color: var(--teal); }
+.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">One Quick Check</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Pull this idea back from memory before we compare plant and animal cells.</p>
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Which organelle captures sunlight and makes food, and is found only in plant cells?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Chloroplasts</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Mitochondria</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Ribosomes</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* Quick Recall checkpoint - pattern reused from lesson_cell-types.html */
+(function(){
+  const opts = document.getElementById('qr1Opts');
+  const fb = document.getElementById('qr1Feedback');
+  const checkBtn = document.getElementById('qr1Check');
+  const retryBtn = document.getElementById('qr1Retry');
+  const correctIdx = 0;
+  const okMsg = 'Correct. Chloroplasts carry out photosynthesis, and only plant cells have them.';
+  const noMsg = 'Not quite. Mitochondria release energy and ribosomes build proteins in both cell types. Chloroplasts capture sunlight and are found only in plant cells.';
+
+  opts.addEventListener('change', e => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+    e.target.closest('label').classList.add('selected');
+  });
+  checkBtn.addEventListener('click', () => {
+    const sel = opts.querySelector('input[type=radio]:checked');
+    if (!sel) {
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = 'Pick an answer first.';
+      return;
+    }
+    const val = parseInt(sel.value, 10);
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    if (val === correctIdx) {
+      sel.closest('label').classList.add('correct');
+      fb.className = 'qr-feedback visible ok';
+      fb.textContent = okMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'none';
+      [...opts.querySelectorAll('input')].forEach(i => i.disabled = true);
+    } else {
+      sel.closest('label').classList.add('wrong');
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = noMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'inline-flex';
+    }
+  });
+  retryBtn.addEventListener('click', () => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    [...opts.querySelectorAll('input')].forEach(i => { i.disabled = false; i.checked = false; });
+    fb.className = 'qr-feedback';
+    fb.textContent = '';
+    retryBtn.style.display = 'none';
+    checkBtn.style.display = 'inline-flex';
+    opts.querySelector('input').focus();
+  });
+})();
+</script>
+
+
 <!-- PLANT VS ANIMAL COMPARISON -->
 <section id="plant-vs-animal" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Compare</span>
+    <span class="section-label">Explain &middot; Plant vs Animal Cells</span>
     <h2 class="section-title">Plant Cell vs. Animal Cell</h2>
     <p class="section-desc">Both are eukaryotic cells with a nucleus and shared organelles; but they're not identical. Study the diagram below. The green labels mark something specific, what do you notice about which cell has them?</p>
 
@@ -1471,40 +1754,17 @@ body.stem-active .stem-detail {
     </div>
 
     <div class="section-bridge">
-      You now know each organelle and what separates plant cells from animal cells. Before the quiz, use the vocabulary section below to lock in the terminology, click any term to jump back to where it was first explained.
+      You now know each organelle and what separates plant cells from animal cells. If any term still feels shaky, the vocabulary cards near the top of the lesson are there to help. Time to put it all together in the quiz.
     </div>
   </div>
 </section>
 
-
-
-<section id="concepts" style="background: var(--dark); padding: 5rem 2rem;">
-  <div class="container">
-    <span class="section-label">Key Vocabulary</span>
-    <h2 class="section-title">Vocabulary to Know</h2>
-    <p class="section-desc" style="margin-bottom:0.5rem;">These are the eleven terms from this lesson. If any feel uncertain, click to jump back to where it was explained, then come back and take the quiz.</p>
-    <p style="font-size:0.78rem; color:rgba(46,204,113,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">👆 Click any term to jump to its explanation in the lesson</p>
-    <div style="display:flex; flex-wrap:wrap; gap:0.65rem;">
-      <span class="concept-tag ct-green"  onclick="vocabJump('org-membrane')">Cell Membrane</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('org-wall')">Cell Wall</span>
-      <span class="concept-tag ct-blue"   onclick="vocabJump('org-nucleus')">Nucleus</span>
-      <span class="concept-tag ct-blue"   onclick="vocabJump('org-cytoplasm')">Cytoplasm</span>
-      <span class="concept-tag ct-amber"  onclick="vocabJump('org-mitochondria')">Mitochondria</span>
-      <span class="concept-tag ct-green"  onclick="vocabJump('org-ribosomes')">Ribosomes</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('org-chloroplasts')">Chloroplasts</span>
-      <span class="concept-tag ct-blue"   onclick="vocabJump('org-vacuoles')">Vacuoles</span>
-      <span class="concept-tag ct-purple" onclick="vocabJump('org-lysosomes')">Lysosomes</span>
-      <span class="concept-tag ct-green"  onclick="vocabJump('org-er')">Rough Endoplasmic Reticulum</span>
-      <span class="concept-tag ct-amber"  onclick="vocabJump('org-golgi')">Golgi Bodies</span>
-    </div>
-  </div>
-</section>
 
 
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section" style="background:var(--dark); padding:5rem 2rem;">
   <div class="container">
-    <span class="section-label">Check Your Understanding</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Cell Organelles Quiz</h2>
     <p class="section-desc">10 questions on cell organelles and their functions. Fill in your info below, your score will be sent to your teacher when you submit.</p>
 

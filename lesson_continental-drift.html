@@ -701,9 +701,11 @@
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hook">Observe</a></li>
     <li><a href="#lesson">Evidence</a></li>
-    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -758,10 +760,215 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GOLD-STANDARD SECTIONS: LEARNING GOALS + KEY VOCABULARY
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  /* Learning Goals */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85);
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3);
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+  }
+
+  /* Key Vocabulary (glossary cards) */
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent2);
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 0.5rem; }
+  .gc-jump { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); border-bottom: 1px dashed currentColor; padding-bottom: 1px; cursor: pointer; }
+  .gc-jump:hover { border-bottom-style: solid; }
+  .gc-slate  { border-top-color: var(--accent2); } .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-teal   { border-top-color: var(--teal); }    .gc-teal .gc-term   { color: var(--teal); }
+  .gc-gold   { border-top-color: var(--gold); }    .gc-gold .gc-term   { color: var(--gold); }
+  .gc-green  { border-top-color: var(--green); }   .gc-green .gc-term  { color: var(--green); }
+  .gc-red    { border-top-color: var(--red); }     .gc-red .gc-term    { color: #e8836f; }
+  .gc-brown  { border-top-color: #c49a6c; }        .gc-brown .gc-term  { color: #d0a878; }
+
+  /* Quick Recall cards */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,233,182,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(29,233,182,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+
+<!-- LEARNING GOALS -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🧩</span>
+        <div class="goal-text">I can describe Wegener's continental drift hypothesis and the idea of Pangaea.</div>
+        <span class="goal-std">6.ESS2-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🦴</span>
+        <div class="goal-text">I can use fossil, rock, and climate evidence to argue that the continents were once joined.</div>
+        <span class="goal-std">6.ESS2-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🔄</span>
+        <div class="goal-text">I can explain why Wegener's idea was rejected until plate tectonics provided a mechanism.</div>
+        <span class="goal-std">6.ESS2-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">📊</span>
+        <div class="goal-text">I can explain why agreement across independent lines of evidence makes a theory strong.</div>
+        <span class="goal-std">SEP-4</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY VOCABULARY -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Every term below appeared somewhere in this lesson. Open a card to reveal what it means, then jump to where it was explained.</p>
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Scientific Theory</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A well-supported explanation backed by a large body of evidence, not just a guess.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-theory')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Continental Drift</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Wegener's idea that the continents slowly move and were once joined together.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-continentaldrift')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Pangaea</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The single supercontinent that, in Wegener's idea, later broke apart into today's continents.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-pangaea')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-brown" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Alfred Wegener</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The scientist who proposed continental drift in 1912 using evidence from several fields.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-wegener')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-brown" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Fossils</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Preserved remains or traces of ancient organisms, used as evidence of past life and where it lived.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-fossils')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Mesosaurus</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A freshwater reptile whose fossils appear on both South America and Africa, evidence the lands were joined.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-mesosaurus')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Glossopteris</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">An ancient plant whose fossils are found across continents now separated by wide oceans.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-glossopteris')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Appalachian Mountains</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A mountain range whose rocks match ranges in Greenland and Europe, evidence of once-connected land.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-appalachians')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-red" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Coal Deposits</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Coal forms from tropical swamp plants, so coal in cold regions shows those lands were once warmer and elsewhere.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-coal')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Glacial Striations</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Scratches left by moving glaciers, found where it is now too warm, showing the continents have shifted.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-glacialstriations')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Plate Tectonics</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The modern theory of how Earth's plates move, providing the mechanism Wegener's idea was missing.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-platetectonics')">See it in the lesson ↓</span></div>
+      </button>
+
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
 <!-- OPENING OBSERVATION / HOOK -->
 <section id="hook" style="background: var(--dark2); padding: 4rem 2rem 3.5rem;">
   <div class="container">
-    <span class="section-label">Opening Observation</span>
+    <span class="section-label">Engage &middot; Observation</span>
     <h2 class="section-title">Before We Explain Anything, Just Look</h2>
     <p class="section-desc">No explanation yet. Just notice something.</p>
 
@@ -875,7 +1082,7 @@
 <!-- WEGENER'S PROPOSAL -->
 <section id="lesson">
   <div class="container">
-    <span class="section-label">Wegener's Proposal</span>
+    <span class="section-label">Explore &middot; Wegener's Proposal</span>
     <h2 class="section-title">What Did Wegener Actually Propose?</h2>
     <p class="section-desc">Before we look at the evidence, we need to understand the claim, and why it was so hard for the scientific world to accept.</p>
 
@@ -920,7 +1127,7 @@
 <!-- THE EVIDENCE -->
 <section id="evidence-sections" style="background: var(--dark2); padding: 3.5rem 2rem 5rem;">
   <div class="container">
-    <span class="section-label">Building the Case</span>
+    <span class="section-label">Explore &middot; Building the Case</span>
     <h2 class="section-title">The Evidence, Piece by Piece</h2>
     <p class="section-desc">Three independent types of evidence (from biology, geology, and climatology) all pointing toward the same conclusion. Each one, on its own, is striking. Together, they're hard to argue with.</p>
 
@@ -1122,7 +1329,7 @@
 <!-- THE MISSING PIECE -->
 <section id="missing-piece" style="background: linear-gradient(135deg, rgba(122,143,166,0.06) 0%, rgba(29,233,182,0.04) 100%); border-top: 1px solid rgba(122,143,166,0.15); border-bottom: 1px solid rgba(29,233,182,0.15); padding: 3.5rem 2rem;">
   <div class="container">
-    <span class="section-label">Science in Action</span>
+    <span class="section-label">Explore &middot; Science in Action</span>
     <h2 class="section-title">Why Wegener Was Rejected, and Then Proven Right</h2>
     <p class="section-desc">Good evidence isn't always enough. Here's what was missing, and what it took to find it.</p>
 
@@ -1156,9 +1363,9 @@
 </section>
 
 <!-- EVIDENCE INTERACTIVE -->
-<section id="evidence" style="background: var(--dark2); padding: 3.5rem 2rem 5rem;">
+<section id="evidence" style="background: var(--dark); padding: 3.5rem 2rem 5rem;">
   <div class="container">
-    <span class="section-label">Put It Together</span>
+    <span class="section-label">Explore &middot; Put It Together</span>
     <h2 class="section-title">The Four Lines of Evidence</h2>
     <p class="section-desc">You've seen each piece separately. Now look at them together, four independent sources, from biology, geology, and climatology, all pointing to the same conclusion. Click each one to see why it couldn't be explained any other way.</p>
 
@@ -1198,31 +1405,70 @@
       </div>
     </div>
 
-    <!-- Key Vocab -->
-    <div style="margin-top: 2rem;">
-      <div id="vocab" class="section-label" style="margin-bottom: 0;">Key Vocabulary</div>
-      <div class="concepts-hint">Click any term to jump to its explanation in the lesson</div>
-      <div class="concepts-grid">
-        <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-theory')">Scientific Theory</span>
-        <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-continentaldrift')">Continental Drift</span>
-        <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-pangaea')">Pangaea</span>
-        <span class="concept-tag ct-brown"  onclick="vocabJump('vocab-wegener')">Alfred Wegener</span>
-        <span class="concept-tag ct-brown"  onclick="vocabJump('vocab-fossils')">Fossils</span>
-        <span class="concept-tag ct-brown"  onclick="vocabJump('vocab-mesosaurus')">Mesosaurus</span>
-        <span class="concept-tag ct-red"    onclick="vocabJump('vocab-glossopteris')">Glossopteris</span>
-        <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-appalachians')">Appalachian Mountains</span>
-        <span class="concept-tag ct-green"  onclick="vocabJump('vocab-coal')">Coal Deposits</span>
-        <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-glacialstriations')">Glacial Striations</span>
-        <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-platetectonics')">Plate Tectonics</span>
+  </div>
+</section>
+
+<!-- QUICK RECALL -->
+<section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before you reason through the big picture. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Why did most scientists reject Wegener's continental drift idea at first?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>His fossil and rock evidence turned out to be fake</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>He could not explain a mechanism for how continents move</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Nobody had ever heard of the idea of Pangaea</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">Mesosaurus fossils appear on both Africa and South America. Why is that strong evidence the continents were once joined?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>It was a freshwater reptile that could not swim across a salty ocean</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Its fossils are extremely rare and valuable</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>It could fly long distances between the continents</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">Why is agreement from fossils, rocks, and climate more convincing than any single clue?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>Having more clues automatically proves any theory</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>Independent lines of evidence pointing the same way are hard to explain another way</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Climate evidence is the only kind that really counts</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CLOSING LOOP: THINK LIKE WEGENER -->
+<!-- CLOSING LOOP: THINK LIKE WEGENER (EXPLAIN) -->
 <section id="apply-it" style="background: var(--dark); border-top: 1px solid rgba(122,143,166,0.12); padding: 3.5rem 2rem 5rem;">
   <div class="container">
-    <span class="section-label">Think Like Wegener</span>
+    <span class="section-label">Explain &middot; Wrap-Up</span>
     <h2 class="section-title">Back to the Beginning</h2>
     <p class="section-desc">At the start of this lesson, you were asked whether the shape of the coastlines alone was enough. Now you have the full picture. Three questions, no score, no submission. Just reasoning.</p>
 
@@ -1359,10 +1605,59 @@ function applyReset() {
 }
 </script>
 
+<!-- Quick Recall wiring -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    if (!opts || !checkBtn) return;
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 1,
+    'Correct! His evidence was solid, but he had no mechanism to explain how continents move, so scientists held back.',
+    'Not quite. Wegener\'s evidence was strong. What was missing was a mechanism, an explanation of how continents actually move.');
+  wireQR('qr2', 0,
+    'Correct! A freshwater reptile could not cross a salty ocean, so the matching fossils mean the lands were once connected.',
+    'Not quite. Mesosaurus lived in fresh water and could not swim a salty ocean, so the shared fossils show the continents were joined.');
+  wireQR('qr3', 1,
+    'Correct! When independent fields all reach the same conclusion, that agreement is very hard to explain any other way.',
+    'Not quite. The strength comes from independent lines of evidence agreeing, not from the number of clues or one favorite type.');
+})();
+</script>
+
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Check Your Understanding</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Continental Drift Quiz</h2>
     <p class="section-desc">10 questions covering Pangaea, Wegener, the four lines of evidence, and plate tectonics. Select your teacher and block below before you begin in Classroom Mode.</p>
 

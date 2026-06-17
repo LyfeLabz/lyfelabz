@@ -340,7 +340,7 @@
   .info-field select option { background: var(--card); }
   .info-error { display: none; font-size: 0.75rem; color: #e87070; margin-top: 0.35rem; font-weight: 700; }
   .info-error.show { display: block; }
-  .quiz-progress-sticky { position: sticky; top: 70px; z-index: 80; background: rgba(24,36,51,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0.7rem 0; margin: 0 -2rem 2rem; padding-left: 2rem; padding-right: 2rem; }
+  .quiz-progress-sticky { position: sticky; top: 70px; z-index: 80; background: rgba(36,52,71,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0.7rem 0; margin: 0 -2rem 2rem; padding-left: 2rem; padding-right: 2rem; }
   .quiz-progress { display: flex; align-items: center; gap: 1rem; }
   .quiz-progress .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; }
   .quiz-progress .progress-fill { height: 100%; border-radius: 99px; background: var(--purple-light); transition: width 0.4s ease; width: 0; }
@@ -493,11 +493,11 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#what-is">The Basics</a></li>
-    <li><a href="#science">The Science</a></li>
-    <li><a href="#spot">Spot It</a></li>
-    <li><a href="#real-life">Real Life</a></li>
     <li><a href="#defense">Defense Kit</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -540,12 +540,210 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
   <span class="stem-badge" data-tip="Cause and Effect, Mechanism and Explanation. What mechanism causes rage bait to trigger a stress response, and what are the downstream effects on behavior?">SEP Cause &amp; Effect</span>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GOLD-STANDARD SECTIONS: LEARNING GOALS + KEY VOCABULARY
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  /* Learning Goals */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85);
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3);
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+  }
+
+  /* Key Vocabulary (glossary cards) */
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--blue);
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .gc-blue   { border-top-color: var(--blue); }   .gc-blue .gc-term   { color: var(--blue); }
+  .gc-teal   { border-top-color: var(--teal); }   .gc-teal .gc-term   { color: var(--teal); }
+  .gc-purple { border-top-color: var(--purple); } .gc-purple .gc-term { color: var(--purple); }
+  .gc-red    { border-top-color: var(--red); }    .gc-red .gc-term    { color: #ef6b5f; }
+  .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+  .gc-green  { border-top-color: var(--green); }  .gc-green .gc-term  { color: var(--green); }
+
+  /* Quick Recall cards */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(26,188,156,0.35); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(26,188,156,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(26,188,156,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(46,204,113,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+
+<!-- LEARNING GOALS -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🎣</span>
+        <div class="goal-text">I can explain what rage baiting is and why it is designed to make people angry.</div>
+        <span class="goal-std">MS-LS1-8</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🧠</span>
+        <div class="goal-text">I can describe how the amygdala reacts to a threat faster than my thinking brain.</div>
+        <span class="goal-std">MS-LS1-8</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🔍</span>
+        <div class="goal-text">I can spot the warning signs of rage bait in real content.</div>
+        <span class="goal-std">MS-LS4-4</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🛡️</span>
+        <div class="goal-text">I can use a strategy like S.T.O.P. to respond instead of react.</div>
+        <span class="goal-std">MS-LS1-8</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY VOCABULARY -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Every term below appeared somewhere in this lesson. Open a card to reveal what it means.</p>
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-red" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Rage Baiting</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Content created on purpose to make you angry, because angry people click, comment, and share more.</div></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Engagement</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Any click, comment, like, or share. Online platforms are built to maximize it.</div></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Algorithm</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The system that decides which posts you see. It tends to amplify content that gets strong reactions.</div></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Amygdala</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The part of the brain that reacts to threats and triggers fast emotions like anger and fear.</div></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Amygdala Hijack</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">When the amygdala fires so fast that you react emotionally before your thinking brain catches up.</div></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Prefrontal Cortex</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The thinking, decision-making part of the brain. It works more slowly than the amygdala.</div></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Clickbait</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Headlines designed to make you click by promising shock or outrage, often without real substance.</div></div>
+      </button>
+
+      <button class="glossary-card gc-red" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Manipulation</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Influencing someone's emotions or behavior for your own benefit, often without them realizing it.</div></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Gaslighting</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Making someone doubt their own memory or sense of reality, a more extreme form of manipulation.</div></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Media Literacy</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The skill of analyzing media critically: who made it, why, and whether it is worth trusting.</div></div>
+      </button>
+
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
 <!-- ═══════════════════════════════════ -->
 <!-- SECTION 1 - WHAT IS RAGE BAIT?    -->
 <!-- ═══════════════════════════════════ -->
 <section id="what-is" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Media Literacy 101</span>
+    <span class="section-label">Engage &middot; The Basics</span>
     <h2 class="section-title">What Is Rage Baiting?</h2>
     <p class="section-desc">Rage baiting is when someone creates content specifically designed to make you angry, upset, or outraged; because angry people click, comment, and share more than anyone else.</p>
 
@@ -591,7 +789,7 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
 <!-- ═══════════════════════════════════ -->
 <section id="science" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Research-Backed</span>
+    <span class="section-label">Explore &middot; The Science</span>
     <h2 class="section-title">The Science Behind the Bait</h2>
     <p class="section-desc">This isn't just a theory, researchers have studied exactly how and why rage bait works at the biological, psychological, and algorithmic level.</p>
 
@@ -642,7 +840,7 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
 <!-- ═══════════════════════════════════ -->
 <section id="spot" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Interactive Challenge</span>
+    <span class="section-label">Explore &middot; Spot It</span>
     <h2 class="section-title">Can You Spot the Rage Bait?</h2>
     <p class="section-desc">Click on any post you think is designed to make you angry. Click it again to toggle. See the verdict and the reasoning each time.</p>
 
@@ -738,7 +936,7 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
 <!-- ═══════════════════════════════════ -->
 <section id="real-life" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">It Happens Everywhere</span>
+    <span class="section-label">Explore &middot; Real Life</span>
     <h2 class="section-title">Rage Baiting Isn't Just Online</h2>
     <p class="section-desc">The same manipulation that happens on your feed also plays out in classrooms, hallways, and group chats: with the same mechanics and the same goal.</p>
 
@@ -816,7 +1014,7 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
 <!-- ═══════════════════════════════════ -->
 <section id="deeper" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Going Deeper</span>
+    <span class="section-label">Explore &middot; Going Deeper</span>
     <h2 class="section-title">From Rage Bait to Manipulation to Gaslighting</h2>
     <p class="section-desc">Rage baiting is the entry point of a wider spectrum of psychological manipulation. Understanding where it leads helps you recognize (and resist) it at every level.</p>
 
@@ -900,7 +1098,7 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
 <!-- ═══════════════════════════════════ -->
 <section id="defense" style="background: var(--dark);">
   <div class="container-md">
-    <span class="section-label">Detection Tools</span>
+    <span class="section-label">Explore &middot; Defense Kit</span>
     <h2 class="section-title">Your Rage Bait Defense Kit</h2>
     <p class="section-desc" style="margin-bottom:2rem;">Two tools to carry with you. One checklist of warning signs. One simple method for any situation.</p>
 
@@ -968,11 +1166,99 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
 </section>
 
 <!-- ═══════════════════════════════════ -->
+<!-- QUICK RECALL                       -->
+<!-- ═══════════════════════════════════ -->
+<section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before you reflect. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Why do creators make rage bait in the first place?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Angry people engage more, which means more views and money</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>They are required to by the platform's rules</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>It is the only way to share real news</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">Which part of the brain reacts to a threat before you have time to think?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>The prefrontal cortex</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>The amygdala</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>The retina</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">What is the single most powerful response to rage bait?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>Write the angriest comment you can</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>Share it so others can see how wrong it is</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Recognize it and choose not to engage</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!-- EXPLAIN (reflect)                  -->
+<!-- ═══════════════════════════════════ -->
+<section id="reflect" style="background: var(--dark);">
+  <div class="container-md">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">Reflect</h2>
+    <p class="section-desc" style="margin-bottom:2rem;">Put it in your own words. There are no right or wrong answers, just honest thinking.</p>
+
+    <div class="reflect-card">
+      <div class="reflect-num">Prompt 1</div>
+      <div class="reflect-q">Think about a time you saw content online that made you feel angry or upset. Looking back now, what signs of rage bait do you notice?</div>
+      <textarea class="reflect-area" id="reflect1" placeholder="Write your thoughts here..." oninput="saveReflect()"></textarea>
+    </div>
+
+    <div class="reflect-card">
+      <div class="reflect-num">Prompt 2</div>
+      <div class="reflect-q">The amygdala hijack happens before your rational brain can respond. Knowing that, what is one specific strategy you want to try the next time you feel that spike of anger online or in person?</div>
+      <textarea class="reflect-area" id="reflect2" placeholder="Write your thoughts here..." oninput="saveReflect()"></textarea>
+    </div>
+
+    <div class="reflect-card">
+      <div class="reflect-num">Prompt 3</div>
+      <div class="reflect-q">In your own words, how would you explain rage bait to a friend who has never heard of it? What is the single most important thing you would want them to understand?</div>
+      <textarea class="reflect-area" id="reflect3" placeholder="Write your thoughts here..." oninput="saveReflect()"></textarea>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
 <!-- SECTION 7 - QUIZ                   -->
 <!-- ═══════════════════════════════════ -->
 <section id="quiz" class="quiz-section" style="padding-top:2.5rem; scroll-margin-top: 3.1rem;">
   <div class="container">
-    <span class="section-label">Check Your Understanding</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Don't Take the Bait, Quiz</h2>
     <p class="section-desc">Five questions covering rage bait, the algorithm, and how to respond. Answer all five, then submit.</p>
 
@@ -1045,32 +1331,6 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
 <!-- ═══════════════════════════════════ -->
 <!-- SECTION 8 - REFLECTION             -->
 <!-- ═══════════════════════════════════ -->
-<section id="reflect" style="background: var(--dark);">
-  <div class="container-md">
-    <span class="section-label">Think It Through</span>
-    <h2 class="section-title">Reflect</h2>
-    <p class="section-desc" style="margin-bottom:2rem;">Take a moment with these prompts. There are no right or wrong answers, just honest thinking.</p>
-
-    <div class="reflect-card">
-      <div class="reflect-num">Prompt 1</div>
-      <div class="reflect-q">Think about a time you saw content online that made you feel angry or upset. Looking back now, what signs of rage bait do you notice?</div>
-      <textarea class="reflect-area" id="reflect1" placeholder="Write your thoughts here..." oninput="saveReflect()"></textarea>
-    </div>
-
-    <div class="reflect-card">
-      <div class="reflect-num">Prompt 2</div>
-      <div class="reflect-q">The amygdala hijack happens before your rational brain can respond. Knowing that, what is one specific strategy you want to try the next time you feel that spike of anger online or in person?</div>
-      <textarea class="reflect-area" id="reflect2" placeholder="Write your thoughts here..." oninput="saveReflect()"></textarea>
-    </div>
-
-    <div class="reflect-card">
-      <div class="reflect-num">Prompt 3</div>
-      <div class="reflect-q">In your own words, how would you explain rage bait to a friend who has never heard of it? What is the single most important thing you would want them to understand?</div>
-      <textarea class="reflect-area" id="reflect3" placeholder="Write your thoughts here..." oninput="saveReflect()"></textarea>
-    </div>
-  </div>
-</section>
-
 <!-- ═══════════════════════════════════ -->
 <!-- GO FURTHER                          -->
 <!-- ═══════════════════════════════════ -->
@@ -1222,6 +1482,55 @@ function updateCheckProgress() {
   }
   saveToStorage();
 }
+</script>
+
+<!-- Quick Recall wiring -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    if (!opts || !checkBtn) return;
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 0,
+    'Correct! Angry people engage more, and that engagement drives views and ad money. Your anger is the product.',
+    'Not quite. Creators make rage bait because angry people engage more, and that engagement earns views and money.');
+  wireQR('qr2', 1,
+    'Correct! The amygdala reacts to threats fast, before the slower, thinking prefrontal cortex catches up.',
+    'Not quite. The amygdala is the fast threat-detector. The prefrontal cortex (your thinking brain) responds more slowly.');
+  wireQR('qr3', 2,
+    'Correct! Recognizing rage bait and choosing not to engage is the most powerful move you can make.',
+    'Not quite. Commenting and sharing only feed the cycle. Recognizing the bait and not engaging is the strongest response.');
+})();
 </script>
 
 <script>

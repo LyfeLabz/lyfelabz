@@ -1593,10 +1593,12 @@ body.stem-active .stem-detail {
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hierarchy">Trace</a></li>
     <li><a href="#connections">Connect</a></li>
-    <li><a href="#systems">Explore</a></li>
-    <li><a href="#concepts">Vocab</a></li>
+    <li><a href="#recall">Recall</a></li>
+    <li><a href="#systems">Wrap-Up</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -1645,10 +1647,200 @@ body.stem-active .stem-detail {
   </div>
 </div>
 
-<!-- HIERARCHY -->
-<section id="hierarchy">
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: 1.6rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card, #1a2436);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-left: 4px solid var(--gold, #f5c842);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+</style>
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
-    <span class="section-label">Organization</span>
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🪜</span>
+        <div class="goal-text">Trace how living things are organized from cells to tissues to organs to body systems.</div>
+        <span class="goal-std">6.MS-LS1-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🔗</span>
+        <div class="goal-text">Describe how the body's major systems interact to carry out the functions of life.</div>
+        <span class="goal-std">6.MS-LS1-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🫀</span>
+        <div class="goal-text">Identify the main job of each major body system.</div>
+        <span class="goal-std">6.MS-LS1-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🧩</span>
+        <div class="goal-text">Use evidence to argue that no single system can keep the body alive on its own.</div>
+        <span class="goal-std">6.MS-LS1-3</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card, #1a2436);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top: 3px solid #7cc8f8;
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text, #e8eef7);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold, #f5c842); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted, #8aa0bd); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted, #c5d3e6); line-height: 1.55; margin-bottom: 0.5rem; }
+  .gc-jump { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold, #f5c842); border-bottom: 1px dashed currentColor; padding-bottom: 1px; cursor: pointer; }
+  .gc-jump:hover { border-bottom-style: solid; }
+  .gc-blue   { border-top-color: #7cc8f8; } .gc-blue .gc-term   { color: #7cc8f8; }
+  .gc-green  { border-top-color: var(--green, #2ecc71); } .gc-green .gc-term  { color: var(--green, #2ecc71); }
+  .gc-purple { border-top-color: #b47fff; } .gc-purple .gc-term { color: #b47fff; }
+  .gc-orange { border-top-color: var(--orange, #e67e22); } .gc-orange .gc-term { color: var(--orange, #e67e22); }
+  .gc-red    { border-top-color: #ff6b6b; } .gc-red .gc-term    { color: #ff6b6b; }
+  .gc-slate  { border-top-color: #8aa0bd; } .gc-slate .gc-term  { color: #aab8cf; }
+</style>
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Every term below appeared somewhere in this lesson. Open a card to reveal what it means, then jump to where it was explained.</p>
+
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Organelles</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Tiny structures inside a cell, each with a specific job to keep the cell running.</div><span class="gc-jump" onclick="event.stopPropagation(); hierJump('vocab-organelle')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Cells</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The basic unit of all living things, the smallest structure that counts as alive.</div><span class="gc-jump" onclick="event.stopPropagation(); hierJump('vocab-cell')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Tissues</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A group of similar cells working together to perform a specific function.</div><span class="gc-jump" onclick="event.stopPropagation(); hierJump('vocab-tissue')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Organs</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A structure made of two or more types of tissue working together to carry out a specific job.</div><span class="gc-jump" onclick="event.stopPropagation(); hierJump('vocab-organ')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Body Systems</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A group of organs that work together to perform a major function for the whole organism.</div><span class="gc-jump" onclick="event.stopPropagation(); hierJump('vocab-body-systems')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-red" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Circulatory System</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Delivers oxygen, nutrients, and immune cells throughout the body through a loop of blood vessels driven by the heart.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('sc-circulatory')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Digestive System</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Breaks food down into molecules small enough for cells to absorb and use as fuel.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('sc-digestive')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Respiratory System</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Pulls oxygen into the body and expels carbon dioxide with every breath.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('sc-respiratory')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Excretory System</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Filters metabolic waste from the blood and expels it, keeping internal chemistry stable.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('sc-excretory')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Skeletal System</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Provides the body's structural framework, protects organs, anchors muscles, and makes blood cells.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('sc-skeletal')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Muscular System</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Generates all movement in the body through the controlled contraction of muscle tissue.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('sc-muscular')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Nervous System</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Senses the environment and sends electrical signals that control and coordinate the body.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('sc-nervous')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Immune System</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Identifies and destroys pathogens, foreign substances, and damaged cells.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('sc-immune')">See it in the lesson ↓</span></div>
+      </button>
+
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
+<!-- HIERARCHY -->
+<section id="hierarchy" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage &middot; Organization</span>
     <h2 class="section-title">How Does a Cell Become a System?</h2>
     <p class="section-desc">Your body has trillions of cells. So does a whale. So does a mushroom. But how do you get from a single cell to a working hand, a beating heart, or a thinking brain? Life solves this problem the same way every time.</p>
 
@@ -1694,9 +1886,9 @@ body.stem-active .stem-detail {
 </section>
 
 <!-- CONNECTIONS TABLE -->
-<section id="connections">
+<section id="connections" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">System Interactions</span>
+    <span class="section-label">Explore &middot; System Interactions</span>
     <h2 class="section-title">No System Works Alone</h2>
     <p class="section-desc">Remember sprinting for that bus? At least six systems fired at once. Pick any system below, then trace how far its connections reach.</p>
     <div class="connections-grid">
@@ -1881,12 +2073,114 @@ body.stem-active .stem-detail {
   </div>
 </section>
 
-<!-- SYSTEMS GATEWAY -->
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL (retrieval checkpoint between Explore and Explain)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: var(--teal); }
+.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+.qr-options input[type=radio] { accent-color: var(--teal); }
+.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+<section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">One Quick Check</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Pull this idea back from memory before we put it all together.</p>
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
+      <div class="qr-q" id="qr1Q">When you sprint for a bus, your muscles need more oxygen fast. Which two systems work together to deliver it?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>The respiratory and circulatory systems</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>The skeletal and digestive systems</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>The nervous and excretory systems</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* Quick Recall checkpoint - pattern reused from lesson_organelles.html */
+(function(){
+  const opts = document.getElementById('qr1Opts');
+  const fb = document.getElementById('qr1Feedback');
+  const checkBtn = document.getElementById('qr1Check');
+  const retryBtn = document.getElementById('qr1Retry');
+  const correctIdx = 0;
+  const okMsg = 'Correct. The respiratory system takes in oxygen and the circulatory system carries it through the blood to your working muscles.';
+  const noMsg = 'Not quite. Oxygen enters through the respiratory system and is delivered by the circulatory system through the blood.';
+
+  opts.addEventListener('change', e => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+    e.target.closest('label').classList.add('selected');
+  });
+  checkBtn.addEventListener('click', () => {
+    const sel = opts.querySelector('input[type=radio]:checked');
+    if (!sel) {
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = 'Pick an answer first.';
+      return;
+    }
+    const val = parseInt(sel.value, 10);
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    if (val === correctIdx) {
+      sel.closest('label').classList.add('correct');
+      fb.className = 'qr-feedback visible ok';
+      fb.textContent = okMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'none';
+      [...opts.querySelectorAll('input')].forEach(i => i.disabled = true);
+    } else {
+      sel.closest('label').classList.add('wrong');
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = noMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'inline-flex';
+    }
+  });
+  retryBtn.addEventListener('click', () => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    [...opts.querySelectorAll('input')].forEach(i => { i.disabled = false; i.checked = false; });
+    fb.className = 'qr-feedback';
+    fb.textContent = '';
+    retryBtn.style.display = 'none';
+    checkBtn.style.display = 'inline-flex';
+    opts.querySelector('input').focus();
+  });
+})();
+</script>
+
+
+<!-- PUTTING IT TOGETHER + GATEWAY -->
 <section id="systems" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explorations</span>
+    <span class="section-label">Explain &middot; Putting It Together</span>
     <h2 class="section-title">Take the Next Step</h2>
-    <p class="section-desc">You've seen how the systems connect. Now pick your path: explore the full interactive maps, or find out what happens when a system breaks down.</p>
+    <p class="section-desc">Back to that sprint for the bus: your muscular, respiratory, circulatory, skeletal, and nervous systems all fired at once. That is the big idea, no system works alone, and the body stays alive only because its systems constantly cooperate. Ready to go deeper? Pick your path below.</p>
 
     <div class="gateway-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem;margin-top:1rem;max-width:none;">
 
@@ -1919,35 +2213,10 @@ body.stem-active .stem-detail {
 
 
 
-<section id="concepts" style="background: var(--dark2); padding: 5rem 2rem;">
-  <div class="container">
-    <span class="section-label">Key Vocabulary</span>
-    <h2 class="section-title">Vocabulary to Know</h2>
-    <p class="section-desc" style="margin-bottom:0.5rem;">These terms appear everywhere in biology: from the hierarchy you just traced to the disease pages ahead.</p>
-    <p style="font-size:0.78rem; color:rgba(59,200,232,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">Tap any term to jump to its definition above.</p>
-    <div style="display:flex; flex-wrap:wrap; gap:0.65rem;">
-      <span class="concept-tag ct-red"    onclick="vocabJump('sc-circulatory')">Circulatory System</span>
-      <span class="concept-tag ct-blue"   onclick="vocabJump('sc-digestive')">Digestive System</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('sc-respiratory')">Respiratory System</span>
-      <span class="concept-tag ct-green"  onclick="vocabJump('sc-excretory')">Excretory System</span>
-      <span class="concept-tag ct-slate"  onclick="vocabJump('sc-skeletal')">Skeletal System</span>
-      <span class="concept-tag ct-purple" onclick="vocabJump('sc-muscular')">Muscular System</span>
-      <span class="concept-tag ct-purple" onclick="vocabJump('sc-nervous')">Nervous System</span>
-      <span class="concept-tag ct-blue"   onclick="vocabJump('sc-immune')">Immune System</span>
-      <span class="concept-tag ct-slate"  onclick="hierJump('vocab-organelle')">Organelles</span>
-      <span class="concept-tag ct-slate"  onclick="hierJump('vocab-cell')">Cells</span>
-      <span class="concept-tag ct-slate"  onclick="hierJump('vocab-tissue')">Tissues</span>
-      <span class="concept-tag ct-slate"  onclick="hierJump('vocab-organ')">Organs</span>
-      <span class="concept-tag ct-slate"  onclick="hierJump('vocab-body-systems')">Body Systems</span>
-    </div>
-  </div>
-</section>
-
-
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Mastery Check</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Body Systems Quiz</h2>
     <p class="section-desc">You've traced how systems are built and how they connect. Now see how much you can recall on your own, no notes needed.</p>
 

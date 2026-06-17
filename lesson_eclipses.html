@@ -429,11 +429,11 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
-    <li><a href="#briefing">Eclipses</a></li>
-    <li><a href="#investigate">Discover</a></li>
-    <li><a href="#orbit">Orbit</a></li>
-    <li><a href="#shadows">Shadows</a></li>
+    <li><a href="#goals">Goals</a></li>
     <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#briefing">Eclipses</a></li>
+    <li><a href="#shadows">Shadows</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -482,9 +482,201 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
 </div>
 
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GOLD-STANDARD SECTIONS: LEARNING GOALS + KEY VOCABULARY
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  /* Learning Goals */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85);
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3);
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+  }
+
+  /* Key Vocabulary (glossary cards) */
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent2);
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 0.5rem; }
+  .gc-jump { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); border-bottom: 1px dashed currentColor; padding-bottom: 1px; cursor: pointer; }
+  .gc-jump:hover { border-bottom-style: solid; }
+  .gc-blue   { border-top-color: #7cc8f8; } .gc-blue .gc-term   { color: #7cc8f8; }
+  .gc-orange { border-top-color: #e6914a; } .gc-orange .gc-term { color: #e6914a; }
+  .gc-teal   { border-top-color: var(--teal); } .gc-teal .gc-term { color: var(--teal); }
+  .gc-purple { border-top-color: #b47fff; } .gc-purple .gc-term { color: #b47fff; }
+
+  /* Quick Recall cards */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,233,182,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(29,233,182,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  /* Explain wrap-up beats */
+  .wrapup-beats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 auto; }
+  @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+  .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
+  .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .wrapup-beat-1 { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+  .wrapup-beat-2 { background: rgba(160,180,228,0.05); border: 1px solid rgba(160,180,228,0.22); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--accent2), #b47fff); }
+  .wrapup-beat-3 { background: rgba(29,233,182,0.05); border: 1px solid rgba(29,233,182,0.2); }
+  .wrapup-beat-3::before { background: linear-gradient(90deg, var(--teal), var(--green)); }
+  .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--accent2); }
+  .wrapup-beat-3 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
+  .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+  .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+  .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
+  .wuc-1 { color: var(--gold);   background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); }
+  .wuc-2 { color: var(--accent2); background: rgba(160,180,228,0.08); border-color: rgba(160,180,228,0.3); }
+  .wuc-3 { color: var(--teal);   background: rgba(29,233,182,0.08); border-color: rgba(29,233,182,0.3); }
+</style>
+
+<!-- LEARNING GOALS -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🌑</span>
+        <div class="goal-text">I can use a model of the Sun, Earth, and Moon to explain how solar and lunar eclipses happen.</div>
+        <span class="goal-std">6.MS-ESS1-1a</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🛰️</span>
+        <div class="goal-text">I can explain why eclipses do not happen every month.</div>
+        <span class="goal-std">6.ESS1-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🌓</span>
+        <div class="goal-text">I can describe the difference between the umbra and the penumbra of a shadow.</div>
+        <span class="goal-std">6.ESS1-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">📐</span>
+        <div class="goal-text">I can explain why eclipses only happen when the Moon is near a node.</div>
+        <span class="goal-std">6.ESS1-2</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY VOCABULARY -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Every term below appeared somewhere in this lesson. Open a card to reveal what it means, then jump to where it was explained.</p>
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Eclipse</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">When one space object moves into the shadow of another. Solar and lunar eclipses are the two kinds.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-eclipse')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Umbra</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The dark, full-shadow center where the light source is completely blocked.</div><span class="gc-jump" onclick="event.stopPropagation(); cardJump('umbra-card')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Penumbra</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The lighter outer shadow where the light source is only partly blocked.</div><span class="gc-jump" onclick="event.stopPropagation(); cardJump('penumbra-card')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Node</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">One of the two points where the Moon's tilted orbit crosses Earth's orbital plane. Eclipses can only happen near a node.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-node')">See it in the lesson ↓</span></div>
+      </button>
+
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
 <section id="briefing" style="background:var(--dark2);">
   <div class="container">
-    <span class="section-label">Before You Begin</span>
+    <span class="section-label">Engage &middot; Briefing</span>
     <h2 class="section-title">Two Kinds of Eclipse</h2>
     <p class="section-desc">Before you investigate, here's the setup. Two types of eclipse exist, and they work in completely opposite ways.</p>
     <span id="vocab-anchor-eclipse"></span>
@@ -553,7 +745,7 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
 
 <section id="investigate">
   <div class="container">
-    <span class="section-label">Investigation</span>
+    <span class="section-label">Explore &middot; Discovery Lab</span>
     <h2 class="section-title">Eclipse Discovery Lab</h2>
     <p class="section-desc">Scientists can predict eclipses centuries in advance. The positions are exact. Can you find them?</p>
 
@@ -624,7 +816,7 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
 
 <section id="discovered" style="background:var(--dark);">
   <div class="container">
-    <span class="section-label">Discovery</span>
+    <span class="section-label">Explore &middot; What You Discovered</span>
     <h2 class="section-title">What You Discovered</h2>
     <p class="section-desc">Here's what you found. The two eclipses look similar from a distance; but the geometry, the phase, and the experience are completely different.</p>
     <div class="discovered-wrap">
@@ -669,7 +861,7 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
 
 <section id="orbit" style="background:var(--dark);">
   <div class="container">
-    <span class="section-label">Why Eclipses Are Rare</span>
+    <span class="section-label">Explore &middot; Why Eclipses Are Rare</span>
     <h2 class="section-title">The Tilted Orbit</h2>
     <p class="section-desc">New moon happens every 29.5 days, the exact phase a solar eclipse needs. So why don't eclipses happen every month? A single 5-degree tilt in the Moon's orbit changes everything.</p>
     <div class="orbit-compare">
@@ -868,7 +1060,7 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
 
 <section id="shadows" style="background:var(--dark);">
   <div class="container">
-    <span class="section-label">Shadow Models</span>
+    <span class="section-label">Explore &middot; Shadow Models</span>
     <h2 class="section-title">The Anatomy of a Shadow</h2>
     <p class="section-desc">The Moon casts two shadow zones during a solar eclipse, and they produce completely different experiences. Which one you're in determines everything.</p>
     <div style="background:rgba(4,8,14,.7);border:1px solid rgba(122,143,200,.1);border-radius:18px;padding:2rem 1.5rem;margin-bottom:1.5rem;overflow:hidden;">
@@ -1016,25 +1208,105 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
   </div>
 </section>
 
-<section id="vocab" style="background:var(--dark2);">
+<!-- QUICK RECALL -->
+<section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
-    <span class="section-label">Key Vocabulary</span>
-    <h2 class="section-title">Vocabulary to Know</h2>
-    <p class="section-desc">Every term below appeared in this lesson. Click any pill to jump to where it was explained.</p>
-    <div class="vocab-pills">
-      <span class="vocab-pill vp-blue"   onclick="vocabJump('vocab-anchor-eclipse')">Eclipse</span>
-      <span class="vocab-pill vp-orange" onclick="cardJump('umbra-card')">Umbra</span>
-      <span class="vocab-pill vp-teal"   onclick="cardJump('penumbra-card')">Penumbra</span>
-      <span class="vocab-pill vp-purple" onclick="vocabJump('vocab-anchor-node')">Node</span>
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">The Moon orbits Earth every month, so why don't we get an eclipse every month?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>The Moon is too far from Earth most months</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>The Moon's orbit is tilted, so it usually passes above or below the Sun-Earth line</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Earth's shadow is too weak during most of the year</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">In a solar eclipse, what moves into whose shadow?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>The Moon passes between the Sun and Earth, casting its shadow on Earth</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Earth passes between the Sun and Moon, casting its shadow on the Moon</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>The Sun drifts into Earth's shadow</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">What is the umbra of a shadow?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>The lighter outer part where the light is only partly blocked</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>The dark inner part where the light source is fully blocked</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>The glowing ring of light around the Sun</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
     </div>
   </div>
 </section>
 
+<!-- EXPLAIN -->
+<section id="explain" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">Why Not Every Month?</h2>
+    <p class="section-desc">You started with a puzzle: the Moon lines up with the Sun every month, so why don't eclipses happen every month? Here is the whole answer, step by step.</p>
 
+    <div class="wrapup-beats">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">The Setup</div>
+        <div class="wrapup-beat-answer">Every month the Moon passes between Earth and the Sun.</div>
+        <div class="wrapup-beat-body">Once per orbit the Moon sits roughly on the line between Earth and the Sun (New Moon). If orbits were perfectly flat, that would line up an <strong>eclipse</strong> every single month.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">The Twist</div>
+        <div class="wrapup-beat-answer">The Moon's orbit is tilted about five degrees.</div>
+        <div class="wrapup-beat-body">Because of that tilt, the Moon usually passes a little above or below the Sun-Earth line. Its shadow misses Earth, so most months bring no eclipse at all.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">The Payoff</div>
+        <div class="wrapup-beat-answer">An eclipse needs alignment AND the Moon near a node.</div>
+        <div class="wrapup-beat-body">Only when New or Full Moon happens near a <strong>node</strong> do the three bodies truly line up. Then the <strong>umbra</strong> and <strong>penumbra</strong> fall in the right place to make a solar or lunar eclipse.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2.5rem;">
+      <strong>The full chain:</strong>
+      <div class="wrapup-chips" style="margin-top: 0.8rem;">
+        <span class="wuc wuc-1">Moon lines up every month</span>
+        <span class="wuc wuc-2">Tilted orbit usually misses</span>
+        <span class="wuc wuc-2">Alignment must happen near a node</span>
+        <span class="wuc wuc-3">Shadow falls in the right place</span>
+        <span class="wuc wuc-3">Solar or lunar eclipse</span>
+      </div>
+      <div style="margin-top: 1rem;">Eclipses are rare not because the Sun and Moon rarely line up, but because they rarely line up <em>in the same plane</em>. The tilt is the whole answer.</div>
+    </div>
+  </div>
+</section>
 
 <section id="quiz" class="quiz-section" style="padding-top: 2.5rem;">
   <div class="container">
-    <span class="section-label">Check Your Understanding</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Eclipses Quiz</h2>
     <p class="section-desc">10 questions covering solar and lunar eclipses, shadows, orbital tilt, and nodes. Answer every question, then submit.</p>
 
@@ -1394,6 +1666,55 @@ function cardJump(cardId) {
     title.addEventListener('animationend', function() { title.classList.remove('pulsing'); }, { once: true });
   }, 500);
 }
+</script>
+
+<!-- Quick Recall wiring -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    if (!opts || !checkBtn) return;
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 1,
+    'Correct! The Moon\'s orbit is tilted, so most months it passes above or below the Sun-Earth line and its shadow misses.',
+    'Not quite. The Moon lines up every month, but its tilted orbit usually carries it above or below the line, so no eclipse.');
+  wireQR('qr2', 0,
+    'Correct! In a solar eclipse the Moon passes between the Sun and Earth and casts its shadow on Earth.',
+    'Not quite. A solar eclipse is the Moon passing between the Sun and Earth, casting its shadow on Earth. The reverse is a lunar eclipse.');
+  wireQR('qr3', 1,
+    'Correct! The umbra is the dark inner shadow where the light source is completely blocked.',
+    'Not quite. The umbra is the dark inner shadow (light fully blocked). The lighter outer shadow is the penumbra.');
+})();
 </script>
 
 <script>

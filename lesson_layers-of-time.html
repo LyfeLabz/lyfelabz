@@ -698,9 +698,11 @@
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hook">Investigate</a></li>
     <li><a href="#lesson">Read Rocks</a></li>
-    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -753,6 +755,245 @@
     </div>
   </div>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GOLD-STANDARD SECTIONS: LEARNING GOALS + KEY VOCABULARY
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  /* Learning Goals */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85);
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3);
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+  }
+
+  /* Key Vocabulary (glossary cards) */
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent2);
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 0.5rem; }
+  .gc-jump { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); border-bottom: 1px dashed currentColor; padding-bottom: 1px; cursor: pointer; }
+  .gc-jump:hover { border-bottom-style: solid; }
+  .gc-slate  { border-top-color: var(--accent2); } .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-teal   { border-top-color: var(--teal); }    .gc-teal .gc-term   { color: var(--teal); }
+  .gc-gold   { border-top-color: var(--gold); }    .gc-gold .gc-term   { color: var(--gold); }
+  .gc-green  { border-top-color: var(--green); }   .gc-green .gc-term  { color: var(--green); }
+  .gc-red    { border-top-color: var(--red); }     .gc-red .gc-term    { color: #e8836f; }
+  .gc-brown  { border-top-color: #c49a6c; }        .gc-brown .gc-term  { color: #d0a878; }
+
+  /* Quick Recall cards */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(29,233,182,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(29,233,182,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+  /* Explain wrap-up beats */
+  .wrapup-beats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 0 auto; }
+  @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+  .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
+  .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .wrapup-beat-1 { background: rgba(196,154,108,0.07); border: 1px solid rgba(196,154,108,0.28); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, #c49a6c, rgba(196,154,108,0.3)); }
+  .wrapup-beat-2 { background: rgba(159,184,204,0.05); border: 1px solid rgba(159,184,204,0.22); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+  .wrapup-beat-3 { background: rgba(29,233,182,0.05); border: 1px solid rgba(29,233,182,0.2); }
+  .wrapup-beat-3::before { background: linear-gradient(90deg, var(--teal), var(--green)); }
+  .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .wrapup-beat-1 .wrapup-beat-label { color: #d0a878; }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--accent2); }
+  .wrapup-beat-3 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
+  .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+  .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+  .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
+  .wuc-1 { color: #d0a878;     background: rgba(196,154,108,0.08); border-color: rgba(196,154,108,0.3); }
+  .wuc-2 { color: var(--accent2); background: rgba(159,184,204,0.08); border-color: rgba(159,184,204,0.3); }
+  .wuc-3 { color: var(--teal); background: rgba(29,233,182,0.08); border-color: rgba(29,233,182,0.3); }
+</style>
+
+<!-- LEARNING GOALS -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🪨</span>
+        <div class="goal-text">I can explain how the three rock types form and how the rock cycle connects them.</div>
+        <span class="goal-std">6.ESS2-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">⬇️</span>
+        <div class="goal-text">I can use superposition and cross-cutting relationships to order rock layers from oldest to youngest.</div>
+        <span class="goal-std">6.ESS1-4</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">💨</span>
+        <div class="goal-text">I can describe how weathering and erosion build the sediment that becomes sedimentary rock.</div>
+        <span class="goal-std">6.ESS2-3</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🦕</span>
+        <div class="goal-text">I can explain how index fossils and dating methods reveal the age of rock layers.</div>
+        <span class="goal-std">6.ESS1-4</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY VOCABULARY -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Every term below appeared somewhere in this lesson. Open a card to reveal what it means, then jump to where it was explained.</p>
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-brown" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Sedimentary Rock</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Rock formed when sediment piles up in layers and is compacted by pressure over time. The best natural recorder of fossils.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-sedimentary')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-red" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Igneous Rock</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Rock formed when melted rock (magma or lava) cools and hardens, either underground or on the surface.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-igneous')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Metamorphic Rock</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Rock formed when existing rock is changed by intense heat and pressure deep underground, without fully melting.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-metamorphic')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-brown" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Weathering</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The breakdown of rock into smaller pieces by wind, rain, ice, or temperature changes. It happens in place.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-weathering')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Erosion</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The movement of broken rock pieces to a new place by water, wind, or ice, where they are deposited.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-erosion')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Rock Strata</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Layers of sedimentary rock stacked on each other, each recording the environment of the time it formed.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-strata')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-brown" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Superposition</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">In undisturbed layers, the bottom layer is the oldest and the top layer is the youngest.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('term-superposition')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Original Horizontality</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Sediment layers are always deposited flat. Tilted or bent layers were moved after they formed.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('term-horizontality')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-red" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Cross-Cutting Relationships</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">When a fault or intrusion cuts through rock layers, the thing that cuts is always younger than the layers it cuts.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('term-crosscutting')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Inclusions</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Pieces of one rock trapped inside another. The trapped pieces are older than the rock around them.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('term-inclusions')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Index Fossils</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Fossils from species that lived a short time but spread worldwide, used to date the rock layer they appear in.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-index')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Relative Dating</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Working out whether a layer is older or younger than another, the sequence, not the exact age.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-relative')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Absolute Dating</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Finding the actual age of rock in years, often by measuring radioactive decay.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-absolute')">See it in the lesson ↓</span></div>
+      </button>
+
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
 
 <!-- ── MICROPASS 1: INVESTIGATION HOOK ── -->
 <style>
@@ -851,7 +1092,7 @@
 
 <section id="hook" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Investigation</span>
+    <span class="section-label">Engage &middot; Investigation</span>
     <h2 class="section-title">Can You Read the Rocks?</h2>
     <p class="section-desc">Before we explain anything, look at these three formations and trust your instincts. What do you notice?</p>
 
@@ -983,7 +1224,7 @@ function invAnswer(btn, result, cardNum) {
 <!-- LESSON NOTES -->
 <section id="lesson">
   <div class="container">
-    <span class="section-label">The Foundation</span>
+    <span class="section-label">Explore &middot; Formation</span>
     <h2 class="section-title">From Sediment to Stone</h2>
     <p class="section-desc">Those patterns you just noticed (flat layers, tilted layers, things that cut through) all come from how rocks form in the first place.</p>
 
@@ -1068,9 +1309,9 @@ function invAnswer(btn, result, cardNum) {
 </div>
 
 <!-- PRINCIPLES SECTION -->
-<section id="principles" style="background: var(--dark2);">
+<section id="principles" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Key Principles</span>
+    <span class="section-label">Explore &middot; Reading the Record</span>
     <h2 class="section-title">Reading the Rock Record</h2>
     <p class="section-desc">You made predictions about all three of these in the Investigation. Here's what each one is actually called, and why it works.</p>
 
@@ -1277,45 +1518,116 @@ function invAnswer(btn, result, cardNum) {
       </div>
     </div>
 
-    <!-- Key concepts -->
-    <div style="margin-top: 2rem;">
-      <div id="vocab" class="section-label" style="margin-bottom: 0;">Key Vocabulary</div>
-      <div class="concepts-hint">Click any term to jump to its explanation in the lesson</div>
-      <div class="concepts-grid">
-        <span class="concept-tag ct-brown"  onclick="vocabJump('vocab-sedimentary')">Sedimentary Rock</span>
-        <span class="concept-tag ct-red"    onclick="vocabJump('vocab-igneous')">Igneous Rock</span>
-        <span class="concept-tag ct-green"  onclick="vocabJump('vocab-metamorphic')">Metamorphic Rock</span>
-        <span class="concept-tag ct-brown"  onclick="vocabJump('vocab-weathering')">Weathering</span>
-        <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-erosion')">Erosion</span>
-        <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-strata')">Rock Strata</span>
-        <span class="concept-tag ct-brown"  onclick="vocabJump('term-superposition')">Superposition</span>
-        <span class="concept-tag ct-slate"  onclick="vocabJump('term-horizontality')">Original Horizontality</span>
-        <span class="concept-tag ct-red"    onclick="vocabJump('term-crosscutting')">Cross-Cutting Relationships</span>
-        <span class="concept-tag ct-green"  onclick="vocabJump('term-inclusions')">Inclusions</span>
-        <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-index')">Index Fossils</span>
-        <span class="concept-tag ct-brown"  onclick="vocabJump('vocab-relative')">Relative Dating</span>
-        <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-absolute')">Absolute Dating</span>
+  </div>
+</section>
+
+<!-- QUICK RECALL -->
+<section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Why is sedimentary rock the best recorder of Earth's history?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>It forms in slow, predictable layers that pile up over time</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>It is the hardest of the three rock types</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>It only forms during volcanic eruptions</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">In an undisturbed stack of rock layers, which layer formed first?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>The top layer, because it is closest to the surface</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>The bottom layer, because of superposition</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>The middle layer, because it is protected</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">A band of hardened magma cuts straight through five rock layers. How old is it compared to those layers?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>Younger than every layer it cuts through</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>Older than every layer it cuts through</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>The same age as the bottom layer</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── MICROPASS 6: REFLECTION MOMENT ── -->
-<div style="background: var(--dark2); padding: 0 2rem 4rem;">
-  <div style="max-width: 1100px; margin: 0 auto;">
-    <div class="callout gold" style="max-width:760px;">
+<!-- EXPLAIN -->
+<section id="explain" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">How Scientists Read the Rocks</h2>
+    <p class="section-desc">You started with a question: if rock layers can't talk, how do scientists figure out what happened, and when, just by looking at them? Here is the whole chain, step by step.</p>
+
+    <div class="wrapup-beats">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">Rocks Form in Order</div>
+        <div class="wrapup-beat-answer">Sediment settles in flat layers, oldest on the bottom.</div>
+        <div class="wrapup-beat-body">Because of <strong>original horizontality</strong>, layers start out flat. Because of <strong>superposition</strong>, each new layer lands on top, so the sequence runs from oldest at the bottom to youngest at the top.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">Later Events Leave Marks</div>
+        <div class="wrapup-beat-answer">Cuts, tilts, and trapped pieces reveal what came after.</div>
+        <div class="wrapup-beat-body">A fault or magma <strong>cross-cutting</strong> the layers had to form after them. Tilted layers were moved later. <strong>Inclusions</strong> trapped inside a rock are older than the rock around them. Each clue adds to the order of events.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">Fossils and Decay Give Dates</div>
+        <div class="wrapup-beat-answer">Index fossils and radioactive decay turn sequence into age.</div>
+        <div class="wrapup-beat-body"><strong>Relative dating</strong> uses these clues and <strong>index fossils</strong> to order layers. <strong>Absolute dating</strong> measures radioactive decay to give an actual age in years. Together they tell the full story.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout" style="margin-top: 2.5rem;">
+      <strong>The full chain:</strong>
+      <div class="wrapup-chips" style="margin-top: 0.8rem;">
+        <span class="wuc wuc-1">Sediment piles up in flat layers</span>
+        <span class="wuc wuc-1">Bottom is oldest, top is youngest</span>
+        <span class="wuc wuc-2">Cuts and tilts mark later events</span>
+        <span class="wuc wuc-3">Index fossils order the layers</span>
+        <span class="wuc wuc-3">Radioactive decay gives an age</span>
+      </div>
+      <div style="margin-top: 1rem;">Rock layers really do keep a record. Read in the right order, with the right tools, they reveal both what happened and when, billions of years of Earth's history written in stone.</div>
+    </div>
+
+    <div class="callout gold" style="max-width:760px; margin-top: 2.5rem;">
       <span class="callout-icon">💭</span>
       <div class="callout-body">
         <strong>Think About It:</strong> Scientists had access to rock strata for thousands of years before anyone formally described superposition. What do you think made it so hard to see something that now seems obvious? What had to change, in tools, in thinking, or in the questions people were asking?
       </div>
     </div>
   </div>
-</div>
+</section>
 
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Layers of Time Quiz</h2>
     <p class="section-desc">10 questions on rock types, geological processes, and reading the rock record. Fill in your info below before you begin, your score will be sent to your teacher when you submit.</p>
 
@@ -1507,6 +1819,56 @@ function vocabJump(targetId) {
   }, 600);
 }
 </script>
+
+<!-- Quick Recall wiring -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    if (!opts || !checkBtn) return;
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 0,
+    'Correct! Sedimentary rock forms in slow, predictable layers, so it preserves a sequence and the fossils inside it.',
+    'Not quite. Sedimentary rock is the best recorder because it forms in slow layers that pile up over time, trapping fossils as they go.');
+  wireQR('qr2', 1,
+    'Correct! By superposition, the bottom layer of an undisturbed stack is the oldest, so it formed first.',
+    'Not quite. In undisturbed layers, the bottom layer is the oldest, so it formed first. That is superposition.');
+  wireQR('qr3', 0,
+    'Correct! By cross-cutting relationships, anything that cuts through layers had to form after them, so it is younger.',
+    'Not quite. The magma had to cut through layers that were already there, so it is younger than every layer it cuts.');
+})();
+</script>
+
 <script>
 const SCRIPT_URLS = {
   MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',

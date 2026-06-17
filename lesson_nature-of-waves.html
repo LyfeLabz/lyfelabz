@@ -568,6 +568,7 @@ body.stem-active .stem-detail {
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#mystery">Mystery</a></li>
     <li><a href="#what-is-wave">What is a Wave?</a></li>
@@ -678,6 +679,57 @@ body.stem-active .stem-detail {
 }
 .gc-jump:hover { border-bottom-style: solid; }
 </style>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+</style>
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🌊</span>
+        <div class="goal-text">Use a wave diagram to describe a wave by its amplitude, wavelength, and frequency.</div>
+        <span class="goal-std">6.MS-PS4-1</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">⚡</span>
+        <div class="goal-text">Explain how the amplitude of a wave is related to the energy it carries.</div>
+        <span class="goal-std">6.MS-PS4-1</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
     <span class="section-label">Key Vocabulary</span>
@@ -875,7 +927,7 @@ body.stem-active .stem-detail {
 
 <section id="mystery" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Mystery</span>
+    <span class="section-label">Engage &middot; Mystery</span>
     <h2 class="section-title">What's Actually Moving?</h2>
     <p class="section-desc">Four ordinary scenes. In each one, something looks like it's traveling. Click each card and watch what's <em>really</em> going on.</p>
 
@@ -1165,7 +1217,7 @@ body.stem-active .stem-detail {
 
 <section id="what-is-wave" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">What is a Wave?</span>
+    <span class="section-label">Explore &middot; What Is a Wave?</span>
     <h2 class="section-title">What Is a Wave?</h2>
     <p class="section-desc">Let's slow it down. Watch carefully. What happens as the pulse moves through the row?</p>
 
@@ -1501,7 +1553,7 @@ body.stem-active .stem-detail {
 
 <section id="em" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Types</span>
+    <span class="section-label">Explore &middot; Electromagnetic Waves</span>
     <h2 class="section-title">Sunlight Across Empty Space</h2>
     <p class="section-desc">Two astronauts float in space. Their helmets are inches apart. Make a prediction for each question.</p>
 
@@ -1778,7 +1830,7 @@ body.stem-active .stem-detail {
 
 <section id="mechanical" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Types</span>
+    <span class="section-label">Explore &middot; Mechanical Waves</span>
     <h2 class="section-title">Why Sound Needs Stuff</h2>
 
     <!-- ── CALLBACK TO SECTION 1 ── -->
@@ -2061,7 +2113,7 @@ body.stem-active .stem-detail {
 
 <section id="parts" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Anatomy</span>
+    <span class="section-label">Explore &middot; Anatomy</span>
     <h2 class="section-title">Describing a Wave</h2>
     <p class="section-desc">We now know waves carry energy. To measure that energy, scientists need a language for describing wave shapes. Let's learn the first three words.</p>
 
@@ -2372,7 +2424,7 @@ body.stem-active .stem-detail {
 
 <section id="wavelength" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Measuring</span>
+    <span class="section-label">Explore &middot; Wavelength</span>
     <h2 class="section-title">How Far Apart Are the Peaks?</h2>
     <p class="section-desc">Compare these two waves. Same height. Different something. What do you notice?</p>
 
@@ -2665,7 +2717,7 @@ window.revealWavelength = function() {
 
 <section id="frequency" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Measuring</span>
+    <span class="section-label">Explore &middot; Frequency</span>
     <h2 class="section-title">Count the Passes</h2>
     <p class="section-desc">Two waves travel toward the gold line. When you press Start, watch the line for one second. <strong style="color:var(--gold);">Count the crests</strong> that cross it.</p>
 
@@ -3093,7 +3145,7 @@ window.revealWavelength = function() {
 
 <section id="amplitude" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Measuring</span>
+    <span class="section-label">Explore &middot; Amplitude</span>
     <h2 class="section-title">A Calm Day and a Storm</h2>
     <p class="section-desc">Two ocean waves. Same distance between peaks. One is much bigger than the other.</p>
 
@@ -3617,7 +3669,7 @@ window.revealWavelength = function() {
 
 <section id="inverse" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">The Big Connection</span>
+    <span class="section-label">Explore &middot; The Big Connection</span>
     <h2 class="section-title">Wavelength, Frequency, Energy</h2>
     <p class="section-desc">You've met all three. Now let's see how they fit together, by trying something.</p>
 
@@ -4033,7 +4085,7 @@ window.toggleSpectrumNumbers = function() {
 
 <section id="label" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Self-Check</span>
+    <span class="section-label">Quick Recall</span>
     <h2 class="section-title">Speak the Language</h2>
     <p class="section-desc">A new wave. Five terms. Label the parts and measurements of the wave: pick a word, then tap what it names.</p>
 
@@ -4409,7 +4461,7 @@ window.toggleSpectrumNumbers = function() {
 
 <section id="concepts" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">The Investigation Closes</span>
+    <span class="section-label">Explain &middot; Wrap-Up</span>
     <h2 class="section-title">What We Discovered</h2>
 
     <!-- ── DRIVING QUESTION ANSWERED ── -->
@@ -4859,7 +4911,7 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 
 <section id="quiz" class="quiz-section" style="padding-top: 2.5rem;">
   <div class="container">
-    <span class="section-label">Check Your Understanding</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Nature of Waves Quiz</h2>
     <p class="section-desc">10 questions covering everything you discovered. Answer every question, then submit.</p>
 

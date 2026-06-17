@@ -730,10 +730,11 @@
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hook">Investigate</a></li>
     <li><a href="#motion">Motion</a></li>
-    <li><a href="#bodies">Bodies</a></li>
-    <li><a href="#concepts">Vocab</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#go-further-anchor">More</a></li>
   </ul>
@@ -787,11 +788,205 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GOLD-STANDARD SECTIONS: LEARNING GOALS + KEY VOCABULARY
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  /* Learning Goals */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85);
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3);
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+  }
+
+  /* Key Vocabulary (glossary cards) */
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent2);
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 0.5rem; }
+  .gc-jump { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); border-bottom: 1px dashed currentColor; padding-bottom: 1px; cursor: pointer; }
+  .gc-jump:hover { border-bottom-style: solid; }
+  .gc-slate  { border-top-color: var(--accent2); } .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-teal   { border-top-color: var(--teal); }    .gc-teal .gc-term   { color: var(--teal); }
+  .gc-gold   { border-top-color: var(--gold); }    .gc-gold .gc-term   { color: var(--gold); }
+  .gc-green  { border-top-color: var(--green); }   .gc-green .gc-term  { color: var(--green); }
+  .gc-silver { border-top-color: var(--silver); }  .gc-silver .gc-term { color: var(--silver); }
+
+  /* Quick Recall cards */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+
+<!-- LEARNING GOALS -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🌌</span>
+        <div class="goal-text">I can use a model of the Sun, Earth, and Moon to describe how the three objects move.</div>
+        <span class="goal-std">6.MS-ESS1-1a</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🧲</span>
+        <div class="goal-text">I can explain how gravity holds the Sun-Earth-Moon system together.</div>
+        <span class="goal-std">MS-ESS1-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🔄</span>
+        <div class="goal-text">I can tell the difference between rotation and revolution and what each one causes.</div>
+        <span class="goal-std">6.MS-ESS1-1a</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">⚖️</span>
+        <div class="goal-text">I can explain how mass and gravity keep the Moon in orbit instead of flying off or crashing in.</div>
+        <span class="goal-std">MS-ESS1-2</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY VOCABULARY -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Every term below appeared somewhere in this lesson. Open a card to reveal what it means, then jump to where it was explained.</p>
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">System</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A group of parts that work together as a whole. The Sun, Earth, and Moon form one system.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-system')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Gravity</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">An invisible force that pulls objects with mass toward each other. It holds the system together.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-gravity')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-silver" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Mass</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The amount of matter in an object. More mass means a stronger gravitational pull.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-mass')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Orbit</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The curved path one object takes around another, like the Moon around Earth.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-orbit')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-silver" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Natural Satellite</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">An object that orbits a planet. The Moon is Earth's natural satellite.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-satellite')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Rotation</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Spinning on an axis. Earth rotates once every 24 hours, which gives us day and night.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-rotation')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Revolution</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Traveling along an orbit around another object. Earth revolves around the Sun once a year.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-revolution')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Axis</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">An imaginary line through an object that it spins around. Earth's axis runs from pole to pole.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-axis')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Model</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A representation used to understand something too big or far away to observe directly.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-model')">See it in the lesson ↓</span></div>
+      </button>
+
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
 <!-- ────────────────────────────────────────────────────────── -->
 <!-- INVESTIGATION HOOK -->
 <section id="hook" style="background: var(--dark2); padding: 4rem 2rem 3.5rem;">
   <div class="container">
-    <span class="section-label">Investigation</span>
+    <span class="section-label">Engage &middot; Investigation</span>
     <h2 class="section-title">Something Doesn't Add Up</h2>
     <p class="section-desc" style="margin-bottom: 2.5rem;">Before we explain anything, just think. You've seen the first thing happen thousands of times. The second one has been happening for 4.5 billion years.</p>
 
@@ -862,7 +1057,7 @@
 <!-- ────────────────────────────────────────────────────────── -->
 <section id="lesson">
   <div class="container">
-    <span class="section-label">Lesson Notes</span>
+    <span class="section-label">Explore &middot; Lesson Notes</span>
     <h2 class="section-title">The Sun-Earth-Moon System</h2>
     <p class="section-desc">Three objects (a star, a planet, and a moon) held in perfect balance by gravity and motion. Here is how it all works.</p>
 
@@ -984,9 +1179,13 @@
 <!-- ────────────────────────────────────────────────────────── -->
 <section id="motion">
   <div class="container">
-    <span class="section-label">Motion</span>
+    <span class="section-label">Explore &middot; Motion</span>
     <h2 class="section-title">Rotation vs. Revolution</h2>
     <p class="section-desc">Two words, two completely different kinds of motion, and one of the most common mix-ups in middle school science. Here is how to keep them straight.</p>
+    <span id="vocab-anchor-rotation"></span>
+    <span id="vocab-anchor-revolution"></span>
+    <span id="vocab-anchor-axis"></span>
+    <span id="vocab-anchor-model"></span>
 
     <div class="tools-grid">
       <!-- Rules Card -->
@@ -1060,7 +1259,7 @@
 <!-- ────────────────────────────────────────────────────────── -->
 <section id="bodies">
   <div class="container">
-    <span class="section-label">The 3 Bodies</span>
+    <span class="section-label">Explore &middot; The 3 Bodies</span>
     <h2 class="section-title">Sun, Earth, and Moon</h2>
     <p class="section-desc">Three very different objects, bound into one system. Click any card to read the key facts, then explore the Motion Explorer to see rotation and revolution in action.</p>
 
@@ -1218,40 +1417,73 @@
 <!-- ────────────────────────────────────────────────────────── -->
 <!-- SECTION: KEY VOCABULARY                                     -->
 <!-- ────────────────────────────────────────────────────────── -->
-<section id="concepts">
+<!-- ────────────────────────────────────────────────────────── -->
+<!-- SECTION: QUICK RECALL                                      -->
+<!-- ────────────────────────────────────────────────────────── -->
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
-    <span class="section-label">Key Vocabulary</span>
-    <h2 class="section-title">Vocabulary to Know</h2>
-    <p class="section-desc" style="margin-bottom:0.5rem;">Every term below appeared in this lesson. Click any pill to jump to its explanation.</p>
-    <p style="font-size:0.78rem; color:rgba(122,143,166,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">👆 Click any term to jump to its explanation in the lesson</p>
-    <div class="concepts-grid">
-      <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-anchor-system')">System</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-anchor-gravity')">Gravity</span>
-      <span class="concept-tag ct-silver" onclick="vocabJump('vocab-anchor-mass')">Mass</span>
-      <span class="concept-tag ct-gold"   onclick="vocabJump('vocab-anchor-orbit')">Orbit</span>
-      <span class="concept-tag ct-silver" onclick="vocabJump('vocab-anchor-satellite')">Natural Satellite</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-anchor-rotation')">Rotation</span>
-      <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-anchor-revolution')">Revolution</span>
-      <span class="concept-tag ct-silver" onclick="vocabJump('vocab-anchor-axis')">Axis</span>
-      <span class="concept-tag ct-green"  onclick="vocabJump('vocab-anchor-model')">Model</span>
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before you reason it through. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">What force keeps the Moon orbiting Earth instead of drifting away?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Gravity, the pull between objects that have mass</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Magnetism from Earth's iron core</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>The push of sunlight against the Moon</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
     </div>
 
-    <!-- Hidden anchor targets for rotation, revolution, axis, model (in motion section) -->
-    <span id="vocab-anchor-rotation"   style="display:block; height:0; visibility:hidden;"></span>
-    <span id="vocab-anchor-revolution" style="display:block; height:0; visibility:hidden;"></span>
-    <span id="vocab-anchor-axis"       style="display:block; height:0; visibility:hidden;"></span>
-    <span id="vocab-anchor-model"      style="display:block; height:0; visibility:hidden;"></span>
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">Earth spins on its axis once every 24 hours. What is this motion called?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>Revolution</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Rotation</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Orbit</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">The Moon orbits Earth, so what do we call the Moon?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>A star, because it gives off light</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>A planet, because it is round</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Earth's natural satellite</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- ────────────────────────────────────────────────────────── -->
-<!-- SECTION: REFLECTION                                         -->
+<!-- SECTION: EXPLAIN (reflection)                              -->
 <!-- ────────────────────────────────────────────────────────── -->
 <section id="reflection" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Think About It</span>
-    <h2 class="section-title">Reflect Before You Quiz</h2>
-    <p class="section-desc">Three questions, no grade, no pressure. Just think it through before the quiz.</p>
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">Reason It Through</h2>
+    <p class="section-desc">Three questions, no grade, no pressure. Put the pieces together before the quiz.</p>
 
     <!-- R1: Rotation vs. Revolution -->
     <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.6rem 1.8rem; margin-bottom: 1.5rem;">
@@ -1297,7 +1529,7 @@
 <!-- ────────────────────────────────────────────────────────── -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Check Your Understanding</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Sun-Earth-Moon Quiz</h2>
     <p class="section-desc">10 questions on gravity, orbits, and the motions of our solar system's closest neighbors. Fill in your info below, your score will be sent to your teacher when you submit.</p>
 
@@ -1553,6 +1785,55 @@ function setMotion(mode) {
   title.textContent = motionData[mode].title;
   desc.textContent  = motionData[mode].desc;
 }
+</script>
+
+<!-- Quick Recall wiring -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    if (!opts || !checkBtn) return;
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 0,
+    'Correct! Gravity, the pull between objects that have mass, keeps the Moon orbiting Earth.',
+    'Not quite. It is gravity, the attractive pull between objects with mass, that holds the Moon in orbit.');
+  wireQR('qr2', 1,
+    'Correct! Spinning on its axis is rotation, and one full spin takes 24 hours.',
+    'Not quite. Spinning on an axis is rotation. Revolution is traveling around another object, like Earth around the Sun.');
+  wireQR('qr3', 2,
+    'Correct! An object that orbits a planet is a natural satellite, and the Moon is Earth\'s.',
+    'Not quite. The Moon makes no light of its own and is not a planet. An object that orbits a planet is a natural satellite.');
+})();
 </script>
 
 <!-- QUIZ ENGINE -->

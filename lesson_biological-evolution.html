@@ -693,10 +693,12 @@
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#lesson">Lesson</a></li>
     <li><a href="#evidence">Evidence</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#structures">Structures</a></li>
-    <li><a href="#concepts">Vocab</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -756,10 +758,209 @@
   </div>
 </div>
 
-<!-- LESSON NOTES -->
-<section id="lesson">
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: 1.6rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-left: 4px solid var(--gold, #c48a4e);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+</style>
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
-    <span class="section-label">📖 Lesson Notes</span>
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🧬</span>
+        <div class="goal-text">Explain how natural selection causes populations to change over many generations.</div>
+        <span class="goal-std">6.MS-LS4-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🦴</span>
+        <div class="goal-text">Use fossil evidence to describe how life forms have changed over Earth's history.</div>
+        <span class="goal-std">6.MS-LS4-1</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">📐</span>
+        <div class="goal-text">Compare homologous, analogous, and vestigial structures as evidence of evolution.</div>
+        <span class="goal-std">6.MS-LS4-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🌳</span>
+        <div class="goal-text">Use anatomical and DNA evidence to argue that species share common ancestors.</div>
+        <span class="goal-std">6.MS-LS4-1</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top: 3px solid #7cc8f8;
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold, #c48a4e); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted, #b8ab8f); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted, #d8cdb5); line-height: 1.55; margin-bottom: 0.5rem; }
+  .gc-jump { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold, #c48a4e); border-bottom: 1px dashed currentColor; padding-bottom: 1px; cursor: pointer; }
+  .gc-jump:hover { border-bottom-style: solid; }
+  .gc-blue   { border-top-color: #7cc8f8; } .gc-blue .gc-term   { color: #7cc8f8; }
+  .gc-green  { border-top-color: var(--green, #2ecc71); } .gc-green .gc-term  { color: var(--green, #2ecc71); }
+  .gc-purple { border-top-color: #b47fff; } .gc-purple .gc-term { color: #b47fff; }
+  .gc-orange { border-top-color: var(--gold, #c48a4e); } .gc-orange .gc-term { color: #d9a566; }
+  .gc-red    { border-top-color: #ff6b6b; } .gc-red .gc-term    { color: #ff6b6b; }
+</style>
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Every term below appeared somewhere in this lesson. Open a card to reveal what it means, then jump to where it was explained.</p>
+
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Biological Evolution</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The change in the inherited traits of a population of organisms over many generations.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-evolution')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Natural Selection</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The process in which organisms with traits better suited to their environment survive and reproduce more.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-natural-selection')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Environmental Pressure</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A challenge from the environment, such as predators or limited food, that affects which organisms survive.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-env-pressure')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Variation</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The natural differences in traits among individuals of the same species.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-variation')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Heritable Variation</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Trait differences that can be passed from parents to offspring.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-heritable-variation')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Adaptation</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">An inherited trait that helps an organism survive and reproduce in its environment.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-adaptation')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Heritable</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Able to be passed from parents to offspring through genes.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-heritable')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Fossils</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The preserved remains or traces of organisms that lived in the past.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-fossils')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Transitional Fossils</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Fossils that show features in between an older group and the group that descended from it.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-transitional')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Homologous Structures</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Body parts that are similar because they were inherited from a common ancestor.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-homologous')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Analogous Structures</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Body parts with similar functions that evolved separately, not from a common ancestor.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-analogous')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Convergent Evolution</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">When unrelated species independently evolve similar traits to meet similar challenges.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-convergent')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-red" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Vestigial Structures</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Body parts that are reduced in size and no longer serve their original function.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-vestigial')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">DNA</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The molecule that carries genetic instructions. Similarities in DNA show how closely species are related.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-dna')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Common Ancestor</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A species from which two or more different species later evolved.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-common-ancestor')">See it in the lesson ↓</span></div>
+      </button>
+
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
+<!-- LESSON NOTES -->
+<section id="lesson" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; How Evolution Works</span>
     <h2 class="section-title">Biological Evolution 🧬&#xFE0E;</h2>
     <p class="section-desc">All life on Earth shares a common history of change. Here's how it works, and the evidence that proves it.</p>
 
@@ -943,9 +1144,9 @@
 </section>
 
 <!-- EVIDENCE -->
-<section id="evidence">
+<section id="evidence" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">🔬 Evidence</span>
+    <span class="section-label">Explore &middot; Evidence for Evolution</span>
     <h2 class="section-title">Five Types of Evidence for Evolution</h2>
     <p class="section-desc">Scientists have multiple independent lines of evidence, each one pointing to the same conclusion. Click each card to explore.</p>
 
@@ -1049,9 +1250,112 @@
 </section>
 
 <!-- STRUCTURES COMPARISON -->
-<section id="structures">
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL (retrieval checkpoint between Explore and Explain)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(196,138,78,0.35); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: #d9a566; margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: #c48a4e; }
+.qr-options label:focus-within { border-color: #c48a4e; box-shadow: 0 0 0 3px rgba(196,138,78,0.22); }
+.qr-options input[type=radio] { accent-color: #c48a4e; }
+.qr-options label.selected { background: rgba(196,138,78,0.12); border-color: #c48a4e; }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green, #2ecc71); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: #e74c3c; }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid #c48a4e; outline-offset: 2px; }
+.qr-check { background: #c48a4e; color: #1a1509; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+<section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
-    <span class="section-label">📐 Comparison</span>
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">One Quick Check</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Pull this idea back from memory before we compare body structures.</p>
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
+      <div class="qr-q" id="qr1Q">In natural selection, which individuals are most likely to pass their traits to the next generation?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Those with traits that help them survive and reproduce in their environment</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>The largest and strongest individuals in every situation</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Individuals that change their own traits during their lifetime</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* Quick Recall checkpoint - pattern reused from lesson_body-systems.html */
+(function(){
+  const opts = document.getElementById('qr1Opts');
+  const fb = document.getElementById('qr1Feedback');
+  const checkBtn = document.getElementById('qr1Check');
+  const retryBtn = document.getElementById('qr1Retry');
+  const correctIdx = 0;
+  const okMsg = 'Correct. Natural selection favors whichever inherited traits help an organism survive and reproduce in its specific environment, not size or strength alone.';
+  const noMsg = 'Not quite. Evolution acts on inherited variation across generations, not traits an individual changes in its lifetime, and the most helpful trait depends on the environment.';
+
+  opts.addEventListener('change', e => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+    e.target.closest('label').classList.add('selected');
+  });
+  checkBtn.addEventListener('click', () => {
+    const sel = opts.querySelector('input[type=radio]:checked');
+    if (!sel) {
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = 'Pick an answer first.';
+      return;
+    }
+    const val = parseInt(sel.value, 10);
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    if (val === correctIdx) {
+      sel.closest('label').classList.add('correct');
+      fb.className = 'qr-feedback visible ok';
+      fb.textContent = okMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'none';
+      [...opts.querySelectorAll('input')].forEach(i => i.disabled = true);
+    } else {
+      sel.closest('label').classList.add('wrong');
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = noMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'inline-flex';
+    }
+  });
+  retryBtn.addEventListener('click', () => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    [...opts.querySelectorAll('input')].forEach(i => { i.disabled = false; i.checked = false; });
+    fb.className = 'qr-feedback';
+    fb.textContent = '';
+    retryBtn.style.display = 'none';
+    checkBtn.style.display = 'inline-flex';
+    opts.querySelector('input').focus();
+  });
+})();
+</script>
+
+
+<!-- STRUCTURES -->
+<section id="structures" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Comparing Structures</span>
     <h2 class="section-title">Homologous vs. Analogous vs. Vestigial</h2>
     <p class="section-desc">Three types of structures, each one tells a different story about evolutionary history. Here's how to keep them straight.</p>
     <div class="struct-compare-grid">
@@ -1087,37 +1391,10 @@
 </section>
 
 <!-- KEY CONCEPTS -->
-<section id="concepts">
-  <div class="container">
-    <span class="section-label">Key Vocabulary</span>
-    <h2 class="section-title">Vocabulary to Know</h2>
-    <p class="section-desc" style="margin-bottom:0.5rem;">Every term below appeared in this lesson. Click any pill to jump to its explanation.</p>
-    <p style="font-size:0.78rem; color:rgba(196,138,78,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">👆 Click any term to jump to its explanation in the lesson</p>
-    <div class="concepts-grid">
-      <span class="concept-tag ct-amber"  onclick="vocabJump('vocab-evolution')">Biological Evolution</span>
-      <span class="concept-tag ct-amber"  onclick="vocabJump('vocab-natural-selection')">Natural Selection</span>
-      <span class="concept-tag ct-amber"  onclick="vocabJump('vocab-env-pressure')">Environmental Pressure</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-variation')">Variation</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-heritable-variation')">Heritable Variation</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-adaptation')">Adaptation</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-heritable')">Heritable</span>
-      <span class="concept-tag ct-amber"  onclick="vocabJump('vocab-fossils')">Fossils</span>
-      <span class="concept-tag ct-amber"  onclick="vocabJump('vocab-transitional')">Transitional Fossils</span>
-      <span class="concept-tag ct-green"  onclick="vocabJump('vocab-homologous')">Homologous Structures</span>
-      <span class="concept-tag ct-purple" onclick="vocabJump('vocab-analogous')">Analogous Structures</span>
-      <span class="concept-tag ct-purple" onclick="vocabJump('vocab-convergent')">Convergent Evolution</span>
-      <span class="concept-tag ct-red"    onclick="vocabJump('vocab-vestigial')">Vestigial Structures</span>
-      <span class="concept-tag ct-blue"   onclick="vocabJump('vocab-dna')">DNA</span>
-      <span class="concept-tag ct-blue"   onclick="vocabJump('vocab-common-ancestor')">Common Ancestor</span>
-    </div>
-  </div>
-</section>
-
-
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">✅ Check Your Understanding</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Biological Evolution Quiz 🧬</h2>
     <p class="section-desc">10 questions on biological evolution. Fill in your info below, your score will be sent to your teacher when you submit.</p>
 

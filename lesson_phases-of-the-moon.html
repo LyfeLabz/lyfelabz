@@ -682,10 +682,11 @@
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hook">Investigate</a></li>
-    <li><a href="#tools">Drawing</a></li>
     <li><a href="#phases">Phases</a></li>
-    <li><a href="#concepts">Vocab</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -740,10 +741,220 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GOLD-STANDARD SECTIONS: LEARNING GOALS + KEY VOCABULARY
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  /* Learning Goals */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85);
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3);
+    padding: 0.25rem 0.8rem;
+    border-radius: 99px;
+  }
+
+  /* Key Vocabulary (glossary cards) */
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent2);
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 0.5rem; }
+  .gc-jump { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); border-bottom: 1px dashed currentColor; padding-bottom: 1px; cursor: pointer; }
+  .gc-jump:hover { border-bottom-style: solid; }
+  .gc-slate  { border-top-color: var(--accent2); } .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-teal   { border-top-color: var(--teal); }    .gc-teal .gc-term   { color: var(--teal); }
+  .gc-gold   { border-top-color: var(--gold); }    .gc-gold .gc-term   { color: var(--gold); }
+  .gc-green  { border-top-color: var(--green); }   .gc-green .gc-term  { color: var(--green); }
+  .gc-silver { border-top-color: var(--silver); }  .gc-silver .gc-term { color: var(--silver); }
+  .gc-red    { border-top-color: var(--red); }     .gc-red .gc-term    { color: #e8836f; }
+
+  /* Quick Recall cards */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+
+<!-- LEARNING GOALS -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🌓</span>
+        <div class="goal-text">I can use a model of the Sun, Earth, and Moon to explain why the Moon appears to change shape.</div>
+        <span class="goal-std">6.MS-ESS1-1a</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🌙</span>
+        <div class="goal-text">I can name the eight phases of the Moon in order through one lunar cycle.</div>
+        <span class="goal-std">6.MS-ESS1-1a</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🔆</span>
+        <div class="goal-text">I can explain the difference between waxing and waning phases.</div>
+        <span class="goal-std">6.MS-ESS1-1a</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🔄</span>
+        <div class="goal-text">I can explain why we always see the same side of the Moon from Earth.</div>
+        <span class="goal-std">MS-ESS1-2</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY VOCABULARY -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Every term below appeared somewhere in this lesson. Open a card to reveal what it means, then jump to where it was explained.</p>
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-silver" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Orbit</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The curved path the Moon takes around Earth, about once a month.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-orbit')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Rotation</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Spinning on an axis. The Moon rotates once per orbit, so the same side always faces Earth.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-rotation')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Gravity</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The pull between objects with mass. It keeps the Moon in orbit around Earth.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-gravity')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Tidal Locking</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">When a moon rotates exactly once per orbit, so it always shows the same face to its planet.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-tidlock')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Waxing</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">When the lit portion of the Moon is growing, from New Moon toward Full Moon.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-waxing')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-red" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Waning</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">When the lit portion of the Moon is shrinking, from Full Moon back toward New Moon.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-waning')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-silver" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Gibbous</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A phase when more than half, but not all, of the Moon's face is lit.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-gibbous')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Crescent</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A phase when less than half of the Moon's face is lit, a thin sliver.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-crescent')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Quarter</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A phase when exactly half of the Moon's face is lit (First Quarter or Third Quarter).</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-quarter')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Lunar Cycle</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The full set of phases the Moon goes through, about every 29.5 days.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-lunarcycle')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">New Moon</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The phase when the Moon's lit side faces away from Earth, so it appears dark.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('phases')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-silver" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Full Moon</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The phase when the Moon's entire lit side faces Earth, so it appears as a full circle.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('phases')">See it in the lesson ↓</span></div>
+      </button>
+
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
 <!-- INVESTIGATION HOOK -->
 <section id="hook" style="background: var(--dark2); padding: 4rem 2rem 3.5rem;">
   <div class="container">
-    <span class="section-label">Investigation</span>
+    <span class="section-label">Engage &middot; Investigation</span>
     <h2 class="section-title">What's Happening to the Moon?</h2>
     <p class="section-desc" style="margin-bottom: 2.5rem;">Before we explain anything, just observe. These four images show the same Moon, photographed on different nights over two weeks. Nothing was done to it. It's the same Moon each time.</p>
 
@@ -808,7 +1019,7 @@
 <!-- LESSON NOTES -->
 <section id="lesson">
   <div class="container">
-    <span class="section-label">Lesson Notes</span>
+    <span class="section-label">Explore &middot; Lesson Notes</span>
     <h2 class="section-title">Phases of the Moon</h2>
     <p class="section-desc">The Moon doesn't glow on its own; it reflects sunlight. As it orbits Earth, we see different amounts of the lit half. Here's what's really going on.</p>
 
@@ -944,7 +1155,7 @@
 <!-- DRAWING RULES & MNEMONIC -->
 <section id="tools">
   <div class="container">
-    <span class="section-label">Drawing Rules</span>
+    <span class="section-label">Explore &middot; Drawing Rules</span>
     <h2 class="section-title">Drawing Moon Phases</h2>
     <p class="section-desc">Two tools to help you draw any phase correctly and remember the sequence every time.</p>
 
@@ -1006,7 +1217,7 @@
 <!-- THE 8 PHASES -->
 <section id="phases">
   <div class="container">
-    <span class="section-label">The 8 Phases</span>
+    <span class="section-label">Explore &middot; The 8 Phases</span>
     <h2 class="section-title">Eight Phases of the Lunar Cycle</h2>
     <p class="section-desc">The lunar cycle contains eight distinct phases, each with a name that tells you whether the Moon is growing or shrinking, and how much of its surface is lit. Click any card to expand it.</p>
 
@@ -1190,43 +1401,69 @@
 </div>
 
 <!-- KEY CONCEPTS -->
-<section id="concepts">
+<!-- QUICK RECALL -->
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
-    <span class="section-label">Key Vocabulary</span>
-    <h2 class="section-title">Vocabulary to Know</h2>
-    <p class="section-desc" style="margin-bottom:0.5rem;">Every term below appeared in this lesson. Click any pill to jump to its explanation.</p>
-    <p style="font-size:0.78rem; color:rgba(122,143,166,0.65); display:flex; align-items:center; gap:0.35rem; margin-bottom:0.75rem;">👆 Click any term to jump to its explanation in the lesson</p>
-    <div class="concepts-grid">
-      <span class="concept-tag ct-silver" onclick="vocabJump('vocab-anchor-orbit')">Orbit</span>
-      <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-anchor-rotation')">Rotation</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-anchor-gravity')">Gravity</span>
-      <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-anchor-tidlock')">Tidal Locking</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-anchor-waxing')">Waxing</span>
-      <span class="concept-tag ct-red"    onclick="vocabJump('vocab-anchor-waning')">Waning</span>
-      <span class="concept-tag ct-silver" onclick="vocabJump('vocab-anchor-gibbous')">Gibbous</span>
-      <span class="concept-tag ct-gold"   onclick="vocabJump('vocab-anchor-crescent')">Crescent</span>
-      <span class="concept-tag ct-slate"  onclick="vocabJump('vocab-anchor-quarter')">Quarter</span>
-      <span class="concept-tag ct-gold"   onclick="vocabJump('vocab-anchor-lunarcycle')">Lunar Cycle</span>
-      <span class="concept-tag ct-teal"   onclick="vocabJump('vocab-orbit')">New Moon</span>
-      <span class="concept-tag ct-silver" onclick="vocabJump('vocab-orbit')">Full Moon</span>
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before you reason it through. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">What actually causes the Moon to appear to change shape through the month?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Earth's shadow slowly falling across the Moon</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Our changing view of the Moon's sunlit half as it orbits Earth</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>The Moon making its own light that dims and brightens</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">A Moon is described as waxing. What is the lit part doing?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>Growing larger toward Full Moon</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Shrinking toward New Moon</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Staying exactly the same each night</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">About how long does one full lunar cycle take?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>About 24 hours</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>About one week</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>About 29 to 30 days</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- BRIDGE: VOCABULARY → REFLECTION -->
-<div style="max-width:1100px; margin:0 auto; padding:0 2rem 1rem;">
-  <div class="callout slate">
-    <span class="callout-icon">→</span>
-    <div class="callout-body">Every term on that list appeared somewhere in this lesson. If any feel uncertain, scroll back and review, then take a moment to reflect before the quiz.</div>
-  </div>
-</div>
-
-<!-- REFLECTION -->
+<!-- EXPLAIN (reflection) -->
 <section id="reflection">
   <div class="container">
-    <span class="section-label">Think About It</span>
-    <h2 class="section-title">Reflect Before You Quiz</h2>
-    <p class="section-desc">Three questions to check your thinking before the quiz. Select an answer, feedback appears right away.</p>
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">Reason It Through</h2>
+    <p class="section-desc">Three questions to put the pieces together before the quiz. Select an answer, feedback appears right away.</p>
 
     <!-- R1: The Misconception -->
     <div class="content-card">
@@ -1293,7 +1530,7 @@
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Check Your Understanding</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Moon Phases Quiz</h2>
     <p class="section-desc">10 questions on Moon phases, tidal locking, and the lunar cycle. Fill in your info below, your score will be sent to your teacher when you submit.</p>
 
@@ -1517,6 +1754,55 @@ function showPhaseInfo(idx) {
     c.style.strokeWidth = i === idx ? '2.5'     : '1.5';
   });
 }
+</script>
+
+<!-- Quick Recall wiring -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    if (!opts || !checkBtn) return;
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 1,
+    'Correct! Phases come from our changing view of the Moon\'s sunlit half as it orbits Earth, not from a shadow.',
+    'Not quite. The Moon always has a lit half. Phases come from our changing view of that lit half as the Moon orbits Earth.');
+  wireQR('qr2', 0,
+    'Correct! Waxing means the lit portion is growing larger, heading toward Full Moon.',
+    'Not quite. Waxing means the lit part is growing toward Full Moon. Shrinking toward New Moon is waning.');
+  wireQR('qr3', 2,
+    'Correct! One full lunar cycle takes about 29 to 30 days, roughly a month.',
+    'Not quite. One full lunar cycle (New Moon back to New Moon) takes about 29 to 30 days.');
+})();
 </script>
 
 <!-- QUIZ ENGINE -->

@@ -811,10 +811,13 @@ body.stem-active .stem-detail {
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
+    <li><a href="#vocab">Vocab</a></li>
     <li><a href="#one-cell">One Cell</a></li>
     <li><a href="#specialization">Specialization</a></li>
     <li><a href="#cell-designs">Cell Designs</a></li>
     <li><a href="#detective">Detective</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#reflection">Reflect</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
@@ -980,9 +983,175 @@ body.stem-active .stem-detail {
 }
 </style>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: 1.6rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card, #1a2436);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-left: 4px solid var(--gold, #f5c842);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+</style>
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🦠</span>
+        <div class="goal-text">Explain how a single cell can carry out all the functions of life.</div>
+        <span class="goal-std">6.MS-LS1-1</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🤝</span>
+        <div class="goal-text">Describe how specialized cells, tissues, and organs divide the work in a multicellular organism.</div>
+        <span class="goal-std">6.MS-LS1-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🧬</span>
+        <div class="goal-text">Compare prokaryotic and eukaryotic cells.</div>
+        <span class="goal-std">6.MS-LS1-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">⚖️</span>
+        <div class="goal-text">Explain the tradeoffs between unicellular and multicellular life.</div>
+        <span class="goal-std">6.MS-LS1-1</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card, #1a2436);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top: 3px solid #7cc8f8;
+    border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem;
+    text-align: left;
+    color: var(--text, #e8eef7);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    width: 100%;
+  }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold, #f5c842); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted, #8aa0bd); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted, #c5d3e6); line-height: 1.55; }
+  .gc-blue   { border-top-color: #7cc8f8; } .gc-blue .gc-term   { color: #7cc8f8; }
+  .gc-green  { border-top-color: var(--green, #2ecc71); } .gc-green .gc-term  { color: var(--green, #2ecc71); }
+  .gc-purple { border-top-color: #b47fff; } .gc-purple .gc-term { color: #b47fff; }
+  .gc-orange { border-top-color: var(--orange, #e67e22); } .gc-orange .gc-term { color: var(--orange, #e67e22); }
+</style>
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Every term below appeared somewhere in this lesson. Open a card to reveal what it means.</p>
+
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Cell</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The smallest unit of life. Every living thing is built from one or more cells.</div></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Unicellular</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Made of a single cell that carries out every life function on its own.</div></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Multicellular</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Made of many cells, each specialized for a particular job and working together.</div></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Cell Specialization</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The way cells develop different shapes and structures so they can each do one job well.</div></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Tissue</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A group of similar cells that work together to carry out a shared function.</div></div>
+      </button>
+
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Organ</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A structure made of different tissues working together for one main job, such as the heart or brain.</div></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Prokaryotic Cell</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A simple cell with no nucleus. Its DNA floats freely inside. Bacteria are prokaryotic.</div></div>
+      </button>
+
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Eukaryotic Cell</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A more complex cell that keeps its DNA inside a nucleus and has membrane-bound organelles.</div></div>
+      </button>
+
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Nucleus</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The membrane-bound structure that holds a eukaryotic cell's DNA.</div></div>
+      </button>
+
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
 <section id="one-cell" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">From the What Is Life Lesson</span>
+    <span class="section-label">Engage &middot; The Big Contrast</span>
     <h2 class="section-title">Same Building Block. Different Strategies.</h2>
     <p class="section-desc">You've established that all living things are made of cells. But that answer immediately raises a bigger question, if the building block is the same, why do living things look so different?</p>
 
@@ -1069,7 +1238,7 @@ body.stem-active .stem-detail {
 <!-- DIVISION OF LABOR -->
 <section id="specialization" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Division of Labor</span>
+    <span class="section-label">Explore &middot; Division of Labor</span>
     <h2 class="section-title">When One Cell Isn't Enough</h2>
     <p class="section-desc">One cell can handle every life function; but only up to a certain scale. As organisms grow larger and more complex, asking one cell to do every job becomes a problem of efficiency.</p>
 
@@ -1113,7 +1282,7 @@ body.stem-active .stem-detail {
 <!-- TWO CELL DESIGNS -->
 <section id="cell-designs" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Cell Designs</span>
+    <span class="section-label">Explore &middot; Cell Designs</span>
     <h2 class="section-title">Two Solutions to the Same Problem</h2>
     <p class="section-desc">Every cell must store and use DNA, the instructions for building and running a living thing. Life has evolved two very different approaches to organizing that DNA, and those two approaches produce very different kinds of organisms.</p>
 
@@ -1280,7 +1449,7 @@ body.stem-active .stem-detail {
 
 <section id="detective" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Evidence-Based Activity</span>
+    <span class="section-label">Explore &middot; Cell Detective</span>
     <h2 class="section-title">Cell Type Detective</h2>
     <p class="section-desc" style="max-width:680px;">Six organisms. For each one, read the evidence, then predict its cell strategy before the classification is revealed. Use your reasoning, not just your memory.</p>
 
@@ -1573,9 +1742,111 @@ buildDetectiveGrid();
 }
 </style>
 
-<section id="reflection" style="background: var(--dark2);">
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL (retrieval checkpoint between Explore and Explain)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: var(--teal); }
+.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+.qr-options input[type=radio] { accent-color: var(--teal); }
+.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+<section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
-    <span class="section-label">Reflection</span>
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">One Quick Check</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Pull this idea back from memory before we pull the lesson together.</p>
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
+      <div class="qr-q" id="qr1Q">What is the main structural difference between prokaryotic and eukaryotic cells?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Eukaryotic cells have a nucleus; prokaryotic cells do not.</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Prokaryotic cells are alive; eukaryotic cells are not.</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Only eukaryotic cells contain DNA.</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* Quick Recall checkpoint - pattern reused from lesson_what-is-life.html */
+(function(){
+  const opts = document.getElementById('qr1Opts');
+  const fb = document.getElementById('qr1Feedback');
+  const checkBtn = document.getElementById('qr1Check');
+  const retryBtn = document.getElementById('qr1Retry');
+  const correctIdx = 0;
+  const okMsg = 'Correct. Eukaryotic cells keep their DNA inside a nucleus. Prokaryotic cells have no nucleus, so their DNA floats freely.';
+  const noMsg = 'Not quite. Both cell types are alive and both contain DNA. The key difference is the nucleus: eukaryotic cells have one, prokaryotic cells do not.';
+
+  opts.addEventListener('change', e => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+    e.target.closest('label').classList.add('selected');
+  });
+  checkBtn.addEventListener('click', () => {
+    const sel = opts.querySelector('input[type=radio]:checked');
+    if (!sel) {
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = 'Pick an answer first.';
+      return;
+    }
+    const val = parseInt(sel.value, 10);
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    if (val === correctIdx) {
+      sel.closest('label').classList.add('correct');
+      fb.className = 'qr-feedback visible ok';
+      fb.textContent = okMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'none';
+      [...opts.querySelectorAll('input')].forEach(i => i.disabled = true);
+    } else {
+      sel.closest('label').classList.add('wrong');
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = noMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'inline-flex';
+    }
+  });
+  retryBtn.addEventListener('click', () => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    [...opts.querySelectorAll('input')].forEach(i => { i.disabled = false; i.checked = false; });
+    fb.className = 'qr-feedback';
+    fb.textContent = '';
+    retryBtn.style.display = 'none';
+    checkBtn.style.display = 'inline-flex';
+    opts.querySelector('input').focus();
+  });
+})();
+</script>
+
+
+<section id="reflection" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Pulling It Together</span>
     <h2 class="section-title">Pulling It Together</h2>
     <p class="section-desc">You've seen the evidence. Now answer the driving question: if all living things are made of cells, why aren't all cells the same?</p>
 
@@ -1688,7 +1959,7 @@ buildReflection();
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section" style="padding-top: 2.5rem;">
   <div class="container">
-    <span class="section-label">Check Your Understanding</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Cell Types Quiz</h2>
     <p class="section-desc">10 questions on cell strategies, division of labor, and why different cell designs exist. Select your answer for every question, then submit.</p>
 

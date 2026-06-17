@@ -1293,10 +1293,12 @@ body.stem-active .stem-detail {
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
+    <li><a href="#goals">Goals</a></li>
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hook">Mystery</a></li>
     <li><a href="#reflection">Behaviors</a></li>
     <li><a href="#interaction">Energy Tracker</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -1402,6 +1404,62 @@ body.stem-active .stem-detail {
 }
 .gc-jump:hover { border-bottom-style: solid; }
 </style>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+</style>
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🪞</span>
+        <div class="goal-text">Use models to show how waves are reflected, absorbed, or transmitted by different materials.</div>
+        <span class="goal-std">6.MS-PS4-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🔦</span>
+        <div class="goal-text">Explain why a material looks transparent, translucent, or opaque.</div>
+        <span class="goal-std">6.MS-PS4-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">⚡</span>
+        <div class="goal-text">Track how a wave's energy is shared when it meets a surface.</div>
+        <span class="goal-std">6.MS-PS4-1</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
     <span class="section-label">Key Vocabulary</span>
@@ -1458,7 +1516,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="hook" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Mystery</span>
+    <span class="section-label">Engage &middot; Mystery</span>
     <h2 class="section-title">Three Objects. One Question.</h2>
     <p class="section-desc">You're outside a classroom. A door, a window, and a brick wall are between you and what's happening inside. Each surface interacts with sound and light differently.</p>
 
@@ -1522,7 +1580,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="review" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">What We Already Know</span>
+    <span class="section-label">Explore &middot; What We Already Know</span>
     <h2 class="section-title">Waves Carry Energy: And Energy Has to Go Somewhere</h2>
     <p class="section-desc">Before we solve the mystery, there's one rule we need to remember.</p>
 
@@ -1565,7 +1623,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="reflection" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: var(--teal); background: var(--reflect-dim); border-color: var(--reflect-border);">When Waves Bounce</span>
+    <span class="section-label" style="color: var(--teal); background: var(--reflect-dim); border-color: var(--reflect-border);">Explore &middot; When Waves Bounce</span>
     <h2 class="section-title">The Wave That Came Back</h2>
     <p class="section-desc">Stand in a canyon and shout. A few seconds later, you hear your own voice return. How did the sound come back?</p>
 
@@ -1625,7 +1683,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="absorption" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label" style="color: var(--orange); background: var(--absorb-dim); border-color: var(--absorb-border);">When Wave Energy Stays Behind</span>
+    <span class="section-label" style="color: var(--orange); background: var(--absorb-dim); border-color: var(--absorb-border);">Explore &middot; When Wave Energy Stays Behind</span>
     <h2 class="section-title">The Wave That Disappeared, or Did It?</h2>
     <p class="section-desc">Leave a black car in the sun for an hour. Touch the seat. It's burning hot: no fire, no heater, just sunlight hitting dark fabric all afternoon.</p>
 
@@ -1691,7 +1749,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="transmission" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label" style="color: var(--green); background: var(--transmit-dim); border-color: var(--transmit-border);">When Waves Pass Through</span>
+    <span class="section-label" style="color: var(--green); background: var(--transmit-dim); border-color: var(--transmit-border);">Explore &middot; When Waves Pass Through</span>
     <h2 class="section-title">The Wave That Kept Going</h2>
     <p class="section-desc">You're outside at night. Inside the house, the lights are on. You look through the window and see everything inside, clearly, in detail. Light waves traveled from inside, hit the glass, and kept moving, all the way to your eyes.</p>
 
@@ -1769,7 +1827,7 @@ body.stem-active .stem-detail {
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="tto" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label" style="color: var(--green); background: var(--transmit-dim); border-color: var(--transmit-border);">How Much Gets Through?</span>
+    <span class="section-label" style="color: var(--green); background: var(--transmit-dim); border-color: var(--transmit-border);">Explore &middot; How Much Gets Through?</span>
     <h2 class="section-title">Transparent, Translucent, and Opaque</h2>
     <p class="section-desc">Transmission turns out to exist on a spectrum. Some materials let all the light through. Some let a little through. Some let none through. Watch what happens to a beam of light as it hits three different panels.</p>
 
@@ -1837,47 +1895,6 @@ body.stem-active .stem-detail {
       <p>The window next to the classroom door? <strong>Transparent</strong>: light fully transmits through. The wooden door? <strong>Opaque</strong> to light, but only partially opaque to sound, which is why you can still hear voices. The brick wall? <strong>Opaque</strong> to both.</p>
     </div>
 
-    <!-- ── QUICK RECALL (retrieval checkpoint, pattern from lesson_nature-of-waves.html) ── -->
-    <style>
-    .qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
-    .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
-    .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
-    .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
-    .qr-options { display: grid; gap: 0.45rem; }
-    .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
-    .qr-options label:hover { border-color: var(--teal); }
-    .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
-    .qr-options input[type=radio] { accent-color: var(--teal); }
-    .qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
-    .qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
-    .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
-    .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
-    .qr-feedback.visible { display: block; }
-    .qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
-    .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
-    .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
-    .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
-    .qr-actions button:hover { transform: translateY(-1px); }
-    .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
-    .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
-    .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
-    </style>
-    <div class="qr-card" id="qrCard1">
-      <div class="qr-eyebrow">Quick Recall</div>
-      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
-      <div class="qr-q" id="qr1Q">You are back in the hallway. Which material is transparent?</div>
-      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>Clear glass</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>Wax paper</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>Brick wall</span></label>
-      </div>
-      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
-      <div class="qr-actions">
-        <button class="qr-check" id="qr1Check">Check Answer</button>
-        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
-      </div>
-    </div>
-
     <div class="bridge-callout orange">
       <strong>Important:</strong> "Opaque" doesn't mean the energy vanished. It means light can't transmit through; the energy reflects or absorbs instead.
       <br><br>
@@ -1887,57 +1904,6 @@ body.stem-active .stem-detail {
     </div>
   </div>
 </section>
-
-<script>
-/* Quick Recall checkpoint - pattern reused from lesson_nature-of-waves.html */
-(function(){
-  const opts = document.getElementById('qr1Opts');
-  const fb = document.getElementById('qr1Feedback');
-  const checkBtn = document.getElementById('qr1Check');
-  const retryBtn = document.getElementById('qr1Retry');
-  const correctIdx = 0;
-  const okMsg = 'Correct! Transparent materials allow most waves to pass through.';
-  const noMsg = 'Not quite. Transparent materials let most waves pass through. Wax paper is translucent and brick walls are opaque.';
-
-  opts.addEventListener('change', e => {
-    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
-    e.target.closest('label').classList.add('selected');
-  });
-  checkBtn.addEventListener('click', () => {
-    const sel = opts.querySelector('input[type=radio]:checked');
-    if (!sel) {
-      fb.className = 'qr-feedback visible no';
-      fb.textContent = 'Pick an answer first.';
-      return;
-    }
-    const val = parseInt(sel.value, 10);
-    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
-    if (val === correctIdx) {
-      sel.closest('label').classList.add('correct');
-      fb.className = 'qr-feedback visible ok';
-      fb.textContent = okMsg;
-      checkBtn.style.display = 'none';
-      retryBtn.style.display = 'none';
-      [...opts.querySelectorAll('input')].forEach(i => i.disabled = true);
-    } else {
-      sel.closest('label').classList.add('wrong');
-      fb.className = 'qr-feedback visible no';
-      fb.textContent = noMsg;
-      checkBtn.style.display = 'none';
-      retryBtn.style.display = 'inline-flex';
-    }
-  });
-  retryBtn.addEventListener('click', () => {
-    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
-    [...opts.querySelectorAll('input')].forEach(i => { i.disabled = false; i.checked = false; });
-    fb.className = 'qr-feedback';
-    fb.textContent = '';
-    retryBtn.style.display = 'none';
-    checkBtn.style.display = 'inline-flex';
-    opts.querySelector('input').focus();
-  });
-})();
-</script>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -2234,7 +2200,7 @@ body.stem-active .stem-detail {
 
 <section id="interaction" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Energy Tracker</span>
+    <span class="section-label">Explore &middot; Energy Tracker</span>
     <h2 class="section-title">Where Does the Energy Go?</h2>
     <p class="section-desc">Real objects almost never do just one thing. Select a material and watch how incoming wave energy divides among the three destinations. The question isn't <em>which</em> behavior; it's <em>how much</em> of each.</p>
 
@@ -2458,11 +2424,113 @@ body.stem-active .stem-detail {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL (retrieval checkpoint between Explore and Explain)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: var(--teal); }
+.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+.qr-options input[type=radio] { accent-color: var(--teal); }
+.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">One Quick Check</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Pull this idea back from memory before we wrap up.</p>
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
+      <div class="qr-q" id="qr1Q">You are back in the hallway. Which material is transparent?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Clear glass</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Wax paper</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Brick wall</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* Quick Recall checkpoint - pattern reused from lesson_nature-of-waves.html */
+(function(){
+  const opts = document.getElementById('qr1Opts');
+  const fb = document.getElementById('qr1Feedback');
+  const checkBtn = document.getElementById('qr1Check');
+  const retryBtn = document.getElementById('qr1Retry');
+  const correctIdx = 0;
+  const okMsg = 'Correct! Transparent materials allow most waves to pass through.';
+  const noMsg = 'Not quite. Transparent materials let most waves pass through. Wax paper is translucent and brick walls are opaque.';
+
+  opts.addEventListener('change', e => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+    e.target.closest('label').classList.add('selected');
+  });
+  checkBtn.addEventListener('click', () => {
+    const sel = opts.querySelector('input[type=radio]:checked');
+    if (!sel) {
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = 'Pick an answer first.';
+      return;
+    }
+    const val = parseInt(sel.value, 10);
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    if (val === correctIdx) {
+      sel.closest('label').classList.add('correct');
+      fb.className = 'qr-feedback visible ok';
+      fb.textContent = okMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'none';
+      [...opts.querySelectorAll('input')].forEach(i => i.disabled = true);
+    } else {
+      sel.closest('label').classList.add('wrong');
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = noMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'inline-flex';
+    }
+  });
+  retryBtn.addEventListener('click', () => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    [...opts.querySelectorAll('input')].forEach(i => { i.disabled = false; i.checked = false; });
+    fb.className = 'qr-feedback';
+    fb.textContent = '';
+    retryBtn.style.display = 'none';
+    checkBtn.style.display = 'inline-flex';
+    opts.querySelector('input').focus();
+  });
+})();
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
      SECTION 7 - WRAP-UP: BACK TO THE HALLWAY
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="synthesis" style="background: var(--dark);">
+<section id="synthesis" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Wrap-Up</span>
+    <span class="section-label">Explain &middot; Wrap-Up</span>
     <h2 class="section-title">Back to the Hallway</h2>
     <p class="section-desc">You started this lesson standing in a hallway, wondering why light and sound behaved differently when they reached different materials. Now you know the answer. Every surface reflects, absorbs, and transmits energy. What changes is how much of each happens.</p>
 
@@ -2815,7 +2883,7 @@ body.stem-active .stem-detail {
 
 <section id="quiz" class="quiz-section">
   <div class="container">
-    <span class="section-label">Quiz</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
     <p class="section-desc">Ten questions covering everything you discovered. Answer every question, then submit.</p>
 

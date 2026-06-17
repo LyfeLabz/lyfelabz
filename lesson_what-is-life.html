@@ -390,7 +390,7 @@
 
   /* ===== QUIZ ===== */
   #quiz { scroll-margin-top: 3.1rem; }
-.quiz-section { background: var(--dark); }
+.quiz-section { background: var(--dark2); }
 
   .quiz-mode-toggle {
     display: flex;
@@ -507,7 +507,7 @@
     position: sticky;
     top: 60px;
     z-index: 100;
-    background: var(--dark);
+    background: var(--dark2);
     padding: 0.85rem 0 0.75rem;
     margin-bottom: 2rem;
     border-bottom: 1px solid var(--border);
@@ -1081,6 +1081,7 @@ body.stem-active .stem-detail {
     <li><a href="#cell-connection">Cells</a></li>
     <li><a href="#unicellular">Uni vs Multi</a></li>
     <li><a href="#prokaryotic">Pro vs Euk</a></li>
+    <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
@@ -1455,7 +1456,7 @@ body.stem-active .stem-detail {
 <!-- SECTION 1: CHARACTERISTICS OF LIFE -->
 <section id="characteristics" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Investigation</span>
+    <span class="section-label">Engage &middot; Investigation</span>
     <h2 class="section-title">What Makes Something Alive?</h2>
     <p class="section-desc">Here are five things. Some are alive. Some are not. One is genuinely debated by scientists. Click each card, what do you think?</p>
 
@@ -1564,7 +1565,7 @@ body.stem-active .stem-detail {
 <!-- SECTION 2: THE CELL CONNECTION -->
 <section id="cell-connection" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Cell Theory</span>
+    <span class="section-label">Explore &middot; Cell Theory</span>
     <h2 class="section-title">The Discovery of Cells</h2>
     <p class="section-desc">Once scientists agreed on the six characteristics, a deeper question emerged: <em>what are living things actually made of?</em> Scientists eventually discovered the answer through centuries of microscope observations, forming the foundation of modern biology.</p>
 
@@ -1733,7 +1734,7 @@ body.stem-active .stem-detail {
 <!-- SECTION 3: UNICELLULAR VS MULTICELLULAR -->
 <section id="unicellular" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Cell Organization</span>
+    <span class="section-label">Explore &middot; Cell Organization</span>
     <h2 class="section-title">One Cell or Many?</h2>
     <p class="section-desc">Once scientists confirmed that all living things are made of cells, a surprising discovery followed: some organisms run their entire lives on just a single cell. Others are built from trillions. Both are completely alive.</p>
 
@@ -1908,7 +1909,7 @@ body.stem-active .stem-detail {
 <!-- SECTION 4: PROKARYOTIC VS EUKARYOTIC -->
 <section id="prokaryotic" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Cell Types</span>
+    <span class="section-label">Explore &middot; Cell Types</span>
     <h2 class="section-title">Two Major Cell Types</h2>
     <p class="section-desc">Not all cells are built the same way. Scientists discovered that the single biggest structural difference (the one that separates all of life into two camps) is where a cell stores its instruction manual.</p>
 
@@ -2080,10 +2081,112 @@ body.stem-active .stem-detail {
 .virus-response strong { color: var(--text); }
 </style>
 
-<!-- VIRUS REFLECTION -->
-<section id="virus-reflect" style="background: var(--dark2);">
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL (retrieval checkpoint between Explore and Explain)
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: var(--teal); }
+.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+.qr-options input[type=radio] { accent-color: var(--teal); }
+.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+<section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
-    <span class="section-label">Scientific Debate</span>
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">One Quick Check</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Pull this idea back from memory before we return to the virus question.</p>
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall</div>
+      <div class="qr-sub">Just a quick brain check before we move on. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Most scientists say a virus is not fully alive. What is the main reason?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>It is not made of cells.</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>It is too small to see.</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>It cannot move on its own.</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* Quick Recall checkpoint - pattern reused from lesson_wave-behavior.html */
+(function(){
+  const opts = document.getElementById('qr1Opts');
+  const fb = document.getElementById('qr1Feedback');
+  const checkBtn = document.getElementById('qr1Check');
+  const retryBtn = document.getElementById('qr1Retry');
+  const correctIdx = 0;
+  const okMsg = 'Right. A virus has no cells of its own, so it fails the very first characteristic of life.';
+  const noMsg = 'Not quite. Size and movement are not what disqualify a virus. It has no cells of its own, so it fails the first characteristic of life.';
+
+  opts.addEventListener('change', e => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('selected'));
+    e.target.closest('label').classList.add('selected');
+  });
+  checkBtn.addEventListener('click', () => {
+    const sel = opts.querySelector('input[type=radio]:checked');
+    if (!sel) {
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = 'Pick an answer first.';
+      return;
+    }
+    const val = parseInt(sel.value, 10);
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    if (val === correctIdx) {
+      sel.closest('label').classList.add('correct');
+      fb.className = 'qr-feedback visible ok';
+      fb.textContent = okMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'none';
+      [...opts.querySelectorAll('input')].forEach(i => i.disabled = true);
+    } else {
+      sel.closest('label').classList.add('wrong');
+      fb.className = 'qr-feedback visible no';
+      fb.textContent = noMsg;
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'inline-flex';
+    }
+  });
+  retryBtn.addEventListener('click', () => {
+    [...opts.querySelectorAll('label')].forEach(l => l.classList.remove('correct','wrong','selected'));
+    [...opts.querySelectorAll('input')].forEach(i => { i.disabled = false; i.checked = false; });
+    fb.className = 'qr-feedback';
+    fb.textContent = '';
+    retryBtn.style.display = 'none';
+    checkBtn.style.display = 'inline-flex';
+    opts.querySelector('input').focus();
+  });
+})();
+</script>
+
+
+<!-- VIRUS REFLECTION -->
+<section id="virus-reflect" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Back to Viruses</span>
     <h2 class="section-title">Back to Viruses</h2>
     <p class="section-desc">This lesson began with a question about viruses. Now you have the framework, the six characteristics and the cell requirement. Let's apply it.</p>
 
@@ -2135,7 +2238,7 @@ function virusVote(choice) {
 <!-- QUIZ -->
 <section id="quiz" class="quiz-section" style="padding-top: 2.5rem;">
   <div class="container">
-    <span class="section-label">Check Your Understanding</span>
+    <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">What Is Life? Quiz</h2>
     <p class="section-desc">10 questions covering characteristics of life, cell theory, cell types, and viruses. Answer every question, then submit.</p>
 
