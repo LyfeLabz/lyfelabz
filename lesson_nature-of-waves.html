@@ -34,6 +34,7 @@
     --yellow:      #f1c40f;
     --gold:        #f5c842;
     --gold-glow:   rgba(245,200,66,0.35);
+    --accent2:     rgba(122,143,166,0.6);
     --dark:        #1a2535;
     --dark2:       #243447;
     --card:        #1e2f42;
@@ -288,6 +289,28 @@
     section { padding: 3.5rem 1.2rem; }
   }
 
+  /* ===== EDUCATOR MODE NOTES ===== */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(122,143,166,0.8); margin-bottom: 1rem; }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(159,184,204,0.75); margin-bottom: 0.35rem; }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+  @keyframes lsFadeIn {
+    from { opacity: 0; transform: translateY(-3px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
   /* ===== VOCABULARY PILLS (matches What Is Life) ===== */
   .concept-tag {
     font-size: 0.82rem;
@@ -419,147 +442,6 @@ body.ls-active .ls-focus {
 }
 </style>
 
-<!-- ── MA STE Standards Badges ── -->
-<style>
-.stem-focus { display: none; }
-body.stem-active .stem-focus {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.45rem 0.55rem;
-  width: fit-content;
-  max-width: 760px;
-  margin: 0.5rem auto 1.6rem;
-  padding: 1.1rem 1.8rem 1.2rem;
-  box-sizing: border-box;
-  background: rgba(46,204,113,0.05);
-  border: 1px solid rgba(46,204,113,0.2);
-  border-radius: 16px;
-  animation: barFadeIn 0.35s ease both;
-}
-.stem-focus-label {
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: rgba(46,204,113,0.75);
-  width: 100%;
-  text-align: center;
-  margin-bottom: 0.5rem;
-}
-.stem-badge {
-  display: inline-flex;
-  align-items: center;
-  position: relative;
-  cursor: default;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.86rem;
-  font-weight: 700;
-  line-height: 1;
-  color: rgba(255,255,255,0.82);
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 99px;
-  padding: 0.35rem 0.9rem;
-  white-space: nowrap;
-}
-.stem-badge[data-tip]::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 9px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 220px;
-  padding: 0.5rem 0.75rem;
-  background: #0c1a28;
-  color: #b8ccd8;
-  font-size: 0.68rem;
-  font-weight: 500;
-  line-height: 1.5;
-  white-space: normal;
-  text-align: center;
-  border-radius: 9px;
-  border: 1px solid rgba(46,204,113,0.2);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 999;
-}
-.stem-badge[data-tip]::before {
-  content: '';
-  position: absolute;
-  bottom: calc(100% + 3px);
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: rgba(46,204,113,0.2);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 999;
-}
-.stem-badge[data-tip]:hover::after,
-.stem-badge[data-tip]:hover::before { opacity: 1; }
-@media (max-width: 480px) {
-  .stem-badge[data-tip]::after,
-  .stem-badge[data-tip]::before { display: none; }
-}
-
-/* ── Stem Detail Expand ── */
-.stem-detail { display: none; }
-body.stem-active .stem-detail {
-  width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
-  text-align: center; animation: barFadeIn 0.35s ease both;
-}
-.stem-show-btn {
-  background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
-  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
-}
-.stem-show-btn:hover { color: rgba(46,204,113,0.85); }
-.stem-detail-body {
-  display: none; margin-top: 0.5rem;
-  background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
-  border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
-}
-.stem-detail.stem-open .stem-detail-body { display: block; }
-.stem-std-row {
-  display: flex; gap: 0.8rem; align-items: flex-start;
-  padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
-.stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
-.stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
-
-/* ── Driving Question ── */
-.driving-question {
-  max-width: 760px;
-  margin: 1.6rem auto 0;
-  padding: 1.1rem 1.6rem;
-  background: rgba(59,200,232,0.06);
-  border: 1px solid rgba(59,200,232,0.22);
-  border-left: 4px solid var(--teal);
-  border-radius: 14px;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.85rem;
-  box-sizing: border-box;
-  position: relative;
-}
-.dq-icon  { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
-.dq-body  { flex: 1; text-align: left; }
-.dq-label {
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: rgba(59,200,232,0.8);
-  margin-bottom: 0.3rem;
-}
-.dq-text  { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
-</style>
 </head>
 <body>
 <canvas id="stars"></canvas>
@@ -607,21 +489,6 @@ body.stem-active .stem-detail {
   <span class="ls-badge" data-tip="Every concept pairs an interactive SVG with brief text, wave anatomy, the inverse-relationship slider, the EM spectrum. Pairing visuals with words activates two memory channels. (Noetel et al., 2022)">🖼️ Dual Coding</span>
   <span class="ls-badge" data-tip="The lesson chunks content into short sections with one idea each, and reveals vocabulary only after students have observed the phenomenon. (Sweller et al., 2019)">⚖️ Load Management</span>
   <span class="ls-badge" data-tip="The labeling self-check and the 10-question quiz both ask students to recall, recall strengthens long-term retention far more than re-reading. (Adesope et al., 2017)">✅ Retrieval Practice</span>
-</div>
-
-<!-- MA STE STANDARDS BADGES -->
-<div class="stem-focus">
-  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
-  <span class="stem-badge" data-tip="Use mathematical representations to describe a simple model for waves that includes how the amplitude of a wave is related to the energy in a wave.">6.MS-PS4-1</span>
-</div>
-<div class="stem-detail" id="stem-detail-1">
-  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-1')">▸ Show standard descriptions</button>
-  <div class="stem-detail-body">
-    <div class="stem-std-row">
-      <span class="stem-std-code">6.MS-PS4-1</span>
-      <span class="stem-std-text">Use mathematical representations to describe a simple model for waves that includes how the amplitude of a wave is related to the energy in a wave.</span>
-    </div>
-  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -727,6 +594,30 @@ body.stem-active .stem-detail {
         <span class="goal-std">6.MS-PS4-1</span>
       </div>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor student attention on two measurable outcomes tied to 6.MS-PS4-1.</li><li>Frame the lesson as skills students will be able to demonstrate, not content to absorb.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting - explicit targets improve self-monitoring</li><li>Advance organizer - previewing endpoints reduces extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Understand to Analyze</li><li>DOK 2 - goals require interpreting a wave diagram and explaining an energy relationship</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Two-column grid collapses to single column on mobile</li><li>Standard badges paired with each goal for quick reference</li><li>Short, verb-led goal statements</li></ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -802,6 +693,30 @@ body.stem-active .stem-detail {
         <div class="gc-def">The height of a wave from the resting line to the crest. The bigger the amplitude, the more energy the wave carries.<br><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-amplitude')">See it in the lesson ↓</span></div>
       </button>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load key terms so students recognize them when they appear in context.</li><li>Reduce vocabulary load during the interactive sections that follow.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary - definitions before application reduces split attention</li><li>Reduced extraneous load - one card open at a time prevents overwhelm</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Remember to Understand</li><li>DOK 1 - recognizing and recalling term definitions</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal, no hover</li><li>One card open at a time</li><li>Plain, short definitions with jump links to in-lesson usage</li></ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -1109,6 +1024,30 @@ body.stem-active .stem-detail {
     <div class="bridge-callout">
       Four scenes. Same puzzle in each one. <strong>Something</strong> is clearly traveling (across the water, around the stadium, through the room, even across empty space) but the matter isn't going along for the ride. So what <em>is</em> moving? Let's look closer.
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Open with four familiar phenomena that share one hidden pattern: something travels but matter stays put.</li><li>Create a curiosity gap that the rest of the lesson resolves.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap - withholding the answer drives engagement</li><li>Phenomenon-based learning - observations come before vocabulary</li><li>Dual coding - animated SVGs pair visual motion with brief text</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Understand</li><li>DOK 2 - students compare four scenarios and identify a shared pattern</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal, no hover</li><li>SVGs include aria-labels describing the animation</li><li>Short puzzle text appears only after click</li></ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -1282,6 +1221,30 @@ body.stem-active .stem-detail {
     <div class="bridge-callout teal">
       Now we know: waves carry energy through stuff: through water, through a stadium, through air. But sunlight reaches Earth across <em>empty space</em>. There's no water, no people, no air between the Sun and us. <strong>So how does that wave travel?</strong>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Resolve the opening mystery's core question: what is actually moving?</li><li>Introduce wave, disturbance, and energy only after students observe the phenomenon.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding - animated pulse paired with observation cards</li><li>Concrete to abstract - visual before vocabulary</li><li>Cause-and-effect modeling - students see particles lift and return</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Understand to Analyze</li><li>DOK 2 - interpreting a model to distinguish energy transfer from matter transport</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Button-triggered animation, not autoplay only</li><li>SVG aria-label describes the pulse behavior</li><li>Observation cards use short, parallel sentence structures</li></ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -1684,6 +1647,29 @@ body.stem-active .stem-detail {
       </div>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Confront the sunlight-across-vacuum puzzle that the previous section left open.</li><li>Name electromagnetic wave only after students experience the see-but-can't-hear contradiction.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Predict-then-reveal - committing to a prediction before feedback strengthens encoding</li><li>Misconception checking - many students assume sound travels through space</li><li>Dual coding - astronaut SVG scene paired with prediction cards</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Understand to Analyze</li><li>DOK 2 to 3 - students must reconcile why light crosses vacuum but sound cannot</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to predict, no hover</li><li>Feedback appears only after student commits an answer</li><li>Reveal button keeps explanation hidden until student requests it</li></ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -1962,6 +1948,29 @@ body.stem-active .stem-detail {
       But here's a new question. If energy is what's really moving, <strong>how do we measure it?</strong>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Close the opening mystery by explaining why sound fails in a vacuum.</li><li>Introduce mechanical wave, medium, and vibration through a side-by-side air vs. vacuum comparison.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison and contrast - air-filled room vs. vacuum isolates the role of the medium</li><li>Cause-and-effect modeling - vibration chain explains why removing molecules stops the wave</li><li>Dual coding - animated molecules and a zoomed-in vibration diagram</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Understand to Analyze</li><li>DOK 2 - comparing two scenarios to explain why one transmits sound and the other does not</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Side-by-side cards collapse to stacked on mobile</li><li>Color-coded success/failure borders reinforce the contrast visually</li><li>SVGs include aria-labels describing each scenario</li></ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -2225,6 +2234,29 @@ body.stem-active .stem-detail {
     <!-- ── BRIDGE TO NEXT ── -->
     <div class="bridge-callout teal" style="margin-top: 1.8rem;">
       Three words down. But knowing where the peaks and dips are doesn't tell us <strong>how big</strong> the wave is, or <strong>how often</strong> the peaks come. For that, scientists need a few more measurements.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Teach the measurement language scientists use to describe wave shapes: crest, trough, resting position.</li><li>Embed a Quick Recall checkpoint so students retrieve terms before moving on.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding - labeled interactive wave diagram paired with text definitions</li><li>Variable isolation - chip toggles highlight one part at a time</li><li>Retrieval practice - embedded Quick Recall question after the visual</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Remember to Understand (anatomy chips), Understand to Apply (Quick Recall)</li><li>DOK 1 to 2 - identifying labeled parts, then applying the term to a novel prompt</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal, no hover - chip toggles show one definition at a time</li><li>SVG markers animate gently to draw attention without distraction</li><li>Quick Recall is ungraded and low stakes with immediate feedback</li></ul>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -2521,6 +2553,29 @@ body.stem-active .stem-detail {
       </div>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Introduce wavelength as a horizontal measurement by contrasting two waves with identical height but different peak spacing.</li><li>Directly confront the common misconception that wavelength refers to wave height.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Contrasting cases - same amplitude, different spacing isolates the target variable</li><li>Misconception checking - "Watch Out" callout addresses wavelength-as-height confusion</li><li>Concrete to abstract - visual comparison before the definition</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Understand to Analyze</li><li>DOK 2 - comparing two wave diagrams to identify what differs</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Wavelength brackets appear only after student clicks reveal</li><li>Gold bracket labels are high contrast against the dark card background</li><li>Anti-confusion callout uses a distinct red border for visual separation</li></ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -2783,6 +2838,29 @@ window.revealWavelength = function() {
       <div class="seed-callout">
         <span class="seed-label">Notice Something?</span>
         Wave B has the <strong>shorter wavelength</strong>, and Wave B also had <strong>more crests</strong> pass the line. Hold onto that. We'll come back to it.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Let students count crest crossings before learning the word frequency.</li><li>Seed the inverse wavelength-frequency relationship without yet explaining it.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Model-based reasoning - students count passes on a live animated wave model</li><li>Generation effect - counting before naming strengthens retention of the concept</li><li>Contrasting cases - same speed, different wavelengths produce different counts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Understand to Analyze</li><li>DOK 2 - interpreting an animated model to compare crest counts across two waves</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Student-initiated start button, not autoplay</li><li>Live crest counters provide a numerical readout alongside the animation</li><li>Gold observation line uses high contrast and a dashed pattern</li></ul>
+        </div>
       </div>
     </div>
 
@@ -3265,6 +3343,29 @@ window.revealWavelength = function() {
         <div class="name-it-label">The Word For Wave Size</div>
         <p>The height of a wave from the resting line to the crest is called its <strong id="vocab-amplitude">amplitude</strong>. The bigger the amplitude, the more <strong>energy</strong> the wave carries.</p>
         <p style="margin-top: 0.7rem;">A small amplitude wave gently bobs your boat. A huge amplitude wave can sink it. Same kind of wave, totally different amount of energy.</p>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Connect amplitude to energy, the core relationship in learning goal 2 (6.MS-PS4-1).</li><li>Use a calm-day vs. storm comparison so students feel the energy difference before naming it.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Predict-then-reveal - students commit to which wave carries more energy before the answer</li><li>Contrasting cases - same wavelength, different heights isolates amplitude</li><li>Dual coding - energy meter bars appear alongside the wave diagrams after reveal</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Understand to Analyze</li><li>DOK 2 - comparing two wave diagrams and linking amplitude to energy</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to predict, no hover</li><li>Amplitude brackets and energy meters appear only after student interaction</li><li>Cards collapse to single column on mobile</li></ul>
+        </div>
       </div>
     </div>
 
@@ -3816,6 +3917,29 @@ window.revealWavelength = function() {
 
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Let students discover the inverse wavelength-frequency relationship by trying (and failing) to separate them.</li><li>Apply the rule to the full EM spectrum so students see it scale from radio to gamma.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Variable isolation - slider adjusts one property while students observe the linked change</li><li>Productive struggle - the challenge is designed to be impossible, forcing the insight</li><li>Model-based reasoning - live wave and readouts let students test the relationship directly</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Analyze</li><li>DOK 2 to 3 - connecting three wave properties through an interactive model and extending the pattern across the EM spectrum</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Slider uses native range input with keyboard support</li><li>Three live readout bars provide numerical and visual feedback simultaneously</li><li>EM spectrum bands have title attributes for hover context</li></ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -4206,6 +4330,29 @@ window.toggleSpectrumNumbers = function() {
       <strong>All five.</strong> You're speaking the language of waves now, crest, trough, resting position, wavelength, amplitude. Same words scientists use to describe everything from ocean swells to gamma rays.
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Require students to retrieve and apply all five wave terms on a fresh diagram they have not seen before.</li><li>Shift from recognition to active placement, a stronger test of understanding.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice - recall from memory rather than re-reading</li><li>Generation effect - students produce the correct pairing, not just select it</li><li>Productive struggle - immediate wrong-answer feedback guides without giving away</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Understand to Apply</li><li>DOK 1 to 2 - identifying labeled parts (DOK 1) on a novel wave diagram (DOK 2)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to place, no drag-and-drop required</li><li>Dashed guides distinguish point targets from line/distance targets</li><li>Ungraded and low stakes with a reset button</li></ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -4502,6 +4649,29 @@ window.toggleSpectrumNumbers = function() {
         <div class="discovery-card">
           <div class="discovery-icon">🔗</div>
           <div class="discovery-text">For EM waves, <strong>shorter wavelength = higher frequency = more energy</strong>. For mechanical waves, <strong>bigger amplitude = more energy</strong>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Synthesize the full lesson by answering the driving question explicitly.</li><li>Organize the six key discoveries into a scannable reference students can return to.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building - connecting separate discoveries into a coherent mental model</li><li>Elaboration - driving question restated alongside its answer reinforces the narrative arc</li><li>Coherent narrative - discoveries are sequenced in the order students encountered them</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Understand to Analyze</li><li>DOK 2 to 3 - connecting wave properties, energy transfer, and wave types into a unified explanation</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Two-column discovery grid collapses to single column on mobile</li><li>Icon cards use short, parallel sentence structures</li><li>High-contrast green border on the driving question answer block</li></ul>
         </div>
       </div>
     </div>
@@ -4991,6 +5161,29 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
       <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Assess understanding across all six discovery areas with a balanced 10-question quiz.</li><li>Classroom mode sends scores to the teacher; practice mode provides risk-free self-assessment.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice - answering from memory strengthens long-term retention</li><li>Feedback loops - answer explanations appear immediately after submission</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Understand to Apply</li><li>DOK 1 to 2 - mix of recall items and applied scenario questions</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided for every question</li><li>Plausible, evenly placed options with varied answer lengths</li><li>Immediate feedback with color-coded correct/incorrect indicators</li></ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -5467,6 +5660,30 @@ buildQuiz();
       </a>
 
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer a natural next step for students who want to go deeper into wave properties.</li><li>Preview the Amplitude Challenge investigation that extends the amplitude-energy relationship.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension - optional pathway maintains intrinsic motivation</li><li>Transfer - applying wave concepts to a new data-collection context</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Bloom's: Apply to Analyze</li><li>DOK 2 to 3 - investigation requires collecting data and building a model</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>No penalty for skipping</li><li>Category color system matches the index page for consistent navigation</li></ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -5484,16 +5701,9 @@ buildQuiz();
   <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
-<!-- ===== SESSION TOGGLES (LS + STE bars) ===== -->
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
 <script>
 if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
-if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
-function toggleStemDetail(id) {
-  const el  = document.getElementById(id);
-  el.classList.toggle('stem-open');
-  const btn = el.querySelector('.stem-show-btn');
-  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
-}
 </script>
 
 <!-- ===== STARFIELD ===== -->
@@ -5533,5 +5743,26 @@ window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt =
 resize();
 requestAnimationFrame(draw);
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

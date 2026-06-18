@@ -180,65 +180,6 @@
   }
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
-  /* ── MA STE STANDARDS ── */
-  .stem-focus { display: none; }
-  body.stem-active .stem-focus {
-    display: flex; align-items: center; justify-content: center;
-    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
-    margin: 0.5rem auto 1.6rem; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
-    background: rgba(46,204,113,0.05); border: 1px solid rgba(46,204,113,0.2);
-    border-radius: 16px; animation: stemFadeIn 0.35s ease both;
-  }
-  @keyframes stemFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
-  .stem-focus-label {
-    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
-    color: rgba(46,204,113,0.75); width: 100%; text-align: center; margin-bottom: 0.5rem;
-  }
-  .stem-badge {
-    position: relative; cursor: default; display: inline-flex; align-items: center;
-    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
-    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px; padding: 0.35rem 0.9rem; white-space: nowrap;
-  }
-  .stem-badge[data-tip]::after {
-    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
-    left: 50%; transform: translateX(-50%); width: 220px; padding: 0.5rem 0.75rem;
-    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
-    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
-    border: 1px solid rgba(46,204,113,0.2); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
-    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
-  }
-  .stem-badge[data-tip]:hover::after { opacity: 1; }
-  .stem-badge[data-tip]::before {
-    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
-    border: 5px solid transparent; border-top-color: rgba(46,204,113,0.2);
-    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
-  }
-  .stem-badge[data-tip]:hover::before { opacity: 1; }
-  .stem-detail { display: none; }
-  body.stem-active .stem-detail {
-    width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
-    text-align: center; animation: stemFadeIn 0.35s ease both;
-  }
-  .stem-show-btn {
-    background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
-    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-    color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
-  }
-  .stem-show-btn:hover { color: rgba(46,204,113,0.85); }
-  .stem-detail-body {
-    display: none; margin-top: 0.5rem;
-    background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
-    border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
-  }
-  .stem-detail.stem-open .stem-detail-body { display: block; }
-  .stem-std-row {
-    display: flex; gap: 0.8rem; align-items: flex-start;
-    padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-  }
-  .stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
-  .stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
 
   /* ── SECTIONS ── */
   section { padding: 3rem 2rem; scroll-margin-top: 2.6rem; }
@@ -719,26 +660,6 @@
   <span class="ls-badge" data-tip="Dual Coding Theory: pairing written phase descriptions with the interactive orbit diagram builds multiple memory pathways for better retrieval. (Noetel et al., 2022)">🖼️ Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes quiz questions improve long-term retention of phase names and characteristics more than re-reading alone. (Roediger &amp; Karpicke, 2006)">✅ Retrieval Practice</span>
   <span class="ls-badge" data-tip="Interleaving: comparing waxing vs. waning and crescent vs. gibbous side-by-side strengthens discrimination and deeper understanding. (Kornell &amp; Bjork, 2008)">🔀 Interleaved Comparison</span>
-</div>
-
-<!-- MA STE STANDARDS -->
-<div class="stem-focus">
-  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
-  <span class="stem-badge" data-tip="ESS1.A: Earth's Place in the Universe, develop and use a model of the Earth-Sun-Moon system to describe cyclic patterns of lunar phases.">6.MS-ESS1-1a</span>
-  <span class="stem-badge" data-tip="ESS1.B: Earth and the Solar System, gravity keeps the Moon in orbit; the Moon's distance and orbital period explain tidal locking.">MS-ESS1-2</span>
-</div>
-<div class="stem-detail" id="stem-detail-1">
-  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-1')">▸ Show standard descriptions</button>
-  <div class="stem-detail-body">
-    <div class="stem-std-row">
-      <span class="stem-std-code">6.MS-ESS1-1a</span>
-      <span class="stem-std-text">Develop and use a model of the Earth-Sun-Moon system to describe the cyclic patterns of lunar phases, eclipses of the Sun and Moon, and seasons.</span>
-    </div>
-    <div class="stem-std-row">
-      <span class="stem-std-code">MS-ESS1-2</span>
-      <span class="stem-std-text">Explain the role of gravity in the motions within galaxies and the solar system, and understand why the Moon's orbital and rotation periods are equal (tidal locking).</span>
-    </div>
-  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -1652,7 +1573,6 @@ function hookAnswer(btn, choice) {
 <!-- SESSION CHECK -->
 <script>
   if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
-  if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
 </script>
 
 <!-- REFLECTION MC ENGINE -->
@@ -1706,12 +1626,6 @@ function reflectAnswer(qid, chosen) {
 
 <!-- UTILITY FUNCTIONS -->
 <script>
-function toggleStemDetail(id) {
-  const el  = document.getElementById(id);
-  el.classList.toggle('stem-open');
-  const btn = el.querySelector('.stem-show-btn');
-  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
-}
 
 function vocabJump(targetId) {
   const anchor = document.getElementById(targetId);
@@ -2089,6 +2003,27 @@ function draw(t) {
 window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
 resize();
 requestAnimationFrame(draw);
+</script>
+
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
 </script>
 
 </body>

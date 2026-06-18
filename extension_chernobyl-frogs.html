@@ -463,9 +463,9 @@ footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
 </nav>
 
 <div class="badge-bar stem-bar">
-  <span class="badge green">6.MS-LS4-1<span class="badge-tip">LS4.A: Evidence of Common Ancestry — analyze and interpret data for patterns in the fossil record and other evidence documenting how life has changed over Earth's history.</span></span>
-  <span class="badge green">6.MS-LS4-2<span class="badge-tip">LS4.A: Anatomical Structures — apply concepts to explain how anatomical similarities and differences among organisms provide evidence of evolutionary relationships.</span></span>
-  <span class="badge green">SP2: Modelling<span class="badge-tip">Science Practice 2: Developing and using models — using a simulation to analyze how populations can change over time in response to environmental events.</span></span>
+  <span class="badge green">6.MS-LS4-1<span class="badge-tip">LS4.A: Evidence of Common Ancestry - analyze and interpret data for patterns in the fossil record and other evidence documenting how life has changed over Earth's history.</span></span>
+  <span class="badge green">6.MS-LS4-2<span class="badge-tip">LS4.A: Anatomical Structures - apply concepts to explain how anatomical similarities and differences among organisms provide evidence of evolutionary relationships.</span></span>
+  <span class="badge green">SP2: Modelling<span class="badge-tip">Science Practice 2: Developing and using models - using a simulation to analyze how populations can change over time in response to environmental events.</span></span>
 </div>
 <div class="badge-bar ls-bar">
   <span class="badge teal">Simulation &amp; Modelling<span class="badge-tip">Simulations help students manipulate variables and connect causes to population-level outcomes.</span></span>
@@ -1765,5 +1765,26 @@ window.addEventListener('DOMContentLoaded', () => {
   }, 50);
 });
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

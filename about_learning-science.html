@@ -595,24 +595,10 @@ body.ls-active .ls-focus {
         <span id="edu-hero-dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:rgba(59,200,232,0.35);transition:all 0.22s;"></span>
         <span id="edu-hero-label">Enable Educator Mode</span>
       </button>
-      <button id="stem-hero-btn" onclick="toggleStemMode()" style="
-        display:inline-flex;align-items:center;gap:0.7rem;
-        font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:800;
-        letter-spacing:0.05em;text-transform:uppercase;
-        border-radius:99px;padding:0.6rem 1.5rem;cursor:pointer;
-        transition:all 0.22s ease;
-        border:1px solid rgba(46,204,113,0.3);
-        background:rgba(46,204,113,0.07);
-        color:rgba(46,204,113,0.65);
-      ">
-        <span id="stem-hero-dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:rgba(46,204,113,0.35);transition:all 0.22s;"></span>
-        <span id="stem-hero-label">Show MA STE Frameworks</span>
-      </button>
     </div>
     <div style="font-size:0.82rem;color:rgba(255,255,255,0.45);line-height:1.8;text-align:center;max-width:720px;">
       Enabling Educator Mode highlights the cognitive strategy at work in each activity.<br>
-      Enabling MA STE Frameworks reveals the Grade 6 alignment standards behind each activity.<br>
-      Toggling either mode on applies it site-wide. Closing the tab resets everything.
+      Toggling it on applies it site-wide. Closing the tab resets everything.
     </div>
   </div>
 </div>
@@ -902,39 +888,6 @@ function toggleEduMode() {
 }
 
 (function() { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); })();
-
-function syncStemToggleUI(isOn) {
-  var btn  = document.getElementById('stem-toggle-btn');
-  var dot  = document.getElementById('stem-toggle-dot');
-  var lbl  = document.getElementById('stem-toggle-label');
-  var hBtn = document.getElementById('stem-hero-btn');
-  var hDot = document.getElementById('stem-hero-dot');
-  var hLbl = document.getElementById('stem-hero-label');
-  if (isOn) {
-    if (btn) { btn.style.borderColor = 'rgba(46,204,113,0.55)'; btn.style.background = 'rgba(46,204,113,0.14)'; btn.style.color = 'rgba(46,204,113,1)'; }
-    if (dot) { dot.style.background = '#2ecc71'; dot.style.boxShadow = '0 0 8px rgba(46,204,113,0.7)'; }
-    if (lbl) { lbl.textContent = 'MA STE Frameworks: On'; }
-    if (hBtn) { hBtn.style.borderColor = 'rgba(46,204,113,0.55)'; hBtn.style.background = 'rgba(46,204,113,0.14)'; hBtn.style.color = 'rgba(46,204,113,1)'; }
-    if (hDot) { hDot.style.background = '#2ecc71'; hDot.style.boxShadow = '0 0 8px rgba(46,204,113,0.7)'; }
-    if (hLbl) { hLbl.textContent = 'MA STE Frameworks: On'; }
-  } else {
-    if (btn) { btn.style.borderColor = 'rgba(46,204,113,0.35)'; btn.style.background = 'rgba(46,204,113,0.07)'; btn.style.color = 'rgba(46,204,113,0.7)'; }
-    if (dot) { dot.style.background = 'rgba(46,204,113,0.4)'; dot.style.boxShadow = ''; }
-    if (lbl) { lbl.textContent = 'Show MA STE Frameworks'; }
-    if (hBtn) { hBtn.style.borderColor = 'rgba(46,204,113,0.35)'; hBtn.style.background = 'rgba(46,204,113,0.07)'; hBtn.style.color = 'rgba(46,204,113,0.7)'; }
-    if (hDot) { hDot.style.background = 'rgba(46,204,113,0.4)'; hDot.style.boxShadow = ''; }
-    if (hLbl) { hLbl.textContent = 'Show MA STE Frameworks'; }
-  }
-  document.body.classList.toggle('stem-active', isOn);
-}
-function toggleStemMode() {
-  var isOn = sessionStorage.getItem('lyfelabz-stem') === 'on';
-  var next = !isOn;
-  if (next) { sessionStorage.setItem('lyfelabz-stem', 'on'); }
-  else { sessionStorage.removeItem('lyfelabz-stem'); }
-  syncStemToggleUI(next);
-}
-(function() { syncStemToggleUI(sessionStorage.getItem('lyfelabz-stem') === 'on'); })();
 </script>
 
 <script>if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');</script>
@@ -968,5 +921,26 @@ function draw(t) {
 window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
 resize(); requestAnimationFrame(draw);
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

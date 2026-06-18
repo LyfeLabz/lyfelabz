@@ -1157,111 +1157,29 @@ body.ls-active .ls-focus {
 
 
 <style>
-/* ── MA STE Standards (inline) ────────────────────────────────── */
-.stem-focus { display: none; }
-body.stem-active .stem-focus {
-  display: flex; align-items: center; justify-content: center;
-  flex-wrap: wrap; gap: 0.45rem 0.55rem;
-  width: fit-content; max-width: 760px;
-  margin: 0.5rem auto 1.6rem; padding: 1.1rem 1.8rem 1.2rem;
-  box-sizing: border-box;
-  background: rgba(46,204,113,0.05); border: 1px solid rgba(46,204,113,0.2);
-  border-radius: 16px; animation: stemFadeIn 0.35s ease both;
+/* ── Instructional Design notes · Educator Mode (hidden until body.ls-active) ── */
+.edu-note { display: none; }
+body.ls-active .edu-note {
+  display: block; max-width: 760px; margin: 2.5rem auto 0;
+  padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+  background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+  border-left: 4px solid #9fb8cc; border-radius: 14px;
+  animation: lsFadeIn 0.35s ease both;
 }
-@keyframes stemFadeIn {
-  from { opacity:0; transform:translateY(-3px); }
-  to   { opacity:1; transform:translateY(0); }
+.edu-note-label {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: rgba(122,143,166,0.8); margin-bottom: 1rem;
 }
-.stem-focus-label {
-  font-size:0.72rem; font-weight:900; letter-spacing:0.13em;
-  text-transform:uppercase; color:rgba(46,204,113,0.75);
-  width:100%; text-align:center; margin-bottom:0.5rem;
+.edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+@media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+.edu-note-head {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
 }
-.stem-badge {
-  display:inline-flex; align-items:center;
-  font-family:'Nunito',sans-serif; font-size:0.86rem; font-weight:700;
-  line-height:1; color:rgba(255,255,255,0.82);
-  background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16);
-  border-radius:99px; padding:0.35rem 0.9rem; white-space:nowrap;
-}
-.stem-detail { display:none; }
-body.stem-active .stem-detail {
-  width:fit-content; max-width:760px;
-  margin:0.35rem auto 0.8rem; text-align:center;
-  animation: stemFadeIn 0.35s ease both;
-}
-.stem-show-btn {
-  background:none; border:none; cursor:pointer;
-  font-family:'Nunito',sans-serif; font-size:0.72rem; font-weight:800;
-  letter-spacing:0.1em; text-transform:uppercase;
-  color:rgba(46,204,113,0.5); padding:0.25rem 0.4rem;
-  transition:color 0.2s;
-}
-.stem-show-btn:hover { color:rgba(46,204,113,0.85); }
-.stem-detail-body {
-  display:none; margin-top:0.5rem;
-  background:rgba(46,204,113,0.04); border:1px solid rgba(46,204,113,0.15);
-  border-radius:12px; padding:0.9rem 1.4rem; text-align:left;
-}
-.stem-detail.stem-open .stem-detail-body { display:block; }
-.stem-std-row {
-  display:flex; gap:0.8rem; align-items:flex-start;
-  padding:0.45rem 0; border-bottom:1px solid rgba(255,255,255,0.05);
-}
-.stem-std-row:last-child { border-bottom:none; padding-bottom:0; }
-.stem-std-code {
-  font-size:0.75rem; font-weight:900; color:rgba(46,204,113,0.8);
-  white-space:nowrap; padding-top:0.1rem; min-width:110px;
-}
-.stem-std-text {
-  font-size:0.83rem; font-weight:600;
-  color:rgba(232,240,247,0.72); line-height:1.55;
-}
-/* ── Stem badge tooltip (mirrors ls-badge pattern) ─────────────── */
-.stem-badge { position: relative; cursor: default; }
-.stem-badge[data-tip]::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 9px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 220px;
-  padding: 0.5rem 0.75rem;
-  background: #0c1a28;
-  color: #b8ccd8;
-  font-size: 0.68rem;
-  font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: 0;
-  white-space: normal;
-  text-align: center;
-  border-radius: 9px;
-  border: 1px solid rgba(46,204,113,0.2);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 999;
-}
-.stem-badge[data-tip]:hover::after { opacity: 1; }
-.stem-badge[data-tip]::before {
-  content: '';
-  position: absolute;
-  bottom: calc(100% + 3px);
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: rgba(46,204,113,0.2);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 999;
-}
-.stem-badge[data-tip]:hover::before { opacity: 1; }
-@media (max-width: 480px) {
-  .stem-badge[data-tip]::after,
-  .stem-badge[data-tip]::before { display: none; }
-}
+.edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+ul.edu-note-text li { margin-bottom: 0.2rem; }
+ul.edu-note-text li:last-child { margin-bottom: 0; }
 </style>
 
 <style>
@@ -1633,20 +1551,6 @@ body.stem-active .stem-detail {
   <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. (Adesope et al., 2017)">🧠 Retrieval Practice</span>
   <span class="ls-badge" data-tip="Content is chunked and sequenced so working memory is never overwhelmed by too much at once. (Sweller et al., 2019)">⚖️ Load Management</span>
 </div>
-<div class="stem-focus">
-  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
-  <span class="stem-badge" data-tip="Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.">6.MS-LS1-3</span>
-</div>
-<div class="stem-detail" id="stem-detail-1">
-  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-1')">▸ Show standard descriptions</button>
-  <div class="stem-detail-body">
-    <div class="stem-std-row">
-      <span class="stem-std-code">6.MS-LS1-3</span>
-      <span class="stem-std-text">Construct an argument supported by evidence that the body systems interact to carry out essential functions of life.</span>
-    </div>
-  </div>
-</div>
-
 <!-- ═══════════════════════════════════════════════════════════════════════
      LEARNING GOALS
 ═══════════════════════════════════════════════════════════════════════ -->
@@ -1702,6 +1606,29 @@ body.stem-active .stem-detail {
         <span class="goal-icon">🧩</span>
         <div class="goal-text">Use evidence to argue that no single system can keep the body alive on its own.</div>
         <span class="goal-std">6.MS-LS1-3</span>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Set the four targets up front so students know what success looks like.</li><li>Signal the lesson moves from naming systems to arguing how they depend on each other.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizer for the cells-to-systems arc</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3 (identify a job is 1; argue from evidence that no system stands alone reaches 3)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Each goal on its own card with an icon</li><li>Standard code shown beside every goal</li><li>Short, single-sentence targets</li></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -1817,6 +1744,29 @@ body.stem-active .stem-detail {
       </button>
 
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the organization terms and system names students will reuse all lesson.</li><li>Give a definition students can return to before each idea is explained in context.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load (one card open at a time)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal, no hover</li><li>One card open at a time</li><li>Each card links to where the term appears in the lesson</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 <script>
@@ -1881,6 +1831,29 @@ body.stem-active .stem-detail {
 
     <div class="hierarchy-note">
       🔑 <strong>Key Idea:</strong> A body system is only as strong as the cells that build it. Damage one level, and everything above it feels it. Now the bigger question: how do eight of these systems manage to work together at once?
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Open with the cells-to-systems question that drives the whole lesson.</li><li>Build the organization ladder before any single system is studied.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap (how a cell becomes a system)</li><li>Dual coding (nested-ring diagram paired with text)</li><li>Cause-and-effect modeling (damage at one level affects the next)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click a ring to reveal, no hover</li><li>Labeled diagram with a text panel for each level</li><li>SVG carries a descriptive aria-label</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -2070,6 +2043,29 @@ body.stem-active .stem-detail {
       </div>
 
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Make the central claim concrete: no system works alone.</li><li>Let students pick a system and trace how far its partnerships reach.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Systems thinking (linking each system to its partners)</li><li>Comparison and contrast across the eight systems</li><li>Dual coding (color-coded partner cards with text)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 (students compare and describe interactions; the explanations are supplied)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Each interaction is one short, parallel row</li><li>Partner systems carry a consistent color label</li><li>Cards stack into a single column on small screens</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2118,6 +2114,29 @@ body.stem-active .stem-detail {
       <div class="qr-actions">
         <button class="qr-check" id="qr1Check">Check Answer</button>
         <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Pause for one retrieval check before the lesson synthesizes everything.</li><li>Use the sprint scenario so students apply the idea, not just recall a label.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect (commit before feedback)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2 (apply the two-system idea to a new scenario)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes, labeled as a brain check</li><li>Immediate feedback with a try-again option</li><li>Feedback region announced for screen readers</li></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -2207,6 +2226,29 @@ body.stem-active .stem-detail {
       </a>
 
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Pull the lesson together around one claim: the body stays alive only because systems cooperate.</li><li>Offer two next paths, interactions and diseases, for students ready to go deeper.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building (organization plus interaction become one model)</li><li>Coherent narrative (the sprint scenario bookends the lesson)</li><li>Systems thinking</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3 (connect multiple systems into one explanation of how the body functions)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Two large, full-card tap targets</li><li>Each path names what it leads to in plain language</li><li>Cards reflow to one column on small screens</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2285,6 +2327,29 @@ body.stem-active .stem-detail {
       <div id="submit-status"></div>
       <button class="reset-btn" onclick="resetQuiz()">🔄 Try Again</button>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check independent recall and reasoning across the full lesson.</li><li>Offer a no-stakes practice mode and a teacher-submitted classroom mode.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops (per-question explanations)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2 (recall a function, or apply the hierarchy to a scenario)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Practice mode works with no sign-in</li><li>Answer explanations provided for every item</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2308,6 +2373,29 @@ body.stem-active .stem-detail {
         <div class="cont-desc">Sprint for a bus and watch every system respond in real time.</div>
         <span class="cont-link">Play</span>
       </a>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Extend the lesson into applied practice for students who want more.</li><li>Frame the quiz as a checkpoint, not an endpoint.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Transfer (apply system interactions to cases and a simulation)</li><li>Interest-driven extension</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3 (diagnose cases or reason about systems responding together)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>No penalty for skipping</li><li>Each card states the activity and the action it leads to</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -2601,13 +2689,6 @@ buildQuiz();
 </script>
 <script>
 if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');
-if(sessionStorage.getItem('lyfelabz-stem')==='on')document.body.classList.add('stem-active');
-function toggleStemDetail(id) {
-  const el  = document.getElementById(id);
-  el.classList.toggle('stem-open');
-  const btn = el.querySelector('.stem-show-btn');
-  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
-}
 </script>
 <script>
 function toggleAssign() {
@@ -2655,5 +2736,26 @@ function draw(t) {
 window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
 resize(); requestAnimationFrame(draw);
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

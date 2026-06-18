@@ -941,7 +941,7 @@ body.stem-active .stem-detail {
         <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
       </div>
       <div class="mode-hint">
-        <span id="modeHintPractice" class="visible">Complete the quiz to check your understanding — nothing is sent to your teacher.</span>
+        <span id="modeHintPractice" class="visible">Complete the quiz to check your understanding - nothing is sent to your teacher.</span>
         <span id="modeHintClassroom">Complete the quiz and fill in your info below to submit your work to your teacher.</span>
       </div>
     </div>
@@ -1226,7 +1226,7 @@ resize(); requestAnimationFrame(draw);
 
 <script>
 /* =====================================================================
-   PRACTICE / CLASSROOM MODE — VIRUS EXTENSION
+   PRACTICE / CLASSROOM MODE - VIRUS EXTENSION
    ===================================================================== */
 const VI_SCRIPT_URLS = {
   'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
@@ -1331,5 +1331,26 @@ document.addEventListener('DOMContentLoaded', function() {
   if (params.get('mode') === 'classroom') setMode(true);
 });
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

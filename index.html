@@ -1365,19 +1365,9 @@
         <span id="edu-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3bc8e8;transition:background 0.22s,box-shadow 0.22s;"></span>
         <span id="edu-toggle-label">Enable Educator Mode</span>
       </button>
-      <button id="stem-toggle-btn" onclick="toggleStemMode()" style="
-        display: inline-flex; align-items: center; gap: 0.6rem;
-        font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 800;
-        letter-spacing: 0.06em; text-transform: uppercase; border-radius: 99px;
-        padding: 0.5rem 1.3rem; cursor: pointer; transition: all 0.22s ease;
-        border: 1px solid rgba(46,204,113,0.7); background: rgba(46,204,113,0.12); color: #2ecc71;
-      ">
-        <span id="stem-toggle-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2ecc71;transition:background 0.22s,box-shadow 0.22s;"></span>
-        <span id="stem-toggle-label">Show MA STE Standards</span>
-      </button>
     </div>
-    <div style="font-size:0.63rem; color:rgba(255,255,255,0.38); max-width:900px; text-align:center; line-height:1.5; white-space:nowrap;" id="edu-toggle-hint">
-      Badges &amp; standards appear on every lesson, map, activity, simulation, extension, and game (this session only).
+    <div style="font-size:0.63rem; color:rgba(255,255,255,0.38); max-width:900px; text-align:center; line-height:1.5;" id="edu-toggle-hint">
+      Learning science badges appear on every lesson, map, activity, simulation, extension, and game (this session only). MA STE standards are shown permanently in each lesson's Learning Goals.
     </div>
   </div>
 
@@ -1594,38 +1584,8 @@ function toggleEduMode() {
   syncEduToggleUI(next);
 }
 
-function syncStemToggleUI(isOn) {
-  var btn  = document.getElementById('stem-toggle-btn');
-  var dot  = document.getElementById('stem-toggle-dot');
-  var lbl  = document.getElementById('stem-toggle-label');
-  if (!btn) return;
-  if (isOn) {
-    btn.style.borderColor  = 'rgba(46,204,113,0.45)';
-    btn.style.background   = 'rgba(46,204,113,0.08)';
-    btn.style.color        = 'rgba(46,204,113,0.95)';
-    dot.style.background   = '#2ecc71';
-    dot.style.boxShadow    = '0 0 8px rgba(46,204,113,0.7)';
-    lbl.textContent        = 'MA STE Standards: On';
-  } else {
-    btn.style.borderColor  = 'rgba(46,204,113,0.7)';
-    btn.style.background   = 'rgba(46,204,113,0.12)';
-    btn.style.color        = '#2ecc71';
-    dot.style.background   = '#2ecc71';
-    dot.style.boxShadow    = 'none';
-    lbl.textContent        = 'Show MA STE Standards';
-  }
-}
-function toggleStemMode() {
-  var isOn = sessionStorage.getItem('lyfelabz-stem') === 'on';
-  var next = !isOn;
-  if (next) { sessionStorage.setItem('lyfelabz-stem', 'on'); }
-  else       { sessionStorage.removeItem('lyfelabz-stem'); }
-  syncStemToggleUI(next);
-}
-
 (function() {
   syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on');
-  syncStemToggleUI(sessionStorage.getItem('lyfelabz-stem') === 'on');
 })();
 </script>
 
@@ -1903,6 +1863,27 @@ function toggleStemMode() {
 <div id="mission-egg" onclick="window.location.href='https://mission.lyfelabz.com'" role="button" aria-label="Go to Mission">
   <img src="mission-icon.png" alt="Mission">
 </div>
+
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
 
 </body>
 </html>

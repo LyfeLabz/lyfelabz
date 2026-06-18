@@ -417,121 +417,27 @@ body.ls-active .ls-focus {
   .ls-badge[data-tip]::before { display: none; }
   body.ls-active .ls-focus { max-width: calc(100% - 2.4rem); padding: 0.75rem 1rem; gap: 0.4rem 0.5rem; }
 }
+
+/* ── Instructional Design notes (Educator Mode) ── */
+@keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+.edu-note { display: none; }
+body.ls-active .edu-note {
+  display: block; max-width: 760px; margin: 2.5rem auto 0;
+  padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+  background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+  border-left: 4px solid #9fb8cc; border-radius: 14px;
+  animation: lsFadeIn 0.35s ease both;
+}
+.edu-note-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(122,143,166,0.8); margin-bottom: 1rem; }
+.edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+@media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+.edu-note-head { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(159,184,204,0.75); margin-bottom: 0.35rem; }
+.edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+ul.edu-note-text li { margin-bottom: 0.2rem; }
+ul.edu-note-text li:last-child { margin-bottom: 0; }
 </style>
 
-<!-- ── MA STE Standards Badges ── -->
-<style>
-.stem-focus { display: none; }
-body.stem-active .stem-focus {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.45rem 0.55rem;
-  width: fit-content;
-  max-width: 760px;
-  margin: 0.5rem auto 1.6rem;
-  padding: 1.1rem 1.8rem 1.2rem;
-  box-sizing: border-box;
-  background: rgba(46,204,113,0.05);
-  border: 1px solid rgba(46,204,113,0.2);
-  border-radius: 16px;
-  animation: barFadeIn 0.35s ease both;
-}
-.stem-focus-label {
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: rgba(46,204,113,0.75);
-  width: 100%;
-  text-align: center;
-  margin-bottom: 0.5rem;
-}
-.stem-badge {
-  display: inline-flex;
-  align-items: center;
-  position: relative;
-  cursor: default;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.86rem;
-  font-weight: 700;
-  line-height: 1;
-  color: rgba(255,255,255,0.82);
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 99px;
-  padding: 0.35rem 0.9rem;
-  white-space: nowrap;
-}
-.stem-badge[data-tip]::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 9px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 220px;
-  padding: 0.5rem 0.75rem;
-  background: #0c1a28;
-  color: #b8ccd8;
-  font-size: 0.68rem;
-  font-weight: 500;
-  line-height: 1.5;
-  white-space: normal;
-  text-align: center;
-  border-radius: 9px;
-  border: 1px solid rgba(46,204,113,0.2);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 999;
-}
-.stem-badge[data-tip]::before {
-  content: '';
-  position: absolute;
-  bottom: calc(100% + 3px);
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: rgba(46,204,113,0.2);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 999;
-}
-.stem-badge[data-tip]:hover::after,
-.stem-badge[data-tip]:hover::before { opacity: 1; }
-@media (max-width: 480px) {
-  .stem-badge[data-tip]::after,
-  .stem-badge[data-tip]::before { display: none; }
-}
-.stem-detail { display: none; }
-body.stem-active .stem-detail {
-  display: block;
-  width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
-  text-align: center; animation: barFadeIn 0.35s ease both;
-}
-.stem-show-btn {
-  background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
-  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
-}
-.stem-show-btn:hover { color: rgba(46,204,113,0.85); }
-.stem-detail-body {
-  display: none; margin-top: 0.5rem;
-  background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
-  border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
-}
-.stem-detail.stem-open .stem-detail-body { display: block; }
-.stem-std-row {
-  display: flex; gap: 0.8rem; align-items: flex-start;
-  padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
-.stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
-.stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
-</style>
 
 <!-- ── Engagement + Content Styles ── -->
 <style>
@@ -1500,26 +1406,6 @@ body.stem-active .stem-detail {
   <span class="ls-badge" data-tip="The quiz asks students to apply density, displacement, and property reasoning to new objects and scenarios rather than recall definitions. Transfer tasks reveal real understanding. (Adesope et al., 2017)">✅ Retrieval Practice</span>
 </div>
 
-<!-- MA STE STANDARDS BADGES -->
-<div class="stem-focus">
-  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
-  <span class="stem-badge" data-tip="Use a particle model of matter to explain that density is the amount of matter (mass) in a given volume. Apply proportional reasoning to describe, calculate, and compare relative densities of different materials.">6.MS-PS1-7</span>
-  <span class="stem-badge" data-tip="Conduct an experiment to show that many materials are mixtures of pure substances that can be separated by physical means into the pure substances (using physical properties such as density, melting point, and magnetism).">6.MS-PS1-8</span>
-</div>
-<div class="stem-detail" id="stem-detail-pp">
-  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-pp')">▸ Show standard descriptions</button>
-  <div class="stem-detail-body">
-    <div class="stem-std-row">
-      <span class="stem-std-code">6.MS-PS1-7</span>
-      <span class="stem-std-text">Use a particle model of matter to explain that density is the amount of matter (mass) in a given volume. Apply proportional reasoning to describe, calculate, and compare relative densities of different materials.</span>
-    </div>
-    <div class="stem-std-row">
-      <span class="stem-std-code">6.MS-PS1-8</span>
-      <span class="stem-std-text">Conduct an experiment to show that many materials are mixtures of pure substances that can be separated by physical means based on physical properties such as density, melting point, and magnetism.</span>
-    </div>
-  </div>
-</div>
-
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      LEARNING GOALS
@@ -1549,6 +1435,41 @@ body.stem-active .stem-detail {
         <span class="goal-icon">🧲</span>
         <div class="goal-text">Identify physical properties of matter - like hardness, conductivity, magnetism, and melting point - and match them to real materials.</div>
         <span class="goal-std">6.MS-PS1-8</span>
+      </div>
+    </div>
+
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Names the four outcomes up front: density, volume, buoyancy, and identifying physical properties.</li>
+            <li>Anchors every goal to 6.MS-PS1-7 and 6.MS-PS1-8 so the lesson stays in scope.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Advance organizer: students see the target before the content.</li>
+            <li>Goal setting primes attention for the measure-then-identify arc.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 to 3 (goals ask students to explain density and predict floating from evidence)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Four icon-led cards, large targets, low text load.</li>
+            <li>Plain "be able to" wording.</li>
+            <li>Standard codes shown but not required reading.</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -1610,6 +1531,41 @@ body.stem-active .stem-detail {
         <div class="gc-def">The ability of a material to be reshaped, bent, or flattened without breaking.</div>
       </button>
     </div>
+
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Front-loads the terms students will meet so reading the lesson is not slowed by new words.</li>
+            <li>Gives a stable reference students can return to during the labs.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Click-to-reveal adds a small retrieval cue before the definition shows.</li>
+            <li>One card open at a time reduces split attention.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Remember to Understand</li>
+            <li>DOK 1 (recall and recognize term meanings)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Color-coded cards aid scanning without relying on color alone.</li>
+            <li>Definitions stay short and concrete.</li>
+            <li>Large tap targets, no hover dependency.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1670,6 +1626,41 @@ body.stem-active .stem-detail {
 
     <div class="bridge-callout">
       <strong>The question:</strong> Ships, coins, ice cubes, and life jackets all obey the same hidden rule. This lesson is about discovering that rule - and the measurable properties behind it.
+    </div>
+
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Opens a discrepant event: a heavy ship floats while a light coin sinks.</li>
+            <li>Confronts the misconception that heavier objects always sink.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Curiosity gap: the puzzle creates a need-to-know before instruction.</li>
+            <li>Cognitive conflict makes the upcoming density rule more memorable.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Apply</li>
+            <li>DOK 2 (students notice a pattern and form a question, not yet justify)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Dual coding: icon plus short text on each puzzle card.</li>
+            <li>Click-to-reveal keeps each card low-load until chosen.</li>
+            <li>Concrete, everyday objects lower the entry barrier.</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1740,6 +1731,41 @@ body.stem-active .stem-detail {
       <strong>But density compares matter to space.</strong> To work with it, we need a way to measure the space part - the volume.
       <br><br>
       Easy for a box. Trickier for a rock. Let's measure both.
+    </div>
+
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Builds the core idea: density is how much matter is packed into a space.</li>
+            <li>Confronts the "density just means heavy" misconception with same-size blocks.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Model-based reasoning: particle dots make an invisible idea visible.</li>
+            <li>Controlling for size isolates the variable students should attend to.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 (compare packing across equal-size blocks to explain density)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Dual coding: particle diagram paired with plain-language definition.</li>
+            <li>Interactive feedback confirms reasoning step by step.</li>
+            <li>Bridge callout signals what comes next.</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1870,6 +1896,41 @@ body.stem-active .stem-detail {
       <br><br>
       That push has a name, and it's the last piece of the ship mystery.
     </div>
+
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Gives students two concrete tools to measure volume: a formula and displacement.</li>
+            <li>Supplies the "space" half of density so the rule becomes usable.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Measurement reasoning: students manipulate inputs and read the result.</li>
+            <li>Worked-then-applied: regular shape first, irregular rock second.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Apply</li>
+            <li>DOK 2 (apply a method and interpret a measured volume)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Numeric inputs use inputmode numeric for mobile keyboards.</li>
+            <li>Animated displacement gives a visual model alongside numbers.</li>
+            <li>Units shown with every result to anchor meaning.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1933,6 +1994,41 @@ body.stem-active .stem-detail {
       <strong>Density, volume, and buoyancy</strong> are all things you can observe or measure about a material without changing what it is. It turns out there's a whole family of properties like that.
       <br><br>
       Time to meet the rest of the family.
+    </div>
+
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Resolves the ship puzzle: floating depends on the water an object pushes aside.</li>
+            <li>Connects density and displacement into a single cause-and-effect story.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Cause-and-effect reasoning links force, displaced water, and floating.</li>
+            <li>Callback to the harbor closes the curiosity gap opened in Engage.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 to 3 (explain why an object floats using displaced-water evidence)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Summary table consolidates the three linked ideas.</li>
+            <li>Prediction prompt invites a guess before the explanation.</li>
+            <li>Short sentences keep the force idea manageable.</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -2021,6 +2117,41 @@ body.stem-active .stem-detail {
       <div class="match-success" id="matchSuccess">🏆 Five for five! You just thought like a materials engineer - choosing materials by their physical properties is exactly how real products get designed.</div>
     </div>
 
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Generalizes from density to the full set of physical properties used to identify materials.</li>
+            <li>Reinforces that physical properties do not change what the substance is.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Classification practice: students match a design problem to the property that matters.</li>
+            <li>Spaced retrieval across five scenarios strengthens the property-to-use link.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 (sort materials by property and explain how a property fits a use)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Property cards use icon plus label for dual coding.</li>
+            <li>Live-region feedback announces results for screen readers.</li>
+            <li>Progress dots show how many scenarios remain.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -2063,6 +2194,41 @@ body.stem-active .stem-detail {
       <div class="qr-actions">
         <button class="qr-check" id="qr2Check">Check Answer</button>
         <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Low-stakes retrieval check before the wrap-up and quiz.</li>
+            <li>Surfaces shaky understanding while there is still time to reread.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Retrieval practice: recalling now strengthens later recall.</li>
+            <li>Immediate feedback corrects errors before they harden.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Remember to Apply</li>
+            <li>DOK 2 (apply a property to a sink-or-float and a sorting scenario)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>"Not graded" wording lowers anxiety.</li>
+            <li>Live-region feedback and a Try Again path support second attempts.</li>
+            <li>Labels tied to questions for screen readers.</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -2159,6 +2325,41 @@ body.stem-active .stem-detail {
 
     <div class="bridge-callout teal">
       <strong>Essential question:</strong> How can we predict what matter will do and identify what a material is? If you can answer that with the words density, volume, buoyancy, and physical property, you own this lesson.
+    </div>
+
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Returns to the harbor puzzles so students explain all three with the new vocabulary.</li>
+            <li>Ties each learning goal back to the evidence students produced.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Elaboration: students connect density, volume, buoyancy, and properties into one explanation.</li>
+            <li>Closing the opening loop aids consolidation and transfer.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 to 3 (justify each outcome using the linked concepts)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Goal-to-evidence table organizes the recap for easy scanning.</li>
+            <li>Essential question restates the target in one sentence.</li>
+            <li>Key terms bolded as memory anchors.</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -2497,6 +2698,41 @@ body.stem-active .stem-detail {
       <button class="reset-btn" onclick="ppResetQuiz()">Try Again</button>
     </div>
 
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Ten-question check mixing recall and applied reasoning across the lesson.</li>
+            <li>Practice mode self-checks; classroom mode reports to the teacher.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Graded retrieval consolidates learning and reveals gaps.</li>
+            <li>Answer explanations turn each item into a feedback moment.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Apply</li>
+            <li>DOK 1 to 2 (define properties, then apply them to sink-float and sorting cases)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Submit stays disabled until every item is answered.</li>
+            <li>Try Again allows a full retake in practice mode.</li>
+            <li>Answer positions and lengths varied to avoid guessing cues.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -2592,6 +2828,41 @@ body.stem-active .stem-detail {
         <span class="cont-link">Zoom In</span>
       </a>
     </div>
+
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Extends physical properties into hands-on home tests and related lessons.</li>
+            <li>Offers transfer beyond the harbor context students started with.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Predict-then-test builds expectation before evidence.</li>
+            <li>Choice and real objects support motivation and transfer.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Apply to Analyze</li>
+            <li>DOK 2 to 3 (predict sink-or-float, then justify a material from several properties)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Optional, low-cost materials keep the challenge open to all.</li>
+            <li>Icon-led continue cards aid scanning.</li>
+            <li>Clear next-step labels on each card.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2607,16 +2878,9 @@ body.stem-active .stem-detail {
   <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
-<!-- ===== SESSION TOGGLES (LS + STE bars) ===== -->
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
 <script>
 if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
-if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
-function toggleStemDetail(id) {
-  const el  = document.getElementById(id);
-  el.classList.toggle('stem-open');
-  const btn = el.querySelector('.stem-show-btn');
-  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
-}
 </script>
 
 <!-- ===== GLOSSARY CARDS (click to expand, one open at a time) ===== -->
@@ -3234,5 +3498,26 @@ window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt =
 resize();
 requestAnimationFrame(draw);
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

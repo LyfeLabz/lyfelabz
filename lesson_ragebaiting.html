@@ -475,15 +475,6 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
 
 <!-- STE Standards Badges -->
 <style>
-.stem-focus { display: none; }
-body.stem-active .stem-focus { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px; margin: 0.5rem auto 1.6rem; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box; background: rgba(46,204,113,0.05); border: 1px solid rgba(46,204,113,0.2); border-radius: 16px; animation: stemFadeIn 0.35s ease both; }
-@keyframes stemFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
-.stem-focus-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(46,204,113,0.75); width: 100%; text-align: center; margin-bottom: 0.5rem; }
-.stem-badge { display: inline-flex; align-items: center; position: relative; cursor: default; font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1; color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16); border-radius: 99px; padding: 0.35rem 0.9rem; white-space: nowrap; }
-.stem-badge[data-tip]::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%); width: 220px; padding: 0.5rem 0.75rem; background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500; line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px; border: 1px solid rgba(46,204,113,0.2); box-shadow: 0 8px 28px rgba(0,0,0,0.55); pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999; }
-.stem-badge[data-tip]::before { content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(46,204,113,0.2); pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999; }
-.stem-badge[data-tip]:hover::after, .stem-badge[data-tip]:hover::before { opacity: 1; }
-@media (max-width: 480px) { .stem-badge[data-tip]::after, .stem-badge[data-tip]::before { display: none; } }
 </style>
 </head>
 <body>
@@ -530,14 +521,6 @@ body.stem-active .stem-focus { display: flex; align-items: center; justify-conte
   <span class="ls-badge" data-tip="Students reflect on their own thinking, building the self-regulation skills that transfer across subjects. (Dent & Koenka, 2016)">Metacognition</span>
   <span class="ls-badge" data-tip="Students construct meaning themselves rather than passively receiving information from a teacher or screen. (Fiorella & Mayer, 2016)">Generative Learning</span>
   <span class="ls-badge" data-tip="Surprising or personally relevant questions activate intrinsic motivation, sustaining engagement longer. (Lazowski & Hulleman, 2016)">Curiosity Drive</span>
-</div>
-
-<!-- MA STE STANDARDS -->
-<div class="stem-focus">
-  <span class="stem-focus-label">MA STE Standards · Grade 6–8</span>
-  <span class="stem-badge" data-tip="Gather and synthesize information that sensory receptors respond to stimuli by sending messages to the brain for immediate behavior or storage as memories.">MS-LS1-8</span>
-  <span class="stem-badge" data-tip="Construct an explanation based on evidence for how natural selection leads to adaptation. Applied here: how brains have evolved rapid threat-detection (amygdala hijack).">MS-LS4-4</span>
-  <span class="stem-badge" data-tip="Cause and Effect, Mechanism and Explanation. What mechanism causes rage bait to trigger a stress response, and what are the downstream effects on behavior?">SEP Cause &amp; Effect</span>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -1766,7 +1749,6 @@ buildQuiz();
 <!-- SESSION STORAGE - LS & STEM TOGGLES -->
 <script>
 if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
-if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
 </script>
 
 <!-- LOCAL STORAGE - AUTOSAVE & RESTORE -->
@@ -1858,6 +1840,27 @@ function draw(t) {
 window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
 resize();
 requestAnimationFrame(draw);
+</script>
+
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
 </script>
 
 </body>

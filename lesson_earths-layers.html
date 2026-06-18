@@ -173,65 +173,32 @@
   }
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
-  /* ── MA STE STANDARDS ── */
-  .stem-focus { display: none; }
-  body.stem-active .stem-focus {
-    display: flex; align-items: center; justify-content: center;
-    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
-    margin: 0.5rem auto 1.6rem; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
-    background: rgba(46,204,113,0.05); border: 1px solid rgba(46,204,113,0.2);
-    border-radius: 16px; animation: stemFadeIn 0.35s ease both;
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
   }
-  @keyframes stemFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
-  .stem-focus-label {
+  .edu-note-label {
     font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
-    color: rgba(46,204,113,0.75); width: 100%; text-align: center; margin-bottom: 0.5rem;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
   }
-  .stem-badge {
-    position: relative; cursor: default; display: inline-flex; align-items: center;
-    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
-    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px; padding: 0.35rem 0.9rem; white-space: nowrap;
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
   }
-  .stem-badge[data-tip]::after {
-    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
-    left: 50%; transform: translateX(-50%); width: 220px; padding: 0.5rem 0.75rem;
-    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
-    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
-    border: 1px solid rgba(46,204,113,0.2); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
-    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
-  }
-  .stem-badge[data-tip]:hover::after { opacity: 1; }
-  .stem-badge[data-tip]::before {
-    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
-    border: 5px solid transparent; border-top-color: rgba(46,204,113,0.2);
-    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
-  }
-  .stem-badge[data-tip]:hover::before { opacity: 1; }
-  .stem-detail { display: none; }
-  body.stem-active .stem-detail {
-    width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
-    text-align: center; animation: stemFadeIn 0.35s ease both;
-  }
-  .stem-show-btn {
-    background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
-    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-    color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
-  }
-  .stem-show-btn:hover { color: rgba(46,204,113,0.85); }
-  .stem-detail-body {
-    display: none; margin-top: 0.5rem;
-    background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
-    border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
-  }
-  .stem-detail.stem-open .stem-detail-body { display: block; }
-  .stem-std-row {
-    display: flex; gap: 0.8rem; align-items: flex-start;
-    padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-  }
-  .stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
-  .stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
 
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
@@ -687,26 +654,6 @@
   <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and density inside Earth to surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
 </div>
 
-<!-- MA STE STANDARDS -->
-<div class="stem-focus">
-  <span class="stem-focus-label">&#128203; MA STE Standards &middot; Grade 7</span>
-  <span class="stem-badge" data-tip="Construct an explanation based on evidence for how Earth's surface has changed over scales ranging from local to global.">7.MS-ESS2-2</span>
-  <span class="stem-badge" data-tip="Use a model to illustrate that energy from Earth's interior drives convection that cycles Earth's crust, leading to melting, crystallization, weathering, and deformation of rock.">7.MS-ESS2-1</span>
-</div>
-<div class="stem-detail" id="stem-detail-el">
-  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-el')">&#9656; Show standard descriptions</button>
-  <div class="stem-detail-body">
-    <div class="stem-std-row">
-      <span class="stem-std-code">7.MS-ESS2-2</span>
-      <span class="stem-std-text">Construct an explanation based on evidence for how Earth's surface has changed over scales ranging from local to global.</span>
-    </div>
-    <div class="stem-std-row">
-      <span class="stem-std-code">7.MS-ESS2-1</span>
-      <span class="stem-std-text">Use a model to illustrate that energy from Earth's interior drives convection that cycles Earth's crust, leading to melting, crystallization, weathering, and deformation of large amounts of rock.</span>
-    </div>
-  </div>
-</div>
-
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      LEARNING GOALS
@@ -738,6 +685,28 @@
         <span class="goal-std">7.MS-ESS2-1</span>
       </div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -749,7 +718,7 @@
   <div class="container">
     <span class="section-label">Vocabulary to Know</span>
     <h2 class="section-title">Words You'll Meet</h2>
-    <p class="section-desc" style="margin-bottom: 1.8rem;">Click or tap a card to reveal the definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
     <div class="glossary-grid">
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Density</span><span class="gc-chev">&#9662;</span></div>
@@ -791,6 +760,28 @@
         <div class="gc-head"><span class="gc-term">Continental Crust</span><span class="gc-chev">&#9662;</span></div>
         <div class="gc-def">Crust made of granite, about 25 miles thick. It is younger and less dense than oceanic crust.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-crusttype')">See it in the lesson &#8595;</span></div>
       </button>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -875,6 +866,28 @@
     <div class="bridge-callout" style="margin-top: 2rem;">
       <strong>Where we're headed:</strong> First we'll see how Earth got its layers in the first place. Then we'll travel from the surface all the way to the center, and finally connect what we find back to the shaking ground above.
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the unit in a real phenomenon: earthquakes and volcanoes.</li><li>Raise a question students will want answered.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Concrete, familiar examples</li><li>Short framing text</li><li>Visual anchor</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -948,6 +961,28 @@
       <span class="callout-icon">&#128161;</span>
       <div class="callout-body"><strong>The key pattern:</strong> Density decides the order. The densest material ended up deepest. That single rule explains why the layers are arranged the way they are, from the heavy metal core to the light, brittle crust.</div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Establish the origin model before naming any layer.</li><li>Ground the whole structure in one cause: density.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Prior knowledge activation (sinking and floating)</li><li>Cause-and-effect modeling</li><li>Dual coding with the staged diagram</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Everyday analogy (steel marble in water)</li><li>Short paragraphs paired with a diagram</li><li>Key terms defined in place</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1005,6 +1040,28 @@
       <span class="callout-icon">&#128207;</span>
       <div class="callout-body"><strong>A clear trend:</strong> Density, temperature, and pressure all increase as you move from the crust to the inner core. The deeper you go, the heavier, hotter, and more squeezed the material becomes.</div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Give a whole-Earth map before studying each layer.</li><li>Name the trend that organizes the sections ahead.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Dual coding with the interactive cross-section</li><li>Pattern recognition (depth, density, heat, pressure)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal each layer, no hover</li><li>Labeled diagram paired with text</li><li>One trend stated plainly</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1061,6 +1118,28 @@
 
     <div class="bridge-callout teal">
       <strong>Remember the density rule?</strong> It still applies here. Oceanic crust is more dense than continental crust, so where the two meet, the heavier oceanic crust tends to sink beneath the lighter continental crust.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the model in the layer students can observe.</li><li>Compare two crust types to reapply the density rule.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Concrete to abstract (apple-skin analogy)</li><li>Comparison and contrast (oceanic vs continental)</li><li>Elaboration on the density pattern</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Familiar, concrete analogy</li><li>Side-by-side comparison cards</li><li>Short, parallel bullet lists</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1134,6 +1213,28 @@
       </svg>
       <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Reveal the mechanism that moves the plates.</li><li>Link convection back to the opening phenomenon.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling (heat to motion)</li><li>Dual coding with the convection diagram</li><li>Elaboration connecting depth to surface change</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Everyday analogy (rock that flows like toothpaste)</li><li>Labeled diagram paired with text</li><li>Key terms defined in place</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1172,6 +1273,28 @@
     <div class="callout gold">
       <span class="callout-icon">&#128207;</span>
       <div class="callout-body"><strong>The pattern holds all the way down:</strong> Density, temperature, and pressure increase the entire way from the crust to the inner core. The center of Earth is the heaviest, hottest, and most squeezed place on the planet.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Complete the model at Earth's center.</li><li>Resolve a common misconception about the solid inner core.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Misconception checking (pressure vs temperature)</li><li>Evidence-based reasoning (seismic waves)</li><li>Reinforces the depth trend for closure</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain causal explanation</li><li>Two short cards, one per sub-layer</li><li>Trend restated to close the model</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1233,6 +1356,28 @@
         <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
       </div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li><li>Productive struggle</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1274,6 +1419,28 @@
         <span class="wuc wuc-3">Earthquakes and volcanoes</span>
       </div>
       <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. The shaking ground above is the surface story of a much deeper one.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening question directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1359,6 +1526,28 @@
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1381,6 +1570,28 @@
         </div>
       </div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1397,16 +1608,9 @@
 </footer>
 
 
-<!-- ===== SESSION TOGGLES (LS + STE bars) ===== -->
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
 <script>
 if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
-if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
-function toggleStemDetail(id) {
-  const el  = document.getElementById(id);
-  el.classList.toggle('stem-open');
-  const btn = el.querySelector('.stem-show-btn');
-  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
-}
 </script>
 
 <!-- ===== VOCAB JUMP ===== -->
@@ -1835,5 +2039,26 @@ window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt =
 resize();
 requestAnimationFrame(draw);
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

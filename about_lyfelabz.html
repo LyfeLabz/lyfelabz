@@ -470,7 +470,7 @@
         <div style="flex-shrink:0;width:2.2rem;height:2.2rem;border-radius:99px;background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.3);display:flex;align-items:center;justify-content:center;font-size:1rem;">📋</div>
         <div>
           <div style="font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#2ecc71;margin-bottom:0.3rem;">MA STE Standards</div>
-          <p style="font-size:0.92rem;color:var(--muted);line-height:1.65;margin:0;">Green badges showing aligned 2016 Massachusetts STE standard codes for Grade 6 Life Science, with an expandable card displaying the full standard text.</p>
+          <p style="font-size:0.92rem;color:var(--muted);line-height:1.65;margin:0;">Green badges showing the aligned 2016 Massachusetts STE standard codes, displayed permanently in each lesson's Learning Goals.</p>
         </div>
       </div>
 
@@ -479,8 +479,7 @@
     <!-- Unified controls row -->
     <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:1rem 1.5rem;display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;">
       <span style="font-size:0.75rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-right:0.25rem;">Enable for this session:</span>
-      <button onclick="document.getElementById('edu-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.45rem;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;border-radius:99px;padding:0.38rem 1rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(59,200,232,0.6);background:rgba(59,200,232,0.1);color:#3bc8e8;">Learning Science</button>
-      <button onclick="document.getElementById('stem-toggle-btn').click()" style="display:inline-flex;align-items:center;gap:0.45rem;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;border-radius:99px;padding:0.38rem 1rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(46,204,113,0.6);background:rgba(46,204,113,0.1);color:#2ecc71;">MA STE Standards</button>
+      <button onclick="toggleEduMode()" style="display:inline-flex;align-items:center;gap:0.45rem;font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;border-radius:99px;padding:0.38rem 1rem;cursor:pointer;transition:all 0.22s;border:1px solid rgba(59,200,232,0.6);background:rgba(59,200,232,0.1);color:#3bc8e8;">Learning Science</button>
       <span style="font-size:0.72rem;color:rgba(255,255,255,0.2);margin-left:auto;">Session resets on tab close</span>
     </div>
   </div>
@@ -549,29 +548,8 @@ function toggleEduMode() {
   next ? sessionStorage.setItem('lyfelabz-ls','on') : sessionStorage.removeItem('lyfelabz-ls');
   syncEduToggleUI(next);
 }
-function syncStemToggleUI(isOn) {
-  var btn = document.getElementById('stem-toggle-btn');
-  var dot = document.getElementById('stem-toggle-dot');
-  var lbl = document.getElementById('stem-toggle-label');
-  if (!btn) return;
-  if (isOn) {
-    btn.style.borderColor = 'rgba(46,204,113,0.45)'; btn.style.background = 'rgba(46,204,113,0.08)'; btn.style.color = 'rgba(46,204,113,0.95)';
-    dot.style.background = '#2ecc71'; dot.style.boxShadow = '0 0 8px rgba(46,204,113,0.7)';
-    lbl.textContent = 'MA STE Standards: On';
-  } else {
-    btn.style.borderColor = 'rgba(46,204,113,0.7)'; btn.style.background = 'rgba(46,204,113,0.12)'; btn.style.color = '#2ecc71';
-    dot.style.background = '#2ecc71'; dot.style.boxShadow = 'none';
-    lbl.textContent = 'Show MA STE Standards';
-  }
-}
-function toggleStemMode() {
-  var next = sessionStorage.getItem('lyfelabz-stem') !== 'on';
-  next ? sessionStorage.setItem('lyfelabz-stem','on') : sessionStorage.removeItem('lyfelabz-stem');
-  syncStemToggleUI(next);
-}
 (function() {
   syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on');
-  syncStemToggleUI(sessionStorage.getItem('lyfelabz-stem') === 'on');
 })();
 </script>
 <script>
@@ -620,5 +598,26 @@ function toggleStemMode() {
   resize();
   requestAnimationFrame(draw);
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

@@ -568,7 +568,7 @@ footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
      ====================================================== -->
 <div class="badge-bar stem-bar">
   <span class="badge green">6.MS-LS1-2<span class="badge-tip">MA STE 6.MS-LS1-2: Develop and use a model to describe the function of a cell as a whole and ways parts of cells contribute to its function, including how cells obtain nutrients, water, and other resources and release waste products.</span></span>
-  <span class="badge green">8.MS-LS1-7<span class="badge-tip">MA STE 8.MS-LS1-7: Develop a model to describe how food molecules are rearranged through chemical reactions forming new molecules that support growth or release energy as this matter moves through an organism. (Grade 8 — above-grade enrichment)</span></span>
+  <span class="badge green">8.MS-LS1-7<span class="badge-tip">MA STE 8.MS-LS1-7: Develop a model to describe how food molecules are rearranged through chemical reactions forming new molecules that support growth or release energy as this matter moves through an organism. (Grade 8 - above-grade enrichment)</span></span>
   <span class="badge green">MS-LS2-3<span class="badge-tip">MA STE MS-LS2-3: Develop a model to describe the cycling of matter and flow of energy among living and nonliving parts of an ecosystem.</span></span>
   <span class="badge green">SEP-2<span class="badge-tip">NGSS SEP-2: Developing and Using Models, students build and manipulate interactive models of photosynthesis, respiration, and the energy cycle.</span></span>
   <span class="badge green">SEP-6<span class="badge-tip">NGSS SEP-6: Constructing Explanations, students synthesize investigation evidence to explain how matter cycles and energy flows through living systems.</span></span>
@@ -4422,5 +4422,26 @@ window.LyfeLabzAudio = {
 /* Hook points wired to existing events for future use */
 /* Example: window.LyfeLabzAudio.on('phase1_complete', () => { ... }); */
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

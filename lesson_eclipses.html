@@ -75,25 +75,6 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
 .ls-badge[data-tip]:hover::after { opacity:1; }
 .ls-badge[data-tip]::before { content:''; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(255,255,255,.11); pointer-events:none; opacity:0; transition:opacity .15s ease; z-index:999; }
 .ls-badge[data-tip]:hover::before { opacity:1; }
-.stem-focus { display:none; }
-body.stem-active .stem-focus { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:.45rem .55rem; width:fit-content; max-width:760px; margin:.5rem auto 1.6rem; padding:1.1rem 1.8rem 1.2rem; box-sizing:border-box; background:rgba(46,204,113,.05); border:1px solid rgba(46,204,113,.2); border-radius:16px; animation:stemFadeIn .35s ease both; }
-@keyframes stemFadeIn { from{opacity:0;transform:translateY(-3px);}to{opacity:1;transform:translateY(0);} }
-.stem-focus-label { font-size:.72rem; font-weight:900; letter-spacing:.13em; text-transform:uppercase; color:rgba(46,204,113,.75); width:100%; text-align:center; margin-bottom:.5rem; }
-.stem-badge { position:relative; cursor:default; display:inline-flex; align-items:center; font-family:'Nunito',sans-serif; font-size:.86rem; font-weight:700; line-height:1; color:rgba(255,255,255,.82); background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16); border-radius:99px; padding:.35rem .9rem; white-space:nowrap; }
-.stem-badge[data-tip]::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 9px); left:50%; transform:translateX(-50%); width:220px; padding:.5rem .75rem; background:#0c1a28; color:#b8ccd8; font-size:.68rem; font-weight:500; line-height:1.5; white-space:normal; text-align:center; border-radius:9px; border:1px solid rgba(46,204,113,.2); box-shadow:0 8px 28px rgba(0,0,0,.55); pointer-events:none; opacity:0; transition:opacity .15s ease; z-index:999; }
-.stem-badge[data-tip]:hover::after { opacity:1; }
-.stem-badge[data-tip]::before { content:''; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(46,204,113,.2); pointer-events:none; opacity:0; transition:opacity .15s ease; z-index:999; }
-.stem-badge[data-tip]:hover::before { opacity:1; }
-.stem-detail { display:none; }
-body.stem-active .stem-detail { width:fit-content; max-width:760px; margin:.35rem auto .8rem; text-align:center; animation:stemFadeIn .35s ease both; }
-.stem-show-btn { background:none; border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-size:.72rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:rgba(46,204,113,.5); padding:.25rem .4rem; transition:color .2s; }
-.stem-show-btn:hover { color:rgba(46,204,113,.85); }
-.stem-detail-body { display:none; margin-top:.5rem; background:rgba(46,204,113,.04); border:1px solid rgba(46,204,113,.15); border-radius:12px; padding:.9rem 1.4rem; text-align:left; }
-.stem-detail.stem-open .stem-detail-body { display:block; }
-.stem-std-row { display:flex; gap:.8rem; align-items:flex-start; padding:.45rem 0; border-bottom:1px solid rgba(255,255,255,.05); }
-.stem-std-row:last-child { border-bottom:none; padding-bottom:0; }
-.stem-std-code { font-size:.75rem; font-weight:900; color:rgba(46,204,113,.8); white-space:nowrap; padding-top:.1rem; min-width:110px; }
-.stem-std-text { font-size:.83rem; font-weight:600; color:rgba(232,240,247,.72); line-height:1.55; }
 .bridge-wrap { padding:0 2rem 2.5rem; }
 .bridge-callout { margin:0 auto; padding:1.4rem 1.8rem; background:rgba(122,143,200,.06); border:1px solid rgba(122,143,200,.2); border-left:4px solid var(--accent2); border-radius:14px; font-size:1rem; color:var(--text-muted); max-width:1100px; }
 .bridge-callout strong { color:var(--text); }
@@ -464,21 +445,6 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
   <span class="ls-badge" data-tip="Conceptual Change Theory: surfacing a productive misconception (monthly eclipses) creates cognitive conflict that drives deeper understanding. (Chi, 2008)">Conceptual Change</span>
   <span class="ls-badge" data-tip="Dual Coding: pairing persistent spatial diagrams with minimal text builds multiple memory pathways for abstract orbital concepts. (Noetel et al., 2022)">Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: interactive multiple-choice questions improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">Retrieval Practice</span>
-</div>
-
-<div class="stem-focus">
-  <span class="stem-focus-label">MA STE Standards &middot; Grade 6</span>
-  <span class="stem-badge" data-tip="ESS1.A: The Universe and its Stars, Earth and its solar system as part of the Milky Way; patterns of apparent motion of the Sun, Moon, and stars as seen from Earth.">6.MS-ESS1-1a</span>
-  <span class="stem-badge" data-tip="ESS1.B: Earth and the Solar System, the role of gravity and orbital mechanics in the relationships between Earth, Moon, and Sun that produce predictable patterns like eclipses.">6.ESS1-2</span>
-  <span class="stem-badge" data-tip="ESS1.B: Patterns of apparent motion, use models to explain eclipses, seasons, and lunar phases as predictable, explainable phenomena.">6.ESS1-3</span>
-</div>
-<div class="stem-detail" id="stem-detail-1">
-  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-1')">&#9658; Show standard descriptions</button>
-  <div class="stem-detail-body">
-    <div class="stem-std-row"><span class="stem-std-code">6.MS-ESS1-1a</span><span class="stem-std-text">Develop and use a model of the Earth-Sun-Moon system to describe the cyclic patterns of lunar phases, eclipses of the Sun and Moon, and seasons.</span></div>
-    <div class="stem-std-row"><span class="stem-std-code">6.ESS1-2</span><span class="stem-std-text">Develop and use a model to describe the role of gravity in the motions within galaxies and the solar system, including orbital paths.</span></div>
-    <div class="stem-std-row"><span class="stem-std-code">6.ESS1-3</span><span class="stem-std-text">Analyze and interpret data to determine scale properties of objects in the solar system and their relative positions to explain patterns such as eclipses.</span></div>
-  </div>
 </div>
 
 
@@ -1414,14 +1380,7 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
 </footer>
 
 <script>
-function toggleStemDetail(id) {
-  const el = document.getElementById(id);
-  el.classList.toggle('stem-open');
-  el.querySelector('.stem-show-btn').textContent =
-    el.classList.contains('stem-open') ? '&#9660; Hide standard descriptions' : '&#9658; Show standard descriptions';
-}
 if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
-if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
 </script>
 
 <script>
@@ -1994,6 +1953,27 @@ buildQuiz();
   }
   window.addEventListener('resize', function(){ clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
   resize(); requestAnimationFrame(draw);
+})();
+</script>
+
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
 })();
 </script>
 

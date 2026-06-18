@@ -503,7 +503,7 @@ body.stem-active .stem-detail {
 </style>
 
 <style>
-/* ── PRACTICE / CLASSROOM MODE — NEURON EXPLORER ── */
+/* ── PRACTICE / CLASSROOM MODE - NEURON EXPLORER ── */
 .ne-classroom-wrap { padding: 2.5rem 1.5rem 3rem; background: var(--dark2); border-top: 1px solid var(--border); position: relative; z-index: 1; }
 .ne-classroom-inner { max-width: 680px; margin: 0 auto; }
 .ne-section-eyebrow { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; color: var(--neuro); font-family: 'Orbitron', sans-serif; margin-bottom: 0.5rem; }
@@ -943,7 +943,7 @@ body.stem-active .stem-detail {
   <div class="ne-classroom-inner">
     <div class="ne-section-eyebrow">Classroom Submission</div>
     <h2 class="ne-section-title">Submit Your Quiz Score</h2>
-    <p class="ne-section-desc">In <strong style="color:var(--text);">Practice Mode</strong>, use Quiz Me to self-check — nothing is sent. In <strong style="color:var(--text);">Classroom Mode</strong>, complete a round of 8 Quiz Me questions, fill in your info below, and submit your results to your teacher.</p>
+    <p class="ne-section-desc">In <strong style="color:var(--text);">Practice Mode</strong>, use Quiz Me to self-check - nothing is sent. In <strong style="color:var(--text);">Classroom Mode</strong>, complete a round of 8 Quiz Me questions, fill in your info below, and submit your results to your teacher.</p>
 
     <div class="ne-mode-toggle-wrap">
       <div class="ne-mode-toggle">
@@ -951,7 +951,7 @@ body.stem-active .stem-detail {
         <button class="mode-btn" id="classroomModeBtn">Classroom Mode</button>
       </div>
       <div class="ne-mode-hint">
-        <span id="modeHintPractice" class="visible">Use Quiz Me to check your understanding — nothing is sent to your teacher.</span>
+        <span id="modeHintPractice" class="visible">Use Quiz Me to check your understanding - nothing is sent to your teacher.</span>
         <span id="modeHintClassroom">Complete a Quiz Me round (8 questions), then fill in your info to submit your score.</span>
       </div>
     </div>
@@ -1380,7 +1380,7 @@ body.stem-active .stem-detail {
 
 <script>
 /* =====================================================================
-   PRACTICE / CLASSROOM MODE — NEURON EXPLORER
+   PRACTICE / CLASSROOM MODE - NEURON EXPLORER
    Uses namespaced variables/functions to avoid collision with the
    existing setMode(m) and game state in the main script block.
    ===================================================================== */
@@ -1423,7 +1423,7 @@ function neRenderSubmitState() {
 
   if (status) {
     if (neQuizCompleted) {
-      status.innerHTML = '<span class="complete">✓ Quiz complete — ' + neQuizFinalScore + '/8 correct.</span> Fill in the fields below and submit.';
+      status.innerHTML = '<span class="complete">✓ Quiz complete - ' + neQuizFinalScore + '/8 correct.</span> Fill in the fields below and submit.';
     } else {
       status.textContent = 'Complete a Quiz Me round (8 questions) above to unlock submission.';
     }
@@ -1504,5 +1504,26 @@ document.addEventListener('DOMContentLoaded', function() {
   if (params.get('mode') === 'classroom') neSetMode(true);
 });
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

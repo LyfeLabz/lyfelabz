@@ -700,7 +700,7 @@ const SYSTEM_CHALLENGES = [
     text:"When you start running, your heart rate increases. This is the Circulatory System responding. Why?",
     options:["To make the lungs bigger","To pump more oxygen-carrying blood to working muscles","To slow digestion so energy goes to muscles","To reduce body temperature"],
     correct:1,
-    explanation:"Working muscles need more oxygen. The heart pumps faster to deliver oxygen-rich blood faster — more beats per minute means more oxygen delivered per minute."
+    explanation:"Working muscles need more oxygen. The heart pumps faster to deliver oxygen-rich blood faster - more beats per minute means more oxygen delivered per minute."
   },
   {
     systemId:'resp',
@@ -710,7 +710,7 @@ const SYSTEM_CHALLENGES = [
     text:"Your breathing rate triples when jogging. Which waste product is the MAIN trigger that signals your body to breathe faster?",
     options:["Oxygen","Glucose","Carbon dioxide (CO₂)","Nitrogen"],
     correct:2,
-    explanation:"Rising CO₂ in the blood is the main signal to the brain to breathe faster. The body is less sensitive to falling O₂ levels — it's the CO₂ buildup that really sounds the alarm."
+    explanation:"Rising CO₂ in the blood is the main signal to the brain to breathe faster. The body is less sensitive to falling O₂ levels - it's the CO₂ buildup that really sounds the alarm."
   },
   {
     systemId:'musc',
@@ -730,7 +730,7 @@ const SYSTEM_CHALLENGES = [
     text:"You sweat heavily during intense exercise. Sweating is mainly the job of which system?",
     options:["Respiratory System","Nervous System","Excretory System","Immune System"],
     correct:2,
-    explanation:"Sweat glands are part of the Excretory System (skin). Sweating removes heat and also excretes small amounts of water, salt, and waste — helping maintain homeostasis."
+    explanation:"Sweat glands are part of the Excretory System (skin). Sweating removes heat and also excretes small amounts of water, salt, and waste - helping maintain homeostasis."
   },
   {
     systemId:'nerv',
@@ -747,10 +747,10 @@ const SYSTEM_CHALLENGES = [
     predictionPrompt:"After intense exercise like {mission}, what do you predict happens to immune activity?",
     predictionOptions:["Temporarily drops","Temporarily spikes","Stays unchanged"],
     predictionResponse:"The immune system has a surprising response to high-intensity exercise. Now prove you know what scientists call this effect.",
-    text:"After intense exercise, the immune system is temporarily weakened — the 'open window' effect. What does this mean for athletes?",
+    text:"After intense exercise, the immune system is temporarily weakened - the 'open window' effect. What does this mean for athletes?",
     options:["They cannot get sick after exercise","They should exercise harder to strengthen immunity","They are more vulnerable to infections for a few hours post-exercise","Their white blood cells stop working permanently"],
     correct:2,
-    explanation:"Intense exercise temporarily suppresses immunity — white blood cell activity drops for a few hours. This 'open window' is why athletes are advised to avoid sick people right after hard training."
+    explanation:"Intense exercise temporarily suppresses immunity - white blood cell activity drops for a few hours. This 'open window' is why athletes are advised to avoid sick people right after hard training."
   }
 ];
 
@@ -1067,5 +1067,26 @@ function draw(t) {
 window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
 resize(); requestAnimationFrame(draw);
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

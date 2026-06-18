@@ -921,152 +921,34 @@ body.ls-active .ls-focus {
   .ls-badge[data-tip]::before { display: none; }
   body.ls-active .ls-focus { max-width: calc(100% - 2.4rem); padding: 0.75rem 1rem; gap: 0.4rem 0.5rem; }
 }
+
+/* ── Instructional Design note · Educator Mode ──
+   Reusable teacher-facing panel. Hidden for students; revealed only when
+   Educator Mode is on (body.ls-active). */
+.edu-note { display: none; }
+body.ls-active .edu-note {
+  display: block; max-width: 760px; margin: 2.5rem auto 0;
+  padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+  background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+  border-left: 4px solid #9fb8cc; border-radius: 14px;
+  animation: lsFadeIn 0.35s ease both;
+}
+.edu-note-label {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+}
+.edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+@media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+.edu-note-head {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+}
+.edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+ul.edu-note-text li { margin-bottom: 0.2rem; }
+ul.edu-note-text li:last-child { margin-bottom: 0; }
 </style>
 
-<!-- ── MA STE Standards Badges ── -->
-<style>
-.stem-focus { display: none; }
-body.stem-active .stem-focus {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.45rem 0.55rem;
-  width: fit-content;
-  max-width: 760px;
-  margin: 0.5rem auto 1.6rem;
-  padding: 1.1rem 1.8rem 1.2rem;
-  box-sizing: border-box;
-  background: rgba(46,204,113,0.05);
-  border: 1px solid rgba(46,204,113,0.2);
-  border-radius: 16px;
-  animation: stemFadeIn 0.35s ease both;
-}
-@keyframes stemFadeIn {
-  from { opacity: 0; transform: translateY(-3px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.stem-focus-label {
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: rgba(46,204,113,0.75);
-  width: 100%;
-  text-align: center;
-  margin-bottom: 0.5rem;
-}
-.stem-badge {
-  display: inline-flex;
-  align-items: center;
-  position: relative;
-  cursor: default;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.86rem;
-  font-weight: 700;
-  line-height: 1;
-  color: rgba(255,255,255,0.82);
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 99px;
-  padding: 0.35rem 0.9rem;
-  white-space: nowrap;
-}
-.stem-badge[data-tip]::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 9px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 220px;
-  padding: 0.5rem 0.75rem;
-  background: #0c1a28;
-  color: #b8ccd8;
-  font-size: 0.68rem;
-  font-weight: 500;
-  line-height: 1.5;
-  white-space: normal;
-  text-align: center;
-  border-radius: 9px;
-  border: 1px solid rgba(46,204,113,0.2);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 999;
-}
-.stem-badge[data-tip]::before {
-  content: '';
-  position: absolute;
-  bottom: calc(100% + 3px);
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: rgba(46,204,113,0.2);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 999;
-}
-.stem-badge[data-tip]:hover::after,
-.stem-badge[data-tip]:hover::before { opacity: 1; }
-@media (max-width: 480px) {
-  .stem-badge[data-tip]::after,
-  .stem-badge[data-tip]::before { display: none; }
-}
-
-/* ── Stem Detail Expand ── */
-.stem-detail { display: none; }
-body.stem-active .stem-detail {
-  width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
-  text-align: center; animation: stemFadeIn 0.35s ease both;
-}
-.stem-show-btn {
-  background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
-  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
-}
-.stem-show-btn:hover { color: rgba(46,204,113,0.85); }
-.stem-detail-body {
-  display: none; margin-top: 0.5rem;
-  background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
-  border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
-}
-.stem-detail.stem-open .stem-detail-body { display: block; }
-.stem-std-row {
-  display: flex; gap: 0.8rem; align-items: flex-start;
-  padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
-.stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
-.stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
-
-/* ── Driving Question ── */
-.driving-question {
-  max-width: 760px;
-  margin: 1.6rem auto 0;
-  padding: 1.1rem 1.6rem;
-  background: rgba(59,200,232,0.06);
-  border: 1px solid rgba(59,200,232,0.22);
-  border-left: 4px solid #3bc8e8;
-  border-radius: 14px;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.85rem;
-  box-sizing: border-box;
-}
-.dq-icon  { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
-.dq-body  { flex: 1; }
-.dq-label {
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: rgba(59,200,232,0.75);
-  margin-bottom: 0.3rem;
-}
-.dq-text  { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
-</style>
 </head>
 <body>
 <canvas id="stars"></canvas>
@@ -1114,26 +996,6 @@ body.stem-active .stem-detail {
   <span class="ls-badge" data-tip="Activities help students build precise mental categories from examples and non-examples. (Schroeder et al., 2018)">🗂️ Concept Formation</span>
   <span class="ls-badge" data-tip="Students recall information from memory, which strengthens long-term retention far more than re-reading. (Adesope et al., 2017)">✅ Retrieval Practice</span>
   <span class="ls-badge" data-tip="Content is chunked and sequenced so working memory is never overwhelmed by too much at once. (Sweller et al., 2019)">⚖️ Load Management</span>
-</div>
-
-<!-- MA STE STANDARDS BADGES -->
-<div class="stem-focus">
-  <span class="stem-focus-label">📋 MA STE Standards · Grade 6</span>
-  <span class="stem-badge" data-tip="Provide evidence that all organisms (unicellular and multicellular) are made of cells.">6.MS-LS1-1</span>
-  <span class="stem-badge" data-tip="Develop and use a model to describe the function of a cell as a whole and ways the parts of cells contribute to the function.">6.MS-LS1-2</span>
-</div>
-<div class="stem-detail" id="stem-detail-1">
-  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-1')">▸ Show standard descriptions</button>
-  <div class="stem-detail-body">
-    <div class="stem-std-row">
-      <span class="stem-std-code">6.MS-LS1-1</span>
-      <span class="stem-std-text">Provide evidence that all organisms (unicellular and multicellular) are made of cells.</span>
-    </div>
-    <div class="stem-std-row">
-      <span class="stem-std-code">6.MS-LS1-2</span>
-      <span class="stem-std-text">Develop and use a model to describe the function of a cell as a whole and ways the parts of cells contribute to the function.</span>
-    </div>
-  </div>
 </div>
 
 <!-- LEARNING GOALS SECTION -->
@@ -1189,6 +1051,29 @@ body.stem-active .stem-detail {
         <span class="goal-icon">🧫</span>
         <div class="goal-text">Model how the parts of a cell work together so the cell can carry out the functions of life.</div>
         <span class="goal-std">6.MS-LS1-2</span>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name what students should be able to do by the end.</li><li>Set the target before any content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -1373,6 +1258,29 @@ body.stem-active .stem-detail {
         </div>
       </button>
 
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet in the reading.</li><li>Lower the language barrier before the science begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions with a jump link</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1559,6 +1467,29 @@ body.stem-active .stem-detail {
       </div>
 
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Open with a sorting challenge: alive, not alive, or debated.</li><li>Surface what students already believe before defining life.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Prior knowledge activation</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal, no hover</li><li>Concrete, familiar examples</li><li>Short prompt on each card</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1651,6 +1582,29 @@ body.stem-active .stem-detail {
 
     <div class="bridge-callout">
       These three statements make up <strong>Cell Theory</strong>, one of the most important frameworks in all of science. Understanding cells means understanding life. The next question scientists asked: are all cells the same?
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Establish that all living things are made of cells.</li><li>Show how centuries of microscope work built Cell Theory.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling (tools drove the discovery)</li><li>Dual coding with the convergence diagram</li><li>Coherent narrative</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Labeled diagram paired with text</li><li>Short paragraphs</li><li>Key terms defined in place</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1903,6 +1857,29 @@ body.stem-active .stem-detail {
     <div class="bridge-callout" style="margin-top: 2.5rem;">
       A single amoeba eats, moves, senses its environment, and reproduces, all with one cell. This raises the next question: if cells can be so different in number, are they also different in <strong>structure</strong>?
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Show life can run on one cell or on trillions.</li><li>Make clear both are fully alive.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison and contrast</li><li>Concrete to abstract</li><li>Dual coding with the side-by-side visual</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Side-by-side comparison cards</li><li>Short, parallel bullet lists</li><li>Labeled visuals</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2021,6 +1998,29 @@ body.stem-active .stem-detail {
         </tr>
       </tbody>
     </table>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Split all of life into two cell types by one structural difference.</li><li>Anchor that difference to where the cell stores its DNA.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison and contrast</li><li>Cause-and-effect modeling (nucleus or no nucleus)</li><li>Dual coding with the comparison table</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Side-by-side comparison table</li><li>One key difference highlighted</li><li>Key terms defined in place</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2128,6 +2128,29 @@ body.stem-active .stem-detail {
         <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
       </div>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Pull one key idea back from memory before the virus question.</li><li>Catch gaps early with a low-stakes check.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Single, plainly worded question</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2222,6 +2245,28 @@ body.stem-active .stem-detail {
       That's where most scientists currently land, and the central reason is cells. <strong>Viruses have no cells of their own.</strong> They can only replicate by hijacking the machinery of a living cell. On their own, they can't obtain energy, grow, respond, or maintain homeostasis. The debate isn't completely closed, but the dominant view in biology is clear: without cells, something cannot be considered truly alive.
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Return to the opening virus question with the full framework.</li><li>Reason from the criteria to classify a genuinely debated case.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Misconception checking (is a virus alive?)</li><li>Evidence-based reasoning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Two-column can and cannot comparison</li><li>Criteria stated plainly</li><li>Key terms defined in place</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2314,6 +2359,28 @@ function virusVote(choice) {
       <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding across characteristics, cells, and viruses.</li><li>Offer practice mode and a classroom submission mode.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Plausible, evenly placed options</li><li>Immediate feedback</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2581,13 +2648,6 @@ buildQuiz();
 
 <script>
 if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
-if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
-function toggleStemDetail(id) {
-  const el  = document.getElementById(id);
-  el.classList.toggle('stem-open');
-  const btn = el.querySelector('.stem-show-btn');
-  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
-}
 </script>
 
 <script>
@@ -2664,6 +2724,29 @@ requestAnimationFrame(draw);
       </a>
 
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer optional ways to push the definition of life further.</li><li>Let students apply the framework to investigations and games.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>No penalty for skipping</li><li>Clear, labeled cards</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2678,5 +2761,26 @@ requestAnimationFrame(draw);
   </div>
   <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>

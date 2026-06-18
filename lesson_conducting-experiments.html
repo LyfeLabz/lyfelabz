@@ -407,121 +407,32 @@ body.ls-active .ls-focus {
   .ls-badge[data-tip]::before { display: none; }
   body.ls-active .ls-focus { max-width: calc(100% - 2.4rem); padding: 0.75rem 1rem; gap: 0.4rem 0.5rem; }
 }
-</style>
 
-<!-- ── MA STE Standards Badges ── -->
-<style>
-.stem-focus { display: none; }
-body.stem-active .stem-focus {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.45rem 0.55rem;
-  width: fit-content;
-  max-width: 760px;
-  margin: 0.5rem auto 1.6rem;
-  padding: 1.1rem 1.8rem 1.2rem;
-  box-sizing: border-box;
-  background: rgba(46,204,113,0.05);
-  border: 1px solid rgba(46,204,113,0.2);
-  border-radius: 16px;
+/* ── Instructional Design notes · Educator Mode ── */
+.edu-note { display: none; }
+body.ls-active .edu-note {
+  display: block; max-width: 760px; margin: 2.5rem auto 0;
+  padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+  background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+  border-left: 4px solid var(--teal); border-radius: 14px;
   animation: barFadeIn 0.35s ease both;
 }
-.stem-focus-label {
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: rgba(46,204,113,0.75);
-  width: 100%;
-  text-align: center;
-  margin-bottom: 0.5rem;
+.edu-note-label {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: rgba(122,143,166,0.8); margin-bottom: 1rem;
 }
-.stem-badge {
-  display: inline-flex;
-  align-items: center;
-  position: relative;
-  cursor: default;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.86rem;
-  font-weight: 700;
-  line-height: 1;
-  color: rgba(255,255,255,0.82);
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 99px;
-  padding: 0.35rem 0.9rem;
-  white-space: nowrap;
+.edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+@media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+.edu-note-head {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
 }
-.stem-badge[data-tip]::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 9px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 220px;
-  padding: 0.5rem 0.75rem;
-  background: #0c1a28;
-  color: #b8ccd8;
-  font-size: 0.68rem;
-  font-weight: 500;
-  line-height: 1.5;
-  white-space: normal;
-  text-align: center;
-  border-radius: 9px;
-  border: 1px solid rgba(46,204,113,0.2);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 999;
-}
-.stem-badge[data-tip]::before {
-  content: '';
-  position: absolute;
-  bottom: calc(100% + 3px);
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: rgba(46,204,113,0.2);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 999;
-}
-.stem-badge[data-tip]:hover::after,
-.stem-badge[data-tip]:hover::before { opacity: 1; }
-@media (max-width: 480px) {
-  .stem-badge[data-tip]::after,
-  .stem-badge[data-tip]::before { display: none; }
-}
-.stem-detail { display: none; }
-body.stem-active .stem-detail {
-  display: block;
-  width: fit-content; max-width: 760px; margin: 0.35rem auto 0.8rem;
-  text-align: center; animation: barFadeIn 0.35s ease both;
-}
-.stem-show-btn {
-  background: none; border: none; cursor: pointer; font-family: 'Nunito', sans-serif;
-  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(46,204,113,0.5); padding: 0.25rem 0.4rem; transition: color 0.2s;
-}
-.stem-show-btn:hover { color: rgba(46,204,113,0.85); }
-.stem-detail-body {
-  display: none; margin-top: 0.5rem;
-  background: rgba(46,204,113,0.04); border: 1px solid rgba(46,204,113,0.15);
-  border-radius: 12px; padding: 0.9rem 1.4rem; text-align: left;
-}
-.stem-detail.stem-open .stem-detail-body { display: block; }
-.stem-std-row {
-  display: flex; gap: 0.8rem; align-items: flex-start;
-  padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.stem-std-row:last-child { border-bottom: none; padding-bottom: 0; }
-.stem-std-code { font-size: 0.75rem; font-weight: 900; color: rgba(46,204,113,0.8); white-space: nowrap; padding-top: 0.1rem; min-width: 110px; }
-.stem-std-text { font-size: 0.83rem; font-weight: 600; color: rgba(232,240,247,0.72); line-height: 1.55; }
+.edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+ul.edu-note-text li { margin-bottom: 0.2rem; }
+ul.edu-note-text li:last-child { margin-bottom: 0; }
 </style>
+
 
 <!-- ── Engagement + Content Styles ── -->
 <style>
@@ -1305,31 +1216,6 @@ body.stem-active .stem-detail {
   <span class="ls-badge" data-tip="The quiz asks students to identify variables and classify observations in brand-new experiments rather than recall definitions. Transfer tasks reveal real understanding. (Adesope et al., 2017)">✅ Retrieval Practice</span>
 </div>
 
-<!-- MA STE STANDARDS BADGES -->
-<div class="stem-focus">
-  <span class="stem-focus-label">📋 MA STE Practices · Grade 6</span>
-  <span class="stem-badge" data-tip="Ask questions that arise from careful observation of phenomena and that can be investigated through a controlled experiment.">SEP 1 · Asking Questions</span>
-  <span class="stem-badge" data-tip="Plan an investigation individually and collaboratively, identifying independent and dependent variables and controls.">SEP 3 · Planning Investigations</span>
-  <span class="stem-badge" data-tip="Distinguish between observations (qualitative and quantitative data) and inferences drawn from that data.">SEP 4 · Analyzing Data</span>
-</div>
-<div class="stem-detail" id="stem-detail-ce">
-  <button class="stem-show-btn" onclick="toggleStemDetail('stem-detail-ce')">▸ Show standard descriptions</button>
-  <div class="stem-detail-body">
-    <div class="stem-std-row">
-      <span class="stem-std-code">SEP 1</span>
-      <span class="stem-std-text">Asking questions and defining problems: ask questions that arise from careful observation of phenomena and that can be investigated through a controlled experiment.</span>
-    </div>
-    <div class="stem-std-row">
-      <span class="stem-std-code">SEP 3</span>
-      <span class="stem-std-text">Planning and carrying out investigations: identify independent and dependent variables and the controls that must be kept constant for a fair test.</span>
-    </div>
-    <div class="stem-std-row">
-      <span class="stem-std-code">SEP 4</span>
-      <span class="stem-std-text">Analyzing and interpreting data: distinguish between qualitative and quantitative observations, and between observations and the inferences drawn from them.</span>
-    </div>
-  </div>
-</div>
-
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      LEARNING GOALS
@@ -1359,6 +1245,42 @@ body.stem-active .stem-detail {
         <span class="goal-icon">🕵️</span>
         <div class="goal-text">Explain the difference between an observation and an inference, and draw reasonable inferences from evidence.</div>
         <span class="goal-std">SEP 4</span>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Name the four science-practice targets before students do any of the work.</li>
+            <li>Frame the lesson as skills to perform, not facts to memorize.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Goal setting orients attention toward what to look for</li>
+            <li>Advance organizer for the hypothesis, variables, and observation work ahead</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Apply</li>
+            <li>DOK 1 to 2 (goals name and classify; no goal demands extended reasoning here)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Four short goal cards, one idea each</li>
+            <li>Practice standards tagged for transparency</li>
+            <li>Plain "be able to do" phrasing</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -1414,6 +1336,42 @@ body.stem-active .stem-detail {
         <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">The process of investigating the world that always starts with a question, driven by curiosity or a desire to solve a problem.</div>
       </button>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Pre-teach the eight terms students meet again in context below.</li>
+            <li>Give a definition to return to when a word reappears.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Pre-teaching vocabulary lowers load during the explore tasks</li>
+            <li>Collapsed cards reduce extraneous load until a word is needed</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Remember to Understand</li>
+            <li>DOK 1</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>One card open at a time</li>
+            <li>Click to reveal, no hover</li>
+            <li>Short, plain definitions</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1475,6 +1433,42 @@ body.stem-active .stem-detail {
 
     <div class="bridge-callout">
       <strong>The mission:</strong> By the end of this lesson, you'll be able to take any "why does that happen?" question and design a fair experiment to answer it. Step one: make an educated guess.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Open with real phenomena so a question, not a definition, starts the inquiry.</li>
+            <li>Show that every investigation begins with noticing something puzzling.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Curiosity gap primes attention before any vocabulary appears</li>
+            <li>Phenomenon-based learning anchors the abstract method in concrete events</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand</li>
+            <li>DOK 2 (students generate questions from an observation)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Click to reveal each mystery, no hover</li>
+            <li>Icon paired with short scenario text</li>
+            <li>No prior knowledge required to engage</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1562,6 +1556,43 @@ body.stem-active .stem-detail {
 
     <div class="bridge-callout teal">
       <strong>A hypothesis points at a cause and an effect.</strong> The thing you change... the thing that responds... scientists have exact names for those. Time to meet the variables.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Define a hypothesis as a testable, reasoned prediction, not a random guess.</li>
+            <li>Make students build the if - then - because frame, not just read it.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Worked examples and a three-part frame scaffold the structure</li>
+            <li>Cause-and-effect modeling links the "if" to the "then"</li>
+            <li>Misconception checking: testable versus untestable cards counter "a hypothesis is just a guess"</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Apply</li>
+            <li>DOK 2 (students assemble and check a hypothesis, not justify a full design)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Drop-down builder, no free typing required</li>
+            <li>Predict gate before the builder, with immediate feedback</li>
+            <li>Key term defined in place before use</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1680,6 +1711,43 @@ body.stem-active .stem-detail {
     <div class="bridge-callout green">
       <strong>Question → hypothesis → fair test.</strong> Now the experiment is running. But what exactly do you write down while it happens? Time to talk about observations.
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Separate the three variable roles and tie each to a color used lesson-wide.</li>
+            <li>Make students justify why holding controls constant is what makes a test fair.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Comparison and contrast distinguishes independent, dependent, and control roles</li>
+            <li>Error analysis: the predict gate exposes why an uncontrolled factor ruins the test</li>
+            <li>Misconception checking counters "changing more than one variable is okay"</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 to 3 (sorting is 2; justifying why a control keeps the test fair reaches 3)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Consistent color coding for the three roles</li>
+            <li>Sorter gives item-level feedback on each choice</li>
+            <li>Short, parallel role cards</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1756,6 +1824,43 @@ body.stem-active .stem-detail {
     <div class="bridge-callout orange">
       <strong>Observations are what you actually see, measure, hear, or smell.</strong> But scientists do one more thing with their evidence: they figure out what it <em>means</em>. That step has its own name too.
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Distinguish quantitative from qualitative evidence before students collect data.</li>
+            <li>Practice classifying real lab-notebook entries, not just reading the definitions.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Comparison and contrast pairs numbers against sensory descriptions</li>
+            <li>The quantity / quality mnemonic supports retrieval</li>
+            <li>Generation effect: students classify entries themselves</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 (classifying each observation by type)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Two-way sort keeps choices simple</li>
+            <li>Icon and short quote for every item</li>
+            <li>Immediate feedback per entry</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1818,6 +1923,43 @@ body.stem-active .stem-detail {
       </div>
     </div>
 
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Draw the line between what you observe and the conclusion you build from it.</li>
+            <li>Show that stronger observations lead to stronger inferences.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Evidence-based reasoning connects clues to a likely explanation</li>
+            <li>Detective analogy maps inference onto a familiar schema</li>
+            <li>Callback to the opening wet-grass mystery supports elaboration</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 (drawing and distinguishing inferences from given observations)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Predict gate before each reveal</li>
+            <li>Observation and inference shown side by side</li>
+            <li>Concrete everyday examples first</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1860,6 +2002,43 @@ body.stem-active .stem-detail {
       <div class="qr-actions">
         <button class="qr-check" id="qr2Check">Check Answer</button>
         <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Force memory retrieval before the synthesis and quiz, while stakes are zero.</li>
+            <li>Surface a wrong variable or observation/inference choice early enough to fix.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Retrieval practice strengthens memory more than rereading</li>
+            <li>Items apply ideas to a fresh Mentos scenario, not the exact examples taught</li>
+            <li>Try-again loop turns an error into productive struggle</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Remember to Apply</li>
+            <li>DOK 1 to 2 (kept at or below the formal quiz)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Ungraded and low stakes, stated up front</li>
+            <li>Retry button with feedback</li>
+            <li>One short question at a time</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -1946,6 +2125,43 @@ body.stem-active .stem-detail {
 
     <div class="bridge-callout teal">
       <strong>Essential question:</strong> How do scientists turn a curious question into an answer they can trust? If you can answer that using the words hypothesis, independent variable, dependent variable, control variables, observation, and inference, you own this lesson.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Tie question, hypothesis, fair test, observation, and inference into one chain.</li>
+            <li>Map every learning goal to the evidence the student produced.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Schema building connects the separate pieces into one method</li>
+            <li>Coherent narrative returns to the opening eruption to close the loop</li>
+            <li>Summary tables consolidate terms and goals in one place</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2 to 3 (relating the full inquiry sequence as a connected process)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Three labeled beats break the method into steps</li>
+            <li>Scrollable tables for term and goal review</li>
+            <li>Essential question restated for self-check</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -2284,6 +2500,43 @@ body.stem-active .stem-detail {
       <button class="reset-btn" onclick="ceResetQuiz()">Try Again</button>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Measure all four goals, including a brand-new experiment students must analyze.</li>
+            <li>Offer practice mode for self-check and classroom mode for teacher reporting.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Retrieval practice across the whole lesson in one sitting</li>
+            <li>Feedback loops: every item has an answer explanation</li>
+            <li>Transfer items apply the method to unfamiliar scenarios</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Apply</li>
+            <li>DOK 1 to 2 (mixed recall and applied items)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Plausible, evenly placed answer options</li>
+            <li>Answer explanations provided</li>
+            <li>Required name, teacher, and block before classroom submission</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -2379,6 +2632,43 @@ body.stem-active .stem-detail {
         <span class="cont-link">Explore</span>
       </a>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Move the method off the screen into a real or self-designed experiment.</li>
+            <li>Use a peer swap to hunt for an uncontrolled variable in a partner's design.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Transfer applies the full method to a student's own question</li>
+            <li>Error analysis: critiquing a peer design targets weak fair tests</li>
+            <li>Interest-driven extension sustains motivation past the lesson</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Apply to Analyze</li>
+            <li>DOK 2 to 3 (designing an investigation and critiquing a peer's controls)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Optional and self-paced, no penalty for skipping</li>
+            <li>Linked next steps sorted by type and color</li>
+            <li>Challenge restated in plain, concrete steps</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -2394,16 +2684,9 @@ body.stem-active .stem-detail {
   <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
 </footer>
 
-<!-- ===== SESSION TOGGLES (LS + STE bars) ===== -->
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
 <script>
 if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
-if (sessionStorage.getItem('lyfelabz-stem') === 'on') document.body.classList.add('stem-active');
-function toggleStemDetail(id) {
-  const el  = document.getElementById(id);
-  el.classList.toggle('stem-open');
-  const btn = el.querySelector('.stem-show-btn');
-  btn.textContent = el.classList.contains('stem-open') ? '▾ Hide standard descriptions' : '▸ Show standard descriptions';
-}
 </script>
 
 <!-- ===== GLOSSARY CARDS (click to expand only; one open at a time) ===== -->
@@ -2927,5 +3210,26 @@ window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt =
 resize();
 requestAnimationFrame(draw);
 </script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
 </body>
 </html>
