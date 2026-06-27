@@ -173,6 +173,28 @@
   }
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
+  /* ── EDUCATOR MODE NOTES ── */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; margin: 2rem auto 0; padding: 1.4rem 1.8rem 1.6rem;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.18);
+    border-left: 4px solid var(--accent2); border-radius: 16px; max-width: 900px;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+    color: rgba(232,237,242,0.5); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
 
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
@@ -655,6 +677,28 @@
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -704,6 +748,28 @@
         <div class="gc-head"><span class="gc-term">Extinct Volcano</span><span class="gc-chev">&#9662;</span></div>
         <div class="gc-def">A volcano that has moved off its magma source and will not erupt again.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-stages')">See it in the lesson &#8595;</span></div>
       </button>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -773,6 +839,28 @@
     <div class="bridge-callout" style="margin-top: 2rem;">
       <strong>Where we're headed:</strong> First we'll see the few ways volcanoes form, and why Hawaii does not fit the usual pattern. Then we'll meet the hotspot, watch the plate build a chain as it moves, and follow the life of a single island from birth to seamount.
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the lesson in a genuine anomaly students can see on a map.</li><li>Create the curiosity gap the rest of the lesson resolves.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Real-world phenomenon students can look up on any map</li><li>Prediction question is low stakes and ungraded</li><li>Answer is revealed immediately, no waiting</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -811,6 +899,28 @@
 
     <div class="bridge-callout teal" style="margin-top: 0.5rem;">
       <strong>The question that remains:</strong> if there is no boundary under Hawaii to crack and melt the crust, what is providing the heat? The answer comes from far below the plate.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Establish the three ways volcanoes form so hotspots stand out as the exception.</li><li>Build the contrast that makes the Hawaiian anomaly make sense.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison and contrast (three formation types)</li><li>Categorization before deep-dive</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Three parallel cards, each self-contained</li><li>Location label on each card reduces confusion</li><li>Misconception alert: students may think all volcanoes are at boundaries</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -875,6 +985,28 @@
       <div class="name-it-label" style="color: var(--gold);">Name it: Hotspot</div>
       <p>A <strong style="color: var(--gold);">hotspot</strong> is a point on the crust directly above a hot plume in the mantle. Because the plume stays fixed while the plate moves, the hotspot acts like a torch held still under a sheet of moving paper. It keeps burning through in the same spot, even as the surface above it slides by.</p>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Introduce the mantle plume as the heat source beneath the hotspot.</li><li>Establish that the plume is fixed while the plate above it moves.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Concrete analogy (torch held under moving paper)</li><li>Labeled cross-section supports dual coding</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Diagram paired with labeled text description</li><li>Short, parallel definitions for plume and hotspot</li><li>Misconception alert: the hotspot does not move; the plate moves over it</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -938,6 +1070,28 @@
     <div class="callout gold">
       <span class="callout-icon">&#129517;</span>
       <div class="callout-body"><strong>Think of it this way:</strong> hold a candle still and pull a sheet of paper slowly across the flame. The flame stays in one place, but it scorches a line of marks across the moving paper. The hotspot is the flame, the plate is the paper, and the islands are the marks.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Show how a fixed hotspot and a moving plate together produce a chain with an age pattern.</li><li>Give students the reasoning tool to predict island ages from position.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Causal reasoning (fixed source + moving plate = chain)</li><li>Candle-and-paper analogy makes the mechanism concrete</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Diagram with directional arrow reinforces the age pattern</li><li>Familiar analogy before technical description</li><li>Pacing tip: ask students to point to the youngest island before revealing the answer</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1009,6 +1163,28 @@
       <span class="callout-icon">&#127754;</span>
       <div class="callout-body"><strong>Why the chain sinks:</strong> as crust moves away from the hotspot it ages, cools, and becomes more dense. Denser crust rides lower, so the old islands slowly subside. Add millions of years of erosion and an island that once towered above the sea ends up as a seamount hidden below it.</div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Follow a single island through its full life cycle to show the mechanism at human scale.</li><li>Introduce subsidence and seamounts as the natural end of every hotspot island.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Sequential narrative (birth to seamount)</li><li>Interactive click-to-reveal keeps students active</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Labeled cross-section shows all four stages at once</li><li>One stage at a time in the detail panel reduces overload</li><li>Real Hawaiian examples (Loihi, Maui, Kauai) ground the stages</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1069,6 +1245,28 @@
         <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
       </div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions before the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li><li>Productive struggle</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce cognitive load</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1110,6 +1308,28 @@
         <span class="wuc wuc-3">Old islands cool and sink to seamounts</span>
       </div>
       <div style="margin-top: 1rem;">Hawaii is not in the wrong place after all. A fixed hotspot and a moving plate worked together over millions of years to build a chain of islands. That chain is a record of how Earth's surface has changed, from a single volcano to a trail stretching across the Pacific.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening phenomenon directly and completely.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative closure</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Step-by-step beats break the chain into chunks</li><li>Plain causal language throughout</li><li>Chip summary gives a visual map of the full sequence</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1194,6 +1414,28 @@
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear performance signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided for every question</li><li>Practice and classroom modes available</li><li>Plausible distractors, evenly distributed answer positions</li></ul>
+        </div>
+      </div>
+    </div>
 
   </div>
 </section>
@@ -1214,6 +1456,28 @@
           <div class="cont-name">More Coming Soon</div>
           <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
           <span class="coming-soon-tag">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
         </div>
       </div>
     </div>

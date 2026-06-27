@@ -213,6 +213,33 @@
   }
   .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
+  /* ===== DRIVING QUESTION ===== */
+  .driving-question {
+    max-width: 760px;
+    margin: 1.6rem auto 0;
+    padding: 1.1rem 1.6rem;
+    background: rgba(255,193,7,0.06);
+    border: 1px solid rgba(255,193,7,0.22);
+    border-left: 4px solid var(--gold);
+    border-radius: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    box-sizing: border-box;
+    position: relative;
+  }
+  .dq-icon  { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body  { flex: 1; text-align: left; }
+  .dq-label {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(255,193,7,0.8);
+    margin-bottom: 0.3rem;
+  }
+  .dq-text  { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
   /* ===== SECTIONS ===== */
   section { padding: 5rem 2rem; position: relative; scroll-margin-top: 10px; }
   #quiz { scroll-margin-top: 3.1rem; }
@@ -5640,6 +5667,29 @@ buildQuiz();
   align-self: flex-start;
   margin-top: auto;
 }
+
+/* Connections section */
+#connections { background: rgba(20,28,42,0.6); padding-top: 3.5rem; padding-bottom: 5rem; scroll-margin-top: 1.6rem; border-top: 1px solid rgba(255,255,255,0.06); }
+.connections-intro {
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 720px;
+  margin: 0 auto 2rem 0;
+}
+.connections-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+@media (max-width: 600px) {
+  .connections-grid { grid-template-columns: 1fr; }
+}
+.cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+.cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+.cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+.cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+.cont-card.lesson .cont-cat { color: #2dd4bf; }
 </style>
 
 <section id="continue">
@@ -5684,6 +5734,35 @@ buildQuiz();
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="connections-intro">These lessons build on what you just learned about waves.</p>
+
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_wave-behavior.html" aria-label="Wave Behavior lesson">
+        <div class="cont-icon">🔄</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Wave Behavior</div>
+        <div class="cont-desc">Explore what happens when waves reflect, absorb, or pass through different materials.</div>
+        <span class="cont-status" style="background:rgba(20,184,166,0.12); border-color:rgba(20,184,166,0.4); color:#2dd4bf;">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_digital-signals.html" aria-label="Digital Signals lesson">
+        <div class="cont-icon">📡</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Digital Signals</div>
+        <div class="cont-desc">See how waves and patterns can be used to send information.</div>
+        <span class="cont-status" style="background:rgba(20,184,166,0.12); border-color:rgba(20,184,166,0.4); color:#2dd4bf;">Explore</span>
+      </a>
+
+    </div>
   </div>
 </section>
 

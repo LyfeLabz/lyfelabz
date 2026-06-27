@@ -12,9 +12,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="https://lyfelabz.com/lesson_plate-tectonics.html">
-<meta name="description" content="Discover plate tectonics: continental drift evidence, lithospheric plates, seafloor spreading, convection currents, and the three plate boundaries that build mountains and trigger earthquakes and volcanoes. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
-<title>LyfeLabz | Plate Tectonics</title>
+<link rel="canonical" href="https://lyfelabz.com/lesson_reproductive-success.html">
+<meta name="description" content="Explore how characteristic animal behaviors and specialized plant structures increase the probability of successful reproduction. A Grade 7 life science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Reproductive Success</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -173,6 +173,32 @@
   }
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
 
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
@@ -358,10 +384,8 @@
   }
   .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
 
-  /* ── LAYER / BOUNDARY SELECTOR (interactive) ── */
+  /* ── STRATEGY SELECTOR (interactive) ── */
   .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
-  .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
-  .layer-figure svg { width: 100%; height: auto; display: block; }
   .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
   .layer-list { display: flex; flex-direction: column; gap: 4px; }
   .layer-row {
@@ -375,41 +399,49 @@
   .layer-detail-panel {
     background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
     border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
-    min-height: 150px; display: flex; align-items: center;
+    min-height: 150px; display: flex; align-items: center; flex: 1.1; min-width: 280px;
   }
   .ld-inner { width: 100%; }
   .ld-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(159,184,204,0.8); margin-bottom: 0.4rem; }
   .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
   .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
 
-  /* ── CRUST COMPARISON ── */
+  /* ── COMPARE GRID (animal vs plant) ── */
   .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
   @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
   .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
   .crust-card.oceanic { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
-  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .crust-card.continental { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.3); }
   .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
   .crust-card.oceanic .crust-title { color: var(--blue); }
-  .crust-card.continental .crust-title { color: var(--orange); }
-  .crust-bar-track { height: 14px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; margin: 0.7rem 0 0.4rem; }
-  .crust-bar { height: 100%; border-radius: 99px; }
-  .crust-card.oceanic .crust-bar { background: linear-gradient(90deg, var(--blue), rgba(124,200,248,0.5)); width: 16%; }
-  .crust-card.continental .crust-bar { background: linear-gradient(90deg, var(--orange), rgba(232,129,74,0.5)); width: 100%; }
-  .crust-bar-label { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; }
-  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .crust-card.continental .crust-title { color: var(--green); }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.7rem; }
   .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
   .crust-list li strong { color: var(--text); }
   .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
   .crust-card.oceanic .crust-dot { background: var(--blue); }
-  .crust-card.continental .crust-dot { background: var(--orange); }
+  .crust-card.continental .crust-dot { background: var(--green); }
 
-  /* ── CONVECTION / DIAGRAM FIGURE ── */
+  /* ── FIGURE BOX ── */
   .figure-box {
     background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
   }
   .figure-box svg { width: 100%; height: auto; display: block; }
   .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(159,184,204,0.7); margin-top: 0.8rem; }
+
+  /* ── CER GRID ── */
+  .cer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0 0; }
+  @media (max-width: 760px) { .cer-grid { grid-template-columns: 1fr; } }
+  .cer-card { border-radius: 16px; padding: 1.4rem 1.3rem; background: var(--card); border: 1px solid var(--border); }
+  .cer-card.claim    { border-top: 3px solid var(--gold); }
+  .cer-card.evidence { border-top: 3px solid var(--teal); }
+  .cer-card.reason   { border-top: 3px solid var(--blue); }
+  .cer-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .cer-card.claim .cer-label    { color: var(--gold); }
+  .cer-card.evidence .cer-label { color: var(--teal); }
+  .cer-card.reason .cer-label   { color: var(--blue); }
+  .cer-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
 
   /* ── QUICK RECALL ── */
   .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
@@ -597,23 +629,23 @@
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
-  <a href="index.html#geo" class="nav-back">&#8592; Earth &amp; Space</a>
+  <a href="index.html#bio" class="nav-back">&#8592; Life Science</a>
 </nav>
 
 <!-- HERO -->
 <header class="hero">
-  <span class="hero-float">&#127757;</span>
-  <span class="hero-float">&#127755;</span>
-  <span class="hero-float">&#9968;&#65039;</span>
-  <span class="hero-float">&#129517;</span>
+  <span class="hero-float">&#129418;</span>
+  <span class="hero-float">&#127800;</span>
+  <span class="hero-float">&#128038;</span>
+  <span class="hero-float">&#127811;</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Plate Tectonics</h1>
-  <p>Earthquakes and volcanoes do not strike at random. They line up in narrow belts that trace the hidden seams of a cracked, moving planet.</p>
+  <h1>Reproductive Success</h1>
+  <p>A peacock grows a huge, heavy tail and a maple tree drops seeds that spin like helicopters. These are not accidents. They are strategies for passing on life.</p>
   <div class="driving-question">
     <div class="dq-icon">&#128269;</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">Why does Earth's surface move?</div>
+      <div class="dq-text">How do animal behaviors and plant structures raise the chance of successful reproduction?</div>
     </div>
   </div>
 </header>
@@ -621,11 +653,11 @@
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">&#128300; Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes in belts) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
-  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the story into evidence, plates, motion, and boundaries keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
-  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of drift, convection, and boundaries builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (a peacock's tail and spinning maple seeds) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the strategies into small, sequenced sections keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each strategy with diagrams and an interactive selector builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and convection to plate motion and surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+  <span class="ls-badge" data-tip="Argument from evidence: students build a claim, cite evidence, and reason about why traits persist, mirroring authentic science practice. (NRC, 2012)">&#128202; Argument From Evidence</span>
 </div>
 
 
@@ -639,24 +671,24 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
     <div class="goal-grid">
       <div class="goal-card">
-        <span class="goal-icon">&#129499;</span>
-        <div class="goal-text">I can describe the evidence Wegener used to support the idea of continental drift.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#129418;</span>
+        <div class="goal-text">I can explain how characteristic animal behaviors increase the chance of successful reproduction.</div>
+        <span class="goal-std">7.MS-LS1-4</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#128293;</span>
-        <div class="goal-text">I can explain how convection currents in the mantle cause tectonic plates to move.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#127800;</span>
+        <div class="goal-text">I can explain how specialized plant structures increase the chance of successful reproduction.</div>
+        <span class="goal-std">7.MS-LS1-4</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#9968;&#65039;</span>
-        <div class="goal-text">I can compare the three types of plate boundaries and the features they build.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#128202;</span>
+        <div class="goal-text">I can use evidence and scientific reasoning to support an explanation.</div>
+        <span class="goal-std">7.MS-LS1-4</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#127757;</span>
-        <div class="goal-text">I can explain why earthquakes and volcanoes occur in narrow belts rather than randomly.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#9878;&#65039;</span>
+        <div class="goal-text">I can compare different strategies used by plants and animals to reproduce.</div>
+        <span class="goal-std">7.MS-LS1-4</span>
       </div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -694,53 +726,45 @@
     <h2 class="section-title">Words You'll Meet</h2>
     <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
     <div class="glossary-grid">
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Reproductive Success</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">How likely an organism is to produce offspring that survive and go on to reproduce themselves.</div>
+      </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Continental Drift</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The idea that the continents were once joined and have slowly moved to their present positions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-drift')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Adaptation</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A behavior or structure that helps an organism survive and reproduce in its environment.</div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Pangaea</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The single supercontinent that held all of Earth's land about 250 million years ago.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pangaea')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Courtship</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Behavior that helps an animal attract a mate, such as songs, dances, and displays.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-courtship')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Plate Tectonics</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The theory that Earth's outer shell is broken into moving plates, explaining drift, earthquakes, and volcanoes.</div>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Mating Display</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A showy feature or performance used to be noticed and chosen by a mate, like a peacock's tail.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-display')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Lithosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The rigid outer shell of Earth, made of the crust and the upper mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Parental Care</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Behavior that protects and feeds offspring so more of them survive to grow up.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-care')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Asthenosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The soft, slowly flowing part of the upper mantle that the plates float on.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Tectonic Plate</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A large slab of lithosphere that moves slowly over the asthenosphere.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-plate')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Convection Current</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A looping flow of hot mantle rock that rises, cools, and sinks, dragging the plates along.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Seafloor Spreading</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The process where magma rises at a mid-ocean ridge and cools into new ocean floor.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-seafloor')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Territorial Behavior</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Defending an area that holds the food, shelter, or nesting space needed to raise young.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-territory')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Divergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move apart and new crust forms in the gap.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Pollination</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The movement of pollen from one flower to another, which allows seeds to form.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pollination')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Convergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move together, often forming mountains or volcanoes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Pollinator</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An animal, such as a bee or hummingbird, that carries pollen between flowers as it feeds.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pollination')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Transform Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates slide past each other, producing faults and earthquakes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Seed Dispersal</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The spreading of seeds away from the parent plant by wind, water, or animals.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-dispersal')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Subduction</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When a more dense plate sinks beneath a less dense plate at a convergent boundary.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Nectar Guide</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A pattern on a flower, sometimes only visible to insects, that points a pollinator toward the nectar.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pollination')">See it in the lesson &#8595;</span></div>
       </button>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -775,61 +799,66 @@
 <section id="engage" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Engage &middot; Phenomenon</span>
-    <h2 class="section-title">A World That Shakes in Lines</h2>
-    <p class="section-desc">If you mapped every earthquake and volcano from the last hundred years, you would not get a random scatter of dots. You would get long, narrow belts that wrap around the planet, like cracks in a shell.</p>
+    <h2 class="section-title">A Heavy Tail and a Spinning Seed</h2>
+    <p class="section-desc">A peacock's tail is enormous. It takes energy to grow, slows the bird down, and makes it easy for predators to spot. A maple seed is tiny, with a thin wing that makes it spin as it falls. At first these seem like problems, not advantages.</p>
 
     <div class="phenomenon-card">
-      <div class="phenomenon-icon">&#127755;</div>
+      <div class="phenomenon-icon">&#129418;</div>
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
-        <h3>The Ring of Fire</h3>
-        <p>A belt of volcanoes and earthquakes called the Ring of Fire traces the edge of the Pacific Ocean. Other belts run down the middle of the Atlantic and across southern Asia. Most of the world's earthquakes and volcanoes happen along these same lines, year after year. Why would Earth's most violent events follow such a clear pattern?</p>
+        <h3>Strange Traits That Stick Around</h3>
+        <p>If a giant tail is dangerous and a spinning seed is fragile, why do peacocks still grow those tails and maple trees still make those seeds, generation after generation? Traits that waste energy or create danger usually do not last. Yet these have lasted for a very long time. Something about them must help.</p>
       </div>
     </div>
 
-    <!-- Phenomenon figure: belts vs random -->
+    <!-- Phenomenon figure -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A stylized world map showing earthquakes and volcanoes clustered along curved belts rather than spread evenly">
-        <rect x="20" y="20" width="560" height="240" rx="16" fill="#10202e"/>
-        <!-- stylized landmasses -->
-        <path d="M70,90 q40,-30 100,-10 q40,15 20,55 q-30,40 -90,30 q-50,-10 -30,-75 Z" fill="#26323f"/>
-        <path d="M300,70 q70,-20 130,10 q40,25 10,80 q-60,45 -130,15 q-40,-50 -20,-105 Z" fill="#26323f"/>
-        <path d="M180,180 q50,-15 90,15 q15,40 -40,55 q-60,5 -50,-70 Z" fill="#26323f"/>
-        <!-- plate-edge belts (dashed) -->
-        <path d="M40,150 C150,90 250,210 360,140 C440,90 520,170 560,120" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <path d="M120,250 C200,200 240,150 300,60" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <!-- earthquake/volcano markers along belts -->
-        <g fill="#e74c3c">
-          <circle cx="60" cy="142" r="5"/><circle cx="120" cy="120" r="5"/><circle cx="180" cy="150" r="5"/>
-          <circle cx="240" cy="180" r="5"/><circle cx="300" cy="158" r="5"/><circle cx="360" cy="140" r="5"/>
-          <circle cx="420" cy="118" r="5"/><circle cx="480" cy="150" r="5"/><circle cx="540" cy="128" r="5"/>
-          <circle cx="150" cy="225" r="5"/><circle cx="210" cy="180" r="5"/><circle cx="260" cy="120" r="5"/><circle cx="292" cy="78" r="5"/>
+      <svg viewBox="0 0 600 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="On the left a peacock displays a large fan of tail feathers; on the right a winged maple seed spins as it falls from a branch">
+        <!-- peacock side -->
+        <g>
+          <path d="M150,150 C90,90 120,40 150,55 C170,30 200,40 195,75 C235,55 250,95 210,120 C250,140 235,185 195,165 C200,200 165,205 150,175 C120,200 95,165 130,140 C95,150 100,110 150,150 Z" fill="#1f6f6f" opacity="0.55"/>
+          <circle cx="150" cy="65" r="9" fill="#3ddc84"/><circle cx="195" cy="95" r="9" fill="#1de9b6"/>
+          <circle cx="200" cy="155" r="9" fill="#3ddc84"/><circle cx="120" cy="135" r="9" fill="#1de9b6"/>
+          <ellipse cx="150" cy="160" rx="16" ry="26" fill="#2a3a52"/>
+          <circle cx="150" cy="138" r="11" fill="#2a3a52"/>
+          <path d="M150,128 L150,116" stroke="#2a3a52" stroke-width="3"/>
+          <text x="150" y="225" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">Peacock display</text>
         </g>
-        <text x="300" y="252" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">Red marks = earthquakes &amp; volcanoes. Dashed lines = where they line up.</text>
+        <!-- maple seed side -->
+        <g>
+          <path d="M430,40 L470,40" stroke="#6a7d52" stroke-width="4"/>
+          <path d="M450,55 C430,45 405,55 400,75 C420,80 445,72 450,58 Z" fill="#c9a45a"/>
+          <ellipse cx="452" cy="62" rx="6" ry="9" fill="#8a6a32"/>
+          <path d="M452,72 C448,110 470,140 458,170" fill="none" stroke="#7a8fa6" stroke-width="2" stroke-dasharray="4 5"/>
+          <path d="M448,150 C426,140 401,150 396,170 C416,175 441,167 446,153 Z" fill="#c9a45a" opacity="0.85"/>
+          <ellipse cx="450" cy="157" rx="6" ry="9" fill="#8a6a32"/>
+          <text x="450" y="225" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">Maple seed spins down</text>
+        </g>
+        <text x="300" y="120" text-anchor="middle" font-size="26" fill="#7a8fa6">?</text>
       </svg>
-      <div class="figure-caption">The dots are not scattered everywhere. They follow the dashed seams that crisscross the globe.</div>
+      <div class="figure-caption">Two very different living things, two strange traits, and one shared puzzle: how do these help the organism reproduce?</div>
     </div>
 
     <!-- Prediction gate -->
     <div class="question-pause predict-pause" id="qp-engage">
       <div class="qp-row">
         <span class="question-pause-icon">&#129300;</span>
-        <div class="question-pause-text"><strong>Make a prediction:</strong> Why do earthquakes and volcanoes line up in narrow belts instead of spreading out evenly across Earth?</div>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Why would a costly, risky trait like a giant tail or a fragile spinning seed last across many generations?</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn"><span class="pb-letter">A</span>Earth's surface is one solid shell that cracks in random spots.</button>
-        <button class="predict-btn"><span class="pb-letter">B</span>Earth's surface is broken into moving plates, and the edges are where the action happens.</button>
-        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes and volcanoes happen everywhere equally; the belts are a coincidence.</button>
+        <button class="predict-btn"><span class="pb-letter">A</span>The traits are just random and have no purpose.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>The traits help the organism reproduce, so they get passed on.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>The traits make the organism live longer with no other effect.</button>
       </div>
     </div>
 
     <div class="name-it slate-it predict-gated" data-gate="qp-engage">
       <div class="name-it-label">Here's the big idea</div>
-      <p>The best answer is <strong>B</strong>. Earth's outer shell is not one piece. It is cracked into giant slabs called plates that slowly move. The belts of earthquakes and volcanoes trace the edges where plates meet, pull apart, or grind past one another. To understand the pattern at the surface, we have to understand the plates and what moves them. That is where this lesson goes next.</p>
+      <p>The best answer is <strong>B</strong>. A trait does not have to make an animal safer or a seed sturdier to last. It only has to help the organism leave behind offspring. A peacock's tail attracts mates. A spinning seed travels far from the parent. Both raise the chance of producing the next generation, so the trait gets passed down. That is what this lesson is about.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2rem;">
-      <strong>Where we're headed:</strong> First we'll meet the scientist who noticed the continents fit together. Then we'll see what the plates are, what pushes them, and what happens at the boundaries where they meet.
+      <strong>Where we're headed:</strong> First we'll define what reproductive success really means. Then we'll explore the behaviors animals use and the structures plants grow, and finally build an argument from evidence to explain why a strange trait like the peacock's tail persists.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -837,7 +866,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Anchor the lesson in a striking real-world pattern.</li><li>Raise a question students will want answered.</li></ul>
+          <ul class="edu-note-text"><li>Anchor the lesson in a real, puzzling phenomenon.</li><li>Raise a question students will want answered.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -849,7 +878,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Concrete visual pattern (belts on a map)</li><li>Short framing text</li><li>Prediction question is low stakes and ungraded</li></ul>
+          <ul class="edu-note-text"><li>Concrete, familiar examples</li><li>Short framing text</li><li>Visual anchor</li></ul>
         </div>
       </div>
     </div>
@@ -858,128 +887,38 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     REVIEW PREVIOUS LEARNING (bridge between Engage and Explore)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="review-prev" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Review Previous Learning</span>
-    <h2 class="section-title">Need a Refresher?</h2>
-    <p class="section-desc">This lesson builds on ideas you may have seen before.</p>
-
-    <div class="content-card">
-      <div class="card-header">
-        <div class="card-title">Continental Drift (Grade 6)</div>
-      </div>
-      <p>Wegener used fossils, matching rock layers, climate clues, and the fit of continents to propose that Earth's continents were once connected. Reviewing this evidence will help explain why scientists accepted plate tectonics.</p>
-      <a href="lesson_continental-drift.html" style="display: inline-block; margin-top: 1.4rem; background: var(--gold); color: var(--dark); font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.03em; text-decoration: none; padding: 0.85rem 1.8rem; border-radius: 12px; transition: transform 0.15s, box-shadow 0.15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px var(--gold-glow)';" onmouseout="this.style.transform='';this.style.boxShadow='';">Review Lesson &rarr;</a>
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Bridge from Grade 6 continental drift to plate tectonics.</li><li>Prevent knowledge gaps before new content begins.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Prior knowledge activation</li><li>Schema priming</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember</li><li>DOK 1</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Optional review, no new content required</li><li>Single clear link, no navigation pressure</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1: CONTINENTAL DRIFT (Wegener's evidence)
+     EXPLORE 1: WHAT REPRODUCTIVE SUCCESS MEANS
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="explore" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The First Clue</span>
-    <h2 class="section-title">The Continents That Fit Together</h2>
-    <p class="section-desc">Long before anyone talked about plates, one scientist looked at a map and noticed something strange: the continents looked like pieces of a torn puzzle.</p>
-
-    <div id="term-drift" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129489;&#8205;&#127891;</span>
-        <div class="card-title">Wegener's Big Idea</div>
-      </div>
-      <div class="card-body">
-        <p>In 1912, a German scientist named <strong>Alfred Wegener</strong> proposed the idea of <span class="vocab">continental drift</span>. He claimed the continents are slowly moving, and that about 250 million years ago they were all joined into one giant supercontinent.</p>
-        <p>He named that supercontinent <strong>Pangaea</strong>, meaning "all land." Wegener knew that the way the coastlines fit together was a clue, but a good fit alone is not proof. So he went looking for real evidence.</p>
-      </div>
-    </div>
-
-    <div id="term-pangaea" class="name-it orange-it">
-      <div class="name-it-label">Name it: Pangaea</div>
-      <p><strong>Pangaea</strong> was a single supercontinent that held all of Earth's land roughly 250 million years ago. Over millions of years it broke apart, and the pieces drifted into the continents we know today.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Wegener gathered four kinds of evidence. No single clue was enough on its own, but together they told a powerful story.</p>
-
-    <div class="example-grid">
-      <div class="example-chip"><span class="example-chip-icon">&#129460;</span><span>Fossils</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#10052;&#65039;</span><span>Climate</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#9968;&#65039;</span><span>Mountains</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#129522;</span><span>Magnetite</span></div>
-    </div>
+    <span class="section-label">Explore &middot; The Big Idea</span>
+    <h2 class="section-title">What Counts as Success?</h2>
+    <p class="section-desc">Before we look at tails and seeds, we need to be clear about what "success" means in biology. It is not about being the biggest, fastest, or strongest. It is about the next generation.</p>
 
     <div class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#129460;</span>
-        <div class="card-title">Fossil Clues</div>
+        <span class="card-icon">&#127793;</span>
+        <div class="card-title">Success Means Offspring</div>
       </div>
       <div class="card-body">
-        <p>Fossils of the same plant and animal species turned up on continents now separated by thousands of miles of ocean. One example is <em>Glossopteris</em>, a fern-like plant found across South America, Africa, India, and Antarctica.</p>
-        <p>Its seeds were too heavy to drift across an ocean without being destroyed, and the small land animals found with it could not have swum that far. The simplest explanation is that the land was once connected.</p>
+        <p>Every living thing faces the same challenge: producing offspring that survive long enough to reproduce themselves. An organism that leaves behind many surviving offspring has passed its traits on. One that leaves none has not.</p>
+        <p>This is why a trait can be costly and still last. As long as it helps an organism reproduce more than others around it, that trait gets passed to the next generation again and again.</p>
       </div>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#10052;&#65039;</span>
-        <div class="card-title">Climate Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Wegener found scratches carved by ancient glaciers on rocks in places that are warm today, like parts of Africa and India. He also found fossils of tropical swamp plants in Antarctica and on islands far to the north.</p>
-        <p>A continent cannot be frozen and tropical at the same time. But if those lands once sat in very different positions, the climate clues suddenly make sense. The southern continents fit together into a region scientists call <strong>Gondwanaland</strong>.</p>
-      </div>
+    <div id="term-success" class="name-it" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Reproductive Success</div>
+      <p><strong style="color: var(--gold);">Reproductive success</strong> is how likely an organism is to produce offspring that survive and go on to reproduce. Behaviors and structures that raise this chance tend to become more common over time.</p>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#9968;&#65039;</span>
-        <div class="card-title">Rock and Mountain Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Mountain ranges on different continents line up and contain rocks of the same age and chemistry. The Caledonian Mountains in northwestern Europe match the Appalachian Mountains along the east coast of the United States.</p>
-        <p>Put the continents back together and these ranges form one continuous belt, like a sentence torn across two pages. Rock types and the shapes of the continental shelves match across the ocean as well.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129522;</span>
-        <div class="card-title">Magnetite Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Some rocks contain <strong>magnetite</strong>, a magnetic iron-oxide mineral and the most magnetic mineral found in nature. When melted rock cools, magnetite crystals line up with Earth's magnetic field and lock in that direction, like tiny frozen compass needles.</p>
-        <p>Rocks of the same age on far-apart continents recorded matching magnetic patterns. That match only makes sense if the rocks formed side by side and later moved apart.</p>
-      </div>
+    <div id="term-adaptation" class="name-it slate-it">
+      <div class="name-it-label">Key idea: Adaptation</div>
+      <p>An <strong>adaptation</strong> is a behavior or structure that helps an organism survive and reproduce in its environment. A peacock's tail is a structure. A bird's courtship dance is a behavior. Both are adaptations because they raise reproductive success.</p>
     </div>
 
     <div class="callout gold">
-      <span class="callout-icon">&#9888;&#65039;</span>
-      <div class="callout-body"><strong>The missing piece:</strong> Wegener's evidence was strong, but most scientists rejected his idea for decades. The reason was simple: he could not explain what force could possibly move something as huge as a continent. That answer was still hidden deep inside Earth.</div>
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The key pattern:</strong> Animals tend to rely on <strong>behaviors</strong>, and plants, which cannot move, tend to rely on <strong>structures</strong>. Both are solving the same problem: how to reproduce successfully.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -987,19 +926,19 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Establish the historical puzzle that drove the theory.</li><li>Show how multiple lines of evidence accumulate into a claim.</li></ul>
+          <ul class="edu-note-text"><li>Define reproductive success before examples.</li><li>Frame behaviors and structures as two solutions to one problem.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Evidence-based reasoning</li><li>Narrative structure (hero, evidence, unsolved mystery)</li></ul>
+          <ul class="edu-note-text"><li>Schema building</li><li>Defining the core concept first</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 1 to 2</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Four parallel evidence cards, each self-contained</li><li>Short paragraphs with bolded key ideas</li><li>Misconception alert: Wegener was rejected for lack of mechanism, not bad evidence</li></ul>
+          <ul class="edu-note-text"><li>Plain definitions in place</li><li>One clear organizing pattern</li><li>Short paragraphs</li></ul>
         </div>
       </div>
     </div>
@@ -1008,57 +947,49 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2: LITHOSPHERIC PLATES
+     EXPLORE 2: STRATEGY SELECTOR (interactive)
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="plates" style="background: var(--dark2);">
+<section id="strategies" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Plates</span>
-    <h2 class="section-title">A Cracked Shell That Floats</h2>
-    <p class="section-desc">The breakthrough came from understanding Earth's layers. The continents do not plow through the ocean floor on their own. They ride on top of giant moving slabs.</p>
+    <span class="section-label">Explore &middot; Strategies</span>
+    <h2 class="section-title">Six Ways to Win at Reproduction</h2>
+    <p class="section-desc">Living things have many strategies for passing on life. Click each one to see how it raises the chance of successful reproduction.</p>
 
-    <div id="term-litho" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129513;</span>
-        <div class="card-title">The Lithosphere Rides the Asthenosphere</div>
-      </div>
-      <div class="card-body">
-        <p>The <span class="vocab">lithosphere</span> is Earth's rigid outer shell, made of the crust plus the upper part of the mantle. It is not one solid piece. It is cracked into many large slabs called <strong>tectonic plates</strong>.</p>
-        <p>Just below sits the <span class="vocab">asthenosphere</span>, a hotter, softer part of the mantle that slowly flows like thick putty. The plates float and slide on the asthenosphere the way rafts drift on the surface of a pool.</p>
-      </div>
-    </div>
-
-    <div id="term-plate" class="name-it slate-it">
-      <div class="name-it-label">Name it: Tectonic Plate</div>
-      <p>A <strong>tectonic plate</strong> is a large slab of lithosphere that moves slowly over the asthenosphere. Most plates carry both ocean floor and continents, so the continents move because the plates they sit on move.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Plates are not all the same, because the crust they carry comes in two kinds. The difference in density will matter a lot at the boundaries.</p>
-
-    <div class="crust-grid">
-      <div class="crust-card oceanic">
-        <div class="crust-title">Oceanic Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thinnest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>basalt</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thinnest</strong> and <strong>most dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Sinks when it meets lighter crust</span></li>
-        </ul>
-      </div>
-      <div class="crust-card continental">
-        <div class="crust-title">Continental Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thickest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>granite</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thickest</strong> and <strong>least dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Rides high and does not sink easily</span></li>
-        </ul>
+    <div class="layer-wrap">
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(232,129,74,0.30); color: #f2b86a;" onclick="stratClick(1)">
+            <span>1 &middot; Courtship</span><span class="layer-tag">animal behavior</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.30); color: #f2b86a;" onclick="stratClick(2)">
+            <span>2 &middot; Mating Displays</span><span class="layer-tag">animal behavior</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.30); color: #f2b86a;" onclick="stratClick(3)">
+            <span>3 &middot; Parental Care</span><span class="layer-tag">animal behavior</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.30); color: #f2b86a;" onclick="stratClick(4)">
+            <span>4 &middot; Territorial Behavior</span><span class="layer-tag">animal behavior</span>
+          </div>
+          <div class="layer-row" style="background: rgba(61,220,132,0.28); color: #7ee6a8;" onclick="stratClick(5)">
+            <span>5 &middot; Pollination</span><span class="layer-tag">plant structure</span>
+          </div>
+          <div class="layer-row" style="background: rgba(61,220,132,0.28); color: #7ee6a8;" onclick="stratClick(6)">
+            <span>6 &middot; Seed Dispersal</span><span class="layer-tag">plant structure</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="ld-label">Click a strategy</div>
+            <div class="ld-title" id="ld-title">Start anywhere &#8594;</div>
+            <div class="ld-body" id="ld-body">Some strategies are behaviors that animals perform. Others are structures that plants grow. Click any strategy to see how it helps an organism reproduce successfully.</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="bridge-callout teal">
-      <strong>Hold on to the density rule:</strong> oceanic crust is more dense than continental crust. When two plates meet, the heavier oceanic crust tends to sink beneath the lighter continental crust. That single rule will explain a lot of what happens at boundaries.
+    <div class="callout slate">
+      <span class="callout-icon">&#128202;</span>
+      <div class="callout-body"><strong>A clear pattern:</strong> The first four strategies are <strong>behaviors</strong> used mostly by animals. The last two are <strong>structures</strong> grown by plants. Both kinds raise the chance of producing surviving offspring.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1066,11 +997,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Give students the moving-parts vocabulary before explaining what moves them.</li><li>Establish the density rule that drives subduction.</li></ul>
+          <ul class="edu-note-text"><li>Give an overview of all strategies before the deep dives.</li><li>Sort strategies into behaviors and structures.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Concrete analogy (rafts on a pool)</li><li>Contrast pairs (oceanic vs continental crust)</li></ul>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Active exploration</li><li>Categorization</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1078,7 +1009,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Side-by-side crust comparison cards</li><li>Visual density bars support non-verbal learners</li><li>Misconception alert: plates are not just continents; most carry ocean floor too</li></ul>
+          <ul class="edu-note-text"><li>Click to reveal, no hover</li><li>Color-coded behavior vs structure</li><li>One detail shown at a time</li></ul>
         </div>
       </div>
     </div>
@@ -1087,67 +1018,62 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3: WHAT MOVES THE PLATES (convection + seafloor spreading)
+     EXPLORE 3: ANIMAL BEHAVIORS
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="motion" style="background: var(--dark);">
+<section id="animals" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Engine</span>
-    <h2 class="section-title">What Pushes the Plates?</h2>
-    <p class="section-desc">This is the answer Wegener was missing. The force that moves whole continents comes from heat deep inside Earth, the same heat that drives everything from the inside out.</p>
+    <span class="section-label">Explore &middot; Animal Behaviors</span>
+    <h2 class="section-title">How Behavior Helps Animals Reproduce</h2>
+    <p class="section-desc">Animals can move, so many of their reproductive strategies are behaviors. These behaviors help them find a mate, win a mate, defend a place to raise young, and keep their offspring alive.</p>
 
-    <div id="term-convection" class="content-card">
+    <div id="term-courtship" class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#128293;</span>
-        <div class="card-title">Convection Currents in the Mantle</div>
+        <span class="card-icon">&#127925;</span>
+        <div class="card-title">Courtship: Finding and Winning a Mate</div>
       </div>
       <div class="card-body">
-        <p>The mantle is extremely hot near the bottom and cooler near the top. Hot rock is less dense, so it slowly rises toward the surface. As it nears the top it cools, becomes more dense, and sinks back down. This endless loop is a <span class="vocab">convection current</span>.</p>
-        <p>These currents flow beneath the lithosphere and drag the plates along, like crackers riding on slowly boiling soup. <strong>The movement of mantle rock creates the movement of the plates above it.</strong></p>
+        <p><span class="vocab">Courtship</span> is behavior that helps an animal attract a mate. A male songbird sings to announce that he is healthy and ready to reproduce. Some frogs call across a pond, and some spiders dance. These signals help individuals find each other and choose a strong partner.</p>
+        <p>Stronger, healthier animals often give the best signals. By choosing them, a mate raises the chance that their offspring will be healthy too.</p>
       </div>
     </div>
 
-    <!-- Convection figure -->
-    <div class="figure-box">
-      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Convection currents in the mantle: hot rock rises in the middle, spreads sideways, and sinks at the edges, pushing two plates apart at the surface">
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="#7a3a2a" opacity="0.85"/>
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="url(#mantleGrad)"/>
-        <defs>
-          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.1"/>
-          </linearGradient>
-        </defs>
-        <rect x="40" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <rect x="320" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <text x="150" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <text x="450" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <path d="M400,210 C400,160 340,150 310,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <defs>
-          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd27a"/></marker>
-        </defs>
-        <text x="300" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">Hot rock rises in the middle, cools, and sinks at the sides</text>
-      </svg>
-      <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
+    <div id="term-display" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129418;</span>
+        <div class="card-title">Mating Displays: Standing Out</div>
+      </div>
+      <div class="card-body">
+        <p>A <span class="vocab">mating display</span> is a showy feature or performance used to be noticed and chosen. A peacock fans his huge, colorful tail. A male frigate bird puffs out a bright red throat pouch. These displays are costly, but they show a mate that the animal is strong enough to survive while carrying them.</p>
+        <div class="callout gold">
+          <span class="callout-icon">&#128161;</span>
+          <div class="callout-body"><strong>Why the peacock's tail persists:</strong> Peahens tend to choose males with the largest, brightest tails. Those males reproduce more, so the trait is passed on, even though the tail is heavy and easy to spot.</div>
+        </div>
+      </div>
     </div>
 
-    <div id="term-seafloor" class="name-it teal-it">
-      <div class="name-it-label">Name it: Seafloor Spreading</div>
-      <p>Where plates pull apart under the ocean, rising magma fills the gap and cools into brand new ocean floor. This is called <strong>seafloor spreading</strong>. It builds a long underwater mountain chain called a mid-ocean ridge, and the seafloor is youngest right at the ridge and older farther away.</p>
+    <div id="term-care" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128039;</span>
+        <div class="card-title">Parental Care: Keeping Offspring Alive</div>
+      </div>
+      <div class="card-body">
+        <p><span class="vocab">Parental care</span> is behavior that protects and feeds offspring so more of them survive. An emperor penguin balances its egg on its feet through the freezing Antarctic winter. Wolves hunt and bring food back to their pups. Robins guard the nest and feed their chicks.</p>
+        <p>Animals that care for their young usually have fewer offspring, but a much larger share survive to grow up and reproduce.</p>
+      </div>
     </div>
 
-    <div class="callout slate">
-      <span class="callout-icon">&#129522;</span>
-      <div class="callout-body"><strong>Magnetite returns:</strong> as new seafloor cools at a ridge, magnetite minerals record the direction of Earth's magnetic field. The field flips over time, leaving matching, mirror-image stripes on both sides of the ridge. Those symmetric stripes are powerful proof that the seafloor is spreading.</div>
+    <div id="term-territory" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128293;</span>
+        <div class="card-title">Territorial Behavior: Defending a Place</div>
+      </div>
+      <div class="card-body">
+        <p><span class="vocab">Territorial behavior</span> means defending an area that holds the food, shelter, or nesting space needed to raise young. A male cardinal sings from the edge of his territory and chases off rivals. Deer mark and defend their range. By holding good space, an animal gives its future offspring a better start.</p>
+      </div>
     </div>
 
-    <div class="bridge-callout teal" style="margin-top: 0.5rem;">
-      <strong>The mystery solved:</strong> convection currents are the engine Wegener could not find. Heat drives the mantle to flow, the flow moves the plates, and the plates carry the continents. Now we can look at exactly what happens where two plates meet.
+    <div class="bridge-callout teal">
+      <strong>Notice the through-line:</strong> Every one of these behaviors does the same job. Each one raises the chance that an animal will produce offspring that survive and reproduce.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1155,19 +1081,19 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Answer Wegener's missing piece: what actually moves the plates.</li><li>Establish the causal chain before showing what it produces at boundaries.</li></ul>
+          <ul class="edu-note-text"><li>Address the animal-behavior half of the standard.</li><li>Connect each behavior to reproductive success.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Causal reasoning (heat to flow to plate motion)</li><li>Labeled diagram supports dual coding</li></ul>
+          <ul class="edu-note-text"><li>Worked examples</li><li>Cause-and-effect reasoning</li><li>Repeated through-line for coherence</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Boiling-water analogy makes convection concrete</li><li>Short paragraphs with key terms bolded in place</li><li>Misconception alert: the asthenosphere flows like thick putty, not liquid lava</li></ul>
+          <ul class="edu-note-text"><li>One behavior per card</li><li>Familiar animal examples</li><li>Short, parallel structure</li></ul>
         </div>
       </div>
     </div>
@@ -1176,69 +1102,52 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 4: PLATE BOUNDARIES (interactive)
+     EXPLORE 4: PLANT STRUCTURES
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="boundaries-sec" style="background: var(--dark2);">
+<section id="plants" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Boundaries</span>
-    <h2 class="section-title">Where Plates Meet</h2>
-    <p class="section-desc">Almost all of Earth's earthquakes and volcanoes happen at plate boundaries. There are three types, sorted by how the plates move. Open each one to see what it builds.</p>
+    <span class="section-label">Explore &middot; Plant Structures</span>
+    <h2 class="section-title">How Structures Help Plants Reproduce</h2>
+    <p class="section-desc">Plants cannot move to find a mate or carry their seeds. Instead, they grow specialized structures that get other forces, like animals, wind, and water, to do the work for them.</p>
 
-    <div id="term-boundaries" class="layer-wrap">
-      <div class="layer-figure">
-        <svg viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three plate boundary types: divergent plates moving apart, convergent plates colliding with one sinking, and transform plates sliding past each other">
-          <!-- Divergent -->
-          <text x="10" y="22" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Divergent</text>
-          <rect x="20" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <rect x="145" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <path d="M118,43 L96,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M142,43 L164,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M130,56 L130,86" stroke="#ffb347" stroke-width="6" stroke-linecap="round"/>
-          <!-- Convergent -->
-          <text x="10" y="122" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Convergent</text>
-          <rect x="20" y="130" width="110" height="24" rx="3" fill="#9a5e3a"/>
-          <path d="M130,142 L155,142 L185,170 Z" fill="#7cc8f8"/>
-          <rect x="150" y="130" width="90" height="14" rx="3" fill="#7cc8f8"/>
-          <path d="M138,140 L120,140" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M150,127 L168,127" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M40,130 L52,112 L64,130 Z" fill="#8a9a6a"/>
-          <!-- Transform -->
-          <text x="10" y="222" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Transform</text>
-          <rect x="20" y="230" width="100" height="40" rx="3" fill="#6a7d52"/>
-          <rect x="140" y="230" width="100" height="40" rx="3" fill="#5a6e44"/>
-          <line x1="130" y1="226" x2="130" y2="274" stroke="#1a1410" stroke-width="3"/>
-          <path d="M70,222 L70,210" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M190,278 L190,290" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <defs>
-            <marker id="bh" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          </defs>
-        </svg>
+    <div id="term-pollination" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127802;</span>
+        <div class="card-title">Flowers: Built to Be Pollinated</div>
       </div>
-      <div class="layer-controls">
-        <div class="layer-list">
-          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9be8bb;" onclick="boundaryClick(1)">
-            <span>1 &middot; Divergent</span><span class="layer-tag">plates move apart</span>
-          </div>
-          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b88a;" onclick="boundaryClick(2)">
-            <span>2 &middot; Convergent</span><span class="layer-tag">plates collide</span>
-          </div>
-          <div class="layer-row" style="background: rgba(124,200,248,0.26); color: #aed8f8;" onclick="boundaryClick(3)">
-            <span>3 &middot; Transform</span><span class="layer-tag">plates slide past</span>
-          </div>
-        </div>
-        <div class="layer-detail-panel">
-          <div class="ld-inner">
-            <div class="ld-label" id="bd-label">Open a boundary</div>
-            <div class="ld-title" id="bd-title">Three ways plates meet &#8594;</div>
-            <div class="ld-body" id="bd-body">Each boundary type moves in a different way, so each one builds different features at the surface. Open any boundary to see how the plates move and what they create.</div>
-          </div>
+      <div class="card-body">
+        <p>For most plants, seeds can only form after <span class="vocab">pollination</span>, the movement of pollen from one flower to another. Many flowers attract a <span class="vocab">pollinator</span> with bright color, sweet scent, and sugary nectar. As a bee or hummingbird feeds, pollen sticks to its body and rides to the next flower.</p>
+        <p>Some flowers even have a <span class="vocab">nectar guide</span>, a pattern that points the pollinator toward the nectar. Other plants skip animals entirely. Grasses release huge clouds of light pollen that the wind carries from plant to plant.</p>
+        <div class="callout gold">
+          <span class="callout-icon">&#128161;</span>
+          <div class="callout-body"><strong>Why hummingbird flowers are often red:</strong> Birds see red well, so a bright red flower stands out to them. The color attracts the pollinator that will carry its pollen, which raises the chance that seeds will form.</div>
         </div>
       </div>
     </div>
 
-    <div class="callout teal">
-      <span class="callout-icon">&#9889;</span>
-      <div class="callout-body"><strong>Why the belts exist:</strong> the plate boundaries are exactly the lines you saw on the map. Divergent ridges, convergent trenches and volcanoes, and transform faults are where the crust cracks, melts, and slips, so that is where earthquakes and volcanoes cluster.</div>
+    <div id="term-dispersal" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127809;</span>
+        <div class="card-title">Fruits and Seeds: Built to Travel</div>
+      </div>
+      <div class="card-body">
+        <p>Once seeds form, a plant faces a new problem. If every seed sprouts right under the parent, the young plants crowd together and compete for light and water. <span class="vocab">Seed dispersal</span> spreads seeds away from the parent so more of them can grow.</p>
+        <p>Different structures move seeds in different ways. A maple seed has a thin wing that makes it spin and glide on the wind. A berry is a sweet fruit that an animal eats, carrying the seeds to a new place. A burr has tiny hooks that grab onto fur. A coconut has a tough, floating shell that can drift across the ocean to a new shore.</p>
+      </div>
+    </div>
+
+    <h3 style="font-family: 'Fredoka One', cursive; font-size: 1.4rem; margin: 2.5rem 0 0.6rem; color: var(--text);">Protecting the Next Generation</h3>
+    <p class="section-desc" style="margin-bottom: 1.4rem;">Some structures do not attract or spread. They protect, so that seeds survive long enough to sprout.</p>
+
+    <div class="example-grid">
+      <div class="example-chip"><span class="example-chip-icon">&#127794;</span><span>Thick seed coats shield the seed inside</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127807;</span><span>Hard shells guard nuts from being eaten</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#127797;</span><span>Spines and thorns keep animals away</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#129003;</span><span>Sweet fruit rewards animals that spread seeds</span></div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Same goal, different tools:</strong> A flower's color, a seed's wing, and a tough shell all do for plants what songs, displays, and care do for animals. Each structure raises the chance that the plant leaves behind offspring.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1246,19 +1155,19 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Connect plate motion to surface features students can observe.</li><li>Answer the opening phenomenon: why earthquakes and volcanoes form belts.</li></ul>
+          <ul class="edu-note-text"><li>Address the plant-structure half of the standard.</li><li>Connect each structure to reproductive success.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Comparison and contrast (three boundary types)</li><li>Dual coding with interactive diagram</li></ul>
+          <ul class="edu-note-text"><li>Worked examples</li><li>Compare-and-contrast with animal behaviors</li><li>Cause-and-effect reasoning</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Click to reveal one boundary at a time reduces load</li><li>Misconception alert: students often mix up which boundary produces mountains vs trenches vs rift valleys</li><li>Pause and have students predict the feature before revealing</li></ul>
+          <ul class="edu-note-text"><li>One structure per card or chip</li><li>Familiar plant examples</li><li>Visual chips for protective structures</li></ul>
         </div>
       </div>
     </div>
@@ -1278,11 +1187,11 @@
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">Wegener's idea of continental drift was rejected for decades. What was missing from his explanation?</div>
+      <div class="qr-q" id="qr1Q">A male bird performs an elaborate dance and song to attract a female. What is this behavior called?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>He had no fossil evidence at all</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>He could not explain what force could move a continent</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>No one believed Pangaea had ever existed</span></label>
+        <label><input type="radio" name="qr1" value="0"><span>Parental care</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>A courtship behavior</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Seed dispersal</span></label>
       </div>
       <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1294,11 +1203,11 @@
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">The tectonic plates float and slide on which layer of Earth?</div>
+      <div class="qr-q" id="qr2Q">Why do many flowers grow bright petals and produce sweet scent and nectar?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>The solid inner core</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>The brittle surface crust</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>The soft, flowing asthenosphere</span></label>
+        <label><input type="radio" name="qr2" value="0"><span>To attract pollinators that carry pollen between flowers</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>To frighten away every insect that lands</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>To make their seeds heavier</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1310,11 +1219,11 @@
     <div class="qr-card" id="qrCard3">
       <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr3Q">Two plates grind past each other along the San Andreas Fault. What does this transform boundary mainly produce?</div>
+      <div class="qr-q" id="qr3Q">A coconut floats across the ocean and sprouts on a new island. What does this show?</div>
       <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
-        <label><input type="radio" name="qr3" value="0"><span>Earthquakes</span></label>
-        <label><input type="radio" name="qr3" value="1"><span>Brand new seafloor</span></label>
-        <label><input type="radio" name="qr3" value="2"><span>Tall volcanoes</span></label>
+        <label><input type="radio" name="qr3" value="0"><span>Parental care</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>A mating display</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Seed dispersal to a new place</span></label>
       </div>
       <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1328,7 +1237,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions before the quiz.</li></ul>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1340,7 +1249,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce cognitive load</li></ul>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
         </div>
       </div>
     </div>
@@ -1354,37 +1263,37 @@
 <section id="explain" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Explain &middot; Wrap-Up</span>
-    <h2 class="section-title">From Deep Heat to Moving Ground</h2>
-    <p class="section-desc">You started with a question: why does Earth's surface move, and why do earthquakes and volcanoes line up in belts? Now you can trace the whole chain, step by step.</p>
+    <h2 class="section-title">Behaviors and Structures, One Goal</h2>
+    <p class="section-desc">You started with a puzzle: why do peacocks grow heavy tails and maple trees make spinning seeds? Now you can trace the answer through both halves of the living world.</p>
 
     <div class="wrapup-beats">
       <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">It Starts With Heat</div>
-        <div class="wrapup-beat-answer">Heat inside Earth keeps the mantle slowly flowing.</div>
-        <div class="wrapup-beat-body">Hot rock is less dense, so it rises, cools, and sinks in <strong>convection currents</strong>. This is the engine Wegener was missing.</div>
+        <div class="wrapup-beat-label">Animals Use Behavior</div>
+        <div class="wrapup-beat-answer">Courtship, displays, territory, and care help animals reproduce.</div>
+        <div class="wrapup-beat-body">Because animals can move, they perform <strong>behaviors</strong> to attract mates, defend space, and protect young, which raises the chance offspring survive.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">Heat Becomes Motion</div>
-        <div class="wrapup-beat-answer">Convection drags the plates, and the plates carry the continents.</div>
-        <div class="wrapup-beat-body">The flowing mantle moves the <strong>tectonic plates</strong> of the lithosphere. New seafloor forms where they pull apart, which is why the continents drift over time.</div>
+        <div class="wrapup-beat-label">Plants Use Structure</div>
+        <div class="wrapup-beat-answer">Flowers, fruits, and seed structures help plants reproduce.</div>
+        <div class="wrapup-beat-body">Because plants cannot move, they grow <strong>structures</strong> that attract pollinators, spread seeds, and protect the next generation.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">Motion Reaches the Surface</div>
-        <div class="wrapup-beat-answer">Plate boundaries produce earthquakes and volcanoes.</div>
-        <div class="wrapup-beat-body">Where plates diverge, converge, or slide past, the crust cracks, melts, and slips. Those <strong>boundaries</strong> are the belts on the map.</div>
+        <div class="wrapup-beat-label">Same Result</div>
+        <div class="wrapup-beat-answer">Both raise the probability of successful reproduction.</div>
+        <div class="wrapup-beat-body">A costly trait can last as long as it helps an organism leave behind <strong>offspring</strong> that survive and reproduce. That is why strange traits persist.</div>
       </div>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
-      <strong>The full chain:</strong>
+      <strong>The full idea:</strong>
       <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Heat deep in the mantle</span>
-        <span class="wuc wuc-2">Convection currents flow</span>
-        <span class="wuc wuc-2">Plates move and continents drift</span>
-        <span class="wuc wuc-3">Plates meet at boundaries</span>
-        <span class="wuc wuc-3">Earthquakes and volcanoes in belts</span>
+        <span class="wuc wuc-1">Animals perform behaviors</span>
+        <span class="wuc wuc-2">Plants grow structures</span>
+        <span class="wuc wuc-3">Both attract, defend, or spread</span>
+        <span class="wuc wuc-3">More offspring survive</span>
+        <span class="wuc wuc-1">Helpful traits get passed on</span>
       </div>
-      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. Wegener saw the puzzle; convection currents and plate tectonics finally explained it.</div>
+      <div style="margin-top: 1rem;">Reproductive success is the engine behind the strange and beautiful traits in nature. A peacock's tail and a maple's spinning seed look nothing alike, but both exist for the same reason: they help life continue.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1392,19 +1301,85 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening phenomenon directly and completely.</li></ul>
+          <ul class="edu-note-text"><li>Tie animal behaviors and plant structures into one idea.</li><li>Answer the opening question directly.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative closure</li></ul>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Step-by-step beats break the chain into chunks</li><li>Plain causal language throughout</li><li>Chip summary gives a visual map of the full chain</li></ul>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN: ARGUMENT FROM EVIDENCE (CER)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="argument" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Argument From Evidence</span>
+    <h2 class="section-title">Build a Scientific Argument</h2>
+    <p class="section-desc">Scientists do not just state ideas. They build an argument: a <strong>claim</strong>, the <strong>evidence</strong> that supports it, and the <strong>reasoning</strong> that ties them together. Try it with the peacock's tail.</p>
+
+    <div class="question-pause predict-pause" id="qp-cer">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>The question:</strong> A peacock's tail takes energy to grow and makes the bird easier for predators to see. Why has this trait persisted across many generations?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>The tail keeps the peacock warm in cold weather.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>The tail helps the peacock attract mates and reproduce.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>The tail lets the peacock fly faster from predators.</button>
+      </div>
+    </div>
+
+    <div class="predict-gated" data-gate="qp-cer">
+      <div class="cer-grid">
+        <div class="cer-card claim">
+          <div class="cer-label">Claim</div>
+          <p>The peacock's tail persists because it raises the bird's reproductive success, even though it is costly.</p>
+        </div>
+        <div class="cer-card evidence">
+          <div class="cer-label">Evidence</div>
+          <p>Peahens tend to choose males with the largest, brightest tails. Males with bigger tails mate more often and leave more offspring.</p>
+        </div>
+        <div class="cer-card reason">
+          <div class="cer-label">Reasoning</div>
+          <p>A trait does not have to aid survival to last. If it helps an organism reproduce, it gets passed to offspring, so it stays common over time.</p>
+        </div>
+      </div>
+      <div class="bridge-callout teal" style="margin-top: 1.6rem;">
+        <strong>The full argument:</strong> The tail is dangerous, but danger is not the only thing that matters. Because peahens choose males with impressive tails, those males reproduce more. The trait is passed on, generation after generation. Evidence plus reasoning explains why a costly trait survives.
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Directly practice the argument-from-evidence part of the standard.</li><li>Model the claim, evidence, reasoning structure.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Argumentation</li><li>Predict-then-reveal</li><li>Worked example of CER</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Three clearly labeled parts</li><li>Reveal only after a prediction</li><li>Plain, short statements</li></ul>
         </div>
       </div>
     </div>
@@ -1419,12 +1394,12 @@
   <div class="container">
     <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Ten questions covering everything you explored, from Wegener's evidence to convection currents and plate boundaries. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you explored, from courtship and parental care to pollination and seed dispersal. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
-      <button class="mode-btn active" id="btn-practice"  onclick="elSetQuizMode('practice')">Practice Mode</button>
-      <button class="mode-btn"        id="btn-classroom" onclick="elSetQuizMode('classroom')">Classroom Mode</button>
+      <button class="mode-btn active" id="btn-practice"  onclick="rsSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="rsSetQuizMode('classroom')">Classroom Mode</button>
     </div>
     <div class="mode-hint">
       <span id="hint-practice"  class="visible">Your score will not be sent</span>
@@ -1437,29 +1412,29 @@
       <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
       <div class="info-fields">
         <div class="info-field">
-          <label for="el-student-name">Student Name</label>
-          <input type="text" id="el-student-name" placeholder="First Last" autocomplete="off">
-          <div class="info-error" id="el-err-name">Please enter your name.</div>
+          <label for="rs-student-name">Student Name</label>
+          <input type="text" id="rs-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="rs-err-name">Please enter your name.</div>
         </div>
         <div class="info-field">
-          <label for="el-teacher-select">Teacher</label>
-          <select id="el-teacher-select">
+          <label for="rs-teacher-select">Teacher</label>
+          <select id="rs-teacher-select">
             <option value="">- Select -</option>
             <option value="MrKankel">Mr. Kankel</option>
             <option value="MrRovner">Mr. Rovner</option>
           </select>
-          <div class="info-error" id="el-err-teacher">Please select your teacher.</div>
+          <div class="info-error" id="rs-err-teacher">Please select your teacher.</div>
         </div>
         <div class="info-field">
-          <label for="el-block-select">Class Block</label>
-          <select id="el-block-select">
+          <label for="rs-block-select">Class Block</label>
+          <select id="rs-block-select">
             <option value="">- Select -</option>
             <option value="A">A Block</option><option value="B">B Block</option>
             <option value="C">C Block</option><option value="D">D Block</option>
             <option value="E">E Block</option><option value="F">F Block</option>
             <option value="G">G Block</option>
           </select>
-          <div class="info-error" id="el-err-block">Please select your block.</div>
+          <div class="info-error" id="rs-err-block">Please select your block.</div>
         </div>
       </div>
     </div>
@@ -1467,37 +1442,38 @@
     <!-- Sticky Progress Bar -->
     <div class="quiz-progress-sticky">
       <div class="quiz-progress">
-        <div class="progress-bar"><div class="progress-fill" id="el-progress"></div></div>
-        <div class="progress-text" id="el-progress-text">0 / 10 selected</div>
+        <div class="progress-bar"><div class="progress-fill" id="rs-progress"></div></div>
+        <div class="progress-text" id="rs-progress-text">0 / 10 selected</div>
       </div>
     </div>
 
     <!-- Questions injected by JS -->
-    <div id="el-quiz-questions"></div>
+    <div id="rs-quiz-questions"></div>
 
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit Score</button>
+      <button class="quiz-submit-btn" id="rs-submit-btn" onclick="rsSubmitQuiz()" disabled>Submit Score</button>
     </div>
 
     <!-- Score Board -->
-    <div class="score-board" id="el-score">
-      <div class="big-score" id="el-score-num"></div>
-      <p id="el-score-msg"></p>
+    <div class="score-board" id="rs-score">
+      <div class="big-score" id="rs-score-num"></div>
+      <p id="rs-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">&#128269; The Question You Came In With</span>
-        You started this lesson asking: <strong>"Why does Earth's surface move?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes at the boundaries, you have answered it.
+        You started this lesson asking: <strong>"How do animal behaviors and plant structures raise the chance of successful reproduction?"</strong> If you can explain how a behavior or a structure helps an organism leave behind surviving offspring, you have answered it.
       </div>
-      <div id="el-submit-status"></div>
-      <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
+      <div id="rs-submit-status"></div>
+      <button class="reset-btn" onclick="rsResetQuiz()">Try Again</button>
     </div>
+
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
       <div class="edu-note-label">&#128218; Instructional Design</div>
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear performance signal.</li></ul>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1509,11 +1485,10 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Answer explanations provided for every question</li><li>Practice and classroom modes available</li><li>Plausible distractors, evenly distributed answer positions</li></ul>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
         </div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -1525,7 +1500,7 @@
   <div class="container">
     <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="continue-intro">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</p>
+    <p class="continue-intro">Nature is full of strange and amazing strategies for reproduction. Bowerbirds build and decorate elaborate structures to attract a mate. Deep-sea anglerfish have remarkable mating strategies in the dark. Corpse flowers smell like rotting meat to attract fly pollinators. Some seed pods burst open and fling their seeds. Certain orchids even mimic the look of a female insect to trick males into pollinating them. <strong>More investigations, simulations, and challenges are coming soon.</strong></p>
     <div class="continue-grid">
       <div class="cont-card soon">
         <div class="cont-icon">&#128640;</div>
@@ -1631,19 +1606,22 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 })();
 </script>
 
-<!-- ===== PLATE BOUNDARIES INTERACTIVE ===== -->
+<!-- ===== STRATEGY SELECTOR INTERACTIVE ===== -->
 <script>
-const boundaryData = {
-  1: { label: 'Boundary 1 · Plates move apart', title: 'Divergent Boundary', body: 'Two plates pull apart and rising magma fills the gap, cooling into new crust. Under the ocean this builds a mid-ocean ridge with a rift valley down the center, like the Mid-Atlantic Ridge. On land it can split a continent, as at the East African Rift.' },
-  2: { label: 'Boundary 2 · Plates collide', title: 'Convergent Boundary', body: 'Two plates push together. The more dense plate subducts (sinks) beneath the less dense one, melting and feeding volcanoes, like the Andes and the Japanese island arc. When both plates are continental and equally light, neither sinks, so they crumple upward into mountains like the Himalayas.' },
-  3: { label: 'Boundary 3 · Plates slide past', title: 'Transform Boundary', body: 'Two plates grind past each other in opposite directions. No crust is made or destroyed, but the plates catch and slip, releasing energy as earthquakes. The San Andreas Fault in California is a famous example.' }
+const stratData = {
+  1: { label: 'Animal Behavior', title: 'Courtship', body: 'Songs, calls, and dances help an animal attract a mate. A male songbird sings to show he is healthy and ready to reproduce. Choosing a strong partner raises the chance of healthy offspring.' },
+  2: { label: 'Animal Behavior', title: 'Mating Displays', body: 'Showy features help an animal stand out and be chosen. A peacock fans his colorful tail; a frigate bird puffs out a red throat pouch. Carrying a costly display signals that the animal is strong.' },
+  3: { label: 'Animal Behavior', title: 'Parental Care', body: 'Caring for young raises how many survive. Emperor penguins warm an egg through the winter and wolves feed their pups. Fewer offspring, but a larger share live to reproduce.' },
+  4: { label: 'Animal Behavior', title: 'Territorial Behavior', body: 'Defending an area protects the food, shelter, and nesting space needed to raise young. A cardinal sings at the edge of its territory and chases off rivals, giving its offspring a better start.' },
+  5: { label: 'Plant Structure', title: 'Pollination', body: 'Flowers attract pollinators with color, scent, and nectar. As a bee or hummingbird feeds, it carries pollen to the next flower so seeds can form. Some plants use the wind instead.' },
+  6: { label: 'Plant Structure', title: 'Seed Dispersal', body: 'Fruits, wings, and hooks move seeds away from the parent plant. Maple seeds spin on the wind, berries are eaten and carried, and burrs grab onto fur, so more seeds reach a place to grow.' }
 };
-function boundaryClick(n) {
-  const d = boundaryData[n];
-  document.getElementById('bd-label').textContent = d.label;
-  document.getElementById('bd-title').textContent = d.title;
-  document.getElementById('bd-body').textContent  = d.body;
-  document.querySelectorAll('#term-boundaries .layer-row').forEach((el, i) => {
+function stratClick(n) {
+  const d = stratData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
     el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
     el.style.outlineOffset = '1px';
   });
@@ -1687,14 +1665,14 @@ function boundaryClick(n) {
     });
   }
   wireQR('qr1', 1,
-    'Correct! His evidence was strong, but he could not explain what force moved the continents. Convection currents were the missing piece.',
-    'Not quite. Wegener had plenty of evidence and believed in Pangaea. What he could not explain was the force that moved the continents.');
-  wireQR('qr2', 2,
-    'Correct! The plates float and slide on the soft, slowly flowing asthenosphere in the upper mantle.',
-    'Not quite. The crust and inner core do not flow. The plates ride on the soft, flowing asthenosphere.');
-  wireQR('qr3', 0,
-    'Correct! Transform boundaries make and destroy no crust, but the plates catch and slip, releasing energy as earthquakes.',
-    'Not quite. New seafloor forms at divergent boundaries and volcanoes at convergent ones. Transform boundaries mainly cause earthquakes.');
+    'Correct! Songs and dances that attract a mate are courtship behaviors.',
+    'Not quite. A dance and song used to attract a mate is courtship behavior.');
+  wireQR('qr2', 0,
+    'Correct! Color, scent, and nectar attract pollinators that carry pollen between flowers so seeds can form.',
+    'Not quite. Bright petals, scent, and nectar attract pollinators that move pollen between flowers.');
+  wireQR('qr3', 2,
+    'Correct! A floating coconut reaching a new island is seed dispersal, spreading seeds away from the parent.',
+    'Not quite. Moving a seed to a new place to grow is seed dispersal.');
 })();
 </script>
 
@@ -1703,119 +1681,114 @@ function boundaryClick(n) {
 // ── GOOGLE SHEET URLS ────────────────────────────────────────────────
 // Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
 // TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
-var EL_SCRIPT_URLS = {
+var RS_SCRIPT_URLS = {
   MrKankel: 'https://script.google.com/macros/s/REPLACE_WITH_MR_KANKEL_DEPLOYMENT_ID/exec',
   MrRovner: 'https://script.google.com/macros/s/REPLACE_WITH_MR_ROVNER_DEPLOYMENT_ID/exec'
 };
 
-var elQuizState = { selected: [], submitted: false };
-var elQuizMode  = 'practice';
+var rsQuizState = { selected: [], submitted: false };
+var rsQuizMode  = 'practice';
 
-var elQuizQuestions = [
+var rsQuizQuestions = [
   {
-    q: "Who proposed the idea of continental drift, and what did he name the ancient supercontinent?",
-    options: ["Isaac Newton; Gondwana", "Alfred Wegener; Pangaea", "Charles Darwin; Laurasia", "Alfred Wegener; Atlantis"],
+    q: "A peacock spreads its colorful tail feathers when a female is nearby. What type of behavior is this?",
+    options: ["A nest-building behavior", "A mating display", "A way to find food", "A method of camouflage"],
     correct: 1,
-    explanation: "In 1912, the German scientist Alfred Wegener proposed continental drift and named the supercontinent Pangaea, meaning all land."
+    explanation: "Spreading colorful feathers to be noticed and chosen by a mate is a mating display."
   },
   {
-    q: "Wegener found fossils of the same plant, Glossopteris, on continents now separated by wide oceans. Why is this evidence that the continents were once joined?",
+    q: "Why do hummingbird-pollinated flowers often have bright red colors?",
     options: [
-      "The seeds were too heavy to drift across an ocean and the animals could not swim that far",
-      "Glossopteris still grows on every continent today",
-      "Fossils can float across oceans on currents",
-      "The plant only grew in freezing climates"
+      "Bright color attracts pollinators that carry pollen between flowers",
+      "Bright color scares away all insects",
+      "Color makes the flower taste better",
+      "Color blocks sunlight from reaching the seeds"
     ],
     correct: 0,
-    explanation: "Glossopteris seeds could not survive a long ocean drift, and the small land animals found with it could not swim across oceans. The simplest explanation is that the land was once connected."
+    explanation: "Birds see red well, so a bright red flower attracts the pollinator that carries its pollen, which helps seeds form."
   },
   {
-    q: "The lithosphere is broken into large slabs that float on the asthenosphere. What are these slabs called?",
-    options: ["Convection cells", "Rift valleys", "Tectonic plates", "Continental shelves"],
-    correct: 2,
-    explanation: "The rigid lithosphere is cracked into tectonic plates that slowly move over the soft, flowing asthenosphere."
-  },
-  {
-    q: "Wegener could not explain what moved the continents. What actually provides the force that moves the plates?",
+    q: "Why do maple seeds have thin, wing-like structures that make them spin as they fall?",
     options: [
-      "The pull of ocean tides",
-      "The spinning of the inner core",
-      "Wind and weather at the surface",
-      "Convection currents in the mantle"
-    ],
-    correct: 3,
-    explanation: "Heat inside Earth drives convection currents in the mantle. The flowing mantle rock drags the plates, which is the force Wegener was missing."
-  },
-  {
-    q: "At a divergent boundary two plates move apart. What happens in the gap between them?",
-    options: [
-      "Rising magma fills the gap and cools into new crust",
-      "One plate sinks beneath the other",
-      "The plates grind past each other",
-      "A deep ocean trench forms"
-    ],
-    correct: 0,
-    explanation: "As the plates separate, magma rises to fill the gap and cools into new crust. Under the ocean this is seafloor spreading at a mid-ocean ridge."
-  },
-  {
-    q: "The seafloor of the Atlantic is youngest at the Mid-Atlantic Ridge and older farther away. Which process best explains this?",
-    options: [
-      "Subduction pulling the crust down",
-      "Seafloor spreading at a divergent boundary",
-      "A transform fault sliding sideways",
-      "Weathering of the ocean floor"
-    ],
-    correct: 1,
-    explanation: "New crust forms at the ridge and moves outward, so the seafloor is youngest at the ridge and gets older with distance. This is seafloor spreading."
-  },
-  {
-    q: "Two oceanic plates collide and the more dense one sinks beneath the other. What is this process called, and what does it tend to build?",
-    options: [
-      "Spreading, building a rift valley",
-      "Erosion, building canyons",
-      "Subduction, building volcanoes and island arcs",
-      "Drifting, building flat plains"
+      "To attract bees to the seed",
+      "To make the tree grow taller",
+      "To help the seeds travel far from the parent tree on the wind",
+      "To store extra water for the seed"
     ],
     correct: 2,
-    explanation: "When one plate sinks beneath another it is called subduction. The sinking plate melts and feeds volcanoes, forming features like the Japanese island arc."
+    explanation: "The spinning wing helps the seed glide on the wind. This is seed dispersal, spreading seeds away from the parent so more can grow."
   },
   {
-    q: "The Himalayas formed where two continental plates of similar density collided. Why did they crumple upward instead of one plate sinking?",
+    q: "How does parental care increase reproductive success?",
     options: [
-      "Continental crust is too dense to rise",
-      "One of the plates melted completely",
-      "The boundary is actually a transform boundary",
-      "Neither plate is dense enough to sink, so they push each other up"
+      "It makes the parents grow much larger",
+      "It changes the weather around the nest",
+      "It removes the need to find a mate",
+      "It raises the chance that offspring survive to reproduce"
     ],
     correct: 3,
-    explanation: "Continental crust is light and does not subduct easily. When two continental plates meet, neither sinks, so the crust folds and pushes upward into tall mountains like the Himalayas."
+    explanation: "Protecting and feeding young means more of them survive long enough to grow up and reproduce."
   },
   {
-    q: "The San Andreas Fault is a place where two plates slide past each other. What kind of boundary is this, and what is it known for?",
+    q: "Burrs have tiny hooks that stick to the fur of passing animals. What does this structure help the plant do?",
     options: [
-      "A transform boundary known for earthquakes",
-      "A divergent boundary known for new seafloor",
-      "A convergent boundary known for volcanoes",
-      "A boundary known for building island arcs"
-    ],
-    correct: 0,
-    explanation: "Plates sliding past each other form a transform boundary. They catch and slip, releasing energy as earthquakes, like those along the San Andreas Fault."
-  },
-  {
-    q: "Why do earthquakes and volcanoes occur in narrow belts around Earth rather than randomly?",
-    options: [
-      "They follow ocean currents around the globe",
-      "They line up along the edges of the tectonic plates",
-      "They appear wherever the crust is thickest",
-      "They are spread evenly but only reported in cities"
+      "Attract pollinators with a sweet scent",
+      "Spread its seeds to new places",
+      "Make food from sunlight",
+      "Stay warm during the winter"
     ],
     correct: 1,
-    explanation: "Almost all earthquakes and volcanoes happen at plate boundaries, where plates pull apart, collide, or slide past. The belts on the map trace those boundaries."
+    explanation: "Hooks let the seed hitch a ride on an animal's fur, dispersing it far from the parent plant."
+  },
+  {
+    q: "Emperor penguins take turns balancing their egg on their feet to keep it warm through the freezing winter. This is an example of:",
+    options: ["Parental care", "A mating display", "Seed dispersal", "Pollination"],
+    correct: 0,
+    explanation: "Protecting an egg so the chick survives is parental care, a behavior that raises reproductive success."
+  },
+  {
+    q: "A male cardinal sings loudly from the edge of an area and chases off other males. What behavior is this?",
+    options: ["Parental care", "Pollination", "Territorial behavior", "Camouflage"],
+    correct: 2,
+    explanation: "Defending an area that holds food and nesting space is territorial behavior. It protects the resources needed to raise young."
+  },
+  {
+    q: "Which statement best uses evidence to explain why a flower produces sweet nectar?",
+    options: [
+      "Nectar has no role in reproduction",
+      "Nectar attracts pollinators, which carry pollen and increase the chance that seeds form",
+      "Nectar makes the flower heavier so it falls to the ground",
+      "Nectar cools the plant on hot days"
+    ],
+    correct: 1,
+    explanation: "Nectar rewards pollinators for visiting. As they feed, they move pollen between flowers, which raises the chance of pollination and seeds."
+  },
+  {
+    q: "A peacock's large tail takes energy to grow and makes the bird easier for predators to see. Why has this trait continued over many generations?",
+    options: [
+      "The tail helps the peacock fly faster",
+      "The tail keeps the bird warm",
+      "The tail has no effect on survival or reproduction",
+      "Peahens choose mates with impressive tails, so those males reproduce more"
+    ],
+    correct: 3,
+    explanation: "A costly trait can persist if it raises reproductive success. Peahens favor large, bright tails, so those males leave more offspring and the trait is passed on."
+  },
+  {
+    q: "Which pair correctly matches a strategy used by animals with one used by plants?",
+    options: [
+      "Courtship displays in animals; colorful flowers in plants",
+      "Photosynthesis in animals; nest building in plants",
+      "Pollination in animals; territorial songs in plants",
+      "Seed dispersal in animals; mating dances in plants"
+    ],
+    correct: 0,
+    explanation: "Animals use behaviors like courtship displays, and plants use structures like colorful flowers. Both raise the chance of successful reproduction."
   }
 ];
 
-function elSetQuizMode(mode) {
-  elQuizMode = mode;
+function rsSetQuizMode(mode) {
+  rsQuizMode = mode;
   var infoBox      = document.getElementById('student-info-box');
   var btnPractice  = document.getElementById('btn-practice');
   var btnClassroom = document.getElementById('btn-classroom');
@@ -1838,21 +1811,21 @@ function elSetQuizMode(mode) {
 
 (function () {
   var params = new URLSearchParams(window.location.search);
-  if (params.get('mode') === 'classroom') elSetQuizMode('classroom');
-  else elSetQuizMode('practice');
+  if (params.get('mode') === 'classroom') rsSetQuizMode('classroom');
+  else rsSetQuizMode('practice');
 })();
 
-function elBuildQuiz() {
-  var container = document.getElementById('el-quiz-questions');
+function rsBuildQuiz() {
+  var container = document.getElementById('rs-quiz-questions');
   container.innerHTML = '';
-  elQuizState.selected  = new Array(elQuizQuestions.length).fill(null);
-  elQuizState.submitted = false;
-  document.getElementById('el-submit-btn').disabled = true;
-  elUpdateProgress();
+  rsQuizState.selected  = new Array(rsQuizQuestions.length).fill(null);
+  rsQuizState.submitted = false;
+  document.getElementById('rs-submit-btn').disabled = true;
+  rsUpdateProgress();
   var letters = ['A','B','C','D'];
-  elQuizQuestions.forEach(function (q, qi) {
+  rsQuizQuestions.forEach(function (q, qi) {
     var optionsHTML = q.options.map(function (opt, oi) {
-      return '<button class="quiz-option" onclick="elSelectAnswer(' + qi + ',' + oi + ')" id="el-q-' + qi + '-' + oi + '">' +
+      return '<button class="quiz-option" onclick="rsSelectAnswer(' + qi + ',' + oi + ')" id="rs-q-' + qi + '-' + oi + '">' +
              '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
     }).join('');
     var card = document.createElement('div');
@@ -1863,113 +1836,113 @@ function elBuildQuiz() {
         '<div class="quiz-question-text">' + q.q + '</div>' +
       '</div>' +
       '<div class="quiz-options">' + optionsHTML + '</div>' +
-      '<div class="option-feedback" id="el-feedback-' + qi + '"></div>';
+      '<div class="option-feedback" id="rs-feedback-' + qi + '"></div>';
     container.appendChild(card);
   });
 }
 
-function elSelectAnswer(qi, chosenIndex) {
-  if (elQuizState.submitted) return;
-  var prev = elQuizState.selected[qi];
-  if (prev !== null) document.getElementById('el-q-' + qi + '-' + prev).classList.remove('selected');
-  elQuizState.selected[qi] = chosenIndex;
-  document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
-  elUpdateProgress();
-  document.getElementById('el-submit-btn').disabled = !elQuizState.selected.every(function (s) { return s !== null; });
+function rsSelectAnswer(qi, chosenIndex) {
+  if (rsQuizState.submitted) return;
+  var prev = rsQuizState.selected[qi];
+  if (prev !== null) document.getElementById('rs-q-' + qi + '-' + prev).classList.remove('selected');
+  rsQuizState.selected[qi] = chosenIndex;
+  document.getElementById('rs-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  rsUpdateProgress();
+  document.getElementById('rs-submit-btn').disabled = !rsQuizState.selected.every(function (s) { return s !== null; });
 }
 
-function elUpdateProgress() {
-  var total    = elQuizQuestions.length;
-  var answered = elQuizState.selected.filter(function (s) { return s !== null; }).length;
-  document.getElementById('el-progress').style.width = (answered / total * 100) + '%';
-  document.getElementById('el-progress-text').textContent = answered + ' / ' + total + ' selected';
+function rsUpdateProgress() {
+  var total    = rsQuizQuestions.length;
+  var answered = rsQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('rs-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('rs-progress-text').textContent = answered + ' / ' + total + ' selected';
 }
 
-function elValidateStudentInfo() {
-  var name    = document.getElementById('el-student-name').value.trim();
-  var teacher = document.getElementById('el-teacher-select').value;
-  var block   = document.getElementById('el-block-select').value;
-  document.getElementById('el-err-name').classList.toggle('show', !name);
-  document.getElementById('el-err-teacher').classList.toggle('show', !teacher);
-  document.getElementById('el-err-block').classList.toggle('show', !block);
+function rsValidateStudentInfo() {
+  var name    = document.getElementById('rs-student-name').value.trim();
+  var teacher = document.getElementById('rs-teacher-select').value;
+  var block   = document.getElementById('rs-block-select').value;
+  document.getElementById('rs-err-name').classList.toggle('show', !name);
+  document.getElementById('rs-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('rs-err-block').classList.toggle('show', !block);
   return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
 }
 
-function elSubmitQuiz() {
-  if (elQuizState.submitted) return;
-  if (elQuizMode === 'classroom') {
-    var info = elValidateStudentInfo();
+function rsSubmitQuiz() {
+  if (rsQuizState.submitted) return;
+  if (rsQuizMode === 'classroom') {
+    var info = rsValidateStudentInfo();
     if (!info.valid) {
       document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
   }
-  elQuizState.submitted = true;
-  document.getElementById('el-submit-btn').disabled = true;
+  rsQuizState.submitted = true;
+  document.getElementById('rs-submit-btn').disabled = true;
   var correct = 0;
-  elQuizQuestions.forEach(function (q, qi) {
-    var chosen    = elQuizState.selected[qi];
+  rsQuizQuestions.forEach(function (q, qi) {
+    var chosen    = rsQuizState.selected[qi];
     var isCorrect = chosen === q.correct;
     if (isCorrect) correct++;
     q.options.forEach(function (_, oi) {
-      var btn = document.getElementById('el-q-' + qi + '-' + oi);
+      var btn = document.getElementById('rs-q-' + qi + '-' + oi);
       btn.classList.add('disabled');
       btn.classList.remove('selected');
       if (oi === q.correct) btn.classList.add('revealed-correct');
     });
-    document.getElementById('el-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
-    var fb = document.getElementById('el-feedback-' + qi);
+    document.getElementById('rs-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('rs-feedback-' + qi);
     fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
     fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
   });
-  var total = elQuizQuestions.length;
+  var total = rsQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
-  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand plate tectonics cold.'
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand reproductive success cold.'
     : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
     : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
     : '\u{1F4AA} Keep going; review each section carefully and try again!';
-  document.getElementById('el-score-num').textContent = score;
-  document.getElementById('el-score-msg').textContent = msg;
-  var sb = document.getElementById('el-score');
+  document.getElementById('rs-score-num').textContent = score;
+  document.getElementById('rs-score-msg').textContent = msg;
+  var sb = document.getElementById('rs-score');
   sb.classList.add('show');
   sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-  if (elQuizMode === 'practice') {
-    document.getElementById('el-submit-status').innerHTML =
+  if (rsQuizMode === 'practice') {
+    document.getElementById('rs-submit-status').innerHTML =
       '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
     return;
   }
 
-  var info2 = elValidateStudentInfo();
+  var info2 = rsValidateStudentInfo();
   var teacherLabel = info2.teacher === 'MrKankel' ? 'Mr. Kankel' : 'Mr. Rovner';
   var letters = ['A','B','C','D'];
-  var answerStr = elQuizState.selected.map(function (idx, i) {
+  var answerStr = rsQuizState.selected.map(function (idx, i) {
     return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
   }).join(', ');
   var params = new URLSearchParams({
-    tab: 'Plate Tectonics', lesson: 'Plate Tectonics', studentName: info2.name, teacher: teacherLabel,
+    tab: 'Reproductive Success', lesson: 'Reproductive Success', studentName: info2.name, teacher: teacherLabel,
     block: info2.block, score: score, total: total, percent: pct + '%',
     timestamp: new Date().toISOString(), answers: answerStr
   });
-  fetch(EL_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+  fetch(RS_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(function () {
-      document.getElementById('el-submit-status').innerHTML =
+      document.getElementById('rs-submit-status').innerHTML =
         '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
     })
     .catch(function () {
-      document.getElementById('el-submit-status').innerHTML =
+      document.getElementById('rs-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });
 }
 
-function elResetQuiz() {
-  document.getElementById('el-score').classList.remove('show');
-  document.getElementById('el-submit-status').innerHTML = '';
-  elBuildQuiz();
+function rsResetQuiz() {
+  document.getElementById('rs-score').classList.remove('show');
+  document.getElementById('rs-submit-status').innerHTML = '';
+  rsBuildQuiz();
 }
 
-elBuildQuiz();
+rsBuildQuiz();
 </script>
 
 <!-- ===== STARFIELD ===== -->

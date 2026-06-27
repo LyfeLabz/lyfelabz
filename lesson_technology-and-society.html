@@ -12,9 +12,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="https://lyfelabz.com/lesson_plate-tectonics.html">
-<meta name="description" content="Discover plate tectonics: continental drift evidence, lithospheric plates, seafloor spreading, convection currents, and the three plate boundaries that build mountains and trigger earthquakes and volcanoes. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
-<title>LyfeLabz | Plate Tectonics</title>
+<link rel="canonical" href="https://lyfelabz.com/lesson_technology-and-society.html">
+<meta name="description" content="Explore how technology affects society: what technology is, how it changes daily life and work, its effects on the environment, the difference between intended and unintended effects, and how technologies improve over time. A Grade 7 engineering enrichment lesson.">
+<title>LyfeLabz | Technology and Society</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -173,6 +173,32 @@
   }
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
 
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
@@ -358,7 +384,7 @@
   }
   .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
 
-  /* ── LAYER / BOUNDARY SELECTOR (interactive) ── */
+  /* ── COMPONENT SELECTOR (interactive system map) ── */
   .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
   .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
   .layer-figure svg { width: 100%; height: auto; display: block; }
@@ -382,7 +408,7 @@
   .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
   .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
 
-  /* ── CRUST COMPARISON ── */
+  /* ── TWO-UP COMPARISON ── */
   .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
   @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
   .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
@@ -391,11 +417,6 @@
   .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
   .crust-card.oceanic .crust-title { color: var(--blue); }
   .crust-card.continental .crust-title { color: var(--orange); }
-  .crust-bar-track { height: 14px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; margin: 0.7rem 0 0.4rem; }
-  .crust-bar { height: 100%; border-radius: 99px; }
-  .crust-card.oceanic .crust-bar { background: linear-gradient(90deg, var(--blue), rgba(124,200,248,0.5)); width: 16%; }
-  .crust-card.continental .crust-bar { background: linear-gradient(90deg, var(--orange), rgba(232,129,74,0.5)); width: 100%; }
-  .crust-bar-label { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; }
   .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
   .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
   .crust-list li strong { color: var(--text); }
@@ -403,7 +424,7 @@
   .crust-card.oceanic .crust-dot { background: var(--blue); }
   .crust-card.continental .crust-dot { background: var(--orange); }
 
-  /* ── CONVECTION / DIAGRAM FIGURE ── */
+  /* ── FIGURE ── */
   .figure-box {
     background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
@@ -597,23 +618,23 @@
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
-  <a href="index.html#geo" class="nav-back">&#8592; Earth &amp; Space</a>
+  <a href="index.html#eng" class="nav-back">&#8592; Engineering</a>
 </nav>
 
 <!-- HERO -->
 <header class="hero">
+  <span class="hero-float">&#128241;</span>
+  <span class="hero-float">&#128666;</span>
+  <span class="hero-float">&#127981;</span>
   <span class="hero-float">&#127757;</span>
-  <span class="hero-float">&#127755;</span>
-  <span class="hero-float">&#9968;&#65039;</span>
-  <span class="hero-float">&#129517;</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Plate Tectonics</h1>
-  <p>Earthquakes and volcanoes do not strike at random. They line up in narrow belts that trace the hidden seams of a cracked, moving planet.</p>
+  <h1>Technology and Society</h1>
+  <p>The smartphone started as a way to call people. Within a few years it had changed how we shop, learn, work, find our way, and even how factories pull metals out of the ground.</p>
   <div class="driving-question">
     <div class="dq-icon">&#128269;</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">Why does Earth's surface move?</div>
+      <div class="dq-text">How can one technology change the way people live, work, communicate, and affect the environment?</div>
     </div>
   </div>
 </header>
@@ -621,11 +642,11 @@
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">&#128300; Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes in belts) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
-  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the story into evidence, plates, motion, and boundaries keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
-  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of drift, convection, and boundaries builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (one device reshaping daily life) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the impacts of technology into small, sequenced areas keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each impact area with an interactive diagram builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and convection to plate motion and surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+  <span class="ls-badge" data-tip="Systems thinking: students trace how one technology ripples across many parts of society and the environment. (NRC, 2012)">&#128202; Systems Thinking</span>
 </div>
 
 
@@ -639,24 +660,20 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
     <div class="goal-grid">
       <div class="goal-card">
-        <span class="goal-icon">&#129499;</span>
-        <div class="goal-text">I can describe the evidence Wegener used to support the idea of continental drift.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#128241;</span>
+        <div class="goal-text">I can explain how a technology changes the way people live and the way they communicate.</div>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#128293;</span>
-        <div class="goal-text">I can explain how convection currents in the mantle cause tectonic plates to move.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
-      </div>
-      <div class="goal-card">
-        <span class="goal-icon">&#9968;&#65039;</span>
-        <div class="goal-text">I can compare the three types of plate boundaries and the features they build.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#128188;</span>
+        <div class="goal-text">I can describe how new technologies change the way people work.</div>
       </div>
       <div class="goal-card">
         <span class="goal-icon">&#127757;</span>
-        <div class="goal-text">I can explain why earthquakes and volcanoes occur in narrow belts rather than randomly.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <div class="goal-text">I can explain how a technology affects the environment, including its resources, energy use, and waste.</div>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#9878;&#65039;</span>
+        <div class="goal-text">I can tell the difference between the intended effects of a technology and its unintended effects.</div>
       </div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -695,52 +712,44 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
     <div class="glossary-grid">
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Continental Drift</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The idea that the continents were once joined and have slowly moved to their present positions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-drift')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Technology</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Anything designed by people to solve a problem or meet a need.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-technology')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Impact</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The effect a technology has on people, society, or the environment.</div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Innovation</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A new or improved technology, or a better way of doing something.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-innovation')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Pangaea</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The single supercontinent that held all of Earth's land about 250 million years ago.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pangaea')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Plate Tectonics</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The theory that Earth's outer shell is broken into moving plates, explaining drift, earthquakes, and volcanoes.</div>
-      </button>
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Lithosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The rigid outer shell of Earth, made of the crust and the upper mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Asthenosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The soft, slowly flowing part of the upper mantle that the plates float on.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Unintended Effect</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A result of a technology that its designers did not plan for.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-effects')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Tectonic Plate</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A large slab of lithosphere that moves slowly over the asthenosphere.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-plate')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Convection Current</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A looping flow of hot mantle rock that rises, cools, and sinks, dragging the plates along.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Seafloor Spreading</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The process where magma rises at a mid-ocean ridge and cools into new ocean floor.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-seafloor')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Environment</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The living and nonliving surroundings that a technology can affect, like air, water, land, and habitats.</div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Divergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move apart and new crust forms in the gap.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Convergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move together, often forming mountains or volcanoes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Automation</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Using machines or computers to do work that people once did by hand.</div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Transform Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates slide past each other, producing faults and earthquakes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Resource</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A material from nature, such as metal, water, or fuel, that is used to make or run a technology.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Pollution</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Harmful material added to the air, water, or land, often as a byproduct of making or using technology.</div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Trade-off</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A benefit gained in exchange for a cost. Most technologies have both benefits and costs.</div>
       </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Subduction</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When a more dense plate sinks beneath a less dense plate at a convergent boundary.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Society</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A community of people and the way they live, work, and interact with one another.</div>
       </button>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -775,61 +784,70 @@
 <section id="engage" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Engage &middot; Phenomenon</span>
-    <h2 class="section-title">A World That Shakes in Lines</h2>
-    <p class="section-desc">If you mapped every earthquake and volcano from the last hundred years, you would not get a random scatter of dots. You would get long, narrow belts that wrap around the planet, like cracks in a shell.</p>
+    <h2 class="section-title">More Than a Phone</h2>
+    <p class="section-desc">A smartphone fits in one hand. Yet in less than twenty years it changed far more than the way people make calls. Whole parts of daily life rearranged themselves around it.</p>
 
     <div class="phenomenon-card">
-      <div class="phenomenon-icon">&#127755;</div>
+      <div class="phenomenon-icon">&#128241;</div>
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
-        <h3>The Ring of Fire</h3>
-        <p>A belt of volcanoes and earthquakes called the Ring of Fire traces the edge of the Pacific Ocean. Other belts run down the middle of the Atlantic and across southern Asia. Most of the world's earthquakes and volcanoes happen along these same lines, year after year. Why would Earth's most violent events follow such a clear pattern?</p>
+        <h3>One Device, Many Changes</h3>
+        <p>Before smartphones, you needed a separate map, camera, music player, newspaper, and bank to do five different things. Now they all live in one device. People shop, learn, work, and find their way with it. Factories mine new metals to build it, and power plants burn fuel to charge it. How can a single technology change the way people live, work, communicate, and affect the planet all at once?</p>
       </div>
     </div>
 
-    <!-- Phenomenon figure: belts vs random -->
+    <!-- Before / after image -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A stylized world map showing earthquakes and volcanoes clustered along curved belts rather than spread evenly">
-        <rect x="20" y="20" width="560" height="240" rx="16" fill="#10202e"/>
-        <!-- stylized landmasses -->
-        <path d="M70,90 q40,-30 100,-10 q40,15 20,55 q-30,40 -90,30 q-50,-10 -30,-75 Z" fill="#26323f"/>
-        <path d="M300,70 q70,-20 130,10 q40,25 10,80 q-60,45 -130,15 q-40,-50 -20,-105 Z" fill="#26323f"/>
-        <path d="M180,180 q50,-15 90,15 q15,40 -40,55 q-60,5 -50,-70 Z" fill="#26323f"/>
-        <!-- plate-edge belts (dashed) -->
-        <path d="M40,150 C150,90 250,210 360,140 C440,90 520,170 560,120" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <path d="M120,250 C200,200 240,150 300,60" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <!-- earthquake/volcano markers along belts -->
-        <g fill="#e74c3c">
-          <circle cx="60" cy="142" r="5"/><circle cx="120" cy="120" r="5"/><circle cx="180" cy="150" r="5"/>
-          <circle cx="240" cy="180" r="5"/><circle cx="300" cy="158" r="5"/><circle cx="360" cy="140" r="5"/>
-          <circle cx="420" cy="118" r="5"/><circle cx="480" cy="150" r="5"/><circle cx="540" cy="128" r="5"/>
-          <circle cx="150" cy="225" r="5"/><circle cx="210" cy="180" r="5"/><circle cx="260" cy="120" r="5"/><circle cx="292" cy="78" r="5"/>
+      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="On the left, separate older devices like a map, camera, music player and newspaper. On the right, a single smartphone that replaces all of them.">
+        <rect x="0" y="0" width="600" height="280" fill="#0f1a26"/>
+        <line x1="300" y1="30" x2="300" y2="250" stroke="#2c3a4a" stroke-width="2" stroke-dasharray="6 6"/>
+        <text x="150" y="48" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="900" fill="#9fb8cc">BEFORE</text>
+        <text x="450" y="48" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="900" fill="#1de9b6">AFTER</text>
+        <!-- before: four separate devices -->
+        <g font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#9fb8cc" text-anchor="middle">
+          <rect x="60"  y="80"  width="70" height="50" rx="8" fill="rgba(159,184,204,0.1)" stroke="#7a8fa6" stroke-width="2"/>
+          <text x="95"  y="110">Map</text>
+          <rect x="170" y="80"  width="70" height="50" rx="8" fill="rgba(159,184,204,0.1)" stroke="#7a8fa6" stroke-width="2"/>
+          <text x="205" y="110">Camera</text>
+          <rect x="60"  y="160" width="70" height="50" rx="8" fill="rgba(159,184,204,0.1)" stroke="#7a8fa6" stroke-width="2"/>
+          <text x="95"  y="190">Music</text>
+          <rect x="170" y="160" width="70" height="50" rx="8" fill="rgba(159,184,204,0.1)" stroke="#7a8fa6" stroke-width="2"/>
+          <text x="205" y="190">News</text>
         </g>
-        <text x="300" y="252" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">Red marks = earthquakes &amp; volcanoes. Dashed lines = where they line up.</text>
+        <!-- arrow -->
+        <path d="M255,145 L345,145" stroke="#f5c842" stroke-width="4" marker-end="url(#tas-gold)"/>
+        <!-- after: one phone -->
+        <rect x="415" y="80" width="70" height="120" rx="12" fill="rgba(29,233,182,0.12)" stroke="#1de9b6" stroke-width="2.5"/>
+        <rect x="423" y="92" width="54" height="86" rx="4" fill="rgba(29,233,182,0.08)"/>
+        <circle cx="450" cy="190" r="4" fill="#1de9b6"/>
+        <text x="450" y="225" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#1de9b6">One smartphone</text>
+        <defs>
+          <marker id="tas-gold" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f5c842"/></marker>
+        </defs>
       </svg>
-      <div class="figure-caption">The dots are not scattered everywhere. They follow the dashed seams that crisscross the globe.</div>
+      <div class="figure-caption">One technology absorbed the jobs of many separate tools, then reached into work, communication, and the environment too.</div>
     </div>
 
     <!-- Prediction gate -->
     <div class="question-pause predict-pause" id="qp-engage">
       <div class="qp-row">
         <span class="question-pause-icon">&#129300;</span>
-        <div class="question-pause-text"><strong>Make a prediction:</strong> Why do earthquakes and volcanoes line up in narrow belts instead of spreading out evenly across Earth?</div>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Which part of society do you think the smartphone changed the most?</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn"><span class="pb-letter">A</span>Earth's surface is one solid shell that cracks in random spots.</button>
-        <button class="predict-btn"><span class="pb-letter">B</span>Earth's surface is broken into moving plates, and the edges are where the action happens.</button>
-        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes and volcanoes happen everywhere equally; the belts are a coincidence.</button>
+        <button class="predict-btn"><span class="pb-letter">A</span>Only the way people make phone calls.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Many parts at once: communication, work, health, travel, and the environment.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Nothing really changed; it is just a smaller telephone.</button>
       </div>
     </div>
 
     <div class="name-it slate-it predict-gated" data-gate="qp-engage">
       <div class="name-it-label">Here's the big idea</div>
-      <p>The best answer is <strong>B</strong>. Earth's outer shell is not one piece. It is cracked into giant slabs called plates that slowly move. The belts of earthquakes and volcanoes trace the edges where plates meet, pull apart, or grind past one another. To understand the pattern at the surface, we have to understand the plates and what moves them. That is where this lesson goes next.</p>
+      <p>The best answer is <strong>B</strong>. A smartphone is not just a better telephone. It is a <strong>technology</strong> that touched many parts of society at once. When a technology spreads, its effects reach far past the one problem it was built to solve. To understand how, we need to look at what technology is and trace the many ways it changes how people live, work, and affect the environment. That is exactly where this lesson goes next.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2rem;">
-      <strong>Where we're headed:</strong> First we'll meet the scientist who noticed the continents fit together. Then we'll see what the plates are, what pushes them, and what happens at the boundaries where they meet.
+      <strong>Where we're headed:</strong> First we'll define what technology actually is. Then we'll trace how one technology changes daily life, work, and the environment, sort its intended effects from its unintended ones, and see how technologies improve over time.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -837,7 +855,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Anchor the lesson in a striking real-world pattern.</li><li>Raise a question students will want answered.</li></ul>
+          <ul class="edu-note-text"><li>Anchor the unit in a real phenomenon: one device reshaping society.</li><li>Raise a question students will want answered.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -849,7 +867,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Concrete visual pattern (belts on a map)</li><li>Short framing text</li><li>Prediction question is low stakes and ungraded</li></ul>
+          <ul class="edu-note-text"><li>Concrete, familiar example</li><li>Short framing text</li><li>Visual anchor</li></ul>
         </div>
       </div>
     </div>
@@ -858,128 +876,46 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     REVIEW PREVIOUS LEARNING (bridge between Engage and Explore)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="review-prev" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Review Previous Learning</span>
-    <h2 class="section-title">Need a Refresher?</h2>
-    <p class="section-desc">This lesson builds on ideas you may have seen before.</p>
-
-    <div class="content-card">
-      <div class="card-header">
-        <div class="card-title">Continental Drift (Grade 6)</div>
-      </div>
-      <p>Wegener used fossils, matching rock layers, climate clues, and the fit of continents to propose that Earth's continents were once connected. Reviewing this evidence will help explain why scientists accepted plate tectonics.</p>
-      <a href="lesson_continental-drift.html" style="display: inline-block; margin-top: 1.4rem; background: var(--gold); color: var(--dark); font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.03em; text-decoration: none; padding: 0.85rem 1.8rem; border-radius: 12px; transition: transform 0.15s, box-shadow 0.15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px var(--gold-glow)';" onmouseout="this.style.transform='';this.style.boxShadow='';">Review Lesson &rarr;</a>
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Bridge from Grade 6 continental drift to plate tectonics.</li><li>Prevent knowledge gaps before new content begins.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Prior knowledge activation</li><li>Schema priming</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember</li><li>DOK 1</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Optional review, no new content required</li><li>Single clear link, no navigation pressure</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1: CONTINENTAL DRIFT (Wegener's evidence)
+     EXPLORE 1: WHAT IS TECHNOLOGY?
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="explore" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The First Clue</span>
-    <h2 class="section-title">The Continents That Fit Together</h2>
-    <p class="section-desc">Long before anyone talked about plates, one scientist looked at a map and noticed something strange: the continents looked like pieces of a torn puzzle.</p>
+    <span class="section-label">Explore &middot; What Is Technology?</span>
+    <h2 class="section-title">More Than Screens and Wires</h2>
+    <p class="section-desc">When people hear "technology," they often picture phones and computers. The real meaning is much wider. Technology is older than electricity and bigger than any one gadget.</p>
 
-    <div id="term-drift" class="content-card">
+    <div class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#129489;&#8205;&#127891;</span>
-        <div class="card-title">Wegener's Big Idea</div>
+        <span class="card-icon">&#128296;</span>
+        <div class="card-title">Anything People Design to Solve a Problem</div>
       </div>
       <div class="card-body">
-        <p>In 1912, a German scientist named <strong>Alfred Wegener</strong> proposed the idea of <span class="vocab">continental drift</span>. He claimed the continents are slowly moving, and that about 250 million years ago they were all joined into one giant supercontinent.</p>
-        <p>He named that supercontinent <strong>Pangaea</strong>, meaning "all land." Wegener knew that the way the coastlines fit together was a clue, but a good fit alone is not proof. So he went looking for real evidence.</p>
+        <p>A water filter, a bridge, a pencil, and a plow are all technology. So is a smartphone. What they share is that people designed them to solve a problem or meet a need.</p>
+        <p>That means technology is not only about screens. A farming tool that helps grow more food and a medical device that helps a doctor see inside the body are both technologies, even though they look nothing alike.</p>
       </div>
     </div>
 
-    <div id="term-pangaea" class="name-it orange-it">
-      <div class="name-it-label">Name it: Pangaea</div>
-      <p><strong>Pangaea</strong> was a single supercontinent that held all of Earth's land roughly 250 million years ago. Over millions of years it broke apart, and the pieces drifted into the continents we know today.</p>
+    <div id="term-technology" class="name-it slate-it">
+      <div class="name-it-label">Key idea: Technology</div>
+      <p><strong>Technology</strong> is anything designed by people to solve a problem or meet a need. The test is purpose, not parts. If people built it to do a job, it is technology, whether it is a stone tool or a satellite.</p>
     </div>
 
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Wegener gathered four kinds of evidence. No single clue was enough on its own, but together they told a powerful story.</p>
+    <p class="section-desc" style="margin-bottom: 1.2rem;">Technology surrounds us. Some pieces are simple, some are complex, but each one was designed to meet a need.</p>
 
     <div class="example-grid">
-      <div class="example-chip"><span class="example-chip-icon">&#129460;</span><span>Fossils</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#10052;&#65039;</span><span>Climate</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#9968;&#65039;</span><span>Mountains</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#129522;</span><span>Magnetite</span></div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129460;</span>
-        <div class="card-title">Fossil Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Fossils of the same plant and animal species turned up on continents now separated by thousands of miles of ocean. One example is <em>Glossopteris</em>, a fern-like plant found across South America, Africa, India, and Antarctica.</p>
-        <p>Its seeds were too heavy to drift across an ocean without being destroyed, and the small land animals found with it could not have swum that far. The simplest explanation is that the land was once connected.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#10052;&#65039;</span>
-        <div class="card-title">Climate Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Wegener found scratches carved by ancient glaciers on rocks in places that are warm today, like parts of Africa and India. He also found fossils of tropical swamp plants in Antarctica and on islands far to the north.</p>
-        <p>A continent cannot be frozen and tropical at the same time. But if those lands once sat in very different positions, the climate clues suddenly make sense. The southern continents fit together into a region scientists call <strong>Gondwanaland</strong>.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#9968;&#65039;</span>
-        <div class="card-title">Rock and Mountain Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Mountain ranges on different continents line up and contain rocks of the same age and chemistry. The Caledonian Mountains in northwestern Europe match the Appalachian Mountains along the east coast of the United States.</p>
-        <p>Put the continents back together and these ranges form one continuous belt, like a sentence torn across two pages. Rock types and the shapes of the continental shelves match across the ocean as well.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129522;</span>
-        <div class="card-title">Magnetite Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Some rocks contain <strong>magnetite</strong>, a magnetic iron-oxide mineral and the most magnetic mineral found in nature. When melted rock cools, magnetite crystals line up with Earth's magnetic field and lock in that direction, like tiny frozen compass needles.</p>
-        <p>Rocks of the same age on far-apart continents recorded matching magnetic patterns. That match only makes sense if the rocks formed side by side and later moved apart.</p>
-      </div>
+      <div class="example-chip"><span class="example-chip-icon">&#128241;</span><span>Smartphones</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128663;</span><span>Cars</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128739;&#65039;</span><span>Bridges</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#129658;</span><span>Medical devices</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128668;</span><span>Farming tools</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128167;</span><span>Water filters</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#9999;&#65039;</span><span>Pencils</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128161;</span><span>Light bulbs</span></div>
     </div>
 
     <div class="callout gold">
-      <span class="callout-icon">&#9888;&#65039;</span>
-      <div class="callout-body"><strong>The missing piece:</strong> Wegener's evidence was strong, but most scientists rejected his idea for decades. The reason was simple: he could not explain what force could possibly move something as huge as a continent. That answer was still hidden deep inside Earth.</div>
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The test for technology:</strong> Ask whether people designed it to solve a problem or meet a need. If the answer is yes, it is technology, no matter how old or how simple it is.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -987,11 +923,112 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Establish the historical puzzle that drove the theory.</li><li>Show how multiple lines of evidence accumulate into a claim.</li></ul>
+          <ul class="edu-note-text"><li>Define technology broadly before tracing its effects.</li><li>Break the "technology equals screens" misconception.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Evidence-based reasoning</li><li>Narrative structure (hero, evidence, unsolved mystery)</li></ul>
+          <ul class="edu-note-text"><li>Concept formation with varied examples</li><li>Confronting a misconception</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Wide range of familiar examples</li><li>One plain test for the concept</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2: ONE TECHNOLOGY, MANY CHANGES (interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="changes" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Impacts</span>
+    <h2 class="section-title">One Technology, Many Changes</h2>
+    <p class="section-desc">A useful technology rarely changes just one thing. Click an area to see how the smartphone, our running example, changed that part of society or the environment.</p>
+
+    <div class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 300 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A smartphone in the center with arrows reaching out to many parts of society and the environment around it">
+          <!-- ripple rings -->
+          <circle cx="150" cy="120" r="100" fill="none" stroke="rgba(159,184,204,0.18)" stroke-width="1.5" stroke-dasharray="4 5"/>
+          <circle cx="150" cy="120" r="68"  fill="none" stroke="rgba(159,184,204,0.25)" stroke-width="1.5" stroke-dasharray="4 5"/>
+          <!-- arrows outward -->
+          <g stroke="#9fb8cc" stroke-width="2" opacity="0.55">
+            <line x1="150" y1="90"  x2="150" y2="40"/>
+            <line x1="178" y1="105" x2="232" y2="78"/>
+            <line x1="182" y1="130" x2="240" y2="140"/>
+            <line x1="170" y1="148" x2="210" y2="196"/>
+            <line x1="130" y1="148" x2="92"  y2="196"/>
+            <line x1="120" y1="128" x2="60"  y2="140"/>
+          </g>
+          <!-- labels -->
+          <g font-family="Nunito,sans-serif" font-size="9" font-weight="800" text-anchor="middle">
+            <text x="150" y="32"  fill="#7cc8f8">Communication</text>
+            <text x="244" y="72"  fill="#3ddc84">Work</text>
+            <text x="256" y="146" fill="#7cc8f8">Environment</text>
+            <text x="214" y="212" fill="#e8814a">Health</text>
+            <text x="88"  y="212" fill="#f5c842">Transportation</text>
+            <text x="44"  y="146" fill="#e74c3c">Side effects</text>
+          </g>
+          <!-- phone center -->
+          <rect x="126" y="92" width="48" height="58" rx="9" fill="rgba(29,233,182,0.14)" stroke="#1de9b6" stroke-width="2.5"/>
+          <rect x="132" y="100" width="36" height="38" rx="3" fill="rgba(29,233,182,0.1)"/>
+          <circle cx="150" cy="144" r="3" fill="#1de9b6"/>
+          <text x="150" y="172" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#1de9b6">Smartphone</text>
+        </svg>
+      </div>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(124,200,248,0.28); color: #aedcff;" onclick="layerClick(1)" id="term-impacts">
+            <span>1 &middot; Communication</span><span class="layer-tag">how we connect</span>
+          </div>
+          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9fe9c0;" onclick="layerClick(2)">
+            <span>2 &middot; Work</span><span class="layer-tag">how we earn</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b48c;" onclick="layerClick(3)">
+            <span>3 &middot; Health</span><span class="layer-tag">how we stay well</span>
+          </div>
+          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f6d56e;" onclick="layerClick(4)">
+            <span>4 &middot; Transportation</span><span class="layer-tag">how we travel</span>
+          </div>
+          <div class="layer-row" style="background: rgba(159,184,204,0.28); color: #cbd9e6;" onclick="layerClick(5)">
+            <span>5 &middot; Environment</span><span class="layer-tag">effect on the planet</span>
+          </div>
+          <div class="layer-row" style="background: rgba(231,76,60,0.24); color: #f0a59d;" onclick="layerClick(6)">
+            <span>6 &middot; Unintended Effects</span><span class="layer-tag">what wasn't planned</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="ld-label">Click an area</div>
+            <div class="ld-title" id="ld-title">Start with communication &#8594;</div>
+            <div class="ld-body" id="ld-body">One technology can change many parts of society at once. Click any area to see how the smartphone changed it.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#128279;</span>
+      <div class="callout-body"><strong>A shared pattern:</strong> Communication, work, health, transportation, and the environment are all parts of one connected society. A technology that reaches one of them usually reaches the others too.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Show one technology changing many parts of life.</li><li>Tie each impact to one running example.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the interactive diagram</li><li>Worked example (one technology throughout)</li><li>Chunking the impact areas</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -999,7 +1036,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Four parallel evidence cards, each self-contained</li><li>Short paragraphs with bolded key ideas</li><li>Misconception alert: Wegener was rejected for lack of mechanism, not bad evidence</li></ul>
+          <ul class="edu-note-text"><li>Click to reveal each area, no hover</li><li>Labeled diagram paired with text</li><li>One example carried throughout</li></ul>
         </div>
       </div>
     </div>
@@ -1008,57 +1045,53 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2: LITHOSPHERIC PLATES
+     EXPLORE 3: INTENDED AND UNINTENDED EFFECTS
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="plates" style="background: var(--dark2);">
+<section id="effects" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Plates</span>
-    <h2 class="section-title">A Cracked Shell That Floats</h2>
-    <p class="section-desc">The breakthrough came from understanding Earth's layers. The continents do not plow through the ocean floor on their own. They ride on top of giant moving slabs.</p>
+    <span class="section-label">Explore &middot; Benefits &amp; Costs</span>
+    <h2 class="section-title">Helpful and Harmful at Once</h2>
+    <p class="section-desc">Almost every technology brings benefits and costs together. The benefit is usually the problem it was built to solve. The cost often shows up later, in a way no one planned.</p>
 
-    <div id="term-litho" class="content-card">
+    <div class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#129513;</span>
-        <div class="card-title">The Lithosphere Rides the Asthenosphere</div>
+        <span class="card-icon">&#9878;&#65039;</span>
+        <div class="card-title">Intended and Unintended Effects</div>
       </div>
       <div class="card-body">
-        <p>The <span class="vocab">lithosphere</span> is Earth's rigid outer shell, made of the crust plus the upper part of the mantle. It is not one solid piece. It is cracked into many large slabs called <strong>tectonic plates</strong>.</p>
-        <p>Just below sits the <span class="vocab">asthenosphere</span>, a hotter, softer part of the mantle that slowly flows like thick putty. The plates float and slide on the asthenosphere the way rafts drift on the surface of a pool.</p>
+        <p>An <strong>intended effect</strong> is the result a technology was designed to produce. A car was designed to help people travel farther and faster, and it does.</p>
+        <p>An <strong>unintended effect</strong> is a result no one planned for. Cars also fill the air with exhaust and crowd cities with traffic. Those effects were not the goal, but they came along anyway.</p>
       </div>
     </div>
 
-    <div id="term-plate" class="name-it slate-it">
-      <div class="name-it-label">Name it: Tectonic Plate</div>
-      <p>A <strong>tectonic plate</strong> is a large slab of lithosphere that moves slowly over the asthenosphere. Most plates carry both ocean floor and continents, so the continents move because the plates they sit on move.</p>
+    <div id="term-effects" class="name-it orange-it">
+      <div class="name-it-label">Key idea: Unintended Effect</div>
+      <p>An <strong>unintended effect</strong> is a result of a technology that its designers did not plan for. A useful technology can still create real problems, which is why engineers and communities have to weigh both the benefits and the costs.</p>
     </div>
 
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Plates are not all the same, because the crust they carry comes in two kinds. The difference in density will matter a lot at the boundaries.</p>
+    <p class="section-desc" style="margin-bottom: 1.4rem;">The same technology often sits on both sides of the line. Look at how each benefit comes with a cost.</p>
 
     <div class="crust-grid">
       <div class="crust-card oceanic">
-        <div class="crust-title">Oceanic Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thinnest layer of crust</div>
+        <div class="crust-title" style="color: var(--blue);">The Benefit (Intended)</div>
         <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>basalt</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thinnest</strong> and <strong>most dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Sinks when it meets lighter crust</span></li>
+          <li><span class="crust-dot"></span><span><strong>Cars</strong> let people travel farther and faster</span></li>
+          <li><span class="crust-dot"></span><span><strong>Plastic</strong> is cheap, light, and useful</span></li>
+          <li><span class="crust-dot"></span><span><strong>Smartphones</strong> connect people instantly</span></li>
         </ul>
       </div>
       <div class="crust-card continental">
-        <div class="crust-title">Continental Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thickest layer of crust</div>
+        <div class="crust-title" style="color: var(--orange);">The Cost (Unintended)</div>
         <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>granite</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thickest</strong> and <strong>least dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Rides high and does not sink easily</span></li>
+          <li><span class="crust-dot"></span><span>but they add <strong>air pollution</strong> and traffic</span></li>
+          <li><span class="crust-dot"></span><span>but it piles up as <strong>waste</strong> that lasts for centuries</span></li>
+          <li><span class="crust-dot"></span><span>but they need <strong>mined metals</strong> and electricity</span></li>
         </ul>
       </div>
     </div>
 
     <div class="bridge-callout teal">
-      <strong>Hold on to the density rule:</strong> oceanic crust is more dense than continental crust. When two plates meet, the heavier oceanic crust tends to sink beneath the lighter continental crust. That single rule will explain a lot of what happens at boundaries.
+      <strong>Benefits and costs travel together.</strong> A technology can be genuinely useful and still cause harm. Naming both sides is the first step engineers take before they try to redesign a technology to keep the benefit and shrink the cost.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1066,191 +1099,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Give students the moving-parts vocabulary before explaining what moves them.</li><li>Establish the density rule that drives subduction.</li></ul>
+          <ul class="edu-note-text"><li>Separate intended effects from unintended ones.</li><li>Establish that useful technology still has costs.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Concrete analogy (rafts on a pool)</li><li>Contrast pairs (oceanic vs continental crust)</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Side-by-side crust comparison cards</li><li>Visual density bars support non-verbal learners</li><li>Misconception alert: plates are not just continents; most carry ocean floor too</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3: WHAT MOVES THE PLATES (convection + seafloor spreading)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="motion" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Engine</span>
-    <h2 class="section-title">What Pushes the Plates?</h2>
-    <p class="section-desc">This is the answer Wegener was missing. The force that moves whole continents comes from heat deep inside Earth, the same heat that drives everything from the inside out.</p>
-
-    <div id="term-convection" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#128293;</span>
-        <div class="card-title">Convection Currents in the Mantle</div>
-      </div>
-      <div class="card-body">
-        <p>The mantle is extremely hot near the bottom and cooler near the top. Hot rock is less dense, so it slowly rises toward the surface. As it nears the top it cools, becomes more dense, and sinks back down. This endless loop is a <span class="vocab">convection current</span>.</p>
-        <p>These currents flow beneath the lithosphere and drag the plates along, like crackers riding on slowly boiling soup. <strong>The movement of mantle rock creates the movement of the plates above it.</strong></p>
-      </div>
-    </div>
-
-    <!-- Convection figure -->
-    <div class="figure-box">
-      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Convection currents in the mantle: hot rock rises in the middle, spreads sideways, and sinks at the edges, pushing two plates apart at the surface">
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="#7a3a2a" opacity="0.85"/>
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="url(#mantleGrad)"/>
-        <defs>
-          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.1"/>
-          </linearGradient>
-        </defs>
-        <rect x="40" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <rect x="320" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <text x="150" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <text x="450" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <path d="M400,210 C400,160 340,150 310,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <defs>
-          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd27a"/></marker>
-        </defs>
-        <text x="300" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">Hot rock rises in the middle, cools, and sinks at the sides</text>
-      </svg>
-      <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
-    </div>
-
-    <div id="term-seafloor" class="name-it teal-it">
-      <div class="name-it-label">Name it: Seafloor Spreading</div>
-      <p>Where plates pull apart under the ocean, rising magma fills the gap and cools into brand new ocean floor. This is called <strong>seafloor spreading</strong>. It builds a long underwater mountain chain called a mid-ocean ridge, and the seafloor is youngest right at the ridge and older farther away.</p>
-    </div>
-
-    <div class="callout slate">
-      <span class="callout-icon">&#129522;</span>
-      <div class="callout-body"><strong>Magnetite returns:</strong> as new seafloor cools at a ridge, magnetite minerals record the direction of Earth's magnetic field. The field flips over time, leaving matching, mirror-image stripes on both sides of the ridge. Those symmetric stripes are powerful proof that the seafloor is spreading.</div>
-    </div>
-
-    <div class="bridge-callout teal" style="margin-top: 0.5rem;">
-      <strong>The mystery solved:</strong> convection currents are the engine Wegener could not find. Heat drives the mantle to flow, the flow moves the plates, and the plates carry the continents. Now we can look at exactly what happens where two plates meet.
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Answer Wegener's missing piece: what actually moves the plates.</li><li>Establish the causal chain before showing what it produces at boundaries.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Causal reasoning (heat to flow to plate motion)</li><li>Labeled diagram supports dual coding</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Boiling-water analogy makes convection concrete</li><li>Short paragraphs with key terms bolded in place</li><li>Misconception alert: the asthenosphere flows like thick putty, not liquid lava</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 4: PLATE BOUNDARIES (interactive)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="boundaries-sec" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Boundaries</span>
-    <h2 class="section-title">Where Plates Meet</h2>
-    <p class="section-desc">Almost all of Earth's earthquakes and volcanoes happen at plate boundaries. There are three types, sorted by how the plates move. Open each one to see what it builds.</p>
-
-    <div id="term-boundaries" class="layer-wrap">
-      <div class="layer-figure">
-        <svg viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three plate boundary types: divergent plates moving apart, convergent plates colliding with one sinking, and transform plates sliding past each other">
-          <!-- Divergent -->
-          <text x="10" y="22" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Divergent</text>
-          <rect x="20" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <rect x="145" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <path d="M118,43 L96,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M142,43 L164,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M130,56 L130,86" stroke="#ffb347" stroke-width="6" stroke-linecap="round"/>
-          <!-- Convergent -->
-          <text x="10" y="122" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Convergent</text>
-          <rect x="20" y="130" width="110" height="24" rx="3" fill="#9a5e3a"/>
-          <path d="M130,142 L155,142 L185,170 Z" fill="#7cc8f8"/>
-          <rect x="150" y="130" width="90" height="14" rx="3" fill="#7cc8f8"/>
-          <path d="M138,140 L120,140" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M150,127 L168,127" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M40,130 L52,112 L64,130 Z" fill="#8a9a6a"/>
-          <!-- Transform -->
-          <text x="10" y="222" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Transform</text>
-          <rect x="20" y="230" width="100" height="40" rx="3" fill="#6a7d52"/>
-          <rect x="140" y="230" width="100" height="40" rx="3" fill="#5a6e44"/>
-          <line x1="130" y1="226" x2="130" y2="274" stroke="#1a1410" stroke-width="3"/>
-          <path d="M70,222 L70,210" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M190,278 L190,290" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <defs>
-            <marker id="bh" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          </defs>
-        </svg>
-      </div>
-      <div class="layer-controls">
-        <div class="layer-list">
-          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9be8bb;" onclick="boundaryClick(1)">
-            <span>1 &middot; Divergent</span><span class="layer-tag">plates move apart</span>
-          </div>
-          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b88a;" onclick="boundaryClick(2)">
-            <span>2 &middot; Convergent</span><span class="layer-tag">plates collide</span>
-          </div>
-          <div class="layer-row" style="background: rgba(124,200,248,0.26); color: #aed8f8;" onclick="boundaryClick(3)">
-            <span>3 &middot; Transform</span><span class="layer-tag">plates slide past</span>
-          </div>
-        </div>
-        <div class="layer-detail-panel">
-          <div class="ld-inner">
-            <div class="ld-label" id="bd-label">Open a boundary</div>
-            <div class="ld-title" id="bd-title">Three ways plates meet &#8594;</div>
-            <div class="ld-body" id="bd-body">Each boundary type moves in a different way, so each one builds different features at the surface. Open any boundary to see how the plates move and what they create.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="callout teal">
-      <span class="callout-icon">&#9889;</span>
-      <div class="callout-body"><strong>Why the belts exist:</strong> the plate boundaries are exactly the lines you saw on the map. Divergent ridges, convergent trenches and volcanoes, and transform faults are where the crust cracks, melts, and slips, so that is where earthquakes and volcanoes cluster.</div>
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Connect plate motion to surface features students can observe.</li><li>Answer the opening phenomenon: why earthquakes and volcanoes form belts.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Comparison and contrast (three boundary types)</li><li>Dual coding with interactive diagram</li></ul>
+          <ul class="edu-note-text"><li>Compare-and-contrast structure</li><li>Cause-and-effect reasoning</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1258,7 +1111,71 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Click to reveal one boundary at a time reduces load</li><li>Misconception alert: students often mix up which boundary produces mountains vs trenches vs rift valleys</li><li>Pause and have students predict the feature before revealing</li></ul>
+          <ul class="edu-note-text"><li>Paired benefit-and-cost columns</li><li>Plain causal language</li><li>Familiar examples</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: INNOVATION OVER TIME (supporting)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="innovation" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Innovation</span>
+    <h2 class="section-title">Technologies Improve Over Time</h2>
+    <p class="section-desc">No technology arrives finished. The smartphone in your hand is the result of many earlier versions, each one a little better than the last. That steady improvement is called innovation.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128260;</span>
+        <div class="card-title">Learning From Each Version</div>
+      </div>
+      <div class="card-body">
+        <p>Engineers rarely get a technology right on the first try. They identify a problem, test a solution, learn from what fails, and redesign. Each cycle improves the materials, the cost, or the way the technology works.</p>
+        <p>Because of this, technologies tend to get smaller, cheaper, safer, or more powerful over time. Today's electric car, water treatment plant, and medical scanner are all far better than their first versions.</p>
+      </div>
+    </div>
+
+    <div id="term-innovation" class="name-it teal-it">
+      <div class="name-it-label">Key idea: Innovation</div>
+      <p><strong>Innovation</strong> is the process of improving a technology, or inventing a better one, through repeated cycles of testing and redesign. Innovation is why technologies keep changing, and why their effects on society keep changing too.</p>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.4rem;">Innovation follows a repeating pattern. Each step feeds the next, and then the cycle begins again.</p>
+
+    <div class="example-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="example-chip"><span class="example-chip-icon">&#128269;</span><span>Identify a problem</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#129514;</span><span>Test a solution</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#10060;</span><span>Learn from failures</span></div>
+      <div class="example-chip"><span class="example-chip-icon">&#128296;</span><span>Redesign and improve</span></div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>Innovation never really stops:</strong> Once a better version exists, engineers spot new problems and start the cycle over. That is why the technology around you keeps changing throughout your life.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Introduce innovation as a supporting idea.</li><li>Show that technologies, and their impacts, keep changing.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Process / cycle schema</li><li>Pattern recognition</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Four short, parallel steps</li><li>Plain cycle language</li><li>Introduced conceptually, not assessed for mastery</li></ul>
         </div>
       </div>
     </div>
@@ -1278,11 +1195,11 @@
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">Wegener's idea of continental drift was rejected for decades. What was missing from his explanation?</div>
+      <div class="qr-q" id="qr1Q">What makes something a technology?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>He had no fossil evidence at all</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>He could not explain what force could move a continent</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>No one believed Pangaea had ever existed</span></label>
+        <label><input type="radio" name="qr1" value="0"><span>It has a screen or runs on electricity</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>People designed it to solve a problem or meet a need</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>It was invented in the last few years</span></label>
       </div>
       <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1294,11 +1211,11 @@
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">The tectonic plates float and slide on which layer of Earth?</div>
+      <div class="qr-q" id="qr2Q">A car was designed to help people travel, but it also pollutes the air. The pollution is an example of</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>The solid inner core</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>The brittle surface crust</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>The soft, flowing asthenosphere</span></label>
+        <label><input type="radio" name="qr2" value="0"><span>an unintended effect</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>the car's intended purpose</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>a kind of innovation</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1310,11 +1227,11 @@
     <div class="qr-card" id="qrCard3">
       <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr3Q">Two plates grind past each other along the San Andreas Fault. What does this transform boundary mainly produce?</div>
+      <div class="qr-q" id="qr3Q">Why does one technology, like the smartphone, change so many parts of society?</div>
       <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
-        <label><input type="radio" name="qr3" value="0"><span>Earthquakes</span></label>
-        <label><input type="radio" name="qr3" value="1"><span>Brand new seafloor</span></label>
-        <label><input type="radio" name="qr3" value="2"><span>Tall volcanoes</span></label>
+        <label><input type="radio" name="qr3" value="0"><span>The parts of society are connected, so a useful technology reaches many of them</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>Technologies only ever affect one thing at a time</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Society never changes when new technology appears</span></label>
       </div>
       <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1328,7 +1245,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions before the quiz.</li></ul>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1340,7 +1257,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce cognitive load</li></ul>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
         </div>
       </div>
     </div>
@@ -1354,37 +1271,37 @@
 <section id="explain" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Explain &middot; Wrap-Up</span>
-    <h2 class="section-title">From Deep Heat to Moving Ground</h2>
-    <p class="section-desc">You started with a question: why does Earth's surface move, and why do earthquakes and volcanoes line up in belts? Now you can trace the whole chain, step by step.</p>
+    <h2 class="section-title">Why a Phone Changed So Much</h2>
+    <p class="section-desc">You started with a question: how can one technology change the way people live, work, communicate, and affect the environment? Now you can trace the whole chain, step by step.</p>
 
     <div class="wrapup-beats">
       <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">It Starts With Heat</div>
-        <div class="wrapup-beat-answer">Heat inside Earth keeps the mantle slowly flowing.</div>
-        <div class="wrapup-beat-body">Hot rock is less dense, so it rises, cools, and sinks in <strong>convection currents</strong>. This is the engine Wegener was missing.</div>
+        <div class="wrapup-beat-label">It Starts With a Need</div>
+        <div class="wrapup-beat-answer">Technology is anything designed to solve a problem.</div>
+        <div class="wrapup-beat-body">A <strong>technology</strong> is built to meet a need. The smartphone was built to connect people, but a powerful technology rarely stops at the one job it was made for.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">Heat Becomes Motion</div>
-        <div class="wrapup-beat-answer">Convection drags the plates, and the plates carry the continents.</div>
-        <div class="wrapup-beat-body">The flowing mantle moves the <strong>tectonic plates</strong> of the lithosphere. New seafloor forms where they pull apart, which is why the continents drift over time.</div>
+        <div class="wrapup-beat-label">Its Effects Spread</div>
+        <div class="wrapup-beat-answer">One technology reaches many parts of a connected society.</div>
+        <div class="wrapup-beat-body">Because communication, work, health, travel, and the environment are linked, the smartphone's <strong>impact</strong> reached all of them at once.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">Motion Reaches the Surface</div>
-        <div class="wrapup-beat-answer">Plate boundaries produce earthquakes and volcanoes.</div>
-        <div class="wrapup-beat-body">Where plates diverge, converge, or slide past, the crust cracks, melts, and slips. Those <strong>boundaries</strong> are the belts on the map.</div>
+        <div class="wrapup-beat-label">Benefits Come With Costs</div>
+        <div class="wrapup-beat-answer">Useful technology brings both intended and unintended effects.</div>
+        <div class="wrapup-beat-body">Every benefit carried a cost, like mined metals and energy use. Naming both sides lets engineers improve a technology through ongoing <strong>innovation</strong>.</div>
       </div>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
       <strong>The full chain:</strong>
       <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Heat deep in the mantle</span>
-        <span class="wuc wuc-2">Convection currents flow</span>
-        <span class="wuc wuc-2">Plates move and continents drift</span>
-        <span class="wuc wuc-3">Plates meet at boundaries</span>
-        <span class="wuc wuc-3">Earthquakes and volcanoes in belts</span>
+        <span class="wuc wuc-1">A technology meets a need</span>
+        <span class="wuc wuc-2">Society is connected</span>
+        <span class="wuc wuc-2">One technology changes many parts</span>
+        <span class="wuc wuc-3">Benefits come with costs</span>
+        <span class="wuc wuc-3">Innovation keeps improving it</span>
       </div>
-      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. Wegener saw the puzzle; convection currents and plate tectonics finally explained it.</div>
+      <div style="margin-top: 1rem;">A technology is never just one tool doing one job. It reaches into how people live, work, communicate, and treat the planet. Weigh its benefits against its costs, and you can explain, and even help redesign, almost any technology.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1392,11 +1309,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening phenomenon directly and completely.</li></ul>
+          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening question directly.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative closure</li></ul>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1404,7 +1321,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Step-by-step beats break the chain into chunks</li><li>Plain causal language throughout</li><li>Chip summary gives a visual map of the full chain</li></ul>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
         </div>
       </div>
     </div>
@@ -1419,7 +1336,7 @@
   <div class="container">
     <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Ten questions covering everything you explored, from Wegener's evidence to convection currents and plate boundaries. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you explored, from what technology is to how its effects spread through society. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -1486,18 +1403,19 @@
       <p id="el-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">&#128269; The Question You Came In With</span>
-        You started this lesson asking: <strong>"Why does Earth's surface move?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes at the boundaries, you have answered it.
+        You started this lesson asking: <strong>"How can one technology change the way people live, work, communicate, and affect the environment?"</strong> If you can trace how a single technology spreads benefits and costs across many parts of society, you have answered it.
       </div>
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
     </div>
+
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
       <div class="edu-note-label">&#128218; Instructional Design</div>
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear performance signal.</li></ul>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1509,11 +1427,10 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Answer explanations provided for every question</li><li>Practice and classroom modes available</li><li>Plausible distractors, evenly distributed answer positions</li></ul>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
         </div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -1525,13 +1442,13 @@
   <div class="container">
     <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="continue-intro">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</p>
+    <p class="continue-intro">The same thinking works for any technology. The <strong>printing press</strong>, the <strong>internet</strong>, <strong>electric cars</strong>, <strong>water treatment</strong>, <strong>renewable energy</strong>, and <strong>medical imaging</strong> each changed society in ways their inventors never fully predicted. More investigations and design challenges are coming soon.</p>
     <div class="continue-grid">
       <div class="cont-card soon">
         <div class="cont-icon">&#128640;</div>
         <div class="cont-body">
           <div class="cont-name">More Coming Soon</div>
-          <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
+          <div class="cont-desc">This lesson continues the engineering sequence. Investigations and design challenges that build on technology and society are coming soon.</div>
           <span class="coming-soon-tag">Coming Soon</span>
         </div>
       </div>
@@ -1560,6 +1477,7 @@
     </div>
   </div>
 </section>
+
 
 <!-- FOOTER -->
 <footer>
@@ -1631,19 +1549,22 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 })();
 </script>
 
-<!-- ===== PLATE BOUNDARIES INTERACTIVE ===== -->
+<!-- ===== IMPACTS INTERACTIVE ===== -->
 <script>
-const boundaryData = {
-  1: { label: 'Boundary 1 · Plates move apart', title: 'Divergent Boundary', body: 'Two plates pull apart and rising magma fills the gap, cooling into new crust. Under the ocean this builds a mid-ocean ridge with a rift valley down the center, like the Mid-Atlantic Ridge. On land it can split a continent, as at the East African Rift.' },
-  2: { label: 'Boundary 2 · Plates collide', title: 'Convergent Boundary', body: 'Two plates push together. The more dense plate subducts (sinks) beneath the less dense one, melting and feeding volcanoes, like the Andes and the Japanese island arc. When both plates are continental and equally light, neither sinks, so they crumple upward into mountains like the Himalayas.' },
-  3: { label: 'Boundary 3 · Plates slide past', title: 'Transform Boundary', body: 'Two plates grind past each other in opposite directions. No crust is made or destroyed, but the plates catch and slip, releasing energy as earthquakes. The San Andreas Fault in California is a famous example.' }
+const layerData = {
+  1: { label: 'Area 1 · How we connect', title: 'Communication', body: 'Before smartphones, talking to someone far away meant a letter or a wired phone. Now people text, video call, and share photos instantly from almost anywhere. The smartphone changed how fast and how often people stay in touch.' },
+  2: { label: 'Area 2 · How we earn', title: 'Work', body: 'Smartphones and the internet let people work remotely, answer messages anywhere, and run a business from a pocket. Some jobs disappeared while new ones, like app developer, appeared. The way people work shifted with the technology.' },
+  3: { label: 'Area 3 · How we stay well', title: 'Health', body: 'People use phones to track steps, remind them to take medicine, and reach a doctor by video. Health information that once took a trip to the library is now a search away. The technology changed how people manage their own health.' },
+  4: { label: 'Area 4 · How we travel', title: 'Transportation', body: 'Map apps reroute drivers around traffic, riders hail a car with a tap, and travelers buy tickets without a counter. The smartphone changed how people plan and pay for getting from place to place.' },
+  5: { label: 'Area 5 · Effect on the planet', title: 'Environment', body: 'Building a smartphone uses mined metals and other resources, and charging billions of them uses electricity. Old phones become electronic waste. A device that helps people every day also leaves a real footprint on the environment.' },
+  6: { label: 'Area 6 · What was not planned', title: 'Unintended Effects', body: 'No one designed the smartphone to interrupt sleep, shorten attention, or create mountains of e-waste, yet all of those happened. These are unintended effects: real results that the designers did not plan for.' }
 };
-function boundaryClick(n) {
-  const d = boundaryData[n];
-  document.getElementById('bd-label').textContent = d.label;
-  document.getElementById('bd-title').textContent = d.title;
-  document.getElementById('bd-body').textContent  = d.body;
-  document.querySelectorAll('#term-boundaries .layer-row').forEach((el, i) => {
+function layerClick(n) {
+  const d = layerData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
     el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
     el.style.outlineOffset = '1px';
   });
@@ -1687,14 +1608,14 @@ function boundaryClick(n) {
     });
   }
   wireQR('qr1', 1,
-    'Correct! His evidence was strong, but he could not explain what force moved the continents. Convection currents were the missing piece.',
-    'Not quite. Wegener had plenty of evidence and believed in Pangaea. What he could not explain was the force that moved the continents.');
-  wireQR('qr2', 2,
-    'Correct! The plates float and slide on the soft, slowly flowing asthenosphere in the upper mantle.',
-    'Not quite. The crust and inner core do not flow. The plates ride on the soft, flowing asthenosphere.');
+    'Correct! Technology is anything people designed to solve a problem or meet a need, no matter how old or simple.',
+    'Not quite. Screens and newness do not define technology. What matters is that people designed it to solve a problem or meet a need.');
+  wireQR('qr2', 0,
+    'Correct! The pollution was not the goal, so it is an unintended effect of the car.',
+    'Not quite. Travel was the car’s intended purpose. The pollution was not planned for, so it is an unintended effect.');
   wireQR('qr3', 0,
-    'Correct! Transform boundaries make and destroy no crust, but the plates catch and slip, releasing energy as earthquakes.',
-    'Not quite. New seafloor forms at divergent boundaries and volcanoes at convergent ones. Transform boundaries mainly cause earthquakes.');
+    'Correct! Society is made of connected parts, so a useful technology reaches many of them at once.',
+    'Not quite. A useful technology rarely affects just one thing. Because society is connected, its effects spread across many parts.');
 })();
 </script>
 
@@ -1713,104 +1634,99 @@ var elQuizMode  = 'practice';
 
 var elQuizQuestions = [
   {
-    q: "Who proposed the idea of continental drift, and what did he name the ancient supercontinent?",
-    options: ["Isaac Newton; Gondwana", "Alfred Wegener; Pangaea", "Charles Darwin; Laurasia", "Alfred Wegener; Atlantis"],
-    correct: 1,
-    explanation: "In 1912, the German scientist Alfred Wegener proposed continental drift and named the supercontinent Pangaea, meaning all land."
-  },
-  {
-    q: "Wegener found fossils of the same plant, Glossopteris, on continents now separated by wide oceans. Why is this evidence that the continents were once joined?",
+    q: "What is a technology?",
     options: [
-      "The seeds were too heavy to drift across an ocean and the animals could not swim that far",
-      "Glossopteris still grows on every continent today",
-      "Fossils can float across oceans on currents",
-      "The plant only grew in freezing climates"
-    ],
-    correct: 0,
-    explanation: "Glossopteris seeds could not survive a long ocean drift, and the small land animals found with it could not swim across oceans. The simplest explanation is that the land was once connected."
-  },
-  {
-    q: "The lithosphere is broken into large slabs that float on the asthenosphere. What are these slabs called?",
-    options: ["Convection cells", "Rift valleys", "Tectonic plates", "Continental shelves"],
-    correct: 2,
-    explanation: "The rigid lithosphere is cracked into tectonic plates that slowly move over the soft, flowing asthenosphere."
-  },
-  {
-    q: "Wegener could not explain what moved the continents. What actually provides the force that moves the plates?",
-    options: [
-      "The pull of ocean tides",
-      "The spinning of the inner core",
-      "Wind and weather at the surface",
-      "Convection currents in the mantle"
-    ],
-    correct: 3,
-    explanation: "Heat inside Earth drives convection currents in the mantle. The flowing mantle rock drags the plates, which is the force Wegener was missing."
-  },
-  {
-    q: "At a divergent boundary two plates move apart. What happens in the gap between them?",
-    options: [
-      "Rising magma fills the gap and cools into new crust",
-      "One plate sinks beneath the other",
-      "The plates grind past each other",
-      "A deep ocean trench forms"
-    ],
-    correct: 0,
-    explanation: "As the plates separate, magma rises to fill the gap and cools into new crust. Under the ocean this is seafloor spreading at a mid-ocean ridge."
-  },
-  {
-    q: "The seafloor of the Atlantic is youngest at the Mid-Atlantic Ridge and older farther away. Which process best explains this?",
-    options: [
-      "Subduction pulling the crust down",
-      "Seafloor spreading at a divergent boundary",
-      "A transform fault sliding sideways",
-      "Weathering of the ocean floor"
+      "Any device that runs on electricity",
+      "Anything designed by people to solve a problem or meet a need",
+      "Only the newest phones and computers",
+      "A material that comes directly from nature"
     ],
     correct: 1,
-    explanation: "New crust forms at the ridge and moves outward, so the seafloor is youngest at the ridge and gets older with distance. This is seafloor spreading."
+    explanation: "Technology is anything people designed to solve a problem or meet a need. That includes a water filter or a pencil, not just electronics."
   },
   {
-    q: "Two oceanic plates collide and the more dense one sinks beneath the other. What is this process called, and what does it tend to build?",
+    q: "Which of these is the best example of a technology?",
     options: [
-      "Spreading, building a rift valley",
-      "Erosion, building canyons",
-      "Subduction, building volcanoes and island arcs",
-      "Drifting, building flat plains"
+      "A river flowing through a valley",
+      "A thunderstorm",
+      "A bridge built to cross a river",
+      "A mountain range"
     ],
     correct: 2,
-    explanation: "When one plate sinks beneath another it is called subduction. The sinking plate melts and feeds volcanoes, forming features like the Japanese island arc."
+    explanation: "A bridge was designed by people to solve a problem, crossing a river. Rivers, storms, and mountains form naturally, so they are not technology."
   },
   {
-    q: "The Himalayas formed where two continental plates of similar density collided. Why did they crumple upward instead of one plate sinking?",
-    options: [
-      "Continental crust is too dense to rise",
-      "One of the plates melted completely",
-      "The boundary is actually a transform boundary",
-      "Neither plate is dense enough to sink, so they push each other up"
-    ],
-    correct: 3,
-    explanation: "Continental crust is light and does not subduct easily. When two continental plates meet, neither sinks, so the crust folds and pushes upward into tall mountains like the Himalayas."
+    q: "Smartphones let people text, video call, and share photos instantly. This shows that a technology can change",
+    options: ["the weather", "how people communicate", "the laws of physics", "how plants grow"],
+    correct: 1,
+    explanation: "Instant texting and video calling changed how people communicate, one of the main ways technology reshapes daily life."
   },
   {
-    q: "The San Andreas Fault is a place where two plates slide past each other. What kind of boundary is this, and what is it known for?",
-    options: [
-      "A transform boundary known for earthquakes",
-      "A divergent boundary known for new seafloor",
-      "A convergent boundary known for volcanoes",
-      "A boundary known for building island arcs"
-    ],
-    correct: 0,
-    explanation: "Plates sliding past each other form a transform boundary. They catch and slip, releasing energy as earthquakes, like those along the San Andreas Fault."
+    q: "Using machines or computers to do work that people once did by hand is called",
+    options: ["pollution", "innovation", "automation", "a resource"],
+    correct: 2,
+    explanation: "Automation is using machines or computers to do work people once did by hand. It is one major way technology changes work."
   },
   {
-    q: "Why do earthquakes and volcanoes occur in narrow belts around Earth rather than randomly?",
+    q: "A factory builds a useful new gadget, but making it releases waste into a nearby river. The waste is an example of",
     options: [
-      "They follow ocean currents around the globe",
-      "They line up along the edges of the tectonic plates",
-      "They appear wherever the crust is thickest",
-      "They are spread evenly but only reported in cities"
+      "the gadget's intended effect",
+      "an unintended effect on the environment",
+      "an innovation",
+      "the gadget's main purpose"
     ],
     correct: 1,
-    explanation: "Almost all earthquakes and volcanoes happen at plate boundaries, where plates pull apart, collide, or slide past. The belts on the map trace those boundaries."
+    explanation: "Polluting the river was not the goal of building the gadget. It is an unintended effect, and it falls on the environment."
+  },
+  {
+    q: "Why can a useful technology still create problems?",
+    options: [
+      "Useful technologies never cause any harm",
+      "Its benefits and its costs often come together",
+      "Problems only happen with broken technology",
+      "Costs always appear before any benefit"
+    ],
+    correct: 1,
+    explanation: "Most technologies bring benefits and costs at the same time. A technology can be genuinely useful and still cause harm, like a car that helps travel but pollutes."
+  },
+  {
+    q: "Plastic is cheap, light, and useful, but it piles up as waste that lasts for centuries. This is an example of a",
+    options: [
+      "trade-off between a benefit and a cost",
+      "technology with no downside",
+      "purely natural material",
+      "failure of innovation"
+    ],
+    correct: 0,
+    explanation: "A trade-off is a benefit gained in exchange for a cost. Plastic's usefulness comes with the cost of long-lasting waste."
+  },
+  {
+    q: "An engineer tests a design, learns from what fails, and redesigns it to work better. This repeating process is",
+    options: ["pollution", "automation", "a boundary", "innovation"],
+    correct: 3,
+    explanation: "Innovation is improving a technology through repeated cycles of testing and redesign. That is why technologies tend to get better over time."
+  },
+  {
+    q: "Which best explains why one technology, like the smartphone, changed so many parts of life at once?",
+    options: [
+      "Each part of society is completely separate from the others",
+      "The smartphone was used by only a few people",
+      "The parts of society are connected, so its effects spread across many of them",
+      "Technology has no effect on how people live"
+    ],
+    correct: 2,
+    explanation: "Communication, work, health, travel, and the environment are connected parts of society. A useful technology reaches many of them at once."
+  },
+  {
+    q: "Building smartphones requires mined metals, and charging them uses electricity. These facts show that technology can affect",
+    options: [
+      "only the people who own it",
+      "the environment, through resource and energy use",
+      "nothing outside the device itself",
+      "only the way people communicate"
+    ],
+    correct: 1,
+    explanation: "Mining metals and using electricity are environmental effects. A technology that helps people daily can still use resources and energy and create waste."
   }
 ];
 
@@ -1925,7 +1841,7 @@ function elSubmitQuiz() {
   var total = elQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
-  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand plate tectonics cold.'
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand how technology shapes society cold.'
     : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
     : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
     : '\u{1F4AA} Keep going; review each section carefully and try again!';
@@ -1948,7 +1864,7 @@ function elSubmitQuiz() {
     return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
   }).join(', ');
   var params = new URLSearchParams({
-    tab: 'Plate Tectonics', lesson: 'Plate Tectonics', studentName: info2.name, teacher: teacherLabel,
+    tab: 'Technology and Society', lesson: "Technology and Society", studentName: info2.name, teacher: teacherLabel,
     block: info2.block, score: score, total: total, percent: pct + '%',
     timestamp: new Date().toISOString(), answers: answerStr
   });

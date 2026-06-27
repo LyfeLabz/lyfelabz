@@ -12,9 +12,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="https://lyfelabz.com/lesson_plate-tectonics.html">
-<meta name="description" content="Discover plate tectonics: continental drift evidence, lithospheric plates, seafloor spreading, convection currents, and the three plate boundaries that build mountains and trigger earthquakes and volcanoes. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
-<title>LyfeLabz | Plate Tectonics</title>
+<link rel="canonical" href="https://lyfelabz.com/lesson_energy-flow.html">
+<meta name="description" content="Explore energy flow in ecosystems: how sunlight enters through producers, moves through consumers and decomposers along food chains and food webs, and shrinks at each level of the energy pyramid. A Grade 7 science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Energy Flow in Ecosystems</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -174,6 +174,32 @@
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
 
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
   .container { max-width: 1100px; margin: 0 auto; }
@@ -332,6 +358,7 @@
   .name-it.green-it { border-left-color: var(--green); }
   .name-it.orange-it { border-left-color: var(--orange); }
   .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it.blue-it { border-left-color: var(--blue); }
   .name-it-label {
     font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
     color: var(--gold); margin-bottom: 0.4rem;
@@ -340,25 +367,32 @@
   .name-it.green-it .name-it-label  { color: var(--green); }
   .name-it.orange-it .name-it-label { color: var(--orange); }
   .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it.blue-it .name-it-label   { color: var(--blue); }
   .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
   .name-it p strong { font-weight: 800; }
   .name-it.teal-it p strong   { color: var(--teal); }
   .name-it.green-it p strong  { color: var(--green); }
   .name-it.orange-it p strong { color: var(--orange); }
   .name-it.slate-it p strong  { color: var(--accent2); }
+  .name-it.blue-it p strong   { color: var(--blue); }
 
-  /* ── EXAMPLE GRID ── */
-  .example-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin: 0 auto 2rem; }
-  @media (max-width: 700px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
-  .example-chip {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.6rem;
-    font-size: 0.88rem; font-weight: 700; color: var(--text-muted); line-height: 1.4;
-  }
-  .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+  /* ── COMPARISON GRID ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .crust-card.oceanic { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.3); }
+  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.8rem; }
+  .crust-card.oceanic .crust-title { color: var(--green); }
+  .crust-card.continental .crust-title { color: var(--orange); }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .crust-list li strong { color: var(--text); }
+  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .crust-card.oceanic .crust-dot { background: var(--green); }
+  .crust-card.continental .crust-dot { background: var(--orange); }
 
-  /* ── LAYER / BOUNDARY SELECTOR (interactive) ── */
+  /* ── STAGE SELECTOR (interactive energy flow) ── */
   .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
   .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
   .layer-figure svg { width: 100%; height: auto; display: block; }
@@ -382,28 +416,7 @@
   .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
   .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
 
-  /* ── CRUST COMPARISON ── */
-  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
-  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
-  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
-  .crust-card.oceanic { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
-  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
-  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
-  .crust-card.oceanic .crust-title { color: var(--blue); }
-  .crust-card.continental .crust-title { color: var(--orange); }
-  .crust-bar-track { height: 14px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; margin: 0.7rem 0 0.4rem; }
-  .crust-bar { height: 100%; border-radius: 99px; }
-  .crust-card.oceanic .crust-bar { background: linear-gradient(90deg, var(--blue), rgba(124,200,248,0.5)); width: 16%; }
-  .crust-card.continental .crust-bar { background: linear-gradient(90deg, var(--orange), rgba(232,129,74,0.5)); width: 100%; }
-  .crust-bar-label { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; }
-  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
-  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
-  .crust-list li strong { color: var(--text); }
-  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
-  .crust-card.oceanic .crust-dot { background: var(--blue); }
-  .crust-card.continental .crust-dot { background: var(--orange); }
-
-  /* ── CONVECTION / DIAGRAM FIGURE ── */
+  /* ── FIGURE ── */
   .figure-box {
     background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
@@ -440,24 +453,24 @@
   @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
   .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
   .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
-  .wrapup-beat-1 { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.25); }
-  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
-  .wrapup-beat-2 { background: rgba(29,233,182,0.05); border: 1px solid rgba(29,233,182,0.2); }
-  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+  .wrapup-beat-1 { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--green), rgba(61,220,132,0.3)); }
+  .wrapup-beat-2 { background: rgba(232,129,74,0.05); border: 1px solid rgba(232,129,74,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--orange), var(--gold)); }
   .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
   .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
   .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
-  .wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
-  .wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--green); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--orange); }
   .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
   .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
   .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
   .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
   .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
   .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
-  .wuc-1 { color: var(--gold);   background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); }
-  .wuc-2 { color: var(--teal);   background: rgba(29,233,182,0.08); border-color: rgba(29,233,182,0.3); }
-  .wuc-3 { color: var(--orange); background: rgba(232,129,74,0.08);  border-color: rgba(232,129,74,0.3); }
+  .wuc-1 { color: var(--green);  background: rgba(61,220,132,0.08); border-color: rgba(61,220,132,0.3); }
+  .wuc-2 { color: var(--orange); background: rgba(232,129,74,0.08); border-color: rgba(232,129,74,0.3); }
+  .wuc-3 { color: var(--blue);   background: rgba(124,200,248,0.08); border-color: rgba(124,200,248,0.3); }
 
   /* ── QUIZ ── */
   .quiz-section { background: var(--dark2); }
@@ -602,18 +615,18 @@
 
 <!-- HERO -->
 <header class="hero">
-  <span class="hero-float">&#127757;</span>
-  <span class="hero-float">&#127755;</span>
-  <span class="hero-float">&#9968;&#65039;</span>
-  <span class="hero-float">&#129517;</span>
+  <span class="hero-float">&#127806;</span>
+  <span class="hero-float">&#128007;</span>
+  <span class="hero-float">&#129418;</span>
+  <span class="hero-float">&#9728;</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Plate Tectonics</h1>
-  <p>Earthquakes and volcanoes do not strike at random. They line up in narrow belts that trace the hidden seams of a cracked, moving planet.</p>
+  <h1>Energy Flow in Ecosystems</h1>
+  <p>A field can hold millions of grass plants, thousands of grasshoppers, hundreds of birds, but only a few hawks. As you climb a food chain, the amount of life shrinks fast. The reason is energy, and how little of it survives each step.</p>
   <div class="driving-question">
     <div class="dq-icon">&#128269;</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">Why does Earth's surface move?</div>
+      <div class="dq-text">Why does the amount of life shrink as you move up a food chain?</div>
     </div>
   </div>
 </header>
@@ -621,11 +634,11 @@
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">&#128300; Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes in belts) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
-  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the story into evidence, plates, motion, and boundaries keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
-  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of drift, convection, and boundaries builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (far fewer hawks than grass plants) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the flow of energy into small, sequenced roles keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each step with food chains, food webs, and an energy pyramid builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and convection to plate motion and surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+  <span class="ls-badge" data-tip="Systems thinking: students trace energy moving among the living parts of an ecosystem, mirroring authentic science. (NRC, 2012)">&#128202; Systems &amp; Cycles</span>
 </div>
 
 
@@ -639,24 +652,24 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
     <div class="goal-grid">
       <div class="goal-card">
-        <span class="goal-icon">&#129499;</span>
-        <div class="goal-text">I can describe the evidence Wegener used to support the idea of continental drift.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#9728;&#65039;</span>
+        <div class="goal-text">I can describe how energy enters an ecosystem from the Sun and flows through living things.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#128293;</span>
-        <div class="goal-text">I can explain how convection currents in the mantle cause tectonic plates to move.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#127806;</span>
+        <div class="goal-text">I can explain the roles of producers, consumers, and decomposers in moving energy.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#9968;&#65039;</span>
-        <div class="goal-text">I can compare the three types of plate boundaries and the features they build.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#128279;</span>
+        <div class="goal-text">I can model energy flow using a food chain and a food web.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#127757;</span>
-        <div class="goal-text">I can explain why earthquakes and volcanoes occur in narrow belts rather than randomly.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#128202;</span>
+        <div class="goal-text">I can explain why only about 10% of energy passes to the next feeding level.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
       </div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -694,53 +707,45 @@
     <h2 class="section-title">Words You'll Meet</h2>
     <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
     <div class="glossary-grid">
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Continental Drift</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The idea that the continents were once joined and have slowly moved to their present positions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-drift')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Producer</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An organism, such as a plant, that makes its own food. Also called an autotroph.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-producer')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Pangaea</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The single supercontinent that held all of Earth's land about 250 million years ago.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pangaea')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Plate Tectonics</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The theory that Earth's outer shell is broken into moving plates, explaining drift, earthquakes, and volcanoes.</div>
-      </button>
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Lithosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The rigid outer shell of Earth, made of the crust and the upper mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Consumer</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An organism that cannot make its own food and gets energy by eating other organisms. Also called a heterotroph.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-consumer')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Asthenosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The soft, slowly flowing part of the upper mantle that the plates float on.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Tectonic Plate</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A large slab of lithosphere that moves slowly over the asthenosphere.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-plate')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Convection Current</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A looping flow of hot mantle rock that rises, cools, and sinks, dragging the plates along.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Seafloor Spreading</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The process where magma rises at a mid-ocean ridge and cools into new ocean floor.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-seafloor')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Decomposer</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An organism that breaks down dead matter and waste, returning raw materials to the environment.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-decomposer')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Divergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move apart and new crust forms in the gap.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Herbivore</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A consumer that eats only plants, such as a rabbit or a deer.</div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Convergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move together, often forming mountains or volcanoes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Carnivore</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A consumer that eats other animals, such as a hawk or a lion.</div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Transform Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates slide past each other, producing faults and earthquakes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Omnivore</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A consumer that eats both plants and animals, such as a bear or a human.</div>
       </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Subduction</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When a more dense plate sinks beneath a less dense plate at a convergent boundary.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Scavenger</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An organism that mostly eats dead and decaying matter, such as a vulture or a hyena.</div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Food Chain</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A model that shows one path of energy as it flows from one organism to the next.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-foodchain')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Food Web</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A model of many overlapping food chains that shows how energy flows through an ecosystem.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-foodweb')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Energy Pyramid</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A model that shows how much energy is available at each feeding level. Energy shrinks toward the top.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pyramid')">See it in the lesson &#8595;</span></div>
       </button>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -775,61 +780,88 @@
 <section id="engage" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Engage &middot; Phenomenon</span>
-    <h2 class="section-title">A World That Shakes in Lines</h2>
-    <p class="section-desc">If you mapped every earthquake and volcano from the last hundred years, you would not get a random scatter of dots. You would get long, narrow belts that wrap around the planet, like cracks in a shell.</p>
+    <h2 class="section-title">A Lot of Grass, Very Few Hawks</h2>
+    <p class="section-desc">Look closely at a grassland and you find a clear pattern. There is a huge amount of grass, fewer grass eaters, and only a handful of top predators. The higher up the food chain you look, the fewer organisms there are.</p>
 
     <div class="phenomenon-card">
-      <div class="phenomenon-icon">&#127755;</div>
+      <div class="phenomenon-icon">&#129413;</div>
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
-        <h3>The Ring of Fire</h3>
-        <p>A belt of volcanoes and earthquakes called the Ring of Fire traces the edge of the Pacific Ocean. Other belts run down the middle of the Atlantic and across southern Asia. Most of the world's earthquakes and volcanoes happen along these same lines, year after year. Why would Earth's most violent events follow such a clear pattern?</p>
+        <h3>The Shrinking Numbers</h3>
+        <p>A single hawk needs a large area to survive. It eats many snakes and mice. Those animals each ate many grasshoppers. The grasshoppers each ate many blades of grass. So a whole field of grass supports only one hawk. Why does it take so much grass at the bottom to support so little life at the top?</p>
       </div>
     </div>
 
-    <!-- Phenomenon figure: belts vs random -->
+    <!-- Food chain scene -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A stylized world map showing earthquakes and volcanoes clustered along curved belts rather than spread evenly">
-        <rect x="20" y="20" width="560" height="240" rx="16" fill="#10202e"/>
-        <!-- stylized landmasses -->
-        <path d="M70,90 q40,-30 100,-10 q40,15 20,55 q-30,40 -90,30 q-50,-10 -30,-75 Z" fill="#26323f"/>
-        <path d="M300,70 q70,-20 130,10 q40,25 10,80 q-60,45 -130,15 q-40,-50 -20,-105 Z" fill="#26323f"/>
-        <path d="M180,180 q50,-15 90,15 q15,40 -40,55 q-60,5 -50,-70 Z" fill="#26323f"/>
-        <!-- plate-edge belts (dashed) -->
-        <path d="M40,150 C150,90 250,210 360,140 C440,90 520,170 560,120" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <path d="M120,250 C200,200 240,150 300,60" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <!-- earthquake/volcano markers along belts -->
-        <g fill="#e74c3c">
-          <circle cx="60" cy="142" r="5"/><circle cx="120" cy="120" r="5"/><circle cx="180" cy="150" r="5"/>
-          <circle cx="240" cy="180" r="5"/><circle cx="300" cy="158" r="5"/><circle cx="360" cy="140" r="5"/>
-          <circle cx="420" cy="118" r="5"/><circle cx="480" cy="150" r="5"/><circle cx="540" cy="128" r="5"/>
-          <circle cx="150" cy="225" r="5"/><circle cx="210" cy="180" r="5"/><circle cx="260" cy="120" r="5"/><circle cx="292" cy="78" r="5"/>
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A grassland food chain: the Sun gives energy to grass, a grasshopper eats grass, a bird eats the grasshopper, and a hawk eats the bird, with arrows showing energy moving from left to right">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#16314a"/>
+            <stop offset="100%" stop-color="#1d3a52"/>
+          </linearGradient>
+          <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4a5d3a"/>
+            <stop offset="100%" stop-color="#33402a"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="600" height="225" fill="url(#sky)"/>
+        <rect x="0" y="225" width="600" height="75" fill="url(#ground)"/>
+        <!-- sun -->
+        <circle cx="60" cy="55" r="26" fill="#f5c842"/>
+        <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
+          <line x1="60" y1="15" x2="60" y2="4"/><line x1="60" y1="95" x2="60" y2="106"/>
+          <line x1="20" y1="55" x2="9" y2="55"/><line x1="100" y1="55" x2="111" y2="55"/>
+          <line x1="31" y1="26" x2="23" y2="18"/><line x1="89" y1="84" x2="97" y2="92"/>
+          <line x1="89" y1="26" x2="97" y2="18"/><line x1="31" y1="84" x2="23" y2="92"/>
         </g>
-        <text x="300" y="252" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">Red marks = earthquakes &amp; volcanoes. Dashed lines = where they line up.</text>
+        <text x="60" y="135" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#f5c842">Sun</text>
+        <!-- grass -->
+        <g stroke="#3ddc84" stroke-width="4" stroke-linecap="round">
+          <line x1="170" y1="225" x2="170" y2="195"/><line x1="178" y1="225" x2="184" y2="197"/><line x1="162" y1="225" x2="156" y2="197"/>
+        </g>
+        <text x="172" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Grass</text>
+        <!-- grasshopper -->
+        <ellipse cx="305" cy="210" rx="16" ry="8" fill="#8fc23a"/>
+        <text x="305" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#8fc23a">Grasshopper</text>
+        <!-- bird -->
+        <circle cx="430" cy="200" r="12" fill="#7cc8f8"/><path d="M442,196 l14,-5 -10,9 Z" fill="#7cc8f8"/>
+        <text x="432" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Bird</text>
+        <!-- hawk -->
+        <ellipse cx="545" cy="190" rx="15" ry="11" fill="#e8814a"/><path d="M558,184 l16,-6 -11,11 Z" fill="#e8814a"/>
+        <text x="546" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Hawk</text>
+        <!-- arrows -->
+        <defs>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#9fb8cc"/></marker>
+        </defs>
+        <line x1="92" y1="150" x2="150" y2="195" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)"/>
+        <line x1="200" y1="205" x2="278" y2="208" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)"/>
+        <line x1="330" y1="206" x2="406" y2="201" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)"/>
+        <line x1="452" y1="197" x2="518" y2="192" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)"/>
       </svg>
-      <div class="figure-caption">The dots are not scattered everywhere. They follow the dashed seams that crisscross the globe.</div>
+      <div class="figure-caption">Energy flows from the Sun to grass to grasshopper to bird to hawk. The arrows point in the direction the energy moves.</div>
     </div>
 
     <!-- Prediction gate -->
     <div class="question-pause predict-pause" id="qp-engage">
       <div class="qp-row">
         <span class="question-pause-icon">&#129300;</span>
-        <div class="question-pause-text"><strong>Make a prediction:</strong> Why do earthquakes and volcanoes line up in narrow belts instead of spreading out evenly across Earth?</div>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Why are there so many more grass plants than hawks in the same field?</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn"><span class="pb-letter">A</span>Earth's surface is one solid shell that cracks in random spots.</button>
-        <button class="predict-btn"><span class="pb-letter">B</span>Earth's surface is broken into moving plates, and the edges are where the action happens.</button>
-        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes and volcanoes happen everywhere equally; the belts are a coincidence.</button>
+        <button class="predict-btn"><span class="pb-letter">A</span>Hawks choose to live far apart from one another.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Each step up the food chain has much less energy available.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Grass reproduces faster than animals can ever eat it.</button>
       </div>
     </div>
 
     <div class="name-it slate-it predict-gated" data-gate="qp-engage">
       <div class="name-it-label">Here's the big idea</div>
-      <p>The best answer is <strong>B</strong>. Earth's outer shell is not one piece. It is cracked into giant slabs called plates that slowly move. The belts of earthquakes and volcanoes trace the edges where plates meet, pull apart, or grind past one another. To understand the pattern at the surface, we have to understand the plates and what moves them. That is where this lesson goes next.</p>
+      <p>The best answer is <strong>B</strong>. Energy enters the ecosystem from the Sun and is captured by plants. Each time one organism eats another, most of that energy is used up or lost. Only a small part is passed on. By the time energy reaches the top, very little is left, so very few organisms can be supported. To see why, we have to follow the energy.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2rem;">
-      <strong>Where we're headed:</strong> First we'll meet the scientist who noticed the continents fit together. Then we'll see what the plates are, what pushes them, and what happens at the boundaries where they meet.
+      <strong>Where we're headed:</strong> First we'll meet the two kinds of organisms, the ones that make food and the ones that eat it. Then we'll follow energy as it enters through plants, moves along food chains and food webs, and shrinks at every step of the energy pyramid.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -837,7 +869,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Anchor the lesson in a striking real-world pattern.</li><li>Raise a question students will want answered.</li></ul>
+          <ul class="edu-note-text"><li>Anchor the lesson in a familiar phenomenon: lots of grass, few hawks.</li><li>Raise a question students will want answered.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -849,7 +881,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Concrete visual pattern (belts on a map)</li><li>Short framing text</li><li>Prediction question is low stakes and ungraded</li></ul>
+          <ul class="edu-note-text"><li>Concrete, familiar examples</li><li>Short framing text</li><li>Visual anchor</li></ul>
         </div>
       </div>
     </div>
@@ -858,207 +890,52 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     REVIEW PREVIOUS LEARNING (bridge between Engage and Explore)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="review-prev" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Review Previous Learning</span>
-    <h2 class="section-title">Need a Refresher?</h2>
-    <p class="section-desc">This lesson builds on ideas you may have seen before.</p>
-
-    <div class="content-card">
-      <div class="card-header">
-        <div class="card-title">Continental Drift (Grade 6)</div>
-      </div>
-      <p>Wegener used fossils, matching rock layers, climate clues, and the fit of continents to propose that Earth's continents were once connected. Reviewing this evidence will help explain why scientists accepted plate tectonics.</p>
-      <a href="lesson_continental-drift.html" style="display: inline-block; margin-top: 1.4rem; background: var(--gold); color: var(--dark); font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.03em; text-decoration: none; padding: 0.85rem 1.8rem; border-radius: 12px; transition: transform 0.15s, box-shadow 0.15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px var(--gold-glow)';" onmouseout="this.style.transform='';this.style.boxShadow='';">Review Lesson &rarr;</a>
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Bridge from Grade 6 continental drift to plate tectonics.</li><li>Prevent knowledge gaps before new content begins.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Prior knowledge activation</li><li>Schema priming</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember</li><li>DOK 1</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Optional review, no new content required</li><li>Single clear link, no navigation pressure</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1: CONTINENTAL DRIFT (Wegener's evidence)
+     EXPLORE 1: TWO KINDS OF ORGANISMS
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="explore" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The First Clue</span>
-    <h2 class="section-title">The Continents That Fit Together</h2>
-    <p class="section-desc">Long before anyone talked about plates, one scientist looked at a map and noticed something strange: the continents looked like pieces of a torn puzzle.</p>
-
-    <div id="term-drift" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129489;&#8205;&#127891;</span>
-        <div class="card-title">Wegener's Big Idea</div>
-      </div>
-      <div class="card-body">
-        <p>In 1912, a German scientist named <strong>Alfred Wegener</strong> proposed the idea of <span class="vocab">continental drift</span>. He claimed the continents are slowly moving, and that about 250 million years ago they were all joined into one giant supercontinent.</p>
-        <p>He named that supercontinent <strong>Pangaea</strong>, meaning "all land." Wegener knew that the way the coastlines fit together was a clue, but a good fit alone is not proof. So he went looking for real evidence.</p>
-      </div>
-    </div>
-
-    <div id="term-pangaea" class="name-it orange-it">
-      <div class="name-it-label">Name it: Pangaea</div>
-      <p><strong>Pangaea</strong> was a single supercontinent that held all of Earth's land roughly 250 million years ago. Over millions of years it broke apart, and the pieces drifted into the continents we know today.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Wegener gathered four kinds of evidence. No single clue was enough on its own, but together they told a powerful story.</p>
-
-    <div class="example-grid">
-      <div class="example-chip"><span class="example-chip-icon">&#129460;</span><span>Fossils</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#10052;&#65039;</span><span>Climate</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#9968;&#65039;</span><span>Mountains</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#129522;</span><span>Magnetite</span></div>
-    </div>
+    <span class="section-label">Explore &middot; Makers and Eaters</span>
+    <h2 class="section-title">Two Kinds of Organisms</h2>
+    <p class="section-desc">Every living thing needs energy. The difference between organisms is how they get it. Some make their own food. The rest have to eat.</p>
 
     <div class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#129460;</span>
-        <div class="card-title">Fossil Clues</div>
+        <span class="card-icon">&#127793;</span>
+        <div class="card-title">Making Food or Eating Food</div>
       </div>
       <div class="card-body">
-        <p>Fossils of the same plant and animal species turned up on continents now separated by thousands of miles of ocean. One example is <em>Glossopteris</em>, a fern-like plant found across South America, Africa, India, and Antarctica.</p>
-        <p>Its seeds were too heavy to drift across an ocean without being destroyed, and the small land animals found with it could not have swum that far. The simplest explanation is that the land was once connected.</p>
+        <p>Energy does not appear out of nowhere. It has to be captured and then passed along. Living things fall into two groups based on how they get the energy they need.</p>
+        <p id="term-producer">A <span class="vocab">producer</span> makes its own food, usually using sunlight. A <span class="vocab">consumer</span> cannot make food, so it must eat other organisms to get energy.</p>
       </div>
     </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#10052;&#65039;</span>
-        <div class="card-title">Climate Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Wegener found scratches carved by ancient glaciers on rocks in places that are warm today, like parts of Africa and India. He also found fossils of tropical swamp plants in Antarctica and on islands far to the north.</p>
-        <p>A continent cannot be frozen and tropical at the same time. But if those lands once sat in very different positions, the climate clues suddenly make sense. The southern continents fit together into a region scientists call <strong>Gondwanaland</strong>.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#9968;&#65039;</span>
-        <div class="card-title">Rock and Mountain Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Mountain ranges on different continents line up and contain rocks of the same age and chemistry. The Caledonian Mountains in northwestern Europe match the Appalachian Mountains along the east coast of the United States.</p>
-        <p>Put the continents back together and these ranges form one continuous belt, like a sentence torn across two pages. Rock types and the shapes of the continental shelves match across the ocean as well.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129522;</span>
-        <div class="card-title">Magnetite Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Some rocks contain <strong>magnetite</strong>, a magnetic iron-oxide mineral and the most magnetic mineral found in nature. When melted rock cools, magnetite crystals line up with Earth's magnetic field and lock in that direction, like tiny frozen compass needles.</p>
-        <p>Rocks of the same age on far-apart continents recorded matching magnetic patterns. That match only makes sense if the rocks formed side by side and later moved apart.</p>
-      </div>
-    </div>
-
-    <div class="callout gold">
-      <span class="callout-icon">&#9888;&#65039;</span>
-      <div class="callout-body"><strong>The missing piece:</strong> Wegener's evidence was strong, but most scientists rejected his idea for decades. The reason was simple: he could not explain what force could possibly move something as huge as a continent. That answer was still hidden deep inside Earth.</div>
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Establish the historical puzzle that drove the theory.</li><li>Show how multiple lines of evidence accumulate into a claim.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Evidence-based reasoning</li><li>Narrative structure (hero, evidence, unsolved mystery)</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Four parallel evidence cards, each self-contained</li><li>Short paragraphs with bolded key ideas</li><li>Misconception alert: Wegener was rejected for lack of mechanism, not bad evidence</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2: LITHOSPHERIC PLATES
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="plates" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Plates</span>
-    <h2 class="section-title">A Cracked Shell That Floats</h2>
-    <p class="section-desc">The breakthrough came from understanding Earth's layers. The continents do not plow through the ocean floor on their own. They ride on top of giant moving slabs.</p>
-
-    <div id="term-litho" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129513;</span>
-        <div class="card-title">The Lithosphere Rides the Asthenosphere</div>
-      </div>
-      <div class="card-body">
-        <p>The <span class="vocab">lithosphere</span> is Earth's rigid outer shell, made of the crust plus the upper part of the mantle. It is not one solid piece. It is cracked into many large slabs called <strong>tectonic plates</strong>.</p>
-        <p>Just below sits the <span class="vocab">asthenosphere</span>, a hotter, softer part of the mantle that slowly flows like thick putty. The plates float and slide on the asthenosphere the way rafts drift on the surface of a pool.</p>
-      </div>
-    </div>
-
-    <div id="term-plate" class="name-it slate-it">
-      <div class="name-it-label">Name it: Tectonic Plate</div>
-      <p>A <strong>tectonic plate</strong> is a large slab of lithosphere that moves slowly over the asthenosphere. Most plates carry both ocean floor and continents, so the continents move because the plates they sit on move.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Plates are not all the same, because the crust they carry comes in two kinds. The difference in density will matter a lot at the boundaries.</p>
 
     <div class="crust-grid">
       <div class="crust-card oceanic">
-        <div class="crust-title">Oceanic Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thinnest layer of crust</div>
+        <div class="crust-title">&#127807; Producers (Autotrophs)</div>
         <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>basalt</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thinnest</strong> and <strong>most dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Sinks when it meets lighter crust</span></li>
+          <li><span class="crust-dot"></span><span>Make their own food, usually through <strong>photosynthesis</strong></span></li>
+          <li><span class="crust-dot"></span><span>Capture energy directly from <strong>sunlight</strong></span></li>
+          <li><span class="crust-dot"></span><span>Examples: grass, trees, even the Venus flytrap</span></li>
         </ul>
       </div>
       <div class="crust-card continental">
-        <div class="crust-title">Continental Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thickest layer of crust</div>
+        <div class="crust-title">&#129418; Consumers (Heterotrophs)</div>
         <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>granite</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thickest</strong> and <strong>least dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Rides high and does not sink easily</span></li>
+          <li><span class="crust-dot"></span><span>Cannot make their own food</span></li>
+          <li><span class="crust-dot"></span><span>Get energy by <strong>eating</strong> other organisms</span></li>
+          <li><span class="crust-dot"></span><span>Examples: grasshoppers, deer, hawks, humans</span></li>
         </ul>
       </div>
     </div>
 
-    <div class="bridge-callout teal">
-      <strong>Hold on to the density rule:</strong> oceanic crust is more dense than continental crust. When two plates meet, the heavier oceanic crust tends to sink beneath the lighter continental crust. That single rule will explain a lot of what happens at boundaries.
+    <div id="term-consumer" class="name-it orange-it">
+      <div class="name-it-label">Key idea: Kinds of consumers</div>
+      <p>Consumers are grouped by what they eat. A <strong>herbivore</strong> eats only plants. A <strong>carnivore</strong> eats other animals. An <strong>omnivore</strong> eats both plants and animals. A <strong>scavenger</strong> mostly eats dead and decaying matter, such as a vulture feeding on a carcass.</p>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The key pattern:</strong> Producers bring energy into the living world by capturing sunlight. Every consumer, from the smallest insect to the largest predator, depends on that captured energy being passed along.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1066,100 +943,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Give students the moving-parts vocabulary before explaining what moves them.</li><li>Establish the density rule that drives subduction.</li></ul>
+          <ul class="edu-note-text"><li>Establish producers vs consumers before tracing energy.</li><li>Sort consumers by what they eat.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Concrete analogy (rafts on a pool)</li><li>Contrast pairs (oceanic vs continental crust)</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Side-by-side crust comparison cards</li><li>Visual density bars support non-verbal learners</li><li>Misconception alert: plates are not just continents; most carry ocean floor too</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3: WHAT MOVES THE PLATES (convection + seafloor spreading)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="motion" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Engine</span>
-    <h2 class="section-title">What Pushes the Plates?</h2>
-    <p class="section-desc">This is the answer Wegener was missing. The force that moves whole continents comes from heat deep inside Earth, the same heat that drives everything from the inside out.</p>
-
-    <div id="term-convection" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#128293;</span>
-        <div class="card-title">Convection Currents in the Mantle</div>
-      </div>
-      <div class="card-body">
-        <p>The mantle is extremely hot near the bottom and cooler near the top. Hot rock is less dense, so it slowly rises toward the surface. As it nears the top it cools, becomes more dense, and sinks back down. This endless loop is a <span class="vocab">convection current</span>.</p>
-        <p>These currents flow beneath the lithosphere and drag the plates along, like crackers riding on slowly boiling soup. <strong>The movement of mantle rock creates the movement of the plates above it.</strong></p>
-      </div>
-    </div>
-
-    <!-- Convection figure -->
-    <div class="figure-box">
-      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Convection currents in the mantle: hot rock rises in the middle, spreads sideways, and sinks at the edges, pushing two plates apart at the surface">
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="#7a3a2a" opacity="0.85"/>
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="url(#mantleGrad)"/>
-        <defs>
-          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.1"/>
-          </linearGradient>
-        </defs>
-        <rect x="40" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <rect x="320" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <text x="150" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <text x="450" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <path d="M400,210 C400,160 340,150 310,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <defs>
-          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd27a"/></marker>
-        </defs>
-        <text x="300" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">Hot rock rises in the middle, cools, and sinks at the sides</text>
-      </svg>
-      <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
-    </div>
-
-    <div id="term-seafloor" class="name-it teal-it">
-      <div class="name-it-label">Name it: Seafloor Spreading</div>
-      <p>Where plates pull apart under the ocean, rising magma fills the gap and cools into brand new ocean floor. This is called <strong>seafloor spreading</strong>. It builds a long underwater mountain chain called a mid-ocean ridge, and the seafloor is youngest right at the ridge and older farther away.</p>
-    </div>
-
-    <div class="callout slate">
-      <span class="callout-icon">&#129522;</span>
-      <div class="callout-body"><strong>Magnetite returns:</strong> as new seafloor cools at a ridge, magnetite minerals record the direction of Earth's magnetic field. The field flips over time, leaving matching, mirror-image stripes on both sides of the ridge. Those symmetric stripes are powerful proof that the seafloor is spreading.</div>
-    </div>
-
-    <div class="bridge-callout teal" style="margin-top: 0.5rem;">
-      <strong>The mystery solved:</strong> convection currents are the engine Wegener could not find. Heat drives the mantle to flow, the flow moves the plates, and the plates carry the continents. Now we can look at exactly what happens where two plates meet.
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Answer Wegener's missing piece: what actually moves the plates.</li><li>Establish the causal chain before showing what it produces at boundaries.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Causal reasoning (heat to flow to plate motion)</li><li>Labeled diagram supports dual coding</li></ul>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Comparison and contrast</li><li>Categorization</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1167,7 +955,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Boiling-water analogy makes convection concrete</li><li>Short paragraphs with key terms bolded in place</li><li>Misconception alert: the asthenosphere flows like thick putty, not liquid lava</li></ul>
+          <ul class="edu-note-text"><li>Two short, parallel comparison cards</li><li>Plain "makers vs eaters" framing</li><li>Key terms in bold</li></ul>
         </div>
       </div>
     </div>
@@ -1176,69 +964,77 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 4: PLATE BOUNDARIES (interactive)
+     EXPLORE 2: FOLLOW THE ENERGY (interactive journey)
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="boundaries-sec" style="background: var(--dark2);">
+<section id="journey" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Boundaries</span>
-    <h2 class="section-title">Where Plates Meet</h2>
-    <p class="section-desc">Almost all of Earth's earthquakes and volcanoes happen at plate boundaries. There are three types, sorted by how the plates move. Open each one to see what it builds.</p>
+    <span class="section-label">Explore &middot; The Journey</span>
+    <h2 class="section-title">Follow the Energy</h2>
+    <p class="section-desc">Energy moves through an ecosystem in a clear order, from the Sun to producers to consumers and finally to decomposers. Click a stage to follow the energy.</p>
 
-    <div id="term-boundaries" class="layer-wrap">
+    <div class="layer-wrap">
       <div class="layer-figure">
-        <svg viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three plate boundary types: divergent plates moving apart, convergent plates colliding with one sinking, and transform plates sliding past each other">
-          <!-- Divergent -->
-          <text x="10" y="22" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Divergent</text>
-          <rect x="20" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <rect x="145" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <path d="M118,43 L96,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M142,43 L164,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M130,56 L130,86" stroke="#ffb347" stroke-width="6" stroke-linecap="round"/>
-          <!-- Convergent -->
-          <text x="10" y="122" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Convergent</text>
-          <rect x="20" y="130" width="110" height="24" rx="3" fill="#9a5e3a"/>
-          <path d="M130,142 L155,142 L185,170 Z" fill="#7cc8f8"/>
-          <rect x="150" y="130" width="90" height="14" rx="3" fill="#7cc8f8"/>
-          <path d="M138,140 L120,140" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M150,127 L168,127" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M40,130 L52,112 L64,130 Z" fill="#8a9a6a"/>
-          <!-- Transform -->
-          <text x="10" y="222" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Transform</text>
-          <rect x="20" y="230" width="100" height="40" rx="3" fill="#6a7d52"/>
-          <rect x="140" y="230" width="100" height="40" rx="3" fill="#5a6e44"/>
-          <line x1="130" y1="226" x2="130" y2="274" stroke="#1a1410" stroke-width="3"/>
-          <path d="M70,222 L70,210" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M190,278 L190,290" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
+        <svg viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An energy flow diagram: the Sun gives energy to a plant, the plant feeds an animal, and a decomposer breaks down dead matter and returns materials to the soil">
+          <rect x="0" y="0" width="320" height="280" fill="#13283c"/>
+          <rect x="0" y="215" width="320" height="65" fill="#3a4a2c"/>
+          <!-- sun -->
+          <circle cx="55" cy="45" r="22" fill="#f5c842"/>
+          <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
+            <line x1="55" y1="12" x2="55" y2="4"/><line x1="55" y1="78" x2="55" y2="86"/>
+            <line x1="22" y1="45" x2="14" y2="45"/><line x1="88" y1="45" x2="96" y2="45"/>
+          </g>
+          <text x="55" y="105" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#f5c842">Sun</text>
+          <!-- plant -->
+          <rect x="142" y="178" width="8" height="42" fill="#6b4a2a"/>
+          <circle cx="146" cy="166" r="22" fill="#3ddc84"/>
+          <!-- animal -->
+          <ellipse cx="240" cy="200" rx="20" ry="12" fill="#c9a06a"/><circle cx="256" cy="192" r="8" fill="#c9a06a"/>
+          <!-- decomposer mushroom -->
+          <rect x="100" y="246" width="6" height="14" fill="#d8c9a8"/>
+          <ellipse cx="103" cy="246" rx="13" ry="7" fill="#1de9b6"/>
+          <text x="103" y="274" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#1de9b6">decomposer</text>
+          <!-- arrows -->
+          <path d="M78,70 C100,110 115,135 130,150" stroke="#f5c842" stroke-width="4" fill="none" marker-end="url(#e1)"/>
+          <path d="M170,170 C195,180 210,190 220,195" stroke="#e8814a" stroke-width="4" fill="none" marker-end="url(#e2)"/>
+          <path d="M225,210 C180,235 140,245 120,250" stroke="#1de9b6" stroke-width="4" fill="none" marker-end="url(#e3)"/>
           <defs>
-            <marker id="bh" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
+            <marker id="e1" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f5c842"/></marker>
+            <marker id="e2" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#e8814a"/></marker>
+            <marker id="e3" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#1de9b6"/></marker>
           </defs>
+          <text x="100" y="125" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#f5c842">1</text>
+          <text x="195" y="178" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#e8814a">2</text>
+          <text x="160" y="245" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#1de9b6">3</text>
         </svg>
       </div>
       <div class="layer-controls">
         <div class="layer-list">
-          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9be8bb;" onclick="boundaryClick(1)">
-            <span>1 &middot; Divergent</span><span class="layer-tag">plates move apart</span>
+          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f3d27a;" onclick="layerClick(1)">
+            <span>1 &middot; Energy Enters</span><span class="layer-tag">the Sun</span>
           </div>
-          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b88a;" onclick="boundaryClick(2)">
-            <span>2 &middot; Convergent</span><span class="layer-tag">plates collide</span>
+          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #7df0b4;" onclick="layerClick(2)">
+            <span>2 &middot; Producers Capture It</span><span class="layer-tag">photosynthesis</span>
           </div>
-          <div class="layer-row" style="background: rgba(124,200,248,0.26); color: #aed8f8;" onclick="boundaryClick(3)">
-            <span>3 &middot; Transform</span><span class="layer-tag">plates slide past</span>
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f0b48a;" onclick="layerClick(3)">
+            <span>3 &middot; Consumers Pass It On</span><span class="layer-tag">eating</span>
+          </div>
+          <div class="layer-row" style="background: rgba(29,233,182,0.24); color: #8ef0db;" onclick="layerClick(4)">
+            <span>4 &middot; Decomposers Recycle</span><span class="layer-tag">breakdown</span>
           </div>
         </div>
         <div class="layer-detail-panel">
           <div class="ld-inner">
-            <div class="ld-label" id="bd-label">Open a boundary</div>
-            <div class="ld-title" id="bd-title">Three ways plates meet &#8594;</div>
-            <div class="ld-body" id="bd-body">Each boundary type moves in a different way, so each one builds different features at the surface. Open any boundary to see how the plates move and what they create.</div>
+            <div class="ld-label" id="ld-label">Click a stage</div>
+            <div class="ld-title" id="ld-title">Start with the Sun &#8594;</div>
+            <div class="ld-body" id="ld-body">Each stage moves energy to a new place. Click any stage to follow the energy and see which organisms are at work.</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="callout teal">
-      <span class="callout-icon">&#9889;</span>
-      <div class="callout-body"><strong>Why the belts exist:</strong> the plate boundaries are exactly the lines you saw on the map. Divergent ridges, convergent trenches and volcanoes, and transform faults are where the crust cracks, melts, and slips, so that is where earthquakes and volcanoes cluster.</div>
+    <div class="callout slate">
+      <span class="callout-icon">&#9728;&#65039;</span>
+      <div class="callout-body"><strong>One-way street:</strong> Unlike matter, energy does not cycle back to the Sun. It flows in one direction, entering as sunlight and leaving as heat. The Sun must keep supplying new energy to keep the ecosystem running.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1246,11 +1042,229 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Connect plate motion to surface features students can observe.</li><li>Answer the opening phenomenon: why earthquakes and volcanoes form belts.</li></ul>
+          <ul class="edu-note-text"><li>Give a whole-flow map before studying each step.</li><li>Show energy flows one way, while materials recycle.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Comparison and contrast (three boundary types)</li><li>Dual coding with interactive diagram</li></ul>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Dual coding with the interactive diagram</li><li>Pattern recognition (in, capture, pass, recycle)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal each stage, no hover</li><li>Labeled diagram paired with text</li><li>Numbered, ordered stages</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: FOOD CHAINS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="into" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Food Chains</span>
+    <h2 class="section-title">One Path of Energy</h2>
+    <p class="section-desc">The simplest way to model energy flow is a food chain. It follows a single path, showing who eats whom and which way the energy moves.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128279;</span>
+        <div class="card-title">Reading a Food Chain</div>
+      </div>
+      <div class="card-body">
+        <p>Energy enters at the Sun and is captured by a producer. A consumer eats the producer, and another consumer eats that one. Decomposers then recycle the materials when organisms die.</p>
+        <p>The arrows in a food chain always point in the direction the energy flows, from the organism being eaten to the one that eats it.</p>
+      </div>
+    </div>
+
+    <div id="term-foodchain" class="name-it gold" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Food Chain</div>
+      <p>A <strong style="color: var(--gold);">food chain</strong> shows one path of energy flow through an ecosystem. A typical order is: Sun, then producer, then first-level consumer, then second-level consumer, with decomposers recycling materials back to producers.</p>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129436;</span>
+        <div class="card-title">Feeding Levels</div>
+      </div>
+      <div class="card-body">
+        <p>Each step in a food chain is a feeding level. Producers sit at the bottom. A <strong>first-level consumer</strong> eats producers. A <strong>second-level consumer</strong> eats first-level consumers, and so on up the chain.</p>
+        <p>A grasshopper eating grass is a first-level consumer. A bird eating the grasshopper is a second-level consumer. The hawk that eats the bird sits higher still.</p>
+      </div>
+    </div>
+
+    <div class="callout teal">
+      <span class="callout-icon">&#127807;</span>
+      <div class="callout-body"><strong>Producers come first:</strong> Almost every food chain begins with a producer, because producers are the organisms that bring the Sun's energy into the living world.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Introduce the simplest model of energy flow.</li><li>Teach feeding levels and arrow direction.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Chunking a sequence</li><li>Cause-and-effect (eaten to eater)</li><li>Modeling with arrows</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key term defined in place</li><li>Short paragraphs</li><li>Concrete grassland example</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: FOOD WEBS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="out" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Food Webs</span>
+    <h2 class="section-title">Many Paths at Once</h2>
+    <p class="section-desc">In a real ecosystem, most organisms eat more than one kind of food, and most are eaten by more than one predator. A single food chain cannot capture all of that. A food web can.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128376;&#65039;</span>
+        <div class="card-title">Chains That Overlap</div>
+      </div>
+      <div class="card-body">
+        <p>A mouse might be eaten by a hawk, a snake, or an owl. A hawk might eat a mouse, a snake, or a rabbit. Each of those connections is part of a different food chain.</p>
+        <p>When you draw all of those overlapping chains together, you get a food web. It shows the many paths energy can take through one ecosystem.</p>
+      </div>
+    </div>
+
+    <div id="term-foodweb" class="name-it blue-it">
+      <div class="name-it-label">Key idea: Food Web</div>
+      <p>A <strong>food web</strong> is a model that shows the flow of energy through many different organisms in an ecosystem. It is made of many overlapping food chains, and the arrows show the direction the energy flows.</p>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129518;</span>
+        <div class="card-title">Why Food Webs Matter</div>
+      </div>
+      <div class="card-body">
+        <p>Because energy can travel many paths, a food web is more stable than a single chain. If one food source disappears, many animals can switch to another.</p>
+        <p>This is why scientists usually use a food web, not a single food chain, to model a whole ecosystem.</p>
+      </div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Chain vs web:</strong> A food chain follows one path of energy. A food web combines many chains to show all the paths at once. Both use arrows pointing in the direction the energy flows.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Extend the chain model to a more realistic web.</li><li>Connect overlapping paths to stability.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison (chain vs web)</li><li>Schema extension</li><li>Cause-and-effect (many paths to stability)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key term defined in place</li><li>Familiar predator and prey examples</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 5: ENERGY PYRAMID
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="storage" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The 10% Rule</span>
+    <h2 class="section-title">Energy Shrinks at Every Step</h2>
+    <p class="section-desc">Energy does not pass cleanly from one organism to the next. Most of it is used up or lost along the way. That loss is the key to our opening puzzle.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128293;</span>
+        <div class="card-title">Where the Energy Goes</div>
+      </div>
+      <div class="card-body">
+        <p>When an organism eats, it takes in energy. But it uses most of that energy to live, to grow, to move, and to stay warm. A lot also leaves the body as heat.</p>
+        <p>This means only part of the energy stored in one organism is available to the next organism that eats it.</p>
+      </div>
+    </div>
+
+    <!-- Energy pyramid figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An energy pyramid showing energy shrinking from producers at the wide base up to top consumers at the narrow tip. Each level passes about ten percent of its energy to the level above it">
+        <rect x="0" y="0" width="560" height="320" fill="#0f1c2b"/>
+        <!-- level 4 top -->
+        <polygon points="280,30 230,90 330,90" fill="#e8814a"/>
+        <text x="280" y="72" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="900" fill="#1a0f08">10</text>
+        <!-- level 3 -->
+        <polygon points="230,92 330,92 365,152 195,152" fill="#7cc8f8"/>
+        <text x="280" y="130" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="900" fill="#0a1d2c">100</text>
+        <!-- level 2 -->
+        <polygon points="195,154 365,154 400,214 160,214" fill="#8fc23a"/>
+        <text x="280" y="192" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="900" fill="#0e1a05">1,000</text>
+        <!-- level 1 base -->
+        <polygon points="160,216 400,216 440,286 120,286" fill="#3ddc84"/>
+        <text x="280" y="258" text-anchor="middle" font-family="Nunito,sans-serif" font-size="15" font-weight="900" fill="#08200f">10,000</text>
+        <!-- right side labels -->
+        <text x="455" y="65" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Top consumer</text>
+        <text x="455" y="127" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">2nd consumer</text>
+        <text x="455" y="189" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#8fc23a">1st consumer</text>
+        <text x="455" y="255" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Producers</text>
+        <!-- arrow up -->
+        <defs>
+          <marker id="pu" markerWidth="10" markerHeight="10" refX="5" refY="2" orient="auto"><path d="M0,9 L5,0 L10,9 Z" fill="#9fb8cc"/></marker>
+        </defs>
+        <line x1="70" y1="286" x2="70" y2="55" stroke="#9fb8cc" stroke-width="3" marker-end="url(#pu)"/>
+        <text x="40" y="175" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc" transform="rotate(-90 40 175)">Energy available shrinks</text>
+        <text x="280" y="308" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#9fb8cc">Only about 10% of energy moves to the next level up</text>
+      </svg>
+      <div class="figure-caption">Numbers show units of energy. Each level holds about one tenth of the level below it, so the pyramid narrows toward the top.</div>
+    </div>
+
+    <div id="term-pyramid" class="name-it gold" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Energy Pyramid</div>
+      <p>An <strong style="color: var(--gold);">energy pyramid</strong> shows how much energy is available at each feeding level. The greatest amount of energy is at the producer level. The least is at the top. Only about <strong style="color: var(--gold);">10%</strong> of the energy at one level is passed on to the next level up.</p>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128202;</span>
+      <div class="callout-body"><strong>Back to the puzzle:</strong> Because each level keeps only about a tenth of the energy, there is far less energy at the top than at the bottom. That is why a whole field of grass supports only a few hawks. The shrinking energy is the shrinking life.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Explain why energy decreases up the levels.</li><li>Answer the opening phenomenon directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the pyramid</li><li>Cause-and-effect (energy loss to fewer organisms)</li><li>Quantitative reasoning (the 10% rule)</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1258,7 +1272,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Click to reveal one boundary at a time reduces load</li><li>Misconception alert: students often mix up which boundary produces mountains vs trenches vs rift valleys</li><li>Pause and have students predict the feature before revealing</li></ul>
+          <ul class="edu-note-text"><li>Key term defined in place</li><li>Numbers shown on the diagram</li><li>Short paragraphs</li></ul>
         </div>
       </div>
     </div>
@@ -1269,7 +1283,7 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      QUICK RECALL
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="recall" style="background: var(--dark);">
+<section id="recall" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Quick Recall</span>
     <h2 class="section-title">Brain Check</h2>
@@ -1278,11 +1292,11 @@
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">Wegener's idea of continental drift was rejected for decades. What was missing from his explanation?</div>
+      <div class="qr-q" id="qr1Q">Where does the energy in almost every ecosystem originally come from?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>He had no fossil evidence at all</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>He could not explain what force could move a continent</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>No one believed Pangaea had ever existed</span></label>
+        <label><input type="radio" name="qr1" value="0"><span>The Sun</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Decomposers</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>The soil</span></label>
       </div>
       <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1294,11 +1308,11 @@
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">The tectonic plates float and slide on which layer of Earth?</div>
+      <div class="qr-q" id="qr2Q">A hawk eats a snake that ate a mouse. The hawk gets its energy by eating, so it is a what?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>The solid inner core</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>The brittle surface crust</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>The soft, flowing asthenosphere</span></label>
+        <label><input type="radio" name="qr2" value="0"><span>Producer</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Consumer</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Decomposer</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1310,11 +1324,11 @@
     <div class="qr-card" id="qrCard3">
       <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr3Q">Two plates grind past each other along the San Andreas Fault. What does this transform boundary mainly produce?</div>
+      <div class="qr-q" id="qr3Q">About how much of the energy at one feeding level is passed on to the next level up?</div>
       <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
-        <label><input type="radio" name="qr3" value="0"><span>Earthquakes</span></label>
-        <label><input type="radio" name="qr3" value="1"><span>Brand new seafloor</span></label>
-        <label><input type="radio" name="qr3" value="2"><span>Tall volcanoes</span></label>
+        <label><input type="radio" name="qr3" value="0"><span>About 90%</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>About 50%</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>About 10%</span></label>
       </div>
       <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1328,7 +1342,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions before the quiz.</li></ul>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1340,7 +1354,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce cognitive load</li></ul>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
         </div>
       </div>
     </div>
@@ -1351,40 +1365,40 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      EXPLAIN: PUTTING IT TOGETHER
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="explain" style="background: var(--dark2);">
+<section id="explain" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Explain &middot; Wrap-Up</span>
-    <h2 class="section-title">From Deep Heat to Moving Ground</h2>
-    <p class="section-desc">You started with a question: why does Earth's surface move, and why do earthquakes and volcanoes line up in belts? Now you can trace the whole chain, step by step.</p>
+    <h2 class="section-title">From Sunlight to the Top</h2>
+    <p class="section-desc">You started with a question: why does the amount of life shrink as you move up a food chain? Now you can trace the whole flow, step by step.</p>
 
     <div class="wrapup-beats">
       <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">It Starts With Heat</div>
-        <div class="wrapup-beat-answer">Heat inside Earth keeps the mantle slowly flowing.</div>
-        <div class="wrapup-beat-body">Hot rock is less dense, so it rises, cools, and sinks in <strong>convection currents</strong>. This is the engine Wegener was missing.</div>
+        <div class="wrapup-beat-label">Energy Enters</div>
+        <div class="wrapup-beat-answer">The Sun powers the whole ecosystem.</div>
+        <div class="wrapup-beat-body">Energy enters as sunlight. <strong>Producers</strong> capture it through photosynthesis and bring it into the living world.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">Heat Becomes Motion</div>
-        <div class="wrapup-beat-answer">Convection drags the plates, and the plates carry the continents.</div>
-        <div class="wrapup-beat-body">The flowing mantle moves the <strong>tectonic plates</strong> of the lithosphere. New seafloor forms where they pull apart, which is why the continents drift over time.</div>
+        <div class="wrapup-beat-label">Energy Moves</div>
+        <div class="wrapup-beat-answer">Consumers pass energy along the food web.</div>
+        <div class="wrapup-beat-body">A <strong>consumer</strong> eats a producer, and another eats that consumer. <strong>Food chains</strong> and <strong>food webs</strong> model these paths, while <strong>decomposers</strong> recycle materials.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">Motion Reaches the Surface</div>
-        <div class="wrapup-beat-answer">Plate boundaries produce earthquakes and volcanoes.</div>
-        <div class="wrapup-beat-body">Where plates diverge, converge, or slide past, the crust cracks, melts, and slips. Those <strong>boundaries</strong> are the belts on the map.</div>
+        <div class="wrapup-beat-label">Energy Shrinks</div>
+        <div class="wrapup-beat-answer">Only about 10% reaches the next level.</div>
+        <div class="wrapup-beat-body">Most energy is used or lost as heat at each step. The <strong>energy pyramid</strong> shows why there is so little life at the top.</div>
       </div>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
-      <strong>The full chain:</strong>
+      <strong>The full flow:</strong>
       <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Heat deep in the mantle</span>
-        <span class="wuc wuc-2">Convection currents flow</span>
-        <span class="wuc wuc-2">Plates move and continents drift</span>
-        <span class="wuc wuc-3">Plates meet at boundaries</span>
-        <span class="wuc wuc-3">Earthquakes and volcanoes in belts</span>
+        <span class="wuc wuc-1">Energy enters from the Sun</span>
+        <span class="wuc wuc-1">Producers capture it</span>
+        <span class="wuc wuc-2">Consumers pass it along</span>
+        <span class="wuc wuc-2">Decomposers recycle materials</span>
+        <span class="wuc wuc-3">Only about 10% moves up each level</span>
       </div>
-      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. Wegener saw the puzzle; convection currents and plate tectonics finally explained it.</div>
+      <div style="margin-top: 1rem;">Energy flows in one direction, entering as sunlight and leaving as heat. Because so little survives each step, the higher you look in a food chain, the less life it can support. That is why a whole field of grass feeds only a few hawks.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1392,11 +1406,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening phenomenon directly and completely.</li></ul>
+          <ul class="edu-note-text"><li>Tie the steps into one cause-and-effect flow.</li><li>Answer the opening question directly.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative closure</li></ul>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1404,7 +1418,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Step-by-step beats break the chain into chunks</li><li>Plain causal language throughout</li><li>Chip summary gives a visual map of the full chain</li></ul>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
         </div>
       </div>
     </div>
@@ -1419,7 +1433,7 @@
   <div class="container">
     <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Ten questions covering everything you explored, from Wegener's evidence to convection currents and plate boundaries. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you explored, from producers to the energy pyramid. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -1486,18 +1500,19 @@
       <p id="el-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">&#128269; The Question You Came In With</span>
-        You started this lesson asking: <strong>"Why does Earth's surface move?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes at the boundaries, you have answered it.
+        You started this lesson asking: <strong>"Why does the amount of life shrink as you move up a food chain?"</strong> If you can trace energy entering from the Sun, getting captured by producers, passing through consumers in a food web, and shrinking by about 90% at each step of the energy pyramid, you have answered it.
       </div>
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
     </div>
+
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
       <div class="edu-note-label">&#128218; Instructional Design</div>
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear performance signal.</li></ul>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1509,11 +1524,10 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Answer explanations provided for every question</li><li>Practice and classroom modes available</li><li>Plausible distractors, evenly distributed answer positions</li></ul>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
         </div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -1631,19 +1645,20 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 })();
 </script>
 
-<!-- ===== PLATE BOUNDARIES INTERACTIVE ===== -->
+<!-- ===== ENERGY FLOW STAGES INTERACTIVE ===== -->
 <script>
-const boundaryData = {
-  1: { label: 'Boundary 1 · Plates move apart', title: 'Divergent Boundary', body: 'Two plates pull apart and rising magma fills the gap, cooling into new crust. Under the ocean this builds a mid-ocean ridge with a rift valley down the center, like the Mid-Atlantic Ridge. On land it can split a continent, as at the East African Rift.' },
-  2: { label: 'Boundary 2 · Plates collide', title: 'Convergent Boundary', body: 'Two plates push together. The more dense plate subducts (sinks) beneath the less dense one, melting and feeding volcanoes, like the Andes and the Japanese island arc. When both plates are continental and equally light, neither sinks, so they crumple upward into mountains like the Himalayas.' },
-  3: { label: 'Boundary 3 · Plates slide past', title: 'Transform Boundary', body: 'Two plates grind past each other in opposite directions. No crust is made or destroyed, but the plates catch and slip, releasing energy as earthquakes. The San Andreas Fault in California is a famous example.' }
+const layerData = {
+  1: { label: 'Stage 1 · Energy enters', title: 'The Sun', body: 'Almost all the energy in an ecosystem starts at the Sun. Sunlight reaches Earth and becomes the original source of energy for nearly every living thing. The energy must keep arriving, because it flows one way and does not return.' },
+  2: { label: 'Stage 2 · Energy is captured', title: 'Producers Capture It', body: 'Producers, such as plants, use photosynthesis to capture sunlight and store it as food. This is the doorway that lets the Sun’s energy enter the living world. Producers hold the most energy of any feeding level.' },
+  3: { label: 'Stage 3 · Energy passes along', title: 'Consumers Pass It On', body: 'Consumers cannot make food, so they eat to get energy. A first-level consumer eats producers, and higher consumers eat other consumers. Each time, only a small part of the energy is passed on.' },
+  4: { label: 'Stage 4 · Materials recycle', title: 'Decomposers Recycle', body: 'Decomposers break down dead organisms and waste, returning raw materials to the environment for producers to use again. They recycle matter even though the energy itself keeps moving on and eventually leaves as heat.' }
 };
-function boundaryClick(n) {
-  const d = boundaryData[n];
-  document.getElementById('bd-label').textContent = d.label;
-  document.getElementById('bd-title').textContent = d.title;
-  document.getElementById('bd-body').textContent  = d.body;
-  document.querySelectorAll('#term-boundaries .layer-row').forEach((el, i) => {
+function layerClick(n) {
+  const d = layerData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
     el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
     el.style.outlineOffset = '1px';
   });
@@ -1686,15 +1701,15 @@ function boundaryClick(n) {
       opts.querySelector('input').focus();
     });
   }
-  wireQR('qr1', 1,
-    'Correct! His evidence was strong, but he could not explain what force moved the continents. Convection currents were the missing piece.',
-    'Not quite. Wegener had plenty of evidence and believed in Pangaea. What he could not explain was the force that moved the continents.');
-  wireQR('qr2', 2,
-    'Correct! The plates float and slide on the soft, slowly flowing asthenosphere in the upper mantle.',
-    'Not quite. The crust and inner core do not flow. The plates ride on the soft, flowing asthenosphere.');
-  wireQR('qr3', 0,
-    'Correct! Transform boundaries make and destroy no crust, but the plates catch and slip, releasing energy as earthquakes.',
-    'Not quite. New seafloor forms at divergent boundaries and volcanoes at convergent ones. Transform boundaries mainly cause earthquakes.');
+  wireQR('qr1', 0,
+    'Correct! Almost all energy in an ecosystem starts as sunlight from the Sun.',
+    'Not quite. The original source of energy for nearly every ecosystem is the Sun.');
+  wireQR('qr2', 1,
+    'Correct! The hawk eats other organisms to get energy, so it is a consumer.',
+    'Not quite. An organism that gets energy by eating others is a consumer.');
+  wireQR('qr3', 2,
+    'Correct! Only about 10% of the energy moves to the next level. The rest is used or lost as heat.',
+    'Not quite. Only about 10% of energy passes to the next feeding level.');
 })();
 </script>
 
@@ -1713,104 +1728,114 @@ var elQuizMode  = 'practice';
 
 var elQuizQuestions = [
   {
-    q: "Who proposed the idea of continental drift, and what did he name the ancient supercontinent?",
-    options: ["Isaac Newton; Gondwana", "Alfred Wegener; Pangaea", "Charles Darwin; Laurasia", "Alfred Wegener; Atlantis"],
-    correct: 1,
-    explanation: "In 1912, the German scientist Alfred Wegener proposed continental drift and named the supercontinent Pangaea, meaning all land."
-  },
-  {
-    q: "Wegener found fossils of the same plant, Glossopteris, on continents now separated by wide oceans. Why is this evidence that the continents were once joined?",
+    q: "Where does the energy in almost every ecosystem originally come from?",
     options: [
-      "The seeds were too heavy to drift across an ocean and the animals could not swim that far",
-      "Glossopteris still grows on every continent today",
-      "Fossils can float across oceans on currents",
-      "The plant only grew in freezing climates"
-    ],
-    correct: 0,
-    explanation: "Glossopteris seeds could not survive a long ocean drift, and the small land animals found with it could not swim across oceans. The simplest explanation is that the land was once connected."
-  },
-  {
-    q: "The lithosphere is broken into large slabs that float on the asthenosphere. What are these slabs called?",
-    options: ["Convection cells", "Rift valleys", "Tectonic plates", "Continental shelves"],
-    correct: 2,
-    explanation: "The rigid lithosphere is cracked into tectonic plates that slowly move over the soft, flowing asthenosphere."
-  },
-  {
-    q: "Wegener could not explain what moved the continents. What actually provides the force that moves the plates?",
-    options: [
-      "The pull of ocean tides",
-      "The spinning of the inner core",
-      "Wind and weather at the surface",
-      "Convection currents in the mantle"
-    ],
-    correct: 3,
-    explanation: "Heat inside Earth drives convection currents in the mantle. The flowing mantle rock drags the plates, which is the force Wegener was missing."
-  },
-  {
-    q: "At a divergent boundary two plates move apart. What happens in the gap between them?",
-    options: [
-      "Rising magma fills the gap and cools into new crust",
-      "One plate sinks beneath the other",
-      "The plates grind past each other",
-      "A deep ocean trench forms"
-    ],
-    correct: 0,
-    explanation: "As the plates separate, magma rises to fill the gap and cools into new crust. Under the ocean this is seafloor spreading at a mid-ocean ridge."
-  },
-  {
-    q: "The seafloor of the Atlantic is youngest at the Mid-Atlantic Ridge and older farther away. Which process best explains this?",
-    options: [
-      "Subduction pulling the crust down",
-      "Seafloor spreading at a divergent boundary",
-      "A transform fault sliding sideways",
-      "Weathering of the ocean floor"
-    ],
-    correct: 1,
-    explanation: "New crust forms at the ridge and moves outward, so the seafloor is youngest at the ridge and gets older with distance. This is seafloor spreading."
-  },
-  {
-    q: "Two oceanic plates collide and the more dense one sinks beneath the other. What is this process called, and what does it tend to build?",
-    options: [
-      "Spreading, building a rift valley",
-      "Erosion, building canyons",
-      "Subduction, building volcanoes and island arcs",
-      "Drifting, building flat plains"
+      "The soil",
+      "Decomposers",
+      "The Sun",
+      "Water"
     ],
     correct: 2,
-    explanation: "When one plate sinks beneath another it is called subduction. The sinking plate melts and feeds volcanoes, forming features like the Japanese island arc."
+    explanation: "Energy enters almost every ecosystem as sunlight. The Sun is the original source of energy for nearly all living things."
   },
   {
-    q: "The Himalayas formed where two continental plates of similar density collided. Why did they crumple upward instead of one plate sinking?",
+    q: "An organism that makes its own food, usually using sunlight, is called what?",
     options: [
-      "Continental crust is too dense to rise",
-      "One of the plates melted completely",
-      "The boundary is actually a transform boundary",
-      "Neither plate is dense enough to sink, so they push each other up"
-    ],
-    correct: 3,
-    explanation: "Continental crust is light and does not subduct easily. When two continental plates meet, neither sinks, so the crust folds and pushes upward into tall mountains like the Himalayas."
-  },
-  {
-    q: "The San Andreas Fault is a place where two plates slide past each other. What kind of boundary is this, and what is it known for?",
-    options: [
-      "A transform boundary known for earthquakes",
-      "A divergent boundary known for new seafloor",
-      "A convergent boundary known for volcanoes",
-      "A boundary known for building island arcs"
+      "A producer",
+      "A consumer",
+      "A scavenger",
+      "A carnivore"
     ],
     correct: 0,
-    explanation: "Plates sliding past each other form a transform boundary. They catch and slip, releasing energy as earthquakes, like those along the San Andreas Fault."
+    explanation: "A producer, also called an autotroph, makes its own food, usually through photosynthesis."
   },
   {
-    q: "Why do earthquakes and volcanoes occur in narrow belts around Earth rather than randomly?",
+    q: "Which type of organism cannot make its own food and must eat other organisms?",
     options: [
-      "They follow ocean currents around the globe",
-      "They line up along the edges of the tectonic plates",
-      "They appear wherever the crust is thickest",
-      "They are spread evenly but only reported in cities"
+      "A producer",
+      "An autotroph",
+      "The Sun",
+      "A consumer"
+    ],
+    correct: 3,
+    explanation: "A consumer, also called a heterotroph, cannot make food and gets energy by eating other organisms."
+  },
+  {
+    q: "A rabbit eats only plants. What kind of consumer is it?",
+    options: [
+      "A carnivore",
+      "A herbivore",
+      "A decomposer",
+      "A producer"
     ],
     correct: 1,
-    explanation: "Almost all earthquakes and volcanoes happen at plate boundaries, where plates pull apart, collide, or slide past. The belts on the map trace those boundaries."
+    explanation: "A herbivore eats only plants. A rabbit that eats grass and leaves is a herbivore."
+  },
+  {
+    q: "What do decomposers do in an ecosystem?",
+    options: [
+      "They make food from sunlight",
+      "They hunt and kill live prey",
+      "They break down dead matter and return materials to the environment",
+      "They add brand new energy to the ecosystem"
+    ],
+    correct: 2,
+    explanation: "Decomposers break down waste and dead organisms, returning raw materials to the environment for producers to reuse."
+  },
+  {
+    q: "What does a food chain show?",
+    options: [
+      "Every organism that lives in a region",
+      "One path of energy flow through an ecosystem",
+      "Only the decomposers in an ecosystem",
+      "The weather patterns of an ecosystem"
+    ],
+    correct: 1,
+    explanation: "A food chain shows one single path of energy as it flows from one organism to the next."
+  },
+  {
+    q: "How is a food web different from a food chain?",
+    options: [
+      "It has no producers in it",
+      "It shows only one path of energy",
+      "It leaves out all the consumers",
+      "It shows many overlapping food chains at once"
+    ],
+    correct: 3,
+    explanation: "A food web combines many overlapping food chains to show all the paths energy can take through an ecosystem."
+  },
+  {
+    q: "About how much of the energy at one feeding level is passed on to the next level up?",
+    options: [
+      "About 10%",
+      "About 50%",
+      "About 90%",
+      "All of it"
+    ],
+    correct: 0,
+    explanation: "Only about 10% of the energy at a level moves to the next level. The rest is used for life processes or lost as heat."
+  },
+  {
+    q: "At which level of an energy pyramid is the most energy available?",
+    options: [
+      "The top consumers",
+      "The decomposers",
+      "The producers",
+      "The second-level consumers"
+    ],
+    correct: 2,
+    explanation: "The greatest amount of energy is at the producer level, at the base of the pyramid. Energy shrinks toward the top."
+  },
+  {
+    q: "Why are there usually far fewer top predators than plants in an ecosystem?",
+    options: [
+      "Top predators are simply larger animals",
+      "Much less energy is available at the higher feeding levels",
+      "Plants only grow during certain seasons",
+      "Top predators do not need to eat very often"
+    ],
+    correct: 1,
+    explanation: "Because only about 10% of energy passes up each level, there is far less energy at the top, so it supports fewer organisms."
   }
 ];
 
@@ -1925,7 +1950,7 @@ function elSubmitQuiz() {
   var total = elQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
-  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand plate tectonics cold.'
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand energy flow cold.'
     : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
     : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
     : '\u{1F4AA} Keep going; review each section carefully and try again!';
@@ -1948,7 +1973,7 @@ function elSubmitQuiz() {
     return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
   }).join(', ');
   var params = new URLSearchParams({
-    tab: 'Plate Tectonics', lesson: 'Plate Tectonics', studentName: info2.name, teacher: teacherLabel,
+    tab: 'Energy Flow', lesson: 'Energy Flow in Ecosystems', studentName: info2.name, teacher: teacherLabel,
     block: info2.block, score: score, total: total, percent: pct + '%',
     timestamp: new Date().toISOString(), answers: answerStr
   });

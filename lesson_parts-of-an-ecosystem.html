@@ -12,9 +12,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="https://lyfelabz.com/lesson_plate-tectonics.html">
-<meta name="description" content="Discover plate tectonics: continental drift evidence, lithospheric plates, seafloor spreading, convection currents, and the three plate boundaries that build mountains and trigger earthquakes and volcanoes. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
-<title>LyfeLabz | Plate Tectonics</title>
+<link rel="canonical" href="https://lyfelabz.com/lesson_parts-of-an-ecosystem.html">
+<meta name="description" content="Explore the parts of an ecosystem: biotic and abiotic factors, the levels of organization from organism to biome, habitat and niche, and how species interact through predation, symbiosis, and competition. A Grade 7 science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Parts of an Ecosystem</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -174,6 +174,32 @@
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
 
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
   .container { max-width: 1100px; margin: 0 auto; }
@@ -332,6 +358,7 @@
   .name-it.green-it { border-left-color: var(--green); }
   .name-it.orange-it { border-left-color: var(--orange); }
   .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it.blue-it { border-left-color: var(--blue); }
   .name-it-label {
     font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
     color: var(--gold); margin-bottom: 0.4rem;
@@ -340,25 +367,32 @@
   .name-it.green-it .name-it-label  { color: var(--green); }
   .name-it.orange-it .name-it-label { color: var(--orange); }
   .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it.blue-it .name-it-label   { color: var(--blue); }
   .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
   .name-it p strong { font-weight: 800; }
   .name-it.teal-it p strong   { color: var(--teal); }
   .name-it.green-it p strong  { color: var(--green); }
   .name-it.orange-it p strong { color: var(--orange); }
   .name-it.slate-it p strong  { color: var(--accent2); }
+  .name-it.blue-it p strong   { color: var(--blue); }
 
-  /* ── EXAMPLE GRID ── */
-  .example-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin: 0 auto 2rem; }
-  @media (max-width: 700px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
-  .example-chip {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.6rem;
-    font-size: 0.88rem; font-weight: 700; color: var(--text-muted); line-height: 1.4;
-  }
-  .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+  /* ── COMPARISON GRID ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .crust-card.oceanic { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.3); }
+  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.8rem; }
+  .crust-card.oceanic .crust-title { color: var(--green); }
+  .crust-card.continental .crust-title { color: var(--orange); }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .crust-list li strong { color: var(--text); }
+  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .crust-card.oceanic .crust-dot { background: var(--green); }
+  .crust-card.continental .crust-dot { background: var(--orange); }
 
-  /* ── LAYER / BOUNDARY SELECTOR (interactive) ── */
+  /* ── STAGE SELECTOR (interactive levels of organization) ── */
   .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
   .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
   .layer-figure svg { width: 100%; height: auto; display: block; }
@@ -382,28 +416,7 @@
   .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
   .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
 
-  /* ── CRUST COMPARISON ── */
-  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
-  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
-  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
-  .crust-card.oceanic { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
-  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
-  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
-  .crust-card.oceanic .crust-title { color: var(--blue); }
-  .crust-card.continental .crust-title { color: var(--orange); }
-  .crust-bar-track { height: 14px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; margin: 0.7rem 0 0.4rem; }
-  .crust-bar { height: 100%; border-radius: 99px; }
-  .crust-card.oceanic .crust-bar { background: linear-gradient(90deg, var(--blue), rgba(124,200,248,0.5)); width: 16%; }
-  .crust-card.continental .crust-bar { background: linear-gradient(90deg, var(--orange), rgba(232,129,74,0.5)); width: 100%; }
-  .crust-bar-label { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; }
-  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
-  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
-  .crust-list li strong { color: var(--text); }
-  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
-  .crust-card.oceanic .crust-dot { background: var(--blue); }
-  .crust-card.continental .crust-dot { background: var(--orange); }
-
-  /* ── CONVECTION / DIAGRAM FIGURE ── */
+  /* ── FIGURE ── */
   .figure-box {
     background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
@@ -440,24 +453,24 @@
   @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
   .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
   .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
-  .wrapup-beat-1 { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.25); }
-  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
-  .wrapup-beat-2 { background: rgba(29,233,182,0.05); border: 1px solid rgba(29,233,182,0.2); }
-  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+  .wrapup-beat-1 { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--green), rgba(61,220,132,0.3)); }
+  .wrapup-beat-2 { background: rgba(232,129,74,0.05); border: 1px solid rgba(232,129,74,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--orange), var(--gold)); }
   .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
   .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
   .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
-  .wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
-  .wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--green); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--orange); }
   .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
   .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
   .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
   .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
   .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
   .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
-  .wuc-1 { color: var(--gold);   background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); }
-  .wuc-2 { color: var(--teal);   background: rgba(29,233,182,0.08); border-color: rgba(29,233,182,0.3); }
-  .wuc-3 { color: var(--orange); background: rgba(232,129,74,0.08);  border-color: rgba(232,129,74,0.3); }
+  .wuc-1 { color: var(--green);  background: rgba(61,220,132,0.08); border-color: rgba(61,220,132,0.3); }
+  .wuc-2 { color: var(--orange); background: rgba(232,129,74,0.08); border-color: rgba(232,129,74,0.3); }
+  .wuc-3 { color: var(--blue);   background: rgba(124,200,248,0.08); border-color: rgba(124,200,248,0.3); }
 
   /* ── QUIZ ── */
   .quiz-section { background: var(--dark2); }
@@ -597,23 +610,23 @@
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
   </ul>
-  <a href="index.html#geo" class="nav-back">&#8592; Earth &amp; Space</a>
+  <a href="index.html#bio" class="nav-back">&#8592; Life Science</a>
 </nav>
 
 <!-- HERO -->
 <header class="hero">
-  <span class="hero-float">&#127757;</span>
-  <span class="hero-float">&#127755;</span>
-  <span class="hero-float">&#9968;&#65039;</span>
-  <span class="hero-float">&#129517;</span>
+  <span class="hero-float">&#127807;</span>
+  <span class="hero-float">&#129422;</span>
+  <span class="hero-float">&#129419;</span>
+  <span class="hero-float">&#127797;</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Plate Tectonics</h1>
-  <p>Earthquakes and volcanoes do not strike at random. They line up in narrow belts that trace the hidden seams of a cracked, moving planet.</p>
+  <h1>Parts of an Ecosystem</h1>
+  <p>A Joshua tree can only be pollinated by one kind of moth, and that moth can only raise its young inside a Joshua tree. Neither one survives without the other. An ecosystem is full of connections like this, between living things and the nonliving world around them.</p>
   <div class="driving-question">
     <div class="dq-icon">&#128269;</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">Why does Earth's surface move?</div>
+      <div class="dq-text">How do the living and nonliving parts of an ecosystem depend on one another?</div>
     </div>
   </div>
 </header>
@@ -621,11 +634,11 @@
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">&#128300; Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes in belts) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
-  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the story into evidence, plates, motion, and boundaries keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
-  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of drift, convection, and boundaries builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (a tree and a moth that cannot survive apart) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: breaking the ecosystem into small, ordered parts keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of levels of organization and species interactions builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and convection to plate motion and surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+  <span class="ls-badge" data-tip="Systems thinking: students trace how living and nonliving parts of an ecosystem interact, mirroring authentic science. (NRC, 2012)">&#128202; Systems &amp; Cycles</span>
 </div>
 
 
@@ -639,24 +652,24 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
     <div class="goal-grid">
       <div class="goal-card">
-        <span class="goal-icon">&#129499;</span>
-        <div class="goal-text">I can describe the evidence Wegener used to support the idea of continental drift.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
-      </div>
-      <div class="goal-card">
-        <span class="goal-icon">&#128293;</span>
-        <div class="goal-text">I can explain how convection currents in the mantle cause tectonic plates to move.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
-      </div>
-      <div class="goal-card">
-        <span class="goal-icon">&#9968;&#65039;</span>
-        <div class="goal-text">I can compare the three types of plate boundaries and the features they build.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
-      </div>
-      <div class="goal-card">
         <span class="goal-icon">&#127757;</span>
-        <div class="goal-text">I can explain why earthquakes and volcanoes occur in narrow belts rather than randomly.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <div class="goal-text">I can describe the living (biotic) and nonliving (abiotic) parts of an ecosystem.</div>
+        <span class="goal-std">7.MS-LS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#128207;</span>
+        <div class="goal-text">I can order the levels of organization from a single organism up to a biome.</div>
+        <span class="goal-std">7.MS-LS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#129309;</span>
+        <div class="goal-text">I can compare how species interact through predation, symbiosis, and competition.</div>
+        <span class="goal-std">7.MS-LS2-2</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">&#127968;</span>
+        <div class="goal-text">I can explain how an organism's habitat and niche shape its role in an ecosystem.</div>
+        <span class="goal-std">7.MS-LS2-2</span>
       </div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -694,53 +707,53 @@
     <h2 class="section-title">Words You'll Meet</h2>
     <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
     <div class="glossary-grid">
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Continental Drift</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The idea that the continents were once joined and have slowly moved to their present positions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-drift')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Pangaea</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The single supercontinent that held all of Earth's land about 250 million years ago.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pangaea')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Plate Tectonics</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The theory that Earth's outer shell is broken into moving plates, explaining drift, earthquakes, and volcanoes.</div>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Ecosystem</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">All of the living and nonliving parts of the environment in a given area.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-ecosystem')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Lithosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The rigid outer shell of Earth, made of the crust and the upper mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Asthenosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The soft, slowly flowing part of the upper mantle that the plates float on.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Tectonic Plate</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A large slab of lithosphere that moves slowly over the asthenosphere.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-plate')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Convection Current</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A looping flow of hot mantle rock that rises, cools, and sinks, dragging the plates along.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Seafloor Spreading</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The process where magma rises at a mid-ocean ridge and cools into new ocean floor.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-seafloor')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Biome</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A large geographic area on Earth that contains ecosystems with similar living and nonliving features.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-biome')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Divergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move apart and new crust forms in the gap.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Convergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move together, often forming mountains or volcanoes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Biotic</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The living or once-living parts of an environment, such as plants, animals, and fungi.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-biotic')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Transform Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates slide past each other, producing faults and earthquakes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Abiotic</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The nonliving parts of an environment, such as water, sunlight, soil, and temperature.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-biotic')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Subduction</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When a more dense plate sinks beneath a less dense plate at a convergent boundary.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Organism</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A single living thing, such as one coyote, one cactus, or one mushroom.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Habitat</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The place within an ecosystem that gives an organism the food, shelter, and conditions it needs to survive. It is the organism's home.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-habitat')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Niche</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The role a species plays in its environment, including how it gets food, finds shelter, and meets its needs.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-niche')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Species</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A group of organisms that can mate and produce fertile offspring. They are the same type of organism.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Population</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">All the organisms of the same species living in the same area at the same time.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-levels')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Community</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">All of the different populations living together in an ecosystem at the same time.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-levels')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Symbiosis</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A close, long-term relationship between two species. The three types are mutualism, commensalism, and parasitism.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-symbiosis')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Predation</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">An interaction in which one organism, the predator, feeds on another organism, its prey.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-predation')">See it in the lesson &#8595;</span></div>
       </button>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -775,61 +788,89 @@
 <section id="engage" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Engage &middot; Phenomenon</span>
-    <h2 class="section-title">A World That Shakes in Lines</h2>
-    <p class="section-desc">If you mapped every earthquake and volcano from the last hundred years, you would not get a random scatter of dots. You would get long, narrow belts that wrap around the planet, like cracks in a shell.</p>
+    <h2 class="section-title">A Tree and a Moth That Need Each Other</h2>
+    <p class="section-desc">In Joshua Tree National Park, the desert looks empty at first. But every living thing there is tied to the others and to the nonliving world around it. One pair shows this better than any other.</p>
 
     <div class="phenomenon-card">
-      <div class="phenomenon-icon">&#127755;</div>
+      <div class="phenomenon-icon">&#127807;</div>
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
-        <h3>The Ring of Fire</h3>
-        <p>A belt of volcanoes and earthquakes called the Ring of Fire traces the edge of the Pacific Ocean. Other belts run down the middle of the Atlantic and across southern Asia. Most of the world's earthquakes and volcanoes happen along these same lines, year after year. Why would Earth's most violent events follow such a clear pattern?</p>
+        <h3>Partners for Survival</h3>
+        <p>The Joshua tree can only be pollinated by the yucca moth. The yucca moth can only lay its eggs inside a Joshua tree flower, where its young will feed. If one disappears, so does the other. Around them, coyotes hunt jackrabbits, lizards hide under rocks from the Sun, and roots reach for scarce water. Why are the living things in one place so tied to each other and to the nonliving world?</p>
       </div>
     </div>
 
-    <!-- Phenomenon figure: belts vs random -->
+    <!-- Desert ecosystem scene -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A stylized world map showing earthquakes and volcanoes clustered along curved belts rather than spread evenly">
-        <rect x="20" y="20" width="560" height="240" rx="16" fill="#10202e"/>
-        <!-- stylized landmasses -->
-        <path d="M70,90 q40,-30 100,-10 q40,15 20,55 q-30,40 -90,30 q-50,-10 -30,-75 Z" fill="#26323f"/>
-        <path d="M300,70 q70,-20 130,10 q40,25 10,80 q-60,45 -130,15 q-40,-50 -20,-105 Z" fill="#26323f"/>
-        <path d="M180,180 q50,-15 90,15 q15,40 -40,55 q-60,5 -50,-70 Z" fill="#26323f"/>
-        <!-- plate-edge belts (dashed) -->
-        <path d="M40,150 C150,90 250,210 360,140 C440,90 520,170 560,120" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <path d="M120,250 C200,200 240,150 300,60" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <!-- earthquake/volcano markers along belts -->
-        <g fill="#e74c3c">
-          <circle cx="60" cy="142" r="5"/><circle cx="120" cy="120" r="5"/><circle cx="180" cy="150" r="5"/>
-          <circle cx="240" cy="180" r="5"/><circle cx="300" cy="158" r="5"/><circle cx="360" cy="140" r="5"/>
-          <circle cx="420" cy="118" r="5"/><circle cx="480" cy="150" r="5"/><circle cx="540" cy="128" r="5"/>
-          <circle cx="150" cy="225" r="5"/><circle cx="210" cy="180" r="5"/><circle cx="260" cy="120" r="5"/><circle cx="292" cy="78" r="5"/>
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A desert ecosystem scene showing the Sun, a Joshua tree, a cactus, rocky soil, a lizard, and a coyote, with labels marking living parts and nonliving parts">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1d2c44"/>
+            <stop offset="100%" stop-color="#33415c"/>
+          </linearGradient>
+          <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#9c7a4a"/>
+            <stop offset="100%" stop-color="#735636"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="600" height="220" fill="url(#sky)"/>
+        <rect x="0" y="220" width="600" height="80" fill="url(#sand)"/>
+        <!-- sun -->
+        <circle cx="535" cy="55" r="26" fill="#f5c842"/>
+        <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
+          <line x1="535" y1="15" x2="535" y2="4"/><line x1="535" y1="95" x2="535" y2="106"/>
+          <line x1="495" y1="55" x2="484" y2="55"/><line x1="575" y1="55" x2="586" y2="55"/>
+          <line x1="506" y1="26" x2="498" y2="18"/><line x1="564" y1="84" x2="572" y2="92"/>
         </g>
-        <text x="300" y="252" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">Red marks = earthquakes &amp; volcanoes. Dashed lines = where they line up.</text>
+        <text x="535" y="135" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#f5c842">Sun (abiotic)</text>
+        <!-- joshua tree -->
+        <rect x="150" y="150" width="14" height="72" fill="#6b4a2a"/>
+        <rect x="120" y="160" width="40" height="11" fill="#6b4a2a"/>
+        <rect x="156" y="135" width="38" height="11" fill="#6b4a2a"/>
+        <g fill="#3ddc84">
+          <polygon points="112,160 124,150 124,170"/>
+          <polygon points="200,140 188,131 188,151"/>
+          <polygon points="157,128 145,135 169,135"/>
+        </g>
+        <text x="160" y="245" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Joshua tree (biotic)</text>
+        <!-- cactus -->
+        <rect x="300" y="178" width="13" height="44" rx="6" fill="#2fae6a"/>
+        <rect x="288" y="190" width="11" height="9" rx="4" fill="#2fae6a"/>
+        <rect x="314" y="186" width="11" height="9" rx="4" fill="#2fae6a"/>
+        <text x="306" y="245" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#2fae6a">Cactus</text>
+        <!-- rock -->
+        <ellipse cx="400" cy="232" rx="30" ry="16" fill="#5a5347"/>
+        <text x="400" y="270" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#c9bfa8">Rock &amp; soil (abiotic)</text>
+        <!-- lizard -->
+        <ellipse cx="392" cy="222" rx="13" ry="5" fill="#e8c14a"/><circle cx="404" cy="220" r="4" fill="#e8c14a"/>
+        <!-- coyote -->
+        <ellipse cx="470" cy="208" rx="22" ry="11" fill="#b88a55"/><circle cx="490" cy="198" r="9" fill="#b88a55"/>
+        <polygon points="486,191 484,182 491,189" fill="#b88a55"/><polygon points="494,191 497,182 498,190" fill="#b88a55"/>
+        <text x="472" y="245" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#d8a86a">Coyote (biotic)</text>
       </svg>
-      <div class="figure-caption">The dots are not scattered everywhere. They follow the dashed seams that crisscross the globe.</div>
+      <div class="figure-caption">A desert ecosystem holds living parts (biotic) like the Joshua tree, cactus, lizard, and coyote, plus nonliving parts (abiotic) like sunlight, rock, soil, and water.</div>
     </div>
 
     <!-- Prediction gate -->
     <div class="question-pause predict-pause" id="qp-engage">
       <div class="qp-row">
         <span class="question-pause-icon">&#129300;</span>
-        <div class="question-pause-text"><strong>Make a prediction:</strong> Why do earthquakes and volcanoes line up in narrow belts instead of spreading out evenly across Earth?</div>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Why does the Joshua tree survive only where the yucca moth also lives?</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn"><span class="pb-letter">A</span>Earth's surface is one solid shell that cracks in random spots.</button>
-        <button class="predict-btn"><span class="pb-letter">B</span>Earth's surface is broken into moving plates, and the edges are where the action happens.</button>
-        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes and volcanoes happen everywhere equally; the belts are a coincidence.</button>
+        <button class="predict-btn"><span class="pb-letter">A</span>The two species depend on each other, so each one needs the other to survive.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>The moth scares away animals that would eat the tree.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>The tree and the moth happen to like the same temperature.</button>
       </div>
     </div>
 
     <div class="name-it slate-it predict-gated" data-gate="qp-engage">
       <div class="name-it-label">Here's the big idea</div>
-      <p>The best answer is <strong>B</strong>. Earth's outer shell is not one piece. It is cracked into giant slabs called plates that slowly move. The belts of earthquakes and volcanoes trace the edges where plates meet, pull apart, or grind past one another. To understand the pattern at the surface, we have to understand the plates and what moves them. That is where this lesson goes next.</p>
+      <p>The best answer is <strong>A</strong>. The Joshua tree needs the moth to move its pollen, and the moth needs the tree as a place to raise its young. This is one kind of close relationship between species. An ecosystem is built from many such connections, between living things and between living things and the nonliving world. To understand them, we first have to name the parts of an ecosystem.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2rem;">
-      <strong>Where we're headed:</strong> First we'll meet the scientist who noticed the continents fit together. Then we'll see what the plates are, what pushes them, and what happens at the boundaries where they meet.
+      <strong>Where we're headed:</strong> First we'll sort an ecosystem into its living and nonliving parts. Then we'll zoom out through the levels of organization, look at where and how each organism lives, and finally study the ways species interact.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -837,7 +878,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Anchor the lesson in a striking real-world pattern.</li><li>Raise a question students will want answered.</li></ul>
+          <ul class="edu-note-text"><li>Anchor the lesson in a striking real relationship.</li><li>Raise a question students will want answered.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -849,7 +890,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Concrete visual pattern (belts on a map)</li><li>Short framing text</li><li>Prediction question is low stakes and ungraded</li></ul>
+          <ul class="edu-note-text"><li>Concrete, labeled example</li><li>Short framing text</li><li>Visual anchor</li></ul>
         </div>
       </div>
     </div>
@@ -858,128 +899,52 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     REVIEW PREVIOUS LEARNING (bridge between Engage and Explore)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="review-prev" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Review Previous Learning</span>
-    <h2 class="section-title">Need a Refresher?</h2>
-    <p class="section-desc">This lesson builds on ideas you may have seen before.</p>
-
-    <div class="content-card">
-      <div class="card-header">
-        <div class="card-title">Continental Drift (Grade 6)</div>
-      </div>
-      <p>Wegener used fossils, matching rock layers, climate clues, and the fit of continents to propose that Earth's continents were once connected. Reviewing this evidence will help explain why scientists accepted plate tectonics.</p>
-      <a href="lesson_continental-drift.html" style="display: inline-block; margin-top: 1.4rem; background: var(--gold); color: var(--dark); font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.03em; text-decoration: none; padding: 0.85rem 1.8rem; border-radius: 12px; transition: transform 0.15s, box-shadow 0.15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px var(--gold-glow)';" onmouseout="this.style.transform='';this.style.boxShadow='';">Review Lesson &rarr;</a>
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Bridge from Grade 6 continental drift to plate tectonics.</li><li>Prevent knowledge gaps before new content begins.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Prior knowledge activation</li><li>Schema priming</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember</li><li>DOK 1</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Optional review, no new content required</li><li>Single clear link, no navigation pressure</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1: CONTINENTAL DRIFT (Wegener's evidence)
+     EXPLORE 1: BIOTIC AND ABIOTIC
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="explore" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The First Clue</span>
-    <h2 class="section-title">The Continents That Fit Together</h2>
-    <p class="section-desc">Long before anyone talked about plates, one scientist looked at a map and noticed something strange: the continents looked like pieces of a torn puzzle.</p>
+    <span class="section-label">Explore &middot; Living and Nonliving</span>
+    <h2 class="section-title">The Two Kinds of Parts</h2>
+    <p class="section-desc">Every ecosystem is made of two kinds of parts. Some parts are alive or were once alive. The rest were never alive at all. Both kinds matter.</p>
 
-    <div id="term-drift" class="content-card">
+    <div id="term-ecosystem" class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#129489;&#8205;&#127891;</span>
-        <div class="card-title">Wegener's Big Idea</div>
+        <span class="card-icon">&#127757;</span>
+        <div class="card-title">What Is an Ecosystem?</div>
       </div>
       <div class="card-body">
-        <p>In 1912, a German scientist named <strong>Alfred Wegener</strong> proposed the idea of <span class="vocab">continental drift</span>. He claimed the continents are slowly moving, and that about 250 million years ago they were all joined into one giant supercontinent.</p>
-        <p>He named that supercontinent <strong>Pangaea</strong>, meaning "all land." Wegener knew that the way the coastlines fit together was a clue, but a good fit alone is not proof. So he went looking for real evidence.</p>
+        <p>An <span class="vocab">ecosystem</span> is all of the living and nonliving parts of the environment in a given area. A pond, a forest, and a stretch of desert are all ecosystems.</p>
+        <p>The living parts and the nonliving parts are always interacting. A plant needs sunlight and water. An animal needs other living things to eat and a place to shelter. Change one part and the others feel it.</p>
       </div>
     </div>
 
-    <div id="term-pangaea" class="name-it orange-it">
-      <div class="name-it-label">Name it: Pangaea</div>
-      <p><strong>Pangaea</strong> was a single supercontinent that held all of Earth's land roughly 250 million years ago. Over millions of years it broke apart, and the pieces drifted into the continents we know today.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Wegener gathered four kinds of evidence. No single clue was enough on its own, but together they told a powerful story.</p>
-
-    <div class="example-grid">
-      <div class="example-chip"><span class="example-chip-icon">&#129460;</span><span>Fossils</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#10052;&#65039;</span><span>Climate</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#9968;&#65039;</span><span>Mountains</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#129522;</span><span>Magnetite</span></div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129460;</span>
-        <div class="card-title">Fossil Clues</div>
+    <div id="term-biotic" class="crust-grid">
+      <div class="crust-card oceanic">
+        <div class="crust-title">&#127807; Biotic Factors (Living)</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>The <strong>living or once-living</strong> parts of an environment</span></li>
+          <li><span class="crust-dot"></span><span>Includes plants, animals, fungi, and microbes</span></li>
+          <li><span class="crust-dot"></span><span>Examples: Joshua tree, coyote, lizard, cactus</span></li>
+        </ul>
       </div>
-      <div class="card-body">
-        <p>Fossils of the same plant and animal species turned up on continents now separated by thousands of miles of ocean. One example is <em>Glossopteris</em>, a fern-like plant found across South America, Africa, India, and Antarctica.</p>
-        <p>Its seeds were too heavy to drift across an ocean without being destroyed, and the small land animals found with it could not have swum that far. The simplest explanation is that the land was once connected.</p>
+      <div class="crust-card continental">
+        <div class="crust-title">&#128167; Abiotic Factors (Nonliving)</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>The <strong>nonliving</strong> parts of an environment</span></li>
+          <li><span class="crust-dot"></span><span>Things that were never alive</span></li>
+          <li><span class="crust-dot"></span><span>Examples: sunlight, water, soil, rock, temperature</span></li>
+        </ul>
       </div>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#10052;&#65039;</span>
-        <div class="card-title">Climate Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Wegener found scratches carved by ancient glaciers on rocks in places that are warm today, like parts of Africa and India. He also found fossils of tropical swamp plants in Antarctica and on islands far to the north.</p>
-        <p>A continent cannot be frozen and tropical at the same time. But if those lands once sat in very different positions, the climate clues suddenly make sense. The southern continents fit together into a region scientists call <strong>Gondwanaland</strong>.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#9968;&#65039;</span>
-        <div class="card-title">Rock and Mountain Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Mountain ranges on different continents line up and contain rocks of the same age and chemistry. The Caledonian Mountains in northwestern Europe match the Appalachian Mountains along the east coast of the United States.</p>
-        <p>Put the continents back together and these ranges form one continuous belt, like a sentence torn across two pages. Rock types and the shapes of the continental shelves match across the ocean as well.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129522;</span>
-        <div class="card-title">Magnetite Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Some rocks contain <strong>magnetite</strong>, a magnetic iron-oxide mineral and the most magnetic mineral found in nature. When melted rock cools, magnetite crystals line up with Earth's magnetic field and lock in that direction, like tiny frozen compass needles.</p>
-        <p>Rocks of the same age on far-apart continents recorded matching magnetic patterns. That match only makes sense if the rocks formed side by side and later moved apart.</p>
-      </div>
+    <div id="term-biome" class="name-it slate-it">
+      <div class="name-it-label">Key idea: Ecosystem vs Biome</div>
+      <p>An <strong>ecosystem</strong> is the living and nonliving parts of one area. A <strong>biome</strong> is much larger. It is a geographic region on Earth that contains many ecosystems with similar living and nonliving features. A desert is a biome, and Joshua Tree National Park is one ecosystem inside it.</p>
     </div>
 
     <div class="callout gold">
-      <span class="callout-icon">&#9888;&#65039;</span>
-      <div class="callout-body"><strong>The missing piece:</strong> Wegener's evidence was strong, but most scientists rejected his idea for decades. The reason was simple: he could not explain what force could possibly move something as huge as a continent. That answer was still hidden deep inside Earth.</div>
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The key pattern:</strong> Biotic and abiotic factors are not separate. A drop in rainfall (abiotic) can shrink the plant population (biotic), which then leaves less food for animals. The parts of an ecosystem are connected.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -987,19 +952,19 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Establish the historical puzzle that drove the theory.</li><li>Show how multiple lines of evidence accumulate into a claim.</li></ul>
+          <ul class="edu-note-text"><li>Define ecosystem and sort it into biotic and abiotic parts.</li><li>Separate ecosystem from the larger biome.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Evidence-based reasoning</li><li>Narrative structure (hero, evidence, unsolved mystery)</li></ul>
+          <ul class="edu-note-text"><li>Categorization</li><li>Comparison and contrast</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Four parallel evidence cards, each self-contained</li><li>Short paragraphs with bolded key ideas</li><li>Misconception alert: Wegener was rejected for lack of mechanism, not bad evidence</li></ul>
+          <ul class="edu-note-text"><li>Two short, parallel cards</li><li>Plain living vs nonliving framing</li><li>Key terms in bold</li></ul>
         </div>
       </div>
     </div>
@@ -1008,57 +973,70 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2: LITHOSPHERIC PLATES
+     EXPLORE 2: LEVELS OF ORGANIZATION (interactive)
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="plates" style="background: var(--dark2);">
+<section id="journey" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Plates</span>
-    <h2 class="section-title">A Cracked Shell That Floats</h2>
-    <p class="section-desc">The breakthrough came from understanding Earth's layers. The continents do not plow through the ocean floor on their own. They ride on top of giant moving slabs.</p>
+    <span class="section-label">Explore &middot; Zooming Out</span>
+    <h2 class="section-title">Levels of Organization</h2>
+    <p class="section-desc">Scientists study living things at different scales. Starting from one organism, each level adds more, until we reach a whole biome. Click a level to zoom out one step.</p>
 
-    <div id="term-litho" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129513;</span>
-        <div class="card-title">The Lithosphere Rides the Asthenosphere</div>
+    <div id="term-levels" class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nested boxes showing the levels of organization: a single organism inside a population, inside a community, inside an ecosystem, inside a biome">
+          <rect x="0" y="0" width="320" height="300" fill="#13283c"/>
+          <!-- biome -->
+          <rect x="14" y="14" width="292" height="272" rx="10" fill="none" stroke="#9fb8cc" stroke-width="2"/>
+          <text x="160" y="32" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Biome</text>
+          <!-- ecosystem -->
+          <rect x="36" y="44" width="248" height="222" rx="9" fill="none" stroke="#7cc8f8" stroke-width="2"/>
+          <text x="160" y="61" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Ecosystem</text>
+          <!-- community -->
+          <rect x="58" y="74" width="204" height="172" rx="8" fill="none" stroke="#1de9b6" stroke-width="2"/>
+          <text x="160" y="91" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#1de9b6">Community</text>
+          <!-- population -->
+          <rect x="82" y="104" width="156" height="122" rx="8" fill="none" stroke="#3ddc84" stroke-width="2"/>
+          <text x="160" y="121" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Population</text>
+          <!-- organisms (coyotes) -->
+          <g fill="#e8814a">
+            <ellipse cx="130" cy="165" rx="13" ry="7"/><circle cx="142" cy="159" r="5"/>
+            <ellipse cx="180" cy="190" rx="13" ry="7"/><circle cx="192" cy="184" r="5"/>
+            <ellipse cx="150" cy="205" rx="13" ry="7"/><circle cx="162" cy="199" r="5"/>
+          </g>
+          <text x="160" y="240" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Organisms</text>
+        </svg>
       </div>
-      <div class="card-body">
-        <p>The <span class="vocab">lithosphere</span> is Earth's rigid outer shell, made of the crust plus the upper part of the mantle. It is not one solid piece. It is cracked into many large slabs called <strong>tectonic plates</strong>.</p>
-        <p>Just below sits the <span class="vocab">asthenosphere</span>, a hotter, softer part of the mantle that slowly flows like thick putty. The plates float and slide on the asthenosphere the way rafts drift on the surface of a pool.</p>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f0b48a;" onclick="layerClick(1)">
+            <span>1 &middot; Organism</span><span class="layer-tag">one living thing</span>
+          </div>
+          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #7df0b4;" onclick="layerClick(2)">
+            <span>2 &middot; Population</span><span class="layer-tag">same species</span>
+          </div>
+          <div class="layer-row" style="background: rgba(29,233,182,0.24); color: #8ef0db;" onclick="layerClick(3)">
+            <span>3 &middot; Community</span><span class="layer-tag">many species</span>
+          </div>
+          <div class="layer-row" style="background: rgba(124,200,248,0.24); color: #aed8f8;" onclick="layerClick(4)">
+            <span>4 &middot; Ecosystem</span><span class="layer-tag">living + nonliving</span>
+          </div>
+          <div class="layer-row" style="background: rgba(159,184,204,0.26); color: #c4d6e6;" onclick="layerClick(5)">
+            <span>5 &middot; Biome</span><span class="layer-tag">a whole region</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="ld-label">Click a level</div>
+            <div class="ld-title" id="ld-title">Start with one organism &#8594;</div>
+            <div class="ld-body" id="ld-body">Each level adds more living things or more of the environment. Click any level to zoom out one step and see what it includes.</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div id="term-plate" class="name-it slate-it">
-      <div class="name-it-label">Name it: Tectonic Plate</div>
-      <p>A <strong>tectonic plate</strong> is a large slab of lithosphere that moves slowly over the asthenosphere. Most plates carry both ocean floor and continents, so the continents move because the plates they sit on move.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Plates are not all the same, because the crust they carry comes in two kinds. The difference in density will matter a lot at the boundaries.</p>
-
-    <div class="crust-grid">
-      <div class="crust-card oceanic">
-        <div class="crust-title">Oceanic Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thinnest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>basalt</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thinnest</strong> and <strong>most dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Sinks when it meets lighter crust</span></li>
-        </ul>
-      </div>
-      <div class="crust-card continental">
-        <div class="crust-title">Continental Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thickest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>granite</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thickest</strong> and <strong>least dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Rides high and does not sink easily</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="bridge-callout teal">
-      <strong>Hold on to the density rule:</strong> oceanic crust is more dense than continental crust. When two plates meet, the heavier oceanic crust tends to sink beneath the lighter continental crust. That single rule will explain a lot of what happens at boundaries.
+    <div class="callout slate">
+      <span class="callout-icon">&#128207;</span>
+      <div class="callout-body"><strong>Smallest to largest:</strong> organism, then population, then community, then ecosystem, then biome. Each level contains everything from the level before it, plus more.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1066,11 +1044,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Give students the moving-parts vocabulary before explaining what moves them.</li><li>Establish the density rule that drives subduction.</li></ul>
+          <ul class="edu-note-text"><li>Order the levels of organization from small to large.</li><li>Show each level nested inside the next.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Concrete analogy (rafts on a pool)</li><li>Contrast pairs (oceanic vs continental crust)</li></ul>
+          <ul class="edu-note-text"><li>Dual coding with the nested diagram</li><li>Sequencing and hierarchy</li><li>Chunking</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1078,7 +1056,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Side-by-side crust comparison cards</li><li>Visual density bars support non-verbal learners</li><li>Misconception alert: plates are not just continents; most carry ocean floor too</li></ul>
+          <ul class="edu-note-text"><li>Click to reveal each level, no hover</li><li>Labeled diagram paired with text</li><li>Numbered, ordered levels</li></ul>
         </div>
       </div>
     </div>
@@ -1087,67 +1065,44 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3: WHAT MOVES THE PLATES (convection + seafloor spreading)
+     EXPLORE 3: HABITAT AND NICHE
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="motion" style="background: var(--dark);">
+<section id="into" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Engine</span>
-    <h2 class="section-title">What Pushes the Plates?</h2>
-    <p class="section-desc">This is the answer Wegener was missing. The force that moves whole continents comes from heat deep inside Earth, the same heat that drives everything from the inside out.</p>
+    <span class="section-label">Explore &middot; Home and Role</span>
+    <h2 class="section-title">Where It Lives, What It Does</h2>
+    <p class="section-desc">Each species fits into its ecosystem in two ways. There is the place it lives, and there is the job it does. These are not the same thing.</p>
 
-    <div id="term-convection" class="content-card">
+    <div id="term-habitat" class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#128293;</span>
-        <div class="card-title">Convection Currents in the Mantle</div>
+        <span class="card-icon">&#127968;</span>
+        <div class="card-title">Habitat: The Home</div>
       </div>
       <div class="card-body">
-        <p>The mantle is extremely hot near the bottom and cooler near the top. Hot rock is less dense, so it slowly rises toward the surface. As it nears the top it cools, becomes more dense, and sinks back down. This endless loop is a <span class="vocab">convection current</span>.</p>
-        <p>These currents flow beneath the lithosphere and drag the plates along, like crackers riding on slowly boiling soup. <strong>The movement of mantle rock creates the movement of the plates above it.</strong></p>
+        <p>A <span class="vocab">habitat</span> is the place within an ecosystem that gives an organism the biotic and abiotic factors it needs to survive and reproduce. It is the organism's home.</p>
+        <p>A coyote's habitat provides shelter among rocks and brush, prey to hunt, and water to drink. If the habitat cannot meet those needs, the organism cannot live there.</p>
       </div>
     </div>
 
-    <!-- Convection figure -->
-    <div class="figure-box">
-      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Convection currents in the mantle: hot rock rises in the middle, spreads sideways, and sinks at the edges, pushing two plates apart at the surface">
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="#7a3a2a" opacity="0.85"/>
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="url(#mantleGrad)"/>
-        <defs>
-          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.1"/>
-          </linearGradient>
-        </defs>
-        <rect x="40" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <rect x="320" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <text x="150" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <text x="450" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <path d="M400,210 C400,160 340,150 310,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <defs>
-          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd27a"/></marker>
-        </defs>
-        <text x="300" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">Hot rock rises in the middle, cools, and sinks at the sides</text>
-      </svg>
-      <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
+    <div id="term-niche" class="name-it orange-it">
+      <div class="name-it-label">Key idea: Niche</div>
+      <p>A <strong>niche</strong> is the role a species plays in its environment. It is the way a species interacts with biotic and abiotic factors to get food, find shelter, and meet its needs. If a habitat is an organism's address, its niche is its job.</p>
     </div>
 
-    <div id="term-seafloor" class="name-it teal-it">
-      <div class="name-it-label">Name it: Seafloor Spreading</div>
-      <p>Where plates pull apart under the ocean, rising magma fills the gap and cools into brand new ocean floor. This is called <strong>seafloor spreading</strong>. It builds a long underwater mountain chain called a mid-ocean ridge, and the seafloor is youngest right at the ridge and older farther away.</p>
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129422;</span>
+        <div class="card-title">Same Habitat, Different Niche</div>
+      </div>
+      <div class="card-body">
+        <p>Two species can share a habitat but fill different niches. A hawk and a lizard might both live among the same rocks, but the hawk hunts from the air during the day while the lizard hunts insects close to the ground.</p>
+        <p>Because their niches differ, they do not need the exact same resources at the same time, so they can share the same space.</p>
+      </div>
     </div>
 
-    <div class="callout slate">
-      <span class="callout-icon">&#129522;</span>
-      <div class="callout-body"><strong>Magnetite returns:</strong> as new seafloor cools at a ridge, magnetite minerals record the direction of Earth's magnetic field. The field flips over time, leaving matching, mirror-image stripes on both sides of the ridge. Those symmetric stripes are powerful proof that the seafloor is spreading.</div>
-    </div>
-
-    <div class="bridge-callout teal" style="margin-top: 0.5rem;">
-      <strong>The mystery solved:</strong> convection currents are the engine Wegener could not find. Heat drives the mantle to flow, the flow moves the plates, and the plates carry the continents. Now we can look at exactly what happens where two plates meet.
+    <div class="callout teal">
+      <span class="callout-icon">&#128205;</span>
+      <div class="callout-body"><strong>Address vs job:</strong> Habitat answers "where does it live?" Niche answers "what does it do and how does it survive?" Every species has both.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1155,11 +1110,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Answer Wegener's missing piece: what actually moves the plates.</li><li>Establish the causal chain before showing what it produces at boundaries.</li></ul>
+          <ul class="edu-note-text"><li>Separate where an organism lives from what it does.</li><li>Address a common habitat and niche mix-up.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Causal reasoning (heat to flow to plate motion)</li><li>Labeled diagram supports dual coding</li></ul>
+          <ul class="edu-note-text"><li>Analogy (address vs job)</li><li>Comparison and contrast</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1167,7 +1122,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Boiling-water analogy makes convection concrete</li><li>Short paragraphs with key terms bolded in place</li><li>Misconception alert: the asthenosphere flows like thick putty, not liquid lava</li></ul>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Concrete desert examples</li><li>Short paragraphs</li></ul>
         </div>
       </div>
     </div>
@@ -1176,69 +1131,38 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 4: PLATE BOUNDARIES (interactive)
+     EXPLORE 4: PREDATION AND COMPETITION
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="boundaries-sec" style="background: var(--dark2);">
+<section id="out" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Boundaries</span>
-    <h2 class="section-title">Where Plates Meet</h2>
-    <p class="section-desc">Almost all of Earth's earthquakes and volcanoes happen at plate boundaries. There are three types, sorted by how the plates move. Open each one to see what it builds.</p>
+    <span class="section-label">Explore &middot; Interactions</span>
+    <h2 class="section-title">Predation and Competition</h2>
+    <p class="section-desc">Organisms in an ecosystem are always interacting. Two of the most common interactions are predation and competition. Both affect how many of each species can survive.</p>
 
-    <div id="term-boundaries" class="layer-wrap">
-      <div class="layer-figure">
-        <svg viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three plate boundary types: divergent plates moving apart, convergent plates colliding with one sinking, and transform plates sliding past each other">
-          <!-- Divergent -->
-          <text x="10" y="22" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Divergent</text>
-          <rect x="20" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <rect x="145" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <path d="M118,43 L96,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M142,43 L164,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M130,56 L130,86" stroke="#ffb347" stroke-width="6" stroke-linecap="round"/>
-          <!-- Convergent -->
-          <text x="10" y="122" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Convergent</text>
-          <rect x="20" y="130" width="110" height="24" rx="3" fill="#9a5e3a"/>
-          <path d="M130,142 L155,142 L185,170 Z" fill="#7cc8f8"/>
-          <rect x="150" y="130" width="90" height="14" rx="3" fill="#7cc8f8"/>
-          <path d="M138,140 L120,140" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M150,127 L168,127" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M40,130 L52,112 L64,130 Z" fill="#8a9a6a"/>
-          <!-- Transform -->
-          <text x="10" y="222" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Transform</text>
-          <rect x="20" y="230" width="100" height="40" rx="3" fill="#6a7d52"/>
-          <rect x="140" y="230" width="100" height="40" rx="3" fill="#5a6e44"/>
-          <line x1="130" y1="226" x2="130" y2="274" stroke="#1a1410" stroke-width="3"/>
-          <path d="M70,222 L70,210" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M190,278 L190,290" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <defs>
-            <marker id="bh" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          </defs>
-        </svg>
+    <div id="term-predation" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129419;</span>
+        <div class="card-title">Predation</div>
       </div>
-      <div class="layer-controls">
-        <div class="layer-list">
-          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9be8bb;" onclick="boundaryClick(1)">
-            <span>1 &middot; Divergent</span><span class="layer-tag">plates move apart</span>
-          </div>
-          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b88a;" onclick="boundaryClick(2)">
-            <span>2 &middot; Convergent</span><span class="layer-tag">plates collide</span>
-          </div>
-          <div class="layer-row" style="background: rgba(124,200,248,0.26); color: #aed8f8;" onclick="boundaryClick(3)">
-            <span>3 &middot; Transform</span><span class="layer-tag">plates slide past</span>
-          </div>
-        </div>
-        <div class="layer-detail-panel">
-          <div class="ld-inner">
-            <div class="ld-label" id="bd-label">Open a boundary</div>
-            <div class="ld-title" id="bd-title">Three ways plates meet &#8594;</div>
-            <div class="ld-body" id="bd-body">Each boundary type moves in a different way, so each one builds different features at the surface. Open any boundary to see how the plates move and what they create.</div>
-          </div>
-        </div>
+      <div class="card-body">
+        <p><span class="vocab">Predation</span> is an interaction in which one organism, the predator, feeds on another organism, its prey. A coyote hunting a jackrabbit is predation.</p>
+        <p>Predation keeps prey populations in check. When prey are plentiful, predators have more food and their numbers can rise. When prey become scarce, predator numbers fall.</p>
       </div>
     </div>
 
-    <div class="callout teal">
-      <span class="callout-icon">&#9889;</span>
-      <div class="callout-body"><strong>Why the belts exist:</strong> the plate boundaries are exactly the lines you saw on the map. Divergent ridges, convergent trenches and volcanoes, and transform faults are where the crust cracks, melts, and slips, so that is where earthquakes and volcanoes cluster.</div>
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9876;&#65039;</span>
+        <div class="card-title">Competition</div>
+      </div>
+      <div class="card-body">
+        <p><strong>Competition</strong> is an interaction in which two or more organisms need the same resource at the same time. They might compete for food, water, space, or sunlight.</p>
+        <p>Competition can happen within one species, such as two coyotes after the same rabbit. It can also happen between species, such as a coyote and a hawk hunting the same small animals.</p>
+      </div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Why it matters:</strong> Predation and competition both limit how large a population can grow. There is only so much food, water, and space, so not every organism can survive. This keeps an ecosystem in balance.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1246,11 +1170,92 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Connect plate motion to surface features students can observe.</li><li>Answer the opening phenomenon: why earthquakes and volcanoes form belts.</li></ul>
+          <ul class="edu-note-text"><li>Introduce predation and competition as core interactions.</li><li>Connect interactions to population size.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Comparison and contrast (three boundary types)</li><li>Dual coding with interactive diagram</li></ul>
+          <ul class="edu-note-text"><li>Cause-and-effect reasoning</li><li>Within vs between species contrast</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Familiar predator and prey examples</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 5: SYMBIOSIS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="storage" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Symbiosis</span>
+    <h2 class="section-title">Close, Long-Term Relationships</h2>
+    <p class="section-desc">Some species live in a close relationship for a long time. We call this symbiosis. It comes in three types, sorted by who benefits and who is harmed.</p>
+
+    <div id="term-symbiosis" class="name-it gold" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Symbiosis</div>
+      <p><strong style="color: var(--gold);">Symbiosis</strong> is a close, long-term relationship between two species that usually involves an exchange of food or energy. The three major types are mutualism, commensalism, and parasitism.</p>
+    </div>
+
+    <!-- Symbiosis figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three types of symbiosis. Mutualism: both species benefit, shown plus and plus. Commensalism: one benefits and one is unaffected, shown plus and zero. Parasitism: one benefits and one is harmed, shown plus and minus.">
+        <rect x="0" y="0" width="600" height="230" fill="#0f1c2b"/>
+        <!-- mutualism -->
+        <rect x="20" y="30" width="170" height="170" rx="14" fill="rgba(61,220,132,0.08)" stroke="#3ddc84" stroke-width="2"/>
+        <text x="105" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="900" fill="#3ddc84">Mutualism</text>
+        <text x="105" y="120" text-anchor="middle" font-family="Nunito,sans-serif" font-size="34" font-weight="900" fill="#3ddc84">+ / +</text>
+        <text x="105" y="165" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#a8e6c4">Both species benefit</text>
+        <!-- commensalism -->
+        <rect x="215" y="30" width="170" height="170" rx="14" fill="rgba(124,200,248,0.08)" stroke="#7cc8f8" stroke-width="2"/>
+        <text x="300" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="900" fill="#7cc8f8">Commensalism</text>
+        <text x="300" y="120" text-anchor="middle" font-family="Nunito,sans-serif" font-size="34" font-weight="900" fill="#7cc8f8">+ / 0</text>
+        <text x="300" y="165" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#bfe0fa">One benefits, one unaffected</text>
+        <!-- parasitism -->
+        <rect x="410" y="30" width="170" height="170" rx="14" fill="rgba(231,76,60,0.08)" stroke="#e74c3c" stroke-width="2"/>
+        <text x="495" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="900" fill="#ec8a82">Parasitism</text>
+        <text x="495" y="120" text-anchor="middle" font-family="Nunito,sans-serif" font-size="34" font-weight="900" fill="#ec8a82">+ / &#8211;</text>
+        <text x="495" y="165" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="700" fill="#f0b3ad">One benefits, one is harmed</text>
+      </svg>
+      <div class="figure-caption">A plus means a species benefits, a zero means it is unaffected, and a minus means it is harmed.</div>
+    </div>
+
+    <div class="crust-grid" style="grid-template-columns: 1fr;">
+      <div class="content-card" style="margin-bottom:0;">
+        <div class="card-header">
+          <span class="card-icon">&#129309;</span>
+          <div class="card-title">The Three Types</div>
+        </div>
+        <div class="card-body">
+          <p><strong>Mutualism:</strong> both species benefit. The Joshua tree and the yucca moth are a classic example. The tree gets pollinated and the moth gets a place to raise its young.</p>
+          <p><strong>Commensalism:</strong> one species benefits and the other is neither helped nor harmed. A bird building a nest in a tree gets shelter, while the tree is unaffected.</p>
+          <p><strong>Parasitism:</strong> one species benefits and the other is harmed. A tick feeds on a deer. The tick (the parasite) benefits, and the deer (the host) is harmed.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>Back to the puzzle:</strong> The Joshua tree and the yucca moth are in a mutualism. Each one benefits, and neither can survive without the other. That is why the tree only lives where the moth lives too.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Define symbiosis and its three types.</li><li>Answer the opening phenomenon directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the plus and minus chart</li><li>Categorization by who benefits</li><li>Worked examples</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1258,7 +1263,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Click to reveal one boundary at a time reduces load</li><li>Misconception alert: students often mix up which boundary produces mountains vs trenches vs rift valleys</li><li>Pause and have students predict the feature before revealing</li></ul>
+          <ul class="edu-note-text"><li>Key term defined in place</li><li>Plus, zero, and minus shown visually</li><li>One example per type</li></ul>
         </div>
       </div>
     </div>
@@ -1269,7 +1274,7 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      QUICK RECALL
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="recall" style="background: var(--dark);">
+<section id="recall" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Quick Recall</span>
     <h2 class="section-title">Brain Check</h2>
@@ -1278,11 +1283,11 @@
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">Wegener's idea of continental drift was rejected for decades. What was missing from his explanation?</div>
+      <div class="qr-q" id="qr1Q">Which of these is an abiotic factor in a desert ecosystem?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>He had no fossil evidence at all</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>He could not explain what force could move a continent</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>No one believed Pangaea had ever existed</span></label>
+        <label><input type="radio" name="qr1" value="0"><span>A coyote</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Sunlight</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>A cactus</span></label>
       </div>
       <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1294,11 +1299,11 @@
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">The tectonic plates float and slide on which layer of Earth?</div>
+      <div class="qr-q" id="qr2Q">All the coyotes living in one area at the same time make up a what?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>The solid inner core</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>The brittle surface crust</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>The soft, flowing asthenosphere</span></label>
+        <label><input type="radio" name="qr2" value="0"><span>Population</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Community</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Biome</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1310,11 +1315,11 @@
     <div class="qr-card" id="qrCard3">
       <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr3Q">Two plates grind past each other along the San Andreas Fault. What does this transform boundary mainly produce?</div>
+      <div class="qr-q" id="qr3Q">In a relationship where both species benefit, the symbiosis is called what?</div>
       <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
-        <label><input type="radio" name="qr3" value="0"><span>Earthquakes</span></label>
-        <label><input type="radio" name="qr3" value="1"><span>Brand new seafloor</span></label>
-        <label><input type="radio" name="qr3" value="2"><span>Tall volcanoes</span></label>
+        <label><input type="radio" name="qr3" value="0"><span>Parasitism</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>Commensalism</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Mutualism</span></label>
       </div>
       <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1328,7 +1333,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions before the quiz.</li></ul>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1340,7 +1345,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce cognitive load</li></ul>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
         </div>
       </div>
     </div>
@@ -1351,40 +1356,40 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      EXPLAIN: PUTTING IT TOGETHER
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="explain" style="background: var(--dark2);">
+<section id="explain" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Explain &middot; Wrap-Up</span>
-    <h2 class="section-title">From Deep Heat to Moving Ground</h2>
-    <p class="section-desc">You started with a question: why does Earth's surface move, and why do earthquakes and volcanoes line up in belts? Now you can trace the whole chain, step by step.</p>
+    <h2 class="section-title">An Ecosystem Is a Web of Parts</h2>
+    <p class="section-desc">You started with a question: how do the living and nonliving parts of an ecosystem depend on one another? Now you can put the whole picture together.</p>
 
     <div class="wrapup-beats">
       <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">It Starts With Heat</div>
-        <div class="wrapup-beat-answer">Heat inside Earth keeps the mantle slowly flowing.</div>
-        <div class="wrapup-beat-body">Hot rock is less dense, so it rises, cools, and sinks in <strong>convection currents</strong>. This is the engine Wegener was missing.</div>
+        <div class="wrapup-beat-label">The Parts</div>
+        <div class="wrapup-beat-answer">Living and nonliving, at every scale.</div>
+        <div class="wrapup-beat-body">An <strong>ecosystem</strong> holds <strong>biotic</strong> and <strong>abiotic</strong> factors. Zooming out gives the levels of organization: organism, <strong>population</strong>, <strong>community</strong>, ecosystem, <strong>biome</strong>.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">Heat Becomes Motion</div>
-        <div class="wrapup-beat-answer">Convection drags the plates, and the plates carry the continents.</div>
-        <div class="wrapup-beat-body">The flowing mantle moves the <strong>tectonic plates</strong> of the lithosphere. New seafloor forms where they pull apart, which is why the continents drift over time.</div>
+        <div class="wrapup-beat-label">The Roles</div>
+        <div class="wrapup-beat-answer">Each species has a home and a job.</div>
+        <div class="wrapup-beat-body">A species lives in its <strong>habitat</strong> and fills its <strong>niche</strong>. Two species can share a habitat as long as their niches differ.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">Motion Reaches the Surface</div>
-        <div class="wrapup-beat-answer">Plate boundaries produce earthquakes and volcanoes.</div>
-        <div class="wrapup-beat-body">Where plates diverge, converge, or slide past, the crust cracks, melts, and slips. Those <strong>boundaries</strong> are the belts on the map.</div>
+        <div class="wrapup-beat-label">The Interactions</div>
+        <div class="wrapup-beat-answer">Species shape one another.</div>
+        <div class="wrapup-beat-body">Through <strong>predation</strong>, <strong>competition</strong>, and <strong>symbiosis</strong>, species depend on and limit each other, keeping the ecosystem in balance.</div>
       </div>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
-      <strong>The full chain:</strong>
+      <strong>The full picture:</strong>
       <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Heat deep in the mantle</span>
-        <span class="wuc wuc-2">Convection currents flow</span>
-        <span class="wuc wuc-2">Plates move and continents drift</span>
-        <span class="wuc wuc-3">Plates meet at boundaries</span>
-        <span class="wuc wuc-3">Earthquakes and volcanoes in belts</span>
+        <span class="wuc wuc-1">Biotic and abiotic parts</span>
+        <span class="wuc wuc-1">Organism to biome</span>
+        <span class="wuc wuc-2">Habitat and niche</span>
+        <span class="wuc wuc-3">Predation and competition</span>
+        <span class="wuc wuc-3">Symbiosis: + / +, + / 0, + / &#8211;</span>
       </div>
-      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. Wegener saw the puzzle; convection currents and plate tectonics finally explained it.</div>
+      <div style="margin-top: 1rem;">An ecosystem is not a list of separate parts. It is a web of connections. Living things depend on the nonliving world for sunlight, water, and shelter, and they depend on each other through hunting, competing, and partnering. Change one part and the rest of the web feels it. That is why the Joshua tree cannot live without its moth.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1392,11 +1397,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening phenomenon directly and completely.</li></ul>
+          <ul class="edu-note-text"><li>Tie the parts into one connected system.</li><li>Answer the opening question directly.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative closure</li></ul>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1404,7 +1409,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Step-by-step beats break the chain into chunks</li><li>Plain causal language throughout</li><li>Chip summary gives a visual map of the full chain</li></ul>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
         </div>
       </div>
     </div>
@@ -1419,7 +1424,7 @@
   <div class="container">
     <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Ten questions covering everything you explored, from Wegener's evidence to convection currents and plate boundaries. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you explored, from biotic and abiotic factors to the three types of symbiosis. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -1486,18 +1491,19 @@
       <p id="el-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">&#128269; The Question You Came In With</span>
-        You started this lesson asking: <strong>"Why does Earth's surface move?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes at the boundaries, you have answered it.
+        You started this lesson asking: <strong>"How do the living and nonliving parts of an ecosystem depend on one another?"</strong> If you can name the biotic and abiotic parts, place an organism in its levels of organization, tell a habitat from a niche, and sort interactions into predation, competition, and the three types of symbiosis, you have answered it.
       </div>
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
     </div>
+
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
       <div class="edu-note-label">&#128218; Instructional Design</div>
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear performance signal.</li></ul>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1509,11 +1515,10 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Answer explanations provided for every question</li><li>Practice and classroom modes available</li><li>Plausible distractors, evenly distributed answer positions</li></ul>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
         </div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -1631,19 +1636,21 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 })();
 </script>
 
-<!-- ===== PLATE BOUNDARIES INTERACTIVE ===== -->
+<!-- ===== LEVELS OF ORGANIZATION INTERACTIVE ===== -->
 <script>
-const boundaryData = {
-  1: { label: 'Boundary 1 · Plates move apart', title: 'Divergent Boundary', body: 'Two plates pull apart and rising magma fills the gap, cooling into new crust. Under the ocean this builds a mid-ocean ridge with a rift valley down the center, like the Mid-Atlantic Ridge. On land it can split a continent, as at the East African Rift.' },
-  2: { label: 'Boundary 2 · Plates collide', title: 'Convergent Boundary', body: 'Two plates push together. The more dense plate subducts (sinks) beneath the less dense one, melting and feeding volcanoes, like the Andes and the Japanese island arc. When both plates are continental and equally light, neither sinks, so they crumple upward into mountains like the Himalayas.' },
-  3: { label: 'Boundary 3 · Plates slide past', title: 'Transform Boundary', body: 'Two plates grind past each other in opposite directions. No crust is made or destroyed, but the plates catch and slip, releasing energy as earthquakes. The San Andreas Fault in California is a famous example.' }
+const layerData = {
+  1: { label: 'Level 1 · Smallest', title: 'Organism', body: 'An organism is a single living thing, such as one coyote. It is the smallest level of organization in an ecosystem.' },
+  2: { label: 'Level 2 · Same species', title: 'Population', body: 'A population is all the organisms of the same species living in the same area at the same time, such as all the coyotes in Joshua Tree National Park.' },
+  3: { label: 'Level 3 · Many species', title: 'Community', body: 'A community is all the different populations living together in an area, such as the coyotes, jackrabbits, lizards, and Joshua trees all in one place.' },
+  4: { label: 'Level 4 · Living + nonliving', title: 'Ecosystem', body: 'An ecosystem adds the nonliving world to the community. It is all the living and nonliving parts of an area, including the sunlight, water, soil, and rock.' },
+  5: { label: 'Level 5 · Largest', title: 'Biome', body: 'A biome is a large geographic region that contains many ecosystems with similar living and nonliving features. The desert is a biome.' }
 };
-function boundaryClick(n) {
-  const d = boundaryData[n];
-  document.getElementById('bd-label').textContent = d.label;
-  document.getElementById('bd-title').textContent = d.title;
-  document.getElementById('bd-body').textContent  = d.body;
-  document.querySelectorAll('#term-boundaries .layer-row').forEach((el, i) => {
+function layerClick(n) {
+  const d = layerData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
     el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
     el.style.outlineOffset = '1px';
   });
@@ -1687,14 +1694,14 @@ function boundaryClick(n) {
     });
   }
   wireQR('qr1', 1,
-    'Correct! His evidence was strong, but he could not explain what force moved the continents. Convection currents were the missing piece.',
-    'Not quite. Wegener had plenty of evidence and believed in Pangaea. What he could not explain was the force that moved the continents.');
-  wireQR('qr2', 2,
-    'Correct! The plates float and slide on the soft, slowly flowing asthenosphere in the upper mantle.',
-    'Not quite. The crust and inner core do not flow. The plates ride on the soft, flowing asthenosphere.');
-  wireQR('qr3', 0,
-    'Correct! Transform boundaries make and destroy no crust, but the plates catch and slip, releasing energy as earthquakes.',
-    'Not quite. New seafloor forms at divergent boundaries and volcanoes at convergent ones. Transform boundaries mainly cause earthquakes.');
+    'Correct! Sunlight is nonliving, so it is an abiotic factor.',
+    'Not quite. A coyote and a cactus are living. Sunlight is the nonliving, abiotic factor.');
+  wireQR('qr2', 0,
+    'Correct! All the members of one species in an area at one time form a population.',
+    'Not quite. One species in one area is a population. A community has many species.');
+  wireQR('qr3', 2,
+    'Correct! When both species benefit, the relationship is mutualism.',
+    'Not quite. When both species benefit, it is mutualism.');
 })();
 </script>
 
@@ -1713,104 +1720,114 @@ var elQuizMode  = 'practice';
 
 var elQuizQuestions = [
   {
-    q: "Who proposed the idea of continental drift, and what did he name the ancient supercontinent?",
-    options: ["Isaac Newton; Gondwana", "Alfred Wegener; Pangaea", "Charles Darwin; Laurasia", "Alfred Wegener; Atlantis"],
-    correct: 1,
-    explanation: "In 1912, the German scientist Alfred Wegener proposed continental drift and named the supercontinent Pangaea, meaning all land."
-  },
-  {
-    q: "Wegener found fossils of the same plant, Glossopteris, on continents now separated by wide oceans. Why is this evidence that the continents were once joined?",
+    q: "What is an ecosystem?",
     options: [
-      "The seeds were too heavy to drift across an ocean and the animals could not swim that far",
-      "Glossopteris still grows on every continent today",
-      "Fossils can float across oceans on currents",
-      "The plant only grew in freezing climates"
-    ],
-    correct: 0,
-    explanation: "Glossopteris seeds could not survive a long ocean drift, and the small land animals found with it could not swim across oceans. The simplest explanation is that the land was once connected."
-  },
-  {
-    q: "The lithosphere is broken into large slabs that float on the asthenosphere. What are these slabs called?",
-    options: ["Convection cells", "Rift valleys", "Tectonic plates", "Continental shelves"],
-    correct: 2,
-    explanation: "The rigid lithosphere is cracked into tectonic plates that slowly move over the soft, flowing asthenosphere."
-  },
-  {
-    q: "Wegener could not explain what moved the continents. What actually provides the force that moves the plates?",
-    options: [
-      "The pull of ocean tides",
-      "The spinning of the inner core",
-      "Wind and weather at the surface",
-      "Convection currents in the mantle"
-    ],
-    correct: 3,
-    explanation: "Heat inside Earth drives convection currents in the mantle. The flowing mantle rock drags the plates, which is the force Wegener was missing."
-  },
-  {
-    q: "At a divergent boundary two plates move apart. What happens in the gap between them?",
-    options: [
-      "Rising magma fills the gap and cools into new crust",
-      "One plate sinks beneath the other",
-      "The plates grind past each other",
-      "A deep ocean trench forms"
-    ],
-    correct: 0,
-    explanation: "As the plates separate, magma rises to fill the gap and cools into new crust. Under the ocean this is seafloor spreading at a mid-ocean ridge."
-  },
-  {
-    q: "The seafloor of the Atlantic is youngest at the Mid-Atlantic Ridge and older farther away. Which process best explains this?",
-    options: [
-      "Subduction pulling the crust down",
-      "Seafloor spreading at a divergent boundary",
-      "A transform fault sliding sideways",
-      "Weathering of the ocean floor"
-    ],
-    correct: 1,
-    explanation: "New crust forms at the ridge and moves outward, so the seafloor is youngest at the ridge and gets older with distance. This is seafloor spreading."
-  },
-  {
-    q: "Two oceanic plates collide and the more dense one sinks beneath the other. What is this process called, and what does it tend to build?",
-    options: [
-      "Spreading, building a rift valley",
-      "Erosion, building canyons",
-      "Subduction, building volcanoes and island arcs",
-      "Drifting, building flat plains"
+      "Only the animals that live in an area",
+      "A single species and its offspring",
+      "All the living and nonliving parts of an area",
+      "A large region with many different climates"
     ],
     correct: 2,
-    explanation: "When one plate sinks beneath another it is called subduction. The sinking plate melts and feeds volcanoes, forming features like the Japanese island arc."
+    explanation: "An ecosystem is all of the living (biotic) and nonliving (abiotic) parts of the environment in a given area."
   },
   {
-    q: "The Himalayas formed where two continental plates of similar density collided. Why did they crumple upward instead of one plate sinking?",
+    q: "Which of the following is a biotic factor?",
     options: [
-      "Continental crust is too dense to rise",
-      "One of the plates melted completely",
-      "The boundary is actually a transform boundary",
-      "Neither plate is dense enough to sink, so they push each other up"
-    ],
-    correct: 3,
-    explanation: "Continental crust is light and does not subduct easily. When two continental plates meet, neither sinks, so the crust folds and pushes upward into tall mountains like the Himalayas."
-  },
-  {
-    q: "The San Andreas Fault is a place where two plates slide past each other. What kind of boundary is this, and what is it known for?",
-    options: [
-      "A transform boundary known for earthquakes",
-      "A divergent boundary known for new seafloor",
-      "A convergent boundary known for volcanoes",
-      "A boundary known for building island arcs"
+      "A lizard",
+      "Sunlight",
+      "Soil",
+      "Temperature"
     ],
     correct: 0,
-    explanation: "Plates sliding past each other form a transform boundary. They catch and slip, releasing energy as earthquakes, like those along the San Andreas Fault."
+    explanation: "Biotic factors are living or once-living. A lizard is alive. Sunlight, soil, and temperature are abiotic."
   },
   {
-    q: "Why do earthquakes and volcanoes occur in narrow belts around Earth rather than randomly?",
+    q: "Which of these would be an abiotic factor in a pond?",
     options: [
-      "They follow ocean currents around the globe",
-      "They line up along the edges of the tectonic plates",
-      "They appear wherever the crust is thickest",
-      "They are spread evenly but only reported in cities"
+      "The fish",
+      "The algae",
+      "The frogs",
+      "The water temperature"
+    ],
+    correct: 3,
+    explanation: "Abiotic factors are nonliving. Water temperature is nonliving, while fish, algae, and frogs are all living."
+  },
+  {
+    q: "Which level of organization is the smallest?",
+    options: [
+      "A community",
+      "A single organism",
+      "A population",
+      "An ecosystem"
     ],
     correct: 1,
-    explanation: "Almost all earthquakes and volcanoes happen at plate boundaries, where plates pull apart, collide, or slide past. The belts on the map trace those boundaries."
+    explanation: "A single organism is the smallest level. From there it builds up to population, community, ecosystem, and biome."
+  },
+  {
+    q: "All of the different populations living together in one area make up a what?",
+    options: [
+      "A species",
+      "A biome",
+      "A community",
+      "A habitat"
+    ],
+    correct: 2,
+    explanation: "A community is all the populations of different species living together in the same area at the same time."
+  },
+  {
+    q: "A coyote's habitat is best described as its what?",
+    options: [
+      "Home, the place that meets its needs",
+      "Job, the role it plays in the ecosystem",
+      "Group of the same species",
+      "Close partner species"
+    ],
+    correct: 0,
+    explanation: "A habitat is the place where an organism lives and finds what it needs. Its role or job is its niche."
+  },
+  {
+    q: "A coyote hunts and eats a jackrabbit. This interaction is an example of what?",
+    options: [
+      "Mutualism",
+      "Competition",
+      "Commensalism",
+      "Predation"
+    ],
+    correct: 3,
+    explanation: "Predation is when one organism, the predator, feeds on another organism, its prey. The coyote is the predator."
+  },
+  {
+    q: "The Joshua tree and the yucca moth both benefit from their relationship. What type of symbiosis is this?",
+    options: [
+      "Parasitism",
+      "Mutualism",
+      "Competition",
+      "Predation"
+    ],
+    correct: 1,
+    explanation: "When both species benefit from a close, long-term relationship, the symbiosis is mutualism."
+  },
+  {
+    q: "A tick feeds on a deer, harming the deer while the tick benefits. This is an example of what?",
+    options: [
+      "Mutualism",
+      "Commensalism",
+      "Parasitism",
+      "Competition"
+    ],
+    correct: 2,
+    explanation: "In parasitism, one species (the parasite) benefits while the other (the host) is harmed. The tick harms the deer."
+  },
+  {
+    q: "Two coyotes both try to catch the same jackrabbit. This interaction is an example of what?",
+    options: [
+      "Competition",
+      "Mutualism",
+      "Commensalism",
+      "Predation"
+    ],
+    correct: 0,
+    explanation: "Competition happens when two or more organisms need the same resource at the same time, such as the same prey."
   }
 ];
 
@@ -1925,7 +1942,7 @@ function elSubmitQuiz() {
   var total = elQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
-  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand plate tectonics cold.'
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand the parts of an ecosystem cold.'
     : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
     : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
     : '\u{1F4AA} Keep going; review each section carefully and try again!';
@@ -1948,7 +1965,7 @@ function elSubmitQuiz() {
     return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
   }).join(', ');
   var params = new URLSearchParams({
-    tab: 'Plate Tectonics', lesson: 'Plate Tectonics', studentName: info2.name, teacher: teacherLabel,
+    tab: 'Parts of an Ecosystem', lesson: 'Parts of an Ecosystem', studentName: info2.name, teacher: teacherLabel,
     block: info2.block, score: score, total: total, percent: pct + '%',
     timestamp: new Date().toISOString(), answers: answerStr
   });

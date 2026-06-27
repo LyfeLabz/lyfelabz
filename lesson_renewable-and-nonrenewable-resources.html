@@ -12,9 +12,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="https://lyfelabz.com/lesson_plate-tectonics.html">
-<meta name="description" content="Discover plate tectonics: continental drift evidence, lithospheric plates, seafloor spreading, convection currents, and the three plate boundaries that build mountains and trigger earthquakes and volcanoes. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
-<title>LyfeLabz | Plate Tectonics</title>
+<link rel="canonical" href="https://lyfelabz.com/lesson_renewable-and-nonrenewable-resources.html">
+<meta name="description" content="Explore renewable and nonrenewable resources: why fossil fuels and nuclear fuel run out, how solar, wind, geothermal, biomass, and hydroelectric energy are replenished, and why the rate of use compared to the rate of replacement decides whether a resource lasts. A Grade 7 science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Renewable and Nonrenewable Resources</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -174,6 +174,32 @@
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
 
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
   .container { max-width: 1100px; margin: 0 auto; }
@@ -332,6 +358,7 @@
   .name-it.green-it { border-left-color: var(--green); }
   .name-it.orange-it { border-left-color: var(--orange); }
   .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it.blue-it { border-left-color: var(--blue); }
   .name-it-label {
     font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
     color: var(--gold); margin-bottom: 0.4rem;
@@ -340,25 +367,32 @@
   .name-it.green-it .name-it-label  { color: var(--green); }
   .name-it.orange-it .name-it-label { color: var(--orange); }
   .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it.blue-it .name-it-label   { color: var(--blue); }
   .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
   .name-it p strong { font-weight: 800; }
   .name-it.teal-it p strong   { color: var(--teal); }
   .name-it.green-it p strong  { color: var(--green); }
   .name-it.orange-it p strong { color: var(--orange); }
   .name-it.slate-it p strong  { color: var(--accent2); }
+  .name-it.blue-it p strong   { color: var(--blue); }
 
-  /* ── EXAMPLE GRID ── */
-  .example-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin: 0 auto 2rem; }
-  @media (max-width: 700px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
-  .example-chip {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.6rem;
-    font-size: 0.88rem; font-weight: 700; color: var(--text-muted); line-height: 1.4;
-  }
-  .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+  /* ── COMPARISON GRID ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .crust-card.oceanic { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.3); }
+  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.8rem; }
+  .crust-card.oceanic .crust-title { color: var(--green); }
+  .crust-card.continental .crust-title { color: var(--orange); }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .crust-list li strong { color: var(--text); }
+  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .crust-card.oceanic .crust-dot { background: var(--green); }
+  .crust-card.continental .crust-dot { background: var(--orange); }
 
-  /* ── LAYER / BOUNDARY SELECTOR (interactive) ── */
+  /* ── STAGE SELECTOR (interactive resource explorer) ── */
   .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
   .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
   .layer-figure svg { width: 100%; height: auto; display: block; }
@@ -382,28 +416,7 @@
   .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
   .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
 
-  /* ── CRUST COMPARISON ── */
-  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
-  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
-  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
-  .crust-card.oceanic { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
-  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
-  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
-  .crust-card.oceanic .crust-title { color: var(--blue); }
-  .crust-card.continental .crust-title { color: var(--orange); }
-  .crust-bar-track { height: 14px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; margin: 0.7rem 0 0.4rem; }
-  .crust-bar { height: 100%; border-radius: 99px; }
-  .crust-card.oceanic .crust-bar { background: linear-gradient(90deg, var(--blue), rgba(124,200,248,0.5)); width: 16%; }
-  .crust-card.continental .crust-bar { background: linear-gradient(90deg, var(--orange), rgba(232,129,74,0.5)); width: 100%; }
-  .crust-bar-label { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; }
-  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
-  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
-  .crust-list li strong { color: var(--text); }
-  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
-  .crust-card.oceanic .crust-dot { background: var(--blue); }
-  .crust-card.continental .crust-dot { background: var(--orange); }
-
-  /* ── CONVECTION / DIAGRAM FIGURE ── */
+  /* ── FIGURE ── */
   .figure-box {
     background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
@@ -440,24 +453,44 @@
   @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
   .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
   .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
-  .wrapup-beat-1 { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.25); }
-  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
-  .wrapup-beat-2 { background: rgba(29,233,182,0.05); border: 1px solid rgba(29,233,182,0.2); }
-  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+  .wrapup-beat-1 { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--green), rgba(61,220,132,0.3)); }
+  .wrapup-beat-2 { background: rgba(232,129,74,0.05); border: 1px solid rgba(232,129,74,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--orange), var(--gold)); }
   .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
   .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
   .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
-  .wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
-  .wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--green); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--orange); }
   .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
   .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
   .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
   .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
   .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
   .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
-  .wuc-1 { color: var(--gold);   background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); }
-  .wuc-2 { color: var(--teal);   background: rgba(29,233,182,0.08); border-color: rgba(29,233,182,0.3); }
-  .wuc-3 { color: var(--orange); background: rgba(232,129,74,0.08);  border-color: rgba(232,129,74,0.3); }
+  .wuc-1 { color: var(--green);  background: rgba(61,220,132,0.08); border-color: rgba(61,220,132,0.3); }
+  .wuc-2 { color: var(--orange); background: rgba(232,129,74,0.08); border-color: rgba(232,129,74,0.3); }
+  .wuc-3 { color: var(--blue);   background: rgba(124,200,248,0.08); border-color: rgba(124,200,248,0.3); }
+
+  /* ── CHOICE SORT (lower vs higher impact) ── */
+  .choice-prompt { font-weight: 800; color: var(--text); margin: 1.4rem 0 0.5rem; font-size: 0.97rem; }
+  .choice-prompt:first-of-type { margin-top: 0; }
+  .choice-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin: 0 0 0.4rem; }
+  @media (max-width: 560px) { .choice-pair { grid-template-columns: 1fr; } }
+  .choice-pair.done .predict-btn { cursor: default; opacity: 1; }
+  .predict-btn.choice-correct { border-color: var(--green); background: rgba(61,220,132,0.16); color: #9ff0c0; }
+  .predict-btn.choice-wrong { border-color: var(--red); background: rgba(231,76,60,0.12); color: #f0b0b0; }
+  .choice-fb { display: none; margin: 0 0 1.2rem; padding: 0.6rem 0.95rem; border-radius: 8px; font-size: 0.86rem; line-height: 1.55; background: rgba(122,143,166,0.08); border-left: 3px solid var(--accent2); color: rgba(232,237,242,0.85); }
+  .choice-fb.visible { display: block; animation: predictFadeUp 0.3s ease both; }
+
+  /* ── ARGUMENT SCAFFOLD ── */
+  .arg-frame { display: grid; gap: 0.9rem; margin: 1.6rem 0 0; }
+  .arg-step { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent2); border-radius: 12px; padding: 1rem 1.3rem; }
+  .arg-step-label { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.35rem; }
+  .arg-step p { font-size: 0.92rem; color: rgba(232,237,242,0.82); line-height: 1.6; }
+  .arg-step p em { color: rgba(159,184,204,0.85); font-style: italic; }
+  .arg-textarea { width: 100%; margin-top: 1.2rem; min-height: 120px; padding: 0.9rem 1.1rem; background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.95rem; line-height: 1.6; resize: vertical; }
+  .arg-textarea:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(122,143,166,0.15); }
 
   /* ── QUIZ ── */
   .quiz-section { background: var(--dark2); }
@@ -602,18 +635,18 @@
 
 <!-- HERO -->
 <header class="hero">
-  <span class="hero-float">&#127757;</span>
-  <span class="hero-float">&#127755;</span>
-  <span class="hero-float">&#9968;&#65039;</span>
-  <span class="hero-float">&#129517;</span>
+  <span class="hero-float">&#9728;&#65039;</span>
+  <span class="hero-float">&#127788;</span>
+  <span class="hero-float">&#9889;</span>
+  <span class="hero-float">&#128293;</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Plate Tectonics</h1>
-  <p>Earthquakes and volcanoes do not strike at random. They line up in narrow belts that trace the hidden seams of a cracked, moving planet.</p>
+  <h1>Renewable and Nonrenewable Resources</h1>
+  <p>The lights in your school stay on all day. The energy behind them might come from coal that took millions of years to form, or from sunlight that arrived this morning. One of those sources is shrinking. The other arrives free, every single day.</p>
   <div class="driving-question">
     <div class="dq-icon">&#128269;</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">Why does Earth's surface move?</div>
+      <div class="dq-text">Why do some energy resources run out while others keep coming back?</div>
     </div>
   </div>
 </header>
@@ -621,11 +654,11 @@
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">&#128300; Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes in belts) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
-  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the story into evidence, plates, motion, and boundaries keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
-  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of drift, convection, and boundaries builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (two power sources, one that runs out and one that does not) before naming any vocabulary. A genuine puzzle activates curiosity. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: sorting resources into two clear groups and small chunks keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each resource with diagrams and a timescale figure builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and convection to plate motion and surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+  <span class="ls-badge" data-tip="Systems thinking: students compare the rate a resource is used with the rate it is replaced, the core idea behind sustainability. (NRC, 2012)">&#128202; Systems &amp; Cycles</span>
 </div>
 
 
@@ -639,24 +672,24 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
     <div class="goal-grid">
       <div class="goal-card">
-        <span class="goal-icon">&#129499;</span>
-        <div class="goal-text">I can describe the evidence Wegener used to support the idea of continental drift.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#9889;</span>
+        <div class="goal-text">I can describe the difference between renewable and nonrenewable resources, and explain how a growing population increases the demand for them.</div>
+        <span class="goal-std">7.MS-ESS3-4</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#128293;</span>
-        <div class="goal-text">I can explain how convection currents in the mantle cause tectonic plates to move.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#128101;</span>
+        <div class="goal-text">I can explain how per-capita consumption changes how many resources people use.</div>
+        <span class="goal-std">7.MS-ESS3-4</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#9968;&#65039;</span>
-        <div class="goal-text">I can compare the three types of plate boundaries and the features they build.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#9728;&#65039;</span>
+        <div class="goal-text">I can give examples of technologies that reduce the environmental impact of resource use.</div>
+        <span class="goal-std">7.MS-ESS3-4</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#127757;</span>
-        <div class="goal-text">I can explain why earthquakes and volcanoes occur in narrow belts rather than randomly.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#9878;&#65039;</span>
+        <div class="goal-text">I can construct an argument supported by evidence for the choices that reduce resource consumption the most.</div>
+        <span class="goal-std">7.MS-ESS3-4</span>
       </div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -695,52 +728,44 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
     <div class="glossary-grid">
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Continental Drift</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The idea that the continents were once joined and have slowly moved to their present positions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-drift')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Natural Resource</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Anything from the Earth that people use, such as water, soil, minerals, or fuels.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-resource')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Pangaea</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The single supercontinent that held all of Earth's land about 250 million years ago.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pangaea')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Plate Tectonics</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The theory that Earth's outer shell is broken into moving plates, explaining drift, earthquakes, and volcanoes.</div>
-      </button>
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Lithosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The rigid outer shell of Earth, made of the crust and the upper mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Asthenosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The soft, slowly flowing part of the upper mantle that the plates float on.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Tectonic Plate</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A large slab of lithosphere that moves slowly over the asthenosphere.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-plate')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Convection Current</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A looping flow of hot mantle rock that rises, cools, and sinks, dragging the plates along.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Seafloor Spreading</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The process where magma rises at a mid-ocean ridge and cools into new ocean floor.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-seafloor')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Nonrenewable Resource</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A resource that cannot be remade or regrown as fast as people use it.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-nonrenewable')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Divergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move apart and new crust forms in the gap.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Renewable Resource</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A resource that can be replenished in a short period of time.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-renewable')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Convergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move together, often forming mountains or volcanoes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Fossil Fuel</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A fuel such as coal, petroleum, or natural gas, formed from buried remains of ancient living things.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-fossilfuel')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Transform Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates slide past each other, producing faults and earthquakes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Nuclear Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy released when uranium atoms are split apart in a process called fission.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-nuclear')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Subduction</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When a more dense plate sinks beneath a less dense plate at a convergent boundary.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Solar Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy that comes from the Sun.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Wind Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy captured from moving air.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Geothermal Energy</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy that comes from the heat inside the Earth.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Biomass</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy released by burning organic or once-living matter, such as wood.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Hydroelectric</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Energy captured from the flow of moving water, often at a dam.</div>
       </button>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -775,61 +800,96 @@
 <section id="engage" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Engage &middot; Phenomenon</span>
-    <h2 class="section-title">A World That Shakes in Lines</h2>
-    <p class="section-desc">If you mapped every earthquake and volcano from the last hundred years, you would not get a random scatter of dots. You would get long, narrow belts that wrap around the planet, like cracks in a shell.</p>
+    <h2 class="section-title">Two Ways to Power a City</h2>
+    <p class="section-desc">A coal power plant and a solar farm can both light up the same city. But they get their energy in very different ways, and only one of them can run out.</p>
 
     <div class="phenomenon-card">
-      <div class="phenomenon-icon">&#127755;</div>
+      <div class="phenomenon-icon">&#9889;</div>
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
-        <h3>The Ring of Fire</h3>
-        <p>A belt of volcanoes and earthquakes called the Ring of Fire traces the edge of the Pacific Ocean. Other belts run down the middle of the Atlantic and across southern Asia. Most of the world's earthquakes and volcanoes happen along these same lines, year after year. Why would Earth's most violent events follow such a clear pattern?</p>
+        <h3>One Source Shrinks, One Does Not</h3>
+        <p>The coal plant burns coal that formed underground over hundreds of millions of years. Once a chunk of coal is burned, it is gone, and the Earth will not make more for a very long time. The solar farm uses sunlight that pours onto the panels new every day. Both make electricity right now, but one supply keeps shrinking while the other keeps arriving. Why?</p>
       </div>
     </div>
 
-    <!-- Phenomenon figure: belts vs random -->
+    <!-- Two-source scene -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A stylized world map showing earthquakes and volcanoes clustered along curved belts rather than spread evenly">
-        <rect x="20" y="20" width="560" height="240" rx="16" fill="#10202e"/>
-        <!-- stylized landmasses -->
-        <path d="M70,90 q40,-30 100,-10 q40,15 20,55 q-30,40 -90,30 q-50,-10 -30,-75 Z" fill="#26323f"/>
-        <path d="M300,70 q70,-20 130,10 q40,25 10,80 q-60,45 -130,15 q-40,-50 -20,-105 Z" fill="#26323f"/>
-        <path d="M180,180 q50,-15 90,15 q15,40 -40,55 q-60,5 -50,-70 Z" fill="#26323f"/>
-        <!-- plate-edge belts (dashed) -->
-        <path d="M40,150 C150,90 250,210 360,140 C440,90 520,170 560,120" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <path d="M120,250 C200,200 240,150 300,60" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <!-- earthquake/volcano markers along belts -->
-        <g fill="#e74c3c">
-          <circle cx="60" cy="142" r="5"/><circle cx="120" cy="120" r="5"/><circle cx="180" cy="150" r="5"/>
-          <circle cx="240" cy="180" r="5"/><circle cx="300" cy="158" r="5"/><circle cx="360" cy="140" r="5"/>
-          <circle cx="420" cy="118" r="5"/><circle cx="480" cy="150" r="5"/><circle cx="540" cy="128" r="5"/>
-          <circle cx="150" cy="225" r="5"/><circle cx="210" cy="180" r="5"/><circle cx="260" cy="120" r="5"/><circle cx="292" cy="78" r="5"/>
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="On the left a coal power plant burns fuel dug from underground, with a smokestack. On the right a solar panel collects sunlight from the Sun. Both send electricity to a city in the middle.">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#16314a"/>
+            <stop offset="100%" stop-color="#1d3a52"/>
+          </linearGradient>
+          <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3a4a2c"/>
+            <stop offset="100%" stop-color="#2a3320"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="600" height="225" fill="url(#sky)"/>
+        <rect x="0" y="225" width="600" height="75" fill="url(#ground)"/>
+
+        <!-- coal plant (left) -->
+        <rect x="55" y="150" width="90" height="75" fill="#4a5260"/>
+        <rect x="70" y="110" width="18" height="45" fill="#5a6472"/>
+        <ellipse cx="79" cy="100" rx="16" ry="9" fill="#7a8492" opacity="0.7"/>
+        <ellipse cx="92" cy="84" rx="20" ry="11" fill="#7a8492" opacity="0.5"/>
+        <text x="100" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Coal plant</text>
+        <text x="100" y="272" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="#9fb8cc">nonrenewable</text>
+
+        <!-- sun + solar (right) -->
+        <circle cx="540" cy="55" r="22" fill="#f5c842"/>
+        <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
+          <line x1="540" y1="20" x2="540" y2="11"/><line x1="540" y1="90" x2="540" y2="99"/>
+          <line x1="505" y1="55" x2="496" y2="55"/><line x1="575" y1="55" x2="584" y2="55"/>
         </g>
-        <text x="300" y="252" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">Red marks = earthquakes &amp; volcanoes. Dashed lines = where they line up.</text>
+        <g transform="translate(470,170)">
+          <rect x="0" y="0" width="64" height="38" fill="#1d3a5a" stroke="#7cc8f8" stroke-width="2"/>
+          <line x1="16" y1="0" x2="16" y2="38" stroke="#7cc8f8" stroke-width="1"/>
+          <line x1="32" y1="0" x2="32" y2="38" stroke="#7cc8f8" stroke-width="1"/>
+          <line x1="48" y1="0" x2="48" y2="38" stroke="#7cc8f8" stroke-width="1"/>
+          <rect x="29" y="38" width="6" height="17" fill="#6b7280"/>
+        </g>
+        <text x="502" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Solar farm</text>
+        <text x="502" y="272" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="#9fb8cc">renewable</text>
+
+        <!-- city (center) -->
+        <rect x="270" y="160" width="22" height="65" fill="#37506a"/>
+        <rect x="296" y="140" width="26" height="85" fill="#41607f"/>
+        <rect x="326" y="172" width="20" height="53" fill="#37506a"/>
+        <rect x="276" y="170" width="6" height="8" fill="#f5c842"/><rect x="276" y="188" width="6" height="8" fill="#f5c842"/>
+        <rect x="303" y="152" width="6" height="8" fill="#f5c842"/><rect x="303" y="172" width="6" height="8" fill="#f5c842"/>
+        <text x="308" y="255" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">City</text>
+
+        <!-- arrows to city -->
+        <defs>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#9fb8cc"/></marker>
+        </defs>
+        <line x1="150" y1="180" x2="262" y2="180" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)" stroke-dasharray="6 4"/>
+        <line x1="464" y1="185" x2="356" y2="182" stroke="#9fb8cc" stroke-width="3" marker-end="url(#ar)" stroke-dasharray="6 4"/>
       </svg>
-      <div class="figure-caption">The dots are not scattered everywhere. They follow the dashed seams that crisscross the globe.</div>
+      <div class="figure-caption">Both power sources light the same city. The coal supply shrinks each time it is burned. The sunlight keeps arriving.</div>
     </div>
 
     <!-- Prediction gate -->
     <div class="question-pause predict-pause" id="qp-engage">
       <div class="qp-row">
         <span class="question-pause-icon">&#129300;</span>
-        <div class="question-pause-text"><strong>Make a prediction:</strong> Why do earthquakes and volcanoes line up in narrow belts instead of spreading out evenly across Earth?</div>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Why will the coal eventually run out while the sunlight does not?</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn"><span class="pb-letter">A</span>Earth's surface is one solid shell that cracks in random spots.</button>
-        <button class="predict-btn"><span class="pb-letter">B</span>Earth's surface is broken into moving plates, and the edges are where the action happens.</button>
-        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes and volcanoes happen everywhere equally; the belts are a coincidence.</button>
+        <button class="predict-btn"><span class="pb-letter">A</span>Coal is simply harder to dig up than sunlight is to catch.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Coal takes millions of years to form, but sunlight arrives new every day.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Solar farms are always bigger than coal mines.</button>
       </div>
     </div>
 
     <div class="name-it slate-it predict-gated" data-gate="qp-engage">
       <div class="name-it-label">Here's the big idea</div>
-      <p>The best answer is <strong>B</strong>. Earth's outer shell is not one piece. It is cracked into giant slabs called plates that slowly move. The belts of earthquakes and volcanoes trace the edges where plates meet, pull apart, or grind past one another. To understand the pattern at the surface, we have to understand the plates and what moves them. That is where this lesson goes next.</p>
+      <p>The best answer is <strong>B</strong>. What matters is how fast a resource forms compared to how fast we use it. Coal forms over hundreds of millions of years, far slower than we burn it, so the supply keeps shrinking. Sunlight is replaced as fast as we use it, so it never runs out. That single idea, the rate of use compared to the rate of replacement, is what sorts every resource into two groups.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2rem;">
-      <strong>Where we're headed:</strong> First we'll meet the scientist who noticed the continents fit together. Then we'll see what the plates are, what pushes them, and what happens at the boundaries where they meet.
+      <strong>Where we're headed:</strong> First we'll meet the two groups of resources, the ones that run out and the ones that come back. Then we'll look closely at the nonrenewable fuels, explore the renewable sources one by one, and finish with the key idea that decides which group a resource belongs in.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -837,7 +897,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Anchor the lesson in a striking real-world pattern.</li><li>Raise a question students will want answered.</li></ul>
+          <ul class="edu-note-text"><li>Anchor the lesson in a familiar phenomenon: two power sources, one that runs out.</li><li>Raise a question students will want answered.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -849,7 +909,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Concrete visual pattern (belts on a map)</li><li>Short framing text</li><li>Prediction question is low stakes and ungraded</li></ul>
+          <ul class="edu-note-text"><li>Concrete, familiar examples</li><li>Short framing text</li><li>Visual anchor</li></ul>
         </div>
       </div>
     </div>
@@ -858,128 +918,57 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     REVIEW PREVIOUS LEARNING (bridge between Engage and Explore)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="review-prev" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Review Previous Learning</span>
-    <h2 class="section-title">Need a Refresher?</h2>
-    <p class="section-desc">This lesson builds on ideas you may have seen before.</p>
-
-    <div class="content-card">
-      <div class="card-header">
-        <div class="card-title">Continental Drift (Grade 6)</div>
-      </div>
-      <p>Wegener used fossils, matching rock layers, climate clues, and the fit of continents to propose that Earth's continents were once connected. Reviewing this evidence will help explain why scientists accepted plate tectonics.</p>
-      <a href="lesson_continental-drift.html" style="display: inline-block; margin-top: 1.4rem; background: var(--gold); color: var(--dark); font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.03em; text-decoration: none; padding: 0.85rem 1.8rem; border-radius: 12px; transition: transform 0.15s, box-shadow 0.15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px var(--gold-glow)';" onmouseout="this.style.transform='';this.style.boxShadow='';">Review Lesson &rarr;</a>
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Bridge from Grade 6 continental drift to plate tectonics.</li><li>Prevent knowledge gaps before new content begins.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Prior knowledge activation</li><li>Schema priming</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember</li><li>DOK 1</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Optional review, no new content required</li><li>Single clear link, no navigation pressure</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1: CONTINENTAL DRIFT (Wegener's evidence)
+     EXPLORE 1: TWO GROUPS OF RESOURCES
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="explore" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The First Clue</span>
-    <h2 class="section-title">The Continents That Fit Together</h2>
-    <p class="section-desc">Long before anyone talked about plates, one scientist looked at a map and noticed something strange: the continents looked like pieces of a torn puzzle.</p>
-
-    <div id="term-drift" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129489;&#8205;&#127891;</span>
-        <div class="card-title">Wegener's Big Idea</div>
-      </div>
-      <div class="card-body">
-        <p>In 1912, a German scientist named <strong>Alfred Wegener</strong> proposed the idea of <span class="vocab">continental drift</span>. He claimed the continents are slowly moving, and that about 250 million years ago they were all joined into one giant supercontinent.</p>
-        <p>He named that supercontinent <strong>Pangaea</strong>, meaning "all land." Wegener knew that the way the coastlines fit together was a clue, but a good fit alone is not proof. So he went looking for real evidence.</p>
-      </div>
-    </div>
-
-    <div id="term-pangaea" class="name-it orange-it">
-      <div class="name-it-label">Name it: Pangaea</div>
-      <p><strong>Pangaea</strong> was a single supercontinent that held all of Earth's land roughly 250 million years ago. Over millions of years it broke apart, and the pieces drifted into the continents we know today.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Wegener gathered four kinds of evidence. No single clue was enough on its own, but together they told a powerful story.</p>
-
-    <div class="example-grid">
-      <div class="example-chip"><span class="example-chip-icon">&#129460;</span><span>Fossils</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#10052;&#65039;</span><span>Climate</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#9968;&#65039;</span><span>Mountains</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#129522;</span><span>Magnetite</span></div>
-    </div>
+    <span class="section-label">Explore &middot; Two Groups</span>
+    <h2 class="section-title">Resources That Run Out, and Resources That Return</h2>
+    <p class="section-desc">People use the Earth for almost everything: the fuel in cars, the electricity in homes, the water we drink. All of these come from natural resources. Those resources fall into two groups.</p>
 
     <div class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#129460;</span>
-        <div class="card-title">Fossil Clues</div>
+        <span class="card-icon">&#127757;</span>
+        <div class="card-title">What Is a Natural Resource?</div>
       </div>
       <div class="card-body">
-        <p>Fossils of the same plant and animal species turned up on continents now separated by thousands of miles of ocean. One example is <em>Glossopteris</em>, a fern-like plant found across South America, Africa, India, and Antarctica.</p>
-        <p>Its seeds were too heavy to drift across an ocean without being destroyed, and the small land animals found with it could not have swum that far. The simplest explanation is that the land was once connected.</p>
+        <p id="term-resource">A <span class="vocab">natural resource</span> is anything from the Earth that people use, such as water, soil, minerals, sunlight, or fuels. Some of these are replaced quickly. Others take so long to form that, once used, they are gone for a very long time.</p>
+        <p>The difference between the two groups is not how useful they are. It is how fast they are replaced compared to how fast we use them.</p>
       </div>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#10052;&#65039;</span>
-        <div class="card-title">Climate Clues</div>
+    <div class="crust-grid">
+      <div class="crust-card continental">
+        <div class="crust-title">&#128293; Nonrenewable Resources</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>Cannot be remade as fast as we <strong>use them up</strong></span></li>
+          <li><span class="crust-dot"></span><span>Take <strong>millions of years</strong> to form or are limited in amount</span></li>
+          <li><span class="crust-dot"></span><span>Examples: coal, petroleum, natural gas, nuclear fuel</span></li>
+        </ul>
       </div>
-      <div class="card-body">
-        <p>Wegener found scratches carved by ancient glaciers on rocks in places that are warm today, like parts of Africa and India. He also found fossils of tropical swamp plants in Antarctica and on islands far to the north.</p>
-        <p>A continent cannot be frozen and tropical at the same time. But if those lands once sat in very different positions, the climate clues suddenly make sense. The southern continents fit together into a region scientists call <strong>Gondwanaland</strong>.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#9968;&#65039;</span>
-        <div class="card-title">Rock and Mountain Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Mountain ranges on different continents line up and contain rocks of the same age and chemistry. The Caledonian Mountains in northwestern Europe match the Appalachian Mountains along the east coast of the United States.</p>
-        <p>Put the continents back together and these ranges form one continuous belt, like a sentence torn across two pages. Rock types and the shapes of the continental shelves match across the ocean as well.</p>
+      <div class="crust-card oceanic">
+        <div class="crust-title">&#9728;&#65039; Renewable Resources</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span>Can be <strong>replenished in a short period of time</strong></span></li>
+          <li><span class="crust-dot"></span><span>Replaced as fast as, or faster than, we use them</span></li>
+          <li><span class="crust-dot"></span><span>Examples: solar, wind, geothermal, biomass, water</span></li>
+        </ul>
       </div>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129522;</span>
-        <div class="card-title">Magnetite Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Some rocks contain <strong>magnetite</strong>, a magnetic iron-oxide mineral and the most magnetic mineral found in nature. When melted rock cools, magnetite crystals line up with Earth's magnetic field and lock in that direction, like tiny frozen compass needles.</p>
-        <p>Rocks of the same age on far-apart continents recorded matching magnetic patterns. That match only makes sense if the rocks formed side by side and later moved apart.</p>
-      </div>
+    <div id="term-nonrenewable" class="name-it orange-it">
+      <div class="name-it-label">Key idea: Nonrenewable Resource</div>
+      <p>A <strong>nonrenewable resource</strong> is a natural resource that cannot be remade or regrown at a scale comparable to how fast it is used. Once it is used up, the Earth cannot replace it within a human lifetime.</p>
+    </div>
+
+    <div id="term-renewable" class="name-it green-it">
+      <div class="name-it-label">Key idea: Renewable Resource</div>
+      <p>A <strong>renewable resource</strong> is a natural resource that can be replenished in a short period of time. As long as it keeps being replaced as fast as we use it, it will not run out.</p>
     </div>
 
     <div class="callout gold">
-      <span class="callout-icon">&#9888;&#65039;</span>
-      <div class="callout-body"><strong>The missing piece:</strong> Wegener's evidence was strong, but most scientists rejected his idea for decades. The reason was simple: he could not explain what force could possibly move something as huge as a continent. That answer was still hidden deep inside Earth.</div>
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The key pattern:</strong> A resource is nonrenewable not because it is rare, but because we use it far faster than nature can replace it. A resource is renewable when nature keeps up.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -987,179 +976,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Establish the historical puzzle that drove the theory.</li><li>Show how multiple lines of evidence accumulate into a claim.</li></ul>
+          <ul class="edu-note-text"><li>Establish the two groups before studying examples.</li><li>Define the sorting rule: rate of use vs rate of replacement.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Evidence-based reasoning</li><li>Narrative structure (hero, evidence, unsolved mystery)</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Four parallel evidence cards, each self-contained</li><li>Short paragraphs with bolded key ideas</li><li>Misconception alert: Wegener was rejected for lack of mechanism, not bad evidence</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2: LITHOSPHERIC PLATES
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="plates" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Plates</span>
-    <h2 class="section-title">A Cracked Shell That Floats</h2>
-    <p class="section-desc">The breakthrough came from understanding Earth's layers. The continents do not plow through the ocean floor on their own. They ride on top of giant moving slabs.</p>
-
-    <div id="term-litho" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129513;</span>
-        <div class="card-title">The Lithosphere Rides the Asthenosphere</div>
-      </div>
-      <div class="card-body">
-        <p>The <span class="vocab">lithosphere</span> is Earth's rigid outer shell, made of the crust plus the upper part of the mantle. It is not one solid piece. It is cracked into many large slabs called <strong>tectonic plates</strong>.</p>
-        <p>Just below sits the <span class="vocab">asthenosphere</span>, a hotter, softer part of the mantle that slowly flows like thick putty. The plates float and slide on the asthenosphere the way rafts drift on the surface of a pool.</p>
-      </div>
-    </div>
-
-    <div id="term-plate" class="name-it slate-it">
-      <div class="name-it-label">Name it: Tectonic Plate</div>
-      <p>A <strong>tectonic plate</strong> is a large slab of lithosphere that moves slowly over the asthenosphere. Most plates carry both ocean floor and continents, so the continents move because the plates they sit on move.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Plates are not all the same, because the crust they carry comes in two kinds. The difference in density will matter a lot at the boundaries.</p>
-
-    <div class="crust-grid">
-      <div class="crust-card oceanic">
-        <div class="crust-title">Oceanic Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thinnest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>basalt</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thinnest</strong> and <strong>most dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Sinks when it meets lighter crust</span></li>
-        </ul>
-      </div>
-      <div class="crust-card continental">
-        <div class="crust-title">Continental Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thickest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>granite</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thickest</strong> and <strong>least dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Rides high and does not sink easily</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="bridge-callout teal">
-      <strong>Hold on to the density rule:</strong> oceanic crust is more dense than continental crust. When two plates meet, the heavier oceanic crust tends to sink beneath the lighter continental crust. That single rule will explain a lot of what happens at boundaries.
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Give students the moving-parts vocabulary before explaining what moves them.</li><li>Establish the density rule that drives subduction.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Concrete analogy (rafts on a pool)</li><li>Contrast pairs (oceanic vs continental crust)</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Side-by-side crust comparison cards</li><li>Visual density bars support non-verbal learners</li><li>Misconception alert: plates are not just continents; most carry ocean floor too</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3: WHAT MOVES THE PLATES (convection + seafloor spreading)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="motion" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Engine</span>
-    <h2 class="section-title">What Pushes the Plates?</h2>
-    <p class="section-desc">This is the answer Wegener was missing. The force that moves whole continents comes from heat deep inside Earth, the same heat that drives everything from the inside out.</p>
-
-    <div id="term-convection" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#128293;</span>
-        <div class="card-title">Convection Currents in the Mantle</div>
-      </div>
-      <div class="card-body">
-        <p>The mantle is extremely hot near the bottom and cooler near the top. Hot rock is less dense, so it slowly rises toward the surface. As it nears the top it cools, becomes more dense, and sinks back down. This endless loop is a <span class="vocab">convection current</span>.</p>
-        <p>These currents flow beneath the lithosphere and drag the plates along, like crackers riding on slowly boiling soup. <strong>The movement of mantle rock creates the movement of the plates above it.</strong></p>
-      </div>
-    </div>
-
-    <!-- Convection figure -->
-    <div class="figure-box">
-      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Convection currents in the mantle: hot rock rises in the middle, spreads sideways, and sinks at the edges, pushing two plates apart at the surface">
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="#7a3a2a" opacity="0.85"/>
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="url(#mantleGrad)"/>
-        <defs>
-          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.1"/>
-          </linearGradient>
-        </defs>
-        <rect x="40" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <rect x="320" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <text x="150" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <text x="450" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <path d="M400,210 C400,160 340,150 310,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <defs>
-          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd27a"/></marker>
-        </defs>
-        <text x="300" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">Hot rock rises in the middle, cools, and sinks at the sides</text>
-      </svg>
-      <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
-    </div>
-
-    <div id="term-seafloor" class="name-it teal-it">
-      <div class="name-it-label">Name it: Seafloor Spreading</div>
-      <p>Where plates pull apart under the ocean, rising magma fills the gap and cools into brand new ocean floor. This is called <strong>seafloor spreading</strong>. It builds a long underwater mountain chain called a mid-ocean ridge, and the seafloor is youngest right at the ridge and older farther away.</p>
-    </div>
-
-    <div class="callout slate">
-      <span class="callout-icon">&#129522;</span>
-      <div class="callout-body"><strong>Magnetite returns:</strong> as new seafloor cools at a ridge, magnetite minerals record the direction of Earth's magnetic field. The field flips over time, leaving matching, mirror-image stripes on both sides of the ridge. Those symmetric stripes are powerful proof that the seafloor is spreading.</div>
-    </div>
-
-    <div class="bridge-callout teal" style="margin-top: 0.5rem;">
-      <strong>The mystery solved:</strong> convection currents are the engine Wegener could not find. Heat drives the mantle to flow, the flow moves the plates, and the plates carry the continents. Now we can look at exactly what happens where two plates meet.
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Answer Wegener's missing piece: what actually moves the plates.</li><li>Establish the causal chain before showing what it produces at boundaries.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Causal reasoning (heat to flow to plate motion)</li><li>Labeled diagram supports dual coding</li></ul>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Comparison and contrast</li><li>Categorization</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1167,7 +988,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Boiling-water analogy makes convection concrete</li><li>Short paragraphs with key terms bolded in place</li><li>Misconception alert: the asthenosphere flows like thick putty, not liquid lava</li></ul>
+          <ul class="edu-note-text"><li>Two short, parallel comparison cards</li><li>Plain "run out vs return" framing</li><li>Key terms in bold</li></ul>
         </div>
       </div>
     </div>
@@ -1176,69 +997,68 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 4: PLATE BOUNDARIES (interactive)
+     EXPLORE 2: NONRENEWABLE FUELS
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="boundaries-sec" style="background: var(--dark2);">
+<section id="journey" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Boundaries</span>
-    <h2 class="section-title">Where Plates Meet</h2>
-    <p class="section-desc">Almost all of Earth's earthquakes and volcanoes happen at plate boundaries. There are three types, sorted by how the plates move. Open each one to see what it builds.</p>
+    <span class="section-label">Explore &middot; Nonrenewable</span>
+    <h2 class="section-title">The Fuels That Run Out</h2>
+    <p class="section-desc">Most of the energy people use today comes from nonrenewable resources. Two main kinds power the modern world: fossil fuels and nuclear fuel.</p>
 
-    <div id="term-boundaries" class="layer-wrap">
-      <div class="layer-figure">
-        <svg viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three plate boundary types: divergent plates moving apart, convergent plates colliding with one sinking, and transform plates sliding past each other">
-          <!-- Divergent -->
-          <text x="10" y="22" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Divergent</text>
-          <rect x="20" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <rect x="145" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <path d="M118,43 L96,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M142,43 L164,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M130,56 L130,86" stroke="#ffb347" stroke-width="6" stroke-linecap="round"/>
-          <!-- Convergent -->
-          <text x="10" y="122" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Convergent</text>
-          <rect x="20" y="130" width="110" height="24" rx="3" fill="#9a5e3a"/>
-          <path d="M130,142 L155,142 L185,170 Z" fill="#7cc8f8"/>
-          <rect x="150" y="130" width="90" height="14" rx="3" fill="#7cc8f8"/>
-          <path d="M138,140 L120,140" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M150,127 L168,127" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M40,130 L52,112 L64,130 Z" fill="#8a9a6a"/>
-          <!-- Transform -->
-          <text x="10" y="222" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Transform</text>
-          <rect x="20" y="230" width="100" height="40" rx="3" fill="#6a7d52"/>
-          <rect x="140" y="230" width="100" height="40" rx="3" fill="#5a6e44"/>
-          <line x1="130" y1="226" x2="130" y2="274" stroke="#1a1410" stroke-width="3"/>
-          <path d="M70,222 L70,210" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M190,278 L190,290" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <defs>
-            <marker id="bh" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          </defs>
-        </svg>
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9935;</span>
+        <div class="card-title">Coal, Petroleum, and Natural Gas</div>
       </div>
-      <div class="layer-controls">
-        <div class="layer-list">
-          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9be8bb;" onclick="boundaryClick(1)">
-            <span>1 &middot; Divergent</span><span class="layer-tag">plates move apart</span>
-          </div>
-          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b88a;" onclick="boundaryClick(2)">
-            <span>2 &middot; Convergent</span><span class="layer-tag">plates collide</span>
-          </div>
-          <div class="layer-row" style="background: rgba(124,200,248,0.26); color: #aed8f8;" onclick="boundaryClick(3)">
-            <span>3 &middot; Transform</span><span class="layer-tag">plates slide past</span>
-          </div>
-        </div>
-        <div class="layer-detail-panel">
-          <div class="ld-inner">
-            <div class="ld-label" id="bd-label">Open a boundary</div>
-            <div class="ld-title" id="bd-title">Three ways plates meet &#8594;</div>
-            <div class="ld-body" id="bd-body">Each boundary type moves in a different way, so each one builds different features at the surface. Open any boundary to see how the plates move and what they create.</div>
-          </div>
-        </div>
+      <div class="card-body">
+        <p id="term-fossilfuel">Coal, petroleum (oil), and natural gas are called <span class="vocab">fossil fuels</span>. They formed from the buried remains of plants and tiny living things that died hundreds of millions of years ago. Heat and pressure deep underground slowly turned those remains into fuel.</p>
+        <p>Because that process takes so long, fossil fuels cannot be replenished in a short period of time. When we burn them faster than the Earth can make more, the supply keeps shrinking.</p>
       </div>
     </div>
 
-    <div class="callout teal">
-      <span class="callout-icon">&#9889;</span>
-      <div class="callout-body"><strong>Why the belts exist:</strong> the plate boundaries are exactly the lines you saw on the map. Divergent ridges, convergent trenches and volcanoes, and transform faults are where the crust cracks, melts, and slips, so that is where earthquakes and volcanoes cluster.</div>
+    <div class="figure-box">
+      <svg viewBox="0 0 600 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A cross section of the ground. Ancient plants and tiny sea creatures are buried under layers of rock. Over millions of years, heat and pressure turn the remains into coal, oil, and natural gas deep underground.">
+        <rect x="0" y="0" width="600" height="60" fill="#1d3a52"/>
+        <rect x="0" y="60" width="600" height="45" fill="#5a4a36"/>
+        <rect x="0" y="105" width="600" height="45" fill="#6b5640"/>
+        <rect x="0" y="150" width="600" height="45" fill="#4a3c2c"/>
+        <rect x="0" y="195" width="600" height="35" fill="#352b20"/>
+        <!-- surface plants -->
+        <g stroke="#3ddc84" stroke-width="3" stroke-linecap="round">
+          <line x1="60" y1="60" x2="60" y2="40"/><line x1="68" y1="60" x2="73" y2="42"/><line x1="52" y1="60" x2="47" y2="42"/>
+        </g>
+        <text x="60" y="30" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#3ddc84">ancient life</text>
+        <!-- buried remains -->
+        <ellipse cx="180" cy="125" rx="22" ry="8" fill="#2a2018"/>
+        <ellipse cx="320" cy="170" rx="26" ry="9" fill="#15110c"/>
+        <ellipse cx="460" cy="120" rx="20" ry="7" fill="#2a2018"/>
+        <!-- labels -->
+        <text x="180" y="128" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#c9a06a">oil &amp; gas</text>
+        <text x="320" y="173" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">coal</text>
+        <!-- time arrow -->
+        <defs>
+          <marker id="tm" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f5c842"/></marker>
+        </defs>
+        <line x1="60" y1="55" x2="320" y2="160" stroke="#f5c842" stroke-width="2.5" marker-end="url(#tm)" stroke-dasharray="5 4"/>
+        <text x="200" y="100" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#f5c842">hundreds of millions of years</text>
+      </svg>
+      <div class="figure-caption">Fossil fuels form when buried remains of ancient life are slowly changed by heat and pressure over hundreds of millions of years.</div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9883;&#65039;</span>
+        <div class="card-title">Nuclear Energy</div>
+      </div>
+      <div class="card-body">
+        <p id="term-nuclear"><span class="vocab">Nuclear energy</span> is released when atoms of uranium are split apart in a process called fission. A small amount of uranium can release a large amount of energy, which is used to make electricity.</p>
+        <p>Nuclear energy is also nonrenewable. Uranium is a metal mined from the ground, and there is only a limited amount. Once the uranium is used, it is gone.</p>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#9888;&#65039;</span>
+      <div class="callout-body"><strong>Different fuels, same problem:</strong> Fossil fuels and nuclear fuel work in completely different ways, but both are nonrenewable. Each comes from a limited supply that the Earth cannot replace as fast as we use it.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1246,11 +1066,190 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Connect plate motion to surface features students can observe.</li><li>Answer the opening phenomenon: why earthquakes and volcanoes form belts.</li></ul>
+          <ul class="edu-note-text"><li>Examine the main nonrenewable fuels.</li><li>Show why slow formation makes them run out.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Comparison and contrast (three boundary types)</li><li>Dual coding with interactive diagram</li></ul>
+          <ul class="edu-note-text"><li>Dual coding with the cross-section</li><li>Cause-and-effect (slow formation to limited supply)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Labeled diagram paired with text</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: RENEWABLE RESOURCES (interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="into" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Renewable</span>
+    <h2 class="section-title">The Sources That Come Back</h2>
+    <p class="section-desc">Renewable resources are replenished in a short period of time, so they do not run out the way fuels do. Click each source to see where its energy comes from and why it keeps returning.</p>
+
+    <div class="layer-wrap">
+      <div class="layer-figure">
+        <svg viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A landscape with five renewable energy sources: the Sun for solar, a wind turbine, steam rising from the ground for geothermal, a plant for biomass, and flowing water at a dam.">
+          <rect x="0" y="0" width="320" height="280" fill="#13283c"/>
+          <rect x="0" y="210" width="320" height="70" fill="#3a4a2c"/>
+          <!-- sun (solar) -->
+          <circle cx="48" cy="44" r="20" fill="#f5c842"/>
+          <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
+            <line x1="48" y1="14" x2="48" y2="6"/><line x1="48" y1="74" x2="48" y2="82"/>
+            <line x1="18" y1="44" x2="10" y2="44"/><line x1="78" y1="44" x2="86" y2="44"/>
+          </g>
+          <text x="48" y="100" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#f5c842">1 Solar</text>
+          <!-- wind turbine -->
+          <line x1="130" y1="210" x2="130" y2="120" stroke="#cfd8e0" stroke-width="4"/>
+          <g stroke="#cfd8e0" stroke-width="4" stroke-linecap="round">
+            <line x1="130" y1="120" x2="130" y2="96"/><line x1="130" y1="120" x2="151" y2="132"/><line x1="130" y1="120" x2="109" y2="132"/>
+          </g>
+          <circle cx="130" cy="120" r="4" fill="#7cc8f8"/>
+          <text x="130" y="225" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#7cc8f8">2 Wind</text>
+          <!-- geothermal steam -->
+          <path d="M205,210 q-6,-16 4,-26 q-8,-14 4,-26" fill="none" stroke="#b8ccd8" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+          <ellipse cx="207" cy="210" rx="14" ry="5" fill="#5a4636"/>
+          <text x="207" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="8.5" font-weight="800" fill="#b8ccd8">3 Geothermal</text>
+          <!-- biomass plant/flame -->
+          <rect x="256" y="190" width="5" height="20" fill="#6b4a2a"/>
+          <circle cx="258" cy="182" r="12" fill="#3ddc84"/>
+          <path d="M278,210 q4,-12 -2,-18 q10,4 6,18 Z" fill="#e8814a"/>
+          <text x="262" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#3ddc84">4 Biomass</text>
+          <!-- dam / water -->
+          <rect x="0" y="232" width="120" height="48" fill="#1d3a5a"/>
+          <rect x="118" y="232" width="14" height="48" fill="#6b7280"/>
+          <path d="M132,244 q14,4 28,0" fill="none" stroke="#7cc8f8" stroke-width="3" stroke-linecap="round"/>
+          <text x="60" y="264" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#7cc8f8">5 Water</text>
+        </svg>
+      </div>
+      <div class="layer-controls">
+        <div class="layer-list">
+          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f3d27a;" onclick="layerClick(1)">
+            <span>1 &middot; Solar</span><span class="layer-tag">the Sun</span>
+          </div>
+          <div class="layer-row" style="background: rgba(124,200,248,0.24); color: #a8d8fa;" onclick="layerClick(2)">
+            <span>2 &middot; Wind</span><span class="layer-tag">moving air</span>
+          </div>
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f0b48a;" onclick="layerClick(3)">
+            <span>3 &middot; Geothermal</span><span class="layer-tag">Earth's heat</span>
+          </div>
+          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #7df0b4;" onclick="layerClick(4)">
+            <span>4 &middot; Biomass</span><span class="layer-tag">burning matter</span>
+          </div>
+          <div class="layer-row" style="background: rgba(29,233,182,0.24); color: #8ef0db;" onclick="layerClick(5)">
+            <span>5 &middot; Hydroelectric</span><span class="layer-tag">flowing water</span>
+          </div>
+        </div>
+        <div class="layer-detail-panel">
+          <div class="ld-inner">
+            <div class="ld-label" id="ld-label">Click a source</div>
+            <div class="ld-title" id="ld-title">Start with Solar &#8594;</div>
+            <div class="ld-body" id="ld-body">Each renewable source draws on something nature keeps replacing. Click any source to see where its energy comes from and why it does not run out.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout teal">
+      <span class="callout-icon">&#9851;</span>
+      <div class="callout-body"><strong>Why they keep coming back:</strong> The Sun keeps shining, the wind keeps blowing, the Earth stays hot, plants keep growing, and the water cycle keeps moving water. Because these are replaced as fast as we use them, they are renewable.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Survey the five main renewable sources.</li><li>Tie each to the natural process that replaces it.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the interactive diagram</li><li>Click to reveal one source at a time</li><li>Pattern recognition (each is continually replaced)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal each source, no hover</li><li>Labeled diagram paired with text</li><li>Numbered, ordered sources</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: RATE OF USE VS RATE OF REPLACEMENT
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="storage" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Deciding Idea</span>
+    <h2 class="section-title">It All Comes Down to Time</h2>
+    <p class="section-desc">What really separates the two groups is a race between two rates: how fast we use a resource, and how fast nature replaces it. That race decides whether a resource runs out.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9201;&#65039;</span>
+        <div class="card-title">A Race Between Two Rates</div>
+      </div>
+      <div class="card-body">
+        <p>Every resource is being used and replaced at the same time. If nature replaces it as fast as we use it, the supply holds steady, and the resource is renewable.</p>
+        <p>If we use it much faster than nature can replace it, the supply keeps shrinking, and the resource is nonrenewable. Coal forms over hundreds of millions of years, but we burn it in seconds, so the supply cannot keep up.</p>
+      </div>
+    </div>
+
+    <!-- Timescale comparison figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 560 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two timelines. The nonrenewable bar shows a resource that takes hundreds of millions of years to replace, far longer than the moment it is used. The renewable bar shows a resource replaced about as fast as it is used.">
+        <rect x="0" y="0" width="560" height="250" fill="#0f1c2b"/>
+        <!-- nonrenewable -->
+        <text x="30" y="50" font-family="Nunito,sans-serif" font-size="13" font-weight="900" fill="#e8814a">Nonrenewable</text>
+        <text x="30" y="70" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="#9fb8cc">used fast, replaced slowly</text>
+        <rect x="30" y="82" width="20" height="22" fill="#e74c3c"/>
+        <text x="30" y="122" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="#9fb8cc">used now</text>
+        <rect x="60" y="82" width="470" height="22" fill="#5a4636"/>
+        <text x="295" y="98" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#f0c89a">replacement takes hundreds of millions of years</text>
+        <!-- renewable -->
+        <text x="30" y="160" font-family="Nunito,sans-serif" font-size="13" font-weight="900" fill="#3ddc84">Renewable</text>
+        <text x="30" y="180" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="#9fb8cc">used and replaced at about the same speed</text>
+        <rect x="30" y="192" width="20" height="22" fill="#1de9b6"/>
+        <text x="30" y="232" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="#9fb8cc">used now</text>
+        <rect x="60" y="192" width="24" height="22" fill="#2e6b4f"/>
+        <text x="150" y="208" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#7df0b4">replaced almost as fast</text>
+      </svg>
+      <div class="figure-caption">A resource runs out when the time to replace it is far longer than the time to use it. When the two are close, the resource keeps returning.</div>
+    </div>
+
+    <div class="name-it gold" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: The Deciding Question</div>
+      <p>To sort any resource, ask one question: <strong style="color: var(--gold);">Is it replaced as fast as we use it?</strong> If yes, it is renewable. If it takes far longer to replace than to use, it is nonrenewable.</p>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#128202;</span>
+      <div class="callout-body"><strong>Back to the puzzle:</strong> The coal plant burns fuel that nature replaces over hundreds of millions of years, so its supply shrinks. The solar farm uses sunlight that arrives new each day, so it never runs out. Same city, two very different races against time.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name the underlying rule behind both groups.</li><li>Answer the opening phenomenon directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Dual coding with the timeline figure</li><li>Cause-and-effect (rate mismatch to running out)</li><li>Single transferable rule</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1258,7 +1257,269 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Click to reveal one boundary at a time reduces load</li><li>Misconception alert: students often mix up which boundary produces mountains vs trenches vs rift valleys</li><li>Pause and have students predict the feature before revealing</li></ul>
+          <ul class="edu-note-text"><li>Key idea stated as one question</li><li>Side-by-side timelines</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 5: WHY RESOURCE USE MATTERS (population + per-capita)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="impact" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Why It Matters</span>
+    <h2 class="section-title">Why Does Resource Use Matter?</h2>
+    <p class="section-desc">Knowing which resources run out is only half the picture. How many people use those resources, and how much each person uses, decides how much pressure we put on the environment. Driving question: why does the way humans use resources affect the environment?</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128101;</span>
+        <div class="card-title">More People, More Demand</div>
+      </div>
+      <div class="card-body">
+        <p>Earth's human population keeps growing. More people need more food, more clean water, more energy, and more materials to build homes and make products. As the number of people rises, the total demand for natural resources rises with it.</p>
+        <p>That demand has effects we can see. Meeting it means more farming, more mining, more drilling, and more waste, all of which change the air, water, and ecosystems around us. Even renewable resources can be strained if a growing population uses them faster than nature replaces them.</p>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9878;&#65039;</span>
+        <div class="card-title">Different Lifestyles, Different Amounts</div>
+      </div>
+      <div class="card-body">
+        <p>Two people can use very different amounts of resources. <span class="vocab">Per-capita consumption</span> means the amount of resources one person uses. A household in a large home with two large vehicles uses more energy and materials than a household in a small home that bikes and walks.</p>
+        <p>The same pattern shows up in everyday products. Single-use plastics are made, used once, and thrown away. Reusable products are used many times before they wear out. The choices people make every day add up to how many resources they consume.</p>
+      </div>
+    </div>
+
+    <div class="name-it slate-it">
+      <div class="name-it-label">Key idea: Total Resource Demand</div>
+      <p>Total resource demand depends on <strong>two things at once</strong>: the number of people, and how much each person uses. Both a growing population and rising per-capita consumption push demand up, and more demand means more impact on the environment.</p>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#127757;</span>
+      <div class="callout-body"><strong>The connection:</strong> The way humans use resources affects the environment because every unit of food, water, energy, and material has to come from somewhere. When demand climbs, so does the strain on the Earth's air, water, land, and living things.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Introduce population growth and per-capita consumption as drivers of demand.</li><li>Set up the human-impact argument of 7.MS-ESS3-4.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect reasoning</li><li>Systems thinking (demand to impact)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Everyday, nonpolitical examples</li><li>Key term defined in place</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 6: HOW TECHNOLOGY REDUCES IMPACTS (+ choice-sort interactive)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="solutions" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Solutions</span>
+    <h2 class="section-title">How Can Technology Reduce Impacts?</h2>
+    <p class="section-desc">If demand drives impact, then technologies and choices that lower demand can reduce that impact. These solutions fall into three groups. Each one comes with tradeoffs, so people weigh costs and benefits using evidence.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9889;</span>
+        <div class="card-title">Cleaner Energy</div>
+      </div>
+      <div class="card-body">
+        <p>Renewable energy technologies make electricity without burning fossil fuels. Solar panels capture sunlight, wind turbines capture moving air, and hydroelectric dams capture flowing water. Using these in place of coal or gas reduces how much nonrenewable fuel we take from the Earth.</p>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128161;</span>
+        <div class="card-title">Greater Efficiency</div>
+      </div>
+      <div class="card-body">
+        <p>Efficient technologies do the same job using less energy. An LED bulb produces the same light as an old incandescent bulb while using a fraction of the energy. Energy-efficient appliances and electric vehicles also do more with less. Using less energy for the same task means fewer resources are consumed.</p>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#9851;</span>
+        <div class="card-title">Conservation</div>
+      </div>
+      <div class="card-body">
+        <p>Conservation means using less and reusing more. Recycling turns used materials into new products instead of new raw materials. Reusable bottles and bags replace single-use items. Water-saving technologies, such as low-flow fixtures, cut how much water we use. Each choice lowers demand on natural resources.</p>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#9888;&#65039;</span>
+      <div class="callout-body"><strong>Every solution has tradeoffs:</strong> Solar panels need materials and space to build, and electric vehicles need batteries. People weigh the costs and benefits using evidence, rather than assuming any one choice is perfect.</div>
+    </div>
+
+    <!-- Choice-sort interactive -->
+    <div class="content-card" style="margin-top: 1.5rem;">
+      <div class="card-header">
+        <span class="card-icon">&#129513;</span>
+        <div class="card-title">Try It: Which Choice Reduces Resource Use the Most?</div>
+      </div>
+      <div class="card-body">
+        <p>For each pair, choose the option with the <strong>lower impact</strong>, the one that reduces resource consumption the most. You will get feedback right away.</p>
+      </div>
+
+      <div class="choice-prompt">1. Drinking water at school all year</div>
+      <div class="choice-pair">
+        <button class="predict-btn" data-lower="1" onclick="elChoicePick(this)">A reusable water bottle refilled each day</button>
+        <button class="predict-btn" data-lower="0" onclick="elChoicePick(this)">A new disposable plastic bottle each day</button>
+      </div>
+      <div class="choice-fb" data-why="A reusable bottle is made once and refilled many times, while a new disposable bottle uses new plastic and creates waste every single day."></div>
+
+      <div class="choice-prompt">2. Lighting a bedroom</div>
+      <div class="choice-pair">
+        <button class="predict-btn" data-lower="0" onclick="elChoicePick(this)">An old incandescent bulb</button>
+        <button class="predict-btn" data-lower="1" onclick="elChoicePick(this)">An LED bulb</button>
+      </div>
+      <div class="choice-fb" data-why="An LED bulb gives the same light using far less energy than an incandescent bulb, so it consumes fewer resources for the same job."></div>
+
+      <div class="choice-prompt">3. Going somewhere a few blocks away</div>
+      <div class="choice-pair">
+        <button class="predict-btn" data-lower="1" onclick="elChoicePick(this)">Riding a bike</button>
+        <button class="predict-btn" data-lower="0" onclick="elChoicePick(this)">Taking a short car trip</button>
+      </div>
+      <div class="choice-fb" data-why="Riding a bike a short distance uses no fuel, while a short car trip burns gasoline, a nonrenewable resource."></div>
+
+      <div class="choice-prompt">4. Lights in a room no one is using</div>
+      <div class="choice-pair">
+        <button class="predict-btn" data-lower="0" onclick="elChoicePick(this)">Leaving the lights on</button>
+        <button class="predict-btn" data-lower="1" onclick="elChoicePick(this)">Turning the lights off</button>
+      </div>
+      <div class="choice-fb" data-why="Turning off lights you are not using saves electricity, while leaving them on wastes energy for no benefit."></div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Show technologies and choices that mitigate resource impact.</li><li>Let students compare options and get immediate feedback.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Active comparison and decision making</li><li>Immediate corrective feedback</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to choose, no hover</li><li>Plain paired choices</li><li>Tradeoffs stated, not advocacy</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EVALUATE: MAKING EVIDENCE-BASED CHOICES (argument, ESS3-4)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="argument" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Build an Argument</span>
+    <h2 class="section-title">Making Evidence-Based Choices</h2>
+    <p class="section-desc">Scientists answer questions like this by constructing an argument: a claim backed by evidence and reasoning. Use what you learned to build one.</p>
+
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">&#127961;&#65039;</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">Your Task</div>
+        <h3>A Town Wants to Reduce Its Impact</h3>
+        <p>A growing town wants to lower the impact of its rising population and resource use on the environment. Town leaders are weighing four strategies. Which would help the most? Build an argument supported by evidence.</p>
+      </div>
+    </div>
+
+    <div class="goal-grid">
+      <div class="goal-card" style="border-left-color: var(--green);">
+        <span class="goal-icon">&#9728;&#65039;</span>
+        <div class="goal-text">Switch to renewable energy</div>
+        <p style="font-size:0.86rem; color: rgba(232,237,242,0.7); line-height:1.55; margin:0;">Evidence: solar and wind make electricity without using up fossil fuels, lowering nonrenewable resource use.</p>
+      </div>
+      <div class="goal-card" style="border-left-color: var(--blue);">
+        <span class="goal-icon">&#127970;</span>
+        <div class="goal-text">Build energy-efficient buildings</div>
+        <p style="font-size:0.86rem; color: rgba(232,237,242,0.7); line-height:1.55; margin:0;">Evidence: efficient lighting, heating, and appliances do the same jobs while using less energy.</p>
+      </div>
+      <div class="goal-card" style="border-left-color: var(--teal);">
+        <span class="goal-icon">&#9851;</span>
+        <div class="goal-text">Start a recycling program</div>
+        <p style="font-size:0.86rem; color: rgba(232,237,242,0.7); line-height:1.55; margin:0;">Evidence: recycling reuses materials, so fewer new raw materials must be mined or harvested.</p>
+      </div>
+      <div class="goal-card" style="border-left-color: var(--accent2);">
+        <span class="goal-icon">&#128167;</span>
+        <div class="goal-text">Add water conservation</div>
+        <p style="font-size:0.86rem; color: rgba(232,237,242,0.7); line-height:1.55; margin:0;">Evidence: low-flow fixtures and leak repairs reduce how much fresh water the town uses.</p>
+      </div>
+    </div>
+
+    <div class="arg-frame">
+      <div class="arg-step">
+        <div class="arg-step-label">1 &middot; Claim</div>
+        <p>State which strategies you think would help the town the most. <em>The town should ___ because ___.</em></p>
+      </div>
+      <div class="arg-step">
+        <div class="arg-step-label">2 &middot; Evidence</div>
+        <p>Give facts from the lesson that support your claim. <em>Evidence from the lesson shows that ___.</em></p>
+      </div>
+      <div class="arg-step">
+        <div class="arg-step-label">3 &middot; Reasoning</div>
+        <p>Explain how your evidence connects population, consumption, and resource use. <em>This reduces the town's impact because ___.</em></p>
+      </div>
+    </div>
+
+    <textarea class="arg-textarea" placeholder="Write your argument here: claim, then evidence, then reasoning." aria-label="Write your evidence-based argument"></textarea>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#9878;&#65039;</span>
+      <div class="callout-body"><strong>What you just did:</strong> You constructed an argument supported by evidence that human activities and technologies can reduce the impact of a growing population and rising consumption on the environment. That is the exact thinking scientists and engineers use to plan for the future.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Have students construct an evidence-based argument, the core verb of 7.MS-ESS3-4.</li><li>Apply the lesson to a real decision.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Claim-evidence-reasoning scaffold</li><li>Transfer to a new context</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3 to 4</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Sentence starters lower the writing barrier</li><li>Evidence supplied for each option</li><li>Resizable response box</li></ul>
         </div>
       </div>
     </div>
@@ -1278,11 +1539,11 @@
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">Wegener's idea of continental drift was rejected for decades. What was missing from his explanation?</div>
+      <div class="qr-q" id="qr1Q">Which type of resource cannot be replaced as quickly as we use it?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>He had no fossil evidence at all</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>He could not explain what force could move a continent</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>No one believed Pangaea had ever existed</span></label>
+        <label><input type="radio" name="qr1" value="0"><span>A nonrenewable resource</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>A renewable resource</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>An endless resource</span></label>
       </div>
       <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1294,11 +1555,11 @@
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">The tectonic plates float and slide on which layer of Earth?</div>
+      <div class="qr-q" id="qr2Q">Which of these is a renewable resource?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>The solid inner core</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>The brittle surface crust</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>The soft, flowing asthenosphere</span></label>
+        <label><input type="radio" name="qr2" value="0"><span>Coal</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Solar energy</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Petroleum</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1310,11 +1571,11 @@
     <div class="qr-card" id="qrCard3">
       <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr3Q">Two plates grind past each other along the San Andreas Fault. What does this transform boundary mainly produce?</div>
+      <div class="qr-q" id="qr3Q">Why are fossil fuels nonrenewable?</div>
       <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
-        <label><input type="radio" name="qr3" value="0"><span>Earthquakes</span></label>
-        <label><input type="radio" name="qr3" value="1"><span>Brand new seafloor</span></label>
-        <label><input type="radio" name="qr3" value="2"><span>Tall volcanoes</span></label>
+        <label><input type="radio" name="qr3" value="0"><span>They take millions of years to form</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>They are made fresh each year</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>They come directly from the Sun</span></label>
       </div>
       <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1328,7 +1589,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions before the quiz.</li></ul>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1340,7 +1601,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce cognitive load</li></ul>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
         </div>
       </div>
     </div>
@@ -1354,37 +1615,37 @@
 <section id="explain" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Explain &middot; Wrap-Up</span>
-    <h2 class="section-title">From Deep Heat to Moving Ground</h2>
-    <p class="section-desc">You started with a question: why does Earth's surface move, and why do earthquakes and volcanoes line up in belts? Now you can trace the whole chain, step by step.</p>
+    <h2 class="section-title">Why Some Run Out and Some Return</h2>
+    <p class="section-desc">You started with a question: why do some energy resources run out while others keep coming back? Now you can explain it, step by step.</p>
 
     <div class="wrapup-beats">
-      <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">It Starts With Heat</div>
-        <div class="wrapup-beat-answer">Heat inside Earth keeps the mantle slowly flowing.</div>
-        <div class="wrapup-beat-body">Hot rock is less dense, so it rises, cools, and sinks in <strong>convection currents</strong>. This is the engine Wegener was missing.</div>
-      </div>
       <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">Heat Becomes Motion</div>
-        <div class="wrapup-beat-answer">Convection drags the plates, and the plates carry the continents.</div>
-        <div class="wrapup-beat-body">The flowing mantle moves the <strong>tectonic plates</strong> of the lithosphere. New seafloor forms where they pull apart, which is why the continents drift over time.</div>
+        <div class="wrapup-beat-label">The Ones That Run Out</div>
+        <div class="wrapup-beat-answer">Nonrenewable resources form too slowly.</div>
+        <div class="wrapup-beat-body"><strong>Fossil fuels</strong> take hundreds of millions of years to form, and <strong>nuclear fuel</strong> comes from a limited supply of uranium. We use them far faster than they are replaced.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">The Ones That Return</div>
+        <div class="wrapup-beat-answer">Renewable resources are replaced quickly.</div>
+        <div class="wrapup-beat-body"><strong>Solar, wind, geothermal, biomass,</strong> and <strong>hydroelectric</strong> draw on processes nature keeps repeating, so they are replenished about as fast as we use them.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">Motion Reaches the Surface</div>
-        <div class="wrapup-beat-answer">Plate boundaries produce earthquakes and volcanoes.</div>
-        <div class="wrapup-beat-body">Where plates diverge, converge, or slide past, the crust cracks, melts, and slips. Those <strong>boundaries</strong> are the belts on the map.</div>
+        <div class="wrapup-beat-label">The Deciding Idea</div>
+        <div class="wrapup-beat-answer">It is a race between two rates.</div>
+        <div class="wrapup-beat-body">Compare the rate we use a resource with the rate nature replaces it. If replacement keeps up, the resource lasts. If it cannot, the supply runs out.</div>
       </div>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
-      <strong>The full chain:</strong>
+      <strong>The full idea:</strong>
       <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Heat deep in the mantle</span>
-        <span class="wuc wuc-2">Convection currents flow</span>
-        <span class="wuc wuc-2">Plates move and continents drift</span>
-        <span class="wuc wuc-3">Plates meet at boundaries</span>
-        <span class="wuc wuc-3">Earthquakes and volcanoes in belts</span>
+        <span class="wuc wuc-2">Nonrenewable: used faster than replaced</span>
+        <span class="wuc wuc-2">Fossil fuels and nuclear fuel</span>
+        <span class="wuc wuc-1">Renewable: replaced as fast as used</span>
+        <span class="wuc wuc-1">Solar, wind, geothermal, biomass, water</span>
+        <span class="wuc wuc-3">Ask: is it replaced as fast as we use it?</span>
       </div>
-      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. Wegener saw the puzzle; convection currents and plate tectonics finally explained it.</div>
+      <div style="margin-top: 1rem;">A resource is not nonrenewable because it is rare. It is nonrenewable because nature replaces it far slower than we use it. That is why a coal plant's supply shrinks while a solar farm's never does.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1392,11 +1653,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening phenomenon directly and completely.</li></ul>
+          <ul class="edu-note-text"><li>Tie the groups into one cause-and-effect idea.</li><li>Answer the opening question directly.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative closure</li></ul>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1404,7 +1665,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Step-by-step beats break the chain into chunks</li><li>Plain causal language throughout</li><li>Chip summary gives a visual map of the full chain</li></ul>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
         </div>
       </div>
     </div>
@@ -1419,7 +1680,7 @@
   <div class="container">
     <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Ten questions covering everything you explored, from Wegener's evidence to convection currents and plate boundaries. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you explored, from fossil fuels and renewable sources to population, consumption, and evidence-based solutions. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -1486,18 +1747,19 @@
       <p id="el-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">&#128269; The Question You Came In With</span>
-        You started this lesson asking: <strong>"Why does Earth's surface move?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes at the boundaries, you have answered it.
+        You started this lesson asking: <strong>"Why do some energy resources run out while others keep coming back?"</strong> If you can explain that nonrenewable resources like fossil fuels and nuclear fuel are used far faster than nature replaces them, while renewable resources like solar and wind are replenished about as fast as we use them, you have answered it.
       </div>
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
     </div>
+
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
       <div class="edu-note-label">&#128218; Instructional Design</div>
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear performance signal.</li></ul>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1509,11 +1771,10 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Answer explanations provided for every question</li><li>Practice and classroom modes available</li><li>Plausible distractors, evenly distributed answer positions</li></ul>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
         </div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -1631,22 +1892,44 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 })();
 </script>
 
-<!-- ===== PLATE BOUNDARIES INTERACTIVE ===== -->
+<!-- ===== RENEWABLE SOURCES INTERACTIVE ===== -->
 <script>
-const boundaryData = {
-  1: { label: 'Boundary 1 · Plates move apart', title: 'Divergent Boundary', body: 'Two plates pull apart and rising magma fills the gap, cooling into new crust. Under the ocean this builds a mid-ocean ridge with a rift valley down the center, like the Mid-Atlantic Ridge. On land it can split a continent, as at the East African Rift.' },
-  2: { label: 'Boundary 2 · Plates collide', title: 'Convergent Boundary', body: 'Two plates push together. The more dense plate subducts (sinks) beneath the less dense one, melting and feeding volcanoes, like the Andes and the Japanese island arc. When both plates are continental and equally light, neither sinks, so they crumple upward into mountains like the Himalayas.' },
-  3: { label: 'Boundary 3 · Plates slide past', title: 'Transform Boundary', body: 'Two plates grind past each other in opposite directions. No crust is made or destroyed, but the plates catch and slip, releasing energy as earthquakes. The San Andreas Fault in California is a famous example.' }
+const layerData = {
+  1: { label: 'Source 1 · Solar', title: 'Solar Energy', body: 'Solar energy comes from the Sun. Panels capture sunlight and turn it into electricity. It is renewable because the Sun keeps shining and the sunlight arrives new every single day.' },
+  2: { label: 'Source 2 · Wind', title: 'Wind Energy', body: 'Wind energy comes from moving air. Turbines spin as the wind pushes their blades, generating electricity. It is renewable because the Sun keeps heating the air unevenly, so the wind keeps blowing.' },
+  3: { label: 'Source 3 · Geothermal', title: 'Geothermal Energy', body: 'Geothermal energy comes from the heat inside the Earth. That heat warms water into steam that can spin turbines. It is renewable because the Earth stays hot, so the heat keeps being supplied.' },
+  4: { label: 'Source 4 · Biomass', title: 'Biomass', body: 'Biomass is energy released by burning organic or once-living matter, such as wood or crop waste. It is renewable because new plants can grow back in a short period of time to replace what is used.' },
+  5: { label: 'Source 5 · Hydroelectric', title: 'Hydroelectric Energy', body: 'Hydroelectric energy comes from the flow of moving water, often at a dam. Falling water spins turbines to make electricity. It is renewable because the water cycle keeps refilling the rivers and reservoirs.' }
 };
-function boundaryClick(n) {
-  const d = boundaryData[n];
-  document.getElementById('bd-label').textContent = d.label;
-  document.getElementById('bd-title').textContent = d.title;
-  document.getElementById('bd-body').textContent  = d.body;
-  document.querySelectorAll('#term-boundaries .layer-row').forEach((el, i) => {
+function layerClick(n) {
+  const d = layerData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
     el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
     el.style.outlineOffset = '1px';
   });
+}
+</script>
+
+<!-- ===== CHOICE SORT (lower vs higher impact) ===== -->
+<script>
+function elChoicePick(btn) {
+  var pair = btn.closest('.choice-pair');
+  if (pair.classList.contains('done')) return;
+  pair.classList.add('done');
+  var picked = btn.getAttribute('data-lower') === '1';
+  pair.querySelectorAll('.predict-btn').forEach(function (b) {
+    b.disabled = true;
+    if (b.getAttribute('data-lower') === '1') b.classList.add('choice-correct');
+    else b.classList.add('choice-wrong');
+  });
+  var fb = pair.nextElementSibling;
+  if (fb && fb.classList.contains('choice-fb')) {
+    fb.classList.add('visible');
+    fb.innerHTML = (picked ? '✅ Correct. ' : '❌ That is the higher-impact choice. ') + fb.getAttribute('data-why');
+  }
 }
 </script>
 
@@ -1686,15 +1969,15 @@ function boundaryClick(n) {
       opts.querySelector('input').focus();
     });
   }
-  wireQR('qr1', 1,
-    'Correct! His evidence was strong, but he could not explain what force moved the continents. Convection currents were the missing piece.',
-    'Not quite. Wegener had plenty of evidence and believed in Pangaea. What he could not explain was the force that moved the continents.');
-  wireQR('qr2', 2,
-    'Correct! The plates float and slide on the soft, slowly flowing asthenosphere in the upper mantle.',
-    'Not quite. The crust and inner core do not flow. The plates ride on the soft, flowing asthenosphere.');
+  wireQR('qr1', 0,
+    'Correct! A nonrenewable resource is used faster than it can be replaced.',
+    'Not quite. A resource that cannot be replaced as fast as we use it is nonrenewable.');
+  wireQR('qr2', 1,
+    'Correct! Solar energy comes from the Sun and is replenished every day, so it is renewable.',
+    'Not quite. Coal and petroleum are nonrenewable. Solar energy is the renewable choice.');
   wireQR('qr3', 0,
-    'Correct! Transform boundaries make and destroy no crust, but the plates catch and slip, releasing energy as earthquakes.',
-    'Not quite. New seafloor forms at divergent boundaries and volcanoes at convergent ones. Transform boundaries mainly cause earthquakes.');
+    'Correct! Fossil fuels take millions of years to form, far longer than we use them.',
+    'Not quite. Fossil fuels are nonrenewable because they take millions of years to form.');
 })();
 </script>
 
@@ -1713,104 +1996,114 @@ var elQuizMode  = 'practice';
 
 var elQuizQuestions = [
   {
-    q: "Who proposed the idea of continental drift, and what did he name the ancient supercontinent?",
-    options: ["Isaac Newton; Gondwana", "Alfred Wegener; Pangaea", "Charles Darwin; Laurasia", "Alfred Wegener; Atlantis"],
-    correct: 1,
-    explanation: "In 1912, the German scientist Alfred Wegener proposed continental drift and named the supercontinent Pangaea, meaning all land."
-  },
-  {
-    q: "Wegener found fossils of the same plant, Glossopteris, on continents now separated by wide oceans. Why is this evidence that the continents were once joined?",
+    q: "A natural resource that cannot be replaced as fast as people use it is called what?",
     options: [
-      "The seeds were too heavy to drift across an ocean and the animals could not swim that far",
-      "Glossopteris still grows on every continent today",
-      "Fossils can float across oceans on currents",
-      "The plant only grew in freezing climates"
-    ],
-    correct: 0,
-    explanation: "Glossopteris seeds could not survive a long ocean drift, and the small land animals found with it could not swim across oceans. The simplest explanation is that the land was once connected."
-  },
-  {
-    q: "The lithosphere is broken into large slabs that float on the asthenosphere. What are these slabs called?",
-    options: ["Convection cells", "Rift valleys", "Tectonic plates", "Continental shelves"],
-    correct: 2,
-    explanation: "The rigid lithosphere is cracked into tectonic plates that slowly move over the soft, flowing asthenosphere."
-  },
-  {
-    q: "Wegener could not explain what moved the continents. What actually provides the force that moves the plates?",
-    options: [
-      "The pull of ocean tides",
-      "The spinning of the inner core",
-      "Wind and weather at the surface",
-      "Convection currents in the mantle"
-    ],
-    correct: 3,
-    explanation: "Heat inside Earth drives convection currents in the mantle. The flowing mantle rock drags the plates, which is the force Wegener was missing."
-  },
-  {
-    q: "At a divergent boundary two plates move apart. What happens in the gap between them?",
-    options: [
-      "Rising magma fills the gap and cools into new crust",
-      "One plate sinks beneath the other",
-      "The plates grind past each other",
-      "A deep ocean trench forms"
-    ],
-    correct: 0,
-    explanation: "As the plates separate, magma rises to fill the gap and cools into new crust. Under the ocean this is seafloor spreading at a mid-ocean ridge."
-  },
-  {
-    q: "The seafloor of the Atlantic is youngest at the Mid-Atlantic Ridge and older farther away. Which process best explains this?",
-    options: [
-      "Subduction pulling the crust down",
-      "Seafloor spreading at a divergent boundary",
-      "A transform fault sliding sideways",
-      "Weathering of the ocean floor"
+      "A renewable resource",
+      "A nonrenewable resource",
+      "An endless resource",
+      "A living resource"
     ],
     correct: 1,
-    explanation: "New crust forms at the ridge and moves outward, so the seafloor is youngest at the ridge and gets older with distance. This is seafloor spreading."
+    explanation: "A nonrenewable resource cannot be remade or regrown as fast as we use it, so the supply runs out."
   },
   {
-    q: "Two oceanic plates collide and the more dense one sinks beneath the other. What is this process called, and what does it tend to build?",
+    q: "Why are fossil fuels considered nonrenewable?",
     options: [
-      "Spreading, building a rift valley",
-      "Erosion, building canyons",
-      "Subduction, building volcanoes and island arcs",
-      "Drifting, building flat plains"
+      "Living plants make new ones every year",
+      "They can be remade in just a few weeks",
+      "They take millions of years to form, far longer than we use them",
+      "They are made directly out of sunlight"
     ],
     correct: 2,
-    explanation: "When one plate sinks beneath another it is called subduction. The sinking plate melts and feeds volcanoes, forming features like the Japanese island arc."
+    explanation: "Fossil fuels take hundreds of millions of years to form. We burn them far faster than the Earth can replace them."
   },
   {
-    q: "The Himalayas formed where two continental plates of similar density collided. Why did they crumple upward instead of one plate sinking?",
+    q: "Which energy resource uses uranium and is nonrenewable because the uranium gets used up?",
     options: [
-      "Continental crust is too dense to rise",
-      "One of the plates melted completely",
-      "The boundary is actually a transform boundary",
-      "Neither plate is dense enough to sink, so they push each other up"
-    ],
-    correct: 3,
-    explanation: "Continental crust is light and does not subduct easily. When two continental plates meet, neither sinks, so the crust folds and pushes upward into tall mountains like the Himalayas."
-  },
-  {
-    q: "The San Andreas Fault is a place where two plates slide past each other. What kind of boundary is this, and what is it known for?",
-    options: [
-      "A transform boundary known for earthquakes",
-      "A divergent boundary known for new seafloor",
-      "A convergent boundary known for volcanoes",
-      "A boundary known for building island arcs"
+      "Nuclear energy",
+      "Solar energy",
+      "Wind energy",
+      "Geothermal energy"
     ],
     correct: 0,
-    explanation: "Plates sliding past each other form a transform boundary. They catch and slip, releasing energy as earthquakes, like those along the San Andreas Fault."
+    explanation: "Nuclear energy splits uranium atoms in fission. Uranium is mined and limited, so once it is used it is gone."
   },
   {
-    q: "Why do earthquakes and volcanoes occur in narrow belts around Earth rather than randomly?",
+    q: "Which of these is a renewable resource?",
     options: [
-      "They follow ocean currents around the globe",
-      "They line up along the edges of the tectonic plates",
-      "They appear wherever the crust is thickest",
-      "They are spread evenly but only reported in cities"
+      "Coal",
+      "Natural gas",
+      "Petroleum",
+      "Wind"
+    ],
+    correct: 3,
+    explanation: "Wind is renewable because the Sun keeps heating the air and the wind keeps blowing. The others are fossil fuels."
+  },
+  {
+    q: "A hydroelectric dam is considered a renewable resource because...",
+    options: [
+      "the water flow is constantly refilled by the water cycle",
+      "the concrete dam itself never wears out",
+      "it has no effect on the river around it",
+      "the water can only be used a single time"
+    ],
+    correct: 0,
+    explanation: "Hydroelectric energy uses flowing water, and the water cycle keeps refilling the rivers, so the source returns."
+  },
+  {
+    q: "As the human population grows, the total demand for natural resources usually...",
+    options: [
+      "stays exactly the same",
+      "decreases",
+      "disappears",
+      "increases"
+    ],
+    correct: 3,
+    explanation: "More people need more food, water, energy, and materials, so the total demand for natural resources rises."
+  },
+  {
+    q: "What does per-capita consumption describe?",
+    options: [
+      "the total number of people on Earth",
+      "the amount of resources one person uses",
+      "the age of a natural resource",
+      "the speed a resource forms underground"
     ],
     correct: 1,
-    explanation: "Almost all earthquakes and volcanoes happen at plate boundaries, where plates pull apart, collide, or slide past. The belts on the map trace those boundaries."
+    explanation: "Per-capita consumption is the amount of resources a single person uses, which varies with lifestyle and choices."
+  },
+  {
+    q: "Which change would reduce the energy used for lighting the most?",
+    options: [
+      "leaving the lights on all day",
+      "using larger incandescent bulbs",
+      "replacing incandescent bulbs with LED bulbs",
+      "adding more incandescent bulbs"
+    ],
+    correct: 2,
+    explanation: "LED bulbs produce the same light using far less energy, so they cut the resources needed for lighting."
+  },
+  {
+    q: "Which is the best example of conserving resources?",
+    options: [
+      "recycling materials instead of using new ones",
+      "throwing reusable items in the trash",
+      "using a new disposable cup every time",
+      "leaving the water running while brushing"
+    ],
+    correct: 0,
+    explanation: "Recycling reuses materials so fewer new raw materials must be mined or harvested, which conserves resources."
+  },
+  {
+    q: "A town claims switching to solar and wind power will lower its environmental impact. Which evidence best supports that claim?",
+    options: [
+      "Wind turbines can be very tall",
+      "Many towns already have power lines",
+      "Solar and wind make electricity without using up fossil fuels",
+      "Solar panels are usually a dark color"
+    ],
+    correct: 2,
+    explanation: "Evidence must connect to the claim. Solar and wind generate electricity without burning nonrenewable fossil fuels, which lowers impact."
   }
 ];
 
@@ -1925,7 +2218,7 @@ function elSubmitQuiz() {
   var total = elQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
-  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand plate tectonics cold.'
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand renewable and nonrenewable resources cold.'
     : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
     : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
     : '\u{1F4AA} Keep going; review each section carefully and try again!';
@@ -1948,7 +2241,7 @@ function elSubmitQuiz() {
     return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
   }).join(', ');
   var params = new URLSearchParams({
-    tab: 'Plate Tectonics', lesson: 'Plate Tectonics', studentName: info2.name, teacher: teacherLabel,
+    tab: 'Resources', lesson: 'Renewable and Nonrenewable Resources', studentName: info2.name, teacher: teacherLabel,
     block: info2.block, score: score, total: total, percent: pct + '%',
     timestamp: new Date().toISOString(), answers: answerStr
   });

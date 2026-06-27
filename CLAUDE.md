@@ -264,6 +264,45 @@ Prefer models and cause-and-effect explanations.
 
 ---
 
+# SUPPORTING CONCEPT PRINCIPLE
+
+Standards drive the curriculum.
+
+However, supporting concepts needed to understand a standard are not prohibited simply because they formally appear in another grade.
+
+Students often require ideas that lie outside the exact wording of the performance expectation in order to understand the phenomenon being studied.
+
+Examples:
+
+* Moon phases require understanding rotation, revolution, and orbital motion.
+* Eclipses require understanding relative positions and gravity.
+* Chemical reactions may require qualitative discussion of atoms rearranging.
+* Electricity may reference magnetic and gravitational fields.
+* Earth systems may require concepts that extend beyond the exact wording of the standard.
+
+## Teach liberally.
+
+Lessons may include supporting concepts beyond the exact wording of the performance expectation when those concepts are necessary for conceptual understanding.
+
+## Badge conservatively.
+
+Badges should represent only the standards whose performance expectations are intentionally addressed and assessed.
+
+Mentioning a concept does not mean a lesson claims mastery of that standard.
+
+Supporting content is not curriculum contamination.
+
+Curriculum contamination occurs only when:
+
+* a lesson intentionally teaches and assesses another grade's performance expectation, or
+* a lesson claims another grade's badge.
+
+Judge lessons by what students are expected to demonstrate, not by every idea mentioned.
+
+Avoid removing useful scaffolding simply because it appears elsewhere in the framework.
+
+---
+
 # ACCESSIBILITY
 
 Responsive design required.

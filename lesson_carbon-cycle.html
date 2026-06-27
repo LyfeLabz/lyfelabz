@@ -12,9 +12,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="https://lyfelabz.com/lesson_plate-tectonics.html">
-<meta name="description" content="Discover plate tectonics: continental drift evidence, lithospheric plates, seafloor spreading, convection currents, and the three plate boundaries that build mountains and trigger earthquakes and volcanoes. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
-<title>LyfeLabz | Plate Tectonics</title>
+<link rel="canonical" href="https://lyfelabz.com/lesson_carbon-cycle.html">
+<meta name="description" content="Explore the carbon cycle: how the same carbon atoms move through the atmosphere, biosphere, hydrosphere, and geosphere by photosynthesis, cellular respiration, decomposition, and combustion. A Grade 7 science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | The Carbon Cycle</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -174,6 +174,32 @@
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
 
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
   .container { max-width: 1100px; margin: 0 auto; }
@@ -332,6 +358,7 @@
   .name-it.green-it { border-left-color: var(--green); }
   .name-it.orange-it { border-left-color: var(--orange); }
   .name-it.slate-it { border-left-color: var(--accent2); }
+  .name-it.blue-it { border-left-color: var(--blue); }
   .name-it-label {
     font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
     color: var(--gold); margin-bottom: 0.4rem;
@@ -340,25 +367,32 @@
   .name-it.green-it .name-it-label  { color: var(--green); }
   .name-it.orange-it .name-it-label { color: var(--orange); }
   .name-it.slate-it .name-it-label  { color: var(--accent2); }
+  .name-it.blue-it .name-it-label   { color: var(--blue); }
   .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
   .name-it p strong { font-weight: 800; }
   .name-it.teal-it p strong   { color: var(--teal); }
   .name-it.green-it p strong  { color: var(--green); }
   .name-it.orange-it p strong { color: var(--orange); }
   .name-it.slate-it p strong  { color: var(--accent2); }
+  .name-it.blue-it p strong   { color: var(--blue); }
 
-  /* ── EXAMPLE GRID ── */
-  .example-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin: 0 auto 2rem; }
-  @media (max-width: 700px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
-  .example-chip {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.6rem;
-    font-size: 0.88rem; font-weight: 700; color: var(--text-muted); line-height: 1.4;
-  }
-  .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+  /* ── DRIVER COMPARISON ── */
+  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
+  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .crust-card.oceanic { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.3); }
+  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.8rem; }
+  .crust-card.oceanic .crust-title { color: var(--green); }
+  .crust-card.continental .crust-title { color: var(--orange); }
+  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .crust-list li strong { color: var(--text); }
+  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .crust-card.oceanic .crust-dot { background: var(--green); }
+  .crust-card.continental .crust-dot { background: var(--orange); }
 
-  /* ── LAYER / BOUNDARY SELECTOR (interactive) ── */
+  /* ── STAGE SELECTOR (interactive carbon cycle) ── */
   .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
   .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
   .layer-figure svg { width: 100%; height: auto; display: block; }
@@ -382,28 +416,7 @@
   .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
   .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
 
-  /* ── CRUST COMPARISON ── */
-  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
-  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
-  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
-  .crust-card.oceanic { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
-  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
-  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
-  .crust-card.oceanic .crust-title { color: var(--blue); }
-  .crust-card.continental .crust-title { color: var(--orange); }
-  .crust-bar-track { height: 14px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; margin: 0.7rem 0 0.4rem; }
-  .crust-bar { height: 100%; border-radius: 99px; }
-  .crust-card.oceanic .crust-bar { background: linear-gradient(90deg, var(--blue), rgba(124,200,248,0.5)); width: 16%; }
-  .crust-card.continental .crust-bar { background: linear-gradient(90deg, var(--orange), rgba(232,129,74,0.5)); width: 100%; }
-  .crust-bar-label { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; }
-  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
-  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
-  .crust-list li strong { color: var(--text); }
-  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
-  .crust-card.oceanic .crust-dot { background: var(--blue); }
-  .crust-card.continental .crust-dot { background: var(--orange); }
-
-  /* ── CONVECTION / DIAGRAM FIGURE ── */
+  /* ── FIGURE ── */
   .figure-box {
     background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
@@ -440,24 +453,24 @@
   @media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
   .wrapup-beat { border-radius: 16px; padding: 1.4rem 1.3rem; position: relative; }
   .wrapup-beat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
-  .wrapup-beat-1 { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.25); }
-  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
-  .wrapup-beat-2 { background: rgba(29,233,182,0.05); border: 1px solid rgba(29,233,182,0.2); }
-  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+  .wrapup-beat-1 { background: rgba(61,220,132,0.06); border: 1px solid rgba(61,220,132,0.25); }
+  .wrapup-beat-1::before { background: linear-gradient(90deg, var(--green), rgba(61,220,132,0.3)); }
+  .wrapup-beat-2 { background: rgba(232,129,74,0.05); border: 1px solid rgba(232,129,74,0.2); }
+  .wrapup-beat-2::before { background: linear-gradient(90deg, var(--orange), var(--gold)); }
   .wrapup-beat-3 { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.18); }
   .wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
   .wrapup-beat-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; margin-bottom: 0.6rem; }
-  .wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
-  .wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+  .wrapup-beat-1 .wrapup-beat-label { color: var(--green); }
+  .wrapup-beat-2 .wrapup-beat-label { color: var(--orange); }
   .wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
   .wrapup-beat-answer { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text); }
   .wrapup-beat-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
   .wrapup-beat-body strong { color: var(--text); font-weight: 800; }
   .wrapup-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
   .wuc { font-size: 0.76rem; font-weight: 800; padding: 0.22rem 0.65rem; border-radius: 99px; border: 1px solid; }
-  .wuc-1 { color: var(--gold);   background: rgba(245,200,66,0.08); border-color: rgba(245,200,66,0.3); }
-  .wuc-2 { color: var(--teal);   background: rgba(29,233,182,0.08); border-color: rgba(29,233,182,0.3); }
-  .wuc-3 { color: var(--orange); background: rgba(232,129,74,0.08);  border-color: rgba(232,129,74,0.3); }
+  .wuc-1 { color: var(--green);  background: rgba(61,220,132,0.08); border-color: rgba(61,220,132,0.3); }
+  .wuc-2 { color: var(--orange); background: rgba(232,129,74,0.08); border-color: rgba(232,129,74,0.3); }
+  .wuc-3 { color: var(--blue);   background: rgba(124,200,248,0.08); border-color: rgba(124,200,248,0.3); }
 
   /* ── QUIZ ── */
   .quiz-section { background: var(--dark2); }
@@ -602,18 +615,18 @@
 
 <!-- HERO -->
 <header class="hero">
-  <span class="hero-float">&#127757;</span>
-  <span class="hero-float">&#127755;</span>
-  <span class="hero-float">&#9968;&#65039;</span>
-  <span class="hero-float">&#129517;</span>
+  <span class="hero-float">&#127807;</span>
+  <span class="hero-float">&#128168;</span>
+  <span class="hero-float">&#127795;</span>
+  <span class="hero-float">&#127981;</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Plate Tectonics</h1>
-  <p>Earthquakes and volcanoes do not strike at random. They line up in narrow belts that trace the hidden seams of a cracked, moving planet.</p>
+  <h1>The Carbon Cycle</h1>
+  <p>A carbon atom in the air you just breathed in may once have been inside a dinosaur, a lump of coal, or a blade of grass. Carbon never runs out. The same atoms keep moving through living things, the air, the oceans, and the rocks.</p>
   <div class="driving-question">
     <div class="dq-icon">&#128269;</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">Why does Earth's surface move?</div>
+      <div class="dq-text">How can the same carbon atoms move through plants, animals, the air, and rocks again and again?</div>
     </div>
   </div>
 </header>
@@ -621,11 +634,11 @@
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">&#128300; Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes in belts) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
-  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the story into evidence, plates, motion, and boundaries keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
-  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of drift, convection, and boundaries builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (the carbon in your breath was once inside other things) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the cycle into small, sequenced steps keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each step with a diagram of the carbon cycle builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and convection to plate motion and surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+  <span class="ls-badge" data-tip="Systems thinking: students trace matter cycling among the living and nonliving parts of Earth, mirroring authentic science. (NRC, 2012)">&#128202; Systems &amp; Cycles</span>
 </div>
 
 
@@ -639,24 +652,24 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
     <div class="goal-grid">
       <div class="goal-card">
-        <span class="goal-icon">&#129499;</span>
-        <div class="goal-text">I can describe the evidence Wegener used to support the idea of continental drift.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#128260;</span>
+        <div class="goal-text">I can describe how carbon cycles among the air, living things, oceans, and rocks.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#128293;</span>
-        <div class="goal-text">I can explain how convection currents in the mantle cause tectonic plates to move.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#127807;</span>
+        <div class="goal-text">I can explain how photosynthesis moves carbon from the air into living things.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#9968;&#65039;</span>
-        <div class="goal-text">I can compare the three types of plate boundaries and the features they build.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#128168;</span>
+        <div class="goal-text">I can explain how respiration, decomposition, and combustion return carbon to the air.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#127757;</span>
-        <div class="goal-text">I can explain why earthquakes and volcanoes occur in narrow belts rather than randomly.</div>
-        <span class="goal-std">7.MS-ESS2-2</span>
+        <span class="goal-icon">&#9851;&#65039;</span>
+        <div class="goal-text">I can model the carbon cycle and explain why the same carbon atoms are used again and again.</div>
+        <span class="goal-std">7.MS-LS2-3</span>
       </div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -694,53 +707,45 @@
     <h2 class="section-title">Words You'll Meet</h2>
     <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
     <div class="glossary-grid">
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Continental Drift</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The idea that the continents were once joined and have slowly moved to their present positions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-drift')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Pangaea</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The single supercontinent that held all of Earth's land about 250 million years ago.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pangaea')">See it in the lesson &#8595;</span></div>
-      </button>
       <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Plate Tectonics</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The theory that Earth's outer shell is broken into moving plates, explaining drift, earthquakes, and volcanoes.</div>
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Carbon Cycle</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The continuous movement of the same carbon atoms among the air, living things, oceans, and rocks.</div>
       </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Lithosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The rigid outer shell of Earth, made of the crust and the upper mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Asthenosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The soft, slowly flowing part of the upper mantle that the plates float on.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Tectonic Plate</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A large slab of lithosphere that moves slowly over the asthenosphere.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-plate')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Convection Current</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A looping flow of hot mantle rock that rises, cools, and sinks, dragging the plates along.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Seafloor Spreading</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The process where magma rises at a mid-ocean ridge and cools into new ocean floor.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-seafloor')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Carbon Dioxide</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A gas in the air, written CO&#8322;, made of carbon and oxygen. It is the main form carbon takes in the atmosphere.</div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Divergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move apart and new crust forms in the gap.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Photosynthesis</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The process plants use to take carbon dioxide from the air and make food using sunlight.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-photosynthesis')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Convergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move together, often forming mountains or volcanoes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Cellular Respiration</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The process living things use to release energy from food, giving off carbon dioxide into the air.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-respiration')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Decomposition</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">When dead plants and animals are broken down, returning most of their carbon to the air and soil.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-decomposition')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Transform Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates slide past each other, producing faults and earthquakes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Fossil Fuels</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Coal, oil, and natural gas formed from organisms that were buried and not fully decomposed over millions of years.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-fossilfuels')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Combustion</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Burning. When fossil fuels are burned, the stored carbon is released into the air as carbon dioxide.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-combustion')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Biosphere</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">All the living things on Earth, from plants and animals to tiny microbes.</div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Atmosphere</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The layer of gases surrounding Earth, where carbon is stored as carbon dioxide.</div>
       </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Subduction</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When a more dense plate sinks beneath a less dense plate at a convergent boundary.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Reservoir</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A place where carbon is stored for a time, such as the air, living things, the oceans, or underground rocks.</div>
       </button>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -775,61 +780,95 @@
 <section id="engage" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Engage &middot; Phenomenon</span>
-    <h2 class="section-title">A World That Shakes in Lines</h2>
-    <p class="section-desc">If you mapped every earthquake and volcano from the last hundred years, you would not get a random scatter of dots. You would get long, narrow belts that wrap around the planet, like cracks in a shell.</p>
+    <h2 class="section-title">The Atom That Keeps Coming Back</h2>
+    <p class="section-desc">No new carbon is being made on Earth. Almost none escapes into space. So every carbon atom in your body has been used many times before, by other living things, long ago.</p>
 
     <div class="phenomenon-card">
-      <div class="phenomenon-icon">&#127755;</div>
+      <div class="phenomenon-icon">&#127807;</div>
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
-        <h3>The Ring of Fire</h3>
-        <p>A belt of volcanoes and earthquakes called the Ring of Fire traces the edge of the Pacific Ocean. Other belts run down the middle of the Atlantic and across southern Asia. Most of the world's earthquakes and volcanoes happen along these same lines, year after year. Why would Earth's most violent events follow such a clear pattern?</p>
+        <h3>The Same Carbon, Over and Over</h3>
+        <p>Carbon is in every living thing. It is in the air, the soil, the ocean, and even some rocks. A single carbon atom might spend time inside a tree, then in the air, then inside a deer that ate a leaf, then back in the air again. If carbon is never created or destroyed, what keeps moving the same atoms from the air to plants to animals to rocks and back again?</p>
       </div>
     </div>
 
-    <!-- Phenomenon figure: belts vs random -->
+    <!-- Carbon cycle overview image -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A stylized world map showing earthquakes and volcanoes clustered along curved belts rather than spread evenly">
-        <rect x="20" y="20" width="560" height="240" rx="16" fill="#10202e"/>
-        <!-- stylized landmasses -->
-        <path d="M70,90 q40,-30 100,-10 q40,15 20,55 q-30,40 -90,30 q-50,-10 -30,-75 Z" fill="#26323f"/>
-        <path d="M300,70 q70,-20 130,10 q40,25 10,80 q-60,45 -130,15 q-40,-50 -20,-105 Z" fill="#26323f"/>
-        <path d="M180,180 q50,-15 90,15 q15,40 -40,55 q-60,5 -50,-70 Z" fill="#26323f"/>
-        <!-- plate-edge belts (dashed) -->
-        <path d="M40,150 C150,90 250,210 360,140 C440,90 520,170 560,120" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <path d="M120,250 C200,200 240,150 300,60" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <!-- earthquake/volcano markers along belts -->
-        <g fill="#e74c3c">
-          <circle cx="60" cy="142" r="5"/><circle cx="120" cy="120" r="5"/><circle cx="180" cy="150" r="5"/>
-          <circle cx="240" cy="180" r="5"/><circle cx="300" cy="158" r="5"/><circle cx="360" cy="140" r="5"/>
-          <circle cx="420" cy="118" r="5"/><circle cx="480" cy="150" r="5"/><circle cx="540" cy="128" r="5"/>
-          <circle cx="150" cy="225" r="5"/><circle cx="210" cy="180" r="5"/><circle cx="260" cy="120" r="5"/><circle cx="292" cy="78" r="5"/>
+      <svg viewBox="0 0 600 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A carbon cycle scene: carbon dioxide in the air moves into a tree by photosynthesis, animals eat plants, respiration and a factory return carbon dioxide to the air, and buried remains form fossil fuels underground">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#16314a"/>
+            <stop offset="100%" stop-color="#1d3a52"/>
+          </linearGradient>
+          <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4a5d3a"/>
+            <stop offset="100%" stop-color="#33402a"/>
+          </linearGradient>
+        </defs>
+        <!-- sky -->
+        <rect x="0" y="0" width="600" height="250" fill="url(#sky)"/>
+        <!-- sun -->
+        <circle cx="70" cy="55" r="26" fill="#f5c842"/>
+        <g stroke="#f5c842" stroke-width="3" stroke-linecap="round">
+          <line x1="70" y1="15" x2="70" y2="4"/><line x1="70" y1="95" x2="70" y2="106"/>
+          <line x1="30" y1="55" x2="19" y2="55"/><line x1="110" y1="55" x2="121" y2="55"/>
+          <line x1="41" y1="26" x2="33" y2="18"/><line x1="99" y1="84" x2="107" y2="92"/>
+          <line x1="99" y1="26" x2="107" y2="18"/><line x1="41" y1="84" x2="33" y2="92"/>
         </g>
-        <text x="300" y="252" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">Red marks = earthquakes &amp; volcanoes. Dashed lines = where they line up.</text>
+        <!-- CO2 label in air -->
+        <text x="300" y="60" text-anchor="middle" font-family="Nunito,sans-serif" font-size="15" font-weight="900" fill="#9fb8cc">CO&#8322; in the air</text>
+        <!-- ground -->
+        <rect x="0" y="250" width="600" height="90" fill="url(#ground)"/>
+        <!-- tree -->
+        <rect x="166" y="190" width="14" height="60" fill="#6b4a2a"/>
+        <circle cx="173" cy="175" r="34" fill="#3ddc84"/>
+        <!-- animal (simple) -->
+        <ellipse cx="300" cy="232" rx="26" ry="15" fill="#c9a06a"/>
+        <circle cx="322" cy="222" r="10" fill="#c9a06a"/>
+        <rect x="284" y="244" width="4" height="12" fill="#c9a06a"/><rect x="312" y="244" width="4" height="12" fill="#c9a06a"/>
+        <!-- factory -->
+        <rect x="430" y="205" width="70" height="45" fill="#5a6e82"/>
+        <rect x="445" y="180" width="12" height="30" fill="#5a6e82"/>
+        <g fill="#9fb8cc" opacity="0.7">
+          <circle cx="451" cy="170" r="7"/><circle cx="460" cy="158" r="9"/><circle cx="450" cy="146" r="11"/>
+        </g>
+        <!-- photosynthesis arrow (air down into tree) -->
+        <path d="M250,80 C210,110 190,130 178,150" stroke="#3ddc84" stroke-width="4" fill="none" marker-end="url(#dn)"/>
+        <!-- respiration arrow (animal up to air) -->
+        <path d="M320,210 C340,160 350,120 360,85" stroke="#e8814a" stroke-width="4" fill="none" marker-end="url(#up)"/>
+        <!-- combustion arrow (factory smoke to air) -->
+        <path d="M460,150 C470,120 480,105 490,82" stroke="#e8814a" stroke-width="4" fill="none" marker-end="url(#up)"/>
+        <defs>
+          <marker id="up" markerWidth="9" markerHeight="9" refX="4" refY="2" orient="auto"><path d="M0,8 L4,0 L8,8 Z" fill="#e8814a"/></marker>
+          <marker id="dn" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8 Z" fill="#3ddc84"/></marker>
+        </defs>
+        <text x="173" y="295" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Photosynthesis</text>
+        <text x="300" y="295" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Respiration</text>
+        <text x="465" y="295" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Burning fuel</text>
       </svg>
-      <div class="figure-caption">The dots are not scattered everywhere. They follow the dashed seams that crisscross the globe.</div>
+      <div class="figure-caption">The same carbon moves from the air into plants, through animals, and back to the air, over and over again.</div>
     </div>
 
     <!-- Prediction gate -->
     <div class="question-pause predict-pause" id="qp-engage">
       <div class="qp-row">
         <span class="question-pause-icon">&#129300;</span>
-        <div class="question-pause-text"><strong>Make a prediction:</strong> Why do earthquakes and volcanoes line up in narrow belts instead of spreading out evenly across Earth?</div>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> If no new carbon is ever made, how does carbon get out of the air and into a living plant?</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn"><span class="pb-letter">A</span>Earth's surface is one solid shell that cracks in random spots.</button>
-        <button class="predict-btn"><span class="pb-letter">B</span>Earth's surface is broken into moving plates, and the edges are where the action happens.</button>
-        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes and volcanoes happen everywhere equally; the belts are a coincidence.</button>
+        <button class="predict-btn"><span class="pb-letter">A</span>Plants soak up carbon from the soil through their roots.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Plants take in carbon dioxide from the air during photosynthesis.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Plants make brand new carbon out of sunlight and water.</button>
       </div>
     </div>
 
     <div class="name-it slate-it predict-gated" data-gate="qp-engage">
       <div class="name-it-label">Here's the big idea</div>
-      <p>The best answer is <strong>B</strong>. Earth's outer shell is not one piece. It is cracked into giant slabs called plates that slowly move. The belts of earthquakes and volcanoes trace the edges where plates meet, pull apart, or grind past one another. To understand the pattern at the surface, we have to understand the plates and what moves them. That is where this lesson goes next.</p>
+      <p>The best answer is <strong>B</strong>. Carbon does not get used up and it does not get made fresh. It just keeps moving. Plants pull carbon dioxide out of the air during photosynthesis. From there, carbon travels through animals, soil, oceans, and rocks before returning to the air. To see how, we have to follow a single carbon atom on its journey.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2rem;">
-      <strong>Where we're headed:</strong> First we'll meet the scientist who noticed the continents fit together. Then we'll see what the plates are, what pushes them, and what happens at the boundaries where they meet.
+      <strong>Where we're headed:</strong> First we'll see the two kinds of processes that move carbon, the ones that pull it out of the air and the ones that put it back. Then we'll follow a carbon atom as it enters a plant, moves through living things, and returns to the air or settles into long-term storage.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -837,7 +876,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Anchor the lesson in a striking real-world pattern.</li><li>Raise a question students will want answered.</li></ul>
+          <ul class="edu-note-text"><li>Anchor the lesson in a familiar phenomenon: the carbon in your breath.</li><li>Raise a question students will want answered.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -849,7 +888,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Concrete visual pattern (belts on a map)</li><li>Short framing text</li><li>Prediction question is low stakes and ungraded</li></ul>
+          <ul class="edu-note-text"><li>Concrete, familiar examples</li><li>Short framing text</li><li>Visual anchor</li></ul>
         </div>
       </div>
     </div>
@@ -858,128 +897,47 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     REVIEW PREVIOUS LEARNING (bridge between Engage and Explore)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="review-prev" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Review Previous Learning</span>
-    <h2 class="section-title">Need a Refresher?</h2>
-    <p class="section-desc">This lesson builds on ideas you may have seen before.</p>
-
-    <div class="content-card">
-      <div class="card-header">
-        <div class="card-title">Continental Drift (Grade 6)</div>
-      </div>
-      <p>Wegener used fossils, matching rock layers, climate clues, and the fit of continents to propose that Earth's continents were once connected. Reviewing this evidence will help explain why scientists accepted plate tectonics.</p>
-      <a href="lesson_continental-drift.html" style="display: inline-block; margin-top: 1.4rem; background: var(--gold); color: var(--dark); font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.03em; text-decoration: none; padding: 0.85rem 1.8rem; border-radius: 12px; transition: transform 0.15s, box-shadow 0.15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px var(--gold-glow)';" onmouseout="this.style.transform='';this.style.boxShadow='';">Review Lesson &rarr;</a>
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Bridge from Grade 6 continental drift to plate tectonics.</li><li>Prevent knowledge gaps before new content begins.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Prior knowledge activation</li><li>Schema priming</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember</li><li>DOK 1</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Optional review, no new content required</li><li>Single clear link, no navigation pressure</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1: CONTINENTAL DRIFT (Wegener's evidence)
+     EXPLORE 1: TWO KINDS OF PROCESSES
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="explore" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The First Clue</span>
-    <h2 class="section-title">The Continents That Fit Together</h2>
-    <p class="section-desc">Long before anyone talked about plates, one scientist looked at a map and noticed something strange: the continents looked like pieces of a torn puzzle.</p>
-
-    <div id="term-drift" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129489;&#8205;&#127891;</span>
-        <div class="card-title">Wegener's Big Idea</div>
-      </div>
-      <div class="card-body">
-        <p>In 1912, a German scientist named <strong>Alfred Wegener</strong> proposed the idea of <span class="vocab">continental drift</span>. He claimed the continents are slowly moving, and that about 250 million years ago they were all joined into one giant supercontinent.</p>
-        <p>He named that supercontinent <strong>Pangaea</strong>, meaning "all land." Wegener knew that the way the coastlines fit together was a clue, but a good fit alone is not proof. So he went looking for real evidence.</p>
-      </div>
-    </div>
-
-    <div id="term-pangaea" class="name-it orange-it">
-      <div class="name-it-label">Name it: Pangaea</div>
-      <p><strong>Pangaea</strong> was a single supercontinent that held all of Earth's land roughly 250 million years ago. Over millions of years it broke apart, and the pieces drifted into the continents we know today.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Wegener gathered four kinds of evidence. No single clue was enough on its own, but together they told a powerful story.</p>
-
-    <div class="example-grid">
-      <div class="example-chip"><span class="example-chip-icon">&#129460;</span><span>Fossils</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#10052;&#65039;</span><span>Climate</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#9968;&#65039;</span><span>Mountains</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#129522;</span><span>Magnetite</span></div>
-    </div>
+    <span class="section-label">Explore &middot; In and Out</span>
+    <h2 class="section-title">What Moves the Carbon</h2>
+    <p class="section-desc">The carbon cycle is not random. Every step either pulls carbon out of the air or puts carbon back into it. The two kinds of processes work together to keep the loop turning.</p>
 
     <div class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#129460;</span>
-        <div class="card-title">Fossil Clues</div>
+        <span class="card-icon">&#128260;</span>
+        <div class="card-title">An Endless Loop</div>
       </div>
       <div class="card-body">
-        <p>Fossils of the same plant and animal species turned up on continents now separated by thousands of miles of ocean. One example is <em>Glossopteris</em>, a fern-like plant found across South America, Africa, India, and Antarctica.</p>
-        <p>Its seeds were too heavy to drift across an ocean without being destroyed, and the small land animals found with it could not have swum that far. The simplest explanation is that the land was once connected.</p>
+        <p>Carbon on Earth is never used up. It simply changes form and changes place. The same atom can be carbon dioxide in the air, part of the food inside a plant, part of an animal's body, or carbon locked in a rock underground.</p>
+        <p>Because the same carbon keeps moving, we call it the <span class="vocab">carbon cycle</span>. Each step belongs to one of two groups: processes that take carbon out of the air, and processes that return it.</p>
       </div>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#10052;&#65039;</span>
-        <div class="card-title">Climate Clues</div>
+    <div class="crust-grid">
+      <div class="crust-card oceanic">
+        <div class="crust-title">&#127807; Carbon Goes In</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span><strong>Photosynthesis</strong> pulls carbon dioxide out of the air into plants</span></li>
+          <li><span class="crust-dot"></span><span>Carbon then moves into <strong>animals</strong> that eat plants</span></li>
+          <li><span class="crust-dot"></span><span>The <strong>ocean</strong> absorbs carbon dioxide from the air</span></li>
+        </ul>
       </div>
-      <div class="card-body">
-        <p>Wegener found scratches carved by ancient glaciers on rocks in places that are warm today, like parts of Africa and India. He also found fossils of tropical swamp plants in Antarctica and on islands far to the north.</p>
-        <p>A continent cannot be frozen and tropical at the same time. But if those lands once sat in very different positions, the climate clues suddenly make sense. The southern continents fit together into a region scientists call <strong>Gondwanaland</strong>.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#9968;&#65039;</span>
-        <div class="card-title">Rock and Mountain Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Mountain ranges on different continents line up and contain rocks of the same age and chemistry. The Caledonian Mountains in northwestern Europe match the Appalachian Mountains along the east coast of the United States.</p>
-        <p>Put the continents back together and these ranges form one continuous belt, like a sentence torn across two pages. Rock types and the shapes of the continental shelves match across the ocean as well.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129522;</span>
-        <div class="card-title">Magnetite Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Some rocks contain <strong>magnetite</strong>, a magnetic iron-oxide mineral and the most magnetic mineral found in nature. When melted rock cools, magnetite crystals line up with Earth's magnetic field and lock in that direction, like tiny frozen compass needles.</p>
-        <p>Rocks of the same age on far-apart continents recorded matching magnetic patterns. That match only makes sense if the rocks formed side by side and later moved apart.</p>
+      <div class="crust-card continental">
+        <div class="crust-title">&#128168; Carbon Comes Out</div>
+        <ul class="crust-list">
+          <li><span class="crust-dot"></span><span><strong>Cellular respiration</strong> in living things releases carbon dioxide</span></li>
+          <li><span class="crust-dot"></span><span><strong>Decomposition</strong> of dead organisms returns carbon to the air</span></li>
+          <li><span class="crust-dot"></span><span><strong>Combustion</strong> and <strong>volcanoes</strong> release stored carbon</span></li>
+        </ul>
       </div>
     </div>
 
     <div class="callout gold">
-      <span class="callout-icon">&#9888;&#65039;</span>
-      <div class="callout-body"><strong>The missing piece:</strong> Wegener's evidence was strong, but most scientists rejected his idea for decades. The reason was simple: he could not explain what force could possibly move something as huge as a continent. That answer was still hidden deep inside Earth.</div>
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The key pattern:</strong> Some processes take carbon out of the air and lock it into living things or rocks. Others release it back into the air. The back-and-forth between these two groups is what keeps carbon cycling through Earth's air, living things, oceans, and rocks.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -987,179 +945,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Establish the historical puzzle that drove the theory.</li><li>Show how multiple lines of evidence accumulate into a claim.</li></ul>
+          <ul class="edu-note-text"><li>Establish the two groups of processes before naming each step.</li><li>Ground the whole cycle in cause and effect.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Evidence-based reasoning</li><li>Narrative structure (hero, evidence, unsolved mystery)</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Four parallel evidence cards, each self-contained</li><li>Short paragraphs with bolded key ideas</li><li>Misconception alert: Wegener was rejected for lack of mechanism, not bad evidence</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2: LITHOSPHERIC PLATES
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="plates" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Plates</span>
-    <h2 class="section-title">A Cracked Shell That Floats</h2>
-    <p class="section-desc">The breakthrough came from understanding Earth's layers. The continents do not plow through the ocean floor on their own. They ride on top of giant moving slabs.</p>
-
-    <div id="term-litho" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129513;</span>
-        <div class="card-title">The Lithosphere Rides the Asthenosphere</div>
-      </div>
-      <div class="card-body">
-        <p>The <span class="vocab">lithosphere</span> is Earth's rigid outer shell, made of the crust plus the upper part of the mantle. It is not one solid piece. It is cracked into many large slabs called <strong>tectonic plates</strong>.</p>
-        <p>Just below sits the <span class="vocab">asthenosphere</span>, a hotter, softer part of the mantle that slowly flows like thick putty. The plates float and slide on the asthenosphere the way rafts drift on the surface of a pool.</p>
-      </div>
-    </div>
-
-    <div id="term-plate" class="name-it slate-it">
-      <div class="name-it-label">Name it: Tectonic Plate</div>
-      <p>A <strong>tectonic plate</strong> is a large slab of lithosphere that moves slowly over the asthenosphere. Most plates carry both ocean floor and continents, so the continents move because the plates they sit on move.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Plates are not all the same, because the crust they carry comes in two kinds. The difference in density will matter a lot at the boundaries.</p>
-
-    <div class="crust-grid">
-      <div class="crust-card oceanic">
-        <div class="crust-title">Oceanic Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thinnest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>basalt</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thinnest</strong> and <strong>most dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Sinks when it meets lighter crust</span></li>
-        </ul>
-      </div>
-      <div class="crust-card continental">
-        <div class="crust-title">Continental Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thickest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>granite</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thickest</strong> and <strong>least dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Rides high and does not sink easily</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="bridge-callout teal">
-      <strong>Hold on to the density rule:</strong> oceanic crust is more dense than continental crust. When two plates meet, the heavier oceanic crust tends to sink beneath the lighter continental crust. That single rule will explain a lot of what happens at boundaries.
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Give students the moving-parts vocabulary before explaining what moves them.</li><li>Establish the density rule that drives subduction.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Concrete analogy (rafts on a pool)</li><li>Contrast pairs (oceanic vs continental crust)</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Side-by-side crust comparison cards</li><li>Visual density bars support non-verbal learners</li><li>Misconception alert: plates are not just continents; most carry ocean floor too</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3: WHAT MOVES THE PLATES (convection + seafloor spreading)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="motion" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Engine</span>
-    <h2 class="section-title">What Pushes the Plates?</h2>
-    <p class="section-desc">This is the answer Wegener was missing. The force that moves whole continents comes from heat deep inside Earth, the same heat that drives everything from the inside out.</p>
-
-    <div id="term-convection" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#128293;</span>
-        <div class="card-title">Convection Currents in the Mantle</div>
-      </div>
-      <div class="card-body">
-        <p>The mantle is extremely hot near the bottom and cooler near the top. Hot rock is less dense, so it slowly rises toward the surface. As it nears the top it cools, becomes more dense, and sinks back down. This endless loop is a <span class="vocab">convection current</span>.</p>
-        <p>These currents flow beneath the lithosphere and drag the plates along, like crackers riding on slowly boiling soup. <strong>The movement of mantle rock creates the movement of the plates above it.</strong></p>
-      </div>
-    </div>
-
-    <!-- Convection figure -->
-    <div class="figure-box">
-      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Convection currents in the mantle: hot rock rises in the middle, spreads sideways, and sinks at the edges, pushing two plates apart at the surface">
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="#7a3a2a" opacity="0.85"/>
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="url(#mantleGrad)"/>
-        <defs>
-          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.1"/>
-          </linearGradient>
-        </defs>
-        <rect x="40" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <rect x="320" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <text x="150" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <text x="450" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <path d="M400,210 C400,160 340,150 310,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <defs>
-          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd27a"/></marker>
-        </defs>
-        <text x="300" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">Hot rock rises in the middle, cools, and sinks at the sides</text>
-      </svg>
-      <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
-    </div>
-
-    <div id="term-seafloor" class="name-it teal-it">
-      <div class="name-it-label">Name it: Seafloor Spreading</div>
-      <p>Where plates pull apart under the ocean, rising magma fills the gap and cools into brand new ocean floor. This is called <strong>seafloor spreading</strong>. It builds a long underwater mountain chain called a mid-ocean ridge, and the seafloor is youngest right at the ridge and older farther away.</p>
-    </div>
-
-    <div class="callout slate">
-      <span class="callout-icon">&#129522;</span>
-      <div class="callout-body"><strong>Magnetite returns:</strong> as new seafloor cools at a ridge, magnetite minerals record the direction of Earth's magnetic field. The field flips over time, leaving matching, mirror-image stripes on both sides of the ridge. Those symmetric stripes are powerful proof that the seafloor is spreading.</div>
-    </div>
-
-    <div class="bridge-callout teal" style="margin-top: 0.5rem;">
-      <strong>The mystery solved:</strong> convection currents are the engine Wegener could not find. Heat drives the mantle to flow, the flow moves the plates, and the plates carry the continents. Now we can look at exactly what happens where two plates meet.
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Answer Wegener's missing piece: what actually moves the plates.</li><li>Establish the causal chain before showing what it produces at boundaries.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Causal reasoning (heat to flow to plate motion)</li><li>Labeled diagram supports dual coding</li></ul>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Cause-and-effect modeling</li><li>Comparison and contrast (in vs out)</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1167,7 +957,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Boiling-water analogy makes convection concrete</li><li>Short paragraphs with key terms bolded in place</li><li>Misconception alert: the asthenosphere flows like thick putty, not liquid lava</li></ul>
+          <ul class="edu-note-text"><li>Two short, parallel comparison cards</li><li>Plain "in vs out" framing</li><li>Key terms in bold</li></ul>
         </div>
       </div>
     </div>
@@ -1176,69 +966,78 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 4: PLATE BOUNDARIES (interactive)
+     EXPLORE 2: FOLLOW A CARBON ATOM (interactive journey)
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="boundaries-sec" style="background: var(--dark2);">
+<section id="journey" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Boundaries</span>
-    <h2 class="section-title">Where Plates Meet</h2>
-    <p class="section-desc">Almost all of Earth's earthquakes and volcanoes happen at plate boundaries. There are three types, sorted by how the plates move. Open each one to see what it builds.</p>
+    <span class="section-label">Explore &middot; The Journey</span>
+    <h2 class="section-title">Follow a Carbon Atom</h2>
+    <p class="section-desc">A single carbon atom travels through four main stages, again and again. Click a stage to follow the atom on its journey.</p>
 
-    <div id="term-boundaries" class="layer-wrap">
+    <div class="layer-wrap">
       <div class="layer-figure">
-        <svg viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three plate boundary types: divergent plates moving apart, convergent plates colliding with one sinking, and transform plates sliding past each other">
-          <!-- Divergent -->
-          <text x="10" y="22" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Divergent</text>
-          <rect x="20" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <rect x="145" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <path d="M118,43 L96,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M142,43 L164,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M130,56 L130,86" stroke="#ffb347" stroke-width="6" stroke-linecap="round"/>
-          <!-- Convergent -->
-          <text x="10" y="122" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Convergent</text>
-          <rect x="20" y="130" width="110" height="24" rx="3" fill="#9a5e3a"/>
-          <path d="M130,142 L155,142 L185,170 Z" fill="#7cc8f8"/>
-          <rect x="150" y="130" width="90" height="14" rx="3" fill="#7cc8f8"/>
-          <path d="M138,140 L120,140" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M150,127 L168,127" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M40,130 L52,112 L64,130 Z" fill="#8a9a6a"/>
-          <!-- Transform -->
-          <text x="10" y="222" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Transform</text>
-          <rect x="20" y="230" width="100" height="40" rx="3" fill="#6a7d52"/>
-          <rect x="140" y="230" width="100" height="40" rx="3" fill="#5a6e44"/>
-          <line x1="130" y1="226" x2="130" y2="274" stroke="#1a1410" stroke-width="3"/>
-          <path d="M70,222 L70,210" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M190,278 L190,290" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
+        <svg viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A circular carbon cycle diagram: carbon dioxide enters a plant by photosynthesis, moves through animals in the food web, returns to the air by respiration and decomposition, and some is stored underground as fossil fuels">
+          <rect x="0" y="0" width="320" height="280" fill="#13283c"/>
+          <!-- ground -->
+          <rect x="0" y="215" width="320" height="65" fill="#3a4a2c"/>
+          <!-- CO2 air label -->
+          <text x="160" y="34" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="900" fill="#9fb8cc">CO&#8322; in the air</text>
+          <!-- tree -->
+          <rect x="62" y="180" width="10" height="40" fill="#6b4a2a"/>
+          <circle cx="67" cy="168" r="24" fill="#3ddc84"/>
+          <!-- animal -->
+          <ellipse cx="180" cy="200" rx="20" ry="12" fill="#c9a06a"/><circle cx="196" cy="192" r="8" fill="#c9a06a"/>
+          <!-- coal underground -->
+          <ellipse cx="255" cy="250" rx="26" ry="14" fill="#222a18"/>
+          <text x="255" y="254" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#9fb8cc">coal</text>
+          <!-- 1 photosynthesis: air down to tree -->
+          <path d="M120,55 C95,90 80,115 70,140" stroke="#3ddc84" stroke-width="4" fill="none" marker-end="url(#d2)"/>
+          <!-- 2 food web: tree to animal -->
+          <path d="M95,175 C130,180 150,188 162,194" stroke="#f5c842" stroke-width="4" fill="none" marker-end="url(#g2)"/>
+          <!-- 3 respiration: animal up to air -->
+          <path d="M198,182 C215,140 220,100 215,60" stroke="#e8814a" stroke-width="4" fill="none" marker-end="url(#u2)"/>
+          <!-- 4 storage: animal/ground down to coal -->
+          <path d="M205,205 C230,220 245,228 252,235" stroke="#7a8fa6" stroke-width="4" fill="none" marker-end="url(#s2)"/>
           <defs>
-            <marker id="bh" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
+            <marker id="u2" markerWidth="9" markerHeight="9" refX="4" refY="2" orient="auto"><path d="M0,8 L4,0 L8,8 Z" fill="#e8814a"/></marker>
+            <marker id="d2" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8 Z" fill="#3ddc84"/></marker>
+            <marker id="g2" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f5c842"/></marker>
+            <marker id="s2" markerWidth="9" markerHeight="9" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8 Z" fill="#7a8fa6"/></marker>
           </defs>
+          <text x="92" y="110" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#3ddc84">1</text>
+          <text x="128" y="180" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#f5c842">2</text>
+          <text x="222" y="120" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#e8814a">3</text>
+          <text x="228" y="232" font-family="Nunito,sans-serif" font-size="10" font-weight="800" fill="#9fb8cc">4</text>
         </svg>
       </div>
       <div class="layer-controls">
         <div class="layer-list">
-          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9be8bb;" onclick="boundaryClick(1)">
-            <span>1 &middot; Divergent</span><span class="layer-tag">plates move apart</span>
+          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #7df0b4;" onclick="layerClick(1)" id="term-photosynthesis">
+            <span>1 &middot; Into Plants</span><span class="layer-tag">photosynthesis</span>
           </div>
-          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b88a;" onclick="boundaryClick(2)">
-            <span>2 &middot; Convergent</span><span class="layer-tag">plates collide</span>
+          <div class="layer-row" style="background: rgba(245,200,66,0.26); color: #f3d27a;" onclick="layerClick(2)" id="term-foodweb">
+            <span>2 &middot; Through the Food Web</span><span class="layer-tag">eating</span>
           </div>
-          <div class="layer-row" style="background: rgba(124,200,248,0.26); color: #aed8f8;" onclick="boundaryClick(3)">
-            <span>3 &middot; Transform</span><span class="layer-tag">plates slide past</span>
+          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f0b48a;" onclick="layerClick(3)" id="term-backtoair">
+            <span>3 &middot; Back to the Air</span><span class="layer-tag">respiration &amp; decay</span>
+          </div>
+          <div class="layer-row" style="background: rgba(122,143,166,0.32); color: #c4d2df;" onclick="layerClick(4)" id="term-storage">
+            <span>4 &middot; Long-Term Storage</span><span class="layer-tag">fuels &amp; oceans</span>
           </div>
         </div>
         <div class="layer-detail-panel">
           <div class="ld-inner">
-            <div class="ld-label" id="bd-label">Open a boundary</div>
-            <div class="ld-title" id="bd-title">Three ways plates meet &#8594;</div>
-            <div class="ld-body" id="bd-body">Each boundary type moves in a different way, so each one builds different features at the surface. Open any boundary to see how the plates move and what they create.</div>
+            <div class="ld-label" id="ld-label">Click a stage</div>
+            <div class="ld-title" id="ld-title">Start in the air &#8594;</div>
+            <div class="ld-body" id="ld-body">Each stage moves carbon to a new place. Click any stage to follow the atom and see which process is at work.</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="callout teal">
-      <span class="callout-icon">&#9889;</span>
-      <div class="callout-body"><strong>Why the belts exist:</strong> the plate boundaries are exactly the lines you saw on the map. Divergent ridges, convergent trenches and volcanoes, and transform faults are where the crust cracks, melts, and slips, so that is where earthquakes and volcanoes cluster.</div>
+    <div class="callout slate">
+      <span class="callout-icon">&#128260;</span>
+      <div class="callout-body"><strong>It never ends:</strong> Carbon released back into the air can be pulled into a plant again, and stored carbon can return to the air later. There is no true start or finish to the carbon cycle.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1246,19 +1045,227 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Connect plate motion to surface features students can observe.</li><li>Answer the opening phenomenon: why earthquakes and volcanoes form belts.</li></ul>
+          <ul class="edu-note-text"><li>Give a whole-cycle map before studying each step.</li><li>Show the loop has no beginning or end.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Comparison and contrast (three boundary types)</li><li>Dual coding with interactive diagram</li></ul>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Dual coding with the interactive diagram</li><li>Pattern recognition (in, through, out, store)</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Click to reveal one boundary at a time reduces load</li><li>Misconception alert: students often mix up which boundary produces mountains vs trenches vs rift valleys</li><li>Pause and have students predict the feature before revealing</li></ul>
+          <ul class="edu-note-text"><li>Click to reveal each stage, no hover</li><li>Labeled diagram paired with text</li><li>Numbered, ordered stages</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: CARBON INTO LIVING THINGS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="into" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Carbon Goes In</span>
+    <h2 class="section-title">Carbon Enters Living Things</h2>
+    <p class="section-desc">The journey starts in the air, where carbon floats as carbon dioxide. Plants are the doorway that lets carbon into the living world.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127811;</span>
+        <div class="card-title">From the Air Into a Plant</div>
+      </div>
+      <div class="card-body">
+        <p>Carbon is in the air in the form of <span class="vocab">carbon dioxide</span>. Plant leaves absorb this carbon dioxide and use the carbon, along with water and sunlight, to make their food.</p>
+      </div>
+    </div>
+
+    <div class="name-it green-it">
+      <div class="name-it-label">Key idea: Photosynthesis</div>
+      <p><strong>Photosynthesis</strong> is the process in which plants pull carbon dioxide out of the atmosphere and use sunlight to turn it into food. This is the main way carbon moves from the nonliving air into living things. Plants hold a large amount of carbon.</p>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129418;</span>
+        <div class="card-title">Carbon Moves Through the Food Web</div>
+      </div>
+      <div class="card-body">
+        <p>When animals eat plants, they take in the carbon, and some of it becomes part of their own bodies. When other animals eat those animals, the carbon moves again, passing from one living thing to the next.</p>
+      </div>
+    </div>
+
+    <div class="name-it orange-it">
+      <div class="name-it-label">Key idea: Carbon and the food web</div>
+      <p>Carbon is passed along the <strong>food web</strong>. It enters at the plants through photosynthesis, then moves into plant eaters and the animals that eat them. The same carbon atom can travel through many living things.</p>
+    </div>
+
+    <div class="callout teal">
+      <span class="callout-icon">&#127807;</span>
+      <div class="callout-body"><strong>Plants are the gateway:</strong> Animals cannot pull carbon straight from the air. Carbon enters the living world almost entirely through plants, then spreads through the food web.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Explain how carbon enters the biosphere.</li><li>Connect a chemical process to the food web.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Chunking related processes together</li><li>Cause-and-effect (air to plant to animal)</li><li>Linking to living systems</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Short paragraphs</li><li>Plain path from air to plant to animal</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: CARBON BACK TO THE AIR
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="out" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Carbon Comes Out</span>
+    <h2 class="section-title">Carbon Returns to the Air</h2>
+    <p class="section-desc">Carbon does not stay in living things forever. Three processes send it back into the air as carbon dioxide, ready to be used again.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128168;</span>
+        <div class="card-title">Living Things Breathe Out Carbon</div>
+      </div>
+      <div class="card-body">
+        <p>Plants and animals both release energy from their food. As they do, they give off carbon dioxide. Animals exhale this carbon dioxide into the air with every breath.</p>
+      </div>
+    </div>
+
+    <div id="term-respiration" class="name-it orange-it">
+      <div class="name-it-label">Key idea: Cellular Respiration</div>
+      <p><strong>Cellular respiration</strong> is the process living things use to release energy from food. It gives off carbon dioxide, which returns carbon to the atmosphere. Respiration is the opposite of photosynthesis: it puts carbon back into the air instead of taking it out.</p>
+    </div>
+
+    <div id="term-decomposition" class="name-it teal-it">
+      <div class="name-it-label">Key idea: Decomposition</div>
+      <p>When plants and animals die, most of their bodies are broken down by decomposers. <strong>Decomposition</strong> returns most of that carbon to the air and soil. A small part of the dead material is not fully broken down and gets buried underground.</p>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128293;</span>
+        <div class="card-title">Burning Releases Stored Carbon</div>
+      </div>
+      <div class="card-body">
+        <p>Carbon stored in fuels and rocks can also return to the air. When fuels are burned, the carbon locked inside them is released.</p>
+      </div>
+    </div>
+
+    <div id="term-combustion" class="name-it slate-it">
+      <div class="name-it-label">Key idea: Combustion</div>
+      <p><strong>Combustion</strong> means burning. When humans dig up and burn fossil fuels to power cars, factories, and heating, the stored carbon is released into the air as carbon dioxide. Volcanic eruptions also release carbon from underground, but much more quickly and rarely.</p>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Three ways back:</strong> Respiration, decomposition, and combustion all return carbon to the air. From there, plants can pull it back in through photosynthesis, and the cycle begins again.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Explain the processes that return carbon to the air.</li><li>Close the loop back to photosynthesis.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Contrast (respiration vs photosynthesis)</li><li>Cause-and-effect (process to release)</li><li>Closure of the cycle schema</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Three clearly separated processes</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 5: LONG-TERM STORAGE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="storage" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Long-Term Storage</span>
+    <h2 class="section-title">Carbon in Storage</h2>
+    <p class="section-desc">Not all carbon keeps moving quickly. Some of it gets locked away for a very long time, in fossil fuels deep underground and dissolved in the oceans.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129704;</span>
+        <div class="card-title">Carbon Buried Underground</div>
+      </div>
+      <div class="card-body">
+        <p>A long time ago, before the dinosaurs, much of the world was covered in plants. As plants grew and died over millions of years, huge amounts of carbon were buried before they could fully decompose.</p>
+        <p>Over time, that buried carbon was pressed and heated underground. If you dig deep enough today, you find it as coal, oil, and natural gas.</p>
+      </div>
+    </div>
+
+    <div id="term-fossilfuels" class="name-it blue-it">
+      <div class="name-it-label">Key idea: Fossil Fuels</div>
+      <p><strong>Fossil fuels</strong> are coal, oil, and natural gas. They formed from organisms that were buried and not fully decomposed over millions of years. They are a huge store of carbon that stayed out of the air for ages, until humans began digging it up and burning it.</p>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127754;</span>
+        <div class="card-title">Carbon in the Oceans</div>
+      </div>
+      <div class="card-body">
+        <p>The oceans hold even more carbon. Carbon dioxide from the air dissolves into the water, the same way gas dissolves in a fizzy drink.</p>
+        <p>After the rocks and fuels of the geosphere, the oceans are Earth's largest store of carbon. Carbon moves slowly in and out of the ocean as part of the cycle.</p>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      <span class="callout-icon">&#9851;&#65039;</span>
+      <div class="callout-body"><strong>Fast and slow paths:</strong> Carbon moves quickly through air, plants, and animals, but it can sit for millions of years in fossil fuels or for a long time in the deep ocean. Both fast and slow paths are part of the same carbon cycle.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Explain the long-term carbon reservoirs.</li><li>Show that the cycle has fast and slow paths.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison (fast vs slow storage)</li><li>Cause-and-effect (burial to fossil fuels)</li><li>Extending the cycle schema</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Familiar analogy (fizzy drink)</li><li>Short paragraphs</li></ul>
         </div>
       </div>
     </div>
@@ -1269,7 +1276,7 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      QUICK RECALL
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="recall" style="background: var(--dark);">
+<section id="recall" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Quick Recall</span>
     <h2 class="section-title">Brain Check</h2>
@@ -1278,11 +1285,11 @@
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">Wegener's idea of continental drift was rejected for decades. What was missing from his explanation?</div>
+      <div class="qr-q" id="qr1Q">A plant takes carbon dioxide from the air and uses sunlight to make food. What is this process?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>He had no fossil evidence at all</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>He could not explain what force could move a continent</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>No one believed Pangaea had ever existed</span></label>
+        <label><input type="radio" name="qr1" value="0"><span>Photosynthesis</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Cellular respiration</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Combustion</span></label>
       </div>
       <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1294,11 +1301,11 @@
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">The tectonic plates float and slide on which layer of Earth?</div>
+      <div class="qr-q" id="qr2Q">You breathe out, and a decomposer breaks down a dead leaf. Both of these processes do what to carbon?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>The solid inner core</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>The brittle surface crust</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>The soft, flowing asthenosphere</span></label>
+        <label><input type="radio" name="qr2" value="0"><span>Remove carbon from the air</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Return carbon to the air</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Create brand new carbon</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1310,11 +1317,11 @@
     <div class="qr-card" id="qrCard3">
       <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr3Q">Two plates grind past each other along the San Andreas Fault. What does this transform boundary mainly produce?</div>
+      <div class="qr-q" id="qr3Q">Coal formed from plants that were buried millions of years ago. Coal is an example of what?</div>
       <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
-        <label><input type="radio" name="qr3" value="0"><span>Earthquakes</span></label>
-        <label><input type="radio" name="qr3" value="1"><span>Brand new seafloor</span></label>
-        <label><input type="radio" name="qr3" value="2"><span>Tall volcanoes</span></label>
+        <label><input type="radio" name="qr3" value="0"><span>Carbon dioxide</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>A decomposer</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>A fossil fuel</span></label>
       </div>
       <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1328,7 +1335,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions before the quiz.</li></ul>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1340,7 +1347,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce cognitive load</li></ul>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
         </div>
       </div>
     </div>
@@ -1351,40 +1358,40 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      EXPLAIN: PUTTING IT TOGETHER
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="explain" style="background: var(--dark2);">
+<section id="explain" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Explain &middot; Wrap-Up</span>
-    <h2 class="section-title">From Deep Heat to Moving Ground</h2>
-    <p class="section-desc">You started with a question: why does Earth's surface move, and why do earthquakes and volcanoes line up in belts? Now you can trace the whole chain, step by step.</p>
+    <h2 class="section-title">One Endless Loop</h2>
+    <p class="section-desc">You started with a question: how can the same carbon atoms keep moving around Earth? Now you can trace the whole loop, step by step.</p>
 
     <div class="wrapup-beats">
       <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">It Starts With Heat</div>
-        <div class="wrapup-beat-answer">Heat inside Earth keeps the mantle slowly flowing.</div>
-        <div class="wrapup-beat-body">Hot rock is less dense, so it rises, cools, and sinks in <strong>convection currents</strong>. This is the engine Wegener was missing.</div>
+        <div class="wrapup-beat-label">Carbon Goes In</div>
+        <div class="wrapup-beat-answer">Photosynthesis pulls carbon from the air into plants.</div>
+        <div class="wrapup-beat-body">Plants take in <strong>carbon dioxide</strong> and make food. Carbon then moves into animals as they eat through the food web.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">Heat Becomes Motion</div>
-        <div class="wrapup-beat-answer">Convection drags the plates, and the plates carry the continents.</div>
-        <div class="wrapup-beat-body">The flowing mantle moves the <strong>tectonic plates</strong> of the lithosphere. New seafloor forms where they pull apart, which is why the continents drift over time.</div>
+        <div class="wrapup-beat-label">Carbon Comes Out</div>
+        <div class="wrapup-beat-answer">Respiration, decomposition, and combustion return it.</div>
+        <div class="wrapup-beat-body">Living things release carbon through <strong>cellular respiration</strong>. Dead organisms are broken down by <strong>decomposition</strong>, and burning fuels release carbon through <strong>combustion</strong>.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">Motion Reaches the Surface</div>
-        <div class="wrapup-beat-answer">Plate boundaries produce earthquakes and volcanoes.</div>
-        <div class="wrapup-beat-body">Where plates diverge, converge, or slide past, the crust cracks, melts, and slips. Those <strong>boundaries</strong> are the belts on the map.</div>
+        <div class="wrapup-beat-label">Some Is Stored</div>
+        <div class="wrapup-beat-answer">Fossil fuels and oceans hold carbon for a long time.</div>
+        <div class="wrapup-beat-body">Buried organisms became <strong>fossil fuels</strong>, and the <strong>oceans</strong> hold a huge store of carbon. This carbon returns to the air slowly, or quickly when fuels are burned.</div>
       </div>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
-      <strong>The full chain:</strong>
+      <strong>The full loop:</strong>
       <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Heat deep in the mantle</span>
-        <span class="wuc wuc-2">Convection currents flow</span>
-        <span class="wuc wuc-2">Plates move and continents drift</span>
-        <span class="wuc wuc-3">Plates meet at boundaries</span>
-        <span class="wuc wuc-3">Earthquakes and volcanoes in belts</span>
+        <span class="wuc wuc-1">Photosynthesis takes carbon in</span>
+        <span class="wuc wuc-1">Carbon moves through the food web</span>
+        <span class="wuc wuc-2">Respiration and decay return it</span>
+        <span class="wuc wuc-2">Combustion releases stored carbon</span>
+        <span class="wuc wuc-3">Fossil fuels and oceans store it</span>
       </div>
-      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. Wegener saw the puzzle; convection currents and plate tectonics finally explained it.</div>
+      <div style="margin-top: 1rem;">Earth's carbon is never created or destroyed. The same carbon atoms move endlessly among the air, living things, oceans, and rocks. That is why the carbon in your breath has been used many times before, and will be used again.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1392,11 +1399,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening phenomenon directly and completely.</li></ul>
+          <ul class="edu-note-text"><li>Tie the steps into one cause-and-effect loop.</li><li>Answer the opening question directly.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative closure</li></ul>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1404,7 +1411,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Step-by-step beats break the chain into chunks</li><li>Plain causal language throughout</li><li>Chip summary gives a visual map of the full chain</li></ul>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
         </div>
       </div>
     </div>
@@ -1419,7 +1426,7 @@
   <div class="container">
     <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Ten questions covering everything you explored, from Wegener's evidence to convection currents and plate boundaries. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you explored, from photosynthesis to fossil fuels. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -1486,18 +1493,19 @@
       <p id="el-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">&#128269; The Question You Came In With</span>
-        You started this lesson asking: <strong>"Why does Earth's surface move?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes at the boundaries, you have answered it.
+        You started this lesson asking: <strong>"How can the same carbon atoms move through plants, animals, the air, and rocks again and again?"</strong> If you can trace carbon moving into plants by photosynthesis, through the food web, back to the air by respiration and decay, and into long-term storage, you have answered it.
       </div>
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
     </div>
+
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
       <div class="edu-note-label">&#128218; Instructional Design</div>
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear performance signal.</li></ul>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1509,11 +1517,10 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Answer explanations provided for every question</li><li>Practice and classroom modes available</li><li>Plausible distractors, evenly distributed answer positions</li></ul>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
         </div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -1631,19 +1638,20 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 })();
 </script>
 
-<!-- ===== PLATE BOUNDARIES INTERACTIVE ===== -->
+<!-- ===== CARBON CYCLE STAGES INTERACTIVE ===== -->
 <script>
-const boundaryData = {
-  1: { label: 'Boundary 1 · Plates move apart', title: 'Divergent Boundary', body: 'Two plates pull apart and rising magma fills the gap, cooling into new crust. Under the ocean this builds a mid-ocean ridge with a rift valley down the center, like the Mid-Atlantic Ridge. On land it can split a continent, as at the East African Rift.' },
-  2: { label: 'Boundary 2 · Plates collide', title: 'Convergent Boundary', body: 'Two plates push together. The more dense plate subducts (sinks) beneath the less dense one, melting and feeding volcanoes, like the Andes and the Japanese island arc. When both plates are continental and equally light, neither sinks, so they crumple upward into mountains like the Himalayas.' },
-  3: { label: 'Boundary 3 · Plates slide past', title: 'Transform Boundary', body: 'Two plates grind past each other in opposite directions. No crust is made or destroyed, but the plates catch and slip, releasing energy as earthquakes. The San Andreas Fault in California is a famous example.' }
+const layerData = {
+  1: { label: 'Stage 1 · Carbon goes in', title: 'Into Plants: Photosynthesis', body: 'Carbon floats in the air as carbon dioxide. Plant leaves absorb it and use sunlight to turn the carbon into food. This is the main way carbon moves from the nonliving air into living things.' },
+  2: { label: 'Stage 2 · Through living things', title: 'Through the Food Web', body: 'When animals eat plants, they take in the carbon, and some becomes part of their bodies. When other animals eat them, the carbon moves again. The same atom can pass through many living things.' },
+  3: { label: 'Stage 3 · Carbon comes out', title: 'Back to the Air', body: 'Living things release carbon dioxide through cellular respiration. When plants and animals die, decomposition breaks them down and returns most of their carbon to the air. Burning fuels releases carbon too.' },
+  4: { label: 'Stage 4 · Locked away', title: 'Long-Term Storage', body: 'Some carbon is stored for a very long time. Buried organisms became fossil fuels deep underground, and the oceans hold a huge store of dissolved carbon. This carbon returns to the air slowly, or quickly when fuels are burned.' }
 };
-function boundaryClick(n) {
-  const d = boundaryData[n];
-  document.getElementById('bd-label').textContent = d.label;
-  document.getElementById('bd-title').textContent = d.title;
-  document.getElementById('bd-body').textContent  = d.body;
-  document.querySelectorAll('#term-boundaries .layer-row').forEach((el, i) => {
+function layerClick(n) {
+  const d = layerData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
     el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
     el.style.outlineOffset = '1px';
   });
@@ -1686,15 +1694,15 @@ function boundaryClick(n) {
       opts.querySelector('input').focus();
     });
   }
-  wireQR('qr1', 1,
-    'Correct! His evidence was strong, but he could not explain what force moved the continents. Convection currents were the missing piece.',
-    'Not quite. Wegener had plenty of evidence and believed in Pangaea. What he could not explain was the force that moved the continents.');
-  wireQR('qr2', 2,
-    'Correct! The plates float and slide on the soft, slowly flowing asthenosphere in the upper mantle.',
-    'Not quite. The crust and inner core do not flow. The plates ride on the soft, flowing asthenosphere.');
-  wireQR('qr3', 0,
-    'Correct! Transform boundaries make and destroy no crust, but the plates catch and slip, releasing energy as earthquakes.',
-    'Not quite. New seafloor forms at divergent boundaries and volcanoes at convergent ones. Transform boundaries mainly cause earthquakes.');
+  wireQR('qr1', 0,
+    'Correct! When a plant takes carbon dioxide from the air and uses sunlight to make food, that is photosynthesis.',
+    'Not quite. A plant using carbon dioxide and sunlight to make food is photosynthesis.');
+  wireQR('qr2', 1,
+    'Correct! Both cellular respiration and decomposition return carbon to the air as carbon dioxide.',
+    'Not quite. Breathing out and decomposition both return carbon to the air, they do not remove it.');
+  wireQR('qr3', 2,
+    'Correct! Coal formed from buried organisms over millions of years, so it is a fossil fuel.',
+    'Not quite. Coal formed from organisms buried millions of years ago, which makes it a fossil fuel.');
 })();
 </script>
 
@@ -1713,104 +1721,114 @@ var elQuizMode  = 'practice';
 
 var elQuizQuestions = [
   {
-    q: "Who proposed the idea of continental drift, and what did he name the ancient supercontinent?",
-    options: ["Isaac Newton; Gondwana", "Alfred Wegener; Pangaea", "Charles Darwin; Laurasia", "Alfred Wegener; Atlantis"],
-    correct: 1,
-    explanation: "In 1912, the German scientist Alfred Wegener proposed continental drift and named the supercontinent Pangaea, meaning all land."
-  },
-  {
-    q: "Wegener found fossils of the same plant, Glossopteris, on continents now separated by wide oceans. Why is this evidence that the continents were once joined?",
+    q: "What is the carbon cycle?",
     options: [
-      "The seeds were too heavy to drift across an ocean and the animals could not swim that far",
-      "Glossopteris still grows on every continent today",
-      "Fossils can float across oceans on currents",
-      "The plant only grew in freezing climates"
-    ],
-    correct: 0,
-    explanation: "Glossopteris seeds could not survive a long ocean drift, and the small land animals found with it could not swim across oceans. The simplest explanation is that the land was once connected."
-  },
-  {
-    q: "The lithosphere is broken into large slabs that float on the asthenosphere. What are these slabs called?",
-    options: ["Convection cells", "Rift valleys", "Tectonic plates", "Continental shelves"],
-    correct: 2,
-    explanation: "The rigid lithosphere is cracked into tectonic plates that slowly move over the soft, flowing asthenosphere."
-  },
-  {
-    q: "Wegener could not explain what moved the continents. What actually provides the force that moves the plates?",
-    options: [
-      "The pull of ocean tides",
-      "The spinning of the inner core",
-      "Wind and weather at the surface",
-      "Convection currents in the mantle"
-    ],
-    correct: 3,
-    explanation: "Heat inside Earth drives convection currents in the mantle. The flowing mantle rock drags the plates, which is the force Wegener was missing."
-  },
-  {
-    q: "At a divergent boundary two plates move apart. What happens in the gap between them?",
-    options: [
-      "Rising magma fills the gap and cools into new crust",
-      "One plate sinks beneath the other",
-      "The plates grind past each other",
-      "A deep ocean trench forms"
-    ],
-    correct: 0,
-    explanation: "As the plates separate, magma rises to fill the gap and cools into new crust. Under the ocean this is seafloor spreading at a mid-ocean ridge."
-  },
-  {
-    q: "The seafloor of the Atlantic is youngest at the Mid-Atlantic Ridge and older farther away. Which process best explains this?",
-    options: [
-      "Subduction pulling the crust down",
-      "Seafloor spreading at a divergent boundary",
-      "A transform fault sliding sideways",
-      "Weathering of the ocean floor"
+      "The one-time movement of carbon from rocks into the air",
+      "The continuous movement of the same carbon atoms among the air, living things, oceans, and rocks",
+      "The process plants use to make oxygen from sunlight",
+      "The steady buildup of new carbon atoms made by living things"
     ],
     correct: 1,
-    explanation: "New crust forms at the ridge and moves outward, so the seafloor is youngest at the ridge and gets older with distance. This is seafloor spreading."
+    explanation: "Carbon is never created or destroyed. The same carbon atoms keep moving among the air, living things, oceans, and rocks."
   },
   {
-    q: "Two oceanic plates collide and the more dense one sinks beneath the other. What is this process called, and what does it tend to build?",
+    q: "How does carbon get out of the air and into a plant?",
     options: [
-      "Spreading, building a rift valley",
-      "Erosion, building canyons",
-      "Subduction, building volcanoes and island arcs",
-      "Drifting, building flat plains"
+      "Plants absorb it through their roots from the soil",
+      "Animals breathe it directly into plants",
+      "Plants take in carbon dioxide during photosynthesis",
+      "Rain washes it onto the plant's leaves"
     ],
     correct: 2,
-    explanation: "When one plate sinks beneath another it is called subduction. The sinking plate melts and feeds volcanoes, forming features like the Japanese island arc."
+    explanation: "During photosynthesis, plant leaves absorb carbon dioxide from the air and use the carbon to build food."
   },
   {
-    q: "The Himalayas formed where two continental plates of similar density collided. Why did they crumple upward instead of one plate sinking?",
+    q: "During photosynthesis, what does a plant do with carbon?",
     options: [
-      "Continental crust is too dense to rise",
-      "One of the plates melted completely",
-      "The boundary is actually a transform boundary",
-      "Neither plate is dense enough to sink, so they push each other up"
-    ],
-    correct: 3,
-    explanation: "Continental crust is light and does not subduct easily. When two continental plates meet, neither sinks, so the crust folds and pushes upward into tall mountains like the Himalayas."
-  },
-  {
-    q: "The San Andreas Fault is a place where two plates slide past each other. What kind of boundary is this, and what is it known for?",
-    options: [
-      "A transform boundary known for earthquakes",
-      "A divergent boundary known for new seafloor",
-      "A convergent boundary known for volcanoes",
-      "A boundary known for building island arcs"
+      "It removes carbon dioxide from the air and uses it to make food",
+      "It releases carbon dioxide into the air",
+      "It turns carbon straight into coal",
+      "It breaks down dead organisms"
     ],
     correct: 0,
-    explanation: "Plates sliding past each other form a transform boundary. They catch and slip, releasing energy as earthquakes, like those along the San Andreas Fault."
+    explanation: "Photosynthesis pulls carbon dioxide out of the air. This is the main way carbon enters the living world."
   },
   {
-    q: "Why do earthquakes and volcanoes occur in narrow belts around Earth rather than randomly?",
+    q: "When an animal eats a plant, what happens to the carbon in that plant?",
     options: [
-      "They follow ocean currents around the globe",
-      "They line up along the edges of the tectonic plates",
-      "They appear wherever the crust is thickest",
-      "They are spread evenly but only reported in cities"
+      "It is destroyed",
+      "It evaporates into the air right away",
+      "It turns into sunlight",
+      "Some of it becomes part of the animal's body"
+    ],
+    correct: 3,
+    explanation: "Carbon passes along the food web. When an animal eats a plant, some of the carbon becomes part of the animal's body."
+  },
+  {
+    q: "Which process returns carbon to the air as living things release energy from their food?",
+    options: [
+      "Photosynthesis",
+      "Cellular respiration",
+      "Combustion of fossil fuels",
+      "Dissolving into the ocean"
     ],
     correct: 1,
-    explanation: "Almost all earthquakes and volcanoes happen at plate boundaries, where plates pull apart, collide, or slide past. The belts on the map trace those boundaries."
+    explanation: "Cellular respiration releases energy from food and gives off carbon dioxide, returning carbon to the air."
+  },
+  {
+    q: "When plants and animals die, what usually happens to most of the carbon in their bodies?",
+    options: [
+      "Decomposers break them down and the carbon returns to the air and soil",
+      "It instantly turns into coal",
+      "It is launched into space",
+      "It stays locked inside the body forever"
+    ],
+    correct: 0,
+    explanation: "Decomposition breaks down dead organisms and returns most of their carbon to the air and soil."
+  },
+  {
+    q: "How did fossil fuels like coal form?",
+    options: [
+      "From volcanic ash that cooled over a few years",
+      "From ocean water evaporating and leaving carbon behind",
+      "From organisms that were buried and not fully decomposed over millions of years",
+      "From carbon dioxide freezing solid underground"
+    ],
+    correct: 2,
+    explanation: "Fossil fuels formed from plants and other organisms that were buried and not fully decomposed over millions of years."
+  },
+  {
+    q: "Which of these releases carbon stored underground back into the air quickly?",
+    options: [
+      "Photosynthesis in a forest",
+      "Carbon slowly dissolving in the deep ocean",
+      "Water soaking into the soil",
+      "Humans digging up and burning fossil fuels"
+    ],
+    correct: 3,
+    explanation: "Burning fossil fuels (combustion) releases stored carbon quickly. Volcanic eruptions do this too, but rarely."
+  },
+  {
+    q: "Besides the rocks and fuels underground, where is most of Earth's carbon stored?",
+    options: [
+      "In the clouds",
+      "Dissolved in the oceans",
+      "In the bodies of land animals",
+      "In bolts of lightning"
+    ],
+    correct: 1,
+    explanation: "The oceans are Earth's largest carbon store after the geosphere. Carbon dioxide dissolves into the water from the air."
+  },
+  {
+    q: "Why can scientists say the same carbon atoms are used over and over?",
+    options: [
+      "New carbon is constantly made by the Sun",
+      "Carbon leaves Earth and is replaced from space",
+      "Carbon is not created or destroyed; it just keeps moving among the air, living things, oceans, and rocks",
+      "Plants create brand new carbon during photosynthesis"
+    ],
+    correct: 2,
+    explanation: "Carbon is not created or destroyed. The same atoms cycle endlessly among the air, living things, oceans, and rocks."
   }
 ];
 
@@ -1925,7 +1943,7 @@ function elSubmitQuiz() {
   var total = elQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
-  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand plate tectonics cold.'
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand the carbon cycle cold.'
     : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
     : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
     : '\u{1F4AA} Keep going; review each section carefully and try again!';
@@ -1948,7 +1966,7 @@ function elSubmitQuiz() {
     return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
   }).join(', ');
   var params = new URLSearchParams({
-    tab: 'Plate Tectonics', lesson: 'Plate Tectonics', studentName: info2.name, teacher: teacherLabel,
+    tab: 'Carbon Cycle', lesson: 'Carbon Cycle', studentName: info2.name, teacher: teacherLabel,
     block: info2.block, score: score, total: total, percent: pct + '%',
     timestamp: new Date().toISOString(), answers: answerStr
   });

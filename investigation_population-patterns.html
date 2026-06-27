@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="utf-8"/>
+<link href="favicon.ico" rel="icon" type="image/x-icon"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link rel="canonical" href="https://lyfelabz.com/investigation_population-patterns.html">
+<meta name="description" content="Analyze and interpret real population data from Isle Royale, the boreal forest, and Yellowstone to find evidence for how resource availability shapes populations."/>
+<title>Population Patterns | LyfeLabz</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+/* =========================================================
+   CSS VARIABLES & RESET  (LyfeLabz shared design system)
+   ========================================================= */
+:root {
+  --bg-primary:    #0d1117;
+  --bg-secondary:  #161b22;
+  --bg-card:       #1c2230;
+  --bg-card-hover: #222b3a;
+  --border:        #2a3447;
+  --border-light:  #3a4a5e;
+  --text-primary:  #e6edf3;
+  --text-secondary:#b8c1cc;
+  --text-muted:    #9aa4af;
+  --muted:         #9aa4af;
+  --teal:          #3bc8e8;
+  --teal-dim:      rgba(59,200,232,0.15);
+  --teal-glow:     rgba(59,200,232,0.35);
+  --orange:        #3B82F6;
+  --orange-dim:    rgba(59,130,246,0.15);
+  --orange-glow:   rgba(59,130,246,0.35);
+  --gold:          #f5c842;
+  --gold-dim:      rgba(245,200,66,0.15);
+  --green:         #2ecc71;
+  --green-dim:     rgba(46,204,113,0.15);
+  --red:           #e87070;
+  --red-dim:       rgba(232,112,112,0.15);
+  --radius:        14px;
+  --radius-sm:     10px;
+  --shadow:        0 4px 20px rgba(0,0,0,0.4);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 18px; scroll-behavior: smooth; }
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Nunito', sans-serif;
+  line-height: 1.75;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(8,14,22,0.97);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.8rem 2.5rem;
+}
+.nav-logo { font-family:'Orbitron',sans-serif; font-size:1.35rem; font-weight:900; color:var(--gold); text-decoration:none; letter-spacing:0.06em; text-shadow:0 0 18px rgba(245,200,66,0.35); }
+.nav-back  { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.78rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--teal); background:rgba(59,200,232,0.1); border:1px solid rgba(59,200,232,0.35); padding:0.32rem 0.9rem; border-radius:99px; text-decoration:none; transition:all 0.2s; }
+.nav-back:hover { background:rgba(59,200,232,0.18); }
+
+/* BADGE BARS */
+.badge-bar { display:none; flex-wrap:wrap; gap:0.5rem; padding:0.6rem 1.4rem; background:var(--bg-secondary); border-bottom:1px solid var(--border); justify-content:center; }
+body.stem-active .badge-bar.stem-bar { display:flex; }
+body.ls-active   .badge-bar.ls-bar   { display:flex; }
+.badge { position:relative; display:inline-flex; align-items:center; gap:0.3rem; padding:0.25rem 0.7rem; border-radius:20px; font-size:0.72rem; font-weight:800; cursor:help; transition:filter 0.2s; }
+.badge:hover { filter:brightness(1.2); }
+.badge.green { background:var(--green-dim); color:var(--green); border:1px solid rgba(46,204,113,0.3); }
+.badge.teal  { background:var(--teal-dim);  color:var(--teal);  border:1px solid rgba(59,200,232,0.3); }
+.badge-tip { display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#1c2230; border:1px solid var(--border-light); border-radius:8px; padding:0.5rem 0.75rem; font-size:0.7rem; font-weight:600; color:#c9d1d9; width:240px; text-align:center; z-index:200; pointer-events:none; line-height:1.4; }
+.badge:hover .badge-tip { display:block; }
+
+/* HERO */
+.hero {
+  background:
+    radial-gradient(circle at 15% 25%, rgba(46,204,113,0.18), transparent 28%),
+    radial-gradient(circle at 85% 15%, rgba(59,130,246,0.10), transparent 22%),
+    radial-gradient(ellipse at 50% 0%, rgba(59,200,232,0.08) 0%, transparent 55%),
+    linear-gradient(135deg, #0a1218 0%, #0c1922 50%, #080f15 100%);
+  padding: 4.1rem 2rem 3.35rem; text-align:center;
+  position:relative; overflow:hidden; border-bottom:1px solid rgba(46,204,113,0.22);
+}
+.hero::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(-32deg, transparent 0px, transparent 36px, rgba(46,204,113,0.02) 36px, rgba(46,204,113,0.02) 38px); pointer-events:none; }
+.hero::after  { content:''; position:absolute; inset:auto 0 0 0; height:90px; background:linear-gradient(180deg, transparent, rgba(8,14,22,0.7)); pointer-events:none; }
+.hero-badge { display:inline-block; background:rgba(46,204,113,0.12); border:1px solid rgba(46,204,113,0.45); color:var(--green); padding:0.35rem 1.1rem; border-radius:99px; font-size:0.75rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:1.2rem; position:relative; box-shadow:0 0 18px rgba(46,204,113,0.18); }
+.hero h1 { font-family:'Fredoka One',cursive; font-size:clamp(2.3rem,5.6vw,3.9rem); line-height:1.06; margin-bottom:0.8rem; background:linear-gradient(135deg,#ffffff 20%,var(--green) 65%,#bdf0d0 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; position:relative; }
+.hero p { font-size:1rem; color:#c9d1d9; max-width:700px; margin:0 auto; line-height:1.7; position:relative; }
+.hero-kicker { margin-top:1rem; font-size:0.8rem; font-weight:800; letter-spacing:0.06em; color:rgba(46,204,113,0.82); position:relative; }
+.hero-shell { max-width:1120px; margin:0 auto; position:relative; z-index:1; }
+
+/* BEFORE YOU BEGIN */
+.byb-wrap { background:var(--bg-primary); border-bottom:2px solid rgba(46,204,113,0.16); padding:2.5rem 1.5rem; }
+.byb-inner { max-width:980px; margin:0 auto; }
+.byb-header { text-align:center; margin-bottom:2rem; }
+.byb-eyebrow { font-size:0.72rem; font-weight:900; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; display:block; }
+.byb-title { font-family:'Fredoka One',cursive; font-size:clamp(1.5rem,3vw,2.2rem); color:var(--text-primary); margin-bottom:0.4rem; }
+.byb-sub { font-size:0.9rem; color:#c9d1d9; line-height:1.6; }
+.byb-qa { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.byb-qa-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:1.2rem 1.4rem; transition:transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
+.byb-qa-card:hover { transform:translateY(-2px); border-color:rgba(245,200,66,0.5); box-shadow:0 4px 16px rgba(245,200,66,0.08); }
+.byb-q { font-family:'Fredoka One',cursive; font-size:0.97rem; color:var(--gold); margin-bottom:0.55rem; line-height:1.3; }
+.byb-a { font-size:0.85rem; color:#c9d1d9; line-height:1.7; }
+.byb-a strong { color:var(--text-primary); font-weight:800; }
+.byb-a a { color:var(--teal); text-decoration:none; border-bottom:1px dashed rgba(59,200,232,0.4); }
+.byb-a a:hover { border-bottom-style:solid; }
+@media (max-width:720px){ .byb-qa { grid-template-columns:1fr; } }
+
+/* PROGRESS BAR */
+.progress-wrap { max-width:900px; margin:1.4rem auto 1.5rem; padding:0 1.4rem; }
+.progress-steps { display:flex; gap:0; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border); background:var(--bg-secondary); }
+.progress-step { flex:1; padding:0.55rem 0.25rem; text-align:center; font-size:0.72rem; font-weight:800; color:#aeb8c2; background:var(--bg-secondary); border-right:1px solid var(--border); transition:background 0.4s ease, color 0.4s ease; cursor:default; letter-spacing:0.04em; user-select:none; }
+.progress-step:last-child { border-right:none; }
+.progress-step.active { background:var(--orange-dim); color:var(--orange); border-right-color:rgba(59,130,246,0.25); box-shadow:inset 0 -2px 0 var(--orange); }
+.progress-step.done   { background:rgba(46,204,113,0.1); color:var(--green); border-right-color:rgba(46,204,113,0.25); }
+
+/* SECTION WRAPPER */
+.sim-section { max-width:900px; margin:0 auto 2.25rem; padding:0 1.4rem; scroll-margin-top:74px; }
+body.stem-active .sim-section, body.ls-active .sim-section { scroll-margin-top:118px; }
+body.stem-active.ls-active .sim-section { scroll-margin-top:158px; }
+.section-label { font-size:0.72rem; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--orange); margin-bottom:0.4rem; }
+.section-title { font-family:'Fredoka One',sans-serif; font-size:clamp(1.5rem,3vw,2rem); line-height:1.15; color:var(--text-primary); margin-bottom:0.55rem; }
+.section-desc  { font-size:1rem; font-weight:600; color:#d6dee6; line-height:1.65; margin-bottom:1.2rem; max-width:900px; }
+.section-desc strong { color:var(--text-primary); }
+
+.unlock-hint { display:flex; align-items:center; gap:0.55rem; font-size:0.82rem; font-weight:700; color:var(--text-secondary); background:rgba(59,130,246,0.06); border-left:3px solid rgba(59,130,246,0.55); padding:0.55rem 0.85rem; border-radius:6px; margin-bottom:1.1rem; }
+.unlock-hint::before { content:"NEXT"; font-size:0.6rem; font-weight:900; letter-spacing:0.14em; color:var(--orange); background:rgba(59,130,246,0.14); padding:0.15rem 0.5rem; border-radius:99px; flex-shrink:0; }
+.unlock-hint.ready { background:rgba(46,204,113,0.08); border-left-color:var(--green); color:#c5ecd2; }
+.unlock-hint.ready::before { content:"READY"; color:var(--green); background:rgba(46,204,113,0.16); }
+.unlock-hint strong { color:var(--text-primary); font-weight:800; }
+
+/* BUTTONS */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.65rem 1.3rem; border-radius:10px; font-family:'Nunito',sans-serif; font-size:0.88rem; font-weight:800; border:1px solid transparent; cursor:pointer; transition:all 0.2s ease; text-decoration:none; line-height:1; }
+.btn:disabled { opacity:0.4; cursor:not-allowed; }
+.btn-orange { background:var(--orange); color:#000; border-color:var(--orange); box-shadow:0 2px 0 rgba(0,0,0,0.15); }
+.btn-orange:hover:not(:disabled) { background:#2563EB; box-shadow:0 4px 14px rgba(59,130,246,0.4); transform:translateY(-1px); }
+.btn-ghost { background:transparent; color:var(--text-primary); border-color:var(--border-light); }
+.btn-ghost:hover:not(:disabled) { background:var(--bg-card); border-color:var(--orange); color:var(--orange); }
+.btn:active:not(:disabled) { transform:scale(0.97); }
+.btn:focus-visible { outline:2px solid var(--orange); outline-offset:2px; }
+
+/* PHASE / DATA CARD */
+.phase-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.4rem 1.4rem 1.6rem; box-shadow:var(--shadow); }
+.phase-card + .phase-card { margin-top:1rem; }
+
+/* DATA SET (graph + table) */
+.dataset { background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius); padding:1rem 1.05rem 1.2rem; margin-top:0.4rem; }
+.dataset + .dataset { margin-top:1.1rem; }
+.dataset-head { display:flex; justify-content:space-between; align-items:baseline; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.2rem; }
+.dataset-title { font-family:'Fredoka One',cursive; color:var(--orange); font-size:1.05rem; }
+.dataset-source { font-size:0.7rem; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; color:var(--text-muted); }
+.dataset-note { font-size:0.85rem; color:#c9d1d9; line-height:1.6; margin:0.35rem 0 0.7rem; }
+.graph-wrap { background:#070b10; border:1px solid var(--border); border-radius:10px; padding:0.7rem 0.6rem 0.4rem; }
+.graph-wrap svg { display:block; width:100%; height:auto; }
+.legend { display:flex; flex-wrap:wrap; gap:0.6rem 1.1rem; justify-content:center; margin-top:0.55rem; }
+.legend-item { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.78rem; font-weight:800; color:var(--text-secondary); }
+.legend-swatch { width:16px; height:4px; border-radius:99px; }
+
+.data-table-wrap { margin-top:0.85rem; overflow-x:auto; }
+.data-table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; min-width:340px; }
+.data-table th, .data-table td { padding:0.5rem 0.7rem; text-align:center; font-size:0.85rem; border-bottom:1px solid var(--border); }
+.data-table th { font-size:0.68rem; font-weight:900; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); }
+.data-table td.first { color:var(--text-primary); font-weight:800; }
+@media (max-width:560px){ .data-table th, .data-table td { padding:0.4rem 0.4rem; font-size:0.8rem; } }
+
+/* OBSERVATION / READ-THE-GRAPH PROMPT */
+.observation-prompt { margin-top:0.95rem; padding:0.85rem 1.05rem; background:rgba(245,200,66,0.06); border:1px dashed rgba(245,200,66,0.4); border-radius:var(--radius); }
+.obs-eyebrow { font-size:0.65rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin-bottom:0.3rem; }
+.obs-text { font-size:0.88rem; color:#d6dee6; line-height:1.55; }
+.obs-text strong { color:var(--gold); font-weight:900; }
+
+/* PREDICTION CARD */
+.prediction-card { background:var(--bg-secondary); border:1.5px solid rgba(245,200,66,0.3); border-radius:var(--radius); padding:1.2rem 1.4rem; margin-top:1.1rem; }
+.prediction-card h4 { font-family:'Fredoka One',cursive; color:var(--gold); font-size:1.05rem; margin-bottom:0.3rem; }
+.prediction-card p { font-size:0.85rem; color:#c9d1d9; margin-bottom:0.85rem; }
+.prediction-options { display:grid; gap:0.55rem; }
+.prediction-options label { display:flex; align-items:center; gap:0.55rem; padding:0.6rem 0.85rem; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; font-size:0.85rem; cursor:pointer; transition:all 0.2s; }
+.prediction-options label:hover { border-color:var(--gold); }
+.prediction-options input[type=radio] { accent-color:var(--gold); }
+.prediction-options label.selected { background:rgba(245,200,66,0.1); border-color:var(--gold); }
+.prediction-saved { display:none; margin-top:0.7rem; font-size:0.8rem; font-weight:800; color:var(--green); letter-spacing:0.03em; }
+.prediction-saved.visible { display:block; }
+
+/* CHECKPOINT */
+.checkpoint-card { background:var(--bg-secondary); border:1.5px solid rgba(59,130,246,0.3); border-radius:var(--radius); padding:1.2rem 1.4rem; margin-top:1.4rem; }
+.checkpoint-card .cp-eyebrow { font-size:0.7rem; font-weight:900; letter-spacing:0.14em; text-transform:uppercase; color:var(--orange); margin-bottom:0.45rem; }
+.checkpoint-card .cp-q { font-family:'Fredoka One',cursive; font-size:1.05rem; color:var(--text-primary); margin-bottom:0.85rem; line-height:1.35; }
+.checkpoint-options { display:grid; gap:0.45rem; }
+.checkpoint-options label { display:flex; align-items:center; gap:0.55rem; padding:0.55rem 0.85rem; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:0.88rem; transition:all 0.2s; }
+.checkpoint-options label:hover { border-color:var(--orange); }
+.checkpoint-options input[type=radio] { accent-color:var(--orange); }
+.checkpoint-options label.selected { background:rgba(59,130,246,0.1); border-color:var(--orange); }
+.checkpoint-options.locked label.correct { background:rgba(46,204,113,0.1); border-color:var(--green); }
+.checkpoint-options.locked label.wrong { background:rgba(232,112,112,0.1); border-color:var(--red); }
+.checkpoint-options.locked label { cursor:default; }
+.checkpoint-feedback { display:none; margin-top:0.75rem; padding:0.65rem 0.9rem; border-radius:8px; font-size:0.85rem; line-height:1.55; }
+.checkpoint-feedback.visible { display:block; }
+.checkpoint-feedback.ok   { background:rgba(46,204,113,0.1); border:1px solid rgba(46,204,113,0.3); color:#a8e6c4; }
+.checkpoint-feedback.no   { background:rgba(232,112,112,0.1); border:1px solid rgba(232,112,112,0.3); color:#ecb3b3; }
+
+/* CER */
+.cer-wrap { margin-top:0.4rem; display:grid; gap:0.75rem; }
+.cer-field { background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius); padding:0.9rem 1.05rem; }
+.cer-label { font-family:'Fredoka One',cursive; font-size:0.95rem; margin-bottom:0.15rem; }
+.cer-label.claim    { color:var(--orange); }
+.cer-label.evidence { color:var(--gold); }
+.cer-label.reasoning{ color:var(--teal); }
+.cer-hint { font-size:0.78rem; color:var(--text-muted); margin-bottom:0.5rem; }
+.cer-field textarea { width:100%; min-height:80px; padding:0.6rem 0.75rem; background:var(--bg-card); border:1px solid var(--border-light); border-radius:8px; color:var(--text-primary); font-family:'Nunito',sans-serif; font-size:0.88rem; line-height:1.5; resize:vertical; }
+.cer-field textarea:focus { outline:none; border-color:var(--orange); box-shadow:0 0 0 3px rgba(59,130,246,0.18); }
+.cer-counter { font-size:0.7rem; color:var(--text-muted); margin-top:0.3rem; text-align:right; font-weight:700; letter-spacing:0.05em; }
+.cer-counter.met { color:var(--green); }
+
+/* FINAL CHALLENGE */
+.challenge-select { width:100%; padding:0.6rem 0.8rem; background:var(--bg-card); border:1px solid var(--border-light); border-radius:8px; color:var(--text-primary); font-family:'Nunito',sans-serif; font-weight:700; font-size:0.9rem; margin-top:0.4rem; }
+.challenge-select:focus { outline:none; border-color:var(--orange); }
+.challenge-feedback { display:none; margin-top:0.85rem; padding:0.7rem 0.95rem; border-radius:8px; font-size:0.86rem; line-height:1.55; }
+.challenge-feedback.visible { display:block; }
+.challenge-feedback.ok { background:rgba(46,204,113,0.1); border:1px solid rgba(46,204,113,0.3); color:#a8e6c4; }
+.challenge-feedback.no { background:rgba(232,112,112,0.1); border:1px solid rgba(232,112,112,0.3); color:#ecb3b3; }
+
+/* MODE TOGGLE */
+.mode-toggle-bar { display:inline-flex; background:var(--bg-secondary); border:1px solid var(--border); border-radius:99px; padding:0.25rem; gap:0.2rem; }
+.mode-btn { padding:0.45rem 1.05rem; border-radius:99px; background:transparent; border:none; color:var(--text-muted); font-family:'Nunito',sans-serif; font-weight:800; font-size:0.8rem; cursor:pointer; letter-spacing:0.04em; transition:all 0.2s; }
+.mode-btn.active { background:var(--orange); color:#000; }
+.mode-hint { margin-top:0.65rem; font-size:0.82rem; color:var(--text-muted); }
+.mode-hint span { display:none; }
+.mode-hint span.visible { display:inline; }
+
+/* QUIZ */
+.quiz-q { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.1rem 1.25rem; margin-bottom:0.85rem; }
+.quiz-q-prompt { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--text-primary); margin-bottom:0.7rem; line-height:1.4; }
+.quiz-q-prompt .num { color:var(--orange); margin-right:0.4rem; }
+.quiz-options { display:grid; gap:0.4rem; }
+.quiz-options label { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0.85rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:0.86rem; transition:all 0.2s; }
+.quiz-options label:hover { border-color:var(--orange); }
+.quiz-options input[type=radio] { accent-color:var(--orange); }
+.quiz-options label.selected { background:rgba(59,130,246,0.08); border-color:var(--orange); }
+.quiz-options.locked label.correct { background:rgba(46,204,113,0.12); border-color:var(--green); color:#c5ecd2; }
+.quiz-options.locked label.wrong   { background:rgba(232,112,112,0.12); border-color:var(--red); color:#ecbcbc; }
+.quiz-options.locked label { cursor:default; }
+.quiz-explain { display:none; margin-top:0.6rem; padding:0.6rem 0.85rem; background:var(--bg-secondary); border-left:3px solid var(--teal); border-radius:6px; font-size:0.82rem; color:#cdd6df; line-height:1.55; }
+.quiz-options.locked + .quiz-explain { display:block; }
+.quiz-score-badge { display:inline-block; padding:0.5rem 1.1rem; background:var(--bg-secondary); border:1px solid var(--border-light); border-radius:99px; font-family:'Fredoka One',cursive; color:var(--orange); font-size:0.95rem; }
+#quizResultBanner { padding:0.85rem 1.1rem; border-radius:var(--radius); font-size:0.9rem; font-weight:800; margin-top:1rem; text-align:center; }
+#quizResultBanner.pass { background:rgba(46,204,113,0.12); border:1px solid rgba(46,204,113,0.35); color:#a8e6c4; }
+#quizResultBanner.fail { background:rgba(232,112,112,0.12); border:1px solid rgba(232,112,112,0.35); color:#ecbcbc; }
+
+/* CLASSROOM PANEL */
+.classroom-panel { margin-top:1.4rem; background:var(--bg-card); border:1.5px solid rgba(59,130,246,0.4); border-radius:var(--radius); padding:1.2rem 1.4rem; }
+.classroom-panel.hidden { display:none; }
+.classroom-panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem; flex-wrap:wrap; gap:0.6rem; }
+.classroom-section-title { font-family:'Fredoka One',cursive; color:var(--text-primary); font-size:1.1rem; }
+.mode-badge { background:var(--orange); color:#000; padding:0.25rem 0.7rem; border-radius:99px; font-size:0.7rem; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; }
+.student-fields { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
+.field-full { grid-column:1 / -1; }
+@media (max-width:540px){ .student-fields { grid-template-columns:1fr; } }
+.field-label { display:block; font-size:0.7rem; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.3rem; }
+.field-input, .field-select { width:100%; padding:0.55rem 0.8rem; background:var(--bg-secondary); border:1px solid var(--border-light); border-radius:8px; color:var(--text-primary); font-family:'Nunito',sans-serif; font-weight:700; font-size:0.9rem; }
+.field-input:focus, .field-select:focus { outline:none; border-color:var(--orange); box-shadow:0 0 0 3px rgba(59,130,246,0.18); }
+.submit-section { margin-top:1rem; }
+.submit-btn { width:100%; padding:0.85rem 1.2rem; font-size:0.95rem; background:var(--orange); color:#000; border:none; border-radius:10px; font-family:'Nunito',sans-serif; font-weight:900; letter-spacing:0.05em; text-transform:uppercase; cursor:pointer; transition:all 0.2s; }
+.submit-btn:hover:not(:disabled):not(.locked) { background:#2563EB; }
+.submit-btn.locked, .submit-btn:disabled { background:var(--border); color:var(--text-muted); cursor:not-allowed; }
+.submit-helper { margin-top:0.55rem; font-size:0.78rem; color:var(--text-muted); text-align:center; }
+.submit-success { display:none; margin-top:0.8rem; padding:0.7rem 0.95rem; background:rgba(46,204,113,0.12); border:1px solid rgba(46,204,113,0.35); border-radius:8px; color:#a8e6c4; font-weight:800; text-align:center; }
+.submit-success.visible { display:block; }
+.submit-error { display:none; margin-top:0.8rem; padding:0.7rem 0.95rem; background:rgba(232,112,112,0.12); border:1px solid rgba(232,112,112,0.35); border-radius:8px; color:#ecbcbc; font-weight:800; text-align:center; }
+.submit-error.visible { display:block; }
+
+/* GO FURTHER */
+.go-further-section { max-width:1100px; margin:1.5rem auto 3rem; padding:0 1.4rem; }
+.go-further-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:1rem; margin-top:1rem; }
+.gf-card { display:block; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.1rem 1.2rem; text-decoration:none; color:var(--text-primary); transition:all 0.25s; box-shadow:var(--shadow); }
+.gf-card:hover { transform:translateY(-3px); border-color:var(--orange); background:var(--bg-card-hover); }
+.gf-card-label { font-size:0.7rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--orange); margin-bottom:0.4rem; }
+.gf-card-title { font-family:'Fredoka One',cursive; font-size:1.05rem; color:var(--text-primary); margin-bottom:0.35rem; line-height:1.3; }
+.gf-card-desc { font-size:0.83rem; color:#c9d1d9; line-height:1.55; }
+
+/* FOOTER */
+footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:0.5rem; }
+footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:0.08em; color:var(--gold); margin-bottom:0.35rem; }
+footer .footer-tagline { font-size:0.83rem; color:rgba(240,228,200,0.6); margin-bottom:0.6rem; }
+footer .footer-links { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:0.6rem; }
+footer .footer-links a { color:var(--gold); text-decoration:none; font-size:0.72rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,0.4); background:rgba(245,200,66,0.08); padding:0.25rem 0.75rem; border-radius:99px; transition:border-color 0.2s, background 0.2s; }
+footer .footer-links a:hover { border-color:rgba(245,200,66,0.7); }
+footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,0.7); background:rgba(59,200,232,0.12); font-weight:800; }
+footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); }
+footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
+
+/* TOAST */
+.toast { position:fixed; bottom:1.4rem; left:50%; transform:translateX(-50%) translateY(10px); background:var(--bg-card); border:1px solid var(--border-light); padding:0.7rem 1.2rem; border-radius:10px; box-shadow:var(--shadow); font-size:0.88rem; font-weight:800; color:var(--text-primary); opacity:0; transition:all 0.3s ease; z-index:300; pointer-events:none; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.success { border-color:var(--green); }
+.toast.info { border-color:var(--teal); }
+.toast.warn { border-color:var(--red); }
+
+/* ANIMATIONS + REDUCED MOTION */
+@keyframes phaseReveal { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+.phase-reveal { animation: phaseReveal 0.6s cubic-bezier(.2,.7,.2,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  html { scroll-behavior:auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ====================== NAV ====================== -->
+<nav>
+  <a class="nav-logo" href="index.html">LYFELABZ</a>
+  <a class="nav-back" href="lesson_parts-of-an-ecosystem.html">&larr; Parts of an Ecosystem</a>
+</nav>
+
+<!-- STEM badge bar -->
+<div class="badge-bar stem-bar">
+  <span class="badge green">7.MS-LS2-1<span class="badge-tip">Analyze and interpret data to provide evidence for the effects of resource availability on individual organisms and populations of organisms in an ecosystem.</span></span>
+  <span class="badge green">SEP: Analyzing Data<span class="badge-tip">You read real graphs and tables and pull patterns and trends out of them.</span></span>
+  <span class="badge green">SEP: Constructing Explanations<span class="badge-tip">You use evidence from the data to explain why populations rise and fall.</span></span>
+  <span class="badge green">CCC: Cause &amp; Effect<span class="badge-tip">Resource availability is a cause; changes in population size are the effect.</span></span>
+  <span class="badge green">CCC: Stability &amp; Change<span class="badge-tip">Populations shift over time as resources, predators, and competition change.</span></span>
+</div>
+
+<!-- Learning Science badge bar -->
+<div class="badge-bar ls-bar">
+  <span class="badge teal">Predict &rarr; Test<span class="badge-tip">You commit to a prediction first, then check it against real data.</span></span>
+  <span class="badge teal">Claim &middot; Evidence &middot; Reasoning<span class="badge-tip">You back up every claim with numbers you read off the graphs.</span></span>
+  <span class="badge teal">Data Interpretation<span class="badge-tip">Checkpoints ask you to read the data, not recall a definition.</span></span>
+  <span class="badge teal">Transfer Task<span class="badge-tip">The final challenge gives you a brand-new graph to analyze on your own.</span></span>
+</div>
+
+<!-- ====================== HERO ====================== -->
+<section class="hero">
+  <div class="hero-shell">
+    <div class="hero-badge">Investigation</div>
+    <h1>Population Patterns</h1>
+    <p>Some populations climb. Some collapse. The clues are hidden inside real data. Read the graphs, find the patterns, and use the numbers as evidence to explain what drives a population up or down.</p>
+    <div class="hero-kicker">Resources &middot; Competition &middot; Predation &middot; Population Size</div>
+  </div>
+</section>
+
+<!-- ====================== BEFORE YOU BEGIN ====================== -->
+<div class="byb-wrap">
+  <div class="byb-inner">
+    <div class="byb-header">
+      <span class="byb-eyebrow">Before You Begin</span>
+      <div class="byb-title">Read this first, then investigate</div>
+      <p class="byb-sub">This is a data investigation, not a reading. Your job is to analyze real population data, interpret the patterns, and use evidence to explain what you find. Work through each phase in order.</p>
+    </div>
+    <div class="byb-qa">
+      <div class="byb-qa-card">
+        <div class="byb-q">What will I actually do?</div>
+        <p class="byb-a">You will <strong>analyze</strong> real population graphs and tables, <strong>interpret</strong> the trends you see, and <strong>provide evidence</strong> for how resource availability changes population size. You are the scientist here.</p>
+      </div>
+      <div class="byb-qa-card">
+        <div class="byb-q">What should I already know?</div>
+        <p class="byb-a">From your lessons you already understand <strong>populations</strong>, <strong>carrying capacity</strong>, <strong>limiting factors</strong>, <strong>food webs</strong>, and <strong>predator-prey relationships</strong>. This investigation puts those ideas to work on real data.</p>
+      </div>
+      <div class="byb-qa-card">
+        <div class="byb-q">Where does the data come from?</div>
+        <p class="byb-a">Real long-term studies: the <strong>Isle Royale</strong> wolves and moose, the <strong>boreal forest</strong> lynx and hare records, and the <strong>Yellowstone</strong> wolf reintroduction. Scientists tracked these for decades.</p>
+      </div>
+      <div class="byb-qa-card">
+        <div class="byb-q">How is this scored?</div>
+        <p class="byb-a">Checkpoints ask you to read the data, not memorize a definition. In <strong>Classroom Mode</strong> your quiz and written work go to your teacher. In <strong>Practice Mode</strong> nothing is sent.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== PROGRESS BAR ====================== -->
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="progress-step active" id="step1">1 &middot; Observe</div>
+    <div class="progress-step" id="step2">2 &middot; Analyze</div>
+    <div class="progress-step" id="step3">3 &middot; Explain</div>
+    <div class="progress-step" id="step4">4 &middot; Reason</div>
+    <div class="progress-step" id="step5">5 &middot; Challenge</div>
+  </div>
+</div>
+
+<!-- ====================== PHASE 1 · MISSION + OBSERVE ====================== -->
+<section class="sim-section" id="phase1">
+  <div class="section-label">Phase 1 &middot; Mission &amp; Observe</div>
+  <h2 class="section-title">Why do some populations crash while others climb?</h2>
+  <p class="section-desc">On <strong>Isle Royale</strong>, an island in Lake Superior, scientists have tracked two populations for over 60 years: <strong>moose</strong> (which eat plants) and <strong>wolves</strong> (which eat moose). Read the graph and table below. Do not skim. Look for where each line rises, where it falls, and how the two lines move in relation to each other.</p>
+
+  <div class="phase-card">
+    <div class="dataset">
+      <div class="dataset-head">
+        <div class="dataset-title">Isle Royale: Moose and Wolves</div>
+        <div class="dataset-source">Source: Long-term field study</div>
+      </div>
+      <p class="dataset-note">Moose are counted in hundreds. Wolves are counted as individual animals. Watch how a change in one population is followed by a change in the other.</p>
+      <div class="graph-wrap" id="graphIsle"></div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--gold);"></span>Moose (hundreds)</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--teal);"></span>Wolves (individuals)</span>
+      </div>
+      <div class="data-table-wrap" id="tableIsle"></div>
+    </div>
+
+    <div class="observation-prompt">
+      <div class="obs-eyebrow">Read the graph</div>
+      <div class="obs-text">When the <strong>moose</strong> population was high, what happened to the <strong>wolf</strong> population a few years later? When wolves grew, what happened to moose? The two lines do not peak at the same time.</div>
+    </div>
+
+    <div class="prediction-card">
+      <h4>Make a prediction</h4>
+      <p>Before you analyze the rest, commit to an idea. When a prey population (moose) grows for several years, what usually happens to its predator population (wolves) afterward?</p>
+      <div class="prediction-options" id="predOptions">
+        <label data-val="rise"><input type="radio" name="pred"> The predator population rises, because more prey means more food.</label>
+        <label data-val="fall"><input type="radio" name="pred"> The predator population falls, because prey scare predators away.</label>
+        <label data-val="same"><input type="radio" name="pred"> The predator population stays flat, because predators are not affected by prey.</label>
+      </div>
+      <div class="prediction-saved" id="predSaved">Prediction saved. Now let's test it against more data.</div>
+    </div>
+
+    <div class="checkpoint-card" id="cp1">
+      <div class="cp-eyebrow">Checkpoint 1 &middot; Read the data</div>
+      <div class="cp-q">In the years right after the moose population peaked, the wolf population:</div>
+      <div class="checkpoint-options" data-cp="1" data-correct="b">
+        <label data-opt="a"><input type="radio" name="cp1opt"> dropped immediately, in the same year.</label>
+        <label data-opt="b"><input type="radio" name="cp1opt"> rose, then later fell after the moose declined.</label>
+        <label data-opt="c"><input type="radio" name="cp1opt"> stayed exactly the same the whole time.</label>
+        <label data-opt="d"><input type="radio" name="cp1opt"> rose forever and never came back down.</label>
+      </div>
+      <div class="checkpoint-feedback" id="cp1fb"></div>
+    </div>
+  </div>
+
+  <div class="unlock-hint" id="hint1" style="margin-top:1.1rem;">Make a prediction, then answer Checkpoint 1 to unlock <strong>Phase 2</strong>.</div>
+</section>
+
+<!-- ====================== PHASE 2 · ANALYZE ====================== -->
+<section class="sim-section" id="phase2" style="display:none;">
+  <div class="section-label">Phase 2 &middot; Analyze</div>
+  <h2 class="section-title">Find the pattern: lynx and hare</h2>
+  <p class="section-desc">For nearly a century, fur-trade records tracked <strong>snowshoe hare</strong> (a plant-eater) and <strong>Canada lynx</strong> (a predator that hunts hare) across the boreal forest. This is one of the most famous datasets in ecology. Analyze it the same way: where are the peaks, where are the crashes, and which population leads the other?</p>
+
+  <div class="phase-card">
+    <div class="dataset">
+      <div class="dataset-head">
+        <div class="dataset-title">Boreal Forest: Snowshoe Hare and Lynx</div>
+        <div class="dataset-source">Source: Long-term trapping records</div>
+      </div>
+      <p class="dataset-note">Both populations are shown in thousands. Notice the repeating cycle, and notice which curve reaches its peak first.</p>
+      <div class="graph-wrap" id="graphLynx"></div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--gold);"></span>Hare (thousands)</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--red);"></span>Lynx (thousands)</span>
+      </div>
+      <div class="data-table-wrap" id="tableLynx"></div>
+    </div>
+
+    <div class="observation-prompt">
+      <div class="obs-eyebrow">Look for the trend</div>
+      <div class="obs-text">The hare is a <strong>resource</strong> for the lynx. Every time hare numbers crash, the lynx crash follows close behind. The predator peak <strong>lags</strong> the prey peak by a few years, over and over again.</div>
+    </div>
+
+    <div class="checkpoint-card" id="cp2">
+      <div class="cp-eyebrow">Checkpoint 2 &middot; Interpret the trend</div>
+      <div class="cp-q">Each time the hare population crashed, the lynx population:</div>
+      <div class="checkpoint-options" data-cp="2" data-correct="c">
+        <label data-opt="a"><input type="radio" name="cp2opt"> grew larger, because fewer hares means less competition.</label>
+        <label data-opt="b"><input type="radio" name="cp2opt"> was unaffected, because lynx eat many other foods.</label>
+        <label data-opt="c"><input type="radio" name="cp2opt"> crashed soon after, because its main food supply ran low.</label>
+        <label data-opt="d"><input type="radio" name="cp2opt"> peaked at the exact same moment as the hare.</label>
+      </div>
+      <div class="checkpoint-feedback" id="cp2fb"></div>
+    </div>
+  </div>
+
+  <div class="unlock-hint" id="hint2" style="margin-top:1.1rem;">Answer Checkpoint 2 to unlock <strong>Phase 3</strong>.</div>
+</section>
+
+<!-- ====================== PHASE 3 · EXPLAIN ====================== -->
+<section class="sim-section" id="phase3" style="display:none;">
+  <div class="section-label">Phase 3 &middot; Explain</div>
+  <h2 class="section-title">Connect resources, competition, and predation</h2>
+  <p class="section-desc">In <strong>1995</strong>, wolves were brought back to Yellowstone after being gone for about 70 years. With wolves missing, the <strong>elk</strong> population had grown very large and overgrazed the young <strong>willow</strong> trees along the rivers. Analyze what happened after the wolves returned, then explain the chain of cause and effect.</p>
+
+  <div class="phase-card">
+    <div class="dataset">
+      <div class="dataset-head">
+        <div class="dataset-title">Yellowstone: Wolves, Elk, and Willow</div>
+        <div class="dataset-source">Source: National park monitoring</div>
+      </div>
+      <p class="dataset-note">Wolves shown as individuals. Elk shown in thousands. Willow shown as an index of plant cover (0 = bare, 100 = full recovery). Wolves were reintroduced in 1995.</p>
+      <div class="graph-wrap" id="graphYell"></div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--teal);"></span>Wolves (individuals)</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--red);"></span>Elk (thousands)</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--green);"></span>Willow cover (index)</span>
+      </div>
+      <div class="data-table-wrap" id="tableYell"></div>
+    </div>
+
+    <div class="observation-prompt">
+      <div class="obs-eyebrow">Trace the cause and effect</div>
+      <div class="obs-text">Wolves up &rarr; elk down. Elk down &rarr; willow recovers. The elk had been a <strong>limiting factor</strong> for willow. Removing too many predators let one population grow until it ran the shared resource down for everyone.</div>
+    </div>
+
+    <div class="checkpoint-card" id="cp3">
+      <div class="cp-eyebrow">Checkpoint 3 &middot; Explain the chain</div>
+      <div class="cp-q">Why did willow cover increase after wolves returned?</div>
+      <div class="checkpoint-options" data-cp="3" data-correct="d">
+        <label data-opt="a"><input type="radio" name="cp3opt"> Wolves planted and watered the willows directly.</label>
+        <label data-opt="b"><input type="radio" name="cp3opt"> Wolves ate the willows, so fewer were counted.</label>
+        <label data-opt="c"><input type="radio" name="cp3opt"> The willows were unaffected by any animal at all.</label>
+        <label data-opt="d"><input type="radio" name="cp3opt"> Wolves reduced the elk, so fewer young willows were eaten.</label>
+      </div>
+      <div class="checkpoint-feedback" id="cp3fb"></div>
+    </div>
+  </div>
+
+  <div class="unlock-hint" id="hint3" style="margin-top:1.1rem;">Answer Checkpoint 3 to unlock <strong>Phase 4</strong>.</div>
+</section>
+
+<!-- ====================== PHASE 4 · REASON (CER) ====================== -->
+<section class="sim-section" id="phase4" style="display:none;">
+  <div class="section-label">Phase 4 &middot; Claim, Evidence, Reasoning</div>
+  <h2 class="section-title">Build your argument from the data</h2>
+  <p class="section-desc">You have analyzed three real datasets. Now use them as evidence. Write a short, scientific argument answering the mission question: <strong>how does resource availability affect population size?</strong> Pull actual numbers from the graphs you read.</p>
+
+  <div class="cer-wrap">
+    <div class="cer-field">
+      <div class="cer-label claim">Claim</div>
+      <div class="cer-hint">In one sentence: what is the relationship between the amount of resources available and the size of a population?</div>
+      <textarea id="cerClaim" data-min="40" placeholder="When resources are plentiful, a population..."></textarea>
+      <div class="cer-counter" id="cerClaimCount">0 characters</div>
+    </div>
+    <div class="cer-field">
+      <div class="cer-label evidence">Evidence</div>
+      <div class="cer-hint">Use specific numbers or trends from at least one dataset (Isle Royale, lynx and hare, or Yellowstone).</div>
+      <textarea id="cerEvidence" data-min="70" placeholder="For example: in the boreal forest data, when hare dropped from about ... to about ..., the lynx then dropped from ... to ..."></textarea>
+      <div class="cer-counter" id="cerEvidenceCount">0 characters</div>
+    </div>
+    <div class="cer-field">
+      <div class="cer-label reasoning">Reasoning</div>
+      <div class="cer-hint">Explain why your evidence supports your claim. Connect resources, competition, and predation to population size.</div>
+      <textarea id="cerReasoning" data-min="70" placeholder="This shows that a predator population depends on its prey because..."></textarea>
+      <div class="cer-counter" id="cerReasoningCount">0 characters</div>
+    </div>
+  </div>
+
+  <div class="unlock-hint" id="hint4" style="margin-top:1.1rem;">Write a claim, evidence, and reasoning to unlock the <strong>Final Challenge</strong>.</div>
+</section>
+
+<!-- ====================== PHASE 5 · FINAL CHALLENGE ====================== -->
+<section class="sim-section" id="phase5" style="display:none;">
+  <div class="section-label">Phase 5 &middot; Final Challenge</div>
+  <h2 class="section-title">A new graph, on your own</h2>
+  <p class="section-desc">Here is a dataset you have never seen. A herd of <strong>deer</strong> was introduced to a fenced range with plenty of grass and no predators. Analyze the graph, then decide what most likely happened to the <strong>food supply</strong> over time. No hints this time, you are the scientist.</p>
+
+  <div class="phase-card">
+    <div class="dataset">
+      <div class="dataset-head">
+        <div class="dataset-title">Mystery Range: Deer Herd</div>
+        <div class="dataset-source">Source: Wildlife survey</div>
+      </div>
+      <p class="dataset-note">Deer counted as individuals. The grass-supply line is an index of how much food was available (0 = bare ground, 100 = full grass cover).</p>
+      <div class="graph-wrap" id="graphDeer"></div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--gold);"></span>Deer (individuals)</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--green);"></span>Grass supply (index)</span>
+      </div>
+      <div class="data-table-wrap" id="tableDeer"></div>
+    </div>
+
+    <div style="margin-top:1.1rem;">
+      <div class="cer-label claim" style="font-size:0.95rem;">Your analysis</div>
+      <div class="cer-hint">Based only on the data, which statement best explains the deer crash?</div>
+      <select class="challenge-select" id="challengeSelect">
+        <option value="">Choose the best explanation...</option>
+        <option value="a">The deer kept growing forever with no limit.</option>
+        <option value="b">A predator arrived and ate most of the deer.</option>
+        <option value="c">The herd overgrazed the grass, so food ran out and the population crashed.</option>
+        <option value="d">The grass supply never changed at all.</option>
+      </select>
+      <div class="challenge-feedback" id="challengeFb"></div>
+    </div>
+
+    <div class="cer-field" style="margin-top:1.1rem;">
+      <div class="cer-label reasoning">Defend it with evidence</div>
+      <div class="cer-hint">Use numbers from this graph. What did the grass index do just before the deer population peaked and crashed?</div>
+      <textarea id="challengeText" data-min="60" placeholder="The grass supply dropped from about ... to about ... right before the deer fell from about ... to ..."></textarea>
+      <div class="cer-counter" id="challengeTextCount">0 characters</div>
+    </div>
+  </div>
+
+  <div class="unlock-hint" id="hint5" style="margin-top:1.1rem;">Choose an explanation and defend it to finish the investigation.</div>
+</section>
+
+<!-- ====================== CHOOSE MODE ====================== -->
+<section class="sim-section" id="modeSection" style="display:none;">
+  <div class="section-label">Next Step</div>
+  <h2 class="section-title">Choose Your Mode</h2>
+  <p class="section-desc">You analyzed three real datasets and one mystery graph. Pick how to finish: <strong>Practice Mode</strong> to self-check, or <strong>Classroom Mode</strong> to send your work to your teacher.</p>
+  <div class="mode-toggle-bar">
+    <button class="mode-btn active" id="practiceModeBtn">Practice Mode</button>
+    <button class="mode-btn"        id="classroomModeBtn">Classroom Mode</button>
+  </div>
+  <div class="mode-hint">
+    <span id="modeHintPractice" class="visible">Practice Mode shows the quiz so you can self-check. Nothing is sent to your teacher.</span>
+    <span id="modeHintClassroom">Classroom Mode adds a submission panel so your work is sent to your teacher.</span>
+  </div>
+</section>
+
+<!-- ====================== QUIZ + SUBMISSION ====================== -->
+<section class="sim-section" id="quizSection" style="display:none;">
+  <div class="section-label">Evaluate &middot; Quiz</div>
+  <h2 class="section-title">Check Your Understanding</h2>
+  <p class="section-desc">Ten questions on reading population data and explaining what drives populations up and down. Answer all ten, then click <strong>Score My Quiz</strong>. In <strong>Classroom Mode</strong>, fill in your name, teacher, and block to submit.</p>
+  <div id="quizContainer"></div>
+  <div style="text-align:center; margin-top:1rem;">
+    <button class="btn btn-orange" id="scoreQuizBtn">Score My Quiz</button>
+  </div>
+  <div id="quizScoreArea" style="display:none; margin-top:1rem; text-align:center;">
+    <div class="quiz-score-badge" id="quizScoreBadge">0 / 10</div>
+  </div>
+  <div id="quizResultBanner" style="display:none;"></div>
+
+  <!-- Classroom submission panel -->
+  <div class="classroom-panel hidden" id="classroomPanel">
+    <div class="classroom-panel-header">
+      <span class="classroom-section-title">Submit Your Work</span>
+      <span class="mode-badge">Classroom Mode</span>
+    </div>
+    <div class="student-fields">
+      <div>
+        <label class="field-label" for="studentNameInput">Your Name</label>
+        <input class="field-input" id="studentNameInput" placeholder="First Last" type="text"/>
+      </div>
+      <div>
+        <label class="field-label" for="blockSelect">Class Block</label>
+        <select class="field-select" id="blockSelect">
+          <option value="">Select block</option>
+          <option value="A">A Block</option><option value="B">B Block</option>
+          <option value="C">C Block</option><option value="D">D Block</option>
+          <option value="E">E Block</option><option value="F">F Block</option>
+          <option value="G">G Block</option>
+        </select>
+      </div>
+      <div class="field-full">
+        <label class="field-label" for="teacherSelect">Teacher</label>
+        <select class="field-select" id="teacherSelect">
+          <option value="">Select your teacher</option>
+          <option value="MrKankel">Mr. Kankel</option>
+          <option value="MrRovner">Mr. Rovner</option>
+        </select>
+      </div>
+    </div>
+    <div class="submit-section">
+      <button class="submit-btn locked" disabled id="submitBtn">Submit Investigation</button>
+      <div class="submit-helper" id="submitHelper">Score the quiz and fill in all fields to submit.</div>
+      <div class="submit-success" id="submitSuccess"></div>
+      <div class="submit-error"   id="submitError">Something went wrong. Please try again.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== GO FURTHER ====================== -->
+<div class="go-further-section" id="goFurtherSection" style="display:none;">
+  <div class="section-label">Go Further</div>
+  <h2 class="section-title">Keep Exploring</h2>
+  <div class="go-further-grid">
+    <a class="gf-card" href="lesson_parts-of-an-ecosystem.html">
+      <div class="gf-card-label">Lesson</div>
+      <div class="gf-card-title">Parts of an Ecosystem</div>
+      <div class="gf-card-desc">Revisit populations, limiting factors, and how living and nonliving parts of an ecosystem connect.</div>
+    </a>
+    <a class="gf-card" href="lesson_ecosystem-stability.html">
+      <div class="gf-card-label">Lesson</div>
+      <div class="gf-card-title">Ecosystem Stability</div>
+      <div class="gf-card-desc">See how a change in one population spreads through the whole system, and what keeps an ecosystem resilient.</div>
+    </a>
+    <a class="gf-card" href="lesson_human-impacts.html">
+      <div class="gf-card-label">Lesson</div>
+      <div class="gf-card-title">Human Impacts</div>
+      <div class="gf-card-desc">How do people change resource availability, and what does that do to populations?</div>
+    </a>
+    <a class="gf-card" href="index.html">
+      <div class="gf-card-label">Library</div>
+      <div class="gf-card-title">Back to LyfeLabz</div>
+      <div class="gf-card-desc">Explore other lessons, investigations, simulations, and games across the LyfeLabz library.</div>
+    </a>
+  </div>
+</div>
+
+<!-- ====================== FOOTER ====================== -->
+<footer>
+  <div class="footer-logo">LYFELABZ&trade;</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   STATE
+   ===================================================================== */
+const STORE_KEY = 'lyfelabz-population-patterns';
+const state = {
+  phaseUnlocked: 1,
+  prediction: null,
+  checkpoints: { 1:null, 2:null, 3:null },
+  cer: { claim:'', evidence:'', reasoning:'' },
+  challengeChoice: null,
+  challengeText: '',
+  quizAnswers: new Array(10).fill(null),
+  quizLocked: false,
+  quizScore: null,
+  mode: 'practice',
+  submitted: false,
+  toggles: { stem:false, ls:false }
+};
+function saveState(){ try { sessionStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){} }
+function loadState(){
+  try { const raw = sessionStorage.getItem(STORE_KEY); if(!raw) return false;
+        Object.assign(state, JSON.parse(raw)); return true; } catch(e){ return false; }
+}
+
+/* TOAST */
+let toastTimer = null;
+function toast(msg, kind='info'){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + kind;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.className = 'toast ' + kind; }, 2400);
+}
+
+/* =====================================================================
+   DATA SETS  (rounded teaching versions of real long-term studies)
+   ===================================================================== */
+const DATA = {
+  isle: { // moose in hundreds, wolves as individuals
+    xLabel:'Year', x:[1980,1985,1990,1995,1996,2000,2005,2010],
+    series:[
+      { name:'Moose (hundreds)', color:'var(--gold)', v:[7,10,12,24,5,9,6,5] },
+      { name:'Wolves', color:'var(--teal)', v:[50,22,15,16,22,29,30,19] }
+    ]
+  },
+  lynx: { // both in thousands
+    xLabel:'Year', x:[1900,1905,1910,1915,1920,1925,1930,1935],
+    series:[
+      { name:'Hare (thousands)', color:'var(--gold)', v:[20,55,15,60,10,50,18,55] },
+      { name:'Lynx (thousands)', color:'var(--red)',  v:[10,35,12,38,8,30,11,34] }
+    ]
+  },
+  yell: { // wolves individuals, elk thousands, willow index
+    xLabel:'Year', x:[1995,1998,2001,2004,2007,2010,2013,2016],
+    series:[
+      { name:'Wolves', color:'var(--teal)', v:[21,60,95,130,98,100,90,95] },
+      { name:'Elk (thousands)', color:'var(--red)', v:[17,14,11,9,7,6,6,7] },
+      { name:'Willow cover', color:'var(--green)', v:[10,15,25,40,60,75,82,85] }
+    ]
+  },
+  deer: { // deer individuals, grass index
+    xLabel:'Year', x:[1,2,3,4,5,6,7,8],
+    series:[
+      { name:'Deer', color:'var(--gold)', v:[40,110,260,520,640,300,120,90] },
+      { name:'Grass supply', color:'var(--green)', v:[100,92,78,52,24,18,35,55] }
+    ]
+  }
+};
+
+/* =====================================================================
+   SVG LINE GRAPH RENDERER  (responsive, high contrast)
+   ===================================================================== */
+function resolveColor(c){
+  if(!c.startsWith('var(')) return c;
+  const name = c.slice(4,-1).trim();
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#fff';
+}
+function renderGraph(elId, ds){
+  const W=700, H=360, padL=54, padR=24, padT=22, padB=46;
+  const xs = ds.x, n = xs.length;
+  const allV = ds.series.flatMap(s=>s.v);
+  const maxV = Math.max(...allV);
+  // round axis max up to a clean number
+  const step = maxV>400?100 : maxV>100?20 : maxV>40?10 : 5;
+  const axMax = Math.ceil(maxV/step)*step;
+  const plotW = W-padL-padR, plotH = H-padT-padB;
+  const xAt = i => padL + (plotW*(i/(n-1)));
+  const yAt = v => padT + plotH - (plotH*(v/axMax));
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Line graph of ${ds.series.map(s=>s.name).join(' and ')} over ${ds.xLabel.toLowerCase()}">`;
+  // gridlines + y labels
+  const yTicks = 5;
+  for(let t=0;t<=yTicks;t++){
+    const val = axMax*t/yTicks; const y = yAt(val);
+    svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#243043" stroke-width="1"/>`;
+    svg += `<text x="${padL-8}" y="${y+4}" fill="#9aa4af" font-size="13" font-family="Nunito,sans-serif" text-anchor="end">${Math.round(val)}</text>`;
+  }
+  // x labels
+  for(let i=0;i<n;i++){
+    svg += `<text x="${xAt(i)}" y="${H-padB+22}" fill="#9aa4af" font-size="13" font-family="Nunito,sans-serif" text-anchor="middle">${xs[i]}</text>`;
+  }
+  svg += `<text x="${padL+plotW/2}" y="${H-6}" fill="#b8c1cc" font-size="13" font-weight="700" font-family="Nunito,sans-serif" text-anchor="middle">${ds.xLabel}</text>`;
+  // series
+  ds.series.forEach(s=>{
+    const col = resolveColor(s.color);
+    let d = '';
+    s.v.forEach((v,i)=>{ d += (i===0?'M':'L') + xAt(i).toFixed(1) + ' ' + yAt(v).toFixed(1) + ' '; });
+    svg += `<path d="${d}" fill="none" stroke="${col}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    s.v.forEach((v,i)=>{ svg += `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(v).toFixed(1)}" r="4.5" fill="${col}" stroke="#070b10" stroke-width="1.5"/>`; });
+  });
+  svg += `</svg>`;
+  document.getElementById(elId).innerHTML = svg;
+}
+function renderTable(elId, ds){
+  let html = '<table class="data-table"><thead><tr><th>'+ds.xLabel+'</th>';
+  ds.series.forEach(s=>{ html += '<th>'+s.name+'</th>'; });
+  html += '</tr></thead><tbody>';
+  ds.x.forEach((x,i)=>{
+    html += '<tr><td class="first">'+x+'</td>';
+    ds.series.forEach(s=>{ html += '<td>'+s.v[i]+'</td>'; });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById(elId).innerHTML = html;
+}
+function renderAllGraphs(){
+  renderGraph('graphIsle', DATA.isle); renderTable('tableIsle', DATA.isle);
+  renderGraph('graphLynx', DATA.lynx); renderTable('tableLynx', DATA.lynx);
+  renderGraph('graphYell', DATA.yell); renderTable('tableYell', DATA.yell);
+  renderGraph('graphDeer', DATA.deer); renderTable('tableDeer', DATA.deer);
+}
+
+/* =====================================================================
+   PROGRESS + PHASE REVEAL
+   ===================================================================== */
+function updateProgress(){
+  for(let i=1;i<=5;i++){
+    const el = document.getElementById('step'+i);
+    el.classList.remove('active','done');
+    if(i < state.phaseUnlocked) el.classList.add('done');
+    else if(i === state.phaseUnlocked) el.classList.add('active');
+  }
+}
+function showPhase(id){
+  const el = document.getElementById(id);
+  if(el && el.style.display==='none'){ el.style.display=''; el.classList.add('phase-reveal'); }
+}
+function unlockPhase(n){
+  if(state.phaseUnlocked < n){ state.phaseUnlocked = n; saveState(); }
+  if(n>=2) showPhase('phase2');
+  if(n>=3) showPhase('phase3');
+  if(n>=4) showPhase('phase4');
+  if(n>=5) showPhase('phase5');
+  updateProgress();
+}
+function maybeFinish(){
+  // Once the final challenge is answered + defended, reveal mode + quiz
+  if(state.challengeChoice && state.challengeText.trim().length >= 60){
+    showPhase('modeSection'); showPhase('quizSection'); showPhase('goFurtherSection');
+    const h = document.getElementById('hint5');
+    if(h){ h.classList.add('ready'); h.innerHTML = 'Nice work. Scroll down to <strong>finish with the quiz</strong>.'; }
+  }
+}
+
+/* =====================================================================
+   PREDICTION
+   ===================================================================== */
+function initPrediction(){
+  document.querySelectorAll('#predOptions label').forEach(lab=>{
+    lab.addEventListener('click', ()=>{
+      document.querySelectorAll('#predOptions label').forEach(l=>l.classList.remove('selected'));
+      lab.classList.add('selected'); lab.querySelector('input').checked = true;
+      state.prediction = lab.dataset.val; saveState();
+      document.getElementById('predSaved').classList.add('visible');
+      revealCheckpoint(1);
+    });
+  });
+}
+function revealCheckpoint(n){
+  // checkpoints are always present; this is a no-op kept for clarity / future gating
+}
+
+/* =====================================================================
+   CHECKPOINTS
+   ===================================================================== */
+const CP_FEEDBACK = {
+  1: { ok:'Correct. The wolves rose while moose were plentiful, then fell a few years after the moose declined. Predators track their food supply with a lag.',
+       no:'Look again at the wolf line. It climbs while moose are high, then drops only after the moose crash. The predator follows its prey with a delay.' },
+  2: { ok:'Correct. The lynx is a predator of the hare. When the hare (its resource) crashed, the lynx crashed soon after.',
+       no:'The lynx depends on the hare for food. When the hare crashed, the lynx lost its resource and crashed too, just a little later.' },
+  3: { ok:'Correct. More wolves meant fewer elk, and fewer elk meant the young willows were no longer overgrazed, so willow cover recovered.',
+       no:'Wolves did not touch the willows. They reduced the elk, and the elk were the ones eating the young willows.' }
+};
+function initCheckpoints(){
+  document.querySelectorAll('.checkpoint-options').forEach(box=>{
+    const cp = box.dataset.cp; const correct = box.dataset.correct;
+    box.querySelectorAll('label').forEach(lab=>{
+      lab.addEventListener('click', ()=>{
+        if(box.classList.contains('locked')) return;
+        box.querySelectorAll('label').forEach(l=>l.classList.remove('selected'));
+        lab.classList.add('selected'); lab.querySelector('input').checked = true;
+        const choice = lab.dataset.opt;
+        const isOk = choice === correct;
+        box.classList.add('locked');
+        box.querySelectorAll('label').forEach(l=>{
+          if(l.dataset.opt === correct) l.classList.add('correct');
+          else if(l===lab) l.classList.add('wrong');
+        });
+        const fb = document.getElementById('cp'+cp+'fb');
+        fb.textContent = isOk ? CP_FEEDBACK[cp].ok : CP_FEEDBACK[cp].no;
+        fb.className = 'checkpoint-feedback visible ' + (isOk?'ok':'no');
+        state.checkpoints[cp] = choice; saveState();
+        const hint = document.getElementById('hint'+cp);
+        if(hint){ hint.classList.add('ready'); hint.innerHTML = 'Checkpoint complete. <strong>Phase '+(parseInt(cp)+1)+' unlocked</strong> below.'; }
+        unlockPhase(parseInt(cp)+1);
+        toast(isOk?'Checkpoint correct':'Checkpoint recorded', isOk?'success':'info');
+      });
+    });
+  });
+}
+
+/* =====================================================================
+   CER + CHALLENGE TEXT COUNTERS
+   ===================================================================== */
+function bindCounter(taId, countId, stateSetter){
+  const ta = document.getElementById(taId); const c = document.getElementById(countId);
+  const min = parseInt(ta.dataset.min||'40',10);
+  function upd(){
+    const len = ta.value.trim().length;
+    c.textContent = len + ' characters' + (len>=min?' (good)':'');
+    c.classList.toggle('met', len>=min);
+    stateSetter(ta.value);
+    checkCerComplete(); maybeFinish();
+  }
+  ta.addEventListener('input', upd);
+  return upd;
+}
+function checkCerComplete(){
+  const c = state.cer;
+  const done = c.claim.trim().length>=40 && c.evidence.trim().length>=70 && c.reasoning.trim().length>=70;
+  if(done){
+    unlockPhase(5);
+    const h = document.getElementById('hint4');
+    if(h){ h.classList.add('ready'); h.innerHTML = 'Argument complete. <strong>Final Challenge unlocked</strong> below.'; }
+  }
+}
+
+/* =====================================================================
+   FINAL CHALLENGE
+   ===================================================================== */
+function initChallenge(){
+  const sel = document.getElementById('challengeSelect');
+  sel.addEventListener('change', ()=>{
+    const v = sel.value; if(!v) return;
+    state.challengeChoice = v; saveState();
+    const fb = document.getElementById('challengeFb');
+    const ok = v === 'c';
+    fb.textContent = ok
+      ? 'Correct. The grass index falls sharply just before the deer peak, then the deer crash. The herd grew past what the food could support, overgrazed it, and the population collapsed. This is carrying capacity overshoot.'
+      : 'Look at the grass line. It drops steeply right before the deer crash, and there is no predator in this dataset. The deer ran their own food supply down.';
+    fb.className = 'challenge-feedback visible ' + (ok?'ok':'no');
+    maybeFinish();
+  });
+  bindCounter('challengeText','challengeTextCount', v=>{ state.challengeText = v; });
+}
+
+/* =====================================================================
+   QUIZ
+   ===================================================================== */
+const QUIZ = [
+  { q:'On Isle Royale, the wolf population peaked a few years <em>after</em> the moose peaked. What does this lag suggest?',
+    o:['Wolves and moose are unrelated','The predator population depends on the size of its prey population','Moose eat wolves','Wolves cause moose to reproduce'], a:1,
+    e:'Predators rise after prey become plentiful and fall after prey decline, so the predator curve lags the prey curve.' },
+  { q:'In the lynx and hare data, the hare is best described as the lynx\'s:',
+    o:['Predator','Competitor for sunlight','Food resource','Decomposer'], a:2,
+    e:'The lynx hunts the hare, so the hare is a food resource. When that resource crashes, the lynx crashes too.' },
+  { q:'A population grows quickly, then levels off and drops. The most likely cause is that the population:',
+    o:['Reached or passed the carrying capacity of its resources','Stopped reproducing for no reason','Was unaffected by its environment','Had unlimited food'], a:0,
+    e:'When a population outgrows its resources, limiting factors push it back down toward carrying capacity.' },
+  { q:'After wolves returned to Yellowstone, elk numbers fell and willow cover rose. This is an example of:',
+    o:['A change in one population affecting others','Two populations that never interact','Plants eating animals','Random noise in the data'], a:0,
+    e:'Wolves reduced elk, and fewer elk meant willows were no longer overgrazed. One change rippled through the system.' },
+  { q:'Which piece of evidence best supports the claim "more resources can allow a population to grow"?',
+    o:['Willow cover stayed flat for 20 years','Deer numbers rose sharply while grass was still plentiful early on','Wolves disappeared from the graph','The years are listed in order'], a:1,
+    e:'Early on, plentiful grass let the deer herd grow rapidly. That is direct evidence linking resources to growth.' },
+  { q:'In the mystery deer graph, the grass index dropped steeply right before the deer crashed. The best interpretation is:',
+    o:['The deer overgrazed their food supply','A disease killed the grass first','Hunters removed the deer','The grass and deer are unrelated'], a:0,
+    e:'With no predators, the herd grew until it ate the grass faster than it could regrow, then the food shortage crashed the herd.' },
+  { q:'A "limiting factor" is best defined as something that:',
+    o:['Always increases a population','Has no effect on living things','Restricts how large a population can grow','Only affects predators'], a:2,
+    e:'Limiting factors such as food, water, or space cap how large a population can become.' },
+  { q:'Two bird species eat the same seeds in the same area. If seeds become scarce, you would expect:',
+    o:['Both populations to grow','Increased competition between the species','No change at all','The seeds to multiply'], a:1,
+    e:'When a shared resource becomes scarce, organisms compete more intensely for it, which can lower populations.' },
+  { q:'Which question can the Isle Royale data set actually answer?',
+    o:['What color are the wolves?','How did moose and wolf numbers change over time?','What do moose dream about?','How heavy is one wolf?'], a:1,
+    e:'The data tracks population counts over years, so it answers questions about how numbers changed over time.' },
+  { q:'A scientist claims "predator and prey populations are linked." The strongest evidence from these investigations is that:',
+    o:['The graphs use different colors','Predator peaks repeatedly follow prey peaks across multiple datasets','Both words start with the letter p','The data covers many years'], a:1,
+    e:'Across Isle Royale and the lynx-hare records, the predator curve repeatedly rises and falls after the prey curve, strong, repeated evidence of a link.' }
+];
+function renderQuiz(){
+  const c = document.getElementById('quizContainer'); let html='';
+  QUIZ.forEach((item,qi)=>{
+    html += '<div class="quiz-q"><div class="quiz-q-prompt"><span class="num">'+(qi+1)+'.</span>'+item.q+'</div>';
+    html += '<div class="quiz-options" data-q="'+qi+'">';
+    item.o.forEach((opt,oi)=>{
+      html += '<label data-oi="'+oi+'"><input type="radio" name="q'+qi+'"> '+opt+'</label>';
+    });
+    html += '</div><div class="quiz-explain">'+item.e+'</div></div>';
+  });
+  c.innerHTML = html;
+  c.querySelectorAll('.quiz-options').forEach(box=>{
+    const qi = parseInt(box.dataset.q,10);
+    box.querySelectorAll('label').forEach(lab=>{
+      lab.addEventListener('click', ()=>{
+        if(state.quizLocked) return;
+        box.querySelectorAll('label').forEach(l=>l.classList.remove('selected'));
+        lab.classList.add('selected'); lab.querySelector('input').checked = true;
+        state.quizAnswers[qi] = parseInt(lab.dataset.oi,10); saveState();
+        refreshSubmitState();
+      });
+    });
+  });
+}
+function scoreQuiz(){
+  if(state.quizAnswers.some(a=>a===null)){ toast('Answer all 10 questions first','warn'); return; }
+  state.quizLocked = true; let score=0;
+  document.querySelectorAll('.quiz-options').forEach(box=>{
+    const qi = parseInt(box.dataset.q,10); const correct = QUIZ[qi].a;
+    box.classList.add('locked');
+    box.querySelectorAll('label').forEach(l=>{
+      const oi = parseInt(l.dataset.oi,10);
+      if(oi===correct) l.classList.add('correct');
+      else if(oi===state.quizAnswers[qi]) l.classList.add('wrong');
+    });
+    if(state.quizAnswers[qi]===correct) score++;
+  });
+  state.quizScore = score; saveState();
+  document.getElementById('quizScoreArea').style.display='block';
+  document.getElementById('quizScoreBadge').textContent = score+' / 10';
+  const banner = document.getElementById('quizResultBanner');
+  banner.style.display='block';
+  const pass = score>=7;
+  banner.className = pass?'pass':'fail';
+  banner.textContent = pass
+    ? 'Strong work. You can read population data and use it as evidence.'
+    : 'Review the graphs and feedback, then try again. Focus on how predators follow prey and how resources cap populations.';
+  document.getElementById('scoreQuizBtn').disabled = true;
+  refreshSubmitState();
+}
+
+/* =====================================================================
+   MODE TOGGLE
+   ===================================================================== */
+function setMode(mode){
+  state.mode = mode; saveState();
+  document.getElementById('practiceModeBtn').classList.toggle('active', mode==='practice');
+  document.getElementById('classroomModeBtn').classList.toggle('active', mode==='classroom');
+  document.getElementById('modeHintPractice').classList.toggle('visible', mode==='practice');
+  document.getElementById('modeHintClassroom').classList.toggle('visible', mode==='classroom');
+  document.getElementById('classroomPanel').classList.toggle('hidden', mode!=='classroom');
+  refreshSubmitState();
+}
+
+/* =====================================================================
+   CLASSROOM SUBMISSION  (Grade 7 endpoints, same Apps Script pattern)
+   ===================================================================== */
+// TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
+const TEACHER_URLS = {
+  MrKankel: 'https://script.google.com/macros/s/REPLACE_WITH_MR_KANKEL_DEPLOYMENT_ID/exec',
+  MrRovner: 'https://script.google.com/macros/s/REPLACE_WITH_MR_ROVNER_DEPLOYMENT_ID/exec'
+};
+const TEACHER_LABEL = { MrKankel:'Mr. Kankel', MrRovner:'Mr. Rovner' };
+
+function refreshSubmitState(){
+  const btn = document.getElementById('submitBtn'); if(!btn) return;
+  const helper = document.getElementById('submitHelper');
+  const name = document.getElementById('studentNameInput')?.value.trim();
+  const block = document.getElementById('blockSelect')?.value;
+  const teacher = document.getElementById('teacherSelect')?.value;
+  const allFields = name && block && teacher;
+  const ready = state.quizLocked && allFields && !state.submitted;
+  if(state.submitted){
+    btn.disabled=true; btn.classList.add('locked'); btn.textContent='Submitted';
+    helper.textContent='Your investigation has been submitted to your teacher.';
+  } else if(ready){
+    btn.disabled=false; btn.classList.remove('locked'); btn.textContent='Submit Investigation';
+    helper.textContent='Ready to submit.';
+  } else {
+    btn.disabled=true; btn.classList.add('locked'); btn.textContent='Submit Investigation';
+    if(!state.quizLocked) helper.textContent='Score your quiz before submitting.';
+    else helper.textContent='Fill in your name, block, and teacher.';
+  }
+}
+function initClassroomFields(){
+  ['studentNameInput','blockSelect','teacherSelect'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.addEventListener('input', refreshSubmitState);
+    el.addEventListener('change', refreshSubmitState);
+  });
+  document.getElementById('submitBtn').addEventListener('click', submitWork);
+}
+function submitWork(){
+  const btn = document.getElementById('submitBtn');
+  const succ = document.getElementById('submitSuccess');
+  const err = document.getElementById('submitError');
+  succ.classList.remove('visible'); err.classList.remove('visible');
+  const teacher = document.getElementById('teacherSelect').value;
+  const url = TEACHER_URLS[teacher];
+  if(!url){ err.textContent='Please pick your teacher.'; err.classList.add('visible'); return; }
+  const params = new URLSearchParams({
+    activity:'Population Patterns Investigation',
+    studentName:document.getElementById('studentNameInput').value.trim(),
+    block:document.getElementById('blockSelect').value,
+    teacher:TEACHER_LABEL[teacher]||teacher,
+    prediction:state.prediction||'',
+    checkpoints:JSON.stringify(state.checkpoints),
+    cerClaim:state.cer.claim||'',
+    cerEvidence:state.cer.evidence||'',
+    cerReasoning:state.cer.reasoning||'',
+    challengeChoice:state.challengeChoice||'',
+    challengeText:state.challengeText||'',
+    quizAnswers:JSON.stringify(state.quizAnswers),
+    quizScore:state.quizScore!==null?state.quizScore:'',
+    submittedAt:new Date().toISOString()
+  });
+  btn.disabled=true; btn.classList.add('locked'); btn.textContent='Submitting...';
+  fetch(url+'?'+params.toString(), { method:'GET', mode:'no-cors' })
+    .then(()=>{
+      state.submitted=true; saveState();
+      succ.textContent='Submitted to '+(TEACHER_LABEL[teacher]||teacher)+'. Great work.';
+      succ.classList.add('visible');
+      try { sessionStorage.removeItem(STORE_KEY); } catch(e){}
+      refreshSubmitState();
+    })
+    .catch(()=>{
+      err.classList.add('visible');
+      btn.disabled=false; btn.classList.remove('locked'); btn.textContent='Submit Investigation';
+    });
+}
+
+/* =====================================================================
+   STEM / LS TOGGLES  (read index-page sessionStorage settings)
+   ===================================================================== */
+function initToggles(){
+  try {
+    state.toggles.stem = sessionStorage.getItem('lyfelabz-stem') === 'on';
+    state.toggles.ls   = sessionStorage.getItem('lyfelabz-ls')   === 'on';
+  } catch(e){}
+  document.body.classList.toggle('stem-active', state.toggles.stem);
+  document.body.classList.toggle('ls-active',   state.toggles.ls);
+}
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  renderAllGraphs();
+  initToggles();
+  initPrediction();
+  initCheckpoints();
+  bindCounter('cerClaim','cerClaimCount', v=>{ state.cer.claim=v; });
+  bindCounter('cerEvidence','cerEvidenceCount', v=>{ state.cer.evidence=v; });
+  bindCounter('cerReasoning','cerReasoningCount', v=>{ state.cer.reasoning=v; });
+  initChallenge();
+  renderQuiz();
+  document.getElementById('scoreQuizBtn').addEventListener('click', scoreQuiz);
+  document.getElementById('practiceModeBtn').addEventListener('click', ()=>setMode('practice'));
+  document.getElementById('classroomModeBtn').addEventListener('click', ()=>setMode('classroom'));
+  initClassroomFields();
+  updateProgress();
+  // graphs use CSS variables resolved at load; re-render on resize for crisp scaling not needed (SVG scales)
+});
+</script>
+</body>
+</html>

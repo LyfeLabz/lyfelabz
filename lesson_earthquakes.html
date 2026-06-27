@@ -12,9 +12,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="https://lyfelabz.com/lesson_plate-tectonics.html">
-<meta name="description" content="Discover plate tectonics: continental drift evidence, lithospheric plates, seafloor spreading, convection currents, and the three plate boundaries that build mountains and trigger earthquakes and volcanoes. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
-<title>LyfeLabz | Plate Tectonics</title>
+<link rel="canonical" href="https://lyfelabz.com/lesson_earthquakes.html">
+<meta name="description" content="Explore why the ground shakes: elastic rebound, the focus and epicenter, faults and fault zones, P and S seismic waves, and how magnitude and intensity measure an earthquake. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Earthquakes</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -173,6 +173,32 @@
   }
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
 
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
@@ -347,69 +373,55 @@
   .name-it.orange-it p strong { color: var(--orange); }
   .name-it.slate-it p strong  { color: var(--accent2); }
 
-  /* ── EXAMPLE GRID ── */
-  .example-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin: 0 auto 2rem; }
-  @media (max-width: 700px) { .example-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 380px) { .example-grid { grid-template-columns: 1fr; } }
-  .example-chip {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.6rem;
-    font-size: 0.88rem; font-weight: 700; color: var(--text-muted); line-height: 1.4;
-  }
-  .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
+  /* ── FAULT COMPARISON ── */
+  .fault-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 760px) { .fault-grid { grid-template-columns: 1fr; } }
+  .fault-card { border-radius: 18px; padding: 1.6rem 1.5rem; }
+  .fault-card.reverse { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .fault-card.normal  { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
+  .fault-card.strike  { background: rgba(29,233,182,0.06); border: 1px solid rgba(29,233,182,0.3); }
+  .fault-card svg { width: 100%; height: auto; display: block; margin-bottom: 0.9rem; }
+  .fault-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin-bottom: 0.3rem; }
+  .fault-card.reverse .fault-title { color: var(--orange); }
+  .fault-card.normal  .fault-title { color: var(--blue); }
+  .fault-card.strike  .fault-title { color: var(--teal); }
+  .fault-boundary { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.6rem; }
+  .fault-desc { font-size: 0.88rem; color: rgba(232,237,242,0.82); line-height: 1.6; }
 
-  /* ── LAYER / BOUNDARY SELECTOR (interactive) ── */
-  .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
-  .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
-  .layer-figure svg { width: 100%; height: auto; display: block; }
-  .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
-  .layer-list { display: flex; flex-direction: column; gap: 4px; }
-  .layer-row {
-    width: 100%; padding: 0.75rem 1.1rem; display: flex; justify-content: space-between; align-items: center;
-    font-size: 0.85rem; font-weight: 800; border-radius: 8px; cursor: pointer;
-    transition: filter 0.2s; position: relative; border: none; text-align: left;
-    font-family: 'Nunito', sans-serif;
-  }
-  .layer-row:hover { filter: brightness(1.18); }
-  .layer-row .layer-tag { opacity: 0.75; font-size: 0.7rem; font-weight: 700; }
-  .layer-detail-panel {
-    background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2);
-    border-left: 4px solid var(--accent2); border-radius: 14px; padding: 1.4rem 1.6rem;
-    min-height: 150px; display: flex; align-items: center;
-  }
-  .ld-inner { width: 100%; }
-  .ld-label { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(159,184,204,0.8); margin-bottom: 0.4rem; }
-  .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
-  .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
-
-  /* ── CRUST COMPARISON ── */
-  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
-  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
-  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
-  .crust-card.oceanic { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
-  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
-  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
-  .crust-card.oceanic .crust-title { color: var(--blue); }
-  .crust-card.continental .crust-title { color: var(--orange); }
-  .crust-bar-track { height: 14px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; margin: 0.7rem 0 0.4rem; }
-  .crust-bar { height: 100%; border-radius: 99px; }
-  .crust-card.oceanic .crust-bar { background: linear-gradient(90deg, var(--blue), rgba(124,200,248,0.5)); width: 16%; }
-  .crust-card.continental .crust-bar { background: linear-gradient(90deg, var(--orange), rgba(232,129,74,0.5)); width: 100%; }
-  .crust-bar-label { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; }
-  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
-  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
-  .crust-list li strong { color: var(--text); }
-  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
-  .crust-card.oceanic .crust-dot { background: var(--blue); }
-  .crust-card.continental .crust-dot { background: var(--orange); }
-
-  /* ── CONVECTION / DIAGRAM FIGURE ── */
+  /* ── FIGURE BOX ── */
   .figure-box {
     background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
   }
   .figure-box svg { width: 100%; height: auto; display: block; }
   .figure-caption { text-align: center; font-size: 0.82rem; font-weight: 700; color: rgba(159,184,204,0.7); margin-top: 0.8rem; }
+
+  /* ── WAVE COMPARISON ── */
+  .wave-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .wave-grid { grid-template-columns: 1fr; } }
+  .wave-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
+  .wave-card.pwave { background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.3); }
+  .wave-card.swave { background: rgba(159,184,204,0.06); border: 1px solid rgba(159,184,204,0.3); }
+  .wave-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
+  .wave-card.pwave .wave-title { color: var(--gold); }
+  .wave-card.swave .wave-title { color: var(--accent2); }
+  .wave-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .wave-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .wave-list li strong { color: var(--text); }
+  .wave-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .wave-card.pwave .wave-dot { background: var(--gold); }
+  .wave-card.swave .wave-dot { background: var(--accent2); }
+
+  /* ── SCALE STRIP ── */
+  .scale-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 640px) { .scale-strip { grid-template-columns: 1fr; } }
+  .scale-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem 1.6rem; }
+  .scale-card.intensity { border-top: 3px solid var(--orange); }
+  .scale-card.magnitude { border-top: 3px solid var(--gold); }
+  .scale-name { font-family: 'Fredoka One', cursive; font-size: 1.15rem; margin-bottom: 0.4rem; color: var(--text); }
+  .scale-card.intensity .scale-name { color: var(--orange); }
+  .scale-card.magnitude .scale-name { color: var(--gold); }
+  .scale-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.65; }
 
   /* ── QUICK RECALL ── */
   .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(29,233,182,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
@@ -602,18 +614,18 @@
 
 <!-- HERO -->
 <header class="hero">
-  <span class="hero-float">&#127757;</span>
-  <span class="hero-float">&#127755;</span>
-  <span class="hero-float">&#9968;&#65039;</span>
-  <span class="hero-float">&#129517;</span>
+  <span class="hero-float">&#127759;</span>
+  <span class="hero-float">&#127956;</span>
+  <span class="hero-float">&#127754;</span>
+  <span class="hero-float">&#9888;&#65039;</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Plate Tectonics</h1>
-  <p>Earthquakes and volcanoes do not strike at random. They line up in narrow belts that trace the hidden seams of a cracked, moving planet.</p>
+  <h1>Earthquakes</h1>
+  <p>In a few seconds the ground can lurch, crack, and topple buildings. That violent shaking begins with energy stored quietly in rock, sometimes for hundreds of years.</p>
   <div class="driving-question">
     <div class="dq-icon">&#128269;</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">Why does Earth's surface move?</div>
+      <div class="dq-text">How does energy stored in Earth's crust cause the ground to shake?</div>
     </div>
   </div>
 </header>
@@ -621,11 +633,11 @@
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">&#128300; Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes in belts) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
-  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the story into evidence, plates, motion, and boundaries keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
-  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of drift, convection, and boundaries builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (a sudden, destructive earthquake) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: breaking the earthquake into small, sequenced steps keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with a labeled diagram builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and convection to plate motion and surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace stored stress to surface shaking, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
 </div>
 
 
@@ -639,23 +651,23 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
     <div class="goal-grid">
       <div class="goal-card">
-        <span class="goal-icon">&#129499;</span>
-        <div class="goal-text">I can describe the evidence Wegener used to support the idea of continental drift.</div>
+        <span class="goal-icon">&#129704;</span>
+        <div class="goal-text">I can explain how elastic rebound stores and releases energy to cause an earthquake.</div>
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#128293;</span>
-        <div class="goal-text">I can explain how convection currents in the mantle cause tectonic plates to move.</div>
+        <span class="goal-icon">&#128205;</span>
+        <div class="goal-text">I can describe the focus and epicenter of an earthquake and where each one is located.</div>
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#9968;&#65039;</span>
-        <div class="goal-text">I can compare the three types of plate boundaries and the features they build.</div>
+        <span class="goal-icon">&#129695;</span>
+        <div class="goal-text">I can compare the three types of faults and the plate boundaries where they form.</div>
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#127757;</span>
-        <div class="goal-text">I can explain why earthquakes and volcanoes occur in narrow belts rather than randomly.</div>
+        <span class="goal-icon">&#128225;</span>
+        <div class="goal-text">I can compare P waves and S waves and explain how magnitude and intensity measure an earthquake.</div>
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
     </div>
@@ -695,52 +707,52 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
     <div class="glossary-grid">
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Continental Drift</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The idea that the continents were once joined and have slowly moved to their present positions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-drift')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Pangaea</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The single supercontinent that held all of Earth's land about 250 million years ago.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pangaea')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Stress</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A force that pushes, pulls, or squeezes rock. Stress can bend rock and store energy inside it.</div>
       </button>
       <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Plate Tectonics</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The theory that Earth's outer shell is broken into moving plates, explaining drift, earthquakes, and volcanoes.</div>
-      </button>
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Lithosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The rigid outer shell of Earth, made of the crust and the upper mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Asthenosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The soft, slowly flowing part of the upper mantle that the plates float on.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Tectonic Plate</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A large slab of lithosphere that moves slowly over the asthenosphere.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-plate')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Convection Current</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A looping flow of hot mantle rock that rises, cools, and sinks, dragging the plates along.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Seafloor Spreading</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The process where magma rises at a mid-ocean ridge and cools into new ocean floor.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-seafloor')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Divergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move apart and new crust forms in the gap.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Elastic Rebound</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">When stressed rock suddenly fractures, releases its stored energy, and snaps back toward its original shape.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-rebound')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Convergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move together, often forming mountains or volcanoes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Earthquake</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The shaking of the ground caused by a sudden release of energy in Earth's crust.</div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Focus</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The point inside Earth where an earthquake begins and energy is first released.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-anatomy')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Transform Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates slide past each other, producing faults and earthquakes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Epicenter</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The point on Earth's surface directly above the focus.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-anatomy')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Subduction</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When a more dense plate sinks beneath a less dense plate at a convergent boundary.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Fault</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A crack in Earth's crust where blocks of rock move past each other.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-faults')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Fault Zone</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A region where faults form, usually at plate boundaries. Some lie at ancient fault lines buried in newer rock.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-faults')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Seismic Waves</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Waves of energy that travel out from an earthquake through Earth.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-waves')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">P Wave</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The primary, fastest seismic wave. It can travel through solids, liquids, and gases.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-waves')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">S Wave</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The secondary seismic wave. It is slower than a P wave and travels through solids only.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-waves')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Magnitude</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The strength of an earthquake, measured by the amount of ground movement. The Richter scale runs from 0 to 10.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-measure')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Intensity</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">A measure of an earthquake's effects in human terms, such as damage to buildings, infrastructure, and loss of life.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-measure')">See it in the lesson &#8595;</span></div>
       </button>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -775,61 +787,74 @@
 <section id="engage" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Engage &middot; Phenomenon</span>
-    <h2 class="section-title">A World That Shakes in Lines</h2>
-    <p class="section-desc">If you mapped every earthquake and volcano from the last hundred years, you would not get a random scatter of dots. You would get long, narrow belts that wrap around the planet, like cracks in a shell.</p>
+    <h2 class="section-title">Solid Ground, Then Sudden Shaking</h2>
+    <p class="section-desc">The ground beneath your feet feels permanent and still. Yet on May 22, 1960, near Valdivia, Chile, the strongest earthquake ever recorded shook the land so hard that it sent a tsunami racing across the entire Pacific Ocean.</p>
 
     <div class="phenomenon-card">
-      <div class="phenomenon-icon">&#127755;</div>
+      <div class="phenomenon-icon">&#127759;</div>
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
-        <h3>The Ring of Fire</h3>
-        <p>A belt of volcanoes and earthquakes called the Ring of Fire traces the edge of the Pacific Ocean. Other belts run down the middle of the Atlantic and across southern Asia. Most of the world's earthquakes and volcanoes happen along these same lines, year after year. Why would Earth's most violent events follow such a clear pattern?</p>
+        <h3>Energy Released in Seconds</h3>
+        <p>That 1960 quake measured 9.5 on the Richter scale. Waves it sent across the ocean reached Hawaii, Japan, the Philippines, and the West Coast of the United States. All of that energy was released in a matter of seconds. But where does that much energy come from, and why does it let go so suddenly?</p>
       </div>
     </div>
 
-    <!-- Phenomenon figure: belts vs random -->
+    <!-- Stressed rock figure -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A stylized world map showing earthquakes and volcanoes clustered along curved belts rather than spread evenly">
-        <rect x="20" y="20" width="560" height="240" rx="16" fill="#10202e"/>
-        <!-- stylized landmasses -->
-        <path d="M70,90 q40,-30 100,-10 q40,15 20,55 q-30,40 -90,30 q-50,-10 -30,-75 Z" fill="#26323f"/>
-        <path d="M300,70 q70,-20 130,10 q40,25 10,80 q-60,45 -130,15 q-40,-50 -20,-105 Z" fill="#26323f"/>
-        <path d="M180,180 q50,-15 90,15 q15,40 -40,55 q-60,5 -50,-70 Z" fill="#26323f"/>
-        <!-- plate-edge belts (dashed) -->
-        <path d="M40,150 C150,90 250,210 360,140 C440,90 520,170 560,120" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <path d="M120,250 C200,200 240,150 300,60" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <!-- earthquake/volcano markers along belts -->
-        <g fill="#e74c3c">
-          <circle cx="60" cy="142" r="5"/><circle cx="120" cy="120" r="5"/><circle cx="180" cy="150" r="5"/>
-          <circle cx="240" cy="180" r="5"/><circle cx="300" cy="158" r="5"/><circle cx="360" cy="140" r="5"/>
-          <circle cx="420" cy="118" r="5"/><circle cx="480" cy="150" r="5"/><circle cx="540" cy="128" r="5"/>
-          <circle cx="150" cy="225" r="5"/><circle cx="210" cy="180" r="5"/><circle cx="260" cy="120" r="5"/><circle cx="292" cy="78" r="5"/>
+      <svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three stages of rock under stress: straight rock, bent rock storing energy, and fractured rock snapping back">
+        <!-- stage 1 -->
+        <g>
+          <rect x="30" y="70" width="120" height="60" rx="4" fill="#6a7d52"/>
+          <line x1="90" y1="70" x2="90" y2="130" stroke="#2a3320" stroke-width="2"/>
+          <text x="90" y="160" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">1. Rock at rest</text>
         </g>
-        <text x="300" y="252" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">Red marks = earthquakes &amp; volcanoes. Dashed lines = where they line up.</text>
+        <text x="195" y="105" text-anchor="middle" font-size="24" fill="#7a8fa6">&#8594;</text>
+        <!-- stage 2 -->
+        <g>
+          <path d="M230,70 q60,4 120,0 q-6,30 0,60 q-60,4 -120,0 q6,-30 0,-60 Z" fill="#7a8f5a"/>
+          <path d="M290,70 q-10,30 0,60" stroke="#2a3320" stroke-width="2" fill="none"/>
+          <path d="M250,55 L270,55" stroke="#e8814a" stroke-width="3" marker-end="url(#sa)"/>
+          <path d="M350,55 L330,55" stroke="#e8814a" stroke-width="3" marker-end="url(#sa)"/>
+          <text x="290" y="160" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">2. Stress bends it</text>
+        </g>
+        <text x="395" y="105" text-anchor="middle" font-size="24" fill="#7a8fa6">&#8594;</text>
+        <!-- stage 3 -->
+        <g>
+          <rect x="430" y="70" width="58" height="60" rx="4" fill="#6a7d52"/>
+          <rect x="500" y="70" width="58" height="60" rx="4" fill="#6a7d52"/>
+          <path d="M488,66 L500,72 L488,80 L500,88 L488,96 L500,104 L488,112 L500,120 L488,128 L500,134" stroke="#1a1410" stroke-width="3" fill="none"/>
+          <path d="M520,60 L540,60" stroke="#ffce5a" stroke-width="3" marker-end="url(#sb)"/>
+          <path d="M468,60 L448,60" stroke="#ffce5a" stroke-width="3" marker-end="url(#sb)"/>
+          <text x="494" y="160" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">3. It snaps back</text>
+        </g>
+        <defs>
+          <marker id="sa" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#e8814a"/></marker>
+          <marker id="sb" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffce5a"/></marker>
+        </defs>
       </svg>
-      <div class="figure-caption">The dots are not scattered everywhere. They follow the dashed seams that crisscross the globe.</div>
+      <div class="figure-caption">Rock can bend and store energy for years. When it finally breaks, the stored energy is released all at once.</div>
     </div>
 
     <!-- Prediction gate -->
     <div class="question-pause predict-pause" id="qp-engage">
       <div class="qp-row">
         <span class="question-pause-icon">&#129300;</span>
-        <div class="question-pause-text"><strong>Make a prediction:</strong> Why do earthquakes and volcanoes line up in narrow belts instead of spreading out evenly across Earth?</div>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Where does the energy for an earthquake come from, and why is it released so suddenly?</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn"><span class="pb-letter">A</span>Earth's surface is one solid shell that cracks in random spots.</button>
-        <button class="predict-btn"><span class="pb-letter">B</span>Earth's surface is broken into moving plates, and the edges are where the action happens.</button>
-        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes and volcanoes happen everywhere equally; the belts are a coincidence.</button>
+        <button class="predict-btn"><span class="pb-letter">A</span>The ground is hollow and the surface collapses into the gap.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Energy slowly builds up in stressed rock and is released when the rock breaks.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Heavy rain soaks the soil and makes it shake.</button>
       </div>
     </div>
 
     <div class="name-it slate-it predict-gated" data-gate="qp-engage">
       <div class="name-it-label">Here's the big idea</div>
-      <p>The best answer is <strong>B</strong>. Earth's outer shell is not one piece. It is cracked into giant slabs called plates that slowly move. The belts of earthquakes and volcanoes trace the edges where plates meet, pull apart, or grind past one another. To understand the pattern at the surface, we have to understand the plates and what moves them. That is where this lesson goes next.</p>
+      <p>The best answer is <strong>B</strong>. Rock is not as rigid as it looks. Slowly moving plates push and pull on it, bending it and storing energy inside, sometimes for hundreds of years. When the rock finally cannot bend any more, it fractures and releases that energy all at once. That sudden release is an earthquake. This lesson follows that energy from the moment it builds to the instant it reaches the surface.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2rem;">
-      <strong>Where we're headed:</strong> First we'll meet the scientist who noticed the continents fit together. Then we'll see what the plates are, what pushes them, and what happens at the boundaries where they meet.
+      <strong>Where we're headed:</strong> First we'll see how rock stores and releases energy. Then we'll locate where a quake begins, look at the faults where it happens, follow the waves it sends out, and finally measure how strong it is.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -837,7 +862,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Anchor the lesson in a striking real-world pattern.</li><li>Raise a question students will want answered.</li></ul>
+          <ul class="edu-note-text"><li>Anchor the lesson in a real, dramatic earthquake.</li><li>Raise a question students will want answered.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -849,7 +874,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Concrete visual pattern (belts on a map)</li><li>Short framing text</li><li>Prediction question is low stakes and ungraded</li></ul>
+          <ul class="edu-note-text"><li>Concrete, familiar example</li><li>Short framing text</li><li>Visual anchor</li></ul>
         </div>
       </div>
     </div>
@@ -858,128 +883,38 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     REVIEW PREVIOUS LEARNING (bridge between Engage and Explore)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="review-prev" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Review Previous Learning</span>
-    <h2 class="section-title">Need a Refresher?</h2>
-    <p class="section-desc">This lesson builds on ideas you may have seen before.</p>
-
-    <div class="content-card">
-      <div class="card-header">
-        <div class="card-title">Continental Drift (Grade 6)</div>
-      </div>
-      <p>Wegener used fossils, matching rock layers, climate clues, and the fit of continents to propose that Earth's continents were once connected. Reviewing this evidence will help explain why scientists accepted plate tectonics.</p>
-      <a href="lesson_continental-drift.html" style="display: inline-block; margin-top: 1.4rem; background: var(--gold); color: var(--dark); font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.03em; text-decoration: none; padding: 0.85rem 1.8rem; border-radius: 12px; transition: transform 0.15s, box-shadow 0.15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px var(--gold-glow)';" onmouseout="this.style.transform='';this.style.boxShadow='';">Review Lesson &rarr;</a>
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Bridge from Grade 6 continental drift to plate tectonics.</li><li>Prevent knowledge gaps before new content begins.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Prior knowledge activation</li><li>Schema priming</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember</li><li>DOK 1</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Optional review, no new content required</li><li>Single clear link, no navigation pressure</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1: CONTINENTAL DRIFT (Wegener's evidence)
+     EXPLORE 1: ELASTIC REBOUND
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="explore" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The First Clue</span>
-    <h2 class="section-title">The Continents That Fit Together</h2>
-    <p class="section-desc">Long before anyone talked about plates, one scientist looked at a map and noticed something strange: the continents looked like pieces of a torn puzzle.</p>
-
-    <div id="term-drift" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129489;&#8205;&#127891;</span>
-        <div class="card-title">Wegener's Big Idea</div>
-      </div>
-      <div class="card-body">
-        <p>In 1912, a German scientist named <strong>Alfred Wegener</strong> proposed the idea of <span class="vocab">continental drift</span>. He claimed the continents are slowly moving, and that about 250 million years ago they were all joined into one giant supercontinent.</p>
-        <p>He named that supercontinent <strong>Pangaea</strong>, meaning "all land." Wegener knew that the way the coastlines fit together was a clue, but a good fit alone is not proof. So he went looking for real evidence.</p>
-      </div>
-    </div>
-
-    <div id="term-pangaea" class="name-it orange-it">
-      <div class="name-it-label">Name it: Pangaea</div>
-      <p><strong>Pangaea</strong> was a single supercontinent that held all of Earth's land roughly 250 million years ago. Over millions of years it broke apart, and the pieces drifted into the continents we know today.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Wegener gathered four kinds of evidence. No single clue was enough on its own, but together they told a powerful story.</p>
-
-    <div class="example-grid">
-      <div class="example-chip"><span class="example-chip-icon">&#129460;</span><span>Fossils</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#10052;&#65039;</span><span>Climate</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#9968;&#65039;</span><span>Mountains</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#129522;</span><span>Magnetite</span></div>
-    </div>
+    <span class="section-label">Explore &middot; Stored Energy</span>
+    <h2 class="section-title">How Rock Stores and Releases Energy</h2>
+    <p class="section-desc">An earthquake is the release of energy that has built up over time. To understand the shaking, we first have to understand how rock can hold that energy in the first place.</p>
 
     <div class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#129460;</span>
-        <div class="card-title">Fossil Clues</div>
+        <span class="card-icon">&#129704;</span>
+        <div class="card-title">Bending Like a Stick</div>
       </div>
       <div class="card-body">
-        <p>Fossils of the same plant and animal species turned up on continents now separated by thousands of miles of ocean. One example is <em>Glossopteris</em>, a fern-like plant found across South America, Africa, India, and Antarctica.</p>
-        <p>Its seeds were too heavy to drift across an ocean without being destroyed, and the small land animals found with it could not have swum that far. The simplest explanation is that the land was once connected.</p>
+        <p>Think about slowly bending a wooden stick. At first it bends and holds its bent shape, storing energy. Push a little more and it suddenly snaps, and both halves spring back straight. Rock in Earth's crust behaves in a similar way.</p>
+        <p>Moving plates put <span class="vocab">stress</span> on the rock, a force that pushes, pulls, or squeezes it. The rock bends and stores energy. When the stress becomes too great, the rock fractures.</p>
       </div>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#10052;&#65039;</span>
-        <div class="card-title">Climate Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Wegener found scratches carved by ancient glaciers on rocks in places that are warm today, like parts of Africa and India. He also found fossils of tropical swamp plants in Antarctica and on islands far to the north.</p>
-        <p>A continent cannot be frozen and tropical at the same time. But if those lands once sat in very different positions, the climate clues suddenly make sense. The southern continents fit together into a region scientists call <strong>Gondwanaland</strong>.</p>
-      </div>
+    <div id="term-stress" class="name-it slate-it">
+      <div class="name-it-label">Key idea: Stress</div>
+      <p><strong>Stress</strong> is a force that pushes, pulls, or squeezes rock. As plates move, they place stress on the rock along their edges. That stress slowly bends the rock and stores energy inside it.</p>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#9968;&#65039;</span>
-        <div class="card-title">Rock and Mountain Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Mountain ranges on different continents line up and contain rocks of the same age and chemistry. The Caledonian Mountains in northwestern Europe match the Appalachian Mountains along the east coast of the United States.</p>
-        <p>Put the continents back together and these ranges form one continuous belt, like a sentence torn across two pages. Rock types and the shapes of the continental shelves match across the ocean as well.</p>
-      </div>
-    </div>
-
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129522;</span>
-        <div class="card-title">Magnetite Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Some rocks contain <strong>magnetite</strong>, a magnetic iron-oxide mineral and the most magnetic mineral found in nature. When melted rock cools, magnetite crystals line up with Earth's magnetic field and lock in that direction, like tiny frozen compass needles.</p>
-        <p>Rocks of the same age on far-apart continents recorded matching magnetic patterns. That match only makes sense if the rocks formed side by side and later moved apart.</p>
-      </div>
+    <div id="term-rebound" class="name-it" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Elastic Rebound</div>
+      <p>When stressed rock finally fractures, it releases its stored energy and snaps back toward its original shape. This snap-back is called <strong style="color: var(--gold);">elastic rebound</strong>. The released energy travels outward through the ground, and that traveling energy is what shakes the surface.</p>
     </div>
 
     <div class="callout gold">
-      <span class="callout-icon">&#9888;&#65039;</span>
-      <div class="callout-body"><strong>The missing piece:</strong> Wegener's evidence was strong, but most scientists rejected his idea for decades. The reason was simple: he could not explain what force could possibly move something as huge as a continent. That answer was still hidden deep inside Earth.</div>
+      <span class="callout-icon">&#128161;</span>
+      <div class="callout-body"><strong>The key pattern:</strong> Energy builds up slowly, then releases suddenly. Plates may push on rock for hundreds of years, but the rock breaks and rebounds in seconds. That is why earthquakes strike without warning.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -987,179 +922,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Establish the historical puzzle that drove the theory.</li><li>Show how multiple lines of evidence accumulate into a claim.</li></ul>
+          <ul class="edu-note-text"><li>Establish the energy mechanism before naming parts of a quake.</li><li>Ground the whole lesson in one cause: stored stress.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Evidence-based reasoning</li><li>Narrative structure (hero, evidence, unsolved mystery)</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Four parallel evidence cards, each self-contained</li><li>Short paragraphs with bolded key ideas</li><li>Misconception alert: Wegener was rejected for lack of mechanism, not bad evidence</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2: LITHOSPHERIC PLATES
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="plates" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Plates</span>
-    <h2 class="section-title">A Cracked Shell That Floats</h2>
-    <p class="section-desc">The breakthrough came from understanding Earth's layers. The continents do not plow through the ocean floor on their own. They ride on top of giant moving slabs.</p>
-
-    <div id="term-litho" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129513;</span>
-        <div class="card-title">The Lithosphere Rides the Asthenosphere</div>
-      </div>
-      <div class="card-body">
-        <p>The <span class="vocab">lithosphere</span> is Earth's rigid outer shell, made of the crust plus the upper part of the mantle. It is not one solid piece. It is cracked into many large slabs called <strong>tectonic plates</strong>.</p>
-        <p>Just below sits the <span class="vocab">asthenosphere</span>, a hotter, softer part of the mantle that slowly flows like thick putty. The plates float and slide on the asthenosphere the way rafts drift on the surface of a pool.</p>
-      </div>
-    </div>
-
-    <div id="term-plate" class="name-it slate-it">
-      <div class="name-it-label">Name it: Tectonic Plate</div>
-      <p>A <strong>tectonic plate</strong> is a large slab of lithosphere that moves slowly over the asthenosphere. Most plates carry both ocean floor and continents, so the continents move because the plates they sit on move.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Plates are not all the same, because the crust they carry comes in two kinds. The difference in density will matter a lot at the boundaries.</p>
-
-    <div class="crust-grid">
-      <div class="crust-card oceanic">
-        <div class="crust-title">Oceanic Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thinnest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>basalt</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thinnest</strong> and <strong>most dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Sinks when it meets lighter crust</span></li>
-        </ul>
-      </div>
-      <div class="crust-card continental">
-        <div class="crust-title">Continental Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thickest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>granite</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thickest</strong> and <strong>least dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Rides high and does not sink easily</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="bridge-callout teal">
-      <strong>Hold on to the density rule:</strong> oceanic crust is more dense than continental crust. When two plates meet, the heavier oceanic crust tends to sink beneath the lighter continental crust. That single rule will explain a lot of what happens at boundaries.
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Give students the moving-parts vocabulary before explaining what moves them.</li><li>Establish the density rule that drives subduction.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Concrete analogy (rafts on a pool)</li><li>Contrast pairs (oceanic vs continental crust)</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Side-by-side crust comparison cards</li><li>Visual density bars support non-verbal learners</li><li>Misconception alert: plates are not just continents; most carry ocean floor too</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3: WHAT MOVES THE PLATES (convection + seafloor spreading)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="motion" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Engine</span>
-    <h2 class="section-title">What Pushes the Plates?</h2>
-    <p class="section-desc">This is the answer Wegener was missing. The force that moves whole continents comes from heat deep inside Earth, the same heat that drives everything from the inside out.</p>
-
-    <div id="term-convection" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#128293;</span>
-        <div class="card-title">Convection Currents in the Mantle</div>
-      </div>
-      <div class="card-body">
-        <p>The mantle is extremely hot near the bottom and cooler near the top. Hot rock is less dense, so it slowly rises toward the surface. As it nears the top it cools, becomes more dense, and sinks back down. This endless loop is a <span class="vocab">convection current</span>.</p>
-        <p>These currents flow beneath the lithosphere and drag the plates along, like crackers riding on slowly boiling soup. <strong>The movement of mantle rock creates the movement of the plates above it.</strong></p>
-      </div>
-    </div>
-
-    <!-- Convection figure -->
-    <div class="figure-box">
-      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Convection currents in the mantle: hot rock rises in the middle, spreads sideways, and sinks at the edges, pushing two plates apart at the surface">
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="#7a3a2a" opacity="0.85"/>
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="url(#mantleGrad)"/>
-        <defs>
-          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.1"/>
-          </linearGradient>
-        </defs>
-        <rect x="40" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <rect x="320" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <text x="150" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <text x="450" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <path d="M400,210 C400,160 340,150 310,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <defs>
-          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd27a"/></marker>
-        </defs>
-        <text x="300" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">Hot rock rises in the middle, cools, and sinks at the sides</text>
-      </svg>
-      <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
-    </div>
-
-    <div id="term-seafloor" class="name-it teal-it">
-      <div class="name-it-label">Name it: Seafloor Spreading</div>
-      <p>Where plates pull apart under the ocean, rising magma fills the gap and cools into brand new ocean floor. This is called <strong>seafloor spreading</strong>. It builds a long underwater mountain chain called a mid-ocean ridge, and the seafloor is youngest right at the ridge and older farther away.</p>
-    </div>
-
-    <div class="callout slate">
-      <span class="callout-icon">&#129522;</span>
-      <div class="callout-body"><strong>Magnetite returns:</strong> as new seafloor cools at a ridge, magnetite minerals record the direction of Earth's magnetic field. The field flips over time, leaving matching, mirror-image stripes on both sides of the ridge. Those symmetric stripes are powerful proof that the seafloor is spreading.</div>
-    </div>
-
-    <div class="bridge-callout teal" style="margin-top: 0.5rem;">
-      <strong>The mystery solved:</strong> convection currents are the engine Wegener could not find. Heat drives the mantle to flow, the flow moves the plates, and the plates carry the continents. Now we can look at exactly what happens where two plates meet.
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Answer Wegener's missing piece: what actually moves the plates.</li><li>Establish the causal chain before showing what it produces at boundaries.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Causal reasoning (heat to flow to plate motion)</li><li>Labeled diagram supports dual coding</li></ul>
+          <ul class="edu-note-text"><li>Prior knowledge activation (bending a stick)</li><li>Cause-and-effect modeling</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1167,7 +934,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Boiling-water analogy makes convection concrete</li><li>Short paragraphs with key terms bolded in place</li><li>Misconception alert: the asthenosphere flows like thick putty, not liquid lava</li></ul>
+          <ul class="edu-note-text"><li>Everyday analogy (snapping a stick)</li><li>Short paragraphs with key terms defined in place</li></ul>
         </div>
       </div>
     </div>
@@ -1176,69 +943,59 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 4: PLATE BOUNDARIES (interactive)
+     EXPLORE 2: ANATOMY OF AN EARTHQUAKE
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="boundaries-sec" style="background: var(--dark2);">
+<section id="anatomy" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Boundaries</span>
-    <h2 class="section-title">Where Plates Meet</h2>
-    <p class="section-desc">Almost all of Earth's earthquakes and volcanoes happen at plate boundaries. There are three types, sorted by how the plates move. Open each one to see what it builds.</p>
+    <span class="section-label">Explore &middot; Anatomy</span>
+    <h2 class="section-title">Where an Earthquake Begins</h2>
+    <p class="section-desc">Energy is released at one point deep underground, but the shaking is felt at the surface. Two terms tell us exactly where each part happens.</p>
 
-    <div id="term-boundaries" class="layer-wrap">
-      <div class="layer-figure">
-        <svg viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three plate boundary types: divergent plates moving apart, convergent plates colliding with one sinking, and transform plates sliding past each other">
-          <!-- Divergent -->
-          <text x="10" y="22" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Divergent</text>
-          <rect x="20" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <rect x="145" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <path d="M118,43 L96,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M142,43 L164,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M130,56 L130,86" stroke="#ffb347" stroke-width="6" stroke-linecap="round"/>
-          <!-- Convergent -->
-          <text x="10" y="122" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Convergent</text>
-          <rect x="20" y="130" width="110" height="24" rx="3" fill="#9a5e3a"/>
-          <path d="M130,142 L155,142 L185,170 Z" fill="#7cc8f8"/>
-          <rect x="150" y="130" width="90" height="14" rx="3" fill="#7cc8f8"/>
-          <path d="M138,140 L120,140" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M150,127 L168,127" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M40,130 L52,112 L64,130 Z" fill="#8a9a6a"/>
-          <!-- Transform -->
-          <text x="10" y="222" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Transform</text>
-          <rect x="20" y="230" width="100" height="40" rx="3" fill="#6a7d52"/>
-          <rect x="140" y="230" width="100" height="40" rx="3" fill="#5a6e44"/>
-          <line x1="130" y1="226" x2="130" y2="274" stroke="#1a1410" stroke-width="3"/>
-          <path d="M70,222 L70,210" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M190,278 L190,290" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <defs>
-            <marker id="bh" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          </defs>
-        </svg>
-      </div>
-      <div class="layer-controls">
-        <div class="layer-list">
-          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9be8bb;" onclick="boundaryClick(1)">
-            <span>1 &middot; Divergent</span><span class="layer-tag">plates move apart</span>
-          </div>
-          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b88a;" onclick="boundaryClick(2)">
-            <span>2 &middot; Convergent</span><span class="layer-tag">plates collide</span>
-          </div>
-          <div class="layer-row" style="background: rgba(124,200,248,0.26); color: #aed8f8;" onclick="boundaryClick(3)">
-            <span>3 &middot; Transform</span><span class="layer-tag">plates slide past</span>
-          </div>
-        </div>
-        <div class="layer-detail-panel">
-          <div class="ld-inner">
-            <div class="ld-label" id="bd-label">Open a boundary</div>
-            <div class="ld-title" id="bd-title">Three ways plates meet &#8594;</div>
-            <div class="ld-body" id="bd-body">Each boundary type moves in a different way, so each one builds different features at the surface. Open any boundary to see how the plates move and what they create.</div>
-          </div>
-        </div>
-      </div>
+    <div id="term-anatomy" class="figure-box">
+      <svg viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A cross-section of the ground showing the focus underground, the epicenter on the surface directly above it, and seismic waves spreading outward">
+        <!-- sky -->
+        <rect x="0" y="0" width="600" height="120" fill="#0d1117"/>
+        <!-- ground -->
+        <rect x="0" y="120" width="600" height="200" fill="#5a4636"/>
+        <rect x="0" y="120" width="600" height="18" fill="#6a7d52"/>
+        <!-- fault line -->
+        <path d="M300,120 L300,250" stroke="#1a1410" stroke-width="3" fill="none" stroke-dasharray="6 5"/>
+        <!-- focus -->
+        <circle cx="300" cy="250" r="12" fill="#e74c3c"/>
+        <circle cx="300" cy="250" r="22" fill="none" stroke="#e74c3c" stroke-width="2" opacity="0.6"/>
+        <circle cx="300" cy="250" r="34" fill="none" stroke="#e74c3c" stroke-width="1.5" opacity="0.35"/>
+        <!-- epicenter -->
+        <circle cx="300" cy="120" r="8" fill="#f5c842"/>
+        <!-- arrow connecting -->
+        <line x1="300" y1="238" x2="300" y2="132" stroke="#9fb8cc" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <!-- surface waves -->
+        <path d="M300,120 q40,-18 80,0" stroke="#9fb8cc" stroke-width="2" fill="none" opacity="0.7"/>
+        <path d="M300,120 q-40,-18 -80,0" stroke="#9fb8cc" stroke-width="2" fill="none" opacity="0.7"/>
+        <path d="M300,120 q70,-30 140,0" stroke="#9fb8cc" stroke-width="1.6" fill="none" opacity="0.45"/>
+        <path d="M300,120 q-70,-30 -140,0" stroke="#9fb8cc" stroke-width="1.6" fill="none" opacity="0.45"/>
+        <!-- labels -->
+        <text x="312" y="112" font-family="Nunito,sans-serif" font-size="14" font-weight="800" fill="#f5c842">Epicenter</text>
+        <text x="312" y="98" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="rgba(245,200,66,0.7)">(on the surface)</text>
+        <text x="318" y="255" font-family="Nunito,sans-serif" font-size="14" font-weight="800" fill="#ff8080">Focus</text>
+        <text x="318" y="271" font-family="Nunito,sans-serif" font-size="10" font-weight="700" fill="rgba(255,128,128,0.7)">(underground start)</text>
+        <text x="40" y="300" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="rgba(255,255,255,0.6)">Energy spreads out as seismic waves</text>
+      </svg>
+      <div class="figure-caption">The focus is where the energy is released underground. The epicenter is the point on the surface directly above it.</div>
     </div>
 
-    <div class="callout teal">
-      <span class="callout-icon">&#9889;</span>
-      <div class="callout-body"><strong>Why the belts exist:</strong> the plate boundaries are exactly the lines you saw on the map. Divergent ridges, convergent trenches and volcanoes, and transform faults are where the crust cracks, melts, and slips, so that is where earthquakes and volcanoes cluster.</div>
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128205;</span>
+        <div class="card-title">Focus and Epicenter</div>
+      </div>
+      <div class="card-body">
+        <p>The <strong>focus</strong> is the point inside Earth where an earthquake begins. It is where the rock first fractures and the stored energy is released.</p>
+        <p>The <strong>epicenter</strong> is the point on Earth's surface directly above the focus. It is usually where shaking is felt the strongest, because it is the closest point on the surface to where the energy started.</p>
+        <div class="callout slate">
+          <span class="callout-icon">&#127919;</span>
+          <div class="callout-body"><strong>An easy way to remember:</strong> The focus is the <em>deep</em> start. The epicenter is the <em>surface</em> spot right on top of it. News reports almost always give the epicenter, because that is the location people can point to on a map.</div>
+        </div>
+      </div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1246,11 +1003,183 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Connect plate motion to surface features students can observe.</li><li>Answer the opening phenomenon: why earthquakes and volcanoes form belts.</li></ul>
+          <ul class="edu-note-text"><li>Give precise vocabulary for where a quake starts.</li><li>Separate the underground start from the surface effect.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Comparison and contrast (three boundary types)</li><li>Dual coding with interactive diagram</li></ul>
+          <ul class="edu-note-text"><li>Dual coding with a labeled cross-section</li><li>Contrast pairs (focus vs epicenter)</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Diagram paired with text</li><li>Memory hook for the two terms</li><li>Short, parallel definitions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3: FAULTS AND FAULT ZONES
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="faults" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Faults</span>
+    <h2 class="section-title">Where the Rock Breaks</h2>
+    <p class="section-desc">Earthquakes do not happen just anywhere. They happen along faults, and faults tend to cluster in fault zones, most of them at the edges of Earth's plates.</p>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#129695;</span>
+        <div class="card-title">Faults and Fault Zones</div>
+      </div>
+      <div class="card-body">
+        <p>A <span class="vocab">fault</span> is a crack in Earth's crust where blocks of rock move past each other. When rock fractures and rebounds, it usually happens along a fault.</p>
+        <p>A <span class="vocab">fault zone</span> is a region where many faults form. Most fault zones lie at <strong>plate boundaries</strong>, where the stress from moving plates is strongest. Some earthquakes also occur at ancient fault lines buried deep in newer rock layers.</p>
+      </div>
+    </div>
+
+    <div id="term-faults" class="bridge-callout teal" style="margin: 0 auto 2rem;">
+      <strong>Three boundaries, three faults:</strong> The way two plates move at a boundary decides the kind of fault that forms there. Compare the three below.
+    </div>
+
+    <div class="fault-grid">
+      <div class="fault-card reverse">
+        <svg viewBox="0 0 160 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reverse fault: two blocks pushed together, one riding up over the other">
+          <rect x="10" y="35" width="140" height="50" fill="#5a4636"/>
+          <path d="M10,35 L150,55 L150,85 L10,85 Z" fill="#6a7d52"/>
+          <path d="M60,35 L100,55" stroke="#1a1410" stroke-width="3"/>
+          <path d="M40,22 L65,22" stroke="#e8814a" stroke-width="3" marker-end="url(#fr)"/>
+          <path d="M120,22 L95,22" stroke="#e8814a" stroke-width="3" marker-end="url(#fr)"/>
+          <defs><marker id="fr" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#e8814a"/></marker></defs>
+        </svg>
+        <div class="fault-title">Reverse Fault</div>
+        <div class="fault-boundary">Convergent boundary</div>
+        <div class="fault-desc">Plates push together. The squeezing force forces one block of rock up and over the other.</div>
+      </div>
+      <div class="fault-card normal">
+        <svg viewBox="0 0 160 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Normal fault: two blocks pulled apart, one slipping down">
+          <rect x="10" y="20" width="70" height="65" fill="#5a4636"/>
+          <rect x="80" y="40" width="70" height="45" fill="#5a4636"/>
+          <rect x="10" y="20" width="70" height="12" fill="#6a7d52"/>
+          <rect x="80" y="40" width="70" height="12" fill="#6a7d52"/>
+          <path d="M80,20 L80,85" stroke="#1a1410" stroke-width="3"/>
+          <path d="M50,8 L25,8" stroke="#7cc8f8" stroke-width="3" marker-end="url(#fn)"/>
+          <path d="M110,8 L135,8" stroke="#7cc8f8" stroke-width="3" marker-end="url(#fn)"/>
+          <defs><marker id="fn" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#7cc8f8"/></marker></defs>
+        </svg>
+        <div class="fault-title">Normal Fault</div>
+        <div class="fault-boundary">Divergent boundary</div>
+        <div class="fault-desc">Plates pull apart. With nothing holding it up, one block of rock drops down along the crack.</div>
+      </div>
+      <div class="fault-card strike">
+        <svg viewBox="0 0 160 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Strike-slip fault: two blocks sliding horizontally past each other">
+          <rect x="10" y="20" width="140" height="55" fill="#5a4636"/>
+          <line x1="80" y1="20" x2="80" y2="75" stroke="#1a1410" stroke-width="3"/>
+          <path d="M30,40 L60,40" stroke="#1de9b6" stroke-width="3" marker-end="url(#fs)"/>
+          <path d="M130,58 L100,58" stroke="#1de9b6" stroke-width="3" marker-end="url(#fs)"/>
+          <defs><marker id="fs" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#1de9b6"/></marker></defs>
+        </svg>
+        <div class="fault-title">Strike-Slip Fault</div>
+        <div class="fault-boundary">Transform boundary</div>
+        <div class="fault-desc">Plates slide horizontally past each other. The rock grinds sideways instead of up or down.</div>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#128279;</span>
+      <div class="callout-body"><strong>Connecting back to plates:</strong> Convergent plates collide, divergent plates separate, and transform plates slide. Each motion stresses the rock in a different direction, so each produces a different type of fault.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Locate earthquakes at faults and plate boundaries.</li><li>Connect plate motion to the type of fault produced.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison and contrast (three fault types)</li><li>Dual coding with motion diagrams</li><li>Elaboration on prior plate-tectonics learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Side-by-side cards with diagrams</li><li>Boundary type labeled on each card</li><li>Short, parallel descriptions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: SEISMIC WAVES
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="waves" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Seismic Waves</span>
+    <h2 class="section-title">The Energy Travels as Waves</h2>
+    <p class="section-desc">Once the rock rebounds, the released energy does not stay put. It travels outward through Earth as seismic waves. Two main types move at different speeds and through different materials.</p>
+
+    <div id="term-waves" class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128225;</span>
+        <div class="card-title">What Are Seismic Waves?</div>
+      </div>
+      <div class="card-body">
+        <p><strong>Seismic waves</strong> are waves of energy that travel out from an earthquake through Earth. They spread from the focus in every direction, like ripples from a stone dropped in a pond, only in three dimensions.</p>
+        <p>Not all seismic waves are the same. The two we focus on here are <strong>P waves</strong> and <strong>S waves</strong>.</p>
+      </div>
+    </div>
+
+    <div class="wave-grid">
+      <div class="wave-card pwave">
+        <div class="wave-title">P Waves (Primary)</div>
+        <ul class="wave-list">
+          <li><span class="wave-dot"></span><span>The <strong>fastest</strong> seismic wave, so they arrive first</span></li>
+          <li><span class="wave-dot"></span><span>Travel through <strong>solids, liquids, and gases</strong></span></li>
+          <li><span class="wave-dot"></span><span>Push and pull the ground back and forth</span></li>
+        </ul>
+      </div>
+      <div class="wave-card swave">
+        <div class="wave-title">S Waves (Secondary)</div>
+        <ul class="wave-list">
+          <li><span class="wave-dot"></span><span><strong>Slower</strong> than P waves, so they arrive second</span></li>
+          <li><span class="wave-dot"></span><span>Travel through <strong>solids only</strong></span></li>
+          <li><span class="wave-dot"></span><span>Shake the ground up and down and side to side</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#128301;</span>
+        <div class="card-title">Waves That Reveal the Inside of Earth</div>
+      </div>
+      <div class="card-body">
+        <p>Seismic waves do more than shake the ground. Scientists use them to figure out the structure of Earth's interior, a place no one can dig down to reach.</p>
+        <p>Because S waves cannot pass through liquids, they stop at Earth's liquid outer core. By tracking which waves arrive where, scientists discovered that the outer core must be liquid. The waves act like an X-ray of the planet.</p>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Explain how the released energy reaches the surface.</li><li>Show seismic waves as evidence about Earth's interior.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison and contrast (P vs S waves)</li><li>Evidence-based reasoning (waves reveal structure)</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1258,7 +1187,68 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Click to reveal one boundary at a time reduces load</li><li>Misconception alert: students often mix up which boundary produces mountains vs trenches vs rift valleys</li><li>Pause and have students predict the feature before revealing</li></ul>
+          <ul class="edu-note-text"><li>Familiar analogy (ripples in a pond)</li><li>Two short comparison cards</li><li>Parallel bullet structure</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 5: MEASURING EARTHQUAKES
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="measure" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Measuring</span>
+    <h2 class="section-title">How We Measure a Quake</h2>
+    <p class="section-desc">When an earthquake hits, two different questions get asked: how strong was it, and how much damage did it do? Those are measured in two different ways.</p>
+
+    <div id="term-measure" class="scale-strip">
+      <div class="scale-card magnitude">
+        <div class="scale-name">Magnitude</div>
+        <div class="scale-body">Measures the <strong>strength</strong> of the quake by the amount of ground movement it produces. The Richter scale runs from 0 to 10. Each whole number is a major jump in strength, so a magnitude 7 is far more powerful than a magnitude 6.</div>
+      </div>
+      <div class="scale-card intensity">
+        <div class="scale-name">Intensity</div>
+        <div class="scale-body">Measures the <strong>effects</strong> of the quake in human terms: damage to buildings, infrastructure, and loss of life. The same quake can have high intensity in a crowded city and low intensity in an empty desert.</div>
+      </div>
+    </div>
+
+    <div class="callout slate">
+      <span class="callout-icon">&#9878;&#65039;</span>
+      <div class="callout-body"><strong>Strength is not the same as damage:</strong> Magnitude describes the earthquake itself. Intensity describes what it does to people and places. A strong quake far from any town can do little harm, while a moderate quake under a city can be devastating.</div>
+    </div>
+
+    <div class="content-card">
+      <div class="card-header">
+        <span class="card-icon">&#127941;</span>
+        <div class="card-title">The Largest Quake Ever Recorded</div>
+      </div>
+      <div class="card-body">
+        <p>On May 22, 1960, an earthquake struck near Valdivia, Chile. At <strong>9.5 on the Richter scale</strong>, it is the strongest earthquake ever recorded.</p>
+        <p>Its energy was so great that it sent a tsunami across the Pacific Ocean. The waves reached Hawaii, Japan, the Philippines, and the West Coast of the United States. One earthquake on one coast changed lives on the far side of the world.</p>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Distinguish how strong a quake is from how much harm it does.</li><li>Close the loop on the opening Valdivia phenomenon.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Misconception checking (magnitude vs intensity)</li><li>Concrete case study for transfer</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Two clearly separated measures</li><li>Plain contrast language</li><li>Memorable real example</li></ul>
         </div>
       </div>
     </div>
@@ -1269,7 +1259,7 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      QUICK RECALL
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="recall" style="background: var(--dark);">
+<section id="recall" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Quick Recall</span>
     <h2 class="section-title">Brain Check</h2>
@@ -1278,11 +1268,11 @@
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">Wegener's idea of continental drift was rejected for decades. What was missing from his explanation?</div>
+      <div class="qr-q" id="qr1Q">Rock is bent by stress for many years, then suddenly fractures and snaps back. What is this process called?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>He had no fossil evidence at all</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>He could not explain what force could move a continent</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>No one believed Pangaea had ever existed</span></label>
+        <label><input type="radio" name="qr1" value="0"><span>Convection</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Elastic rebound</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Erosion</span></label>
       </div>
       <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1294,11 +1284,11 @@
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">The tectonic plates float and slide on which layer of Earth?</div>
+      <div class="qr-q" id="qr2Q">Which term names the point on Earth's surface directly above where an earthquake begins?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>The solid inner core</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>The brittle surface crust</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>The soft, flowing asthenosphere</span></label>
+        <label><input type="radio" name="qr2" value="0"><span>The focus</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>The fault zone</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>The epicenter</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1310,11 +1300,11 @@
     <div class="qr-card" id="qrCard3">
       <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr3Q">Two plates grind past each other along the San Andreas Fault. What does this transform boundary mainly produce?</div>
+      <div class="qr-q" id="qr3Q">Which seismic wave is fastest and can travel through solids, liquids, and gases?</div>
       <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
-        <label><input type="radio" name="qr3" value="0"><span>Earthquakes</span></label>
-        <label><input type="radio" name="qr3" value="1"><span>Brand new seafloor</span></label>
-        <label><input type="radio" name="qr3" value="2"><span>Tall volcanoes</span></label>
+        <label><input type="radio" name="qr3" value="0"><span>The P wave</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>The S wave</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>Neither, they move at the same speed</span></label>
       </div>
       <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1328,7 +1318,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions before the quiz.</li></ul>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1340,7 +1330,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce cognitive load</li></ul>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
         </div>
       </div>
     </div>
@@ -1351,40 +1341,40 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      EXPLAIN: PUTTING IT TOGETHER
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="explain" style="background: var(--dark2);">
+<section id="explain" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Explain &middot; Wrap-Up</span>
-    <h2 class="section-title">From Deep Heat to Moving Ground</h2>
-    <p class="section-desc">You started with a question: why does Earth's surface move, and why do earthquakes and volcanoes line up in belts? Now you can trace the whole chain, step by step.</p>
+    <h2 class="section-title">From Stored Energy to Shaking Ground</h2>
+    <p class="section-desc">You started with a question: how can energy stored in rock make the ground shake? Now you can trace the whole chain, step by step.</p>
 
     <div class="wrapup-beats">
       <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">It Starts With Heat</div>
-        <div class="wrapup-beat-answer">Heat inside Earth keeps the mantle slowly flowing.</div>
-        <div class="wrapup-beat-body">Hot rock is less dense, so it rises, cools, and sinks in <strong>convection currents</strong>. This is the engine Wegener was missing.</div>
+        <div class="wrapup-beat-label">Energy Builds Up</div>
+        <div class="wrapup-beat-answer">Stress bends rock and stores energy.</div>
+        <div class="wrapup-beat-body">Moving plates put <strong>stress</strong> on rock along faults. The rock bends and stores energy, sometimes for hundreds of years, like a stick bent more and more.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">Heat Becomes Motion</div>
-        <div class="wrapup-beat-answer">Convection drags the plates, and the plates carry the continents.</div>
-        <div class="wrapup-beat-body">The flowing mantle moves the <strong>tectonic plates</strong> of the lithosphere. New seafloor forms where they pull apart, which is why the continents drift over time.</div>
+        <div class="wrapup-beat-label">Energy Releases</div>
+        <div class="wrapup-beat-answer">The rock fractures and rebounds, sending out seismic waves.</div>
+        <div class="wrapup-beat-body">When stress is too great, the rock breaks in <strong>elastic rebound</strong>. Energy is released at the <strong>focus</strong> and travels outward as <strong>seismic waves</strong>.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">Motion Reaches the Surface</div>
-        <div class="wrapup-beat-answer">Plate boundaries produce earthquakes and volcanoes.</div>
-        <div class="wrapup-beat-body">Where plates diverge, converge, or slide past, the crust cracks, melts, and slips. Those <strong>boundaries</strong> are the belts on the map.</div>
+        <div class="wrapup-beat-label">The Surface Shakes</div>
+        <div class="wrapup-beat-answer">Waves reach the surface, and we measure the result.</div>
+        <div class="wrapup-beat-body">Shaking is strongest near the <strong>epicenter</strong>. <strong>Magnitude</strong> tells us how strong the quake was, and <strong>intensity</strong> tells us how much damage it caused.</div>
       </div>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
       <strong>The full chain:</strong>
       <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Heat deep in the mantle</span>
-        <span class="wuc wuc-2">Convection currents flow</span>
-        <span class="wuc wuc-2">Plates move and continents drift</span>
-        <span class="wuc wuc-3">Plates meet at boundaries</span>
-        <span class="wuc wuc-3">Earthquakes and volcanoes in belts</span>
+        <span class="wuc wuc-1">Plate motion stresses rock</span>
+        <span class="wuc wuc-1">Rock bends and stores energy</span>
+        <span class="wuc wuc-2">Elastic rebound at the focus</span>
+        <span class="wuc wuc-2">Seismic waves spread out</span>
+        <span class="wuc wuc-3">Ground shakes and is measured</span>
       </div>
-      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. Wegener saw the puzzle; convection currents and plate tectonics finally explained it.</div>
+      <div style="margin-top: 1rem;">An earthquake is not random violence. It is energy from slow plate motion, stored in rock and then released all at once. The shaking we feel is the last step in a long, quiet build-up deep below.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1392,11 +1382,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening phenomenon directly and completely.</li></ul>
+          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening question directly.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative closure</li></ul>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1404,7 +1394,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Step-by-step beats break the chain into chunks</li><li>Plain causal language throughout</li><li>Chip summary gives a visual map of the full chain</li></ul>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
         </div>
       </div>
     </div>
@@ -1419,7 +1409,7 @@
   <div class="container">
     <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Ten questions covering everything you explored, from Wegener's evidence to convection currents and plate boundaries. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you explored, from elastic rebound to magnitude and intensity. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
@@ -1486,18 +1476,19 @@
       <p id="el-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">&#128269; The Question You Came In With</span>
-        You started this lesson asking: <strong>"Why does Earth's surface move?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes at the boundaries, you have answered it.
+        You started this lesson asking: <strong>"How does energy stored in Earth's crust cause the ground to shake?"</strong> If you can trace stress to elastic rebound to seismic waves to the shaking surface, you have answered it.
       </div>
       <div id="el-submit-status"></div>
       <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
     </div>
+
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
       <div class="edu-note-label">&#128218; Instructional Design</div>
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear performance signal.</li></ul>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1509,11 +1500,10 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Answer explanations provided for every question</li><li>Practice and classroom modes available</li><li>Plausible distractors, evenly distributed answer positions</li></ul>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
         </div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -1631,25 +1621,6 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 })();
 </script>
 
-<!-- ===== PLATE BOUNDARIES INTERACTIVE ===== -->
-<script>
-const boundaryData = {
-  1: { label: 'Boundary 1 · Plates move apart', title: 'Divergent Boundary', body: 'Two plates pull apart and rising magma fills the gap, cooling into new crust. Under the ocean this builds a mid-ocean ridge with a rift valley down the center, like the Mid-Atlantic Ridge. On land it can split a continent, as at the East African Rift.' },
-  2: { label: 'Boundary 2 · Plates collide', title: 'Convergent Boundary', body: 'Two plates push together. The more dense plate subducts (sinks) beneath the less dense one, melting and feeding volcanoes, like the Andes and the Japanese island arc. When both plates are continental and equally light, neither sinks, so they crumple upward into mountains like the Himalayas.' },
-  3: { label: 'Boundary 3 · Plates slide past', title: 'Transform Boundary', body: 'Two plates grind past each other in opposite directions. No crust is made or destroyed, but the plates catch and slip, releasing energy as earthquakes. The San Andreas Fault in California is a famous example.' }
-};
-function boundaryClick(n) {
-  const d = boundaryData[n];
-  document.getElementById('bd-label').textContent = d.label;
-  document.getElementById('bd-title').textContent = d.title;
-  document.getElementById('bd-body').textContent  = d.body;
-  document.querySelectorAll('#term-boundaries .layer-row').forEach((el, i) => {
-    el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
-    el.style.outlineOffset = '1px';
-  });
-}
-</script>
-
 <!-- ===== QUICK RECALL CHECKPOINTS ===== -->
 <script>
 (function(){
@@ -1687,14 +1658,14 @@ function boundaryClick(n) {
     });
   }
   wireQR('qr1', 1,
-    'Correct! His evidence was strong, but he could not explain what force moved the continents. Convection currents were the missing piece.',
-    'Not quite. Wegener had plenty of evidence and believed in Pangaea. What he could not explain was the force that moved the continents.');
+    'Correct! Stressed rock that bends, fractures, and snaps back is going through elastic rebound.',
+    'Not quite. The slow bending and sudden snap-back of stressed rock is called elastic rebound.');
   wireQR('qr2', 2,
-    'Correct! The plates float and slide on the soft, slowly flowing asthenosphere in the upper mantle.',
-    'Not quite. The crust and inner core do not flow. The plates ride on the soft, flowing asthenosphere.');
+    'Correct! The epicenter is the point on the surface directly above the focus.',
+    'Not quite. The focus is the underground start. The point on the surface right above it is the epicenter.');
   wireQR('qr3', 0,
-    'Correct! Transform boundaries make and destroy no crust, but the plates catch and slip, releasing energy as earthquakes.',
-    'Not quite. New seafloor forms at divergent boundaries and volcanoes at convergent ones. Transform boundaries mainly cause earthquakes.');
+    'Correct! P waves are the fastest and can move through solids, liquids, and gases.',
+    'Not quite. The S wave is slower and travels through solids only. The fast wave that moves through all three states is the P wave.');
 })();
 </script>
 
@@ -1713,104 +1684,104 @@ var elQuizMode  = 'practice';
 
 var elQuizQuestions = [
   {
-    q: "Who proposed the idea of continental drift, and what did he name the ancient supercontinent?",
-    options: ["Isaac Newton; Gondwana", "Alfred Wegener; Pangaea", "Charles Darwin; Laurasia", "Alfred Wegener; Atlantis"],
-    correct: 1,
-    explanation: "In 1912, the German scientist Alfred Wegener proposed continental drift and named the supercontinent Pangaea, meaning all land."
-  },
-  {
-    q: "Wegener found fossils of the same plant, Glossopteris, on continents now separated by wide oceans. Why is this evidence that the continents were once joined?",
+    q: "What is an earthquake?",
     options: [
-      "The seeds were too heavy to drift across an ocean and the animals could not swim that far",
-      "Glossopteris still grows on every continent today",
-      "Fossils can float across oceans on currents",
-      "The plant only grew in freezing climates"
-    ],
-    correct: 0,
-    explanation: "Glossopteris seeds could not survive a long ocean drift, and the small land animals found with it could not swim across oceans. The simplest explanation is that the land was once connected."
-  },
-  {
-    q: "The lithosphere is broken into large slabs that float on the asthenosphere. What are these slabs called?",
-    options: ["Convection cells", "Rift valleys", "Tectonic plates", "Continental shelves"],
-    correct: 2,
-    explanation: "The rigid lithosphere is cracked into tectonic plates that slowly move over the soft, flowing asthenosphere."
-  },
-  {
-    q: "Wegener could not explain what moved the continents. What actually provides the force that moves the plates?",
-    options: [
-      "The pull of ocean tides",
-      "The spinning of the inner core",
-      "Wind and weather at the surface",
-      "Convection currents in the mantle"
-    ],
-    correct: 3,
-    explanation: "Heat inside Earth drives convection currents in the mantle. The flowing mantle rock drags the plates, which is the force Wegener was missing."
-  },
-  {
-    q: "At a divergent boundary two plates move apart. What happens in the gap between them?",
-    options: [
-      "Rising magma fills the gap and cools into new crust",
-      "One plate sinks beneath the other",
-      "The plates grind past each other",
-      "A deep ocean trench forms"
-    ],
-    correct: 0,
-    explanation: "As the plates separate, magma rises to fill the gap and cools into new crust. Under the ocean this is seafloor spreading at a mid-ocean ridge."
-  },
-  {
-    q: "The seafloor of the Atlantic is youngest at the Mid-Atlantic Ridge and older farther away. Which process best explains this?",
-    options: [
-      "Subduction pulling the crust down",
-      "Seafloor spreading at a divergent boundary",
-      "A transform fault sliding sideways",
-      "Weathering of the ocean floor"
+      "The slow weathering of rock at the surface",
+      "The shaking of the ground from a sudden release of energy in Earth's crust",
+      "A crack that forms only at ancient fault lines",
+      "The melting of rock deep inside the mantle"
     ],
     correct: 1,
-    explanation: "New crust forms at the ridge and moves outward, so the seafloor is youngest at the ridge and gets older with distance. This is seafloor spreading."
+    explanation: "An earthquake is the shaking of the ground caused by a sudden release of energy that has built up in Earth's crust."
   },
   {
-    q: "Two oceanic plates collide and the more dense one sinks beneath the other. What is this process called, and what does it tend to build?",
+    q: "Stressed rock bends for years, then fractures and snaps back toward its original shape. What is this process called?",
+    options: ["Elastic rebound", "Differentiation", "Convection", "Erosion"],
+    correct: 0,
+    explanation: "Elastic rebound is when stressed rock releases its stored energy, fractures, and returns toward its original shape. That released energy causes the shaking."
+  },
+  {
+    q: "Where does the energy that an earthquake releases come from?",
     options: [
-      "Spreading, building a rift valley",
-      "Erosion, building canyons",
-      "Subduction, building volcanoes and island arcs",
-      "Drifting, building flat plains"
+      "Heat from the Sun warming the surface",
+      "Rain soaking into the soil",
+      "Stress that slowly builds up in rock as plates move",
+      "The pull of the Moon's gravity"
     ],
     correct: 2,
-    explanation: "When one plate sinks beneath another it is called subduction. The sinking plate melts and feeds volcanoes, forming features like the Japanese island arc."
+    explanation: "Moving plates put stress on rock along faults. The rock bends and stores energy over time, sometimes for hundreds of years, until it fractures."
   },
   {
-    q: "The Himalayas formed where two continental plates of similar density collided. Why did they crumple upward instead of one plate sinking?",
+    q: "What is the focus of an earthquake?",
     options: [
-      "Continental crust is too dense to rise",
-      "One of the plates melted completely",
-      "The boundary is actually a transform boundary",
-      "Neither plate is dense enough to sink, so they push each other up"
+      "The point on the surface where shaking is strongest",
+      "The fastest seismic wave",
+      "The instrument that records the quake",
+      "The point inside Earth where the earthquake begins"
     ],
     correct: 3,
-    explanation: "Continental crust is light and does not subduct easily. When two continental plates meet, neither sinks, so the crust folds and pushes upward into tall mountains like the Himalayas."
+    explanation: "The focus is the point inside Earth where an earthquake begins and the stored energy is first released."
   },
   {
-    q: "The San Andreas Fault is a place where two plates slide past each other. What kind of boundary is this, and what is it known for?",
+    q: "A news report gives the location of an earthquake on a map. Which point is it most likely describing?",
     options: [
-      "A transform boundary known for earthquakes",
-      "A divergent boundary known for new seafloor",
-      "A convergent boundary known for volcanoes",
-      "A boundary known for building island arcs"
+      "The epicenter, on the surface above the focus",
+      "The focus, deep underground",
+      "The fault zone in the mantle",
+      "The Richter scale reading"
     ],
     correct: 0,
-    explanation: "Plates sliding past each other form a transform boundary. They catch and slip, releasing energy as earthquakes, like those along the San Andreas Fault."
+    explanation: "The epicenter is the point on the surface directly above the focus. Because it is a surface location, it is the point people can mark on a map."
   },
   {
-    q: "Why do earthquakes and volcanoes occur in narrow belts around Earth rather than randomly?",
+    q: "A reverse fault forms where one block of rock is pushed up and over another. At which plate boundary does this happen?",
     options: [
-      "They follow ocean currents around the globe",
-      "They line up along the edges of the tectonic plates",
-      "They appear wherever the crust is thickest",
-      "They are spread evenly but only reported in cities"
+      "A transform boundary",
+      "A divergent boundary",
+      "A convergent boundary",
+      "It does not happen at any boundary"
+    ],
+    correct: 2,
+    explanation: "Reverse faults form at convergent boundaries, where plates push together and the squeezing force drives one block up over the other."
+  },
+  {
+    q: "At a transform boundary, plates slide horizontally past each other. Which type of fault does this create?",
+    options: ["A normal fault", "A strike-slip fault", "A reverse fault", "No fault at all"],
+    correct: 1,
+    explanation: "A strike-slip fault forms at a transform boundary, where blocks of rock grind sideways past each other instead of moving up or down."
+  },
+  {
+    q: "Which statement correctly compares P waves and S waves?",
+    options: [
+      "S waves are faster and travel through liquids",
+      "P waves and S waves are exactly the same",
+      "P waves travel through solids only",
+      "P waves are faster and can travel through solids, liquids, and gases"
+    ],
+    correct: 3,
+    explanation: "P waves are the fastest seismic waves and travel through solids, liquids, and gases. S waves are slower and travel through solids only."
+  },
+  {
+    q: "Two earthquakes have the same magnitude, but one causes far more damage. What best explains the difference?",
+    options: [
+      "The more damaging quake had a higher intensity because of where it struck",
+      "Magnitude and damage are always identical",
+      "The less damaging quake had a higher magnitude",
+      "Intensity measures the strength of the quake itself"
+    ],
+    correct: 0,
+    explanation: "Magnitude measures the strength of the quake, while intensity measures its effects on people and places. The same magnitude can cause very different intensity depending on where it hits."
+  },
+  {
+    q: "Which sequence correctly traces how stored energy becomes shaking at the surface?",
+    options: [
+      "Seismic waves form first, then stress builds, then rock bends",
+      "Stress bends rock, the rock rebounds at the focus, and seismic waves shake the surface",
+      "The epicenter releases energy that travels down to the focus",
+      "Rain weakens rock, which then melts and erupts"
     ],
     correct: 1,
-    explanation: "Almost all earthquakes and volcanoes happen at plate boundaries, where plates pull apart, collide, or slide past. The belts on the map trace those boundaries."
+    explanation: "Stress slowly bends rock and stores energy. The rock fractures and rebounds at the focus, releasing energy as seismic waves that travel out and shake the surface near the epicenter."
   }
 ];
 
@@ -1925,7 +1896,7 @@ function elSubmitQuiz() {
   var total = elQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
-  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand plate tectonics cold.'
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand earthquakes cold.'
     : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
     : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
     : '\u{1F4AA} Keep going; review each section carefully and try again!';
@@ -1948,7 +1919,7 @@ function elSubmitQuiz() {
     return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
   }).join(', ');
   var params = new URLSearchParams({
-    tab: 'Plate Tectonics', lesson: 'Plate Tectonics', studentName: info2.name, teacher: teacherLabel,
+    tab: 'Earthquakes', lesson: "Earthquakes", studentName: info2.name, teacher: teacherLabel,
     block: info2.block, score: score, total: total, percent: pct + '%',
     timestamp: new Date().toISOString(), answers: answerStr
   });

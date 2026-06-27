@@ -12,9 +12,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="canonical" href="https://lyfelabz.com/lesson_plate-tectonics.html">
-<meta name="description" content="Discover plate tectonics: continental drift evidence, lithospheric plates, seafloor spreading, convection currents, and the three plate boundaries that build mountains and trigger earthquakes and volcanoes. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
-<title>LyfeLabz | Plate Tectonics</title>
+<link rel="canonical" href="https://lyfelabz.com/lesson_types-of-volcanoes.html">
+<meta name="description" content="Explore the three main types of volcanoes, composite, cinder cone, and shield, and learn how the thickness of lava and trapped gas control whether a volcano erupts gently or explodes. A Grade 7 Earth science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Types of Volcanoes</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -173,6 +173,32 @@
   }
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
+
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
 
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
@@ -358,9 +384,9 @@
   }
   .example-chip-icon { font-size: 1.4rem; flex-shrink: 0; }
 
-  /* ── LAYER / BOUNDARY SELECTOR (interactive) ── */
+  /* ── TYPE SELECTOR (interactive) ── */
   .layer-wrap { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
-  .layer-figure { flex: 0 0 auto; width: 320px; max-width: 100%; margin: 0 auto; }
+  .layer-figure { flex: 0 0 auto; width: 280px; max-width: 100%; margin: 0 auto; }
   .layer-figure svg { width: 100%; height: auto; display: block; }
   .layer-controls { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 1rem; }
   .layer-list { display: flex; flex-direction: column; gap: 4px; }
@@ -382,28 +408,27 @@
   .ld-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
   .ld-body { font-size: 0.9rem; color: rgba(232,237,242,0.82); line-height: 1.7; }
 
-  /* ── CRUST COMPARISON ── */
-  .crust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0 2rem; }
-  @media (max-width: 640px) { .crust-grid { grid-template-columns: 1fr; } }
-  .crust-card { border-radius: 18px; padding: 1.8rem 1.6rem; }
-  .crust-card.oceanic { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
-  .crust-card.continental { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
-  .crust-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 0.5rem; }
-  .crust-card.oceanic .crust-title { color: var(--blue); }
-  .crust-card.continental .crust-title { color: var(--orange); }
-  .crust-bar-track { height: 14px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; margin: 0.7rem 0 0.4rem; }
-  .crust-bar { height: 100%; border-radius: 99px; }
-  .crust-card.oceanic .crust-bar { background: linear-gradient(90deg, var(--blue), rgba(124,200,248,0.5)); width: 16%; }
-  .crust-card.continental .crust-bar { background: linear-gradient(90deg, var(--orange), rgba(232,129,74,0.5)); width: 100%; }
-  .crust-bar-label { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; }
-  .crust-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
-  .crust-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
-  .crust-list li strong { color: var(--text); }
-  .crust-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
-  .crust-card.oceanic .crust-dot { background: var(--blue); }
-  .crust-card.continental .crust-dot { background: var(--orange); }
+  /* ── TYPE COMPARISON CARDS ── */
+  .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin: 1.5rem 0 2rem; }
+  @media (max-width: 760px) { .type-grid { grid-template-columns: 1fr; } }
+  .type-card { border-radius: 18px; padding: 1.6rem 1.5rem; }
+  .type-card.shield { background: rgba(124,200,248,0.06); border: 1px solid rgba(124,200,248,0.3); }
+  .type-card.cinder { background: rgba(232,129,74,0.06); border: 1px solid rgba(232,129,74,0.3); }
+  .type-card.composite { background: rgba(231,76,60,0.06); border: 1px solid rgba(231,76,60,0.3); }
+  .type-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; margin-bottom: 0.2rem; }
+  .type-card.shield .type-title { color: var(--blue); }
+  .type-card.cinder .type-title { color: var(--orange); }
+  .type-card.composite .type-title { color: var(--red); }
+  .type-eg { font-size: 0.78rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.9rem; }
+  .type-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+  .type-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+  .type-list li strong { color: var(--text); }
+  .type-dot { flex-shrink: 0; margin-top: 0.45rem; width: 8px; height: 8px; border-radius: 50%; }
+  .type-card.shield .type-dot { background: var(--blue); }
+  .type-card.cinder .type-dot { background: var(--orange); }
+  .type-card.composite .type-dot { background: var(--red); }
 
-  /* ── CONVECTION / DIAGRAM FIGURE ── */
+  /* ── FIGURE ── */
   .figure-box {
     background: rgba(8,18,32,0.55); border: 1px solid rgba(122,143,166,0.14);
     border-radius: 18px; padding: 1.2rem; max-width: 820px; margin: 1.6rem auto 2rem;
@@ -602,18 +627,18 @@
 
 <!-- HERO -->
 <header class="hero">
-  <span class="hero-float">&#127757;</span>
   <span class="hero-float">&#127755;</span>
+  <span class="hero-float">&#128293;</span>
   <span class="hero-float">&#9968;&#65039;</span>
-  <span class="hero-float">&#129517;</span>
+  <span class="hero-float">&#129704;</span>
   <div class="hero-badge">Lesson</div>
-  <h1>Plate Tectonics</h1>
-  <p>Earthquakes and volcanoes do not strike at random. They line up in narrow belts that trace the hidden seams of a cracked, moving planet.</p>
+  <h1>Types of Volcanoes</h1>
+  <p>Some volcanoes ooze slow rivers of glowing lava. Others blow their tops apart in a single violent blast. They are all volcanoes, so why are they so different?</p>
   <div class="driving-question">
     <div class="dq-icon">&#128269;</div>
     <div class="dq-body">
       <div class="dq-label">Driving Question</div>
-      <div class="dq-text">Why does Earth's surface move?</div>
+      <div class="dq-text">Why do some volcanoes erupt gently while others explode?</div>
     </div>
   </div>
 </header>
@@ -621,11 +646,11 @@
 <!-- LEARNING SCIENCE BADGES -->
 <div class="ls-focus">
   <span class="ls-focus-label">&#128300; Learning Science Focus</span>
-  <span class="ls-badge" data-tip="The lesson opens with a real phenomenon (earthquakes and volcanoes in belts) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
-  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the story into evidence, plates, motion, and boundaries keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
-  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each idea with diagrams of drift, convection, and boundaries builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
+  <span class="ls-badge" data-tip="The lesson opens with a real contrast (a gentle eruption next to a violent one) before naming any vocabulary. A genuine puzzle activates curiosity and primes attention. (Loewenstein, 1994)">&#128269; Phenomenon First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: chunking the volcano into parts, then one cause, then three types keeps working memory from overloading. (Sweller et al., 2019)">&#129504; Chunked Content</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: pairing each volcano type with a labeled cross-section builds multiple memory pathways. (Noetel et al., 2022)">&#128444;&#65039; Dual Coding</span>
   <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">&#9989; Retrieval Practice</span>
-  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace heat and convection to plate motion and surface events, mirroring authentic Earth science. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
+  <span class="ls-badge" data-tip="Cause and effect reasoning: students trace lava thickness and trapped gas to eruption style and volcano shape. (NRC, 2012)">&#128202; Cause &amp; Effect</span>
 </div>
 
 
@@ -639,23 +664,23 @@
     <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
     <div class="goal-grid">
       <div class="goal-card">
-        <span class="goal-icon">&#129499;</span>
-        <div class="goal-text">I can describe the evidence Wegener used to support the idea of continental drift.</div>
+        <span class="goal-icon">&#127755;</span>
+        <div class="goal-text">I can describe the main parts of a volcano, including magma, lava, the vent, and the magma chamber.</div>
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
       <div class="goal-card">
         <span class="goal-icon">&#128293;</span>
-        <div class="goal-text">I can explain how convection currents in the mantle cause tectonic plates to move.</div>
+        <div class="goal-text">I can explain how the thickness of lava and trapped gas control how a volcano erupts.</div>
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#9968;&#65039;</span>
-        <div class="goal-text">I can compare the three types of plate boundaries and the features they build.</div>
+        <span class="goal-icon">&#127956;&#65039;</span>
+        <div class="goal-text">I can compare composite volcanoes, cinder cones, and shield volcanoes.</div>
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
       <div class="goal-card">
-        <span class="goal-icon">&#127757;</span>
-        <div class="goal-text">I can explain why earthquakes and volcanoes occur in narrow belts rather than randomly.</div>
+        <span class="goal-icon">&#128302;</span>
+        <div class="goal-text">I can predict a volcano's shape and eruption style from the kind of lava it produces.</div>
         <span class="goal-std">7.MS-ESS2-2</span>
       </div>
     </div>
@@ -694,53 +719,45 @@
     <h2 class="section-title">Words You'll Meet</h2>
     <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
     <div class="glossary-grid">
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Continental Drift</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The idea that the continents were once joined and have slowly moved to their present positions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-drift')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Magma</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Melted rock material inside the Earth that contains dissolved gas.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-magma')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Pangaea</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The single supercontinent that held all of Earth's land about 250 million years ago.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pangaea')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Plate Tectonics</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The theory that Earth's outer shell is broken into moving plates, explaining drift, earthquakes, and volcanoes.</div>
+        <div class="gc-head"><span class="gc-term">Lava</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Melted rock material once it reaches the Earth's surface.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-lava')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Lithosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The rigid outer shell of Earth, made of the crust and the upper mantle. It is broken into plates.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Magma Chamber</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The pool deep underground where magma is stored before it erupts.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-chamber')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Asthenosphere</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The soft, slowly flowing part of the upper mantle that the plates float on.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-litho')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Vent</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The opening that leads magma from inside the Earth up to the surface.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-vent')">See it in the lesson &#8595;</span></div>
+      </button>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Crater</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The bowl-shaped opening at the top of a volcano, around the main vent.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-vent')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Tectonic Plate</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A large slab of lithosphere that moves slowly over the asthenosphere.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-plate')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Pyroclastic</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">Fragments thrown out during an eruption, including ash and other debris.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-pyro')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
-        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Convection Current</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A looping flow of hot mantle rock that rises, cools, and sinks, dragging the plates along.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-convection')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Viscosity</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">How thick or runny a liquid is. Thick lava has high viscosity; thin, runny lava has low viscosity.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-viscosity')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Seafloor Spreading</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The process where magma rises at a mid-ocean ridge and cools into new ocean floor.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-seafloor')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-green" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Divergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move apart and new crust forms in the gap.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-head"><span class="gc-term">Shield Volcano</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The largest type, with broad, gently sloping sides built by thin, runny lava and gentle eruptions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-types')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Convergent Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates move together, often forming mountains or volcanoes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+        <div class="gc-head"><span class="gc-term">Cinder Cone</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The smallest type, a steep cone built from cinders that pile up around a single vent.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-types')">See it in the lesson &#8595;</span></div>
       </button>
-      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Transform Boundary</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">A boundary where two plates slide past each other, producing faults and earthquakes.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
-      </button>
-      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
-        <div class="gc-head"><span class="gc-term">Subduction</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">When a more dense plate sinks beneath a less dense plate at a convergent boundary.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-boundaries')">See it in the lesson &#8595;</span></div>
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false" style="border-top-color: var(--red);">
+        <div class="gc-head"><span class="gc-term" style="color: var(--red);">Composite Volcano</span><span class="gc-chev">&#9662;</span></div>
+        <div class="gc-def">The tallest type, with steep sides built from alternating layers of ash and lava, and violent eruptions.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-types')">See it in the lesson &#8595;</span></div>
       </button>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -775,61 +792,69 @@
 <section id="engage" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Engage &middot; Phenomenon</span>
-    <h2 class="section-title">A World That Shakes in Lines</h2>
-    <p class="section-desc">If you mapped every earthquake and volcano from the last hundred years, you would not get a random scatter of dots. You would get long, narrow belts that wrap around the planet, like cracks in a shell.</p>
+    <h2 class="section-title">Two Volcanoes, Two Stories</h2>
+    <p class="section-desc">Mauna Loa in Hawaii is the largest volcano on Earth, yet its eruptions usually flow out slowly enough for people to walk away. Mount St. Helens in Washington is much smaller, but in 1980 it exploded in seconds and flattened a forest.</p>
 
     <div class="phenomenon-card">
-      <div class="phenomenon-icon">&#127755;</div>
+      <div class="phenomenon-icon">&#128293;</div>
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
-        <h3>The Ring of Fire</h3>
-        <p>A belt of volcanoes and earthquakes called the Ring of Fire traces the edge of the Pacific Ocean. Other belts run down the middle of the Atlantic and across southern Asia. Most of the world's earthquakes and volcanoes happen along these same lines, year after year. Why would Earth's most violent events follow such a clear pattern?</p>
+        <h3>Gentle Rivers and Sudden Blasts</h3>
+        <p>Both Mauna Loa and Mount St. Helens are fed by melted rock rising from inside the Earth. Both build mountains at the surface. But one leaks glowing lava that you can outrun, while the other can erupt with the force of a bomb. If they are both volcanoes, why do they look so different and behave so differently?</p>
       </div>
     </div>
 
-    <!-- Phenomenon figure: belts vs random -->
+    <!-- Two-shape comparison image -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A stylized world map showing earthquakes and volcanoes clustered along curved belts rather than spread evenly">
-        <rect x="20" y="20" width="560" height="240" rx="16" fill="#10202e"/>
-        <!-- stylized landmasses -->
-        <path d="M70,90 q40,-30 100,-10 q40,15 20,55 q-30,40 -90,30 q-50,-10 -30,-75 Z" fill="#26323f"/>
-        <path d="M300,70 q70,-20 130,10 q40,25 10,80 q-60,45 -130,15 q-40,-50 -20,-105 Z" fill="#26323f"/>
-        <path d="M180,180 q50,-15 90,15 q15,40 -40,55 q-60,5 -50,-70 Z" fill="#26323f"/>
-        <!-- plate-edge belts (dashed) -->
-        <path d="M40,150 C150,90 250,210 360,140 C440,90 520,170 560,120" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <path d="M120,250 C200,200 240,150 300,60" fill="none" stroke="rgba(159,184,204,0.45)" stroke-width="2.5" stroke-dasharray="7 7"/>
-        <!-- earthquake/volcano markers along belts -->
-        <g fill="#e74c3c">
-          <circle cx="60" cy="142" r="5"/><circle cx="120" cy="120" r="5"/><circle cx="180" cy="150" r="5"/>
-          <circle cx="240" cy="180" r="5"/><circle cx="300" cy="158" r="5"/><circle cx="360" cy="140" r="5"/>
-          <circle cx="420" cy="118" r="5"/><circle cx="480" cy="150" r="5"/><circle cx="540" cy="128" r="5"/>
-          <circle cx="150" cy="225" r="5"/><circle cx="210" cy="180" r="5"/><circle cx="260" cy="120" r="5"/><circle cx="292" cy="78" r="5"/>
-        </g>
-        <text x="300" y="252" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#9fb8cc">Red marks = earthquakes &amp; volcanoes. Dashed lines = where they line up.</text>
+      <svg viewBox="0 0 600 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A broad, gently sloping shield volcano beside a tall, steep, exploding composite volcano">
+        <!-- sky -->
+        <rect x="0" y="0" width="600" height="240" fill="none"/>
+        <!-- ground -->
+        <rect x="0" y="200" width="600" height="40" fill="#1a2430"/>
+        <!-- shield volcano (left) -->
+        <path d="M20,200 Q160,150 300,200 Z" fill="#3a5a6e"/>
+        <path d="M155,168 Q160,160 165,168 L172,178 L148,178 Z" fill="#5a3a2a"/>
+        <path d="M160,160 C156,152 164,150 160,144 C166,152 170,156 166,164 C160,160 162,166 160,160 Z" fill="#ff8a3c"/>
+        <!-- gentle lava flow -->
+        <path d="M160,176 Q210,188 250,196" fill="none" stroke="rgba(255,140,60,0.7)" stroke-width="5" stroke-linecap="round"/>
+        <text x="160" y="224" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#7cc8f8">Broad, gentle slopes</text>
+        <!-- composite volcano (right) -->
+        <path d="M380,200 L450,70 L520,200 Z" fill="#4a3140"/>
+        <path d="M433,100 L450,70 L467,100 L520,200 L380,200 Z" fill="none"/>
+        <!-- explosion plume -->
+        <path d="M450,70 C440,48 460,46 450,28 C470,44 484,40 472,62 C462,56 466,72 450,70 Z" fill="#c9c2cc"/>
+        <circle cx="438" cy="48" r="9" fill="#b8b0bc"/>
+        <circle cx="466" cy="40" r="11" fill="#cbc4cf"/>
+        <circle cx="452" cy="26" r="13" fill="#ddd6e0"/>
+        <!-- pyroclastic specks -->
+        <circle cx="420" cy="70" r="3" fill="#e8814a"/>
+        <circle cx="486" cy="66" r="3" fill="#e8814a"/>
+        <circle cx="470" cy="90" r="2.5" fill="#e8814a"/>
+        <text x="450" y="224" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#e74c3c">Tall, steep, explosive</text>
       </svg>
-      <div class="figure-caption">The dots are not scattered everywhere. They follow the dashed seams that crisscross the globe.</div>
+      <div class="figure-caption">Same engine inside the Earth, very different shapes and eruptions at the surface.</div>
     </div>
 
     <!-- Prediction gate -->
     <div class="question-pause predict-pause" id="qp-engage">
       <div class="qp-row">
         <span class="question-pause-icon">&#129300;</span>
-        <div class="question-pause-text"><strong>Make a prediction:</strong> Why do earthquakes and volcanoes line up in narrow belts instead of spreading out evenly across Earth?</div>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> What could make one volcano erupt gently while another explodes?</div>
       </div>
       <div class="predict-buttons">
-        <button class="predict-btn"><span class="pb-letter">A</span>Earth's surface is one solid shell that cracks in random spots.</button>
-        <button class="predict-btn"><span class="pb-letter">B</span>Earth's surface is broken into moving plates, and the edges are where the action happens.</button>
-        <button class="predict-btn"><span class="pb-letter">C</span>Earthquakes and volcanoes happen everywhere equally; the belts are a coincidence.</button>
+        <button class="predict-btn"><span class="pb-letter">A</span>All volcanoes are really the same; the difference is just luck.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Something about the lava itself makes one flow and the other blast.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Bigger volcanoes always have the most violent eruptions.</button>
       </div>
     </div>
 
     <div class="name-it slate-it predict-gated" data-gate="qp-engage">
       <div class="name-it-label">Here's the big idea</div>
-      <p>The best answer is <strong>B</strong>. Earth's outer shell is not one piece. It is cracked into giant slabs called plates that slowly move. The belts of earthquakes and volcanoes trace the edges where plates meet, pull apart, or grind past one another. To understand the pattern at the surface, we have to understand the plates and what moves them. That is where this lesson goes next.</p>
+      <p>The best answer is <strong>B</strong>. The secret is in the lava. Thin, runny lava lets gas slip out easily, so it flows like a river. Thick, sticky lava traps gas until the pressure builds and bursts. That single difference shapes how a volcano erupts and what it looks like. This lesson follows that idea from inside the Earth all the way to the three main volcano shapes.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2rem;">
-      <strong>Where we're headed:</strong> First we'll meet the scientist who noticed the continents fit together. Then we'll see what the plates are, what pushes them, and what happens at the boundaries where they meet.
+      <strong>Where we're headed:</strong> First we'll look inside a volcano to name its parts. Then we'll find the one property of lava that controls every eruption. Finally we'll meet the three types of volcanoes that property builds.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -837,7 +862,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Anchor the lesson in a striking real-world pattern.</li><li>Raise a question students will want answered.</li></ul>
+          <ul class="edu-note-text"><li>Anchor the lesson in a real, surprising contrast.</li><li>Raise a question students will want answered.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -849,7 +874,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Concrete visual pattern (belts on a map)</li><li>Short framing text</li><li>Prediction question is low stakes and ungraded</li></ul>
+          <ul class="edu-note-text"><li>Concrete, familiar examples</li><li>Short framing text</li><li>Visual anchor</li></ul>
         </div>
       </div>
     </div>
@@ -858,128 +883,94 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     REVIEW PREVIOUS LEARNING (bridge between Engage and Explore)
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="review-prev" style="background: var(--dark);">
-  <div class="container">
-    <span class="section-label">Review Previous Learning</span>
-    <h2 class="section-title">Need a Refresher?</h2>
-    <p class="section-desc">This lesson builds on ideas you may have seen before.</p>
-
-    <div class="content-card">
-      <div class="card-header">
-        <div class="card-title">Continental Drift (Grade 6)</div>
-      </div>
-      <p>Wegener used fossils, matching rock layers, climate clues, and the fit of continents to propose that Earth's continents were once connected. Reviewing this evidence will help explain why scientists accepted plate tectonics.</p>
-      <a href="lesson_continental-drift.html" style="display: inline-block; margin-top: 1.4rem; background: var(--gold); color: var(--dark); font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.03em; text-decoration: none; padding: 0.85rem 1.8rem; border-radius: 12px; transition: transform 0.15s, box-shadow 0.15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px var(--gold-glow)';" onmouseout="this.style.transform='';this.style.boxShadow='';">Review Lesson &rarr;</a>
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Bridge from Grade 6 continental drift to plate tectonics.</li><li>Prevent knowledge gaps before new content begins.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Prior knowledge activation</li><li>Schema priming</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Remember</li><li>DOK 1</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Optional review, no new content required</li><li>Single clear link, no navigation pressure</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 1: CONTINENTAL DRIFT (Wegener's evidence)
+     EXPLORE 1: INSIDE A VOLCANO
 ═══════════════════════════════════════════════════════════════════════ -->
 <section id="explore" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The First Clue</span>
-    <h2 class="section-title">The Continents That Fit Together</h2>
-    <p class="section-desc">Long before anyone talked about plates, one scientist looked at a map and noticed something strange: the continents looked like pieces of a torn puzzle.</p>
-
-    <div id="term-drift" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129489;&#8205;&#127891;</span>
-        <div class="card-title">Wegener's Big Idea</div>
-      </div>
-      <div class="card-body">
-        <p>In 1912, a German scientist named <strong>Alfred Wegener</strong> proposed the idea of <span class="vocab">continental drift</span>. He claimed the continents are slowly moving, and that about 250 million years ago they were all joined into one giant supercontinent.</p>
-        <p>He named that supercontinent <strong>Pangaea</strong>, meaning "all land." Wegener knew that the way the coastlines fit together was a clue, but a good fit alone is not proof. So he went looking for real evidence.</p>
-      </div>
-    </div>
-
-    <div id="term-pangaea" class="name-it orange-it">
-      <div class="name-it-label">Name it: Pangaea</div>
-      <p><strong>Pangaea</strong> was a single supercontinent that held all of Earth's land roughly 250 million years ago. Over millions of years it broke apart, and the pieces drifted into the continents we know today.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Wegener gathered four kinds of evidence. No single clue was enough on its own, but together they told a powerful story.</p>
-
-    <div class="example-grid">
-      <div class="example-chip"><span class="example-chip-icon">&#129460;</span><span>Fossils</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#10052;&#65039;</span><span>Climate</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#9968;&#65039;</span><span>Mountains</span></div>
-      <div class="example-chip"><span class="example-chip-icon">&#129522;</span><span>Magnetite</span></div>
-    </div>
+    <span class="section-label">Explore &middot; The Parts</span>
+    <h2 class="section-title">Inside a Volcano</h2>
+    <p class="section-desc">Before we compare types, we need a shared map. Every volcano is built from the same basic parts, a path that melted rock follows from deep underground up to the open air.</p>
 
     <div class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#129460;</span>
-        <div class="card-title">Fossil Clues</div>
+        <span class="card-icon">&#127755;</span>
+        <div class="card-title">From the Magma Chamber to the Surface</div>
       </div>
       <div class="card-body">
-        <p>Fossils of the same plant and animal species turned up on continents now separated by thousands of miles of ocean. One example is <em>Glossopteris</em>, a fern-like plant found across South America, Africa, India, and Antarctica.</p>
-        <p>Its seeds were too heavy to drift across an ocean without being destroyed, and the small land animals found with it could not have swum that far. The simplest explanation is that the land was once connected.</p>
+        <p>Deep inside the Earth, rock gets so hot that it melts. A volcano is simply the place where that melted rock reaches the surface and erupts.</p>
+        <p>The melted rock starts in a storage pool, travels up a channel, and finally breaks out at the top. Each part of that path has a name.</p>
       </div>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#10052;&#65039;</span>
-        <div class="card-title">Climate Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Wegener found scratches carved by ancient glaciers on rocks in places that are warm today, like parts of Africa and India. He also found fossils of tropical swamp plants in Antarctica and on islands far to the north.</p>
-        <p>A continent cannot be frozen and tropical at the same time. But if those lands once sat in very different positions, the climate clues suddenly make sense. The southern continents fit together into a region scientists call <strong>Gondwanaland</strong>.</p>
-      </div>
+    <div id="term-magma" class="name-it orange-it">
+      <div class="name-it-label">Key idea: Magma</div>
+      <p><strong>Magma</strong> is melted rock material inside the Earth. It holds dissolved gas, a little like the gas trapped in a fizzy drink before you open it.</p>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#9968;&#65039;</span>
-        <div class="card-title">Rock and Mountain Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Mountain ranges on different continents line up and contain rocks of the same age and chemistry. The Caledonian Mountains in northwestern Europe match the Appalachian Mountains along the east coast of the United States.</p>
-        <p>Put the continents back together and these ranges form one continuous belt, like a sentence torn across two pages. Rock types and the shapes of the continental shelves match across the ocean as well.</p>
-      </div>
+    <div id="term-lava" class="name-it orange-it">
+      <div class="name-it-label">Key idea: Lava</div>
+      <p>The same melted rock gets a new name once it reaches the surface. On the surface, it is called <strong>lava</strong>. So magma is inside the Earth; lava is outside.</p>
     </div>
 
-    <div class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129522;</span>
-        <div class="card-title">Magnetite Clues</div>
-      </div>
-      <div class="card-body">
-        <p>Some rocks contain <strong>magnetite</strong>, a magnetic iron-oxide mineral and the most magnetic mineral found in nature. When melted rock cools, magnetite crystals line up with Earth's magnetic field and lock in that direction, like tiny frozen compass needles.</p>
-        <p>Rocks of the same age on far-apart continents recorded matching magnetic patterns. That match only makes sense if the rocks formed side by side and later moved apart.</p>
-      </div>
+    <div id="term-chamber" class="name-it slate-it">
+      <div class="name-it-label">Key idea: Magma Chamber</div>
+      <p>The <strong>magma chamber</strong> is the underground pool where the magma is kept before an eruption. Think of it as the volcano's fuel tank.</p>
     </div>
 
-    <div class="callout gold">
-      <span class="callout-icon">&#9888;&#65039;</span>
-      <div class="callout-body"><strong>The missing piece:</strong> Wegener's evidence was strong, but most scientists rejected his idea for decades. The reason was simple: he could not explain what force could possibly move something as huge as a continent. That answer was still hidden deep inside Earth.</div>
+    <div id="term-vent" class="name-it slate-it">
+      <div class="name-it-label">Key idea: Vent and Crater</div>
+      <p>A <strong>vent</strong> is the opening that leads magma from the chamber up to the Earth's surface. At the top, the vent opens into a bowl-shaped <strong>crater</strong>. Some volcanoes also have smaller secondary vents on their sides.</p>
+    </div>
+
+    <!-- Cross-section figure -->
+    <div class="figure-box">
+      <svg viewBox="0 0 600 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A cutaway of a volcano showing the magma chamber underground, a main vent leading up, a crater at the top, lava and ash erupting, and a secondary vent on the side">
+        <!-- sky -->
+        <rect x="0" y="0" width="600" height="200" fill="none"/>
+        <!-- underground -->
+        <rect x="0" y="200" width="600" height="140" fill="#1a1410"/>
+        <!-- cone -->
+        <path d="M120,200 L300,40 L480,200 Z" fill="#5a4a3a"/>
+        <!-- layers in cone -->
+        <path d="M170,200 L300,84 L430,200 Z" fill="#6a5746"/>
+        <path d="M215,200 L300,124 L385,200 Z" fill="#4a3c2e"/>
+        <!-- main vent -->
+        <path d="M292,200 L296,60 L304,60 L308,200 Z" fill="#3a2e26"/>
+        <!-- magma chamber -->
+        <ellipse cx="300" cy="280" rx="95" ry="42" fill="url(#chamberGlow)"/>
+        <defs>
+          <radialGradient id="chamberGlow" cx="50%" cy="50%" r="60%">
+            <stop offset="0%" stop-color="#ffcf6b"/>
+            <stop offset="55%" stop-color="#e8814a"/>
+            <stop offset="100%" stop-color="#7a3a2a"/>
+          </radialGradient>
+        </defs>
+        <!-- magma channel from chamber to vent -->
+        <path d="M300,240 L300,200" stroke="#e8814a" stroke-width="12" stroke-linecap="round"/>
+        <!-- secondary vent -->
+        <path d="M300,150 C330,160 350,175 360,200" fill="none" stroke="#e8814a" stroke-width="7" stroke-linecap="round"/>
+        <path d="M356,200 L378,200 L368,176 Z" fill="#7a5a3a"/>
+        <!-- crater + eruption -->
+        <path d="M286,52 L300,40 L314,52 L308,62 L292,62 Z" fill="#3a2e26"/>
+        <path d="M300,40 C294,26 308,24 300,10 C314,24 322,22 314,40 C306,34 308,46 300,40 Z" fill="#ff8a3c"/>
+        <!-- ash specks -->
+        <circle cx="284" cy="30" r="3" fill="#c9c2cc"/>
+        <circle cx="318" cy="26" r="3.5" fill="#cbc4cf"/>
+        <circle cx="300" cy="14" r="4" fill="#ddd6e0"/>
+        <!-- labels -->
+        <text x="300" y="334" text-anchor="middle" font-family="Nunito,sans-serif" font-size="13" font-weight="800" fill="#f2b86a">Magma Chamber</text>
+        <text x="392" y="190" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#dfe7ee">Secondary vent</text>
+        <text x="150" y="150" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#dfe7ee">Main vent</text>
+        <line x1="248" y1="146" x2="296" y2="130" stroke="#dfe7ee" stroke-width="1.4"/>
+        <text x="330" y="40" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#dfe7ee">Crater</text>
+        <line x1="328" y1="44" x2="308" y2="50" stroke="#dfe7ee" stroke-width="1.4"/>
+      </svg>
+      <div class="figure-caption">The path of melted rock: stored in the magma chamber, up the vent, out the crater as lava and ash.</div>
+    </div>
+
+    <div id="term-pyro" class="name-it" style="border-left-color: var(--blue);">
+      <div class="name-it-label" style="color: var(--blue);">Key idea: Pyroclastic Material</div>
+      <p>Not everything that comes out of a volcano flows. <strong style="color: var(--blue);">Pyroclastic</strong> material is the broken fragments thrown out during an eruption, including ash and other debris. The word comes from Greek roots meaning fire and broken pieces.</p>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -987,90 +978,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Establish the historical puzzle that drove the theory.</li><li>Show how multiple lines of evidence accumulate into a claim.</li></ul>
+          <ul class="edu-note-text"><li>Build a shared model before comparing types.</li><li>Name each part along the path of melted rock.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Evidence-based reasoning</li><li>Narrative structure (hero, evidence, unsolved mystery)</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Four parallel evidence cards, each self-contained</li><li>Short paragraphs with bolded key ideas</li><li>Misconception alert: Wegener was rejected for lack of mechanism, not bad evidence</li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 2: LITHOSPHERIC PLATES
-═══════════════════════════════════════════════════════════════════════ -->
-<section id="plates" style="background: var(--dark2);">
-  <div class="container">
-    <span class="section-label">Explore &middot; The Plates</span>
-    <h2 class="section-title">A Cracked Shell That Floats</h2>
-    <p class="section-desc">The breakthrough came from understanding Earth's layers. The continents do not plow through the ocean floor on their own. They ride on top of giant moving slabs.</p>
-
-    <div id="term-litho" class="content-card">
-      <div class="card-header">
-        <span class="card-icon">&#129513;</span>
-        <div class="card-title">The Lithosphere Rides the Asthenosphere</div>
-      </div>
-      <div class="card-body">
-        <p>The <span class="vocab">lithosphere</span> is Earth's rigid outer shell, made of the crust plus the upper part of the mantle. It is not one solid piece. It is cracked into many large slabs called <strong>tectonic plates</strong>.</p>
-        <p>Just below sits the <span class="vocab">asthenosphere</span>, a hotter, softer part of the mantle that slowly flows like thick putty. The plates float and slide on the asthenosphere the way rafts drift on the surface of a pool.</p>
-      </div>
-    </div>
-
-    <div id="term-plate" class="name-it slate-it">
-      <div class="name-it-label">Name it: Tectonic Plate</div>
-      <p>A <strong>tectonic plate</strong> is a large slab of lithosphere that moves slowly over the asthenosphere. Most plates carry both ocean floor and continents, so the continents move because the plates they sit on move.</p>
-    </div>
-
-    <p class="section-desc" style="margin: 2.5rem 0 1.4rem;">Plates are not all the same, because the crust they carry comes in two kinds. The difference in density will matter a lot at the boundaries.</p>
-
-    <div class="crust-grid">
-      <div class="crust-card oceanic">
-        <div class="crust-title">Oceanic Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thinnest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>basalt</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thinnest</strong> and <strong>most dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Sinks when it meets lighter crust</span></li>
-        </ul>
-      </div>
-      <div class="crust-card continental">
-        <div class="crust-title">Continental Crust</div>
-        <div class="crust-bar-track"><div class="crust-bar"></div></div>
-        <div class="crust-bar-label">Thickest layer of crust</div>
-        <ul class="crust-list">
-          <li><span class="crust-dot"></span><span>Made of <strong>granite</strong></span></li>
-          <li><span class="crust-dot"></span><span><strong>Thickest</strong> and <strong>least dense</strong></span></li>
-          <li><span class="crust-dot"></span><span>Rides high and does not sink easily</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="bridge-callout teal">
-      <strong>Hold on to the density rule:</strong> oceanic crust is more dense than continental crust. When two plates meet, the heavier oceanic crust tends to sink beneath the lighter continental crust. That single rule will explain a lot of what happens at boundaries.
-    </div>
-    <!-- ── Instructional Design note · Educator Mode ── -->
-    <div class="edu-note">
-      <div class="edu-note-label">&#128218; Instructional Design</div>
-      <div class="edu-note-grid">
-        <div class="edu-note-item">
-          <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Give students the moving-parts vocabulary before explaining what moves them.</li><li>Establish the density rule that drives subduction.</li></ul>
-        </div>
-        <div class="edu-note-item">
-          <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Concrete analogy (rafts on a pool)</li><li>Contrast pairs (oceanic vs continental crust)</li></ul>
+          <ul class="edu-note-text"><li>Schema building</li><li>Dual coding with the labeled cutaway</li><li>Everyday analogy (fizzy drink, fuel tank)</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1078,7 +990,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Side-by-side crust comparison cards</li><li>Visual density bars support non-verbal learners</li><li>Misconception alert: plates are not just continents; most carry ocean floor too</li></ul>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Labeled diagram paired with text</li><li>Short paragraphs</li></ul>
         </div>
       </div>
     </div>
@@ -1087,67 +999,62 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 3: WHAT MOVES THE PLATES (convection + seafloor spreading)
+     EXPLORE 2: WHAT CONTROLS AN ERUPTION
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="motion" style="background: var(--dark);">
+<section id="eruption" style="background: var(--dark2);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Engine</span>
-    <h2 class="section-title">What Pushes the Plates?</h2>
-    <p class="section-desc">This is the answer Wegener was missing. The force that moves whole continents comes from heat deep inside Earth, the same heat that drives everything from the inside out.</p>
+    <span class="section-label">Explore &middot; The Cause</span>
+    <h2 class="section-title">What Decides How a Volcano Erupts</h2>
+    <p class="section-desc">Here is the heart of the whole lesson. Whether a volcano oozes or explodes comes down to one property of its lava, and the gas trapped inside it.</p>
 
-    <div id="term-convection" class="content-card">
+    <div id="term-viscosity" class="name-it" style="border-left-color: var(--gold);">
+      <div class="name-it-label" style="color: var(--gold);">Key idea: Viscosity</div>
+      <p><strong style="color: var(--gold);">Viscosity</strong> is how thick or runny a liquid is. Water has low viscosity, so it pours easily. Honey has high viscosity, so it moves slowly. Lava can be either, and that makes all the difference.</p>
+    </div>
+
+    <div class="content-card">
       <div class="card-header">
-        <span class="card-icon">&#128293;</span>
-        <div class="card-title">Convection Currents in the Mantle</div>
+        <span class="card-icon">&#127855;</span>
+        <div class="card-title">Thin Lava Flows, Thick Lava Traps Gas</div>
       </div>
       <div class="card-body">
-        <p>The mantle is extremely hot near the bottom and cooler near the top. Hot rock is less dense, so it slowly rises toward the surface. As it nears the top it cools, becomes more dense, and sinks back down. This endless loop is a <span class="vocab">convection current</span>.</p>
-        <p>These currents flow beneath the lithosphere and drag the plates along, like crackers riding on slowly boiling soup. <strong>The movement of mantle rock creates the movement of the plates above it.</strong></p>
+        <p>Magma always carries dissolved gas. As magma rises, that gas tries to escape, just like bubbles rising in a soda.</p>
+        <p>When lava is <strong>thin and runny</strong>, gas slips out easily and the lava flows out quietly. When lava is <strong>thick and sticky</strong>, gas gets trapped. Pressure builds and builds until it finally bursts free, blasting lava and ash into the air.</p>
+        <div class="callout gold">
+          <span class="callout-icon">&#128161;</span>
+          <div class="callout-body"><strong>The key pattern:</strong> Low viscosity means gentle, flowing eruptions. High viscosity means trapped gas and explosive eruptions. Hold on to this idea, because it explains all three volcano types.</div>
+        </div>
       </div>
     </div>
 
-    <!-- Convection figure -->
+    <!-- Viscosity figure -->
     <div class="figure-box">
-      <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Convection currents in the mantle: hot rock rises in the middle, spreads sideways, and sinks at the edges, pushing two plates apart at the surface">
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="#7a3a2a" opacity="0.85"/>
-        <rect x="20" y="40" width="560" height="200" rx="10" fill="url(#mantleGrad)"/>
-        <defs>
-          <linearGradient id="mantleGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stop-color="#ffb347" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="#7a3a2a" stop-opacity="0.1"/>
-          </linearGradient>
-        </defs>
-        <rect x="40" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <rect x="320" y="32" width="240" height="16" rx="3" fill="#6a7d52"/>
-        <text x="150" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <text x="450" y="20" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#9fb8cc">Plate</text>
-        <path d="M270,40 L230,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M330,40 L370,40" stroke="#dfe7ee" stroke-width="3" marker-end="url(#ah)"/>
-        <path d="M300,210 C300,120 200,120 200,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M300,210 C300,120 400,120 400,60" fill="none" stroke="#ffd27a" stroke-width="3" marker-end="url(#ah2)"/>
-        <path d="M200,210 C200,160 260,150 290,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <path d="M400,210 C400,160 340,150 310,200" fill="none" stroke="#ffd27a" stroke-width="2.4" opacity="0.7" marker-end="url(#ah2)"/>
-        <defs>
-          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd27a"/></marker>
-        </defs>
-        <text x="300" y="232" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#ffce8a">Hot rock rises in the middle, cools, and sinks at the sides</text>
+      <svg viewBox="0 0 560 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two beakers of lava. Thin lava lets gas bubbles escape and pours out gently. Thick lava traps bubbles until it bursts.">
+        <!-- left: thin lava -->
+        <text x="140" y="28" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="800" fill="#7cc8f8">Thin, runny lava</text>
+        <path d="M70,50 L210,50 L196,180 L84,180 Z" fill="none" stroke="rgba(124,200,248,0.5)" stroke-width="2"/>
+        <path d="M84,120 L196,120 L188,180 L92,180 Z" fill="rgba(124,200,248,0.25)"/>
+        <!-- escaping bubbles -->
+        <circle cx="120" cy="100" r="5" fill="none" stroke="#7cc8f8" stroke-width="2"/>
+        <circle cx="150" cy="80" r="4" fill="none" stroke="#7cc8f8" stroke-width="2"/>
+        <circle cx="135" cy="58" r="3" fill="none" stroke="#7cc8f8" stroke-width="2"/>
+        <text x="140" y="205" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#9fb8cc">Gas escapes &#8594; gentle flow</text>
+        <!-- right: thick lava -->
+        <text x="420" y="28" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="800" fill="#e74c3c">Thick, sticky lava</text>
+        <path d="M350,50 L490,50 L476,180 L364,180 Z" fill="none" stroke="rgba(231,76,60,0.5)" stroke-width="2"/>
+        <path d="M360,70 L480,70 L476,180 L364,180 Z" fill="rgba(231,76,60,0.28)"/>
+        <!-- trapped bubbles -->
+        <circle cx="400" cy="120" r="6" fill="rgba(245,200,66,0.7)"/>
+        <circle cx="435" cy="100" r="7" fill="rgba(245,200,66,0.7)"/>
+        <circle cx="412" cy="150" r="5" fill="rgba(245,200,66,0.7)"/>
+        <circle cx="450" cy="140" r="6" fill="rgba(245,200,66,0.7)"/>
+        <text x="420" y="205" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#9fb8cc">Gas trapped &#8594; pressure builds</text>
       </svg>
-      <div class="figure-caption">A convection current in the mantle: the loop of rising and sinking rock pushes the plates apart at the surface.</div>
+      <div class="figure-caption">Viscosity controls the gas. Gas that escapes makes a calm eruption; gas that is trapped makes an explosive one.</div>
     </div>
 
-    <div id="term-seafloor" class="name-it teal-it">
-      <div class="name-it-label">Name it: Seafloor Spreading</div>
-      <p>Where plates pull apart under the ocean, rising magma fills the gap and cools into brand new ocean floor. This is called <strong>seafloor spreading</strong>. It builds a long underwater mountain chain called a mid-ocean ridge, and the seafloor is youngest right at the ridge and older farther away.</p>
-    </div>
-
-    <div class="callout slate">
-      <span class="callout-icon">&#129522;</span>
-      <div class="callout-body"><strong>Magnetite returns:</strong> as new seafloor cools at a ridge, magnetite minerals record the direction of Earth's magnetic field. The field flips over time, leaving matching, mirror-image stripes on both sides of the ridge. Those symmetric stripes are powerful proof that the seafloor is spreading.</div>
-    </div>
-
-    <div class="bridge-callout teal" style="margin-top: 0.5rem;">
-      <strong>The mystery solved:</strong> convection currents are the engine Wegener could not find. Heat drives the mantle to flow, the flow moves the plates, and the plates carry the continents. Now we can look at exactly what happens where two plates meet.
+    <div class="bridge-callout teal">
+      <strong>One cause, three results.</strong> The three types of volcanoes are really just three outcomes of this same idea. Next, let's meet them and see how viscosity built each one.
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1155,11 +1062,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Answer Wegener's missing piece: what actually moves the plates.</li><li>Establish the causal chain before showing what it produces at boundaries.</li></ul>
+          <ul class="edu-note-text"><li>Establish the single cause before classifying types.</li><li>Replace memorized lists with one explanatory idea.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Causal reasoning (heat to flow to plate motion)</li><li>Labeled diagram supports dual coding</li></ul>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling</li><li>Prior knowledge activation (honey, soda)</li><li>Dual coding with the beaker diagram</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1167,7 +1074,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Boiling-water analogy makes convection concrete</li><li>Short paragraphs with key terms bolded in place</li><li>Misconception alert: the asthenosphere flows like thick putty, not liquid lava</li></ul>
+          <ul class="edu-note-text"><li>Everyday analogies</li><li>One idea stated plainly</li><li>Short paragraphs with a visual</li></ul>
         </div>
       </div>
     </div>
@@ -1176,69 +1083,54 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXPLORE 4: PLATE BOUNDARIES (interactive)
+     EXPLORE 3: THE THREE TYPES (interactive)
 ═══════════════════════════════════════════════════════════════════════ -->
-<section id="boundaries-sec" style="background: var(--dark2);">
+<section id="types" style="background: var(--dark);">
   <div class="container">
-    <span class="section-label">Explore &middot; The Boundaries</span>
-    <h2 class="section-title">Where Plates Meet</h2>
-    <p class="section-desc">Almost all of Earth's earthquakes and volcanoes happen at plate boundaries. There are three types, sorted by how the plates move. Open each one to see what it builds.</p>
+    <span class="section-label">Explore &middot; The Three Types</span>
+    <h2 class="section-title">Three Shapes, One Cause</h2>
+    <p class="section-desc">Scientists sort volcanoes into three main types by their shape and how they erupt. Click a type to explore how its lava builds it.</p>
 
-    <div id="term-boundaries" class="layer-wrap">
+    <div id="term-types" class="layer-wrap">
       <div class="layer-figure">
-        <svg viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three plate boundary types: divergent plates moving apart, convergent plates colliding with one sinking, and transform plates sliding past each other">
-          <!-- Divergent -->
-          <text x="10" y="22" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#3ddc84">Divergent</text>
-          <rect x="20" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <rect x="145" y="30" width="95" height="26" rx="3" fill="#6a7d52"/>
-          <path d="M118,43 L96,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M142,43 L164,43" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M130,56 L130,86" stroke="#ffb347" stroke-width="6" stroke-linecap="round"/>
-          <!-- Convergent -->
-          <text x="10" y="122" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#e8814a">Convergent</text>
-          <rect x="20" y="130" width="110" height="24" rx="3" fill="#9a5e3a"/>
-          <path d="M130,142 L155,142 L185,170 Z" fill="#7cc8f8"/>
-          <rect x="150" y="130" width="90" height="14" rx="3" fill="#7cc8f8"/>
-          <path d="M138,140 L120,140" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M150,127 L168,127" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M40,130 L52,112 L64,130 Z" fill="#8a9a6a"/>
-          <!-- Transform -->
-          <text x="10" y="222" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#7cc8f8">Transform</text>
-          <rect x="20" y="230" width="100" height="40" rx="3" fill="#6a7d52"/>
-          <rect x="140" y="230" width="100" height="40" rx="3" fill="#5a6e44"/>
-          <line x1="130" y1="226" x2="130" y2="274" stroke="#1a1410" stroke-width="3"/>
-          <path d="M70,222 L70,210" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <path d="M190,278 L190,290" stroke="#dfe7ee" stroke-width="2.5" marker-end="url(#bh)"/>
-          <defs>
-            <marker id="bh" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dfe7ee"/></marker>
-          </defs>
+        <svg viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three volcano silhouettes: a broad gentle shield, a small steep cinder cone, and a tall steep composite cone">
+          <rect x="0" y="160" width="240" height="40" fill="#1a2430"/>
+          <!-- shield -->
+          <path d="M8,160 Q60,134 112,160 Z" fill="#7cc8f8" opacity="0.8"/>
+          <text x="60" y="178" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#7cc8f8">Shield</text>
+          <!-- cinder cone -->
+          <path d="M120,160 L142,118 L164,160 Z" fill="#e8814a" opacity="0.85"/>
+          <text x="142" y="178" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#e8814a">Cinder</text>
+          <!-- composite -->
+          <path d="M168,160 L206,60 L240,160 Z" fill="#e74c3c" opacity="0.8"/>
+          <text x="206" y="178" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="800" fill="#e74c3c">Composite</text>
         </svg>
       </div>
       <div class="layer-controls">
         <div class="layer-list">
-          <div class="layer-row" style="background: rgba(61,220,132,0.26); color: #9be8bb;" onclick="boundaryClick(1)">
-            <span>1 &middot; Divergent</span><span class="layer-tag">plates move apart</span>
+          <div class="layer-row" style="background: rgba(124,200,248,0.28); color: #aadcff;" onclick="typeClick(1)">
+            <span>1 &middot; Shield Volcano</span><span class="layer-tag">largest &middot; gentle</span>
           </div>
-          <div class="layer-row" style="background: rgba(232,129,74,0.28); color: #f2b88a;" onclick="boundaryClick(2)">
-            <span>2 &middot; Convergent</span><span class="layer-tag">plates collide</span>
+          <div class="layer-row" style="background: rgba(232,129,74,0.30); color: #f2b86a;" onclick="typeClick(2)">
+            <span>2 &middot; Cinder Cone</span><span class="layer-tag">smallest &middot; steep</span>
           </div>
-          <div class="layer-row" style="background: rgba(124,200,248,0.26); color: #aed8f8;" onclick="boundaryClick(3)">
-            <span>3 &middot; Transform</span><span class="layer-tag">plates slide past</span>
+          <div class="layer-row" style="background: rgba(231,76,60,0.28); color: #f0928a;" onclick="typeClick(3)">
+            <span>3 &middot; Composite Volcano</span><span class="layer-tag">tallest &middot; deadliest</span>
           </div>
         </div>
         <div class="layer-detail-panel">
           <div class="ld-inner">
-            <div class="ld-label" id="bd-label">Open a boundary</div>
-            <div class="ld-title" id="bd-title">Three ways plates meet &#8594;</div>
-            <div class="ld-body" id="bd-body">Each boundary type moves in a different way, so each one builds different features at the surface. Open any boundary to see how the plates move and what they create.</div>
+            <div class="ld-label" id="ld-label">Click a type</div>
+            <div class="ld-title" id="ld-title">Start with the shield &#8594;</div>
+            <div class="ld-body" id="ld-body">Each type has its own size, shape, eruption style, and a real example you can find on a map. Click any type to see how its lava shaped it.</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="callout teal">
-      <span class="callout-icon">&#9889;</span>
-      <div class="callout-body"><strong>Why the belts exist:</strong> the plate boundaries are exactly the lines you saw on the map. Divergent ridges, convergent trenches and volcanoes, and transform faults are where the crust cracks, melts, and slips, so that is where earthquakes and volcanoes cluster.</div>
+    <div class="callout slate">
+      <span class="callout-icon">&#128207;</span>
+      <div class="callout-body"><strong>A clear trend:</strong> As lava gets thicker, eruptions get more explosive and slopes get steeper. Shield volcanoes have the thinnest lava and gentlest shape; composite volcanoes have the thickest lava and the steepest, most dangerous shape.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1246,19 +1138,90 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Connect plate motion to surface features students can observe.</li><li>Answer the opening phenomenon: why earthquakes and volcanoes form belts.</li></ul>
+          <ul class="edu-note-text"><li>Give a whole-picture map of the three types.</li><li>Tie each shape back to the viscosity cause.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Comparison and contrast (three boundary types)</li><li>Dual coding with interactive diagram</li></ul>
+          <ul class="edu-note-text"><li>Advance organizer</li><li>Dual coding with the interactive selector</li><li>Pattern recognition (thickness to shape)</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
-          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Click to reveal one boundary at a time reduces load</li><li>Misconception alert: students often mix up which boundary produces mountains vs trenches vs rift valleys</li><li>Pause and have students predict the feature before revealing</li></ul>
+          <ul class="edu-note-text"><li>Click to reveal each type, no hover</li><li>Labeled diagram paired with text</li><li>One trend stated plainly</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 4: A CLOSER LOOK AT EACH TYPE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="compare" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; Side by Side</span>
+    <h2 class="section-title">Compare the Three Types</h2>
+    <p class="section-desc">Now line them up. Notice how the kind of lava in each column explains its size, shape, eruption, and a real-world example.</p>
+
+    <div class="type-grid">
+      <div class="type-card shield">
+        <div class="type-title">Shield Volcano</div>
+        <div class="type-eg">Example: Mauna Loa, Hawaii</div>
+        <ul class="type-list">
+          <li><span class="type-dot"></span><span>The <strong>largest</strong> volcanic structures</span></li>
+          <li><span class="type-dot"></span><span>Broad, <strong>gently sloping</strong> sides</span></li>
+          <li><span class="type-dot"></span><span><strong>Non-violent</strong> eruptions</span></li>
+          <li><span class="type-dot"></span><span>Built by <strong>thin, runny lava</strong> that flows out many times and spreads in wide layers</span></li>
+        </ul>
+      </div>
+      <div class="type-card cinder">
+        <div class="type-title">Cinder Cone</div>
+        <div class="type-eg">Example: Sunset Crater, Arizona</div>
+        <ul class="type-list">
+          <li><span class="type-dot"></span><span>The <strong>smallest</strong> volcano, usually under 1,000 feet</span></li>
+          <li><span class="type-dot"></span><span>Very steep <strong>cone shape</strong></span></li>
+          <li><span class="type-dot"></span><span>Violent eruptions, but <strong>too small to do much harm</strong></span></li>
+          <li><span class="type-dot"></span><span>Built when small bits of lava erupt, <strong>cool in the air</strong>, and fall back around the vent</span></li>
+        </ul>
+      </div>
+      <div class="type-card composite">
+        <div class="type-title">Composite Volcano</div>
+        <div class="type-eg">Example: Mount St. Helens, Washington</div>
+        <ul class="type-list">
+          <li><span class="type-dot"></span><span>The <strong>tallest</strong> volcano, steep sides on a broad base</span></li>
+          <li><span class="type-dot"></span><span><strong>Violent</strong> eruptions, often the most deadly</span></li>
+          <li><span class="type-dot"></span><span>Built by <strong>thick lava</strong> and explosive eruptions</span></li>
+          <li><span class="type-dot"></span><span>Layers of <strong>ash and lava</strong> stack on top of each other over time</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="bridge-callout teal">
+      <strong>Why "composite"?</strong> The word means made of parts. A composite volcano is built from alternating layers of ash (pyroclastic material) and hardened lava, which is exactly why it can grow so tall and erupt so violently.
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Place the three types side by side for contrast.</li><li>Tie each feature back to lava and a real example.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison and contrast</li><li>Worked examples (real volcanoes)</li><li>Elaboration on the viscosity cause</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Side-by-side comparison cards</li><li>Short, parallel bullet lists</li><li>Real examples for each type</li></ul>
         </div>
       </div>
     </div>
@@ -1278,11 +1241,11 @@
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr1Q">Wegener's idea of continental drift was rejected for decades. What was missing from his explanation?</div>
+      <div class="qr-q" id="qr1Q">Melted rock is called magma inside the Earth. What is it called once it reaches the surface?</div>
       <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
-        <label><input type="radio" name="qr1" value="0"><span>He had no fossil evidence at all</span></label>
-        <label><input type="radio" name="qr1" value="1"><span>He could not explain what force could move a continent</span></label>
-        <label><input type="radio" name="qr1" value="2"><span>No one believed Pangaea had ever existed</span></label>
+        <label><input type="radio" name="qr1" value="0"><span>It is still called magma</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>It is called lava</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>It is called ash</span></label>
       </div>
       <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1294,11 +1257,11 @@
     <div class="qr-card" id="qrCard2">
       <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr2Q">The tectonic plates float and slide on which layer of Earth?</div>
+      <div class="qr-q" id="qr2Q">Which kind of lava produces the most explosive eruptions?</div>
       <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
-        <label><input type="radio" name="qr2" value="0"><span>The solid inner core</span></label>
-        <label><input type="radio" name="qr2" value="1"><span>The brittle surface crust</span></label>
-        <label><input type="radio" name="qr2" value="2"><span>The soft, flowing asthenosphere</span></label>
+        <label><input type="radio" name="qr2" value="0"><span>Thin, runny lava that lets gas escape</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Thick, sticky lava that traps gas</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Cold, solid lava that cannot move</span></label>
       </div>
       <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1310,11 +1273,11 @@
     <div class="qr-card" id="qrCard3">
       <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
       <div class="qr-sub">Just a quick brain check. Not graded.</div>
-      <div class="qr-q" id="qr3Q">Two plates grind past each other along the San Andreas Fault. What does this transform boundary mainly produce?</div>
+      <div class="qr-q" id="qr3Q">A volcano has broad, gently sloping sides and is built by thin lava flowing out many times. Which type is it?</div>
       <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
-        <label><input type="radio" name="qr3" value="0"><span>Earthquakes</span></label>
-        <label><input type="radio" name="qr3" value="1"><span>Brand new seafloor</span></label>
-        <label><input type="radio" name="qr3" value="2"><span>Tall volcanoes</span></label>
+        <label><input type="radio" name="qr3" value="0"><span>A composite volcano</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>A cinder cone</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>A shield volcano</span></label>
       </div>
       <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
       <div class="qr-actions">
@@ -1328,7 +1291,7 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions before the quiz.</li></ul>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1340,7 +1303,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce cognitive load</li></ul>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
         </div>
       </div>
     </div>
@@ -1354,37 +1317,37 @@
 <section id="explain" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label">Explain &middot; Wrap-Up</span>
-    <h2 class="section-title">From Deep Heat to Moving Ground</h2>
-    <p class="section-desc">You started with a question: why does Earth's surface move, and why do earthquakes and volcanoes line up in belts? Now you can trace the whole chain, step by step.</p>
+    <h2 class="section-title">From Lava to Landscape</h2>
+    <p class="section-desc">You started with a question: why do some volcanoes erupt gently while others explode? Now you can trace the whole chain, step by step.</p>
 
     <div class="wrapup-beats">
       <div class="wrapup-beat wrapup-beat-1">
-        <div class="wrapup-beat-label">It Starts With Heat</div>
-        <div class="wrapup-beat-answer">Heat inside Earth keeps the mantle slowly flowing.</div>
-        <div class="wrapup-beat-body">Hot rock is less dense, so it rises, cools, and sinks in <strong>convection currents</strong>. This is the engine Wegener was missing.</div>
+        <div class="wrapup-beat-label">It Starts With the Lava</div>
+        <div class="wrapup-beat-answer">Lava can be thin or thick.</div>
+        <div class="wrapup-beat-body">Every volcano is fed by magma carrying dissolved gas. The <strong>viscosity</strong> of that lava, how thick or runny it is, decides what happens next.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-2">
-        <div class="wrapup-beat-label">Heat Becomes Motion</div>
-        <div class="wrapup-beat-answer">Convection drags the plates, and the plates carry the continents.</div>
-        <div class="wrapup-beat-body">The flowing mantle moves the <strong>tectonic plates</strong> of the lithosphere. New seafloor forms where they pull apart, which is why the continents drift over time.</div>
+        <div class="wrapup-beat-label">Lava Controls the Gas</div>
+        <div class="wrapup-beat-answer">Thin lava lets gas out; thick lava traps it.</div>
+        <div class="wrapup-beat-body">When gas escapes easily, eruptions are <strong>gentle</strong>. When gas is trapped, pressure builds until it bursts in a <strong>violent</strong> eruption full of ash and pyroclastic material.</div>
       </div>
       <div class="wrapup-beat wrapup-beat-3">
-        <div class="wrapup-beat-label">Motion Reaches the Surface</div>
-        <div class="wrapup-beat-answer">Plate boundaries produce earthquakes and volcanoes.</div>
-        <div class="wrapup-beat-body">Where plates diverge, converge, or slide past, the crust cracks, melts, and slips. Those <strong>boundaries</strong> are the belts on the map.</div>
+        <div class="wrapup-beat-label">Eruptions Build the Shape</div>
+        <div class="wrapup-beat-answer">The eruption style builds the volcano type.</div>
+        <div class="wrapup-beat-body">Gentle flows spread into broad <strong>shield</strong> volcanoes. Flung cinders pile into small <strong>cinder cones</strong>. Layers of ash and thick lava stack into tall, steep <strong>composite</strong> volcanoes.</div>
       </div>
     </div>
 
     <div class="bridge-callout" style="margin-top: 2.5rem;">
       <strong>The full chain:</strong>
       <div class="wrapup-chips" style="margin-top: 0.8rem;">
-        <span class="wuc wuc-1">Heat deep in the mantle</span>
-        <span class="wuc wuc-2">Convection currents flow</span>
-        <span class="wuc wuc-2">Plates move and continents drift</span>
-        <span class="wuc wuc-3">Plates meet at boundaries</span>
-        <span class="wuc wuc-3">Earthquakes and volcanoes in belts</span>
+        <span class="wuc wuc-1">Magma with dissolved gas</span>
+        <span class="wuc wuc-2">Viscosity, thin or thick</span>
+        <span class="wuc wuc-2">Gas escapes or gets trapped</span>
+        <span class="wuc wuc-3">Gentle flow or violent blast</span>
+        <span class="wuc wuc-3">Shield, cinder cone, or composite</span>
       </div>
-      <div style="margin-top: 1rem;">Earth's surface is not fixed. It has changed over scales from local to global because of energy and motion deep inside the planet. Wegener saw the puzzle; convection currents and plate tectonics finally explained it.</div>
+      <div style="margin-top: 1rem;">Volcanoes are one of the ways geoscience processes shape Earth's surface. The shape of a mountain you can see on a map is the surface story of how thick its lava was deep below.</div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -1392,11 +1355,11 @@
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening phenomenon directly and completely.</li></ul>
+          <ul class="edu-note-text"><li>Tie the pieces into one cause-and-effect chain.</li><li>Answer the opening question directly.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative closure</li></ul>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li><li>Coherent narrative</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1404,7 +1367,7 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Step-by-step beats break the chain into chunks</li><li>Plain causal language throughout</li><li>Chip summary gives a visual map of the full chain</li></ul>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
         </div>
       </div>
     </div>
@@ -1419,12 +1382,12 @@
   <div class="container">
     <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Check Your Understanding</h2>
-    <p class="section-desc">Ten questions covering everything you explored, from Wegener's evidence to convection currents and plate boundaries. Answer every question, then submit.</p>
+    <p class="section-desc">Ten questions covering everything you explored, from the parts of a volcano to the three types. Answer every question, then submit.</p>
 
     <!-- Mode Toggle -->
     <div class="quiz-mode-toggle">
-      <button class="mode-btn active" id="btn-practice"  onclick="elSetQuizMode('practice')">Practice Mode</button>
-      <button class="mode-btn"        id="btn-classroom" onclick="elSetQuizMode('classroom')">Classroom Mode</button>
+      <button class="mode-btn active" id="btn-practice"  onclick="vcSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="vcSetQuizMode('classroom')">Classroom Mode</button>
     </div>
     <div class="mode-hint">
       <span id="hint-practice"  class="visible">Your score will not be sent</span>
@@ -1437,29 +1400,29 @@
       <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
       <div class="info-fields">
         <div class="info-field">
-          <label for="el-student-name">Student Name</label>
-          <input type="text" id="el-student-name" placeholder="First Last" autocomplete="off">
-          <div class="info-error" id="el-err-name">Please enter your name.</div>
+          <label for="vc-student-name">Student Name</label>
+          <input type="text" id="vc-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="vc-err-name">Please enter your name.</div>
         </div>
         <div class="info-field">
-          <label for="el-teacher-select">Teacher</label>
-          <select id="el-teacher-select">
+          <label for="vc-teacher-select">Teacher</label>
+          <select id="vc-teacher-select">
             <option value="">- Select -</option>
             <option value="MrKankel">Mr. Kankel</option>
             <option value="MrRovner">Mr. Rovner</option>
           </select>
-          <div class="info-error" id="el-err-teacher">Please select your teacher.</div>
+          <div class="info-error" id="vc-err-teacher">Please select your teacher.</div>
         </div>
         <div class="info-field">
-          <label for="el-block-select">Class Block</label>
-          <select id="el-block-select">
+          <label for="vc-block-select">Class Block</label>
+          <select id="vc-block-select">
             <option value="">- Select -</option>
             <option value="A">A Block</option><option value="B">B Block</option>
             <option value="C">C Block</option><option value="D">D Block</option>
             <option value="E">E Block</option><option value="F">F Block</option>
             <option value="G">G Block</option>
           </select>
-          <div class="info-error" id="el-err-block">Please select your block.</div>
+          <div class="info-error" id="vc-err-block">Please select your block.</div>
         </div>
       </div>
     </div>
@@ -1467,37 +1430,38 @@
     <!-- Sticky Progress Bar -->
     <div class="quiz-progress-sticky">
       <div class="quiz-progress">
-        <div class="progress-bar"><div class="progress-fill" id="el-progress"></div></div>
-        <div class="progress-text" id="el-progress-text">0 / 10 selected</div>
+        <div class="progress-bar"><div class="progress-fill" id="vc-progress"></div></div>
+        <div class="progress-text" id="vc-progress-text">0 / 10 selected</div>
       </div>
     </div>
 
     <!-- Questions injected by JS -->
-    <div id="el-quiz-questions"></div>
+    <div id="vc-quiz-questions"></div>
 
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit Score</button>
+      <button class="quiz-submit-btn" id="vc-submit-btn" onclick="vcSubmitQuiz()" disabled>Submit Score</button>
     </div>
 
     <!-- Score Board -->
-    <div class="score-board" id="el-score">
-      <div class="big-score" id="el-score-num"></div>
-      <p id="el-score-msg"></p>
+    <div class="score-board" id="vc-score">
+      <div class="big-score" id="vc-score-num"></div>
+      <p id="vc-score-msg"></p>
       <div class="mystery-loop">
         <span class="ml-label">&#128269; The Question You Came In With</span>
-        You started this lesson asking: <strong>"Why does Earth's surface move?"</strong> If you can trace heat to convection to plate motion to earthquakes and volcanoes at the boundaries, you have answered it.
+        You started this lesson asking: <strong>"Why do some volcanoes erupt gently while others explode?"</strong> If you can trace lava thickness to trapped gas to eruption style to the three volcano types, you have answered it.
       </div>
-      <div id="el-submit-status"></div>
-      <button class="reset-btn" onclick="elResetQuiz()">Try Again</button>
+      <div id="vc-submit-status"></div>
+      <button class="reset-btn" onclick="vcResetQuiz()">Try Again</button>
     </div>
+
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
       <div class="edu-note-label">&#128218; Instructional Design</div>
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear performance signal.</li></ul>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -1509,11 +1473,10 @@
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Accessibility considerations</div>
-          <ul class="edu-note-text"><li>Answer explanations provided for every question</li><li>Practice and classroom modes available</li><li>Plausible distractors, evenly distributed answer positions</li></ul>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
         </div>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -1631,19 +1594,19 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
 })();
 </script>
 
-<!-- ===== PLATE BOUNDARIES INTERACTIVE ===== -->
+<!-- ===== THREE TYPES INTERACTIVE ===== -->
 <script>
-const boundaryData = {
-  1: { label: 'Boundary 1 · Plates move apart', title: 'Divergent Boundary', body: 'Two plates pull apart and rising magma fills the gap, cooling into new crust. Under the ocean this builds a mid-ocean ridge with a rift valley down the center, like the Mid-Atlantic Ridge. On land it can split a continent, as at the East African Rift.' },
-  2: { label: 'Boundary 2 · Plates collide', title: 'Convergent Boundary', body: 'Two plates push together. The more dense plate subducts (sinks) beneath the less dense one, melting and feeding volcanoes, like the Andes and the Japanese island arc. When both plates are continental and equally light, neither sinks, so they crumple upward into mountains like the Himalayas.' },
-  3: { label: 'Boundary 3 · Plates slide past', title: 'Transform Boundary', body: 'Two plates grind past each other in opposite directions. No crust is made or destroyed, but the plates catch and slip, releasing energy as earthquakes. The San Andreas Fault in California is a famous example.' }
+const typeData = {
+  1: { label: 'Type 1 · Largest', title: 'Shield Volcano', body: 'The largest volcanic structures, with broad, gently sloping sides. They form when thin, runny lava flows out many times and spreads in wide layers. Their low-viscosity lava lets gas escape, so eruptions are non-violent. Example: Mauna Loa in Hawaii.' },
+  2: { label: 'Type 2 · Smallest', title: 'Cinder Cone', body: 'The smallest volcano, usually under 1,000 feet, with a very steep cone shape. It forms when small pieces of lava erupt, cool in the air, and fall back down around the vent. Eruptions can be violent but are too small to do much harm. Example: Sunset Crater in Arizona.' },
+  3: { label: 'Type 3 · Tallest', title: 'Composite Volcano', body: 'The tallest volcano, with steep sides and a broad base. It forms when thick lava and explosive eruptions layer ash and lava on top of each other over time. Its high-viscosity lava traps gas, which makes its eruptions the most violent and deadly. Example: Mount St. Helens in Washington.' }
 };
-function boundaryClick(n) {
-  const d = boundaryData[n];
-  document.getElementById('bd-label').textContent = d.label;
-  document.getElementById('bd-title').textContent = d.title;
-  document.getElementById('bd-body').textContent  = d.body;
-  document.querySelectorAll('#term-boundaries .layer-row').forEach((el, i) => {
+function typeClick(n) {
+  const d = typeData[n];
+  document.getElementById('ld-label').textContent = d.label;
+  document.getElementById('ld-title').textContent = d.title;
+  document.getElementById('ld-body').textContent  = d.body;
+  document.querySelectorAll('.layer-row').forEach((el, i) => {
     el.style.outline = (i + 1 === n) ? '2px solid rgba(159,184,204,0.75)' : 'none';
     el.style.outlineOffset = '1px';
   });
@@ -1687,14 +1650,14 @@ function boundaryClick(n) {
     });
   }
   wireQR('qr1', 1,
-    'Correct! His evidence was strong, but he could not explain what force moved the continents. Convection currents were the missing piece.',
-    'Not quite. Wegener had plenty of evidence and believed in Pangaea. What he could not explain was the force that moved the continents.');
-  wireQR('qr2', 2,
-    'Correct! The plates float and slide on the soft, slowly flowing asthenosphere in the upper mantle.',
-    'Not quite. The crust and inner core do not flow. The plates ride on the soft, flowing asthenosphere.');
-  wireQR('qr3', 0,
-    'Correct! Transform boundaries make and destroy no crust, but the plates catch and slip, releasing energy as earthquakes.',
-    'Not quite. New seafloor forms at divergent boundaries and volcanoes at convergent ones. Transform boundaries mainly cause earthquakes.');
+    'Correct! The same melted rock is called magma inside the Earth and lava once it reaches the surface.',
+    'Not quite. Inside the Earth it is magma. Once it reaches the surface, the melted rock is called lava.');
+  wireQR('qr2', 1,
+    'Correct! Thick, sticky lava traps gas. Pressure builds until it bursts, making an explosive eruption.',
+    'Not quite. Thin lava lets gas escape gently. It is thick, sticky lava that traps gas and erupts explosively.');
+  wireQR('qr3', 2,
+    'Correct! Broad, gentle slopes built by thin lava flowing out many times describe a shield volcano.',
+    'Not quite. Thin, runny lava spreading in wide layers builds a broad shield volcano, like Mauna Loa.');
 })();
 </script>
 
@@ -1703,119 +1666,104 @@ function boundaryClick(n) {
 // ── GOOGLE SHEET URLS ────────────────────────────────────────────────
 // Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
 // TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
-var EL_SCRIPT_URLS = {
+var VC_SCRIPT_URLS = {
   MrKankel: 'https://script.google.com/macros/s/REPLACE_WITH_MR_KANKEL_DEPLOYMENT_ID/exec',
   MrRovner: 'https://script.google.com/macros/s/REPLACE_WITH_MR_ROVNER_DEPLOYMENT_ID/exec'
 };
 
-var elQuizState = { selected: [], submitted: false };
-var elQuizMode  = 'practice';
+var vcQuizState = { selected: [], submitted: false };
+var vcQuizMode  = 'practice';
 
-var elQuizQuestions = [
+var vcQuizQuestions = [
   {
-    q: "Who proposed the idea of continental drift, and what did he name the ancient supercontinent?",
-    options: ["Isaac Newton; Gondwana", "Alfred Wegener; Pangaea", "Charles Darwin; Laurasia", "Alfred Wegener; Atlantis"],
+    q: "What is melted rock called while it is still inside the Earth?",
+    options: ["Lava", "Magma", "Pyroclastic", "Cinder"],
     correct: 1,
-    explanation: "In 1912, the German scientist Alfred Wegener proposed continental drift and named the supercontinent Pangaea, meaning all land."
+    explanation: "Magma is melted rock material inside the Earth that contains dissolved gas. Once it reaches the surface, it is called lava."
   },
   {
-    q: "Wegener found fossils of the same plant, Glossopteris, on continents now separated by wide oceans. Why is this evidence that the continents were once joined?",
+    q: "What is melted rock called once it reaches the Earth's surface?",
+    options: ["Magma", "Ash", "Lava", "Pyroclastic"],
+    correct: 2,
+    explanation: "On the surface, melted rock is called lava. The same material is called magma while it is still underground."
+  },
+  {
+    q: "Which volcano is the tallest, with steep sides and the most violent, deadly eruptions?",
+    options: ["A composite volcano", "A shield volcano", "A cinder cone", "A magma chamber"],
+    correct: 0,
+    explanation: "Composite volcanoes are the tallest, with steep sides and a broad base. Their thick lava traps gas, making them the most violent and deadly."
+  },
+  {
+    q: "Mauna Loa has broad, gently sloping sides and erupts without violent explosions. Which type of volcano is it?",
+    options: ["A composite volcano", "A cinder cone", "A pyroclastic dome", "A shield volcano"],
+    correct: 3,
+    explanation: "Mauna Loa is a shield volcano. Thin, runny lava flows out many times and spreads in wide layers, building broad, gentle slopes."
+  },
+  {
+    q: "Why does a shield volcano have gentle slopes and calm eruptions?",
     options: [
-      "The seeds were too heavy to drift across an ocean and the animals could not swim that far",
-      "Glossopteris still grows on every continent today",
-      "Fossils can float across oceans on currents",
-      "The plant only grew in freezing climates"
+      "Its thick, sticky lava traps gas underground",
+      "Its thin, runny lava flows easily and spreads out",
+      "It has no magma chamber to feed it",
+      "It is made only of ash and no lava"
+    ],
+    correct: 1,
+    explanation: "Shield volcanoes are built by thin, low-viscosity lava. Gas escapes easily, so the lava flows quietly and spreads into broad, gentle slopes."
+  },
+  {
+    q: "Why do composite volcanoes erupt so violently?",
+    options: [
+      "Thick lava traps gas, so pressure builds until it explodes",
+      "Thin lava lets all the gas escape gently",
+      "They sit on top of cold, solid rock",
+      "They are too small to erupt at all"
     ],
     correct: 0,
-    explanation: "Glossopteris seeds could not survive a long ocean drift, and the small land animals found with it could not swim across oceans. The simplest explanation is that the land was once connected."
+    explanation: "Composite volcanoes have thick, high-viscosity lava that traps gas. Pressure builds until it bursts free in a violent, explosive eruption."
   },
   {
-    q: "The lithosphere is broken into large slabs that float on the asthenosphere. What are these slabs called?",
-    options: ["Convection cells", "Rift valleys", "Tectonic plates", "Continental shelves"],
+    q: "Which is the smallest type of volcano, usually under 1,000 feet, built from cinders that pile up around a vent?",
+    options: ["A shield volcano", "A composite volcano", "A cinder cone", "A magma chamber"],
     correct: 2,
-    explanation: "The rigid lithosphere is cracked into tectonic plates that slowly move over the soft, flowing asthenosphere."
+    explanation: "A cinder cone is the smallest volcano, with a very steep cone shape. It is built from small pieces of lava that pile up around the vent."
   },
   {
-    q: "Wegener could not explain what moved the continents. What actually provides the force that moves the plates?",
+    q: "How does a cinder cone form?",
     options: [
-      "The pull of ocean tides",
-      "The spinning of the inner core",
-      "Wind and weather at the surface",
-      "Convection currents in the mantle"
+      "Runny lava flows out and spreads in wide, flat sheets",
+      "Thick lava and ash build up in alternating layers over time",
+      "The magma chamber slowly cools without ever erupting",
+      "Erupted bits of lava cool in the air and pile up around the vent"
     ],
     correct: 3,
-    explanation: "Heat inside Earth drives convection currents in the mantle. The flowing mantle rock drags the plates, which is the force Wegener was missing."
+    explanation: "A cinder cone forms when small pieces of lava erupt, cool in the air, and fall back down around the vent, building a steep cone."
   },
   {
-    q: "At a divergent boundary two plates move apart. What happens in the gap between them?",
+    q: "What property of lava best explains the difference between gentle and explosive eruptions?",
     options: [
-      "Rising magma fills the gap and cools into new crust",
-      "One plate sinks beneath the other",
-      "The plates grind past each other",
-      "A deep ocean trench forms"
-    ],
-    correct: 0,
-    explanation: "As the plates separate, magma rises to fill the gap and cools into new crust. Under the ocean this is seafloor spreading at a mid-ocean ridge."
-  },
-  {
-    q: "The seafloor of the Atlantic is youngest at the Mid-Atlantic Ridge and older farther away. Which process best explains this?",
-    options: [
-      "Subduction pulling the crust down",
-      "Seafloor spreading at a divergent boundary",
-      "A transform fault sliding sideways",
-      "Weathering of the ocean floor"
+      "The color of the lava",
+      "How thick or thin (viscous) the lava is",
+      "The time of day the volcano erupts",
+      "The size of the crater at the top"
     ],
     correct: 1,
-    explanation: "New crust forms at the ridge and moves outward, so the seafloor is youngest at the ridge and gets older with distance. This is seafloor spreading."
+    explanation: "Viscosity, how thick or runny the lava is, controls whether gas escapes or gets trapped, which decides if an eruption is gentle or explosive."
   },
   {
-    q: "Two oceanic plates collide and the more dense one sinks beneath the other. What is this process called, and what does it tend to build?",
+    q: "Mount St. Helens (a composite volcano) and Mauna Loa (a shield volcano) are both volcanoes, yet they look and erupt very differently. What best explains this?",
     options: [
-      "Spreading, building a rift valley",
-      "Erosion, building canyons",
-      "Subduction, building volcanoes and island arcs",
-      "Drifting, building flat plains"
+      "One is a real volcano and the other is not",
+      "They are made of completely different elements than rock",
+      "Differences in lava thickness and trapped gas lead to different eruption styles and shapes",
+      "Shield volcanoes are younger, so they are unable to explode"
     ],
     correct: 2,
-    explanation: "When one plate sinks beneath another it is called subduction. The sinking plate melts and feeds volcanoes, forming features like the Japanese island arc."
-  },
-  {
-    q: "The Himalayas formed where two continental plates of similar density collided. Why did they crumple upward instead of one plate sinking?",
-    options: [
-      "Continental crust is too dense to rise",
-      "One of the plates melted completely",
-      "The boundary is actually a transform boundary",
-      "Neither plate is dense enough to sink, so they push each other up"
-    ],
-    correct: 3,
-    explanation: "Continental crust is light and does not subduct easily. When two continental plates meet, neither sinks, so the crust folds and pushes upward into tall mountains like the Himalayas."
-  },
-  {
-    q: "The San Andreas Fault is a place where two plates slide past each other. What kind of boundary is this, and what is it known for?",
-    options: [
-      "A transform boundary known for earthquakes",
-      "A divergent boundary known for new seafloor",
-      "A convergent boundary known for volcanoes",
-      "A boundary known for building island arcs"
-    ],
-    correct: 0,
-    explanation: "Plates sliding past each other form a transform boundary. They catch and slip, releasing energy as earthquakes, like those along the San Andreas Fault."
-  },
-  {
-    q: "Why do earthquakes and volcanoes occur in narrow belts around Earth rather than randomly?",
-    options: [
-      "They follow ocean currents around the globe",
-      "They line up along the edges of the tectonic plates",
-      "They appear wherever the crust is thickest",
-      "They are spread evenly but only reported in cities"
-    ],
-    correct: 1,
-    explanation: "Almost all earthquakes and volcanoes happen at plate boundaries, where plates pull apart, collide, or slide past. The belts on the map trace those boundaries."
+    explanation: "Both are fed by magma, but the viscosity of their lava differs. Thick lava traps gas and builds steep, explosive composite volcanoes; thin lava flows gently and builds broad shield volcanoes."
   }
 ];
 
-function elSetQuizMode(mode) {
-  elQuizMode = mode;
+function vcSetQuizMode(mode) {
+  vcQuizMode = mode;
   var infoBox      = document.getElementById('student-info-box');
   var btnPractice  = document.getElementById('btn-practice');
   var btnClassroom = document.getElementById('btn-classroom');
@@ -1838,21 +1786,21 @@ function elSetQuizMode(mode) {
 
 (function () {
   var params = new URLSearchParams(window.location.search);
-  if (params.get('mode') === 'classroom') elSetQuizMode('classroom');
-  else elSetQuizMode('practice');
+  if (params.get('mode') === 'classroom') vcSetQuizMode('classroom');
+  else vcSetQuizMode('practice');
 })();
 
-function elBuildQuiz() {
-  var container = document.getElementById('el-quiz-questions');
+function vcBuildQuiz() {
+  var container = document.getElementById('vc-quiz-questions');
   container.innerHTML = '';
-  elQuizState.selected  = new Array(elQuizQuestions.length).fill(null);
-  elQuizState.submitted = false;
-  document.getElementById('el-submit-btn').disabled = true;
-  elUpdateProgress();
+  vcQuizState.selected  = new Array(vcQuizQuestions.length).fill(null);
+  vcQuizState.submitted = false;
+  document.getElementById('vc-submit-btn').disabled = true;
+  vcUpdateProgress();
   var letters = ['A','B','C','D'];
-  elQuizQuestions.forEach(function (q, qi) {
+  vcQuizQuestions.forEach(function (q, qi) {
     var optionsHTML = q.options.map(function (opt, oi) {
-      return '<button class="quiz-option" onclick="elSelectAnswer(' + qi + ',' + oi + ')" id="el-q-' + qi + '-' + oi + '">' +
+      return '<button class="quiz-option" onclick="vcSelectAnswer(' + qi + ',' + oi + ')" id="vc-q-' + qi + '-' + oi + '">' +
              '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
     }).join('');
     var card = document.createElement('div');
@@ -1863,113 +1811,113 @@ function elBuildQuiz() {
         '<div class="quiz-question-text">' + q.q + '</div>' +
       '</div>' +
       '<div class="quiz-options">' + optionsHTML + '</div>' +
-      '<div class="option-feedback" id="el-feedback-' + qi + '"></div>';
+      '<div class="option-feedback" id="vc-feedback-' + qi + '"></div>';
     container.appendChild(card);
   });
 }
 
-function elSelectAnswer(qi, chosenIndex) {
-  if (elQuizState.submitted) return;
-  var prev = elQuizState.selected[qi];
-  if (prev !== null) document.getElementById('el-q-' + qi + '-' + prev).classList.remove('selected');
-  elQuizState.selected[qi] = chosenIndex;
-  document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
-  elUpdateProgress();
-  document.getElementById('el-submit-btn').disabled = !elQuizState.selected.every(function (s) { return s !== null; });
+function vcSelectAnswer(qi, chosenIndex) {
+  if (vcQuizState.submitted) return;
+  var prev = vcQuizState.selected[qi];
+  if (prev !== null) document.getElementById('vc-q-' + qi + '-' + prev).classList.remove('selected');
+  vcQuizState.selected[qi] = chosenIndex;
+  document.getElementById('vc-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  vcUpdateProgress();
+  document.getElementById('vc-submit-btn').disabled = !vcQuizState.selected.every(function (s) { return s !== null; });
 }
 
-function elUpdateProgress() {
-  var total    = elQuizQuestions.length;
-  var answered = elQuizState.selected.filter(function (s) { return s !== null; }).length;
-  document.getElementById('el-progress').style.width = (answered / total * 100) + '%';
-  document.getElementById('el-progress-text').textContent = answered + ' / ' + total + ' selected';
+function vcUpdateProgress() {
+  var total    = vcQuizQuestions.length;
+  var answered = vcQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('vc-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('vc-progress-text').textContent = answered + ' / ' + total + ' selected';
 }
 
-function elValidateStudentInfo() {
-  var name    = document.getElementById('el-student-name').value.trim();
-  var teacher = document.getElementById('el-teacher-select').value;
-  var block   = document.getElementById('el-block-select').value;
-  document.getElementById('el-err-name').classList.toggle('show', !name);
-  document.getElementById('el-err-teacher').classList.toggle('show', !teacher);
-  document.getElementById('el-err-block').classList.toggle('show', !block);
+function vcValidateStudentInfo() {
+  var name    = document.getElementById('vc-student-name').value.trim();
+  var teacher = document.getElementById('vc-teacher-select').value;
+  var block   = document.getElementById('vc-block-select').value;
+  document.getElementById('vc-err-name').classList.toggle('show', !name);
+  document.getElementById('vc-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('vc-err-block').classList.toggle('show', !block);
   return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
 }
 
-function elSubmitQuiz() {
-  if (elQuizState.submitted) return;
-  if (elQuizMode === 'classroom') {
-    var info = elValidateStudentInfo();
+function vcSubmitQuiz() {
+  if (vcQuizState.submitted) return;
+  if (vcQuizMode === 'classroom') {
+    var info = vcValidateStudentInfo();
     if (!info.valid) {
       document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
   }
-  elQuizState.submitted = true;
-  document.getElementById('el-submit-btn').disabled = true;
+  vcQuizState.submitted = true;
+  document.getElementById('vc-submit-btn').disabled = true;
   var correct = 0;
-  elQuizQuestions.forEach(function (q, qi) {
-    var chosen    = elQuizState.selected[qi];
+  vcQuizQuestions.forEach(function (q, qi) {
+    var chosen    = vcQuizState.selected[qi];
     var isCorrect = chosen === q.correct;
     if (isCorrect) correct++;
     q.options.forEach(function (_, oi) {
-      var btn = document.getElementById('el-q-' + qi + '-' + oi);
+      var btn = document.getElementById('vc-q-' + qi + '-' + oi);
       btn.classList.add('disabled');
       btn.classList.remove('selected');
       if (oi === q.correct) btn.classList.add('revealed-correct');
     });
-    document.getElementById('el-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
-    var fb = document.getElementById('el-feedback-' + qi);
+    document.getElementById('vc-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('vc-feedback-' + qi);
     fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
     fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
   });
-  var total = elQuizQuestions.length;
+  var total = vcQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
-  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand plate tectonics cold.'
+  var msg   = pct === 100 ? '\u{1F3C6} Perfect score! You understand the three volcano types cold.'
     : pct >= 80 ? '\u{1F31F} Great work! Review any you missed and you’re ready for the next lesson.'
     : pct >= 60 ? '\u{1F4DA} Solid effort. Go back through the lesson and try again.'
     : '\u{1F4AA} Keep going; review each section carefully and try again!';
-  document.getElementById('el-score-num').textContent = score;
-  document.getElementById('el-score-msg').textContent = msg;
-  var sb = document.getElementById('el-score');
+  document.getElementById('vc-score-num').textContent = score;
+  document.getElementById('vc-score-msg').textContent = msg;
+  var sb = document.getElementById('vc-score');
   sb.classList.add('show');
   sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-  if (elQuizMode === 'practice') {
-    document.getElementById('el-submit-status').innerHTML =
+  if (vcQuizMode === 'practice') {
+    document.getElementById('vc-submit-status').innerHTML =
       '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
     return;
   }
 
-  var info2 = elValidateStudentInfo();
+  var info2 = vcValidateStudentInfo();
   var teacherLabel = info2.teacher === 'MrKankel' ? 'Mr. Kankel' : 'Mr. Rovner';
   var letters = ['A','B','C','D'];
-  var answerStr = elQuizState.selected.map(function (idx, i) {
+  var answerStr = vcQuizState.selected.map(function (idx, i) {
     return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
   }).join(', ');
   var params = new URLSearchParams({
-    tab: 'Plate Tectonics', lesson: 'Plate Tectonics', studentName: info2.name, teacher: teacherLabel,
+    tab: 'Types of Volcanoes', lesson: 'Types of Volcanoes', studentName: info2.name, teacher: teacherLabel,
     block: info2.block, score: score, total: total, percent: pct + '%',
     timestamp: new Date().toISOString(), answers: answerStr
   });
-  fetch(EL_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+  fetch(VC_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(function () {
-      document.getElementById('el-submit-status').innerHTML =
+      document.getElementById('vc-submit-status').innerHTML =
         '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
     })
     .catch(function () {
-      document.getElementById('el-submit-status').innerHTML =
+      document.getElementById('vc-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });
 }
 
-function elResetQuiz() {
-  document.getElementById('el-score').classList.remove('show');
-  document.getElementById('el-submit-status').innerHTML = '';
-  elBuildQuiz();
+function vcResetQuiz() {
+  document.getElementById('vc-score').classList.remove('show');
+  document.getElementById('vc-submit-status').innerHTML = '';
+  vcBuildQuiz();
 }
 
-elBuildQuiz();
+vcBuildQuiz();
 </script>
 
 <!-- ===== STARFIELD ===== -->
