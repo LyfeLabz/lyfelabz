@@ -184,6 +184,33 @@
     50%      { transform: translateY(-20px) rotate(10deg); }
   }
 
+  /* ===== DRIVING QUESTION ===== */
+  .driving-question {
+    max-width: 760px;
+    margin: 1.6rem auto 0;
+    padding: 1.1rem 1.6rem;
+    background: rgba(255,193,7,0.06);
+    border: 1px solid rgba(255,193,7,0.22);
+    border-left: 4px solid var(--gold);
+    border-radius: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    box-sizing: border-box;
+    position: relative;
+  }
+  .dq-icon  { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body  { flex: 1; text-align: left; }
+  .dq-label {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(255,193,7,0.8);
+    margin-bottom: 0.3rem;
+  }
+  .dq-text  { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
   /* ===== BUTTONS ===== */
   .btn {
     display: inline-block;
@@ -760,6 +787,31 @@
   .cont-card.inv:hover  .cont-link { background: rgba(59,130,246,0.2);  border-color: rgba(59,130,246,0.55);  }
   .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55);  }
 
+  /* ===== CONNECTIONS ===== */
+  #connections { background: rgba(20,28,42,0.6); padding-top: 3.5rem; padding-bottom: 5rem; scroll-margin-top: 1.6rem; border-top: 1px solid rgba(255,255,255,0.06); }
+  .connections-intro {
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 720px;
+    margin: 0 auto 2rem 0;
+  }
+  .connections-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+    margin-top: 1.5rem;
+  }
+  @media (max-width: 600px) {
+    .connections-grid { grid-template-columns: 1fr; }
+  }
+  .cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+  .cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+  .cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+  .cont-card.lesson .cont-link { background: rgba(20,184,166,0.1); border-color: rgba(20,184,166,0.3); color: #2dd4bf; }
+  .cont-card.lesson:hover .cont-link { background: rgba(20,184,166,0.2); border-color: rgba(20,184,166,0.55); }
+
   /* ===== FOOTER ===== */
   footer {
     background: #070f17;
@@ -957,7 +1009,6 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
-    <li><a href="#goals">Goals</a></li>
     <li><a href="#concepts">Vocab</a></li>
     <li><a href="#characteristics">Characteristics</a></li>
     <li><a href="#cell-connection">Cells</a></li>
@@ -966,6 +1017,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
   </ul>
   <a href="index.html#bio" class="nav-back">← Life Science</a>
 </nav>
@@ -1974,7 +2026,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
         <tr id="dna-location-row">
           <td>DNA location</td>
           <td>Enclosed inside a membrane-bound <span class="vocab" title="Nucleus: the membrane-bound organelle that houses a cell's DNA and controls cell activity, only found in eukaryotic cells"><strong>nucleus</strong></span></td>
-          <td>Floating freely in the <span class="vocab" title="Cytoplasm: the gel-like fluid that fills the cell and suspends its contents (present in all cells"><strong>cytoplasm</strong></span>) no nucleus</td>
+          <td>Floating freely in the <span class="vocab" title="Cytoplasm: the gel-like fluid that fills the cell and suspends its contents (present in all cells)"><strong>cytoplasm</strong></span>, no nucleus</td>
         </tr>
         <tr>
           <td>Has a nucleus?</td>
@@ -2746,6 +2798,26 @@ requestAnimationFrame(draw);
           <ul class="edu-note-text"><li>Optional and self-paced</li><li>No penalty for skipping</li><li>Clear, labeled cards</li></ul>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="connections-intro">This lesson builds on what you just learned about what it means to be alive.</p>
+
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_cell-types.html" aria-label="Cell Types lesson">
+        <div class="cont-icon">🦠</div>
+        <div class="cont-name">Cell Types</div>
+        <div class="cont-desc">Every living thing is built from cells. See why a bacterium and a human brain cell look nothing alike, and how cells specialize for different jobs.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
     </div>
   </div>
 </section>

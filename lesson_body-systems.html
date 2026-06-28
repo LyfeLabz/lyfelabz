@@ -229,7 +229,7 @@
   }
 
   /* ===== SCROLL MARGIN ===== */
-  #connections, #systems, #concepts, #quiz, #continue { scroll-margin-top: 10px; }
+  #system-interactions, #connections, #systems, #concepts, #quiz, #continue { scroll-margin-top: 10px; }
 
   /* ===== HIERARCHY SECTION ===== */
   #hierarchy { background: var(--dark2); padding-top: 2.5rem; padding-bottom: 2.5rem; scroll-margin-top: 3.1rem; }
@@ -541,7 +541,7 @@
   .connection-tag .ct-desc { color: var(--text-muted); }
 
   /* ===== CONNECTIONS TABLE ===== */
-  #connections { background: var(--dark2); }
+  #system-interactions { background: var(--dark2); }
   .compare-table {
     width: 100%;
     border-collapse: collapse;
@@ -571,7 +571,7 @@
   .compare-table td:nth-child(2) { color: var(--accent); font-weight: 700; }
 
   /* ===== CONNECTION CARDS ===== */
-  .connections-grid {
+  .system-interactions-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.4rem;
@@ -1502,6 +1502,31 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   .cont-card.map:hover  .cont-link { background: rgba(59,200,232,0.2);  border-color: rgba(59,200,232,0.6);  }
 .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55);  color: #3ddc84; }
   .cont-card.map:hover  .cont-link { background: rgba(59,200,232,0.2);  border-color: rgba(59,200,232,0.6);   color: #3bc8e8; }
+
+  /* ===== CONNECTIONS ===== */
+  #connections { background: rgba(20,28,42,0.6); padding-top: 3.5rem; padding-bottom: 5rem; border-top: 1px solid rgba(255,255,255,0.06); }
+  .connections-intro {
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 720px;
+    margin: 0 auto 2rem 0;
+  }
+  .connections-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+    margin-top: 1.5rem;
+  }
+  @media (max-width: 600px) {
+    .connections-grid { grid-template-columns: 1fr; }
+  }
+  .cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+  .cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+  .cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+  .cont-card.lesson .cont-link { background: rgba(20,184,166,0.1); border-color: rgba(20,184,166,0.3); color: #2dd4bf; }
+  .cont-card.lesson:hover .cont-link { background: rgba(20,184,166,0.2); border-color: rgba(20,184,166,0.55); }
 </style>
 </head>
 <body>
@@ -1511,14 +1536,14 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
-    <li><a href="#goals">Goals</a></li>
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hierarchy">Trace</a></li>
-    <li><a href="#connections">Connect</a></li>
+    <li><a href="#system-interactions">Connect</a></li>
     <li><a href="#recall">Recall</a></li>
     <li><a href="#systems">Wrap-Up</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
   </ul>
   <a href="index.html#bio" class="nav-back">← Life Science</a>
 </nav>
@@ -1859,12 +1884,12 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 </section>
 
 <!-- CONNECTIONS TABLE -->
-<section id="connections" style="background: var(--dark);">
+<section id="system-interactions" style="background: var(--dark);">
   <div class="container">
     <span class="section-label">Explore &middot; System Interactions</span>
     <h2 class="section-title">No System Works Alone</h2>
     <p class="section-desc">Remember sprinting for that bus? At least six systems fired at once. Pick any system below, then trace how far its connections reach.</p>
-    <div class="connections-grid">
+    <div class="system-interactions-grid">
 
       <!-- NERVOUS - spans full width, first ─────────────────────────────── -->
       <div class="conn-card nervous-featured" id="sc-nervous">
@@ -2396,6 +2421,26 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
           <ul class="edu-note-text"><li>Optional and self-paced</li><li>No penalty for skipping</li><li>Each card states the activity and the action it leads to</li></ul>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="connections-intro">This lesson builds on what you just learned about body systems.</p>
+
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_organelles.html" aria-label="Cell Organelles lesson">
+        <div class="cont-icon">🏭</div>
+        <div class="cont-name">Cell Organelles</div>
+        <div class="cont-desc">Zoom back in to the organelles that build proteins and make the energy powering every cell inside these systems.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
     </div>
   </div>
 </section>
