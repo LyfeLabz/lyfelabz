@@ -1647,14 +1647,20 @@ function toggleEduMode() {
   var TIMEOUT = 1800;
   var timer = null;
 
-  function unlock() {
-    if (document.body.classList.contains('psych-unlocked')) return;
-    document.body.classList.add('psych-unlocked');
-    sessionStorage.setItem('lyfelabz-psych', 'on');
-    var toast = document.getElementById('psych-toast');
-    if (toast) {
-      toast.classList.add('show');
-      setTimeout(function() { toast.classList.remove('show'); }, 3200);
+  function toggle() {
+    var isOn = document.body.classList.contains('psych-unlocked');
+    var next = !isOn;
+    if (next) {
+      document.body.classList.add('psych-unlocked');
+      sessionStorage.setItem('lyfelabz-psych', 'on');
+      var toast = document.getElementById('psych-toast');
+      if (toast) {
+        toast.classList.add('show');
+        setTimeout(function() { toast.classList.remove('show'); }, 3200);
+      }
+    } else {
+      document.body.classList.remove('psych-unlocked');
+      sessionStorage.removeItem('lyfelabz-psych');
     }
   }
 
@@ -1669,7 +1675,7 @@ function toggleEduMode() {
       if (buf === SEQ) {
         buf = '';
         clearTimeout(timer);
-        unlock();
+        toggle();
       }
     }
   });
