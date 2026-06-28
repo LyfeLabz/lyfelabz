@@ -33,6 +33,29 @@ When editing, imitate neighboring lessons.
 
 ---
 
+# STUDENT LANGUAGE
+
+Throughout LyfeLabz, prefer language that speaks directly to students.
+
+Avoid teacher-facing terminology whenever a student-centered alternative exists.
+
+Good:
+
+* Explore
+* More
+* Connections
+
+Avoid:
+
+* Goals
+* Recall
+* 5Ws
+* Learning Targets
+
+This is the canonical voice standard. Navigation, section labels, and homepage cards all defer to it.
+
+---
+
 # COPY STANDARD: CONCEPT CARD LABELS
 
 For explanatory concept cards, use `KEY IDEA: [TERM]` instead of `NAME IT: [TERM]`.
@@ -88,6 +111,103 @@ Do not add games, investigations, simulations, or extensions during initial less
 9. Go Further
 
 Keep this order unless explicitly instructed otherwise.
+
+---
+
+# STICKY NAVIGATION
+
+The sticky navigation is a student quick-return menu, not a table of contents.
+
+Its purpose is to help students quickly return to the parts of a lesson they are most likely to revisit while learning or studying.
+
+Use student-facing language only. See STUDENT LANGUAGE.
+
+Do not expose teacher-facing instructional terminology.
+
+Never include navigation items such as:
+
+* Goals
+* Recall
+* Review Previous Learning
+* 5Ws
+* Learning Targets
+* Individual Explore subsections
+
+The standard sticky navigation order is:
+
+* Vocab
+* Explore
+* Quiz
+* More
+* Connections
+
+The Explore link always points to the lesson's first true Explore-phase section.
+
+---
+
+# LESSON ENDING STANDARD
+
+Every lesson ends with:
+
+1. Quiz
+2. More Learning
+3. Connections
+
+Maintain this order consistently.
+
+This formalizes the closing of a lesson. The earlier "Go Further" stage is now expressed as More Learning followed by Connections.
+
+---
+
+# MORE LEARNING
+
+Purpose:
+
+Help students go deeper into the current lesson.
+
+Contains only:
+
+* Investigations
+* Simulations
+* Extensions
+* Games
+
+Never place lesson-to-lesson navigation inside More Learning.
+
+---
+
+# CONNECTIONS
+
+Purpose:
+
+Help students discover conceptually related lessons.
+
+Connections are not:
+
+* a checklist
+* a progression tracker
+* "Next Lesson"
+* "Previous Lesson"
+
+They simply reveal how scientific ideas relate.
+
+Connections contain only lesson cards.
+
+Never include investigations, simulations, extensions, or games.
+
+## Placeholder Connections
+
+Every lesson should include a Connections section.
+
+If curriculum relationships have not yet been designed, include the standard placeholder.
+
+Placeholder title:
+
+**Related lessons coming soon.**
+
+Do not invent curriculum relationships simply to populate the section.
+
+The architecture should exist before the relationships are defined.
 
 ---
 
@@ -240,6 +360,20 @@ without structural changes.
 
 ---
 
+# HOMEPAGE LESSON CARDS
+
+Lesson cards should communicate the lesson's central scientific question or purpose, not simply list vocabulary.
+
+Ask:
+
+> What scientific question will this lesson help students answer?
+
+Avoid vocabulary lists whenever possible.
+
+Within a conceptual narrative, neighboring lesson cards should communicate clearly different purposes.
+
+---
+
 # SCIENCE
 
 Use only:
@@ -358,6 +492,30 @@ Search for em dashes.
 Report exactly what changed.
 
 Do not claim verification that was not performed.
+
+---
+
+# NARRATIVE PHILOSOPHY
+
+LyfeLabz is organized around conceptual narratives, not traditional units.
+
+Lessons are the home base.
+
+Narratives connect related scientific ideas.
+
+Connections should encourage students to:
+
+* revisit ideas
+* connect concepts
+* explore related lessons
+
+without creating a sense of required progression.
+
+Bridge connections are encouraged when they naturally connect two conceptual narratives.
+
+Bridge connections should never receive separate headings or visual treatment.
+
+Students should experience a connected curriculum without being aware of any special distinction.
 
 ---
 

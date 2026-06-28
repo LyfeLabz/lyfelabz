@@ -30,6 +30,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3460", "."],
       "port": 3460
+    },
+    {
+      "name": "lessons-b3",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3461", "."],
+      "port": 3461
     }
   ]
 }
