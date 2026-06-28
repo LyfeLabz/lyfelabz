@@ -938,7 +938,6 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
-    <li><a href="#goals">Goals</a></li>
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hook">Mystery</a></li>
     <li><a href="#ptable">Periodic Table</a></li>
@@ -946,6 +945,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
   </ul>
   <a href="index.html#chem" class="nav-back">← Physical Science</a>
 </nav>
@@ -2024,35 +2024,45 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
 .cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
 .cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+
+/* Connections section */
+#connections { background: rgba(20,28,42,0.6); padding-top: 3.5rem; padding-bottom: 5rem; scroll-margin-top: 1.6rem; border-top: 1px solid rgba(255,255,255,0.06); }
+.connections-intro {
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 720px;
+  margin: 0 auto 2rem 0;
+}
+.connections-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+@media (max-width: 600px) {
+  .connections-grid { grid-template-columns: 1fr; }
+}
+.cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+.cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+.cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+.cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+.cont-card.lesson .cont-cat { color: #2dd4bf; }
+.cont-card.lesson .cont-link { background: rgba(20,184,166,0.1); border-color: rgba(20,184,166,0.3); color: #2dd4bf; }
+.cont-card.lesson:hover .cont-link { background: rgba(20,184,166,0.2); border-color: rgba(20,184,166,0.55); }
 </style>
 
 <section id="continue">
   <div class="container">
     <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="continue-intro">Atoms build every material you have ever touched. <strong>Offline challenges:</strong> grab a periodic table and write your initials using element symbols (for example, He-Ne or C-O). Or go on a kitchen compound hunt: find three labels listing H₂O (water), NaCl (salt), and CO₂ (in fizzy drinks), and sketch each as a model of bonded atoms. Which of your finds are elements, and which are compounds?</p>
+    <p class="continue-intro">Atoms build every material you have ever touched. Take that idea off the screen and put it to work with a hands-on challenge at home.</p>
     <div class="continue-grid">
-      <a href="lesson_pure-substances-and-mixtures.html" class="cont-card les">
-        <div class="cont-icon">⚗️</div>
-        <div class="cont-cat">Lesson</div>
-        <div class="cont-name">Pure Substances &amp; Mixtures</div>
-        <div class="cont-desc">Now that you know atoms build elements and compounds, see how those combine into pure substances and mixtures, and how mixtures can be pulled apart.</div>
-        <span class="cont-link">Explore</span>
-      </a>
-      <a href="lesson_what-is-life.html" class="cont-card ext">
-        <div class="cont-icon">🌱</div>
-        <div class="cont-cat">Lesson</div>
-        <div class="cont-name">What Is Life?</div>
-        <div class="cont-desc">Living things are made of the same atoms as everything else, just arranged in special compounds. Discover what makes matter alive.</div>
-        <span class="cont-link">Explore</span>
-      </a>
-      <a href="lesson_digital-signals.html" class="cont-card inv">
-        <div class="cont-icon">📡</div>
-        <div class="cont-cat">Lesson</div>
-        <div class="cont-name">Digital Signals</div>
-        <div class="cont-desc">From the smallest piece of matter to the smallest piece of information: see how everything digital is built from just two symbols, 0 and 1.</div>
-        <span class="cont-link">Explore</span>
-      </a>
+      <div class="cont-card ext">
+        <div class="cont-icon">⚛️</div>
+        <div class="cont-cat">Extension</div>
+        <div class="cont-name">Kitchen Compound Hunt</div>
+        <div class="cont-desc">Grab a periodic table and write your initials using element symbols (for example, He-Ne or C-O). Then hunt your kitchen for three labels listing H₂O (water), NaCl (salt), and CO₂ (in fizzy drinks), and sketch each as a model of bonded atoms. Which of your finds are elements, and which are compounds?</div>
+      </div>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">
@@ -2060,7 +2070,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Extend the atom-to-compound idea into offline challenges and related lessons.</li><li>Students apply classification to substances they find at home.</li></ul>
+          <ul class="edu-note-text"><li>Extend the atom-to-compound idea into an offline challenge students can run at home.</li><li>Students apply classification to substances they find at home.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
@@ -2075,6 +2085,35 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
           <ul class="edu-note-text"><li>Offline options need no devices or accounts</li><li>Cards are clearly categorized and color coded</li><li>Large tap targets, short descriptions</li></ul>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="connections-intro">These lessons build on what you just learned about the building blocks of matter.</p>
+
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_physical-properties.html" aria-label="Physical Properties lesson">
+        <div class="cont-icon">🔎</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Physical Properties</div>
+        <div class="cont-desc">The atoms and bonds you just met are why materials have color, hardness, and melting points. See how scientists observe and describe those properties.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_pure-substances-and-mixtures.html" aria-label="Pure Substances and Mixtures lesson">
+        <div class="cont-icon">⚗️</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Pure Substances &amp; Mixtures</div>
+        <div class="cont-desc">Atoms build elements and compounds. See how those combine into pure substances and mixtures, and how mixtures can be pulled back apart.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
     </div>
   </div>
 </section>

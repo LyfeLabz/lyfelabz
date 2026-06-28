@@ -1366,7 +1366,6 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <ul class="nav-links">
-    <li><a href="#goals">Goals</a></li>
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#hook">Mystery</a></li>
     <li><a href="#volume">Volume</a></li>
@@ -1374,6 +1373,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <li><a href="#recall">Recall</a></li>
     <li><a href="#quiz">Quiz</a></li>
     <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
   </ul>
   <a href="index.html#chem" class="nav-back">← Physical Science</a>
 </nav>
@@ -2798,35 +2798,45 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
 .cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
 .cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+
+/* Connections section */
+#connections { background: rgba(20,28,42,0.6); padding-top: 3.5rem; padding-bottom: 5rem; scroll-margin-top: 1.6rem; border-top: 1px solid rgba(255,255,255,0.06); }
+.connections-intro {
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 720px;
+  margin: 0 auto 2rem 0;
+}
+.connections-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+@media (max-width: 600px) {
+  .connections-grid { grid-template-columns: 1fr; }
+}
+.cont-card.lesson { background: rgba(20,184,166,0.07); border: 1px solid rgba(20,184,166,0.3); }
+.cont-card.lesson::before { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+.cont-card.lesson:hover { border-color: rgba(20,184,166,0.6); box-shadow: 0 14px 40px rgba(20,184,166,0.15); transform: translateY(-4px); }
+.cont-card.lesson .cont-icon { background: rgba(20,184,166,0.18); }
+.cont-card.lesson .cont-cat { color: #2dd4bf; }
+.cont-card.lesson .cont-link { background: rgba(20,184,166,0.1); border-color: rgba(20,184,166,0.3); color: #2dd4bf; }
+.cont-card.lesson:hover .cont-link { background: rgba(20,184,166,0.2); border-color: rgba(20,184,166,0.55); }
 </style>
 
 <section id="continue">
   <div class="container">
     <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="continue-intro">Physical properties connect to everything else in the Matter unit. <strong>Extension challenges:</strong> find five objects at home and predict whether each will sink or float, then test them in a bowl of water. Or design a "mystery material" card: list four physical properties of a household object and see if a partner can guess what it is.</p>
+    <p class="continue-intro">You explored the physical properties scientists use to describe matter. Take that observing eye off the screen and put it to work with a hands-on challenge at home.</p>
     <div class="continue-grid">
-      <a href="lesson_measuring-matter.html" class="cont-card inv">
-        <div class="cont-icon">⚖️</div>
-        <div class="cont-cat">Lesson</div>
-        <div class="cont-name">Measuring Matter</div>
-        <div class="cont-desc">Mass, volume, and density as numbers you can calculate. Take the ideas from this lesson and turn them into measurements with real units.</div>
-        <span class="cont-link">Review</span>
-      </a>
-      <a href="lesson_pure-substances-and-mixtures.html" class="cont-card les">
-        <div class="cont-icon">🥤</div>
-        <div class="cont-cat">Lesson</div>
-        <div class="cont-name">Pure Substances &amp; Mixtures</div>
-        <div class="cont-desc">Physical properties like density, melting point, and magnetism are exactly how scientists separate mixtures back into pure substances. See it in action.</div>
-        <span class="cont-link">Explore</span>
-      </a>
-      <a href="lesson_building-blocks-of-matter.html" class="cont-card ext">
-        <div class="cont-icon">⚛️</div>
-        <div class="cont-cat">Lesson</div>
-        <div class="cont-name">Building Blocks of Matter</div>
-        <div class="cont-desc">The particles you saw packed inside the density blocks are atoms and molecules. Zoom all the way in and meet the building blocks themselves.</div>
-        <span class="cont-link">Zoom In</span>
-      </a>
+      <div class="cont-card ext">
+        <div class="cont-icon">🔎</div>
+        <div class="cont-cat">Extension</div>
+        <div class="cont-name">Mystery Material Challenge</div>
+        <div class="cont-desc">Find five objects at home and predict whether each will sink or float, then test them in a bowl of water. Next, design a "mystery material" card: list four physical properties of a household object and see if a partner can guess what it is.</div>
+      </div>
     </div>
 
     <div class="edu-note">
@@ -2835,7 +2845,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
           <ul class="edu-note-text">
-            <li>Extends physical properties into hands-on home tests and related lessons.</li>
+            <li>Extends physical properties into hands-on home tests students can run themselves.</li>
             <li>Offers transfer beyond the harbor context students started with.</li>
           </ul>
         </div>
@@ -2857,11 +2867,40 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
           <div class="edu-note-head">Accessibility considerations</div>
           <ul class="edu-note-text">
             <li>Optional, low-cost materials keep the challenge open to all.</li>
-            <li>Icon-led continue cards aid scanning.</li>
-            <li>Clear next-step labels on each card.</li>
+            <li>Icon-led extension card aids scanning.</li>
+            <li>Optional and self-paced, with no penalty for skipping.</li>
           </ul>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="connections-intro">These lessons build on what you just learned about physical properties.</p>
+
+    <div class="connections-grid">
+
+      <a class="cont-card lesson" href="lesson_measuring-matter.html" aria-label="Measuring Matter lesson">
+        <div class="cont-icon">⚖️</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Measuring Matter</div>
+        <div class="cont-desc">Density was one of the properties you just explored. Turn it into a number you can calculate from mass and volume, with real units.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_building-blocks-of-matter.html" aria-label="Building Blocks of Matter lesson">
+        <div class="cont-icon">⚛️</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Building Blocks of Matter</div>
+        <div class="cont-desc">Properties like color, hardness, and melting point come from what matter is made of. Zoom in and meet the atoms and molecules behind them.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
     </div>
   </div>
 </section>
