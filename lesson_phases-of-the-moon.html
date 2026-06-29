@@ -520,6 +520,12 @@
   .cont-card.game .cont-link { background: rgba(61,220,132,0.1);   border-color: rgba(61,220,132,0.3);   color: #3ddc84; }
   .cont-card.ext:hover  .cont-link { background: rgba(180,127,255,0.2); border-color: rgba(180,127,255,0.55); }
   .cont-card.game:hover .cont-link { background: rgba(61,220,132,0.2);  border-color: rgba(61,220,132,0.55); }
+  .cont-card.lesson { background: rgba(245,200,66,0.08); border: 1px solid rgba(245,200,66,0.35); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #f5c842, #f5a028); }
+  .cont-card.lesson:hover { border-color: rgba(245,200,66,0.6); box-shadow: 0 14px 40px rgba(245,200,66,0.15); }
+  .cont-card.lesson .cont-icon { background: rgba(245,200,66,0.18); }
+  .cont-card.lesson .cont-link { background: rgba(245,200,66,0.10); border-color: rgba(245,200,66,0.40); color: #f5c842; }
+  .cont-card.lesson:hover .cont-link { background: rgba(245,200,66,0.20); border-color: rgba(245,200,66,0.55); }
 
   /* ── PULSING ── */
   @keyframes vocabPulse {
@@ -1540,15 +1546,30 @@
   <div class="container">
     <span class="section-label">Connections</span>
     <h2 class="section-title">Connections</h2>
-    <p class="section-desc">See how this lesson connects to other LyfeLabz lessons.</p>
+    <p class="section-desc">Phases are one piece of a bigger picture. Here are the ideas that help explain them.</p>
     <div class="continue-grid">
-      <div class="cont-card" style="background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); cursor: default;">
-        <div class="cont-icon">&#128279;</div>
-        <div style="flex: 1;">
-          <div class="cont-name">Connections Coming Soon</div>
-          <div class="cont-desc">Related lessons will appear here as LyfeLabz continues to expand. Check back to see how this topic connects to the rest of your science journey.</div>
-        </div>
-      </div>
+
+      <a class="cont-card lesson" href="lesson_sun-earth-moon.html" aria-label="Sun-Earth-Moon System lesson">
+        <div class="cont-icon">🌎</div>
+        <div class="cont-name">Sun-Earth-Moon System</div>
+        <div class="cont-desc">Phases come from the way these three bodies move together. Step back to see the whole system that produces them.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_eclipses.html" aria-label="Eclipses lesson">
+        <div class="cont-icon">🌑</div>
+        <div class="cont-name">Eclipses</div>
+        <div class="cont-desc">Eclipses only happen at certain phases, a new Moon or a full Moon. See why the same orbit that makes phases also makes eclipses.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_nature-of-waves.html" aria-label="Nature of Waves lesson">
+        <div class="cont-icon">🌊</div>
+        <div class="cont-name">Nature of Waves</div>
+        <div class="cont-desc">A phase is really just sunlight reflecting off the Moon. Explore how that light travels to your eyes as waves.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
     </div>
   </div>
 </section>

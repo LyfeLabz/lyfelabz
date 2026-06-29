@@ -2598,6 +2598,9 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
 .cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
 .cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+.cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+.cont-body { flex: 1; }
+.coming-soon-tag { display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.8rem; border-radius: 99px; border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted); background: rgba(122,143,166,0.06); margin-top: 0.7rem; }
 </style>
 
 <section id="continue">
@@ -2606,27 +2609,14 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <h2 class="section-title">More Learning</h2>
     <p class="continue-intro">Experimental design is the backbone of every science unit. <strong>Extension challenges:</strong> actually run the Mentos experiment at home (outside!) - write your hypothesis first, name all three variable types, and record two quantitative and two qualitative observations. Or design an experiment to answer one of your own "why does that happen?" questions and trade designs with a partner: can they find a variable you forgot to control?</p>
     <div class="continue-grid">
-      <a href="investigation_gray-zone.html" class="cont-card inv">
-        <div class="cont-icon">🧪</div>
-        <div class="cont-cat">Investigation</div>
-        <div class="cont-name">The Gray Zone</div>
-        <div class="cont-desc">Put your observation and inference skills to work on a real scientific puzzle where the evidence doesn't give a clean yes-or-no answer.</div>
-        <span class="cont-link">Investigate</span>
-      </a>
-      <a href="lesson_measuring-matter.html" class="cont-card les">
-        <div class="cont-icon">⚖️</div>
-        <div class="cont-cat">Lesson</div>
-        <div class="cont-name">Measuring Matter</div>
-        <div class="cont-desc">Quantitative observations need good measurements. Learn the tools and units scientists use to measure mass, volume, and density precisely.</div>
-        <span class="cont-link">Learn</span>
-      </a>
-      <a href="lesson_engineering-design.html" class="cont-card ext">
-        <div class="cont-icon">🔧</div>
-        <div class="cont-cat">Lesson</div>
-        <div class="cont-name">Engineering Design</div>
-        <div class="cont-desc">Scientists ask questions; engineers solve problems. See how the testing and data skills you just learned power the engineering design process.</div>
-        <span class="cont-link">Explore</span>
-      </a>
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-body">
+          <div class="cont-name">More Coming Soon</div>
+          <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
+          <span class="coming-soon-tag">Coming Soon</span>
+        </div>
+      </div>
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -2673,15 +2663,15 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   <div class="container">
     <span class="section-label">Connections</span>
     <h2 class="section-title">Connections</h2>
-    <p class="section-desc">See how this lesson connects to other LyfeLabz lessons.</p>
+    <p class="section-desc">Science and engineering share the same toolkit. Here is where these skills carry over.</p>
     <div class="continue-grid">
-      <div class="cont-card" style="background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); cursor: default;">
-        <div class="cont-icon">&#128279;</div>
-        <div style="flex: 1;">
-          <div class="cont-name">Connections Coming Soon</div>
-          <div class="cont-desc">Related lessons will appear here as LyfeLabz continues to expand. Check back to see how this topic connects to the rest of your science journey.</div>
-        </div>
-      </div>
+      <a href="lesson_engineering-design.html" class="cont-card les">
+        <div class="cont-icon">🔧</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Engineering Design</div>
+        <div class="cont-desc">Scientists test ideas to explain the world; engineers test designs to improve them. See how variables, fair tests, and data drive the engineering design process too.</div>
+        <span class="cont-link">Explore</span>
+      </a>
     </div>
   </div>
 </section>

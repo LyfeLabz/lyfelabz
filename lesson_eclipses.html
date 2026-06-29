@@ -306,8 +306,15 @@ h2.section-title { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,4vw
 .cont-name { font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--text); }
 .cont-desc { font-size:.86rem; color:rgba(232,237,242,.82); line-height:1.6; flex:1; }
 .coming-soon-tag { display:inline-block; font-size:.7rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; padding:.2rem .7rem; border-radius:99px; border:1px solid rgba(122,143,166,.3); color:var(--text-muted); background:rgba(122,143,166,.06); margin-top:.2rem; }
-.cont-link { display:inline-block; font-size:.7rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; padding:.2rem .7rem; border-radius:99px; border:1px solid rgba(245,160,40,.35); color:#f5a028; background:rgba(245,160,40,.08); margin-top:.2rem; }
+.cont-link { display:inline-flex; align-items:center; font-size:.78rem; font-weight:700; line-height:1.6; letter-spacing:.04em; text-decoration:none; padding:.4rem 1rem; border-radius:99px; border:1px solid; transition:all .2s; white-space:nowrap; align-self:flex-start; margin-top:auto; }
+.cont-card.sim  .cont-link { background:rgba(245,160,40,.08); border-color:rgba(245,160,40,.35); color:#f5a028; }
 .cont-card.sim:hover .cont-link { background:rgba(245,160,40,.16); border-color:rgba(245,160,40,.6); }
+.cont-card.lesson { background:rgba(245,200,66,.08); border:1px solid rgba(245,200,66,.35); }
+.cont-card.lesson::before { background:linear-gradient(90deg,#f5c842,#f5a028); }
+.cont-card.lesson:hover { border-color:rgba(245,200,66,.6); box-shadow:0 14px 40px rgba(245,200,66,.15); }
+.cont-card.lesson .cont-icon { background:rgba(245,200,66,.18); }
+.cont-card.lesson .cont-link { background:rgba(245,200,66,.10); border-color:rgba(245,200,66,.40); color:#f5c842; }
+.cont-card.lesson:hover .cont-link { background:rgba(245,200,66,.20); border-color:rgba(245,200,66,.55); }
 footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:.5rem; }
 footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:.08em; color:var(--gold); margin-bottom:.35rem; }
 footer .footer-tagline { font-size:.83rem; color:rgba(240,228,200,.6); margin-bottom:.6rem; }
@@ -1371,15 +1378,30 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
   <div class="container">
     <span class="section-label">Connections</span>
     <h2 class="section-title">Connections</h2>
-    <p class="section-desc">See how this lesson connects to other LyfeLabz lessons.</p>
+    <p class="section-desc">An eclipse is all about alignment. Here are the ideas that help explain how it happens.</p>
     <div class="cont-grid">
-      <div class="cont-card" style="background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); cursor: default;">
-        <div class="cont-icon">&#128279;</div>
-        <div style="flex: 1;">
-          <div class="cont-name">Connections Coming Soon</div>
-          <div class="cont-desc">Related lessons will appear here as LyfeLabz continues to expand. Check back to see how this topic connects to the rest of your science journey.</div>
-        </div>
-      </div>
+
+      <a class="cont-card lesson" href="lesson_sun-earth-moon.html" aria-label="Sun-Earth-Moon System lesson">
+        <div class="cont-icon">🌎</div>
+        <div class="cont-name">Sun-Earth-Moon System</div>
+        <div class="cont-desc">An eclipse depends on alignment. See how the motion of these three bodies sets up the rare moments when they line up.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_phases-of-the-moon.html" aria-label="Phases of the Moon lesson">
+        <div class="cont-icon">🌙</div>
+        <div class="cont-name">Phases of the Moon</div>
+        <div class="cont-desc">Solar eclipses happen at a new Moon and lunar eclipses at a full Moon. See how phases and eclipses share the same orbit.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_nature-of-waves.html" aria-label="Nature of Waves lesson">
+        <div class="cont-icon">🌊</div>
+        <div class="cont-name">Nature of Waves</div>
+        <div class="cont-desc">Eclipses are made of light and shadow. Explore how light travels in straight lines, which is why the Moon can block the Sun.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
     </div>
   </div>
 </section>

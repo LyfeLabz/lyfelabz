@@ -2650,6 +2650,9 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
 .cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
 .cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+.cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+.cont-body { flex: 1; }
+.coming-soon-tag { display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.8rem; border-radius: 99px; border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted); background: rgba(122,143,166,0.06); margin-top: 0.7rem; }
 </style>
 
 <section id="continue">
@@ -2658,27 +2661,14 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <h2 class="section-title">More Learning</h2>
     <p class="continue-intro">Engineering design connects to everything you build and test in science class. <strong>Extension challenges:</strong> redesign your own backpack on paper. List 3 criteria and 3 constraints, sketch a prototype, and trade with a partner to "test" each other's designs. Or pick a product you use daily and research how many iterations it went through before the version you own.</p>
     <div class="continue-grid">
-      <a href="lesson_conducting-experiments.html" class="cont-card inv">
-        <div class="cont-icon">🧪</div>
-        <div class="cont-cat">Lesson</div>
-        <div class="cont-name">Conducting Experiments</div>
-        <div class="cont-desc">The TEST step of the design cycle is really an experiment. Learn how to plan fair tests with variables, controls, and repeated trials, the same way engineers test prototypes.</div>
-        <span class="cont-link">Investigate</span>
-      </a>
-      <a href="lesson_physical-properties.html" class="cont-card les">
-        <div class="cont-icon">🧲</div>
-        <div class="cont-cat">Lesson</div>
-        <div class="cont-name">Physical Properties</div>
-        <div class="cont-desc">Why cardboard for a prototype but leather for the final shoe? Engineers choose materials by their properties: hardness, flexibility, density, and more.</div>
-        <span class="cont-link">Review</span>
-      </a>
-      <a href="lesson_measuring-matter.html" class="cont-card ext">
-        <div class="cont-icon">📏</div>
-        <div class="cont-cat">Lesson</div>
-        <div class="cont-name">Measuring Matter</div>
-        <div class="cont-desc">Constraints like "must weigh under 200 grams" only work if you can measure precisely. Sharpen the measurement skills every design test depends on.</div>
-        <span class="cont-link">Explore</span>
-      </a>
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-body">
+          <div class="cont-name">More Coming Soon</div>
+          <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
+          <span class="coming-soon-tag">Coming Soon</span>
+        </div>
+      </div>
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -2725,15 +2715,15 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   <div class="container">
     <span class="section-label">Connections</span>
     <h2 class="section-title">Connections</h2>
-    <p class="section-desc">See how this lesson connects to other LyfeLabz lessons.</p>
+    <p class="section-desc">Strong designs are built on evidence. Here is where these skills carry over.</p>
     <div class="continue-grid">
-      <div class="cont-card" style="background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); cursor: default;">
-        <div class="cont-icon">&#128279;</div>
-        <div style="flex: 1;">
-          <div class="cont-name">Connections Coming Soon</div>
-          <div class="cont-desc">Related lessons will appear here as LyfeLabz continues to expand. Check back to see how this topic connects to the rest of your science journey.</div>
-        </div>
-      </div>
+      <a href="lesson_conducting-experiments.html" class="cont-card les">
+        <div class="cont-icon">🔬</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Conducting Experiments</div>
+        <div class="cont-desc">Every prototype you test is a fair test in disguise. Revisit how scientists control variables, run fair tests, and use data to decide what works.</div>
+        <span class="cont-link">Explore</span>
+      </a>
     </div>
   </div>
 </section>

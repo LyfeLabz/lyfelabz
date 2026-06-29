@@ -389,8 +389,11 @@
   .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
   .cont-card.ext  { background: rgba(180,127,255,0.12); border: 1px solid rgba(180,127,255,0.35); }
   .cont-card.res  { background: rgba(59,200,232,0.08);  border: 1px solid rgba(59,200,232,0.3);  }
+  .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
   .cont-card.ext::before { background: linear-gradient(90deg, #b47fff, #7c3aed); }
   .cont-card.res::before { background: linear-gradient(90deg, #3bc8e8, #1de9b6); }
+  .cont-card.soon::before { background: rgba(122,143,166,0.3); }
+  .cont-card.soon .cont-icon { background: rgba(122,143,166,0.15); }
   .cont-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
   .cont-card.ext:hover { border-color: rgba(180,127,255,0.6); box-shadow: 0 14px 40px rgba(180,127,255,0.15); }
   .cont-card.res:hover { border-color: rgba(59,200,232,0.6); box-shadow: 0 14px 40px rgba(59,200,232,0.12); }
@@ -1405,12 +1408,10 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
     <h2 class="section-title">Connections</h2>
     <p class="section-desc">See how this lesson connects to other LyfeLabz lessons.</p>
     <div class="continue-grid">
-      <div class="cont-card" style="background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); cursor: default;">
+      <div class="cont-card soon">
         <div class="cont-icon">&#128279;</div>
-        <div style="flex: 1;">
-          <div class="cont-name">Connections Coming Soon</div>
-          <div class="cont-desc">Related lessons will appear here as LyfeLabz continues to expand. Check back to see how this topic connects to the rest of your science journey.</div>
-        </div>
+        <div class="cont-name">Related lessons coming soon.</div>
+        <div class="cont-desc">More lessons will connect here as LyfeLabz grows. Check back to see how this topic links to the rest of your science journey.</div>
       </div>
     </div>
   </div>
