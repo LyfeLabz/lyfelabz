@@ -3263,7 +3263,14 @@ function edSubmitQuiz() {
   document.getElementById('ed-score-msg').textContent = msg;
   var sb = document.getElementById('ed-score');
   sb.classList.add('show');
-  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (pct === 100) {
+    edQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
 
   if (edQuizMode === 'practice') {
     document.getElementById('ed-submit-status').innerHTML =
@@ -3294,9 +3301,16 @@ function edSubmitQuiz() {
 
 // ── RESET QUIZ ────────────────────────────────────────────────────────
 function edResetQuiz() {
+  if (edQuizState.continueTimer) {
+    clearTimeout(edQuizState.continueTimer);
+    edQuizState.continueTimer = null;
+  }
   document.getElementById('ed-score').classList.remove('show');
   document.getElementById('ed-submit-status').innerHTML = '';
   edBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────

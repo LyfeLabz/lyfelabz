@@ -3722,7 +3722,14 @@ function dsSubmitQuiz() {
   document.getElementById('ds-score-msg').textContent = msg;
   var sb = document.getElementById('ds-score');
   sb.classList.add('show');
-  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (pct === 100) {
+    dsQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
 
   if (dsQuizMode === 'practice') {
     document.getElementById('ds-submit-status').innerHTML =
@@ -3753,9 +3760,16 @@ function dsSubmitQuiz() {
 
 // ── RESET QUIZ ────────────────────────────────────────────────────────
 function dsResetQuiz() {
+  if (dsQuizState.continueTimer) {
+    clearTimeout(dsQuizState.continueTimer);
+    dsQuizState.continueTimer = null;
+  }
   document.getElementById('ds-score').classList.remove('show');
   document.getElementById('ds-submit-status').innerHTML = '';
   dsBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────

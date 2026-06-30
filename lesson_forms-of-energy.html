@@ -2012,7 +2012,14 @@ function feSubmitQuiz() {
   document.getElementById('fe-score-msg').textContent = msg;
   var sb = document.getElementById('fe-score');
   sb.classList.add('show');
-  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (pct === 100) {
+    feQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
 
   if (feQuizMode === 'practice') {
     document.getElementById('fe-submit-status').innerHTML =
@@ -2049,9 +2056,16 @@ function feSubmitQuiz() {
 }
 
 function feResetQuiz() {
+  if (feQuizState.continueTimer) {
+    clearTimeout(feQuizState.continueTimer);
+    feQuizState.continueTimer = null;
+  }
   document.getElementById('fe-score').classList.remove('show');
   document.getElementById('fe-submit-status').innerHTML = '';
   feBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 feBuildQuiz();

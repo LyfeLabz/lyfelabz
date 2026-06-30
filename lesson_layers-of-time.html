@@ -424,6 +424,7 @@
   .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
   .score-board {
+    scroll-margin-top: 90px;
     display: none; background: var(--card); border: 1px solid rgba(159,184,204,0.3);
     border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem;
     box-shadow: 0 0 24px rgba(122,143,166,0.08);
@@ -2118,7 +2119,22 @@ function submitQuiz() {
   document.getElementById('q1-score-msg').textContent = msg;
   const sb = document.getElementById('q1-score');
   sb.classList.add('show');
-  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Reveal the full results panel below the sticky nav so score, feedback,
+  // submission status, and Try Again are all visible at once. The panel's
+  // scroll-margin-top keeps it clear of the sticky navigation.
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // A perfect score is a natural cue to keep learning, so after a brief pause
+  // (leaving the score fully visible) we glide into the More section, landing
+  // at the exact destination the More nav button uses. Anything below 100%
+  // stays put at the results panel, where the student can review the feedback
+  // and reach Try Again without the page moving on its own.
+  if (pct === 100) {
+    quizState.continueTimer = setTimeout(() => {
+      const more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
 
   // ── Practice mode: skip submission ───────────────────────────────
   if (quizMode === 'practice') {
@@ -2152,9 +2168,22 @@ function submitQuiz() {
 }
 
 function resetQuiz() {
+  // Cancel any pending auto-scroll so the page never jumps after a reset.
+  if (quizState.continueTimer) {
+    clearTimeout(quizState.continueTimer);
+    quizState.continueTimer = null;
+  }
   document.getElementById('q1-score').classList.remove('show');
   document.getElementById('submit-status').innerHTML = '';
   buildQuiz();
+  // Return the student to the quiz's natural beginning. Reuse the Quiz nav
+  // link's target so there is only one canonical quiz destination, and scroll
+  // there directly (rather than re-clicking the link, which does nothing when
+  // the URL hash is already #quiz). scroll-margin-top keeps it clear of the
+  // sticky nav, matching where the Quiz nav lands.
+  const quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  const target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 buildQuiz();

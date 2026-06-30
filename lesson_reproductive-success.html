@@ -1976,7 +1976,14 @@ function rsSubmitQuiz() {
   document.getElementById('rs-score-msg').textContent = msg;
   var sb = document.getElementById('rs-score');
   sb.classList.add('show');
-  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (pct === 100) {
+    rsQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
 
   if (rsQuizMode === 'practice') {
     document.getElementById('rs-submit-status').innerHTML =
@@ -2013,9 +2020,16 @@ function rsSubmitQuiz() {
 }
 
 function rsResetQuiz() {
+  if (rsQuizState.continueTimer) {
+    clearTimeout(rsQuizState.continueTimer);
+    rsQuizState.continueTimer = null;
+  }
   document.getElementById('rs-score').classList.remove('show');
   document.getElementById('rs-submit-status').innerHTML = '';
   rsBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 rsBuildQuiz();

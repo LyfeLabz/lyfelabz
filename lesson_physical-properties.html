@@ -3478,7 +3478,14 @@ function ppSubmitQuiz() {
   document.getElementById('pp-score-msg').textContent = msg;
   var sb = document.getElementById('pp-score');
   sb.classList.add('show');
-  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (pct === 100) {
+    ppQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
 
   if (ppQuizMode === 'practice') {
     document.getElementById('pp-submit-status').innerHTML =
@@ -3509,9 +3516,16 @@ function ppSubmitQuiz() {
 
 // ── RESET QUIZ ────────────────────────────────────────────────────────
 function ppResetQuiz() {
+  if (ppQuizState.continueTimer) {
+    clearTimeout(ppQuizState.continueTimer);
+    ppQuizState.continueTimer = null;
+  }
   document.getElementById('pp-score').classList.remove('show');
   document.getElementById('pp-submit-status').innerHTML = '';
   ppBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────

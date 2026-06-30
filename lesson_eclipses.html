@@ -273,7 +273,7 @@ h2.section-title { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,4vw
 .quiz-submit-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
 
 /* score board */
-.score-board { display:none; background:linear-gradient(135deg,rgba(122,143,200,0.1),rgba(90,112,168,0.05)); border:1px solid rgba(122,143,200,0.3); border-radius:20px; padding:2.5rem; text-align:center; margin-top:2rem; }
+.score-board { scroll-margin-top: 90px; display:none; background:linear-gradient(135deg,rgba(122,143,200,0.1),rgba(90,112,168,0.05)); border:1px solid rgba(122,143,200,0.3); border-radius:20px; padding:2.5rem; text-align:center; margin-top:2rem; }
 .score-board.show { display:block; animation:fadeIn .5s ease; }
 .big-score { font-family:'Fredoka One',cursive; font-size:4rem; color:var(--accent2); margin-bottom:.5rem; }
 .score-board p { color:var(--text-muted); font-size:1rem; margin-bottom:1.5rem; }
@@ -1968,7 +1968,22 @@ function submitQuiz() {
   document.getElementById('q1-score-msg').textContent  = msg;
   var sb = document.getElementById('q1-score');
   sb.classList.add('show');
-  sb.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  // Reveal the full results panel below the sticky nav so score, feedback,
+  // submission status, and Try Again are all visible at once. The panel's
+  // scroll-margin-top keeps it clear of the sticky navigation.
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // A perfect score is a natural cue to keep learning, so after a brief pause
+  // (leaving the score fully visible) we glide into the More section, landing
+  // at the exact destination the More nav button uses. Anything below 100%
+  // stays put at the results panel, where the student can review the feedback
+  // and reach Try Again without the page moving on its own.
+  if (pct === 100) {
+    quizState.continueTimer = setTimeout(() => {
+      const more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
   if (quizMode === 'practice') {
     document.getElementById('submit-status').innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,.08);border-color:rgba(122,143,166,.3);">Practice mode \u2014 score not submitted</div>';
     return;
@@ -1984,9 +1999,22 @@ function submitQuiz() {
 }
 
 function resetQuiz() {
+  // Cancel any pending auto-scroll so the page never jumps after a reset.
+  if (quizState.continueTimer) {
+    clearTimeout(quizState.continueTimer);
+    quizState.continueTimer = null;
+  }
   document.getElementById('q1-score').classList.remove('show');
   document.getElementById('submit-status').innerHTML = '';
   buildQuiz();
+  // Return the student to the quiz's natural beginning. Reuse the Quiz nav
+  // link's target so there is only one canonical quiz destination, and scroll
+  // there directly (rather than re-clicking the link, which does nothing when
+  // the URL hash is already #quiz). scroll-margin-top keeps it clear of the
+  // sticky nav, matching where the Quiz nav lands.
+  const quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  const target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 buildQuiz();
 </script>
