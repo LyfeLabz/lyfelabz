@@ -36,6 +36,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3461", "."],
       "port": 3461
+    },
+    {
+      "name": "quiz-audit",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3472", "."],
+      "port": 3472
     }
   ]
 }

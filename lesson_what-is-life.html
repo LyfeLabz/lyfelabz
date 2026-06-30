@@ -667,6 +667,7 @@
     padding: 2.5rem;
     text-align: center;
     margin-top: 2rem;
+    scroll-margin-top: 90px;
   }
   .score-board.show { display: block; }
   .big-score {
@@ -2499,7 +2500,7 @@ const quizQuestions = [
   {
     // Q5 → correct: A (0)
     q: "A fire can grow, consume oxygen, and release energy. Is a fire alive? Why or why not?",
-    options: ["No (it cannot reproduce or maintain homeostasis", "Yes) it uses energy and grows", "Yes (it responds to oxygen as a stimulus", "No) it is not made of cells, but otherwise qualifies"],
+    options: ["No, it cannot reproduce or maintain homeostasis", "Yes, it uses energy and grows", "Yes, it responds to oxygen as a stimulus", "No, it is not made of cells, but otherwise qualifies"],
     correct: 0,
     explanation: "Fire fails multiple characteristics: it cannot reproduce, is not made of cells, and doesn't maintain homeostasis. ALL six must be met to be considered alive."
   },
@@ -2527,14 +2528,14 @@ const quizQuestions = [
   {
     // Q9 → correct: A (0)
     q: "Can a unicellular organism also be eukaryotic?",
-    options: ["Yes (for example, amoeba and paramecium are unicellular eukaryotes", "No) all unicellular organisms are prokaryotic", "No (eukaryotes must always be multicellular", "Yes) but only if they have a cell wall"],
+    options: ["Yes, for example, amoeba and paramecium are unicellular eukaryotes", "No, all unicellular organisms are prokaryotic", "No, eukaryotes must always be multicellular", "Yes, but only if they have a cell wall"],
     correct: 0,
     explanation: "Unicellular and eukaryotic are not mutually exclusive! Amoeba, paramecium, and many protists are single-celled but still have a nucleus, making them unicellular eukaryotes."
   },
   {
     // Q10 → correct: B (1) - keep as-is
     q: "A student looks at a cell under a microscope and sees no nucleus, the DNA appears to be floating freely in the cell. What type of cell is this?",
-    options: ["Eukaryotic (it must have lost its nucleus", "Prokaryotic) no nucleus is the defining feature", "Multicellular (large cells don't always have nuclei", "Unicellular) small cells never have nuclei"],
+    options: ["Eukaryotic, it must have lost its nucleus", "Prokaryotic, no nucleus is the defining feature", "Multicellular, large cells don't always have nuclei", "Unicellular, small cells never have nuclei"],
     correct: 1,
     explanation: "The absence of a membrane-bound nucleus is the defining feature of prokaryotic cells. Eukaryotic cells always have a nucleus enclosing their DNA."
   }
@@ -2671,7 +2672,22 @@ function submitQuiz() {
   document.getElementById('q1-score-msg').textContent = msg;
   const sb = document.getElementById('q1-score');
   sb.classList.add('show');
-  sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Reveal the full results panel below the sticky nav so score, feedback,
+  // submission status, and Try Again are all visible at once. The panel's
+  // scroll-margin-top keeps it clear of the sticky navigation.
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // A perfect score is a natural cue to keep learning, so after a brief pause
+  // (leaving the score fully visible) we glide into the More section, landing
+  // at the exact destination the More nav button uses (#continue). Anything
+  // below 100% stays put at the results panel, where the student can review
+  // the feedback and reach Try Again without the page moving on its own.
+  if (pct === 100) {
+    quizState.continueTimer = setTimeout(() => {
+      const more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
 
   if (quizMode === 'practice') {
     document.getElementById('submit-status').innerHTML =
@@ -2698,6 +2714,11 @@ function submitQuiz() {
 
 // ── RESET QUIZ ────────────────────────────────────────────────────────
 function resetQuiz() {
+  // Cancel any pending auto-scroll so the page never jumps after a reset.
+  if (quizState.continueTimer) {
+    clearTimeout(quizState.continueTimer);
+    quizState.continueTimer = null;
+  }
   document.getElementById('q1-score').classList.remove('show');
   document.getElementById('submit-status').innerHTML = '';
   buildQuiz();
