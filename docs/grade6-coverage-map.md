@@ -152,6 +152,7 @@ Massachusetts assignment.
 | lesson_sun-earth-moon.html | MS-ESS1-1 | Earth-Sun-Moon system |
 | simulation_eclipse-alignment.html | MS-ESS1-1 | Eclipse alignment sim |
 | extension_moon-tonight.html | (none) | Moon observation extension |
+| lesson_gravity.html | 6.MS-PS2-4 | Gravity as an attractive force |
 | simulation_gravity-wells.html | MS-ESS1-2, MS-PS2-4 | Gravity / orbital sim |
 | lesson_layers-of-time.html | MS-ESS1-4, MS-ESS2-3 | Relative dating, rock layers |
 | extension_fossil-hunt.html | MS-ESS1-4 | Fossil/relative-age extension |
@@ -218,7 +219,7 @@ Massachusetts assignment.
 | 6.MS-PS1-6 | Exothermic/endothermic reactions, thermal energy | lesson_chemical-reactions | Fully Covered | PE is met, but the covering page overshoots into grade-8 atomic mechanism. **See Off-Grade Risk.** A clean grade-6 treatment would emphasize energy in/out, not atom rearrangement. |
 | 6.MS-PS1-7(MA) | Particulate model: density, proportional reasoning | lesson_measuring-matter, lesson_physical-properties | Fully Covered | Uses particulate ("particles") framing, which is on grade. Good model. |
 | 6.MS-PS1-8(MA) | Mixtures separable into pure substances by physical means | lesson_pure-substances-and-mixtures, lesson_physical-properties | Fully Covered | Minor risk: keep "pure substance" at the particle level, not atomic structure. **See Off-Grade Risk (minor).** |
-| 6.MS-PS2-4 | Gravitational forces attractive; large mass | simulation_gravity-wells | Partially Covered | Only a simulation references PS2-4; no core lesson develops the claim/evidence. Sim also carries grade-8 ESS1-2. Needs a short core lesson. |
+| 6.MS-PS2-4 | Gravitational forces attractive; large mass | lesson_gravity, simulation_gravity-wells | Fully Covered | Core lesson develops the claim/evidence (always attractive; noticeable only with large mass) and carries the badge; the gravity-wells simulation extends it. |
 | 6.MS-PS4-1 | Simple wave: amplitude, frequency, wavelength | lesson_nature-of-waves, lesson_wave-behavior, lesson_digital-signals, investigation_amplitude-challenge | Fully Covered | Gold-standard wave cluster. |
 | 6.MS-PS4-2 | Light & mechanical waves: reflect/absorb/transmit | lesson_wave-behavior, investigation_amplitude-challenge | Fully Covered | Qualitative, on grade. |
 | 6.MS-PS4-3 | Digitized signals (0s/1s) encode/transmit info | lesson_digital-signals | Fully Covered | Stays qualitative per boundary. |
@@ -291,24 +292,25 @@ are listed; gaps mark what still needs to be built.
 > **Astronomy / Earth-in-space standards (6.MS-ESS1-1a, 6.MS-ESS1-4,
 > 6.MS-ESS1-5(MA), 6.MS-ESS2-3, 6.MS-PS2-4)** can form an optional **Unit 0 -
 > Earth and Space** or be distributed as a seventh unit. Existing Earth-Sun-Moon,
-> relative-dating, and continental-drift clusters cover most of it; gaps are
-> 6.MS-ESS1-5(MA) (galaxies/scale) and a core lesson for 6.MS-PS2-4 (gravity).
-> Because gravity (PS2-4) and Earth-Sun-Moon (ESS1-1a) reinforce each other,
-> grouping them is natural.
+> relative-dating, and continental-drift clusters cover most of it; the
+> remaining gap is 6.MS-ESS1-5(MA) (galaxies/scale). The core lesson for
+> 6.MS-PS2-4 (gravity) is now built (lesson_gravity.html). Because gravity
+> (PS2-4) and Earth-Sun-Moon (ESS1-1a) reinforce each other, grouping them is
+> natural.
 
 ---
 
 ## Step 5 - Summary
 
-**Total standards: 22 | Fully Covered: 16 | Partially: 1 | Not Covered: 5**
+**Total standards: 22 | Fully Covered: 17 | Partially: 0 | Not Covered: 5**
 
-- Fully Covered (16): ESS1-1a, ESS1-4, ESS2-3, LS1-1, LS1-2, LS1-3, LS4-1,
-  LS4-2, PS1-6, PS1-7(MA), PS1-8(MA), PS4-1, PS4-2, PS4-3, ETS1-1, ETS1-6(MA)
-- Partially Covered (1): PS2-4 (simulation only, no core lesson)
+- Fully Covered (17): ESS1-1a, ESS1-4, ESS2-3, LS1-1, LS1-2, LS1-3, LS4-1,
+  LS4-2, PS1-6, PS1-7(MA), PS1-8(MA), PS2-4, PS4-1, PS4-2, PS4-3, ETS1-1,
+  ETS1-6(MA)
 - Not Covered (5): ESS1-5(MA), ETS1-5(MA), ETS2-1(MA), ETS2-2(MA), ETS2-3(MA)
 
-**Overall progress toward a complete Grade 6 core program: about 75%**
-(16 full + 0.5 for the one partial = 16.5 / 22 = 75%). Three of the five
+**Overall progress toward a complete Grade 6 core program: about 77%**
+(17 full / 22 = 77%). Three of the five
 content domains - Life Science, Waves, and the matter strand - are effectively
 complete. The gap is concentrated in Technology/Engineering (the entire ETS2
 "Materials, Tools, and Manufacturing" strand plus ETS1-5) and one astronomy
@@ -331,9 +333,9 @@ standard.
    prerequisite skill (scale and proportion in drawings) that feeds the ETS2
    prototyping work and connects to math.
 
-> Note on PS2-4 (gravity): not in the top-5 build list because it is partially
-> covered already; it needs a short core lesson to upgrade the existing
-> simulation to full coverage, not a from-scratch build.
+> Note on PS2-4 (gravity): now Fully Covered. lesson_gravity.html supplies the
+> core claim-and-evidence lesson and carries the badge; the gravity-wells
+> simulation extends it.
 
 ### Off-Grade Risk items (non-negotiable accuracy fixes)
 
