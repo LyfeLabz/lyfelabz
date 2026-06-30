@@ -1884,8 +1884,8 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 
     <!-- Quiz Mode Toggle -->
     <div class="quiz-mode-toggle">
-      <button class="mode-btn active" id="btn-practice" onclick="setQuizMode('practice')">Practice Mode</button>
-      <button class="mode-btn"        id="btn-classroom" onclick="setQuizMode('classroom')">Classroom Mode</button>
+      <button class="mode-btn active" id="btn-practice" onclick="ogSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="ogSetQuizMode('classroom')">Classroom Mode</button>
     </div>
     <div class="mode-hint">
       <span id="hint-practice" class="visible">Your score will not be sent</span>
@@ -1898,22 +1898,22 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
       <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
       <div class="info-fields">
         <div class="info-field">
-          <label for="student-name">Your Name</label>
-          <input type="text" id="student-name" placeholder="First Last" autocomplete="off">
-          <div class="info-error" id="err-name">Please enter your name.</div>
+          <label for="og-student-name">Your Name</label>
+          <input type="text" id="og-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="og-err-name">Please enter your name.</div>
         </div>
         <div class="info-field">
-          <label for="teacher-select">Teacher</label>
-          <select id="teacher-select">
+          <label for="og-teacher-select">Teacher</label>
+          <select id="og-teacher-select">
             <option value="">- Select -</option>
             <option value="MrBrown">Mr. Brown</option>
             <option value="MsGay">Ms. Gay</option>
           </select>
-          <div class="info-error" id="err-teacher">Please select your teacher.</div>
+          <div class="info-error" id="og-err-teacher">Please select your teacher.</div>
         </div>
         <div class="info-field">
-          <label for="block-select">Block</label>
-          <select id="block-select">
+          <label for="og-block-select">Block</label>
+          <select id="og-block-select">
             <option value="">- Select -</option>
             <option value="A">A</option>
             <option value="B">B</option>
@@ -1923,29 +1923,29 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
             <option value="F">F</option>
             <option value="G">G</option>
           </select>
-          <div class="info-error" id="err-block">Please select your block.</div>
+          <div class="info-error" id="og-err-block">Please select your block.</div>
         </div>
       </div>
     </div>
 
     <div class="quiz-progress-sticky">
       <div class="quiz-progress">
-        <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
-        <div class="progress-text" id="q1-progress-text">0 / 10 selected</div>
+        <div class="progress-bar"><div class="progress-fill" id="og-progress"></div></div>
+        <div class="progress-text" id="og-progress-text">0 / 10 selected</div>
       </div>
     </div>
 
-    <div id="quiz1-questions"></div>
+    <div id="og-quiz-questions"></div>
 
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="og-submit-btn" onclick="ogSubmitQuiz()" disabled>Submit Quiz</button>
     </div>
 
-    <div class="score-board" id="q1-score">
-      <div class="big-score" id="q1-score-num"></div>
-      <p id="q1-score-msg"></p>
-      <div id="submit-status"></div>
-      <button class="reset-btn" onclick="resetQuiz()">🔄 Try Again</button>
+    <div class="score-board" id="og-score">
+      <div class="big-score" id="og-score-num"></div>
+      <p id="og-score-msg"></p>
+      <div id="og-submit-status"></div>
+      <button class="reset-btn" onclick="ogResetQuiz()">🔄 Try Again</button>
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -2066,12 +2066,12 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 </footer>
 
 <script>
-const SCRIPT_URLS = {
+const OG_SCRIPT_URLS = {
   MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
   MsGay: 'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
 
-const quizQuestions = [
+const ogQuizQuestions = [
   { q: "Which organelle is described as 'the powerhouse of the cell' because it produces energy?", options: ["Nucleus","Ribosome","Mitochondria","Chloroplast"], correct: 2, explanation: "The mitochondria produce ATP (energy) for the cell through cellular respiration, it's literally called the powerhouse!" },
   { q: "The cell membrane is compared to a toll bridge because it:", options: ["Gives the cell its rigid shape","Controls what enters and exits the cell","Stores water and nutrients","Produces proteins"], correct: 1, explanation: "Like a toll bridge, the cell membrane controls traffic, deciding what can pass into and out of the cell." },
   { q: "Which organelle is found in plant cells but NOT in animal cells and is responsible for photosynthesis?", options: ["Mitochondria","Vacuole","Ribosome","Chloroplast"], correct: 3, explanation: "Chloroplasts capture sunlight and convert it to glucose through photosynthesis. They're only found in plant (and algae) cells!" },
@@ -2084,14 +2084,14 @@ const quizQuestions = [
   { q: "Which of the following organelles is found in plant cells but NOT in animal cells?", options: ["Mitochondria","Ribosomes","Cell wall","Lysosomes"], correct: 2, explanation: "The cell wall is a rigid outer layer found only in plant cells; it provides structure and support. Animal cells have a cell membrane but no cell wall." }
 ];
 
-const quizState = { selected: [], submitted: false };
+const ogQuizState = { selected: [], submitted: false };
 
 
 // ── QUIZ MODE ────────────────────────────────────────────────────────
-let quizMode = 'practice';
+let ogQuizMode = 'practice';
 
-function setQuizMode(mode) {
-  quizMode = mode;
+function ogSetQuizMode(mode) {
+  ogQuizMode = mode;
   const infoBox       = document.getElementById('student-info-box');
   const btnPractice   = document.getElementById('btn-practice');
   const btnClassroom  = document.getElementById('btn-classroom');
@@ -2118,23 +2118,23 @@ function setQuizMode(mode) {
   const params    = new URLSearchParams(window.location.search);
   const modeParam = params.get('mode');
   if (modeParam === 'classroom') {
-    setQuizMode('classroom');
+    ogSetQuizMode('classroom');
   } else {
-    setQuizMode('practice');
+    ogSetQuizMode('practice');
   }
 })();
 
-function buildQuiz() {
-  const container = document.getElementById('quiz1-questions');
+function ogBuildQuiz() {
+  const container = document.getElementById('og-quiz-questions');
   container.innerHTML = '';
-  quizState.selected  = new Array(quizQuestions.length).fill(null);
-  quizState.submitted = false;
-  document.getElementById('submit-btn').disabled = true;
-  updateProgress();
-  quizQuestions.forEach((q, qi) => {
+  ogQuizState.selected  = new Array(ogQuizQuestions.length).fill(null);
+  ogQuizState.submitted = false;
+  document.getElementById('og-submit-btn').disabled = true;
+  ogUpdateProgress();
+  ogQuizQuestions.forEach((q, qi) => {
     const letters = ['A','B','C','D'];
     const optionsHTML = q.options.map((opt, oi) => `
-      <button class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q-${qi}-${oi}">
+      <button class="quiz-option" onclick="ogSelectAnswer(${qi}, ${oi})" id="og-q-${qi}-${oi}">
         <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
       </button>`).join('');
     const card = document.createElement('div');
@@ -2145,77 +2145,77 @@ function buildQuiz() {
         <div class="quiz-question-text">${q.q}</div>
       </div>
       <div class="quiz-options">${optionsHTML}</div>
-      <div class="option-feedback" id="q-feedback-${qi}"></div>`;
+      <div class="option-feedback" id="og-feedback-${qi}"></div>`;
     container.appendChild(card);
   });
 }
 
-function selectAnswer(qi, chosenIndex) {
-  if (quizState.submitted) return;
-  const prev = quizState.selected[qi];
-  if (prev !== null) document.getElementById(`q-${qi}-${prev}`).classList.remove('selected');
-  quizState.selected[qi] = chosenIndex;
-  document.getElementById(`q-${qi}-${chosenIndex}`).classList.add('selected');
-  updateProgress();
-  document.getElementById('submit-btn').disabled = !quizState.selected.every(s => s !== null);
+function ogSelectAnswer(qi, chosenIndex) {
+  if (ogQuizState.submitted) return;
+  const prev = ogQuizState.selected[qi];
+  if (prev !== null) document.getElementById(`og-q-${qi}-${prev}`).classList.remove('selected');
+  ogQuizState.selected[qi] = chosenIndex;
+  document.getElementById(`og-q-${qi}-${chosenIndex}`).classList.add('selected');
+  ogUpdateProgress();
+  document.getElementById('og-submit-btn').disabled = !ogQuizState.selected.every(s => s !== null);
 }
 
-function updateProgress() {
-  const total    = quizQuestions.length;
-  const answered = quizState.selected.filter(s => s !== null).length;
-  document.getElementById('q1-progress').style.width = (answered / total * 100) + '%';
-  document.getElementById('q1-progress-text').textContent = `${answered} / ${total} selected`;
+function ogUpdateProgress() {
+  const total    = ogQuizQuestions.length;
+  const answered = ogQuizState.selected.filter(s => s !== null).length;
+  document.getElementById('og-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('og-progress-text').textContent = `${answered} / ${total} selected`;
 }
 
-function validateStudentInfo() {
-  const name    = document.getElementById('student-name').value.trim();
-  const teacher = document.getElementById('teacher-select').value;
-  const block   = document.getElementById('block-select').value;
-  document.getElementById('err-name').classList.toggle('show', !name);
-  document.getElementById('err-teacher').classList.toggle('show', !teacher);
-  document.getElementById('err-block').classList.toggle('show', !block);
+function ogValidateStudentInfo() {
+  const name    = document.getElementById('og-student-name').value.trim();
+  const teacher = document.getElementById('og-teacher-select').value;
+  const block   = document.getElementById('og-block-select').value;
+  document.getElementById('og-err-name').classList.toggle('show', !name);
+  document.getElementById('og-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('og-err-block').classList.toggle('show', !block);
   return { valid: !!(name && teacher && block), name, teacher, block };
 }
 
-function submitQuiz() {
-  if (quizState.submitted) return;
+function ogSubmitQuiz() {
+  if (ogQuizState.submitted) return;
 
   // ── Classroom mode: validate student info first ──────────────────
-  if (quizMode === 'classroom') {
-    const { valid } = validateStudentInfo();
+  if (ogQuizMode === 'classroom') {
+    const { valid } = ogValidateStudentInfo();
     if (!valid) {
       document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
   }
 
-  quizState.submitted = true;
-  document.getElementById('submit-btn').disabled = true;
+  ogQuizState.submitted = true;
+  document.getElementById('og-submit-btn').disabled = true;
   let correct = 0;
-  quizQuestions.forEach((q, qi) => {
-    const chosen = quizState.selected[qi];
+  ogQuizQuestions.forEach((q, qi) => {
+    const chosen = ogQuizState.selected[qi];
     const isCorrect = chosen === q.correct;
     if (isCorrect) correct++;
     q.options.forEach((_, oi) => {
-      const btn = document.getElementById(`q-${qi}-${oi}`);
+      const btn = document.getElementById(`og-q-${qi}-${oi}`);
       btn.classList.add('disabled'); btn.classList.remove('selected');
       if (oi === q.correct) btn.classList.add('revealed-correct');
     });
-    document.getElementById(`q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
-    const fb = document.getElementById(`q-feedback-${qi}`);
+    document.getElementById(`og-q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+    const fb = document.getElementById(`og-feedback-${qi}`);
     fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
     fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
   });
-  const total = quizQuestions.length;
+  const total = ogQuizQuestions.length;
   const pct   = Math.round(correct / total * 100);
   const score = `${correct}/${total}`;
   const msg   = pct === 100 ? '🏆 Perfect score! You know every organelle and its job!'
     : pct >= 80 ? '🌟 Great work! You really know your organelles. Review any you missed.'
     : pct >= 60 ? '📚 Good effort! Go back over the notes and try again.'
     : '💪 Keep going, review each organelle carefully. You\'ve got this!';
-  document.getElementById('q1-score-num').textContent = score;
-  document.getElementById('q1-score-msg').textContent = msg;
-  const sb = document.getElementById('q1-score');
+  document.getElementById('og-score-num').textContent = score;
+  document.getElementById('og-score-msg').textContent = msg;
+  const sb = document.getElementById('og-score');
   sb.classList.add('show');
   // Reveal the full results panel below the sticky nav so score, feedback,
   // submission status, and Try Again are all visible at once. The panel's
@@ -2228,43 +2228,43 @@ function submitQuiz() {
   // stays put at the results panel, where the student can review the feedback
   // and reach Try Again without the page moving on its own.
   if (pct === 100) {
-    quizState.continueTimer = setTimeout(() => {
+    ogQuizState.continueTimer = setTimeout(() => {
       const more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
   }
 
   // ── Practice mode: skip submission ─────────────────────
-  if (quizMode === 'practice') {
-    document.getElementById('submit-status').innerHTML =
+  if (ogQuizMode === 'practice') {
+    document.getElementById('og-submit-status').innerHTML =
       '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
     return;
   }
 
   // ── Classroom mode: send to Google Sheet ─────────────────
-  const { name, teacher, block } = validateStudentInfo();
+  const { name, teacher, block } = ogValidateStudentInfo();
   const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
   const params = new URLSearchParams({ tab: 'Organelles', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%' });
-  fetch(SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+  fetch(OG_SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(() => {
-      document.getElementById('submit-status').innerHTML =
+      document.getElementById('og-submit-status').innerHTML =
         '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
     })
     .catch(() => {
-      document.getElementById('submit-status').innerHTML =
+      document.getElementById('og-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });
 }
 
-function resetQuiz() {
+function ogResetQuiz() {
   // Cancel any pending auto-scroll so the page never jumps after a reset.
-  if (quizState.continueTimer) {
-    clearTimeout(quizState.continueTimer);
-    quizState.continueTimer = null;
+  if (ogQuizState.continueTimer) {
+    clearTimeout(ogQuizState.continueTimer);
+    ogQuizState.continueTimer = null;
   }
-  document.getElementById('q1-score').classList.remove('show');
-  document.getElementById('submit-status').innerHTML = '';
-  buildQuiz();
+  document.getElementById('og-score').classList.remove('show');
+  document.getElementById('og-submit-status').innerHTML = '';
+  ogBuildQuiz();
   // Return the student to the quiz's natural beginning. Reuse the Quiz nav
   // link's target so there is only one canonical quiz destination, and scroll
   // there directly (rather than re-clicking the link, which does nothing when
@@ -2288,7 +2288,7 @@ function vocabJump(targetId) {
   }, 600);
 }
 
-buildQuiz();
+ogBuildQuiz();
 </script>
 <script>
 if(sessionStorage.getItem('lyfelabz-ls')==='on')document.body.classList.add('ls-active');

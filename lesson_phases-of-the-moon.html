@@ -1487,8 +1487,8 @@
 
     <!-- Quiz Mode Toggle -->
     <div class="quiz-mode-toggle">
-      <button class="mode-btn active" id="btn-practice" onclick="setQuizMode('practice')">Practice Mode</button>
-      <button class="mode-btn"        id="btn-classroom" onclick="setQuizMode('classroom')">Classroom Mode</button>
+      <button class="mode-btn active" id="btn-practice" onclick="pmSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="pmSetQuizMode('classroom')">Classroom Mode</button>
     </div>
     <div class="mode-hint">
       <span id="hint-practice" class="visible">Your score will not be sent</span>
@@ -1500,22 +1500,22 @@
       <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
       <div class="info-fields">
         <div class="info-field">
-          <label for="student-name">Your Name</label>
-          <input type="text" id="student-name" placeholder="First Last" autocomplete="off">
-          <div class="info-error" id="err-name">Please enter your name.</div>
+          <label for="pm-student-name">Your Name</label>
+          <input type="text" id="pm-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="pm-err-name">Please enter your name.</div>
         </div>
         <div class="info-field">
-          <label for="teacher-select">Teacher</label>
-          <select id="teacher-select">
+          <label for="pm-teacher-select">Teacher</label>
+          <select id="pm-teacher-select">
             <option value="">- Select -</option>
             <option value="MrBrown">Mr. Brown</option>
             <option value="MsGay">Ms. Gay</option>
           </select>
-          <div class="info-error" id="err-teacher">Please select your teacher.</div>
+          <div class="info-error" id="pm-err-teacher">Please select your teacher.</div>
         </div>
         <div class="info-field">
-          <label for="block-select">Block</label>
-          <select id="block-select">
+          <label for="pm-block-select">Block</label>
+          <select id="pm-block-select">
             <option value="">- Select -</option>
             <option value="A">A</option>
             <option value="B">B</option>
@@ -1525,29 +1525,29 @@
             <option value="F">F</option>
             <option value="G">G</option>
           </select>
-          <div class="info-error" id="err-block">Please select your block.</div>
+          <div class="info-error" id="pm-err-block">Please select your block.</div>
         </div>
       </div>
     </div>
 
     <div class="quiz-progress-sticky">
       <div class="quiz-progress">
-        <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
-        <div class="progress-text" id="q1-progress-text">0 / 10 selected</div>
+        <div class="progress-bar"><div class="progress-fill" id="pm-progress"></div></div>
+        <div class="progress-text" id="pm-progress-text">0 / 10 selected</div>
       </div>
     </div>
 
-    <div id="quiz1-questions"></div>
+    <div id="pm-quiz-questions"></div>
 
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="pm-submit-btn" onclick="pmSubmitQuiz()" disabled>Submit Quiz</button>
     </div>
 
-    <div class="score-board" id="q1-score">
-      <div class="big-score" id="q1-score-num"></div>
-      <p id="q1-score-msg"></p>
-      <div id="submit-status"></div>
-      <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
+    <div class="score-board" id="pm-score">
+      <div class="big-score" id="pm-score-num"></div>
+      <p id="pm-score-msg"></p>
+      <div id="pm-submit-status"></div>
+      <button class="reset-btn" onclick="pmResetQuiz()">Try Again</button>
     </div>
   </div>
 </section>
@@ -1784,12 +1784,12 @@ function showPhaseInfo(idx) {
 
 <!-- QUIZ ENGINE -->
 <script>
-const SCRIPT_URLS = {
+const PM_SCRIPT_URLS = {
   MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
   MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
 
-const quizQuestions = [
+const pmQuizQuestions = [
   {
     q: "How long does it take for the Moon to complete one full orbit around Earth?",
     options: ["7 days","27.3 days","365 days","12 hours"],
@@ -1862,12 +1862,12 @@ const quizQuestions = [
   }
 ];
 
-const quizState = { selected: [], submitted: false };
+const pmQuizState = { selected: [], submitted: false };
 
-let quizMode = 'practice';
+let pmQuizMode = 'practice';
 
-function setQuizMode(mode) {
-  quizMode = mode;
+function pmSetQuizMode(mode) {
+  pmQuizMode = mode;
   const infoBox      = document.getElementById('student-info-box');
   const btnPractice  = document.getElementById('btn-practice');
   const btnClassroom = document.getElementById('btn-classroom');
@@ -1894,23 +1894,23 @@ function setQuizMode(mode) {
   const params    = new URLSearchParams(window.location.search);
   const modeParam = params.get('mode');
   if (modeParam === 'classroom') {
-    setQuizMode('classroom');
+    pmSetQuizMode('classroom');
   } else {
-    setQuizMode('practice');
+    pmSetQuizMode('practice');
   }
 })();
 
-function buildQuiz() {
-  const container = document.getElementById('quiz1-questions');
+function pmBuildQuiz() {
+  const container = document.getElementById('pm-quiz-questions');
   container.innerHTML = '';
-  quizState.selected  = new Array(quizQuestions.length).fill(null);
-  quizState.submitted = false;
-  document.getElementById('submit-btn').disabled = true;
-  updateProgress();
-  quizQuestions.forEach((q, qi) => {
+  pmQuizState.selected  = new Array(pmQuizQuestions.length).fill(null);
+  pmQuizState.submitted = false;
+  document.getElementById('pm-submit-btn').disabled = true;
+  pmUpdateProgress();
+  pmQuizQuestions.forEach((q, qi) => {
     const letters = ['A', 'B', 'C', 'D'];
     const optionsHTML = q.options.map((opt, oi) => `
-      <button class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q-${qi}-${oi}">
+      <button class="quiz-option" onclick="pmSelectAnswer(${qi}, ${oi})" id="pm-q-${qi}-${oi}">
         <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
       </button>`).join('');
     const card = document.createElement('div');
@@ -1921,70 +1921,70 @@ function buildQuiz() {
         <div class="quiz-question-text">${q.q}</div>
       </div>
       <div class="quiz-options">${optionsHTML}</div>
-      <div class="option-feedback" id="q-feedback-${qi}"></div>`;
+      <div class="option-feedback" id="pm-feedback-${qi}"></div>`;
     container.appendChild(card);
   });
 }
 
-function selectAnswer(qi, chosenIndex) {
-  if (quizState.submitted) return;
-  const prev = quizState.selected[qi];
-  if (prev !== null) document.getElementById(`q-${qi}-${prev}`).classList.remove('selected');
-  quizState.selected[qi] = chosenIndex;
-  document.getElementById(`q-${qi}-${chosenIndex}`).classList.add('selected');
-  updateProgress();
-  document.getElementById('submit-btn').disabled = !quizState.selected.every(s => s !== null);
+function pmSelectAnswer(qi, chosenIndex) {
+  if (pmQuizState.submitted) return;
+  const prev = pmQuizState.selected[qi];
+  if (prev !== null) document.getElementById(`pm-q-${qi}-${prev}`).classList.remove('selected');
+  pmQuizState.selected[qi] = chosenIndex;
+  document.getElementById(`pm-q-${qi}-${chosenIndex}`).classList.add('selected');
+  pmUpdateProgress();
+  document.getElementById('pm-submit-btn').disabled = !pmQuizState.selected.every(s => s !== null);
 }
 
-function updateProgress() {
-  const total    = quizQuestions.length;
-  const answered = quizState.selected.filter(s => s !== null).length;
-  document.getElementById('q1-progress').style.width = (answered / total * 100) + '%';
-  document.getElementById('q1-progress-text').textContent = `${answered} / ${total} selected`;
+function pmUpdateProgress() {
+  const total    = pmQuizQuestions.length;
+  const answered = pmQuizState.selected.filter(s => s !== null).length;
+  document.getElementById('pm-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('pm-progress-text').textContent = `${answered} / ${total} selected`;
 }
 
-function validateStudentInfo() {
-  const name    = document.getElementById('student-name').value.trim();
-  const teacher = document.getElementById('teacher-select').value;
-  const block   = document.getElementById('block-select').value;
-  document.getElementById('err-name').classList.toggle('show',    !name);
-  document.getElementById('err-teacher').classList.toggle('show', !teacher);
-  document.getElementById('err-block').classList.toggle('show',   !block);
+function pmValidateStudentInfo() {
+  const name    = document.getElementById('pm-student-name').value.trim();
+  const teacher = document.getElementById('pm-teacher-select').value;
+  const block   = document.getElementById('pm-block-select').value;
+  document.getElementById('pm-err-name').classList.toggle('show',    !name);
+  document.getElementById('pm-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('pm-err-block').classList.toggle('show',   !block);
   return { valid: !!(name && teacher && block), name, teacher, block };
 }
 
-function submitQuiz() {
-  if (quizState.submitted) return;
+function pmSubmitQuiz() {
+  if (pmQuizState.submitted) return;
 
-  if (quizMode === 'classroom') {
-    const { valid } = validateStudentInfo();
+  if (pmQuizMode === 'classroom') {
+    const { valid } = pmValidateStudentInfo();
     if (!valid) {
       document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
   }
 
-  quizState.submitted = true;
-  document.getElementById('submit-btn').disabled = true;
+  pmQuizState.submitted = true;
+  document.getElementById('pm-submit-btn').disabled = true;
 
   let correct = 0;
-  quizQuestions.forEach((q, qi) => {
-    const chosen    = quizState.selected[qi];
+  pmQuizQuestions.forEach((q, qi) => {
+    const chosen    = pmQuizState.selected[qi];
     const isCorrect = chosen === q.correct;
     if (isCorrect) correct++;
     q.options.forEach((_, oi) => {
-      const btn = document.getElementById(`q-${qi}-${oi}`);
+      const btn = document.getElementById(`pm-q-${qi}-${oi}`);
       btn.classList.add('disabled');
       btn.classList.remove('selected');
       if (oi === q.correct) btn.classList.add('revealed-correct');
     });
-    document.getElementById(`q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
-    const fb = document.getElementById(`q-feedback-${qi}`);
+    document.getElementById(`pm-q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+    const fb = document.getElementById(`pm-feedback-${qi}`);
     fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
     fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
   });
 
-  const total = quizQuestions.length;
+  const total = pmQuizQuestions.length;
   const pct   = Math.round(correct / total * 100);
   const score = `${correct}/${total}`;
   const msg   = pct === 100 ? '🏆 Perfect score! You know your Moon phases inside and out!'
@@ -1992,9 +1992,9 @@ function submitQuiz() {
     : pct >= 60 ? '📚 Good effort! Go back over the notes and try again.'
     : '💪 Keep going, review each section carefully. You\'ve got this!';
 
-  document.getElementById('q1-score-num').textContent = score;
-  document.getElementById('q1-score-msg').textContent = msg;
-  const sb = document.getElementById('q1-score');
+  document.getElementById('pm-score-num').textContent = score;
+  document.getElementById('pm-score-msg').textContent = msg;
+  const sb = document.getElementById('pm-score');
   sb.classList.add('show');
   // Reveal the full results panel below the sticky nav so score, feedback,
   // submission status, and Try Again are all visible at once. The panel's
@@ -2007,41 +2007,41 @@ function submitQuiz() {
   // stays put at the results panel, where the student can review the feedback
   // and reach Try Again without the page moving on its own.
   if (pct === 100) {
-    quizState.continueTimer = setTimeout(() => {
+    pmQuizState.continueTimer = setTimeout(() => {
       const more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
   }
 
-  if (quizMode === 'practice') {
-    document.getElementById('submit-status').innerHTML =
+  if (pmQuizMode === 'practice') {
+    document.getElementById('pm-submit-status').innerHTML =
       '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
     return;
   }
 
-  const { name, teacher, block } = validateStudentInfo();
+  const { name, teacher, block } = pmValidateStudentInfo();
   const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
   const params = new URLSearchParams({ tab: 'Moon Phases', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%' });
-  fetch(SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+  fetch(PM_SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(() => {
-      document.getElementById('submit-status').innerHTML =
+      document.getElementById('pm-submit-status').innerHTML =
         '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
     })
     .catch(() => {
-      document.getElementById('submit-status').innerHTML =
+      document.getElementById('pm-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });
 }
 
-function resetQuiz() {
+function pmResetQuiz() {
   // Cancel any pending auto-scroll so the page never jumps after a reset.
-  if (quizState.continueTimer) {
-    clearTimeout(quizState.continueTimer);
-    quizState.continueTimer = null;
+  if (pmQuizState.continueTimer) {
+    clearTimeout(pmQuizState.continueTimer);
+    pmQuizState.continueTimer = null;
   }
-  document.getElementById('q1-score').classList.remove('show');
-  document.getElementById('submit-status').innerHTML = '';
-  buildQuiz();
+  document.getElementById('pm-score').classList.remove('show');
+  document.getElementById('pm-submit-status').innerHTML = '';
+  pmBuildQuiz();
   // Return the student to the quiz's natural beginning. Reuse the Quiz nav
   // link's target so there is only one canonical quiz destination, and scroll
   // there directly (rather than re-clicking the link, which does nothing when
@@ -2052,7 +2052,7 @@ function resetQuiz() {
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-buildQuiz();
+pmBuildQuiz();
 </script>
 
 <!-- STARFIELD - cool silver/white tint for Moon Phases -->

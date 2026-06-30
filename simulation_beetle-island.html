@@ -1614,7 +1614,7 @@ function updateGraphDataTable() {
   tbody.innerHTML='';
   allHistory.slice().reverse().forEach(function(h) {
     var t=h.l+h.d, lp=t?Math.round((h.l/t)*100):0, dp=100-lp;
-    var gn=h.gen!==undefined?h.gen:'\u2014';
+    var gn=h.gen!==undefined?h.gen:'-';
     var isEvent=eventFired&&gn===eventGen;
     var tr=document.createElement('tr');
     if (isEvent) tr.style.background=eventType==='arrive'?'rgba(232,112,112,0.1)':'rgba(46,204,113,0.1)';
@@ -1757,8 +1757,8 @@ function submitReflection() {
     environment: envNames[env]||env,
     eventType:   eventDesc,
     totalGens:   gen,
-    accuracy:    graphAccuracy!==null ? graphAccuracy+'%' : '\u2014',
-    prediction:  CHOICE_LABELS[predictionChoice]||'\u2014',
+    accuracy:    graphAccuracy!==null ? graphAccuracy+'%' : '-',
+    prediction:  CHOICE_LABELS[predictionChoice]||'-',
     q1:q1, q2:q2, q3:q3, q4:q4
   };
   var params = new URLSearchParams();

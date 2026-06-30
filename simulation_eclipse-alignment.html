@@ -2161,7 +2161,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         <div class="info-field">
           <label for="quiz-teacher-select">Teacher</label>
           <select id="quiz-teacher-select">
-            <option value="">&#8212; Select &#8212;</option>
+            <option value="">- Select -</option>
             <option value="MrBrown">Mr. Brown</option>
             <option value="MsGay">Ms. Gay</option>
           </select>
@@ -2170,7 +2170,7 @@ body[data-phase="3"] .scroll-gate[data-gate="3"] {
         <div class="info-field">
           <label for="quiz-block-select">Block</label>
           <select id="quiz-block-select">
-            <option value="">&#8212; Select &#8212;</option>
+            <option value="">- Select -</option>
             <option value="A">A</option>
             <option value="B">B</option>
             <option value="C">C</option>
@@ -2298,13 +2298,13 @@ function updateHeightControls() {
 
   if (p === 'quarter') {
     hNote.classList.add('note-quarter');
-    hNote.textContent = 'Quarter moon sits 90\u00b0 to the side of Earth \u2014 neither eclipse geometry is possible. Height does not change that.';
+    hNote.textContent = 'Quarter moon sits 90\u00b0 to the side of Earth, neither eclipse geometry is possible. Height does not change that.';
   } else if (t === 'solar' && p === 'full') {
     hNote.classList.add('note-solar-full');
-    hNote.textContent = 'Solar eclipses require a new moon. A full moon is on the far side of Earth \u2014 the Moon\u2019s shadow points away from us.';
+    hNote.textContent = 'Solar eclipses require a new moon. A full moon is on the far side of Earth, the Moon\u2019s shadow points away from us.';
   } else if (t === 'lunar' && p === 'new') {
     hNote.classList.add('note-lunar-new');
-    hNote.textContent = 'Lunar eclipses require a full moon. A new moon is between the Sun and Earth \u2014 it cannot enter Earth\u2019s shadow.';
+    hNote.textContent = 'Lunar eclipses require a full moon. A new moon is between the Sun and Earth, it cannot enter Earth\u2019s shadow.';
   }
 
   hNote.classList.add('show');
@@ -2334,18 +2334,18 @@ function setHeight(h) {
 
 /* ── FEEDBACK MESSAGES ─────────────────────────────────── */
 var MSG = {
-  'solar|new|node':      {c:'solar', i:'&#127761;', t:'<strong>Solar eclipse!</strong> New moon + near a node &mdash; the Moon\'s shadow reaches Earth.'},
-  'solar|new|above':     {c:'miss',  i:'&uarr;',    t:'Right phase, wrong height. New moon &mdash; but the Moon is <strong>above the orbital plane</strong>. Shadow misses Earth.'},
-  'solar|new|below':     {c:'miss',  i:'&darr;',    t:'Right phase, wrong height. New moon &mdash; but the Moon is <strong>below the orbital plane</strong>. Shadow misses Earth.'},
+  'solar|new|node':      {c:'solar', i:'&#127761;', t:'<strong>Solar eclipse!</strong> New moon + near a node: the Moon\'s shadow reaches Earth.'},
+  'solar|new|above':     {c:'miss',  i:'&uarr;',    t:'Right phase, wrong height. New moon, but the Moon is <strong>above the orbital plane</strong>. Shadow misses Earth.'},
+  'solar|new|below':     {c:'miss',  i:'&darr;',    t:'Right phase, wrong height. New moon, but the Moon is <strong>below the orbital plane</strong>. Shadow misses Earth.'},
   'solar|quarter|above': {c:'miss',  i:'&#9676;',   t:'Quarter moon sits <strong>90&deg; to the side</strong> of Earth. It is not between the Sun and Earth.'},
   'solar|quarter|node':  {c:'miss',  i:'&#9676;',   t:'Quarter moon sits <strong>90&deg; to the side</strong> of Earth. It is not between the Sun and Earth.'},
   'solar|quarter|below': {c:'miss',  i:'&#9676;',   t:'Quarter moon sits <strong>90&deg; to the side</strong> of Earth. It is not between the Sun and Earth.'},
   'solar|full|above':    {c:'miss',  i:'&#9676;',   t:'Full moon is on the <strong>far side of Earth</strong> from the Sun. It cannot cause a solar eclipse.'},
   'solar|full|node':     {c:'miss',  i:'&#9676;',   t:'Full moon is on the <strong>far side of Earth</strong> from the Sun. It cannot cause a solar eclipse.'},
   'solar|full|below':    {c:'miss',  i:'&#9676;',   t:'Full moon is on the <strong>far side of Earth</strong> from the Sun. It cannot cause a solar eclipse.'},
-  'lunar|full|node':     {c:'lunar', i:'&#127765;', t:'<strong>Lunar eclipse!</strong> Full moon + near a node &mdash; Earth\'s shadow falls on the Moon.'},
-  'lunar|full|above':    {c:'miss',  i:'&uarr;',    t:'Right phase, wrong height. Full moon &mdash; but the Moon is <strong>above Earth\'s shadow</strong>. Shadow misses.'},
-  'lunar|full|below':    {c:'miss',  i:'&darr;',    t:'Right phase, wrong height. Full moon &mdash; but the Moon is <strong>below Earth\'s shadow</strong>. Shadow misses.'},
+  'lunar|full|node':     {c:'lunar', i:'&#127765;', t:'<strong>Lunar eclipse!</strong> Full moon + near a node: Earth\'s shadow falls on the Moon.'},
+  'lunar|full|above':    {c:'miss',  i:'&uarr;',    t:'Right phase, wrong height. Full moon, but the Moon is <strong>above Earth\'s shadow</strong>. Shadow misses.'},
+  'lunar|full|below':    {c:'miss',  i:'&darr;',    t:'Right phase, wrong height. Full moon, but the Moon is <strong>below Earth\'s shadow</strong>. Shadow misses.'},
   'lunar|new|above':     {c:'miss',  i:'&#9676;',   t:'New moon is between Earth and the Sun. Earth\'s shadow points the <strong>other direction</strong>.'},
   'lunar|new|node':      {c:'miss',  i:'&#9676;',   t:'New moon is between Earth and the Sun. Earth\'s shadow points the <strong>other direction</strong>.'},
   'lunar|new|below':     {c:'miss',  i:'&#9676;',   t:'New moon is between Earth and the Sun. Earth\'s shadow points the <strong>other direction</strong>.'},
@@ -2648,7 +2648,7 @@ var STAGE_MISSIONS = [
     done:  'Lunar eclipse achieved.',
     goal:  'Now create a lunar eclipse.',
     prompts: [
-      'Earth casts the shadow this time \u2014 which phase puts the Moon on the far side?',
+      'Earth casts the shadow this time. Which phase puts the Moon on the far side?',
       'Same height rule as before. Where does the Moon need to be?'
     ]
   },
@@ -2657,7 +2657,7 @@ var STAGE_MISSIONS = [
     done:  'No-eclipse month demonstrated.',
     goal:  'Show a month where the shadow misses.',
     prompts: [
-      'The right phase is set \u2014 but the geometry still fails. Why?',
+      'The right phase is set, but the geometry still fails. Why?',
       'What is the Moon\'s height doing differently than in Stages 1 and 2?'
     ]
   }
@@ -2686,7 +2686,7 @@ function updateMissionPanel() {
   }
 
   if (allDone) {
-    html += '<div class="mission-all-done">All three stages complete \u2014 explore the Discovery Summary below.</div>';
+    html += '<div class="mission-all-done">All three stages complete. Explore the Discovery Summary below.</div>';
   } else {
     var m = STAGE_MISSIONS[current];
     html += '<div class="mission-goal">' + m.goal + '</div>';
@@ -2774,7 +2774,7 @@ function checkChallenges() {
     document.getElementById('ch1').classList.add('solved');
     updateCounter();
     updateProgressTracker();
-    setTimeout(function(){ toast('Challenge 1 complete \u2014 solar eclipse!', 'success'); }, 150);
+    setTimeout(function(){ toast('Challenge 1 complete: solar eclipse!', 'success'); }, 150);
     unlockNextStage(1);
   }
   // Ch 2 - Lunar eclipse (only if ch1 solved)
@@ -2784,7 +2784,7 @@ function checkChallenges() {
     document.getElementById('ch2').classList.add('solved');
     updateCounter();
     updateProgressTracker();
-    setTimeout(function(){ toast('Challenge 2 complete \u2014 lunar eclipse!', 'success'); }, 150);
+    setTimeout(function(){ toast('Challenge 2 complete: lunar eclipse!', 'success'); }, 150);
     unlockNextStage(2);
   }
   // Ch 3 - Shadow miss (only if ch2 solved)
@@ -2796,10 +2796,10 @@ function checkChallenges() {
     document.getElementById('ch3').classList.add('solved');
     updateCounter();
     updateProgressTracker();
-    setTimeout(function(){ toast('Challenge 3 complete \u2014 shadow misses!', 'success'); }, 150);
+    setTimeout(function(){ toast('Challenge 3 complete: shadow misses!', 'success'); }, 150);
     unlockDiscovery(false);
     // Advance phase 2 → 3 (Micropass 1)
-    if (typeof setProgressPhase === 'function') setProgressPhase(3, { toastMsg: 'Phase 3 unlocked \u2014 deep time', toastDelay: 900 });
+    if (typeof setProgressPhase === 'function') setProgressPhase(3, { toastMsg: 'Phase 3 unlocked: deep time', toastDelay: 900 });
   }
 }
 
@@ -2969,7 +2969,7 @@ var DT_SCENES = [
     time:  'Approximately 620 million years from now',
     duration: 2500,
     title: 'A ring of sunlight appears',
-    text:  'Total solar eclipses become increasingly rare. Annular eclipses \u2014 where a ring of sunlight surrounds the Moon \u2014 become more common.',
+    text:  'Total solar eclipses become increasingly rare. Annular eclipses (where a ring of sunlight surrounds the Moon) become more common.',
     moonStart: 0.85, moonEnd: 0.72
   },
   {
@@ -3202,7 +3202,7 @@ function completeDeepTime() {
   if (!deepTimeState.completed) return;
   // Advance progression only once; scroll runs every time the user clicks Continue.
   if (currentPhase < 4) {
-    setProgressPhase(4, { toastMsg: 'Phase 4 unlocked \u2014 checkpoint quiz', toastDelay: 250 });
+    setProgressPhase(4, { toastMsg: 'Phase 4 unlocked: checkpoint quiz', toastDelay: 250 });
   }
   // Smooth-scroll to quiz once the gate fades
   setTimeout(function() {
@@ -3524,7 +3524,7 @@ function submitCheckpoint() {
 
   if (quizMode === 'practice') {
     document.getElementById('chk-submit-status').innerHTML =
-      '<div class="score-practice-note">Practice mode &#8212; score not submitted</div>';
+      '<div class="score-practice-note">Practice mode, score not submitted</div>';
     return;
   }
 
@@ -3591,7 +3591,7 @@ buildCheckpoint();
       if (wrap) wrap.classList.remove('lab-controls-locked');
       if (msg)  msg.classList.add('hidden');
       if (!silent) {
-        setTimeout(function() { toast('Lab unlocked \u2014 begin the experiment.', 'info'); }, 150);
+        setTimeout(function() { toast('Lab unlocked: begin the experiment.', 'info'); }, 150);
       }
       // Advance phase 1 → 2 (Micropass 1). Silent on restore.
       if (typeof setProgressPhase === 'function') setProgressPhase(2, { silent: !!silent });

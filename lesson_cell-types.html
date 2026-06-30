@@ -2094,8 +2094,8 @@ buildReflection();
     <p class="section-desc">10 questions on cell strategies, division of labor, and why different cell designs exist. Select your answer for every question, then submit.</p>
 
     <div class="quiz-mode-toggle">
-      <button class="mode-btn active" id="btn-practice"  onclick="setQuizMode('practice')">Practice Mode</button>
-      <button class="mode-btn"        id="btn-classroom" onclick="setQuizMode('classroom')">Classroom Mode</button>
+      <button class="mode-btn active" id="btn-practice"  onclick="ctSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="ctSetQuizMode('classroom')">Classroom Mode</button>
     </div>
     <div class="mode-hint">
       <span id="hint-practice"  class="visible">Your score will not be sent</span>
@@ -2107,22 +2107,22 @@ buildReflection();
       <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
       <div class="info-fields">
         <div class="info-field">
-          <label for="student-name">Your Name</label>
-          <input type="text" id="student-name" placeholder="First Last" autocomplete="off">
-          <div class="info-error" id="err-name">Please enter your name.</div>
+          <label for="ct-student-name">Your Name</label>
+          <input type="text" id="ct-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="ct-err-name">Please enter your name.</div>
         </div>
         <div class="info-field">
-          <label for="teacher-select">Teacher</label>
-          <select id="teacher-select">
+          <label for="ct-teacher-select">Teacher</label>
+          <select id="ct-teacher-select">
             <option value="">- Select -</option>
             <option value="MrBrown">Mr. Brown</option>
             <option value="MsGay">Ms. Gay</option>
           </select>
-          <div class="info-error" id="err-teacher">Please select your teacher.</div>
+          <div class="info-error" id="ct-err-teacher">Please select your teacher.</div>
         </div>
         <div class="info-field">
-          <label for="block-select">Block</label>
-          <select id="block-select">
+          <label for="ct-block-select">Block</label>
+          <select id="ct-block-select">
             <option value="">- Select -</option>
             <option value="A">A</option>
             <option value="B">B</option>
@@ -2132,29 +2132,29 @@ buildReflection();
             <option value="F">F</option>
             <option value="G">G</option>
           </select>
-          <div class="info-error" id="err-block">Please select your block.</div>
+          <div class="info-error" id="ct-err-block">Please select your block.</div>
         </div>
       </div>
     </div>
 
     <div class="quiz-progress-sticky">
       <div class="quiz-progress">
-        <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
-        <div class="progress-text" id="q1-progress-text">0 / 10 selected</div>
+        <div class="progress-bar"><div class="progress-fill" id="ct-progress"></div></div>
+        <div class="progress-text" id="ct-progress-text">0 / 10 selected</div>
       </div>
     </div>
 
-    <div id="quiz1-questions"></div>
+    <div id="ct-quiz-questions"></div>
 
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="ct-submit-btn" onclick="ctSubmitQuiz()" disabled>Submit Quiz</button>
     </div>
 
-    <div class="score-board" id="q1-score">
-      <div class="big-score" id="q1-score-num"></div>
-      <p id="q1-score-msg"></p>
-      <div id="submit-status"></div>
-      <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
+    <div class="score-board" id="ct-score">
+      <div class="big-score" id="ct-score-num"></div>
+      <p id="ct-score-msg"></p>
+      <div id="ct-submit-status"></div>
+      <button class="reset-btn" onclick="ctResetQuiz()">Try Again</button>
     </div>
 
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -2270,13 +2270,13 @@ buildReflection();
 
 <script>
 // ── GOOGLE SHEET URLS ─────────────────────────────────────────────────
-const SCRIPT_URLS = {
+const CT_SCRIPT_URLS = {
   MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
   MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
 
 // ── QUIZ QUESTIONS ────────────────────────────────────────────────────
-const quizQuestions = [
+const ctQuizQuestions = [
   {
     q: "A bacterium living in boiling hot springs can survive, reproduce, and respond to its environment, all with a single cell. What does this best demonstrate?",
     options: [
@@ -2390,13 +2390,13 @@ const quizQuestions = [
 ];
 
 // ── QUIZ STATE ────────────────────────────────────────────────────────
-const quizState = { selected: new Array(quizQuestions.length).fill(null), submitted: false };
+const ctQuizState = { selected: new Array(ctQuizQuestions.length).fill(null), submitted: false };
 
 // ── QUIZ MODE ─────────────────────────────────────────────────────────
-let quizMode = 'practice';
+let ctQuizMode = 'practice';
 
-function setQuizMode(mode) {
-  quizMode = mode;
+function ctSetQuizMode(mode) {
+  ctQuizMode = mode;
   const infoBox      = document.getElementById('student-info-box');
   const btnPractice  = document.getElementById('btn-practice');
   const btnClassroom = document.getElementById('btn-classroom');
@@ -2415,22 +2415,22 @@ function setQuizMode(mode) {
 
 (function () {
   const params = new URLSearchParams(window.location.search);
-  if (params.get('mode') === 'classroom') setQuizMode('classroom');
-  else setQuizMode('practice');
+  if (params.get('mode') === 'classroom') ctSetQuizMode('classroom');
+  else ctSetQuizMode('practice');
 })();
 
 // ── BUILD QUIZ ────────────────────────────────────────────────────────
-function buildQuiz() {
-  const container = document.getElementById('quiz1-questions');
+function ctBuildQuiz() {
+  const container = document.getElementById('ct-quiz-questions');
   container.innerHTML = '';
-  quizState.selected  = new Array(quizQuestions.length).fill(null);
-  quizState.submitted = false;
-  document.getElementById('submit-btn').disabled = true;
-  updateProgress();
-  quizQuestions.forEach((q, qi) => {
+  ctQuizState.selected  = new Array(ctQuizQuestions.length).fill(null);
+  ctQuizState.submitted = false;
+  document.getElementById('ct-submit-btn').disabled = true;
+  ctUpdateProgress();
+  ctQuizQuestions.forEach((q, qi) => {
     const letters = ['A','B','C','D'];
     const optionsHTML = q.options.map((opt, oi) => `
-      <button class="quiz-option" onclick="selectAnswer(${qi},${oi})" id="q-${qi}-${oi}">
+      <button class="quiz-option" onclick="ctSelectAnswer(${qi},${oi})" id="ct-q-${qi}-${oi}">
         <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
       </button>`).join('');
     const card = document.createElement('div');
@@ -2441,79 +2441,79 @@ function buildQuiz() {
         <div class="quiz-question-text">${q.q}</div>
       </div>
       <div class="quiz-options">${optionsHTML}</div>
-      <div class="option-feedback" id="q-feedback-${qi}"></div>`;
+      <div class="option-feedback" id="ct-feedback-${qi}"></div>`;
     container.appendChild(card);
   });
 }
 
 // ── SELECT ANSWER ─────────────────────────────────────────────────────
-function selectAnswer(qi, chosenIndex) {
-  if (quizState.submitted) return;
-  const prev = quizState.selected[qi];
-  if (prev !== null) document.getElementById(`q-${qi}-${prev}`).classList.remove('selected');
-  quizState.selected[qi] = chosenIndex;
-  document.getElementById(`q-${qi}-${chosenIndex}`).classList.add('selected');
-  updateProgress();
-  document.getElementById('submit-btn').disabled = !quizState.selected.every(s => s !== null);
+function ctSelectAnswer(qi, chosenIndex) {
+  if (ctQuizState.submitted) return;
+  const prev = ctQuizState.selected[qi];
+  if (prev !== null) document.getElementById(`ct-q-${qi}-${prev}`).classList.remove('selected');
+  ctQuizState.selected[qi] = chosenIndex;
+  document.getElementById(`ct-q-${qi}-${chosenIndex}`).classList.add('selected');
+  ctUpdateProgress();
+  document.getElementById('ct-submit-btn').disabled = !ctQuizState.selected.every(s => s !== null);
 }
 
 // ── PROGRESS BAR ──────────────────────────────────────────────────────
-function updateProgress() {
-  const total    = quizQuestions.length;
-  const answered = quizState.selected.filter(s => s !== null).length;
-  document.getElementById('q1-progress').style.width = (answered / total * 100) + '%';
-  document.getElementById('q1-progress-text').textContent = `${answered} / ${total} selected`;
+function ctUpdateProgress() {
+  const total    = ctQuizQuestions.length;
+  const answered = ctQuizState.selected.filter(s => s !== null).length;
+  document.getElementById('ct-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('ct-progress-text').textContent = `${answered} / ${total} selected`;
 }
 
 // ── VALIDATE STUDENT INFO ─────────────────────────────────────────────
-function validateStudentInfo() {
-  const name    = document.getElementById('student-name').value.trim();
-  const teacher = document.getElementById('teacher-select').value;
-  const block   = document.getElementById('block-select').value;
-  document.getElementById('err-name').classList.toggle('show', !name);
-  document.getElementById('err-teacher').classList.toggle('show', !teacher);
-  document.getElementById('err-block').classList.toggle('show', !block);
+function ctValidateStudentInfo() {
+  const name    = document.getElementById('ct-student-name').value.trim();
+  const teacher = document.getElementById('ct-teacher-select').value;
+  const block   = document.getElementById('ct-block-select').value;
+  document.getElementById('ct-err-name').classList.toggle('show', !name);
+  document.getElementById('ct-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('ct-err-block').classList.toggle('show', !block);
   return { valid: !!(name && teacher && block), name, teacher, block };
 }
 
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
-function submitQuiz() {
-  if (quizState.submitted) return;
-  if (quizMode === 'classroom') {
-    const { valid } = validateStudentInfo();
+function ctSubmitQuiz() {
+  if (ctQuizState.submitted) return;
+  if (ctQuizMode === 'classroom') {
+    const { valid } = ctValidateStudentInfo();
     if (!valid) {
       document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
   }
-  quizState.submitted = true;
-  document.getElementById('submit-btn').disabled = true;
+  ctQuizState.submitted = true;
+  document.getElementById('ct-submit-btn').disabled = true;
   let correct = 0;
-  quizQuestions.forEach((q, qi) => {
-    const chosen    = quizState.selected[qi];
+  ctQuizQuestions.forEach((q, qi) => {
+    const chosen    = ctQuizState.selected[qi];
     const isCorrect = chosen === q.correct;
     if (isCorrect) correct++;
     q.options.forEach((_, oi) => {
-      const btn = document.getElementById(`q-${qi}-${oi}`);
+      const btn = document.getElementById(`ct-q-${qi}-${oi}`);
       btn.classList.add('disabled');
       btn.classList.remove('selected');
       if (oi === q.correct) btn.classList.add('revealed-correct');
     });
-    document.getElementById(`q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
-    const fb = document.getElementById(`q-feedback-${qi}`);
+    document.getElementById(`ct-q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+    const fb = document.getElementById(`ct-feedback-${qi}`);
     fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
     fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
   });
-  const total = quizQuestions.length;
+  const total = ctQuizQuestions.length;
   const pct   = Math.round(correct / total * 100);
   const score = `${correct}/${total}`;
   const msg   = pct === 100 ? '🏆 Perfect score! You understand every cell strategy.'
     : pct >= 80 ? '🌟 Great work! You clearly understand the reasoning, review any you missed.'
     : pct >= 60 ? '📚 Good effort! Go back over the lesson sections and try again.'
     : '💪 Keep going, review each section carefully and try again!';
-  document.getElementById('q1-score-num').textContent = score;
-  document.getElementById('q1-score-msg').textContent = msg;
-  const sb = document.getElementById('q1-score');
+  document.getElementById('ct-score-num').textContent = score;
+  document.getElementById('ct-score-msg').textContent = msg;
+  const sb = document.getElementById('ct-score');
   sb.classList.add('show');
   // Reveal the full results panel below the sticky nav so score, feedback,
   // submission status, and Try Again are all visible at once. The panel's
@@ -2526,45 +2526,45 @@ function submitQuiz() {
   // stays put at the results panel, where the student can review the feedback
   // and reach Try Again without the page moving on its own.
   if (pct === 100) {
-    quizState.continueTimer = setTimeout(() => {
+    ctQuizState.continueTimer = setTimeout(() => {
       const more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
   }
 
-  if (quizMode === 'practice') {
-    document.getElementById('submit-status').innerHTML =
+  if (ctQuizMode === 'practice') {
+    document.getElementById('ct-submit-status').innerHTML =
       '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
     return;
   }
 
-  const { name, teacher, block } = validateStudentInfo();
+  const { name, teacher, block } = ctValidateStudentInfo();
   const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
   const params = new URLSearchParams({
     tab: 'Cell Types', studentName: name, teacher: teacherLabel,
     block, score, percent: pct + '%'
   });
-  fetch(SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+  fetch(CT_SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(() => {
-      document.getElementById('submit-status').innerHTML =
+      document.getElementById('ct-submit-status').innerHTML =
         '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
     })
     .catch(() => {
-      document.getElementById('submit-status').innerHTML =
+      document.getElementById('ct-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });
 }
 
 // ── RESET QUIZ ────────────────────────────────────────────────────────
-function resetQuiz() {
+function ctResetQuiz() {
   // Cancel any pending auto-scroll so the page never jumps after a reset.
-  if (quizState.continueTimer) {
-    clearTimeout(quizState.continueTimer);
-    quizState.continueTimer = null;
+  if (ctQuizState.continueTimer) {
+    clearTimeout(ctQuizState.continueTimer);
+    ctQuizState.continueTimer = null;
   }
-  document.getElementById('q1-score').classList.remove('show');
-  document.getElementById('submit-status').innerHTML = '';
-  buildQuiz();
+  document.getElementById('ct-score').classList.remove('show');
+  document.getElementById('ct-submit-status').innerHTML = '';
+  ctBuildQuiz();
   // Return the student to the quiz's natural beginning. Reuse the Quiz nav
   // link's target so there is only one canonical quiz destination, and scroll
   // there directly (rather than re-clicking the link, which does nothing when
@@ -2576,7 +2576,7 @@ function resetQuiz() {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────
-buildQuiz();
+ctBuildQuiz();
 </script>
 <script>
 if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');

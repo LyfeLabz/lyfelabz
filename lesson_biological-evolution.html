@@ -1341,8 +1341,8 @@
 
     <!-- Quiz Mode Toggle -->
     <div class="quiz-mode-toggle">
-      <button class="mode-btn active" id="btn-practice" onclick="setQuizMode('practice')">Practice Mode</button>
-      <button class="mode-btn"        id="btn-classroom" onclick="setQuizMode('classroom')">Classroom Mode</button>
+      <button class="mode-btn active" id="btn-practice" onclick="beSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="beSetQuizMode('classroom')">Classroom Mode</button>
     </div>
     <div class="mode-hint">
       <span id="hint-practice" class="visible">Your score will not be sent</span>
@@ -1355,22 +1355,22 @@
       <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
       <div class="info-fields">
         <div class="info-field">
-          <label for="student-name">Your Name</label>
-          <input type="text" id="student-name" placeholder="First Last" autocomplete="off">
-          <div class="info-error" id="err-name">Please enter your name.</div>
+          <label for="be-student-name">Your Name</label>
+          <input type="text" id="be-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="be-err-name">Please enter your name.</div>
         </div>
         <div class="info-field">
-          <label for="teacher-select">Teacher</label>
-          <select id="teacher-select">
+          <label for="be-teacher-select">Teacher</label>
+          <select id="be-teacher-select">
             <option value="">- Select -</option>
             <option value="MrBrown">Mr. Brown</option>
             <option value="MsGay">Ms. Gay</option>
           </select>
-          <div class="info-error" id="err-teacher">Please select your teacher.</div>
+          <div class="info-error" id="be-err-teacher">Please select your teacher.</div>
         </div>
         <div class="info-field">
-          <label for="block-select">Block</label>
-          <select id="block-select">
+          <label for="be-block-select">Block</label>
+          <select id="be-block-select">
             <option value="">- Select -</option>
             <option value="A">A</option>
             <option value="B">B</option>
@@ -1380,29 +1380,29 @@
             <option value="F">F</option>
             <option value="G">G</option>
           </select>
-          <div class="info-error" id="err-block">Please select your block.</div>
+          <div class="info-error" id="be-err-block">Please select your block.</div>
         </div>
       </div>
     </div>
 
     <div class="quiz-progress-sticky">
       <div class="quiz-progress">
-        <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
-        <div class="progress-text" id="q1-progress-text">0 / 10 selected</div>
+        <div class="progress-bar"><div class="progress-fill" id="be-progress"></div></div>
+        <div class="progress-text" id="be-progress-text">0 / 10 selected</div>
       </div>
     </div>
 
-    <div id="quiz1-questions"></div>
+    <div id="be-quiz-questions"></div>
 
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="be-submit-btn" onclick="beSubmitQuiz()" disabled>Submit Quiz</button>
     </div>
 
-    <div class="score-board" id="q1-score">
-      <div class="big-score" id="q1-score-num"></div>
-      <p id="q1-score-msg"></p>
-      <div id="submit-status"></div>
-      <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
+    <div class="score-board" id="be-score">
+      <div class="big-score" id="be-score-num"></div>
+      <p id="be-score-msg"></p>
+      <div id="be-submit-status"></div>
+      <button class="reset-btn" onclick="beResetQuiz()">Try Again</button>
     </div>
   </div>
 </section>
@@ -1492,12 +1492,12 @@ function toggleEv(card) { card.classList.toggle('open'); }
 
 <!-- QUIZ ENGINE -->
 <script>
-const SCRIPT_URLS = {
+const BE_SCRIPT_URLS = {
   MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
   MsGay: 'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
 
-const quizQuestions = [
+const beQuizQuestions = [
   { q: "What is biological evolution?", options: ["A single organism changing its traits during its lifetime","A population changing over many generations due to environmental pressures","One species instantly turning into a completely different species","Only the strongest animals surviving in the wild"], correct: 1, explanation: "Biological evolution describes populations (not individuals) changing over many generations. A single organism cannot evolve; evolution is a shift in how often certain traits appear across an entire population over time." },
   { q: "In natural selection, which organisms are MOST likely to reproduce and pass on their traits?", options: ["The largest organisms in a population","Those with traits that help them survive in their environment","Those that have been alive the longest","Those that look the most different from the rest of the population"], correct: 1, explanation: "Natural selection favors organisms whose traits best match the environment; they survive longer and reproduce more, passing those helpful traits to the next generation." },
   { q: "A population of moths lives on trees. When pollution darkens the bark, dark moths survive better than light moths. Over many generations, the population becomes mostly dark. What happened?", options: ["Individual moths changed color in response to pollution","The light moths chose to leave the trees","Dark moths survived because they blended in better","The moths evolved randomly without any cause"], correct: 2, explanation: "This is natural selection in action. Dark moths already existed in the population (variation). Predators spotted and ate more light moths. Dark moths survived and reproduced more, so dark coloring became more common over generations." },
@@ -1510,14 +1510,14 @@ const quizQuestions = [
   { q: "Which of the following BEST describes why evolution is described as a change in a population, NOT a change in an individual?", options: ["Individuals change their own DNA to adapt during their lifetime","Only the strongest individuals evolve while weaker ones stay unchanged","Evolution is a population-level shift in trait frequency across generations","Populations only evolve when they move to a new environment"], correct: 2, explanation: "An individual's DNA doesn't change in response to the environment. Evolution works through reproduction: organisms with helpful traits have more offspring, those traits appear more often in the next generation, and gradually the trait becomes more common in the population. It's a change in the population, not the individual." }
 ];
 
-const quizState = { selected: [], submitted: false };
+const beQuizState = { selected: [], submitted: false };
 
 
 // ── QUIZ MODE ────────────────────────────────────────────────────────
-let quizMode = 'practice';
+let beQuizMode = 'practice';
 
-function setQuizMode(mode) {
-  quizMode = mode;
+function beSetQuizMode(mode) {
+  beQuizMode = mode;
   const infoBox       = document.getElementById('student-info-box');
   const btnPractice   = document.getElementById('btn-practice');
   const btnClassroom  = document.getElementById('btn-classroom');
@@ -1544,23 +1544,23 @@ function setQuizMode(mode) {
   const params    = new URLSearchParams(window.location.search);
   const modeParam = params.get('mode');
   if (modeParam === 'classroom') {
-    setQuizMode('classroom');
+    beSetQuizMode('classroom');
   } else {
-    setQuizMode('practice');
+    beSetQuizMode('practice');
   }
 })();
 
-function buildQuiz() {
-  const container = document.getElementById('quiz1-questions');
+function beBuildQuiz() {
+  const container = document.getElementById('be-quiz-questions');
   container.innerHTML = '';
-  quizState.selected  = new Array(quizQuestions.length).fill(null);
-  quizState.submitted = false;
-  document.getElementById('submit-btn').disabled = true;
-  updateProgress();
-  quizQuestions.forEach((q, qi) => {
+  beQuizState.selected  = new Array(beQuizQuestions.length).fill(null);
+  beQuizState.submitted = false;
+  document.getElementById('be-submit-btn').disabled = true;
+  beUpdateProgress();
+  beQuizQuestions.forEach((q, qi) => {
     const letters = ['A','B','C','D'];
     const optionsHTML = q.options.map((opt, oi) => `
-      <button class="quiz-option" onclick="selectAnswer(${qi}, ${oi})" id="q-${qi}-${oi}">
+      <button class="quiz-option" onclick="beSelectAnswer(${qi}, ${oi})" id="be-q-${qi}-${oi}">
         <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
       </button>`).join('');
     const card = document.createElement('div');
@@ -1571,77 +1571,77 @@ function buildQuiz() {
         <div class="quiz-question-text">${q.q}</div>
       </div>
       <div class="quiz-options">${optionsHTML}</div>
-      <div class="option-feedback" id="q-feedback-${qi}"></div>`;
+      <div class="option-feedback" id="be-feedback-${qi}"></div>`;
     container.appendChild(card);
   });
 }
 
-function selectAnswer(qi, chosenIndex) {
-  if (quizState.submitted) return;
-  const prev = quizState.selected[qi];
-  if (prev !== null) document.getElementById(`q-${qi}-${prev}`).classList.remove('selected');
-  quizState.selected[qi] = chosenIndex;
-  document.getElementById(`q-${qi}-${chosenIndex}`).classList.add('selected');
-  updateProgress();
-  document.getElementById('submit-btn').disabled = !quizState.selected.every(s => s !== null);
+function beSelectAnswer(qi, chosenIndex) {
+  if (beQuizState.submitted) return;
+  const prev = beQuizState.selected[qi];
+  if (prev !== null) document.getElementById(`be-q-${qi}-${prev}`).classList.remove('selected');
+  beQuizState.selected[qi] = chosenIndex;
+  document.getElementById(`be-q-${qi}-${chosenIndex}`).classList.add('selected');
+  beUpdateProgress();
+  document.getElementById('be-submit-btn').disabled = !beQuizState.selected.every(s => s !== null);
 }
 
-function updateProgress() {
-  const total    = quizQuestions.length;
-  const answered = quizState.selected.filter(s => s !== null).length;
-  document.getElementById('q1-progress').style.width = (answered / total * 100) + '%';
-  document.getElementById('q1-progress-text').textContent = `${answered} / ${total} selected`;
+function beUpdateProgress() {
+  const total    = beQuizQuestions.length;
+  const answered = beQuizState.selected.filter(s => s !== null).length;
+  document.getElementById('be-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('be-progress-text').textContent = `${answered} / ${total} selected`;
 }
 
-function validateStudentInfo() {
-  const name    = document.getElementById('student-name').value.trim();
-  const teacher = document.getElementById('teacher-select').value;
-  const block   = document.getElementById('block-select').value;
-  document.getElementById('err-name').classList.toggle('show', !name);
-  document.getElementById('err-teacher').classList.toggle('show', !teacher);
-  document.getElementById('err-block').classList.toggle('show', !block);
+function beValidateStudentInfo() {
+  const name    = document.getElementById('be-student-name').value.trim();
+  const teacher = document.getElementById('be-teacher-select').value;
+  const block   = document.getElementById('be-block-select').value;
+  document.getElementById('be-err-name').classList.toggle('show', !name);
+  document.getElementById('be-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('be-err-block').classList.toggle('show', !block);
   return { valid: !!(name && teacher && block), name, teacher, block };
 }
 
-function submitQuiz() {
-  if (quizState.submitted) return;
+function beSubmitQuiz() {
+  if (beQuizState.submitted) return;
 
   // ── Classroom mode: validate student info first ──────────────────
-  if (quizMode === 'classroom') {
-    const { valid } = validateStudentInfo();
+  if (beQuizMode === 'classroom') {
+    const { valid } = beValidateStudentInfo();
     if (!valid) {
       document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
   }
 
-  quizState.submitted = true;
-  document.getElementById('submit-btn').disabled = true;
+  beQuizState.submitted = true;
+  document.getElementById('be-submit-btn').disabled = true;
   let correct = 0;
-  quizQuestions.forEach((q, qi) => {
-    const chosen = quizState.selected[qi];
+  beQuizQuestions.forEach((q, qi) => {
+    const chosen = beQuizState.selected[qi];
     const isCorrect = chosen === q.correct;
     if (isCorrect) correct++;
     q.options.forEach((_, oi) => {
-      const btn = document.getElementById(`q-${qi}-${oi}`);
+      const btn = document.getElementById(`be-q-${qi}-${oi}`);
       btn.classList.add('disabled'); btn.classList.remove('selected');
       if (oi === q.correct) btn.classList.add('revealed-correct');
     });
-    document.getElementById(`q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
-    const fb = document.getElementById(`q-feedback-${qi}`);
+    document.getElementById(`be-q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+    const fb = document.getElementById(`be-feedback-${qi}`);
     fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
     fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
   });
-  const total = quizQuestions.length;
+  const total = beQuizQuestions.length;
   const pct   = Math.round(correct / total * 100);
   const score = `${correct}/${total}`;
   const msg   = pct === 100 ? '🏆 Perfect score! You know your evolution inside and out!'
     : pct >= 80 ? '🌟 Great work! You clearly studied, review any you missed.'
     : pct >= 60 ? '📚 Good effort! Go back over the notes and try again.'
     : '💪 Keep going, review each section carefully. You\'ve got this!';
-  document.getElementById('q1-score-num').textContent = score;
-  document.getElementById('q1-score-msg').textContent = msg;
-  const sb = document.getElementById('q1-score');
+  document.getElementById('be-score-num').textContent = score;
+  document.getElementById('be-score-msg').textContent = msg;
+  const sb = document.getElementById('be-score');
   sb.classList.add('show');
   // Reveal the full results panel below the sticky nav so score, feedback,
   // submission status, and Try Again are all visible at once. The panel's
@@ -1654,42 +1654,42 @@ function submitQuiz() {
   // stays put at the results panel, where the student can review the feedback
   // and reach Try Again without the page moving on its own.
   if (pct === 100) {
-    quizState.continueTimer = setTimeout(() => {
+    beQuizState.continueTimer = setTimeout(() => {
       const more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
   }
 
   // ── Practice mode: skip submission ─────────────────────
-  if (quizMode === 'practice') {
-    document.getElementById('submit-status').innerHTML =
+  if (beQuizMode === 'practice') {
+    document.getElementById('be-submit-status').innerHTML =
       '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
     return;
   }
 
   // ── Classroom mode: send to Google Sheet ─────────────────
-  const { name, teacher, block } = validateStudentInfo();
+  const { name, teacher, block } = beValidateStudentInfo();
   const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
   const params = new URLSearchParams({ tab: 'Bio Evolution', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%' });
-  fetch(SCRIPT_URLS[teacher] + '?' + params.toString())
+  fetch(BE_SCRIPT_URLS[teacher] + '?' + params.toString())
     .then(r => r.json())
     .then(data => {
-      document.getElementById('submit-status').innerHTML = data.status === 'success'
+      document.getElementById('be-submit-status').innerHTML = data.status === 'success'
         ? '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>'
         : '<div class="score-error">⚠️ Submission issue: ' + (data.message || 'Unknown error') + '</div>';
     })
-    .catch(() => { document.getElementById('submit-status').innerHTML = '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>'; });
+    .catch(() => { document.getElementById('be-submit-status').innerHTML = '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>'; });
 }
 
-function resetQuiz() {
+function beResetQuiz() {
   // Cancel any pending auto-scroll so the page never jumps after a reset.
-  if (quizState.continueTimer) {
-    clearTimeout(quizState.continueTimer);
-    quizState.continueTimer = null;
+  if (beQuizState.continueTimer) {
+    clearTimeout(beQuizState.continueTimer);
+    beQuizState.continueTimer = null;
   }
-  document.getElementById('q1-score').classList.remove('show');
-  document.getElementById('submit-status').innerHTML = '';
-  buildQuiz();
+  document.getElementById('be-score').classList.remove('show');
+  document.getElementById('be-submit-status').innerHTML = '';
+  beBuildQuiz();
   // Return the student to the quiz's natural beginning. Reuse the Quiz nav
   // link's target so there is only one canonical quiz destination, and scroll
   // there directly (rather than re-clicking the link, which does nothing when
@@ -1720,7 +1720,7 @@ function vocabJump(targetId) {
   });
 }
 
-buildQuiz();
+beBuildQuiz();
 </script>
 
 

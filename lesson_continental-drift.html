@@ -1610,8 +1610,8 @@ function applyReset() {
 
     <!-- Quiz Mode Toggle -->
     <div class="quiz-mode-toggle">
-      <button class="mode-btn active" id="btn-practice"  onclick="setQuizMode('practice')">Practice Mode</button>
-      <button class="mode-btn"        id="btn-classroom" onclick="setQuizMode('classroom')">Classroom Mode</button>
+      <button class="mode-btn active" id="btn-practice"  onclick="cdSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="cdSetQuizMode('classroom')">Classroom Mode</button>
     </div>
     <div class="mode-hint">
       <span id="hint-practice" class="visible">Your score will not be sent</span>
@@ -1624,23 +1624,23 @@ function applyReset() {
       <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
       <div class="info-fields">
         <div class="info-field">
-          <label for="student-name">Your Name</label>
-          <input type="text" id="student-name" placeholder="First Last" autocomplete="off">
-          <div class="info-error" id="err-name">Please enter your name.</div>
+          <label for="cd-student-name">Your Name</label>
+          <input type="text" id="cd-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="cd-err-name">Please enter your name.</div>
         </div>
         <div class="info-field">
-          <label for="teacher-select">Teacher</label>
-          <select id="teacher-select">
-            <option value="">&#8212; Select &#8212;</option>
+          <label for="cd-teacher-select">Teacher</label>
+          <select id="cd-teacher-select">
+            <option value="">- Select -</option>
             <option value="MrBrown">Mr. Brown</option>
             <option value="MsGay">Ms. Gay</option>
           </select>
-          <div class="info-error" id="err-teacher">Please select your teacher.</div>
+          <div class="info-error" id="cd-err-teacher">Please select your teacher.</div>
         </div>
         <div class="info-field">
-          <label for="block-select">Block</label>
-          <select id="block-select">
-            <option value="">&#8212; Select &#8212;</option>
+          <label for="cd-block-select">Block</label>
+          <select id="cd-block-select">
+            <option value="">- Select -</option>
             <option value="A">A</option>
             <option value="B">B</option>
             <option value="C">C</option>
@@ -1649,7 +1649,7 @@ function applyReset() {
             <option value="F">F</option>
             <option value="G">G</option>
           </select>
-          <div class="info-error" id="err-block">Please select your block.</div>
+          <div class="info-error" id="cd-err-block">Please select your block.</div>
         </div>
       </div>
     </div>
@@ -1657,25 +1657,25 @@ function applyReset() {
     <!-- Progress (sticky) -->
     <div class="quiz-progress-sticky">
       <div class="quiz-progress">
-        <div class="progress-bar"><div class="progress-fill" id="q1-progress"></div></div>
-        <div class="progress-text" id="q1-progress-text">0 / 10 selected</div>
+        <div class="progress-bar"><div class="progress-fill" id="cd-progress"></div></div>
+        <div class="progress-text" id="cd-progress-text">0 / 10 selected</div>
       </div>
     </div>
 
     <!-- Questions -->
-    <div id="quiz1-questions"></div>
+    <div id="cd-quiz-questions"></div>
 
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="submit-btn" onclick="submitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="cd-submit-btn" onclick="cdSubmitQuiz()" disabled>Submit Quiz</button>
     </div>
 
     <!-- Score -->
-    <div class="score-board" id="q1-score">
-      <div class="big-score" id="q1-score-num"></div>
-      <p id="q1-score-msg"></p>
-      <div id="submit-status"></div>
-      <button class="reset-btn" onclick="resetQuiz()">Try Again</button>
+    <div class="score-board" id="cd-score">
+      <div class="big-score" id="cd-score-num"></div>
+      <p id="cd-score-msg"></p>
+      <div id="cd-submit-status"></div>
+      <button class="reset-btn" onclick="cdResetQuiz()">Try Again</button>
     </div>
   </div>
 </section>
@@ -1812,7 +1812,7 @@ function vocabJump(targetId) {
 
 <!-- Google Apps Script URLs -->
 <script>
-var SCRIPT_URLS = {
+var CD_SCRIPT_URLS = {
   MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
   MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
 };
@@ -1820,8 +1820,7 @@ var SCRIPT_URLS = {
 
 <!-- Quiz Logic -->
 <script>
-var quizData = {
-  questions: [
+var cdQuizQuestions = [
     {
       q: "What does the theory of continental drift propose?",
       options: [
@@ -1932,14 +1931,13 @@ var quizData = {
       correct: 1,
       explanation: "In the 1950s and 1960s, scientists mapping the ocean floor discovered that Earth's crust is broken into large sections called tectonic plates. These plates float on hot, solid rock that slowly flows like thick putty, not liquid magma, and move slowly over time. This discovery (plate tectonics) provided exactly the physical mechanism that Wegener's theory had been missing."
     }
-  ]
-};
+];
 
-var quizState = { selected: [], submitted: false };
-var quizMode = 'practice';
+var cdQuizState = { selected: [], submitted: false };
+var cdQuizMode = 'practice';
 
-function setQuizMode(mode) {
-  quizMode = mode;
+function cdSetQuizMode(mode) {
+  cdQuizMode = mode;
   var infoBox      = document.getElementById('student-info-box');
   var btnPractice  = document.getElementById('btn-practice');
   var btnClassroom = document.getElementById('btn-classroom');
@@ -1966,99 +1964,99 @@ window.addEventListener('DOMContentLoaded', function() {
   var params = new URLSearchParams(window.location.search);
   var modeParam = params.get('mode');
   if (modeParam === 'classroom') {
-    setQuizMode('classroom');
+    cdSetQuizMode('classroom');
   } else {
-    setQuizMode('practice');
+    cdSetQuizMode('practice');
   }
 });
 
-function buildQuiz() {
-  var container = document.getElementById('quiz1-questions');
+function cdBuildQuiz() {
+  var container = document.getElementById('cd-quiz-questions');
   container.innerHTML = '';
-  quizState.selected  = new Array(quizData.questions.length).fill(null);
-  quizState.submitted = false;
-  document.getElementById('submit-btn').disabled = true;
-  updateProgress();
+  cdQuizState.selected  = new Array(cdQuizQuestions.length).fill(null);
+  cdQuizState.submitted = false;
+  document.getElementById('cd-submit-btn').disabled = true;
+  cdUpdateProgress();
 
-  quizData.questions.forEach(function(q, qi) {
+  cdQuizQuestions.forEach(function(q, qi) {
     var letters = ['A','B','C','D'];
     var optionsHTML = q.options.map(function(opt, oi) {
-      return '<button class="quiz-option" onclick="selectAnswer(' + qi + ', ' + oi + ')" id="q-' + qi + '-' + oi + '"><span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+      return '<button class="quiz-option" onclick="cdSelectAnswer(' + qi + ', ' + oi + ')" id="cd-q-' + qi + '-' + oi + '"><span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
     }).join('');
     var card = document.createElement('div');
     card.className = 'quiz-card';
-    card.id = 'q-card-' + qi;
-    card.innerHTML = '<div class="quiz-header"><div class="quiz-num">' + (qi + 1) + '</div><div class="quiz-question-text">' + q.q + '</div></div><div class="quiz-options">' + optionsHTML + '</div><div class="option-feedback" id="q-feedback-' + qi + '"></div>';
+    card.id = 'cd-q-card-' + qi;
+    card.innerHTML = '<div class="quiz-header"><div class="quiz-num">' + (qi + 1) + '</div><div class="quiz-question-text">' + q.q + '</div></div><div class="quiz-options">' + optionsHTML + '</div><div class="option-feedback" id="cd-feedback-' + qi + '"></div>';
     container.appendChild(card);
   });
 }
 
-function selectAnswer(qi, chosenIndex) {
-  if (quizState.submitted) return;
-  var prev = quizState.selected[qi];
+function cdSelectAnswer(qi, chosenIndex) {
+  if (cdQuizState.submitted) return;
+  var prev = cdQuizState.selected[qi];
   if (prev !== null) {
-    document.getElementById('q-' + qi + '-' + prev).classList.remove('selected');
+    document.getElementById('cd-q-' + qi + '-' + prev).classList.remove('selected');
   }
-  quizState.selected[qi] = chosenIndex;
-  document.getElementById('q-' + qi + '-' + chosenIndex).classList.add('selected');
-  updateProgress();
-  var allSelected = quizState.selected.every(function(s) { return s !== null; });
-  document.getElementById('submit-btn').disabled = !allSelected;
+  cdQuizState.selected[qi] = chosenIndex;
+  document.getElementById('cd-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  cdUpdateProgress();
+  var allSelected = cdQuizState.selected.every(function(s) { return s !== null; });
+  document.getElementById('cd-submit-btn').disabled = !allSelected;
 }
 
-function updateProgress() {
-  var total    = quizData.questions.length;
-  var answered = quizState.selected.filter(function(s) { return s !== null; }).length;
-  document.getElementById('q1-progress').style.width = (answered / total * 100) + '%';
-  document.getElementById('q1-progress-text').textContent = answered + ' / ' + total + ' selected';
+function cdUpdateProgress() {
+  var total    = cdQuizQuestions.length;
+  var answered = cdQuizState.selected.filter(function(s) { return s !== null; }).length;
+  document.getElementById('cd-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('cd-progress-text').textContent = answered + ' / ' + total + ' selected';
 }
 
-function validateStudentInfo() {
-  var name    = document.getElementById('student-name').value.trim();
-  var teacher = document.getElementById('teacher-select').value;
-  var block   = document.getElementById('block-select').value;
-  document.getElementById('err-name').classList.toggle('show', !name);
-  document.getElementById('err-teacher').classList.toggle('show', !teacher);
-  document.getElementById('err-block').classList.toggle('show', !block);
+function cdValidateStudentInfo() {
+  var name    = document.getElementById('cd-student-name').value.trim();
+  var teacher = document.getElementById('cd-teacher-select').value;
+  var block   = document.getElementById('cd-block-select').value;
+  document.getElementById('cd-err-name').classList.toggle('show', !name);
+  document.getElementById('cd-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('cd-err-block').classList.toggle('show', !block);
   return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
 }
 
-function submitQuiz() {
-  if (quizState.submitted) return;
+function cdSubmitQuiz() {
+  if (cdQuizState.submitted) return;
 
-  if (quizMode === 'classroom') {
-    var check = validateStudentInfo();
+  if (cdQuizMode === 'classroom') {
+    var check = cdValidateStudentInfo();
     if (!check.valid) {
       document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
   }
 
-  quizState.submitted = true;
-  document.getElementById('submit-btn').disabled = true;
+  cdQuizState.submitted = true;
+  document.getElementById('cd-submit-btn').disabled = true;
 
   var correct = 0;
 
-  quizData.questions.forEach(function(q, qi) {
-    var chosen    = quizState.selected[qi];
+  cdQuizQuestions.forEach(function(q, qi) {
+    var chosen    = cdQuizState.selected[qi];
     var isCorrect = (chosen === q.correct);
     if (isCorrect) correct++;
 
     q.options.forEach(function(_, oi) {
-      var btn = document.getElementById('q-' + qi + '-' + oi);
+      var btn = document.getElementById('cd-q-' + qi + '-' + oi);
       btn.classList.add('disabled');
       btn.classList.remove('selected');
       if (oi === q.correct) btn.classList.add('revealed-correct');
     });
 
-    document.getElementById('q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    document.getElementById('cd-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
 
-    var fb = document.getElementById('q-feedback-' + qi);
+    var fb = document.getElementById('cd-feedback-' + qi);
     fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
     fb.innerHTML = (isCorrect ? '&#10003; Correct! ' : '&#10007; Not quite. ') + q.explanation;
   });
 
-  var total = quizData.questions.length;
+  var total = cdQuizQuestions.length;
   var pct   = Math.round(correct / total * 100);
   var score = correct + '/' + total;
   var msg   = pct === 100
@@ -2069,9 +2067,9 @@ function submitQuiz() {
     ? 'Good effort! Go back over the evidence sections and try again.'
     : 'Keep going, review each section carefully. You have got this!';
 
-  document.getElementById('q1-score-num').textContent = score;
-  document.getElementById('q1-score-msg').textContent = msg;
-  var sb = document.getElementById('q1-score');
+  document.getElementById('cd-score-num').textContent = score;
+  document.getElementById('cd-score-msg').textContent = msg;
+  var sb = document.getElementById('cd-score');
   sb.classList.add('show');
   // Reveal the full results panel below the sticky nav so score, feedback,
   // submission status, and Try Again are all visible at once. The panel's
@@ -2084,21 +2082,21 @@ function submitQuiz() {
   // stays put at the results panel, where the student can review the feedback
   // and reach Try Again without the page moving on its own.
   if (pct === 100) {
-    quizState.continueTimer = setTimeout(() => {
+    cdQuizState.continueTimer = setTimeout(() => {
       const more = document.getElementById('continue');
       if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 1900);
   }
 
-  if (quizMode === 'practice') {
-    document.getElementById('submit-status').innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
+  if (cdQuizMode === 'practice') {
+    document.getElementById('cd-submit-status').innerHTML = '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
     return;
   }
 
-  var info       = validateStudentInfo();
-  var url        = SCRIPT_URLS[info.teacher];
+  var info       = cdValidateStudentInfo();
+  var url        = CD_SCRIPT_URLS[info.teacher];
   if (!url || url.indexOf('YOUR_') !== -1) {
-    document.getElementById('submit-status').innerHTML = '<div class="score-error">Script URL not configured, ask your teacher.</div>';
+    document.getElementById('cd-submit-status').innerHTML = '<div class="score-error">Script URL not configured, ask your teacher.</div>';
     return;
   }
   var teacherLabel = (info.teacher === 'MrBrown') ? 'Mr. Brown' : 'Ms. Gay';
@@ -2112,24 +2110,24 @@ function submitQuiz() {
   });
   fetch(url + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(function() {
-      document.getElementById('submit-status').innerHTML =
+      document.getElementById('cd-submit-status').innerHTML =
         '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
     })
     .catch(function() {
-      document.getElementById('submit-status').innerHTML =
+      document.getElementById('cd-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });
 }
 
-function resetQuiz() {
+function cdResetQuiz() {
   // Cancel any pending auto-scroll so the page never jumps after a reset.
-  if (quizState.continueTimer) {
-    clearTimeout(quizState.continueTimer);
-    quizState.continueTimer = null;
+  if (cdQuizState.continueTimer) {
+    clearTimeout(cdQuizState.continueTimer);
+    cdQuizState.continueTimer = null;
   }
-  document.getElementById('q1-score').classList.remove('show');
-  document.getElementById('submit-status').innerHTML = '';
-  buildQuiz();
+  document.getElementById('cd-score').classList.remove('show');
+  document.getElementById('cd-submit-status').innerHTML = '';
+  cdBuildQuiz();
   // Return the student to the quiz's natural beginning. Reuse the Quiz nav
   // link's target so there is only one canonical quiz destination, and scroll
   // there directly (rather than re-clicking the link, which does nothing when
@@ -2140,7 +2138,7 @@ function resetQuiz() {
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-buildQuiz();
+cdBuildQuiz();
 </script>
 
 <!-- Starfield -->

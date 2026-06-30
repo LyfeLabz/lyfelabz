@@ -1087,7 +1087,7 @@ function generateReport() {
   var feedbackTitle=finalScore===15?'Perfect Score':finalScore>=13?'Excellent Work':finalScore>=11?'Good Effort':'Keep Studying';
 
   f(C.teal10); s(C.teal); doc.setLineWidth(0.6); rr(ML,y,CW,30,5,'FD');
-  bold(13); t(C.tealDk); doc.text(feedbackTitle+'  \u2014  Overall Feedback', ML+7, y+10);
+  bold(13); t(C.tealDk); doc.text(feedbackTitle+': Overall Feedback', ML+7, y+10);
   normal(10.5); t(C.dgrey);
   var msgLines=doc.splitTextToSize(feedbackMsg,CW-14);
   doc.text(msgLines, ML+7, y+19, {lineHeightFactor:1.5});
