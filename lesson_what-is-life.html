@@ -2722,6 +2722,14 @@ function resetQuiz() {
   document.getElementById('q1-score').classList.remove('show');
   document.getElementById('submit-status').innerHTML = '';
   buildQuiz();
+  // Return the student to the quiz's natural beginning. Reuse the Quiz nav
+  // link's target so there is only one canonical quiz destination, and scroll
+  // there directly (rather than re-clicking the link, which does nothing when
+  // the URL hash is already #quiz). scroll-margin-top keeps it clear of the
+  // sticky nav, matching where the Quiz nav lands.
+  const quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  const target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── VOCAB JUMP ────────────────────────────────────────────────────────
