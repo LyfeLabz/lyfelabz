@@ -209,6 +209,79 @@ Do not invent curriculum relationships simply to populate the section.
 
 The architecture should exist before the relationships are defined.
 
+## Connections Philosophy
+
+Connections exist to reveal relationships, not provide navigation.
+
+A Connections card should help students understand how scientific ideas fit together.
+
+The purpose is not to say:
+
+* Learn more about...
+* Continue with...
+* Next lesson...
+* You might also like...
+
+Instead, every Connections card should answer one of these questions:
+
+### 1. What caused this?
+
+Show how an earlier scientific idea leads naturally to the current lesson.
+
+Example:
+
+> Continental Drift introduced the evidence.
+> Plate Tectonics explains the mechanism.
+
+### 2. What does this explain?
+
+Show how another lesson helps explain something students just learned.
+
+Example:
+
+> Plate Tectonics explains why Wegener's observations were correct.
+
+### 3. Where does this idea lead?
+
+Show how today's lesson becomes the foundation for a larger scientific concept.
+
+Example:
+
+> Reproductive success provides the mechanism that allows natural selection to occur.
+
+## Writing Principles
+
+Connections should create curiosity.
+
+Students should finish reading a Connections card thinking:
+
+> "I want to understand that."
+
+Avoid generic wording such as:
+
+* Learn more about...
+* Continue with...
+* Next, study...
+* Explore this topic...
+
+Instead, reveal the scientific relationship between the two lessons.
+
+Connections should strengthen the student's mental model of science as one interconnected story rather than a sequence of isolated lessons.
+
+A lesson is the student's home base.
+
+Connections invite exploration and always provide an easy path back to that home base.
+
+They should never function as a checklist or imply a required progression.
+
+When writing a new Connections card, ask:
+
+* Does this reveal a meaningful scientific relationship?
+* Would a curious middle school student naturally want to click it?
+* Does this strengthen the overall narrative of the curriculum?
+
+If the answer is no, rewrite the card until it does.
+
 ---
 
 # VOCABULARY RULES
@@ -226,6 +299,51 @@ Use right-aligned:
 No "Click or tap" text.
 
 No "In this lesson" text.
+
+## Vocabulary Standards
+
+Vocabulary sections should be visually and behaviorally identical across LyfeLabz unless there is a clear instructional reason to differ.
+
+This is the canonical standard for all current and future lessons.
+
+### Section Introduction
+
+Every vocabulary section should begin with exactly:
+
+> Choose a card to see what each word means.
+
+Do not create alternate phrasings.
+
+### Vocabulary Cards
+
+Vocabulary cards should not include instructional helper text such as:
+
+* Click to reveal
+* Click or tap to reveal
+* Tap to reveal
+* Click for definition
+* or similar wording.
+
+The interaction should be communicated entirely through the component itself:
+
+* button styling
+* hover/focus states
+* chevron indicator
+* reveal animation
+
+Avoid redundant instructional text.
+
+### Interaction
+
+Vocabulary cards should:
+
+* open and close on click/tap
+* support keyboard navigation
+* update `aria-expanded`
+* allow only one card to be open at a time
+* use the standard LyfeLabz chevron affordance
+
+Do not create alternate vocabulary card implementations unless there is a compelling instructional need.
 
 ---
 

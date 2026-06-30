@@ -1354,10 +1354,39 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
 .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
 .glossary-card.open .gc-hint { display: none; }
+.gc-term { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.gc-term::after { content: '▾'; font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: color 0.2s; }
+.glossary-card.open .gc-term::after { content: '▴'; color: var(--gold); }
 .gc-teal   { border-top-color: var(--teal);     } .gc-teal .gc-term   { color: var(--teal); }
 .gc-orange { border-top-color: var(--orange);   } .gc-orange .gc-term { color: var(--orange); }
 .gc-green  { border-top-color: var(--green);    } .gc-green .gc-term  { color: var(--green); }
 .gc-purple { border-top-color: var(--separate); } .gc-purple .gc-term { color: var(--separate); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
 </style>
 </head>
 <body>
@@ -1366,7 +1395,8 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 <!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
-  <ul class="nav-links">
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#pure">Explore</a></li>
     <li><a href="#quiz">Quiz</a></li>
@@ -1472,51 +1502,42 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   <div class="container">
     <span class="section-label">Key Vocabulary</span>
     <h2 class="section-title">Words You'll Meet</h2>
-    <p class="section-desc" style="margin-bottom: 1.8rem;">Click a card to reveal what each word means. Click it again to close. You'll meet every one of these in the lesson below.</p>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
     <div class="glossary-grid">
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-term">Pure Substance</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">A sample of matter that has the same ingredients throughout. It contains only one type of particle: an element, a molecule, or a compound.</div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
         <div class="gc-term">Mixture</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">A combination of different particles that are not chemically joined. The parts can be separated physically.</div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
         <div class="gc-term">Homogeneous Mixture</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">A combination of different substances that are evenly distributed. "Homo" means one or the same throughout. Example: coffee.</div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
         <div class="gc-term">Heterogeneous Mixture</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">A combination of different substances that are UNevenly distributed. "Hetero" means many different parts you can see. Example: chicken soup.</div>
       </button>
       <button class="glossary-card gc-purple" type="button" aria-expanded="false">
         <div class="gc-term">Filtration</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">Separating big particles from small particles using a filter, like a coffee filter.</div>
       </button>
       <button class="glossary-card gc-purple" type="button" aria-expanded="false">
         <div class="gc-term">Evaporation</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">Removing a liquid by turning it into gas, leaving solids behind.</div>
       </button>
       <button class="glossary-card gc-purple" type="button" aria-expanded="false">
         <div class="gc-term">Magnetism</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">Separating a mixture when one part is magnetic and the others are not.</div>
       </button>
       <button class="glossary-card gc-purple" type="button" aria-expanded="false">
         <div class="gc-term">Sieving</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">Separating mixtures using a tool with holes of a specific size (a sieve or mesh).</div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-term">Element &amp; Compound</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">An element has only one kind of atom (like sodium, Na). A compound has two or more kinds of atoms chemically joined (like salt, NaCl). Both are pure substances.</div>
       </button>
     </div>
@@ -3495,5 +3516,23 @@ requestAnimationFrame(draw);
 })();
 </script>
 
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
 </body>
 </html>

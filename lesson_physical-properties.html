@@ -1352,11 +1352,40 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
 .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
 .glossary-card.open .gc-hint { display: none; }
+.gc-term { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.gc-term::after { content: '▾'; font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: color 0.2s; }
+.glossary-card.open .gc-term::after { content: '▴'; color: var(--gold); }
 .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
 .gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
 .gc-blue   { border-top-color: #7cc8f8;       } .gc-blue .gc-term   { color: #7cc8f8; }
 .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
 .gc-purple { border-top-color: var(--purple); } .gc-purple .gc-term { color: var(--purple); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
 </style>
 </head>
 <body>
@@ -1365,7 +1394,8 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 <!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
-  <ul class="nav-links">
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#density">Explore</a></li>
     <li><a href="#quiz">Quiz</a></li>
@@ -1480,51 +1510,42 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   <div class="container">
     <span class="section-label">Key Vocabulary</span>
     <h2 class="section-title">Words You'll Meet</h2>
-    <p class="section-desc" style="margin-bottom: 1.8rem;">Click a card to see what each word means. Click it again to close it. You'll meet every one of these in the lesson below.</p>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
     <div class="glossary-grid">
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-term">Density</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">How much matter is packed in a space. Objects with high density usually sink; objects with low density usually float.</div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
         <div class="gc-term">Volume</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">How much space an object takes up. For regular objects, volume = length x width x height.</div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
         <div class="gc-term">Water Displacement</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">A method for measuring the volume of irregular objects: the difference between the water levels before and after the object goes in is its volume.</div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
         <div class="gc-term">Buoyancy</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">The upward force that makes an object float. An object floats when the water it pushes aside weighs as much or more than the object itself.</div>
       </button>
       <button class="glossary-card gc-purple" type="button" aria-expanded="false">
         <div class="gc-term">Physical Property</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">A characteristic we can observe or measure without changing what the material is.</div>
       </button>
       <button class="glossary-card gc-purple" type="button" aria-expanded="false">
         <div class="gc-term">Hardness</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">A measure of a material's resistance to scratching or denting.</div>
       </button>
       <button class="glossary-card gc-purple" type="button" aria-expanded="false">
         <div class="gc-term">Melting Point</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">The temperature where a solid becomes a liquid.</div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
         <div class="gc-term">Conductivity</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">How easily something moves through a material: heat (thermal conductivity) or electric current (electrical conductivity).</div>
       </button>
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
         <div class="gc-term">Malleability</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">The ability of a material to be reshaped, bent, or flattened without breaking.</div>
       </button>
     </div>
@@ -1956,7 +1977,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 
     <div class="predict-gated" data-gate="qp-buoy">
       <div class="name-it orange-it">
-        <div class="name-it-label">Name it</div>
+        <div class="name-it-label">Key idea</div>
         <p><strong>Buoyancy</strong> is the upward force that makes an object float. Here's the rule: an object floats when the water it pushes aside <strong>weighs as much or more than the object itself</strong>. The ship's wide, hollow hull pushes aside thousands of tons of water - more than the ship weighs - so the water holds it up. The coin pushes aside only a coin-sized drop of water, far less than the coin weighs, so down it goes.</p>
       </div>
 
@@ -3555,5 +3576,23 @@ requestAnimationFrame(draw);
 })();
 </script>
 
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
 </body>
 </html>

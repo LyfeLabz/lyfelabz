@@ -750,13 +750,40 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   .cont-card.lesson .cont-link { background: rgba(20,184,166,0.1); border-color: rgba(20,184,166,0.3); color: #2dd4bf; }
   .cont-card.lesson:hover .cont-link { background: rgba(20,184,166,0.2); border-color: rgba(20,184,166,0.55); }
 </style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
 </head>
 <body>
 
 <!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
-  <ul class="nav-links">
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#specialization">Explore</a></li>
     <li><a href="#quiz">Quiz</a></li>
@@ -1024,7 +1051,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   <div class="container">
     <span class="section-label">Key Vocabulary</span>
     <h2 class="section-title">Vocabulary to Know</h2>
-    <p class="section-desc" style="margin-bottom: 0.6rem;">Every term below appeared somewhere in this lesson. Open a card to reveal what it means.</p>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Choose a card to see what each word means.</p>
 
     <div class="glossary-grid">
 
@@ -1829,7 +1856,7 @@ buildDetectiveGrid();
 <section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
   <div class="container">
     <span class="section-label">Quick Recall</span>
-    <h2 class="section-title">One Quick Check</h2>
+    <h2 class="section-title">Brain Check</h2>
     <p class="section-desc" style="margin-bottom: 1.8rem;">Pull this idea back from memory before we pull the lesson together.</p>
     <div class="qr-card" id="qrCard1">
       <div class="qr-eyebrow">Quick Recall</div>
@@ -2546,5 +2573,23 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 })();
 </script>
 
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
 </body>
 </html>

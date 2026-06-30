@@ -924,11 +924,40 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
 .glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
 .glossary-card.open .gc-hint { display: none; }
+.gc-term { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.gc-term::after { content: '▾'; font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: color 0.2s; }
+.glossary-card.open .gc-term::after { content: '▴'; color: var(--gold); }
 .gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
 .gc-purple { border-top-color: var(--compound); } .gc-purple .gc-term { color: var(--compound); }
 .gc-blue   { border-top-color: #7cc8f8;       } .gc-blue .gc-term   { color: #7cc8f8; }
 .gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
 .gc-gold   { border-top-color: var(--gold);   } .gc-gold .gc-term   { color: var(--gold); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
 </style>
 </head>
 <body>
@@ -937,7 +966,8 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 <!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
-  <ul class="nav-links">
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#matter">Explore</a></li>
     <li><a href="#quiz">Quiz</a></li>
@@ -1025,37 +1055,31 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   <div class="container">
     <span class="section-label">Key Vocabulary</span>
     <h2 class="section-title">Words You'll Meet</h2>
-    <p class="section-desc" style="margin-bottom: 1.8rem;">Click a card to reveal what each word means. Click it again to close. You'll meet every one of these in the lesson below.</p>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
     <div class="glossary-grid">
       <button class="glossary-card gc-blue" type="button" aria-expanded="false">
         <div class="gc-term">Matter</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">Anything that has mass and takes up space (volume). Everything you can touch is matter.</div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-term">Atom</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">The smallest piece of matter that still behaves like that substance. The basic building block of everything.</div>
       </button>
       <button class="glossary-card gc-teal" type="button" aria-expanded="false">
         <div class="gc-term">Element</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">A substance made of only one type of atom, such as gold, oxygen, or iron.</div>
       </button>
       <button class="glossary-card gc-gold" type="button" aria-expanded="false">
         <div class="gc-term">Periodic Table</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">The chart that organizes every known type of atom. Each one has its own name and symbol.</div>
       </button>
       <button class="glossary-card gc-green" type="button" aria-expanded="false">
         <div class="gc-term">Molecule</div>
-        <div class="gc-hint">Click to reveal</div>
         <div class="gc-def">Two or more atoms bonded together that act as one unit, such as oxygen gas (O₂).</div>
       </button>
       <button class="glossary-card gc-purple" type="button" aria-expanded="false">
         <div class="gc-term">Compound</div>
-        <div class="gc-hint">Click to reveal</div>
-        <div class="gc-def">A molecule made of two or more different types of atoms bonded together, such as water (H₂O).</div>
+        <div class="gc-def">A substance made of two or more different types of atoms bonded together, such as water (H₂O).</div>
       </button>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
@@ -1250,7 +1274,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     </div>
 
     <div class="name-it teal-it" id="atom-term">
-      <div class="name-it-label">Name it</div>
+      <div class="name-it-label">Key idea</div>
       <p>An <strong>atom</strong> is the smallest piece of matter that still behaves like that substance. One atom of gold is still gold. But if you could split that atom apart, the pieces would no longer be gold at all. For example, the smallest piece of gold that is still gold is a single <strong>gold atom</strong>.</p>
     </div>
 
@@ -1352,7 +1376,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <p class="section-desc">Every tile you just tapped is an element. The idea is simple but powerful.</p>
 
     <div class="name-it teal-it" id="element-term">
-      <div class="name-it-label">Name it</div>
+      <div class="name-it-label">Key idea</div>
       <p>An <strong>element</strong> is a substance made up of only <strong>one type of atom</strong>. A gold bar is pure gold, so it is the element gold: nothing but gold atoms, all the way through. For example, a chunk of pure gold is the element <strong>gold</strong>.</p>
     </div>
 
@@ -1402,7 +1426,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <p class="section-desc">Atoms can join together and act as a single unit. The oxygen you breathe is not lonely single atoms; it travels as pairs.</p>
 
     <div class="name-it green-it" id="molecule-term">
-      <div class="name-it-label">Name it</div>
+      <div class="name-it-label">Key idea</div>
       <p>A <strong>molecule</strong> is two or more atoms joined together that act as one unit. The air you breathe is full of oxygen molecules: two oxygen atoms bonded together, written <strong>O₂</strong>.</p>
     </div>
 
@@ -1467,12 +1491,12 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 <section id="compounds" style="background: var(--dark2);">
   <div class="container">
     <span class="section-label" style="color: var(--compound); background: var(--compound-dim); border-color: var(--compound-border);">Explore · Different Atoms Join</span>
-    <h2 class="section-title">Compounds: A Special Kind of Molecule</h2>
+    <h2 class="section-title">Compounds: Different Atoms Bonded Together</h2>
     <p class="section-desc">Remember the mystery? Hydrogen plus oxygen makes water, something completely different from either gas. That is the power of a compound.</p>
 
     <div class="name-it purple-it" id="compound-term">
-      <div class="name-it-label">Name it</div>
-      <p>A <strong>compound</strong> is a molecule that has two or more <strong>different</strong> types of atoms bonded together. Water is two hydrogen atoms bonded to one oxygen atom, written <strong>H₂O</strong>.</p>
+      <div class="name-it-label">Key idea</div>
+      <p>A <strong>compound</strong> is a substance with two or more <strong>different</strong> types of atoms bonded together. Water is two hydrogen atoms bonded to one oxygen atom, written <strong>H₂O</strong>.</p>
     </div>
 
     <div class="worked-grid">
@@ -1498,7 +1522,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 
     <div class="question-pause">
       <span class="question-pause-icon">💡</span>
-      <div class="question-pause-text"><strong>The key test:</strong> Count the <em>types</em> of atom. One type only = element. Two or more <em>different</em> types bonded = compound. Every compound is a molecule, but not every molecule is a compound.</div>
+      <div class="question-pause-text"><strong>The key test:</strong> Count the <em>types</em> of atom. One type only = element. Two or more <em>different</em> types bonded = compound. A molecule can be just one kind of atom, like O₂, but a compound always has at least two different kinds.</div>
     </div>
 
     <div class="bridge-callout">
@@ -1510,11 +1534,11 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
       <div class="edu-note-grid">
         <div class="edu-note-item">
           <div class="edu-note-head">Why this section exists</div>
-          <ul class="edu-note-text"><li>Define a compound as a molecule of two or more different atom types.</li><li>Give students a "count the types of atom" test to separate elements from compounds.</li></ul>
+          <ul class="edu-note-text"><li>Define a compound as a substance with two or more different atom types.</li><li>Give students a "count the types of atom" test to separate elements from compounds.</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Cognitive science</div>
-          <ul class="edu-note-text"><li>Comparison of related concepts (molecule vs compound)</li><li>Misconception checking (every compound is a molecule, not the reverse)</li></ul>
+          <ul class="edu-note-text"><li>Comparison of related concepts (molecule vs compound)</li><li>Misconception checking (a molecule of one element, like O₂, is not a compound)</li></ul>
         </div>
         <div class="edu-note-item">
           <div class="edu-note-head">Bloom's / DOK</div>
@@ -1738,7 +1762,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
           <tr><td class="term">Element</td><td>A substance made of only one type of atom, such as gold or oxygen.</td></tr>
           <tr><td class="term">Periodic table</td><td>The chart that organizes every known type of atom, each with its own name and symbol.</td></tr>
           <tr><td class="term">Molecule</td><td>Two or more atoms bonded together that act as one unit, such as O₂.</td></tr>
-          <tr><td class="term">Compound</td><td>A molecule made of two or more different types of atoms bonded together, such as H₂O.</td></tr>
+          <tr><td class="term">Compound</td><td>A substance made of two or more different types of atoms bonded together, such as H₂O.</td></tr>
         </tbody>
       </table>
     </div>
@@ -2285,7 +2309,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
     'Correct! Copper is made of only one type of atom, so it is an element.',
     'Not quite. A substance made of only one type of atom is an element. Copper is nothing but copper atoms.');
   wireQR('qr2', 1,
-    'Correct! CO₂ is atoms bonded as one unit (a molecule) AND it has different types of atoms (a compound). Every compound is also a molecule.',
+    'Correct! CO₂ is atoms bonded as one unit (a molecule) AND it has different types of atoms (a compound), so both labels fit.',
     'Not quite. CO₂ has carbon and oxygen bonded together. Bonded atoms make a molecule, and because the atoms are different types, it is also a compound.');
 })();
 </script>
@@ -2369,7 +2393,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
       verdict.innerHTML = '<strong>Molecule.</strong> Two or more atoms bonded as one unit. Because all the atoms are the <strong>same type</strong>, this is still an element.' + nameBit;
     } else {
       cOut.textContent = 'Compound'; cOut.classList.add('is-comp');
-      verdict.innerHTML = '<strong>Compound.</strong> Different types of atoms bonded together. Every compound is also a molecule.' + nameBit;
+      verdict.innerHTML = '<strong>Compound.</strong> Two or more different types of atoms bonded together.' + nameBit;
     }
 
     /* mark targets */
@@ -2505,7 +2529,7 @@ var bbQuizQuestions = [
       "Because it can be split back into a single atom"
     ],
     correct: 1,
-    explanation: "A compound is a molecule with two or more different types of atoms bonded together. Water has hydrogen and oxygen, two different atoms, so it is a compound."
+    explanation: "A compound is a substance with two or more different types of atoms bonded together. Water has hydrogen and oxygen, two different atoms, so it is a compound."
   },
   {
     q: "Oxygen gas (O₂) and ozone (O₃) are both made of only oxygen atoms. Which statement is correct?",
@@ -2799,5 +2823,23 @@ requestAnimationFrame(draw);
 })();
 </script>
 
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
 </body>
 </html>

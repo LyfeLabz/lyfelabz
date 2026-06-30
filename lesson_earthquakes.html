@@ -604,6 +604,32 @@
   footer .footer-links a.nav-why:hover { background:rgba(59,200,232,0.22); border-color:rgba(59,200,232,0.95); }
   footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
 </style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
 </head>
 <body>
 <canvas id="stars"></canvas>
@@ -611,7 +637,8 @@
 <!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
-  <ul class="nav-links">
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
     <li><a href="#vocab">Vocab</a></li>
     <li><a href="#explore">Explore</a></li>
     <li><a href="#quiz">Quiz</a></li>
@@ -713,7 +740,7 @@
   <div class="container">
     <span class="section-label">Vocabulary to Know</span>
     <h2 class="section-title">Words You'll Meet</h2>
-    <p class="section-desc" style="margin-bottom: 1.8rem;">Open a card to reveal its definition. One card opens at a time. You'll see each of these terms throughout the lesson.</p>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
     <div class="glossary-grid">
       <button class="glossary-card gc-slate" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Stress</span><span class="gc-chev">&#9662;</span></div>
@@ -757,7 +784,7 @@
       </button>
       <button class="glossary-card gc-gold" type="button" aria-expanded="false" style="border-top-color: var(--gold);">
         <div class="gc-head"><span class="gc-term" style="color: var(--gold);">Magnitude</span><span class="gc-chev">&#9662;</span></div>
-        <div class="gc-def">The strength of an earthquake, measured by the amount of ground movement. The Richter scale runs from 0 to 10.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-measure')">See it in the lesson &#8595;</span></div>
+        <div class="gc-def">The strength of an earthquake, measured by the amount of ground movement. Each whole number on the magnitude scale is a major jump in strength.<br><span class="gc-jump" onclick="event.stopPropagation(); jumpToTerm('term-measure')">See it in the lesson &#8595;</span></div>
       </button>
       <button class="glossary-card gc-orange" type="button" aria-expanded="false">
         <div class="gc-head"><span class="gc-term">Intensity</span><span class="gc-chev">&#9662;</span></div>
@@ -804,7 +831,7 @@
       <div class="phenomenon-body">
         <div class="phenomenon-tag">Real World Phenomenon</div>
         <h3>Energy Released in Seconds</h3>
-        <p>That 1960 quake measured 9.5 on the Richter scale. Waves it sent across the ocean reached Hawaii, Japan, the Philippines, and the West Coast of the United States. All of that energy was released in a matter of seconds. But where does that much energy come from, and why does it let go so suddenly?</p>
+        <p>That 1960 quake measured magnitude 9.5. Waves it sent across the ocean reached Hawaii, Japan, the Philippines, and the West Coast of the United States. All of that energy was released in a matter of seconds. But where does that much energy come from, and why does it let go so suddenly?</p>
       </div>
     </div>
 
@@ -1216,7 +1243,7 @@
     <div id="term-measure" class="scale-strip">
       <div class="scale-card magnitude">
         <div class="scale-name">Magnitude</div>
-        <div class="scale-body">Measures the <strong>strength</strong> of the quake by the amount of ground movement it produces. The Richter scale runs from 0 to 10. Each whole number is a major jump in strength, so a magnitude 7 is far more powerful than a magnitude 6.</div>
+        <div class="scale-body">Measures the <strong>strength</strong> of the quake by the amount of ground movement it produces. The magnitude scale has no fixed upper limit, and each whole number is a major jump in strength, so a magnitude 7 is far more powerful than a magnitude 6.</div>
       </div>
       <div class="scale-card intensity">
         <div class="scale-name">Intensity</div>
@@ -1235,7 +1262,7 @@
         <div class="card-title">The Largest Quake Ever Recorded</div>
       </div>
       <div class="card-body">
-        <p>On May 22, 1960, an earthquake struck near Valdivia, Chile. At <strong>9.5 on the Richter scale</strong>, it is the strongest earthquake ever recorded.</p>
+        <p>On May 22, 1960, an earthquake struck near Valdivia, Chile. At <strong>magnitude 9.5</strong>, it is the strongest earthquake ever recorded.</p>
         <p>Its energy was so great that it sent a tsunami across the Pacific Ocean. The waves reached Hawaii, Japan, the Philippines, and the West Coast of the United States. One earthquake on one coast changed lives on the far side of the world.</p>
       </div>
     </div>
@@ -1771,7 +1798,7 @@ var elQuizQuestions = [
       "The epicenter, on the surface above the focus",
       "The focus, deep underground",
       "The fault zone in the mantle",
-      "The Richter scale reading"
+      "The magnitude scale reading"
     ],
     correct: 0,
     explanation: "The epicenter is the point on the surface directly above the focus. Because it is a surface location, it is the point people can mark on a map."
@@ -1966,6 +1993,12 @@ function elSubmitQuiz() {
     block: info2.block, score: score, total: total, percent: pct + '%',
     timestamp: new Date().toISOString(), answers: answerStr
   });
+  var endpoint = EL_SCRIPT_URLS[info2.teacher];
+  if (!endpoint || endpoint.indexOf('REPLACE_WITH') !== -1) {
+    document.getElementById('el-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Classroom Mode is not yet available for this lesson. Your score was not submitted.</div>';
+    return;
+  }
   fetch(EL_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(function () {
       document.getElementById('el-submit-status').innerHTML =
@@ -2044,5 +2077,23 @@ requestAnimationFrame(draw);
 })();
 </script>
 
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
 </body>
 </html>
