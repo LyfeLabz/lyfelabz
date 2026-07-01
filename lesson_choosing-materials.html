@@ -1,0 +1,3206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_choosing-materials.html">
+<meta name="description" content="Why isn't an entire bicycle made from just one material? Learn to compare metals, plastics, wood, and ceramics and choose materials by property, the way engineers do. Grade 6 aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Choosing Materials</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+  html { font-size: 18px; }
+
+  /* ===== CSS VARIABLES ===== */
+  :root {
+    --green:       #2ecc71;
+    --green-dark:  #27ae60;
+    --blue:        #3498db;
+    --blue-dark:   #2980b9;
+    --teal:        #3bc8e8;
+    --teal-deep:   #1abc9c;
+    --purple:      #9b59b6;
+    --red:         #e74c3c;
+    --orange:      #e67e22;
+    --yellow:      #f1c40f;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #1a2535;
+    --dark2:       #243447;
+    --card:        #1e2f42;
+    --text:        #e8f4f8;
+    --text-muted:  #8aafca;
+    --border:      rgba(52,152,219,0.2);
+
+    /* Materials color system */
+    --criteria:        #3bc8e8;   /* teal   - property / job */
+    --criteria-dim:    rgba(59,200,232,0.08);
+    --criteria-border: rgba(59,200,232,0.3);
+
+    --constraint:        #e67e22; /* orange - wrong-for-the-job */
+    --constraint-dim:    rgba(230,126,34,0.08);
+    --constraint-border: rgba(230,126,34,0.3);
+
+    --iterate:        #2ecc71;    /* green  - best-for-the-job */
+    --iterate-dim:    rgba(46,204,113,0.08);
+    --iterate-border: rgba(46,204,113,0.3);
+  }
+
+  /* ===== RESET ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ===== STARFIELD ===== */
+  #stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.45;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: color 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-back:hover {
+    background: rgba(245,200,66,0.18);
+    border-color: rgba(245,200,66,0.65);
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0f2535 100%);
+    padding: 6rem 2rem 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(59,200,232,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(46,204,113,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 80%, rgba(230,126,34,0.04) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(245,200,66,0.15);
+    border: 1px solid rgba(245,200,66,0.4);
+    color: var(--gold);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  .hero p.hero-sub {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 620px;
+    margin: 0 auto 2.5rem;
+    position: relative;
+  }
+  .hero-float {
+    position: absolute;
+    font-size: 4.5rem;
+    opacity: 0.045;
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+    filter: blur(0.5px);
+  }
+  .hero-float:nth-child(1) { top: 8%;    left: 4%;   animation-delay: 0s;   font-size: 5rem;   }
+  .hero-float:nth-child(2) { top: 15%;   right: 5%;  animation-delay: 1.5s; font-size: 3.8rem; }
+  .hero-float:nth-child(3) { bottom: 8%; left: 10%;  animation-delay: 3s;   font-size: 3.5rem; }
+  .hero-float:nth-child(4) { bottom: 12%;right: 4%;  animation-delay: 4.5s; font-size: 4.2rem; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* ===== DRIVING QUESTION ===== */
+  .driving-question {
+    max-width: 760px;
+    margin: 1.6rem auto 0;
+    padding: 1.1rem 1.6rem;
+    background: rgba(59,200,232,0.06);
+    border: 1px solid rgba(59,200,232,0.22);
+    border-left: 4px solid var(--teal);
+    border-radius: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    box-sizing: border-box;
+    position: relative;
+  }
+  .dq-icon  { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body  { flex: 1; text-align: left; }
+  .dq-label {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(59,200,232,0.8);
+    margin-bottom: 0.3rem;
+  }
+  .dq-text  { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5rem 2rem; position: relative; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 760px;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+  }
+
+  /* ===== BRIDGE CALLOUT ===== */
+  .bridge-callout {
+    margin: 2rem auto 0;
+    max-width: 800px;
+    padding: 1.1rem 1.4rem;
+    background: rgba(245,200,66,0.06);
+    border: 1px solid rgba(245,200,66,0.22);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    font-size: 0.98rem;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .bridge-callout strong { color: var(--gold); }
+  .bridge-callout.teal {
+    background: rgba(59,200,232,0.06);
+    border-color: rgba(59,200,232,0.22);
+    border-left-color: var(--teal);
+  }
+  .bridge-callout.teal strong { color: var(--teal); }
+  .bridge-callout.green {
+    background: rgba(46,204,113,0.06);
+    border-color: rgba(46,204,113,0.22);
+    border-left-color: var(--green);
+  }
+  .bridge-callout.green strong { color: var(--green); }
+  .bridge-callout.orange {
+    background: rgba(230,126,34,0.06);
+    border-color: rgba(230,126,34,0.22);
+    border-left-color: var(--orange);
+  }
+  .bridge-callout.orange strong { color: var(--orange); }
+
+  /* ===== FOOTER ===== */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:.08em; color:var(--gold); margin-bottom:.35rem; }
+  footer .footer-tagline { font-size:.83rem; color:rgba(240,228,200,.6); margin-bottom:.6rem; }
+  footer .footer-links { display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:.72rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,.4); background:rgba(245,200,66,.08); padding:.25rem .75rem; border-radius:99px; transition:border-color .2s,background .2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,.7); background:rgba(59,200,232,.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,.22); border-color:rgba(59,200,232,.95); }
+  footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
+
+  /* ===== RESPONSIVE NAV ===== */
+  @media (max-width: 900px) {
+    nav { padding: 0.75rem 1.2rem; flex-wrap: wrap; gap: 0.6rem; }
+    .nav-links { gap: 0.9rem; order: 3; width: 100%; justify-content: center; }
+    .nav-links a { font-size: 0.78rem; }
+  }
+  @media (max-width: 560px) {
+    .hero { padding: 4rem 1.2rem 3.5rem; }
+    section { padding: 3.5rem 1.2rem; }
+  }
+</style>
+
+<!-- ── Learning Science Focus Bar ── -->
+<style>
+.ls-focus { display: none; }
+body.ls-active .ls-focus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+  width: fit-content;
+  max-width: 760px;
+  margin: 0.5rem auto 1.6rem;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 16px;
+  animation: barFadeIn 0.35s ease both;
+}
+@keyframes barFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ls-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(59,200,232,0.8);
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.ls-badge {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: default;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+}
+.ls-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.11);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255,255,255,0.11);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]:hover::after,
+.ls-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after,
+  .ls-badge[data-tip]::before { display: none; }
+  body.ls-active .ls-focus { max-width: calc(100% - 2.4rem); padding: 0.75rem 1rem; gap: 0.4rem 0.5rem; }
+}
+
+/* ── Instructional Design notes · Educator Mode ── */
+.edu-note { display: none; }
+body.ls-active .edu-note {
+  display: block; max-width: 760px; margin: 2.5rem auto 0;
+  padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+  background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+  border-left: 4px solid #9fb8cc; border-radius: 14px;
+  animation: barFadeIn 0.35s ease both;
+}
+.edu-note-label {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+}
+.edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+@media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+.edu-note-head {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+}
+.edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+ul.edu-note-text li { margin-bottom: 0.2rem; }
+ul.edu-note-text li:last-child { margin-bottom: 0; }
+</style>
+
+
+<!-- ── Engagement + Content Styles ── -->
+<style>
+
+/* ── QUESTION PAUSE CARD ── */
+.question-pause {
+  max-width: 760px;
+  margin: 0.5rem auto 2rem;
+  padding: 1.2rem 1.5rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.question-pause-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+.question-pause-text {
+  font-size: 0.98rem;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.question-pause-text strong {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 800;
+}
+@media (max-width: 480px) {
+  .question-pause {
+    padding: 0.9rem 1rem;
+    gap: 0.6rem;
+    margin-top: 0;
+  }
+  .question-pause-icon { font-size: 1.2rem; }
+  .question-pause-text { font-size: 0.9rem; }
+}
+
+/* ── PREDICT BEFORE REVEAL ── */
+.question-pause.predict-pause {
+  display: block;
+}
+.question-pause.predict-pause .qp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.predict-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+.predict-btn {
+  flex: 1;
+  min-width: 140px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 0.55rem 0.7rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.predict-btn:hover:not(.locked) {
+  border-color: rgba(245,200,66,0.5);
+  background: rgba(245,200,66,0.08);
+}
+.predict-btn.chosen {
+  border-color: var(--gold);
+  background: rgba(245,200,66,0.16);
+  color: var(--gold);
+}
+.question-pause.locked .predict-btn { cursor: default; opacity: 0.45; }
+.question-pause.locked .predict-btn.chosen { opacity: 1; }
+
+.predict-gated { display: none; }
+.predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+@keyframes predictFadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── HOOK MYSTERY CARDS (Engage) ── */
+.hook-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 720px) { .hook-grid { grid-template-columns: 1fr; } }
+
+.hook-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.8rem 1.4rem 1.6rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  cursor: pointer;
+  user-select: none;
+}
+.hook-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+}
+.hook-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.hook-card.c1::before { background: linear-gradient(90deg, var(--teal), rgba(59,200,232,0.4)); }
+.hook-card.c2::before { background: linear-gradient(90deg, var(--green), rgba(46,204,113,0.4)); }
+.hook-card.c3::before { background: linear-gradient(90deg, var(--orange), rgba(230,126,34,0.4)); }
+
+.hook-card-icon { font-size: 2.8rem; margin-bottom: 0.6rem; display: block; line-height: 1; }
+.hook-card-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+.hook-card-observation {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+.hook-card-question {
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--gold);
+  line-height: 1.5;
+}
+.hook-card:hover:not(.revealed) { border-color: rgba(245,200,66,0.45); }
+.hook-card.revealed { cursor: default; }
+.hook-card-prompt {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.4rem 1rem;
+  border: 1px dashed rgba(245,200,66,0.45);
+  border-radius: 99px;
+  margin-top: 0.4rem;
+}
+.hook-card .hook-card-observation,
+.hook-card .hook-card-question { display: none; }
+.hook-card.revealed .hook-card-prompt { display: none; }
+.hook-card.revealed .hook-card-observation,
+.hook-card.revealed .hook-card-question {
+  display: block;
+  animation: predictFadeUp 0.4s ease both;
+}
+
+/* ── OBSERVE ROW ── */
+.observe-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 560px) { .observe-row { grid-template-columns: 1fr; } }
+.observe-card {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.93rem;
+  line-height: 1.55;
+}
+.observe-icon { font-size: 1.6rem; flex-shrink: 0; }
+.observe-card strong { color: var(--teal); }
+.observe-card.green-card { background: rgba(46,204,113,0.05); border-color: rgba(46,204,113,0.2); }
+.observe-card.green-card strong { color: var(--green); }
+.observe-card.orange-card { background: rgba(230,126,34,0.05); border-color: rgba(230,126,34,0.2); }
+.observe-card.orange-card strong { color: var(--orange); }
+
+/* ── NAME-IT REVEAL ── */
+.name-it {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 14px;
+  padding: 1.4rem 1.6rem;
+  max-width: 760px;
+  margin: 0 auto 2rem;
+}
+.name-it.teal-it { border-left-color: var(--teal); }
+.name-it.green-it { border-left-color: var(--green); }
+.name-it.orange-it { border-left-color: var(--orange); }
+.name-it-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+.name-it.teal-it .name-it-label   { color: var(--teal); }
+.name-it.green-it .name-it-label  { color: var(--green); }
+.name-it.orange-it .name-it-label { color: var(--orange); }
+.name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+.name-it p strong { font-weight: 800; }
+.name-it.teal-it p strong   { color: var(--teal); }
+.name-it.green-it p strong  { color: var(--green); }
+.name-it.orange-it p strong { color: var(--orange); }
+
+/* ── FAMILY EXPLORER (click to reveal) ── */
+.cycle-card {
+  background: var(--card);
+  border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 24px;
+  padding: 2.2rem 2rem 2.4rem;
+  max-width: 980px;
+  margin: 0 auto 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+}
+.cycle-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 25px;
+  background: linear-gradient(135deg,
+    rgba(59,200,232,0.3) 0%, rgba(245,200,66,0.08) 25%,
+    rgba(46,204,113,0.25) 50%, rgba(245,200,66,0.08) 75%,
+    rgba(230,126,34,0.25) 100%
+  );
+  background-size: 400% 400%;
+  animation: borderFlow 6s ease infinite;
+  z-index: 0;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+}
+@keyframes borderFlow {
+  0%,100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.cycle-card > * { position: relative; z-index: 1; }
+.cycle-progress {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1.3rem;
+}
+.cycle-progress strong { color: var(--gold); }
+.cycle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.9rem;
+}
+@media (max-width: 860px) { .cycle-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .cycle-grid { grid-template-columns: 1fr; } }
+.cycle-step {
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.13);
+  border-radius: 16px;
+  padding: 1.2rem 1rem 1.1rem;
+  text-align: center;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.cycle-step:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.3); border-color: rgba(245,200,66,0.45); }
+.cycle-step:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.cycle-step-icon { font-size: 2.2rem; display: block; line-height: 1.2; margin-bottom: 0.3rem; }
+.cycle-step-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
+  color: var(--teal);
+}
+.cycle-step-hint {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.cycle-step-desc {
+  display: none;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-top: 0.2rem;
+  text-align: left;
+}
+.cycle-step.open .cycle-step-desc { display: block; animation: predictFadeUp 0.3s ease both; }
+.cycle-step.open .cycle-step-hint { display: none; }
+.cycle-step.open { border-color: var(--green); background: rgba(46,204,113,0.06); }
+.cycle-step.open .cycle-step-name { color: var(--green); }
+.cycle-step-desc .fp-weak { color: var(--orange); font-weight: 700; }
+.cycle-complete {
+  display: none;
+  margin-top: 1.3rem;
+  text-align: center;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.35);
+  color: #a8e6c4;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.cycle-complete.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+
+/* ── QUICK RECALL ── */
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: var(--teal); }
+.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+.qr-options input[type=radio] { accent-color: var(--teal); }
+.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+/* ── WRAP-UP BEATS ── */
+.wrapup-beats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+@media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+
+.wrapup-beat {
+  border-radius: 16px;
+  padding: 1.4rem 1.3rem;
+  position: relative;
+}
+.wrapup-beat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+.wrapup-beat-1 {
+  background: rgba(245,200,66,0.06);
+  border: 1px solid rgba(245,200,66,0.25);
+}
+.wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+.wrapup-beat-2 {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+}
+.wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+.wrapup-beat-3 {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+
+.wrapup-beat-label {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+.wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+.wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+
+.wrapup-beat-answer {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+.wrapup-beat-body {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+
+/* ── SUMMARY TABLES ── */
+.summary-table-wrap { overflow-x: auto; margin-bottom: 2rem; }
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+.summary-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(245,200,66,0.07);
+  padding: 0.8rem 1.2rem;
+  border-bottom: 1px solid rgba(245,200,66,0.25);
+}
+.summary-table td {
+  padding: 0.75rem 1.2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: var(--text-muted);
+  line-height: 1.6;
+  vertical-align: top;
+}
+.summary-table tr:last-child td { border-bottom: none; }
+.summary-table td.term { color: var(--teal); font-weight: 800; white-space: nowrap; }
+</style>
+
+<!-- ── Learning Goals + Glossary Cards ── -->
+<style>
+.goal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+
+/* Glossary cards: click-to-expand only. Hover gives subtle lift feedback
+   but never reveals the definition or changes the card height. */
+.glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+.glossary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 16px;
+  padding: 1.2rem 1.3rem 1.3rem;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.35rem; }
+.gc-hint {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
+.glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+.glossary-card.open .gc-hint { display: none; }
+.gc-term { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.gc-term::after { content: '▾'; font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: color 0.2s; }
+.glossary-card.open .gc-term::after { content: '▴'; color: var(--gold); }
+.gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+.gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+.gc-blue   { border-top-color: #7cc8f8;       } .gc-blue .gc-term   { color: #7cc8f8; }
+.gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+.gc-gold   { border-top-color: var(--gold);   } .gc-gold .gc-term   { color: var(--gold); }
+.gc-purple { border-top-color: #b47fff;       } .gc-purple .gc-term { color: #b47fff; }
+</style>
+
+<!-- ── Signature Interactive + Identity Statement Styles ── -->
+<style>
+/* ── ENGINEERING IDENTITY STATEMENT ── */
+.identity-quote {
+  max-width: 820px;
+  margin: 0 auto 2rem;
+  text-align: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: var(--gold);
+  background: rgba(245,200,66,0.06);
+  border: 1px solid rgba(245,200,66,0.28);
+  border-radius: 16px;
+  padding: 1.3rem 1.5rem;
+}
+.identity-quote .iq-ask { color: var(--text); }
+.identity-quote .iq-solve { color: var(--green); }
+
+/* ── MATERIALS BENCH ── */
+.bench-card {
+  background: var(--card);
+  border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 24px;
+  padding: 2rem 1.8rem 2.2rem;
+  max-width: 900px;
+  margin: 0 auto 2rem;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+}
+.bench-progress {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+.bench-progress strong { color: var(--gold); }
+.bench-brief {
+  background: rgba(59,200,232,0.06);
+  border: 1px solid rgba(59,200,232,0.22);
+  border-left: 4px solid var(--teal);
+  border-radius: 14px;
+  padding: 1.1rem 1.3rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 1.4rem;
+}
+.bench-brief strong { color: var(--teal); }
+.bench-step { margin-bottom: 1.3rem; }
+.bench-step.locked-step { opacity: 0.4; pointer-events: none; }
+.bench-step-label {
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.bench-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem; height: 1.5rem;
+  border-radius: 50%;
+  background: rgba(245,200,66,0.12);
+  border: 1px solid rgba(245,200,66,0.35);
+  color: var(--gold);
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+.bench-hint { font-size: 0.82rem; color: var(--text-muted); font-style: italic; margin-bottom: 0.7rem; }
+.bench-options { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+.bench-opt {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 800;
+  padding: 0.6rem 1.1rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.16);
+  color: var(--text);
+}
+.bench-opt:hover:not(:disabled) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+.bench-opt:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.bench-opt.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+.bench-opt:disabled { cursor: default; }
+.bench-mat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+@media (max-width: 560px) { .bench-mat-grid { grid-template-columns: repeat(2, 1fr); } }
+.bench-mat {
+  text-align: center;
+  padding: 0.9rem 0.6rem;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.14);
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: all 0.2s;
+}
+.bench-mat:hover:not(:disabled) { transform: translateY(-3px); border-color: rgba(245,200,66,0.5); }
+.bench-mat:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.bench-mat.chosen { border-color: var(--gold); background: rgba(245,200,66,0.12); }
+.bench-mat:disabled { cursor: default; }
+.bench-mat-icon { font-size: 1.8rem; display: block; line-height: 1; margin-bottom: 0.35rem; }
+.bench-mat-name { font-family: 'Fredoka One', cursive; font-size: 0.92rem; }
+.bench-reveal { display: none; margin-top: 0.5rem; }
+.bench-reveal.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+.bench-verdict {
+  background: rgba(59,200,232,0.06);
+  border: 1px solid rgba(59,200,232,0.25);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+.bench-verdict strong { color: var(--teal); }
+.bench-notes { display: flex; flex-direction: column; gap: 0.55rem; }
+.bench-note {
+  display: flex; gap: 0.6rem; align-items: flex-start;
+  font-size: 0.88rem; line-height: 1.55; color: var(--text-muted);
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 0.7rem 0.9rem;
+}
+.bench-note.best { border-color: rgba(46,204,113,0.4); background: rgba(46,204,113,0.08); color: #cfe9d8; }
+.bench-note-mat { font-weight: 900; color: var(--text); flex-shrink: 0; }
+.bench-note.best .bench-note-mat { color: var(--green); }
+.bench-next { margin-top: 1.3rem; text-align: center; }
+.bench-next button {
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.95rem; letter-spacing: 0.03em;
+  background: var(--teal); color: #0d1f2d; border: none;
+  padding: 0.7rem 2rem; border-radius: 99px; cursor: pointer; transition: transform 0.15s;
+}
+.bench-next button:hover { transform: translateY(-2px); }
+.bench-complete {
+  display: none; margin-top: 1rem; text-align: center;
+  padding: 1.2rem 1.4rem; border-radius: 14px;
+  background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.35);
+  color: #a8e6c4; font-size: 0.95rem; line-height: 1.65;
+}
+.bench-complete.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+.bench-complete strong { color: var(--green); }
+
+/* ── REVERSAL COMPARE ── */
+.reversal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 100%; margin: 0 auto 2rem; }
+@media (max-width: 560px) { .reversal-grid { grid-template-columns: 1fr; } }
+.reversal-card { border-radius: 16px; padding: 1.4rem 1.4rem; }
+.reversal-card.good { background: rgba(46,204,113,0.06); border: 1px solid rgba(46,204,113,0.28); }
+.reversal-card.bad  { background: rgba(230,126,34,0.06); border: 1px solid rgba(230,126,34,0.28); }
+.reversal-icon { font-size: 2rem; display: block; margin-bottom: 0.4rem; }
+.reversal-verdict { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.4rem; }
+.reversal-card.good .reversal-verdict { color: var(--green); }
+.reversal-card.bad  .reversal-verdict { color: var(--orange); }
+.reversal-body { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#families">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#eng" class="nav-back">← Engineering</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">🚲</span>
+  <span class="hero-float">🔩</span>
+  <span class="hero-float">🛞</span>
+  <span class="hero-float">⚙️</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Choosing Materials</h1>
+  <p class="hero-sub">A bicycle has an aluminum frame, a steel chain, rubber tires, and a foam seat. If steel is stronger, why isn't the whole bike made of steel?</p>
+  <div class="driving-question">
+    <div class="dq-icon">🔍</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">Why isn't an entire bicycle made from just one material?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="The lesson opens with a familiar bicycle built from many materials before any property is named. A genuine puzzle activates curiosity and primes attention for the explanation that follows. (Loewenstein, 1994)">🔍 Phenomenon First</span>
+  <span class="ls-badge" data-tip="In the Materials Bench, students must name the property that matters most before they may choose a material. Committing to a reasoning frame first prevents answer-first guessing. (Willingham, 2009)">🎯 Property Before Material</span>
+  <span class="ls-badge" data-tip="Material families are introduced one at a time, then each property is tied to a real part, before students decide on their own. Stepwise modeling reduces cognitive load for all learners. (Sweller, 1988)">🪜 Stepwise Scaffolds</span>
+  <span class="ls-badge" data-tip="Students make the material decisions themselves and get evidence-based feedback rather than watching a demonstration. Generating answers strengthens memory more than reviewing them. (Bertsch et al., 2007)">✏️ Generation Effect</span>
+  <span class="ls-badge" data-tip="The quiz asks students to choose materials for brand-new design tasks rather than recall definitions. Transfer tasks require deeper processing and reveal real understanding. (Adesope et al., 2017)">✅ Retrieval Practice</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🔬</span>
+        <div class="goal-text">Compare metals, plastics, wood, and ceramics using properties like flexibility, hardness, conductivity, and melting point.</div>
+        <span class="goal-std">6.MS-ETS2-1(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🎯</span>
+        <div class="goal-text">Match a material property to the job a part has to do, so you can pick what matters most for each situation.</div>
+        <span class="goal-std">6.MS-ETS2-2(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🧠</span>
+        <div class="goal-text">Choose a material using evidence, and explain why a different material would fail at the same job.</div>
+        <span class="goal-std">6.MS-ETS2-2(MA)</span>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Tell students the target outcomes before they meet the content.</li>
+            <li>Frame the lesson around comparing properties and choosing materials by evidence, not memorizing facts.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Goal setting</li>
+            <li>Advance organizer</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 1 to 3 (the "explain why a different material would fail" goal reaches cause-and-effect reasoning)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Each goal paired with an icon and a standard code</li>
+            <li>Short, plain-language statements</li>
+            <li>One card per goal, no crowding</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards - click to expand only)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Words You'll Meet</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-term">Property</div>
+        <div class="gc-def">A feature of a material you can observe or measure, such as how hard, how flexible, or how well it carries heat.</div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Flexibility</div>
+        <div class="gc-def">How easily a material bends without breaking.</div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-term">Hardness</div>
+        <div class="gc-def">How well a material resists being scratched or dented.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Ductility</div>
+        <div class="gc-def">How much a material can be stretched or bent into a new shape without breaking.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-term">Thermal conductivity</div>
+        <div class="gc-def">How easily heat travels through a material.</div>
+      </button>
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-term">Electrical conductivity</div>
+        <div class="gc-def">How easily electricity flows through a material.</div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Melting point</div>
+        <div class="gc-def">The temperature at which a material changes from a solid to a liquid.</div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-term">Design Decision</div>
+        <div class="gc-def">A choice an engineer makes by matching what a part needs to the property a material has.</div>
+      </button>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Pre-teach the six material properties from 6.MS-ETS2-1 that students will reuse throughout the lesson.</li>
+            <li>Introduce "design decision" so trade-off reasoning stays qualitative at grade 6.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Pre-teaching vocabulary</li>
+            <li>Reduced extraneous load</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Remember to Understand</li>
+            <li>DOK 1</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Click to reveal, no hover</li>
+            <li>One card open at a time</li>
+            <li>Plain, short definitions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ENGAGE: THE MYSTERY
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="hook" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Engage · Mystery</span>
+    <h2 class="section-title">One Bicycle. Many Materials.</h2>
+    <p class="section-desc">Look closely at a bicycle and you find a puzzle. The parts are made of completely different materials, and each choice looks deliberate. Click each card to look closer.</p>
+
+    <div class="hook-grid">
+
+      <div class="hook-card c1" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">🚲</span>
+        <div class="hook-card-name">The Frame</div>
+        <div class="hook-card-observation">
+          A bike frame is usually aluminum: light enough to lift with one hand, yet stiff enough to carry a rider. Steel is stronger, but most frames are not steel.
+        </div>
+        <div class="hook-card-question">If steel is stronger, why isn't the frame made of steel?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+      <div class="hook-card c2" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">⛓️</span>
+        <div class="hook-card-name">The Chain</div>
+        <div class="hook-card-observation">
+          The chain is steel. It gets pulled hard thousands of times on every ride and must not stretch, bend, or wear out.
+        </div>
+        <div class="hook-card-question">Why steel here, but not for the whole bike?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+      <div class="hook-card c3" onclick="this.classList.add('revealed')">
+        <span class="hook-card-icon">🛞</span>
+        <div class="hook-card-name">The Tires and Grips</div>
+        <div class="hook-card-observation">
+          The tires and handlebar grips are rubber: soft, bendy, and grippy. A metal tire would be almost impossible to ride.
+        </div>
+        <div class="hook-card-question">Why would a soft material beat a strong one here?</div>
+        <div class="hook-card-prompt">Click to look closer</div>
+      </div>
+
+    </div>
+
+    <div class="observe-row">
+      <div class="observe-card">
+        <span class="observe-icon">💡</span>
+        <span><strong>One clue:</strong> no single material shows up in every part. Each part uses the material that fits its own job.</span>
+      </div>
+      <div class="observe-card">
+        <span class="observe-icon">🤔</span>
+        <span>If you had to pick just ONE material for the whole bike, which would you choose? Hold that thought.</span>
+      </div>
+    </div>
+
+    <div class="bridge-callout">
+      <strong>The question:</strong> a bicycle is built from many materials on purpose. This lesson is about how engineers decide which material goes where, and why there is no single best one.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Open with one familiar object whose parts use different materials, creating a question students want answered.</li>
+            <li>Surface the misconception that the strongest material is always the best choice.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Curiosity gap</li>
+            <li>Phenomenon-based learning</li>
+            <li>Prior knowledge activation</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand</li>
+            <li>DOK 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Click to reveal, no hover</li>
+            <li>Large card targets with icon and label</li>
+            <li>Short observation text per card</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PREDICTION GATE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="predict" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Engage · Predict First</span>
+    <h2 class="section-title">Pick One Material for the Whole Bike</h2>
+    <p class="section-desc">Before we go further, commit to an answer. You have to build an entire bicycle out of only one material. Which one would you choose?</p>
+
+    <!-- PREDICT BEFORE REVEAL -->
+    <div class="question-pause predict-pause" id="matPredict">
+      <div class="qp-row">
+        <span class="question-pause-icon">🔮</span>
+        <span class="question-pause-text"><strong>Predict first:</strong> If you could build an entire bicycle from only ONE material, which would you choose? Pick the one you think would work best.</span>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn" type="button">Steel, the strongest of these</button>
+        <button class="predict-btn" type="button">Titanium, strong and super tough</button>
+        <button class="predict-btn" type="button">Diamond, the hardest material there is</button>
+      </div>
+    </div>
+
+    <div class="predict-gated" data-gate="matPredict">
+      <div class="name-it orange-it">
+        <div class="name-it-label">Here's the surprise</div>
+        <p>Every one of those answers runs into trouble. An all-steel bike would be so heavy it would be exhausting to pedal, and it would rust. An all-rubber bike could not hold you up. An all-diamond bike would cost more than a house and shatter the first time it hit a bump. <strong>A one-material bicycle fails fast.</strong></p>
+      </div>
+
+      <div class="name-it green-it">
+        <div class="name-it-label">The real move</div>
+        <p>Notice what engineers do NOT do. They do not start by hunting for the strongest material. They start with a different question, asked one part at a time: <strong>what does this part need to do?</strong> Only then do they choose a material.</p>
+      </div>
+
+      <div class="identity-quote">
+        Good engineers don't ask, <span class="iq-ask">"What's the strongest material?"</span><br>
+        They ask, <span class="iq-solve">"What problem does this material solve?"</span>
+      </div>
+
+      <div class="bridge-callout teal">
+        <strong>That question launches the whole lesson.</strong> To answer it, you first need to know what the different materials are actually good at. Let's meet the four families.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Force a public commitment to a "strongest material" answer, then productively overturn it.</li>
+            <li>Introduce the engineering identity statement that recurs through the lesson.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Predict before reveal</li>
+            <li>Productive surprise</li>
+            <li>Misconception checking</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Options intentionally tempt the common misconception</li>
+            <li>Reveal is gated so students commit before seeing it</li>
+            <li>Short, parallel explanation cards</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 1 - THE FOUR FAMILIES
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="families" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label" style="color: var(--teal); background: var(--criteria-dim); border-color: var(--criteria-border);">Explore · The Materials</span>
+    <h2 class="section-title">Four Families of Materials</h2>
+    <p class="section-desc">Almost everything built around you is made from four families of materials: metals, plastics, wood, and ceramics. Each family is strong at some properties and weak at others. Click each card to reveal its personality. Open all four.</p>
+
+    <!-- INTERACTIVE: FAMILY EXPLORER -->
+    <div class="cycle-card">
+      <div class="cycle-progress">Families explored: <strong id="familyCount">0</strong> / 4</div>
+      <div class="cycle-grid" id="familyGrid">
+        <button class="cycle-step" type="button" aria-expanded="false">
+          <span class="cycle-step-icon">🔩</span>
+          <div class="cycle-step-name">METALS</div>
+          <div class="cycle-step-hint">Click to reveal</div>
+          <div class="cycle-step-desc">Strong, hard, and ductile. Metals carry heat and electricity very well and can be stretched into shapes. <span class="fp-weak">Weak spots:</span> heavy, and many of them rust or corrode.</div>
+        </button>
+        <button class="cycle-step" type="button" aria-expanded="false">
+          <span class="cycle-step-icon">🧴</span>
+          <div class="cycle-step-name">PLASTICS</div>
+          <div class="cycle-step-hint">Click to reveal</div>
+          <div class="cycle-step-desc">Light, flexible, and easy to mold into any shape. They block heat and electricity. <span class="fp-weak">Weak spots:</span> low melting point and they scratch easily. Rubber and foam are plastics.</div>
+        </button>
+        <button class="cycle-step" type="button" aria-expanded="false">
+          <span class="cycle-step-icon">🪵</span>
+          <div class="cycle-step-name">WOOD</div>
+          <div class="cycle-step-hint">Click to reveal</div>
+          <div class="cycle-step-desc">Light, stiff, and easy to cut and shape. It barely carries heat or electricity. <span class="fp-weak">Weak spots:</span> it can rot, burn, or splinter.</div>
+        </button>
+        <button class="cycle-step" type="button" aria-expanded="false">
+          <span class="cycle-step-icon">🧱</span>
+          <div class="cycle-step-name">CERAMICS</div>
+          <div class="cycle-step-hint">Click to reveal</div>
+          <div class="cycle-step-desc">Very hard with a very high melting point. They block heat and electricity. <span class="fp-weak">Weak spots:</span> brittle, so they crack or shatter under a sudden hit.</div>
+        </button>
+      </div>
+      <div class="cycle-complete" id="familyComplete">🎉 Four families, four personalities. Notice this: not one of them wins at everything. Each is strong at some properties and weak at others. That is exactly why engineers have to choose.</div>
+    </div>
+
+    <div class="bridge-callout">
+      <strong>So how do you choose?</strong> You look at the job, figure out which property matters most, and pick the family that is strong in that property. Next, let's connect each property to a real part.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Give students the four material families (6.MS-ETS2-1) with a strong-and-weak fingerprint for each.</li>
+            <li>Establish early that every family has weaknesses, so no family can be "the best."</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Chunking</li>
+            <li>Comparison and contrast</li>
+            <li>Active reveal</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Remember to Understand</li>
+            <li>DOK 1 to 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Click to reveal each family, no hover</li>
+            <li>Strengths and weaknesses color-coded within each card</li>
+            <li>Progress counter shows how many remain</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 2 - EVERY PROPERTY IS A JOB
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="properties" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label" style="color: var(--orange); background: var(--constraint-dim); border-color: var(--constraint-border);">Explore · Properties</span>
+    <h2 class="section-title">Every Property Is a Job</h2>
+    <p class="section-desc">A property only matters when a part needs it. Here are the six properties engineers compare most, and a real part that depends on each one.</p>
+
+    <div class="summary-table-wrap">
+      <table class="summary-table">
+        <thead>
+          <tr><th>Property</th><th>What It Measures</th><th>A Part That Needs It</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="term">Flexibility</td>
+            <td>How easily it bends without breaking.</td>
+            <td>A bike tire or a shoe sole that flexes on every step.</td>
+          </tr>
+          <tr>
+            <td class="term">Hardness</td>
+            <td>How well it resists scratches and dents.</td>
+            <td>A floor tile or a drill bit that gets scraped all day.</td>
+          </tr>
+          <tr>
+            <td class="term">Ductility</td>
+            <td>How much it stretches into shape without breaking.</td>
+            <td>A stamped drink can or a curved car-body panel.</td>
+          </tr>
+          <tr>
+            <td class="term">Thermal conductivity</td>
+            <td>How easily heat travels through it.</td>
+            <td>A frying pan body (wants high) or its handle (wants low).</td>
+          </tr>
+          <tr>
+            <td class="term">Electrical conductivity</td>
+            <td>How easily electricity flows through it.</td>
+            <td>A copper wire (wants high) or its plastic coating (wants low).</td>
+          </tr>
+          <tr>
+            <td class="term">Melting point</td>
+            <td>The temperature it turns from solid to liquid.</td>
+            <td>An oven lining or a rocket nozzle that sits in heat.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="question-pause">
+      <span class="question-pause-icon">🔁</span>
+      <span class="question-pause-text"><strong>Notice this:</strong> the same property can be wanted HIGH in one part and LOW in another. A frying pan body wants high thermal conductivity so it heats fast. Its handle wants low thermal conductivity so it stays cool. Same property, opposite goal.</span>
+    </div>
+
+    <div class="bridge-callout orange">
+      <strong>That flip is the heart of engineering.</strong> A material is never good or bad by itself. It is only a good or bad match for a job. The next example proves it with a single material.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Tie each 6.MS-ETS2-1 property to a concrete part so the property becomes a reason, not a vocabulary word.</li>
+            <li>Introduce that one property can be wanted high or low depending on the job.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Concrete examples</li>
+            <li>Dual coding</li>
+            <li>Elaboration</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand</li>
+            <li>DOK 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Table pairs each property with a plain meaning and an example</li>
+            <li>Scrolls horizontally on small screens</li>
+            <li>Short cells, no dense paragraphs</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLORE 3 - THE CAST-IRON REVERSAL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="reversal" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore · The Big Idea</span>
+    <h2 class="section-title">The Cast-Iron Reversal</h2>
+    <p class="section-desc">Here is the clearest proof that there is no best material. Take one material, cast iron, and give it two different jobs. The material never changes. The verdict flips completely.</p>
+
+    <div class="name-it">
+      <div class="name-it-label">One material, two jobs</div>
+      <p>Cast iron is a fantastic frying pan. It is also a terrible bicycle frame. <strong>The material did not change. The job did.</strong></p>
+    </div>
+
+    <div class="reversal-grid">
+      <div class="reversal-card good">
+        <span class="reversal-icon">🍳</span>
+        <div class="reversal-verdict">As a frying pan: perfect</div>
+        <div class="reversal-body">Cast iron holds heat and spreads it evenly, and it is hard enough to last for decades. The very same weight that would slow a bike helps a pan sit still and sear food. Right material for the job.</div>
+      </div>
+      <div class="reversal-card bad">
+        <span class="reversal-icon">🚲</span>
+        <div class="reversal-verdict">As a bike frame: awful</div>
+        <div class="reversal-body">That same heavy, brittle cast iron would be exhausting to pedal and could crack on a hard bump. Nothing is wrong with the material. It is simply the wrong material for this job.</div>
+      </div>
+    </div>
+
+    <div class="bridge-callout">
+      <strong>There is no best material. There is only the best material for a particular purpose.</strong> Now it is your turn to make the call. Step up to the Materials Bench.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Prove the central idea with one material that is a hero in one job and a failure in another.</li>
+            <li>Move students from "which material is best" to "best for which job."</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Contrasting cases</li>
+            <li>Anchoring the big idea</li>
+            <li>Misconception checking</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Analyze</li>
+            <li>DOK 2 to 3</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Two short parallel cards, good verdict and bad verdict</li>
+            <li>Color coding matches success and mismatch</li>
+            <li>Big idea restated in one sentence</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SIGNATURE INTERACTIVE - THE MATERIALS BENCH
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="bench" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label" style="color: var(--green); background: var(--iterate-dim); border-color: var(--iterate-border);">Explore · Your Turn</span>
+    <h2 class="section-title">The Materials Bench</h2>
+    <p class="section-desc">You are the engineer now. For each design brief, do it in order: first name the property that matters most, then choose the material that fits. There is no lucky guess here. The reasoning is the answer.</p>
+
+    <div class="identity-quote">
+      Good engineers don't ask, <span class="iq-ask">"What's the strongest material?"</span><br>
+      They ask, <span class="iq-solve">"What problem does this material solve?"</span>
+    </div>
+
+    <!-- INTERACTIVE: MATERIALS BENCH -->
+    <div class="bench-card">
+      <div id="benchWork">
+        <div class="bench-progress">Design brief <strong id="benchNum">1</strong> of <span id="benchTotal">6</span></div>
+        <div class="bench-brief" id="benchBrief"></div>
+
+        <div class="bench-step" id="benchStep1">
+          <div class="bench-step-label"><span class="bench-step-num">1</span> First: which property matters most?</div>
+          <div class="bench-hint">Decide what the part needs to do before you pick any material.</div>
+          <div class="bench-options" id="benchProps"></div>
+        </div>
+
+        <div class="bench-step locked-step" id="benchStep2">
+          <div class="bench-step-label"><span class="bench-step-num">2</span> Now: choose the material that fits that property.</div>
+          <div class="bench-mat-grid" id="benchMats"></div>
+        </div>
+
+        <div class="bench-reveal" id="benchReveal"></div>
+        <div class="bench-next" id="benchNext" style="display:none;">
+          <button type="button" id="benchNextBtn">Next brief →</button>
+        </div>
+      </div>
+      <div class="bench-complete" id="benchComplete"></div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>This is the signature interactive and the assessment of 6.MS-ETS2-2: select a material based on the property a job needs.</li>
+            <li>The property-first step forces the reasoning move. A right material chosen for the wrong reason is not yet mastery; look for students who can name the deciding property, not just land on the material.</li>
+            <li>The recurring identity statement anchors the mindset: good engineers don't ask "What's the strongest material?" They ask "What problem does this material solve?"</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Generation effect</li>
+            <li>Evidence-based reasoning</li>
+            <li>Immediate elaborated feedback</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Apply to Evaluate</li>
+            <li>DOK 3 (choosing and justifying a material for a novel job)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Step 2 stays locked until a property is chosen, one decision at a time</li>
+            <li>Feedback never just says "correct"; every rejected material is shown winning elsewhere</li>
+            <li>Large keyboard-focusable buttons and short reveals</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Two quick questions before we put it all together. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall · 1 of 2</div>
+      <div class="qr-sub">Answer from memory. Not graded.</div>
+      <div class="qr-q">A frying pan handle should stay cool to touch. Which property matters most when choosing the handle material?</div>
+      <div class="qr-options" id="qr1Opts">
+        <label><input type="radio" name="qr1" value="0"><span>High thermal conductivity</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Low thermal conductivity</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>High electrical conductivity</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall · 2 of 2</div>
+      <div class="qr-sub">Answer from memory. Not graded.</div>
+      <div class="qr-q">A classmate says, "This is the strongest material, so it must be the best one to use." What is the best engineering response?</div>
+      <div class="qr-options" id="qr2Opts">
+        <label><input type="radio" name="qr2" value="0"><span>Agree, since the strongest material is always best</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Ask what the part needs to do before choosing</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Pick the cheapest material instead</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Give a low-stakes retrieval check before the synthesis section.</li>
+            <li>Target the two ideas most worth strengthening: matching a property to a job and rejecting "strongest equals best."</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Retrieval practice</li>
+            <li>Feedback loops</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Apply</li>
+            <li>DOK 1 to 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Ungraded and low stakes</li>
+            <li>Answer explanations provided</li>
+            <li>Retry option with keyboard-accessible radios</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXPLAIN - WRAP-UP
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="summary" style="background: var(--dark);">
+  <div class="container">
+    <span class="section-label">Explain · Wrap-Up</span>
+    <h2 class="section-title">Pulling It All Together</h2>
+    <p class="section-desc">Three beats to remember, then every key term in one table.</p>
+
+    <div class="wrapup-beats" style="margin-bottom: 2.5rem;">
+      <div class="wrapup-beat wrapup-beat-1">
+        <div class="wrapup-beat-label">🔍 The Question, Answered</div>
+        <div class="wrapup-beat-answer">A bike uses many materials on purpose.</div>
+        <div class="wrapup-beat-body">Each part is built from the material whose properties fit its job: an <strong>aluminum</strong> frame, a <strong>steel</strong> chain, <strong>rubber</strong> tires, and a <strong>foam</strong> seat.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-2">
+        <div class="wrapup-beat-label">🧰 The Move</div>
+        <div class="wrapup-beat-answer">Property first, then material.</div>
+        <div class="wrapup-beat-body">Engineers decide what a part needs to <strong>do</strong>, name the property that matters most, then choose the material that has it. That is a <strong>design decision</strong>.</div>
+      </div>
+      <div class="wrapup-beat wrapup-beat-3">
+        <div class="wrapup-beat-label">💡 The Big Idea</div>
+        <div class="wrapup-beat-answer">There is no best material.</div>
+        <div class="wrapup-beat-body">There is only the best material for a particular <strong>purpose</strong>. The same material can be perfect for one job and completely wrong for another.</div>
+      </div>
+    </div>
+
+    <div class="identity-quote">
+      Good engineers don't ask, <span class="iq-ask">"What's the strongest material?"</span><br>
+      They ask, <span class="iq-solve">"What problem does this material solve?"</span>
+    </div>
+
+    <div class="summary-table-wrap">
+      <table class="summary-table">
+        <thead>
+          <tr><th>Term</th><th>What It Means</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="term">Property</td>
+            <td>A feature of a material you can observe or measure.</td>
+            <td>Hardness, flexibility, or how well it carries heat.</td>
+          </tr>
+          <tr>
+            <td class="term">Flexibility</td>
+            <td>How easily a material bends without breaking.</td>
+            <td>Rubber in a bike tire bends on every turn.</td>
+          </tr>
+          <tr>
+            <td class="term">Hardness</td>
+            <td>How well a material resists scratches and dents.</td>
+            <td>Ceramic floor tile survives daily foot traffic.</td>
+          </tr>
+          <tr>
+            <td class="term">Ductility</td>
+            <td>How much a material stretches into shape without breaking.</td>
+            <td>Metal stamped into a smooth drink can.</td>
+          </tr>
+          <tr>
+            <td class="term">Thermal conductivity</td>
+            <td>How easily heat travels through a material.</td>
+            <td>Metal pan spreads heat; wood handle blocks it.</td>
+          </tr>
+          <tr>
+            <td class="term">Electrical conductivity</td>
+            <td>How easily electricity flows through a material.</td>
+            <td>Copper carries current; plastic coating blocks it.</td>
+          </tr>
+          <tr>
+            <td class="term">Melting point</td>
+            <td>The temperature a material turns from solid to liquid.</td>
+            <td>Ceramic lines an oven without melting.</td>
+          </tr>
+          <tr>
+            <td class="term">Design Decision</td>
+            <td>Matching what a part needs to the property a material has.</td>
+            <td>Choosing rubber for grip, steel for the chain.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="question-pause">
+      <span class="question-pause-icon">✏️</span>
+      <span class="question-pause-text"><strong>Your turn to think:</strong> pick one part of a bicycle. Name the property that decides its material, and explain why a different material would fail at that same job. If you can do that, you are choosing materials like an engineer.</span>
+    </div>
+
+    <div class="bridge-callout green">
+      <strong>Ready to prove it?</strong> The quiz gives you brand new parts to design. For each one, ask the engineer's question first: what does this part need to do?
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Consolidate the lesson into three beats and one term-by-term table.</li>
+            <li>Close with a short constructed-response prompt that generates 6.MS-ETS2-2 evidence.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Schema building</li>
+            <li>Coherent narrative</li>
+            <li>Self-explanation</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Evaluate</li>
+            <li>DOK 2 to 3 (the reflection asks students to justify a choice and explain a failure)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Three short beats before the reference table</li>
+            <li>Summary table pairs each term with a meaning and example</li>
+            <li>Reflection is open-ended and low stakes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.quiz-section { background: var(--dark2); }
+.quiz-mode-toggle {
+  display: flex; justify-content: center; gap: 0.6rem; margin-bottom: 0.7rem;
+}
+.mode-btn {
+  font-family: 'Nunito', sans-serif; font-size: 0.88rem; font-weight: 800;
+  letter-spacing: 0.04em; padding: 0.6rem 1.6rem; border-radius: 99px;
+  cursor: pointer; transition: all 0.2s;
+  background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.16); color: var(--text-muted);
+}
+.mode-btn:hover { border-color: rgba(245,200,66,0.5); }
+.mode-btn.active {
+  background: rgba(245,200,66,0.14); border-color: var(--gold); color: var(--gold);
+}
+.mode-hint { text-align: center; margin-bottom: 1.8rem; min-height: 1.4rem; }
+.mode-hint span { display: none; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+.mode-hint span.visible { display: inline; }
+
+.student-info-box {
+  background: var(--card); border: 1px solid rgba(245,200,66,0.25);
+  border-radius: 16px; padding: 1.5rem 1.6rem; margin-bottom: 2rem;
+}
+.student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--gold); margin-bottom: 0.2rem; }
+.student-info-sub { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem; }
+.info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.9rem; }
+.info-field label {
+  display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem;
+}
+.info-field input, .info-field select {
+  width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px;
+  background: var(--dark2); border: 1.5px solid rgba(255,255,255,0.14);
+  color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 700;
+  outline: none; transition: border-color 0.2s;
+}
+.info-field input:focus, .info-field select:focus { border-color: var(--gold); }
+.info-error { display: none; font-size: 0.74rem; font-weight: 800; color: #e87070; margin-top: 0.25rem; }
+.info-error.show { display: block; }
+
+.quiz-progress-sticky { position: sticky; top: 64px; z-index: 50; padding: 0.4rem 0; background: var(--dark2); }
+.quiz-progress { display: flex; align-items: center; gap: 0.9rem; }
+.progress-bar { flex: 1; height: 10px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--teal), var(--green)); border-radius: 99px; transition: width 0.3s; }
+.progress-text { font-size: 0.78rem; font-weight: 900; letter-spacing: 0.06em; color: var(--text-muted); white-space: nowrap; }
+
+.quiz-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+  padding: 1.6rem 1.7rem; margin-top: 1.4rem;
+}
+.quiz-header { display: flex; gap: 0.9rem; align-items: flex-start; margin-bottom: 1rem; }
+.quiz-num {
+  flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 50%;
+  background: rgba(245,200,66,0.12); border: 1px solid rgba(245,200,66,0.35);
+  color: var(--gold); font-family: 'Fredoka One', cursive; font-size: 0.95rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.quiz-question-text { font-family: 'Fredoka One', cursive; font-size: 1.08rem; line-height: 1.45; color: var(--text); padding-top: 0.2rem; }
+.quiz-options { display: grid; gap: 0.55rem; padding-left: 2.9rem; }
+.quiz-option {
+  display: flex; align-items: flex-start; gap: 0.7rem; text-align: left;
+  background: var(--dark2); border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 12px; padding: 0.75rem 0.95rem;
+  font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 600; color: var(--text);
+  line-height: 1.5; cursor: pointer; transition: all 0.2s;
+}
+.quiz-option:hover:not(.disabled) { border-color: rgba(59,200,232,0.55); transform: translateX(3px); }
+.quiz-option.selected { border-color: var(--teal); background: rgba(59,200,232,0.1); }
+.quiz-option.correct { border-color: var(--green); background: rgba(46,204,113,0.12); }
+.quiz-option.incorrect { border-color: var(--red); background: rgba(231,76,60,0.1); }
+.quiz-option.revealed-correct { border-color: rgba(46,204,113,0.6); }
+.quiz-option.disabled { cursor: default; }
+.option-letter {
+  flex-shrink: 0; width: 1.55rem; height: 1.55rem; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.25); font-size: 0.78rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center; margin-top: 0.1rem;
+}
+.option-feedback { display: none; margin-top: 0.9rem; padding: 0.8rem 1.05rem 0.8rem 1rem; border-radius: 10px; font-size: 0.88rem; line-height: 1.6; margin-left: 2.9rem; }
+.option-feedback.correct-fb { display: block; background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.option-feedback.incorrect-fb { display: block; background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+
+.quiz-submit-wrap { text-align: center; margin-top: 2rem; }
+.quiz-submit-btn {
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  color: #fff; border: none; padding: 0.95rem 3rem; border-radius: 14px;
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.03em;
+  cursor: pointer; transition: all 0.25s;
+}
+.quiz-submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(46,204,113,0.35); }
+.quiz-submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.score-board {
+  display: none; text-align: center; margin-top: 2.5rem;
+  background: var(--card); border: 1px solid rgba(245,200,66,0.3);
+  border-radius: 20px; padding: 2.2rem 1.8rem;
+}
+.score-board.show { display: block; animation: predictFadeUp 0.4s ease both; }
+.big-score { font-family: 'Fredoka One', cursive; font-size: 3rem; color: var(--gold); margin-bottom: 0.4rem; }
+.score-board p { font-size: 1rem; color: var(--text-muted); margin-bottom: 1.4rem; }
+.mystery-loop {
+  max-width: 620px; margin: 0 auto 1.5rem; text-align: left;
+  background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 12px; padding: 1rem 1.3rem;
+  font-size: 0.9rem; color: var(--text-muted); line-height: 1.65;
+}
+.mystery-loop .ml-label {
+  display: block; font-size: 0.68rem; font-weight: 900;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 0.4rem;
+}
+.mystery-loop strong { color: var(--gold); }
+
+.score-submitted {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--green); background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.score-error {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  color: #e87070; background: rgba(231,76,60,0.1);
+  border: 1px solid rgba(231,76,60,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.reset-btn {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  color: #fff; border: none;
+  padding: 0.85rem 2.5rem; border-radius: 12px;
+  font-weight: 800; font-size: 1rem;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+  transition: all 0.25s;
+}
+.reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+@media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .quiz-options { padding-left: 0; }
+  .option-feedback { padding-left: 1rem; margin-left: 0; }
+}
+</style>
+
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate · Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you discovered, including brand new parts to design. For each one, ask what the part needs to do. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="cmSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="cmSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="cm-student-name">Your Name</label>
+          <input type="text" id="cm-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="cm-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="cm-teacher-select">Teacher</label>
+          <select id="cm-teacher-select">
+            <option value="">- Select -</option>
+            <option value="MrBrown">Mr. Brown</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="cm-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="cm-block-select">Block</label>
+          <select id="cm-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="cm-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="cm-progress"></div></div>
+        <div class="progress-text" id="cm-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="cm-quiz-questions"></div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="cm-submit-btn" onclick="cmSubmitQuiz()" disabled>Submit Quiz</button>
+    </div>
+
+    <!-- Score Board -->
+    <div class="score-board" id="cm-score">
+      <div class="big-score" id="cm-score-num"></div>
+      <p id="cm-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">🔍 The Question You Came In With</span>
+        You started this lesson with one question: <strong>"Why isn't an entire bicycle made from just one material?"</strong> If you can pick the property first and match a material to the job, you have answered it.
+      </div>
+      <div id="cm-submit-status"></div>
+      <button class="reset-btn" onclick="cmResetQuiz()">Try Again</button>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Measure understanding with ten items, most of them new design tasks rather than definitions.</li>
+            <li>Distractors are real materials that are right for another job, so wrong answers still teach the big idea.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Retrieval practice</li>
+            <li>Transfer</li>
+            <li>Feedback loops</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Apply</li>
+            <li>DOK 1 to 2 (mix of property recall and choosing materials for fresh jobs)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Practice mode works independently with no submission</li>
+            <li>Plausible, evenly placed options of varied length</li>
+            <li>Progress bar and required fields before classroom submit</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MORE LEARNING
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+#continue { background: var(--dark); padding-top: 4rem; padding-bottom: 5rem; scroll-margin-top: 1.6rem; }
+.continue-intro {
+  text-align: left;
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 720px;
+  margin: 0 auto 2.4rem 0;
+}
+.continue-intro strong { color: var(--gold); }
+.continue-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin-top: 0;
+}
+@media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+.cont-card {
+  border-radius: 18px;
+  padding: 1.5rem 1.5rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.cont-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.cont-card.inv { background: rgba(59,130,246,0.08);  border: 1px solid rgba(59,130,246,0.38); }
+.cont-card.les { background: rgba(245,160,40,0.08);  border: 1px solid rgba(245,160,40,0.35); }
+.cont-card.ext { background: rgba(180,127,255,0.10); border: 1px solid rgba(180,127,255,0.35); }
+.cont-card.inv::before { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
+.cont-card.les::before { background: linear-gradient(90deg, #f5a028, #f5c842); }
+.cont-card.ext::before { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+.cont-card.inv:hover { border-color: rgba(59,130,246,0.7);  box-shadow: 0 14px 40px rgba(59,130,246,0.2);  transform: translateY(-4px); }
+.cont-card.les:hover { border-color: rgba(245,160,40,0.65); box-shadow: 0 14px 40px rgba(245,160,40,0.18); transform: translateY(-4px); }
+.cont-card.ext:hover { border-color: rgba(180,127,255,0.65);box-shadow: 0 14px 40px rgba(180,127,255,0.15);transform: translateY(-4px); }
+.cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; }
+.cont-card.inv .cont-icon { background: rgba(59,130,246,0.2);  }
+.cont-card.les .cont-icon { background: rgba(245,160,40,0.18); }
+.cont-card.ext .cont-icon { background: rgba(180,127,255,0.22);}
+.cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; }
+.cont-card.inv .cont-cat { color: #3B82F6; }
+.cont-card.les .cont-cat { color: #f5a028; }
+.cont-card.ext .cont-cat { color: #b47fff; }
+.cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+.cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+.cont-link { display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-decoration: none; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; transition: all 0.2s; white-space: nowrap; align-self: flex-start; margin-top: auto; }
+.cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
+.cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
+.cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+.cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+.cont-body { flex: 1; }
+.coming-soon-tag { display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.8rem; border-radius: 99px; border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted); background: rgba(122,143,166,0.06); margin-top: 0.7rem; }
+</style>
+
+<section id="continue">
+  <div class="container">
+    <span class="section-label">More Learning</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">Choosing materials is a skill you will use in every build. <strong>Extension challenge:</strong> pick an object near you that is made of more than one material, like a backpack, a pen, or a pair of headphones. For each part, name the property that decided its material, and explain what would go wrong if the whole object were made from just one material.</p>
+    <div class="continue-grid">
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-body">
+          <div class="cont-name">More Coming Soon</div>
+          <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges that put your material choices to the test are coming soon.</div>
+          <span class="coming-soon-tag">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Offer a hands-on extension that transfers the property-first move to a real object.</li>
+            <li>Hold space for investigations, simulations, and challenges that will build toward later engineering work.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Transfer</li>
+            <li>Interest-driven extension</li>
+            <li>Metacognition</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Apply to Analyze</li>
+            <li>DOK 2 to 3</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Optional and self-paced</li>
+            <li>No penalty for skipping</li>
+            <li>Uses everyday objects, no special materials needed</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">Choosing materials is one move in a bigger engineering story. Here is where it comes from and where it leads.</p>
+    <div class="continue-grid">
+      <a href="lesson_engineering-design.html" class="cont-card les">
+        <div class="cont-icon">📐</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Engineering Design</div>
+        <div class="cont-desc">Engineering Design gave you criteria and constraints. Choosing Materials is where those criteria get decided: every property you compare is a criterion a material has to meet.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+      <a href="lesson_physical-properties.html" class="cont-card les">
+        <div class="cont-icon">⚖️</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Physical Properties</div>
+        <div class="cont-desc">You met hardness, conductivity, and melting point while measuring matter. Here those same properties become the reasons an engineer picks one material over another.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+      <a href="lesson_designing-to-scale.html" class="cont-card les">
+        <div class="cont-icon">📏</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Designing to Scale</div>
+        <div class="cont-desc">Once you have chosen a material, the next step is drawing and sizing the real part. Designing to Scale turns your material choice into a plan someone else can actually build.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ™</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- ===== GLOSSARY CARDS (click to expand only; one open at a time) ===== -->
+<script>
+(function(){
+  var cards = document.querySelectorAll('.glossary-card');
+  cards.forEach(function(card){
+    card.addEventListener('click', function(){
+      var isOpen = card.classList.contains('open');
+      cards.forEach(function(c){
+        c.classList.remove('open');
+        c.setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+})();
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== FAMILY EXPLORER ===== -->
+<script>
+(function(){
+  var steps = document.querySelectorAll('#familyGrid .cycle-step');
+  var countEl = document.getElementById('familyCount');
+  var completeEl = document.getElementById('familyComplete');
+  var opened = 0;
+  steps.forEach(function(step){
+    step.addEventListener('click', function(){
+      if (step.classList.contains('open')) return;
+      step.classList.add('open');
+      step.setAttribute('aria-expanded', 'true');
+      opened++;
+      countEl.textContent = opened;
+      if (opened === steps.length) completeEl.classList.add('visible');
+    });
+  });
+})();
+</script>
+
+<!-- ===== MATERIALS BENCH ===== -->
+<script>
+(function(){
+  var PROPS = [
+    { key: 'flexibility', label: 'Flexibility' },
+    { key: 'hardness',    label: 'Hardness' },
+    { key: 'ductility',   label: 'Ductility' },
+    { key: 'thermal',     label: 'Thermal conductivity' },
+    { key: 'electrical',  label: 'Electrical conductivity' },
+    { key: 'melting',     label: 'Melting point' }
+  ];
+  var MATS = [
+    { key: 'metal',   icon: '🔩', name: 'Metal' },
+    { key: 'plastic', icon: '🧴', name: 'Plastic' },
+    { key: 'wood',    icon: '🪵', name: 'Wood' },
+    { key: 'ceramic', icon: '🧱', name: 'Ceramic' }
+  ];
+  var PROP_LABEL = {};
+  PROPS.forEach(function(p){ PROP_LABEL[p.key] = p.label; });
+
+  var SCENARIOS = [
+    {
+      brief: '🚲 Design the tread on a <strong>bicycle tire</strong>. It has to grip the road and bend on every turn of the wheel, thousands of times, without cracking or snapping.',
+      deciding: 'flexibility',
+      why: 'the tire bends on every turn of the wheel, so it has to flex again and again without cracking',
+      best: 'plastic',
+      notes: {
+        plastic: 'Rubber is a type of plastic. It bends over and over and grips the road. This is exactly why real tires are rubber.',
+        metal:   'A metal tire would be strong but could barely flex, and it would crack apart. Save metal for the chain and spokes, where hardness matters.',
+        wood:    'Wood is stiff and would splinter as it bent. Wood shines in a picnic table or a baseball bat, not a tire.',
+        ceramic: 'Ceramic is hard but brittle and would shatter on the first bump. Ceramic belongs where heat and hardness matter, like tiles.'
+      }
+    },
+    {
+      brief: '🍳 Design the body of a <strong>frying pan</strong>. It has to spread heat quickly and evenly across the whole surface so food cooks without burning in one spot.',
+      deciding: 'thermal',
+      why: 'the pan has to move heat from the burner into the food quickly and evenly',
+      best: 'metal',
+      notes: {
+        metal:   'Metals are excellent thermal conductors, so heat spreads fast and evenly. This is why pans are metal.',
+        wood:    'Wood barely carries heat, so the food would cook unevenly. Wood is perfect for the handle, where you want heat to stop.',
+        plastic: 'Plastic is a poor heat conductor and could melt on a burner. Plastic is better for cool-touch parts like grips.',
+        ceramic: 'Ceramic can take heat but carries it slowly and can crack from fast temperature changes. Ceramic wins in an oven, not a fast-heating pan.'
+      }
+    },
+    {
+      brief: '💡 Design the <strong>wire</strong> that carries electricity from a bike light’s battery to the bulb. It has to let electric current flow through it easily.',
+      deciding: 'electrical',
+      why: 'a wire’s only job is to let electric current flow through it with as little resistance as possible',
+      best: 'metal',
+      notes: {
+        metal:   'Metals like copper are excellent electrical conductors. This is why nearly every wire has a metal core.',
+        plastic: 'Plastic blocks electricity, which is exactly why it wraps around wires as a safe coating. Great insulator, wrong choice for the core.',
+        wood:    'Wood does not carry electricity well, so current could not flow. Wood is a builder’s material, not a conductor.',
+        ceramic: 'Ceramic is used to hold power lines apart because it blocks electricity. A perfect insulator, wrong choice for the wire itself.'
+      }
+    },
+    {
+      brief: '🔥 Design the <strong>floor of a pizza oven</strong> that sits at over 900 degrees for hours. It has to hold that heat without melting, softening, or burning.',
+      deciding: 'melting',
+      why: 'the floor sits in constant extreme heat, so it must stay solid and not melt or soften',
+      best: 'ceramic',
+      notes: {
+        ceramic: 'Ceramics have very high melting points and stay hard in extreme heat. This is why ovens, kilns, and furnaces are lined with ceramic.',
+        metal:   'Many metals conduct heat well but can soften or warp at very high temperatures. Metal is better for the pan than the oven wall.',
+        plastic: 'Plastic has a low melting point and would melt almost instantly. Plastic belongs far from heat, like a cool handle.',
+        wood:    'Wood would burn, not melt. Wood is a great building material at normal temperatures, not inside an oven.'
+      }
+    },
+    {
+      brief: '🥫 Design a <strong>drink can</strong> that is stamped from a thin flat sheet and stretched into a smooth curved shape without cracking.',
+      deciding: 'ductility',
+      why: 'the sheet has to stretch and bend into a new shape without breaking, which is exactly what ductility means',
+      best: 'metal',
+      notes: {
+        metal:   'Metals are ductile: they can be pressed and stretched into shapes without cracking. This is why cans, car bodies, and foil are stamped from metal.',
+        ceramic: 'Ceramic is the opposite of ductile. It is brittle and would crack the instant you tried to stretch it.',
+        wood:    'Wood cannot be stretched into a smooth curve. It would split along its grain.',
+        plastic: 'Some plastics can be molded, but they are not stretched from a sheet the way ductile metal is. Plastic is molded, not stamped.'
+      }
+    },
+    {
+      brief: '🧱 Design a <strong>floor tile</strong> for a busy hallway. It has to resist scratches, dents, and wear from thousands of shoes every day.',
+      deciding: 'hardness',
+      why: 'the surface is scraped and pressed all day, so it has to resist scratching and denting, which is hardness',
+      best: 'ceramic',
+      notes: {
+        ceramic: 'Ceramics are very hard and resist scratches and wear. This is why floor tiles and countertops are ceramic.',
+        metal:   'Metal is hard too, but it can dent and would be cold and loud underfoot. Metal wins in tools and frames.',
+        wood:    'Wood scratches and dents more easily and wears down in a busy hallway. Wood is warmer but softer.',
+        plastic: 'Plastic is light and cheap but scratches and wears quickly under heavy traffic. Plastic is better for lightweight parts.'
+      }
+    }
+  ];
+
+  var numEl     = document.getElementById('benchNum');
+  var totalEl   = document.getElementById('benchTotal');
+  var briefEl   = document.getElementById('benchBrief');
+  var step1El   = document.getElementById('benchStep1');
+  var step2El   = document.getElementById('benchStep2');
+  var propsEl   = document.getElementById('benchProps');
+  var matsEl    = document.getElementById('benchMats');
+  var revealEl  = document.getElementById('benchReveal');
+  var nextEl    = document.getElementById('benchNext');
+  var nextBtn   = document.getElementById('benchNextBtn');
+  var workEl    = document.getElementById('benchWork');
+  var completeEl= document.getElementById('benchComplete');
+  if (!briefEl) return;
+
+  totalEl.textContent = SCENARIOS.length;
+  var index = 0;
+  var pickedProp = null;
+
+  function render(i) {
+    var sc = SCENARIOS[i];
+    numEl.textContent = i + 1;
+    briefEl.innerHTML = sc.brief;
+    pickedProp = null;
+
+    // Step 1: properties
+    propsEl.innerHTML = '';
+    PROPS.forEach(function(p){
+      var b = document.createElement('button');
+      b.className = 'bench-opt';
+      b.type = 'button';
+      b.textContent = p.label;
+      b.addEventListener('click', function(){
+        if (pickedProp) return;
+        pickedProp = p.key;
+        b.classList.add('chosen');
+        propsEl.querySelectorAll('.bench-opt').forEach(function(x){ x.disabled = true; });
+        step2El.classList.remove('locked-step');
+      });
+      propsEl.appendChild(b);
+    });
+
+    // Step 2: materials (locked until a property is chosen)
+    step2El.classList.add('locked-step');
+    matsEl.innerHTML = '';
+    MATS.forEach(function(m){
+      var b = document.createElement('button');
+      b.className = 'bench-mat';
+      b.type = 'button';
+      b.innerHTML = '<span class="bench-mat-icon">' + m.icon + '</span><span class="bench-mat-name">' + m.name + '</span>';
+      b.addEventListener('click', function(){
+        if (!pickedProp) return;
+        if (matsEl.querySelector('.chosen')) return;
+        b.classList.add('chosen');
+        matsEl.querySelectorAll('.bench-mat').forEach(function(x){ x.disabled = true; });
+        showReveal(i, m.key);
+      });
+      matsEl.appendChild(b);
+    });
+
+    revealEl.className = 'bench-reveal';
+    revealEl.innerHTML = '';
+    nextEl.style.display = 'none';
+  }
+
+  function showReveal(i, matKey) {
+    var sc = SCENARIOS[i];
+    var decLabel = PROP_LABEL[sc.deciding];
+    var verdict;
+    if (pickedProp === sc.deciding) {
+      verdict = '✅ You spotted it. For this part, ' + sc.why + '. So <strong>' + decLabel.toLowerCase() + '</strong> is the property that matters most.';
+    } else {
+      verdict = 'You chose <strong>' + PROP_LABEL[pickedProp].toLowerCase() + '</strong>. That is a real property, but for this part <strong>' + decLabel.toLowerCase() + '</strong> matters most, because ' + sc.why + '.';
+    }
+
+    var notesHTML = '';
+    MATS.forEach(function(m){
+      var isBest = (m.key === sc.best);
+      notesHTML += '<div class="bench-note' + (isBest ? ' best' : '') + '">' +
+        '<span class="bench-note-mat">' + m.icon + ' ' + m.name + (isBest ? ' ✅' : '') + '</span>' +
+        '<span>' + sc.notes[m.key] + '</span></div>';
+    });
+
+    revealEl.innerHTML =
+      '<div class="bench-verdict">' + verdict + '</div>' +
+      '<div class="bench-notes">' + notesHTML + '</div>';
+    revealEl.classList.add('visible');
+
+    nextBtn.textContent = (i + 1 < SCENARIOS.length) ? 'Next brief →' : 'Finish at the bench →';
+    nextEl.style.display = 'block';
+  }
+
+  nextBtn.addEventListener('click', function(){
+    if (index + 1 < SCENARIOS.length) {
+      index++;
+      render(index);
+      document.getElementById('bench').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      workEl.style.display = 'none';
+      completeEl.innerHTML = '🏁 <strong>Six briefs, six decisions.</strong> Notice what never happened: you never asked which material was strongest. Every time, you asked what the part needed to do, then chose. That is exactly how engineers choose materials. Remember the rule: there is no best material, only the best material for a particular purpose.';
+      completeEl.classList.add('visible');
+    }
+  });
+
+  render(0);
+})();
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) {
+        fb.className = 'qr-feedback visible no';
+        fb.textContent = 'Pick an answer first.';
+        return;
+      }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok';
+        fb.textContent = okMsg;
+        checkBtn.style.display = 'none';
+        retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no';
+        fb.textContent = noMsg;
+        checkBtn.style.display = 'none';
+        retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback';
+      fb.textContent = '';
+      retryBtn.style.display = 'none';
+      checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+
+  wireQR('qr1', 1,
+    'Correct! A handle should stay cool, so you want LOW thermal conductivity. Wood or plastic barely carry heat, so it does not reach your hand.',
+    'Not quite. A cool handle needs LOW thermal conductivity so heat does not travel to your hand. Metal, a great conductor, would get too hot to hold.');
+  wireQR('qr2', 1,
+    'Correct! Strongest is not the same as best. Before choosing, an engineer asks what the part needs to do, then picks the material with the right property.',
+    'Not quite. There is no single best material. The right move is to ask what the part needs to do first, then choose the material whose properties fit.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+var CM_SCRIPT_URLS = {
+  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+
+// ── QUIZ STATE ────────────────────────────────────────────────────────
+var cmQuizState = { selected: [], submitted: false };
+var cmQuizMode  = 'practice';
+
+// ── QUIZ QUESTIONS ────────────────────────────────────────────────────
+var cmQuizQuestions = [
+  {
+    q: "Which property describes how well a material lets electric current flow through it?",
+    options: [
+      "Flexibility",
+      "Hardness",
+      "Electrical conductivity",
+      "Melting point"
+    ],
+    correct: 2,
+    explanation: "Electrical conductivity measures how easily electricity flows through a material. Metals conduct well; plastic, wood, and ceramic block current."
+  },
+  {
+    q: "An engineer needs the body of a frying pan to spread heat quickly and evenly. Which property matters most, and which material fits best?",
+    options: [
+      "Thermal conductivity, so choose metal",
+      "Flexibility, so choose plastic",
+      "Melting point, so choose wood",
+      "Hardness, so choose ceramic"
+    ],
+    correct: 0,
+    explanation: "The pan's job is to move heat into the food, so thermal conductivity matters most. Metals are excellent heat conductors, which is why pans are metal."
+  },
+  {
+    q: "The same frying pan needs a handle that stays cool to hold. Why is the handle often made of wood or plastic instead of metal?",
+    options: [
+      "Wood and plastic are stronger than metal",
+      "Wood and plastic are poor thermal conductors, so heat does not reach your hand",
+      "Wood and plastic have higher melting points than metal",
+      "Metal costs too much to use for a handle"
+    ],
+    correct: 1,
+    explanation: "A cool handle needs low thermal conductivity. Wood and plastic barely carry heat, so it stays in the pan instead of traveling to your hand."
+  },
+  {
+    q: "Ductility is the property that lets a material be...",
+    options: [
+      "scratched by a harder material",
+      "heated until it glows",
+      "dissolved in water",
+      "stretched and bent into a new shape without breaking"
+    ],
+    correct: 3,
+    explanation: "Ductility is how much a material can be stretched or bent into a new shape without breaking. Metals are ductile, which is why cans and car bodies are stamped from them."
+  },
+  {
+    q: "Plastic is wrapped around the metal core of an electrical wire. What does this best show about choosing materials?",
+    options: [
+      "Plastic conducts electricity better than metal",
+      "The wire would work just as well made entirely of plastic",
+      "Each part is chosen for a different job: metal carries the current, plastic blocks it to keep you safe",
+      "Plastic is the strongest material available"
+    ],
+    correct: 2,
+    explanation: "The metal core and plastic coating each do a different job. Metal is chosen because it conducts, plastic because it blocks current and protects the user. Different properties, different jobs."
+  },
+  {
+    q: "A material must line the inside of a 900-degree oven without melting or softening. Which choice fits best?",
+    options: [
+      "Plastic, because it is light",
+      "A ceramic, because it has a very high melting point",
+      "Wood, because it is easy to shape",
+      "Rubber, because it is flexible"
+    ],
+    correct: 1,
+    explanation: "Surviving extreme heat depends on melting point. Ceramics have very high melting points and stay solid, which is why ovens and kilns are lined with ceramic."
+  },
+  {
+    q: "Diego says steel is \"the best material\" because it is strong. What is the problem with his thinking?",
+    options: [
+      "There is no single best material; the best choice depends on what the part must do",
+      "Steel is actually the weakest material",
+      "Aluminum is always better than steel",
+      "Strength never matters in a design"
+    ],
+    correct: 0,
+    explanation: "No material is best at everything. The best choice always depends on the job. Steel is great for a chain but too heavy for a whole bike frame."
+  },
+  {
+    q: "A bike tire must grip the road and bend on every turn without cracking. Which property matters most, and which material is used?",
+    options: [
+      "Hardness, and ceramic",
+      "Melting point, and metal",
+      "Electrical conductivity, and copper",
+      "Flexibility, and rubber, which is a plastic"
+    ],
+    correct: 3,
+    explanation: "A tire flexes constantly, so flexibility matters most. Rubber, a type of plastic, bends over and over without cracking, which is why tires are rubber."
+  },
+  {
+    q: "Why are floor tiles usually made from ceramic instead of wood?",
+    options: [
+      "Ceramic is cheaper than every other material",
+      "Ceramic is flexible, so it bounces back",
+      "Ceramic is hard and resists scratches and wear from foot traffic",
+      "Ceramic conducts electricity safely"
+    ],
+    correct: 2,
+    explanation: "A busy floor gets scraped all day, so hardness matters most. Ceramic is very hard and resists scratches and dents, while wood is softer and wears down."
+  },
+  {
+    q: "An engineer picks aluminum for a bike frame and rubber for the tires. What best describes how she is thinking?",
+    options: [
+      "She picks the strongest material for every part",
+      "She matches each part's material to the job that part has to do",
+      "She picks the cheapest material for every part",
+      "She uses whatever material is easiest to find"
+    ],
+    correct: 1,
+    explanation: "This is the core engineering move: match the material to the job. A light aluminum frame and grippy rubber tires each fit what that part needs to do."
+  }
+];
+
+// ── SET QUIZ MODE ─────────────────────────────────────────────────────
+function cmSetQuizMode(mode) {
+  cmQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+
+// ── URL PARAM - auto-set mode on load ─────────────────────────────────
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') cmSetQuizMode('classroom');
+  else cmSetQuizMode('practice');
+})();
+
+// ── BUILD QUIZ ────────────────────────────────────────────────────────
+function cmBuildQuiz() {
+  var container = document.getElementById('cm-quiz-questions');
+  container.innerHTML = '';
+  cmQuizState.selected  = new Array(cmQuizQuestions.length).fill(null);
+  cmQuizState.submitted = false;
+  document.getElementById('cm-submit-btn').disabled = true;
+  cmUpdateProgress();
+  var letters = ['A','B','C','D'];
+  cmQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="cmSelectAnswer(' + qi + ',' + oi + ')" id="cm-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="cm-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+// ── SELECT ANSWER ─────────────────────────────────────────────────────
+function cmSelectAnswer(qi, chosenIndex) {
+  if (cmQuizState.submitted) return;
+  var prev = cmQuizState.selected[qi];
+  if (prev !== null) document.getElementById('cm-q-' + qi + '-' + prev).classList.remove('selected');
+  cmQuizState.selected[qi] = chosenIndex;
+  document.getElementById('cm-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  cmUpdateProgress();
+  document.getElementById('cm-submit-btn').disabled = !cmQuizState.selected.every(function (s) { return s !== null; });
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────
+function cmUpdateProgress() {
+  var total    = cmQuizQuestions.length;
+  var answered = cmQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('cm-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('cm-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+// ── VALIDATE STUDENT INFO ─────────────────────────────────────────────
+function cmValidateStudentInfo() {
+  var name    = document.getElementById('cm-student-name').value.trim();
+  var teacher = document.getElementById('cm-teacher-select').value;
+  var block   = document.getElementById('cm-block-select').value;
+  document.getElementById('cm-err-name').classList.toggle('show', !name);
+  document.getElementById('cm-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('cm-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+
+// ── SUBMIT QUIZ ───────────────────────────────────────────────────────
+function cmSubmitQuiz() {
+  if (cmQuizState.submitted) return;
+  if (cmQuizMode === 'classroom') {
+    var info = cmValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  cmQuizState.submitted = true;
+  document.getElementById('cm-submit-btn').disabled = true;
+  var correct = 0;
+  cmQuizQuestions.forEach(function (q, qi) {
+    var chosen    = cmQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('cm-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('cm-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('cm-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = cmQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '🏆 Perfect score! You choose materials like an engineer.'
+    : pct >= 80 ? '🌟 Great work! Review any you missed and you are ready for your next design challenge.'
+    : pct >= 60 ? '📚 Solid effort. Go back through the lesson and try again.'
+    : '💪 Keep going; review each section carefully and try again!';
+  document.getElementById('cm-score-num').textContent = score;
+  document.getElementById('cm-score-msg').textContent = msg;
+  var sb = document.getElementById('cm-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (pct === 100) {
+    cmQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  if (cmQuizMode === 'practice') {
+    document.getElementById('cm-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+
+  var info2 = cmValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var letters = ['A','B','C','D'];
+  var answerStr = cmQuizState.selected.map(function (idx, i) {
+    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
+  }).join(', ');
+  var params = new URLSearchParams({
+    tab: 'Choosing Materials', studentName: info2.name, teacher: teacherLabel,
+    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+  });
+  fetch(CM_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(function () {
+      document.getElementById('cm-submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+    })
+    .catch(function () {
+      document.getElementById('cm-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+}
+
+// ── RESET QUIZ ────────────────────────────────────────────────────────
+function cmResetQuiz() {
+  if (cmQuizState.continueTimer) {
+    clearTimeout(cmQuizState.continueTimer);
+    cmQuizState.continueTimer = null;
+  }
+  document.getElementById('cm-score').classList.remove('show');
+  document.getElementById('cm-submit-status').innerHTML = '';
+  cmBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+cmBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,2251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/lesson_earths-place-in-the-universe.html">
+<meta name="description" content="Zoom out from Earth to the solar system, the Milky Way galaxy, and the universe, and discover that our galaxy is one of billions. An interactive Grade 6 Earth and Space Science lesson aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Earth's Place in the Universe</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:      #7a8fa6;
+    --accent-dim:  rgba(122,143,166,0.15);
+    --accent-glow: rgba(122,143,166,0.35);
+    --accent-dark: #5a6e82;
+    --accent2:     #b8cfe0;
+    --teal:        #3bc8e8;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #0d1117;
+    --dark2:       #111820;
+    --card:        #161e28;
+    --text:        #e8edf2;
+    --text-muted:  #7a8fa6;
+    --border:      rgba(122,143,166,0.18);
+    --red:         #e74c3c;
+    --green:       #2ecc71;
+    --silver:      #c8d8e8;
+    --purple:      #9b59b6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { font-size: 18px; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  #stars {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0; opacity: 0.45;
+  }
+
+  nav, header, section, footer { position: relative; z-index: 1; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(8,12,18,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 900;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+    font-weight: 700; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-dim);
+    border: 1px solid rgba(122,143,166,0.4); padding: 0.35rem 0.9rem;
+    border-radius: 99px; text-decoration: none; transition: all 0.2s;
+  }
+  .nav-back:hover { background: rgba(122,143,166,0.25); border-color: rgba(122,143,166,0.7); }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #09101a 0%, #111820 50%, #0a0f18 100%);
+    padding: 6rem 2rem 5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(122,143,166,0.09) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(184,207,224,0.06) 0%, transparent 60%);
+  }
+  .hero-float {
+    position: absolute; font-size: 2.5rem; opacity: 0.08;
+    animation: float 6s ease-in-out infinite; pointer-events: none;
+  }
+  .hero-float:nth-child(1) { top: 10%; left: 8%;   animation-delay: 0s; }
+  .hero-float:nth-child(2) { top: 20%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+  .hero-float:nth-child(3) { bottom: 15%; left: 15%; animation-delay: 3s; font-size: 1.8rem; }
+  .hero-float:nth-child(4) { bottom: 20%; right: 8%; animation-delay: 4s; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
+  .hero-badge {
+    display: inline-block; background: rgba(245,200,66,0.12);
+    border: 1px solid rgba(245,200,66,0.45); color: #f5c842;
+    padding: 0.4rem 1.2rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1; margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative;
+  }
+  .hero p {
+    font-size: 1.1rem; color: rgba(232,237,242,0.78); max-width: 600px;
+    margin: 0 auto 2rem; position: relative; line-height: 1.7;
+  }
+
+  /* ── DRIVING QUESTION ── */
+  .driving-question {
+    max-width: 760px; margin: 0 auto; padding: 1.1rem 1.6rem;
+    background: rgba(122,143,166,0.07); border: 1px solid rgba(122,143,166,0.3);
+    border-left: 4px solid var(--accent); border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    box-sizing: border-box; position: relative;
+  }
+  .dq-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body { flex: 1; }
+  .dq-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 0.3rem;
+  }
+  .dq-text { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ── LEARNING SCIENCE BADGES ── */
+  .ls-focus { display: none; }
+  body.ls-active .ls-focus {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 0.45rem 0.55rem; width: fit-content; max-width: 760px;
+    margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-radius: 16px; animation: lsFadeIn 0.35s ease both;
+  }
+  @keyframes lsFadeIn { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(122,143,166,0.8); margin-bottom: 1rem; }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(159,184,204,0.75); margin-bottom: 0.35rem; }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+  .ls-focus-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.75); white-space: nowrap; width: 100%; text-align: center; margin-bottom: 0.5rem;
+  }
+  .ls-badge {
+    position: relative; display: inline-flex; align-items: center; gap: 0.35rem;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; font-weight: 700; line-height: 1;
+    color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.16); border-radius: 99px;
+    padding: 0.35rem 0.9rem; cursor: default; white-space: nowrap; overflow: visible;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .ls-badge:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+  .ls-badge[data-tip]::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px);
+    left: 50%; transform: translateX(-50%); width: 200px; padding: 0.5rem 0.75rem;
+    background: #0c1a28; color: #b8ccd8; font-size: 0.68rem; font-weight: 500;
+    line-height: 1.5; white-space: normal; text-align: center; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.11); box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::after { opacity: 1; }
+  .ls-badge[data-tip]::before {
+    content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11);
+    pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999;
+  }
+  .ls-badge[data-tip]:hover::before { opacity: 1; }
+
+  /* ── SECTIONS ── */
+  section { padding: 3rem 2rem; scroll-margin-top: 2.6rem; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    display: inline-block; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.3);
+    padding: 0.3rem 0.9rem; border-radius: 99px; margin-bottom: 1rem;
+  }
+  h2.section-title {
+    font-family: 'Fredoka One', cursive; font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1rem; line-height: 1.2;
+  }
+  .section-desc { color: rgba(232,237,242,0.78); font-size: 1.05rem; max-width: 680px; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* ── PHENOMENON CARD ── */
+  .phenomenon-card {
+    background: linear-gradient(135deg, rgba(122,143,166,0.08) 0%, rgba(122,143,166,0.03) 100%);
+    border: 1.5px solid rgba(122,143,166,0.3); border-radius: 20px;
+    padding: 2.2rem 2.5rem; display: flex; align-items: flex-start;
+    gap: 2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .phenomenon-icon { font-size: 3.5rem; flex-shrink: 0; animation: floatSlow 5s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .phenomenon-body { flex: 1; min-width: 220px; }
+  .phenomenon-tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+    background: var(--accent-dim); border: 1px solid rgba(122,143,166,0.35);
+    padding: 0.22rem 0.8rem; border-radius: 99px; margin-bottom: 0.6rem;
+  }
+  .phenomenon-body h3 {
+    font-family: 'Fredoka One', cursive; font-size: 1.5rem;
+    margin-bottom: 0.4rem; color: var(--text); line-height: 1.25;
+  }
+  .phenomenon-body p { color: rgba(232,237,242,0.82); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── CONTENT CARDS ── */
+  .content-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 1.8rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    animation: fadeIn 0.3s ease both;
+  }
+  .content-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .card-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem; }
+  .card-title { font-family: 'Fredoka One', cursive; font-size: 1.45rem; color: var(--text); flex: 1; }
+  .card-body { color: rgba(232,237,242,0.88); font-size: 0.97rem; line-height: 1.75; }
+  .card-body p { margin-bottom: 1rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .vocab { color: var(--accent2); font-weight: 800; border-bottom: 1.5px dotted rgba(184,207,224,0.6); cursor: help; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── VOCAB ENTRY BLOCKS ── */
+  .vocab-entry {
+    background: rgba(122,143,166,0.06); border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0; padding: 0.9rem 1.2rem; margin: 0.9rem 0;
+  }
+  .vocab-entry .vterm {
+    font-family: 'Fredoka One', cursive; font-size: 1.05rem;
+    color: var(--silver); margin-bottom: 0.25rem;
+  }
+  .vocab-entry .vdef { font-size: 0.88rem; color: rgba(232,237,242,0.85); line-height: 1.65; }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 12px; padding: 1rem 1.3rem; margin: 1.2rem 0;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    font-size: 0.92rem; line-height: 1.65;
+  }
+  .callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .callout-body strong { font-weight: 900; }
+  .callout.slate  { background: rgba(122,143,166,0.07); border-left: 3px solid var(--accent); color: rgba(232,237,242,0.85); }
+  .callout.teal   { background: rgba(59,200,232,0.06);  border-left: 3px solid var(--teal);   color: rgba(232,237,242,0.85); }
+  .callout.gold   { background: rgba(245,200,66,0.06);  border-left: 3px solid var(--gold);   color: rgba(232,237,242,0.85); }
+  .callout.purple { background: rgba(155,89,182,0.08);  border-left: 3px solid var(--purple); color: rgba(232,237,242,0.85); }
+
+  /* ── SIGNATURE INTERACTIVE: NESTED ZOOM MODEL ── */
+  #explore { background: var(--dark); }
+  .zoom-wrap {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.6rem;
+  }
+  .zoom-title { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--silver); margin-bottom: 0.3rem; }
+  .zoom-sub { font-size: 0.92rem; color: var(--text-muted); margin-bottom: 1.2rem; font-weight: 600; }
+  .zoom-ladder { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.35rem 0.4rem; margin-bottom: 1.3rem; }
+  .zoom-step {
+    display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 800;
+    color: var(--text-muted); padding: 0.35rem 0.85rem; border-radius: 99px;
+    border: 1px solid var(--border); background: rgba(255,255,255,0.02); transition: all 0.25s;
+  }
+  .zoom-step.done { color: var(--teal); border-color: rgba(59,200,232,0.4); background: rgba(59,200,232,0.08); }
+  .zoom-step.active {
+    color: #04121a; background: linear-gradient(135deg, var(--teal), #2a9fd0);
+    border-color: var(--teal); box-shadow: 0 0 14px rgba(59,200,232,0.3);
+  }
+  .zoom-sep { color: rgba(122,143,166,0.5); font-weight: 900; font-size: 0.85rem; padding: 0 0.1rem; }
+  .zoom-stage {
+    position: relative; background: radial-gradient(ellipse at 50% 40%, rgba(20,30,48,0.9), rgba(6,10,18,0.95));
+    border: 1px solid rgba(122,143,166,0.14); border-radius: 14px;
+    padding: 1rem; max-width: 520px; margin: 0 auto;
+  }
+  .zoom-scene { display: none; }
+  .zoom-scene.active { display: block; animation: fadeIn 0.45s ease both; }
+  .zoom-scene svg { width: 100%; height: auto; display: block; }
+  .zoom-info {
+    max-width: 520px; margin: 1.2rem auto 0;
+    background: rgba(59,200,232,0.06); border: 1px solid rgba(59,200,232,0.22);
+    border-left: 4px solid var(--teal); border-radius: 14px; padding: 1.1rem 1.3rem;
+  }
+  .zoom-info-name { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: #fff; margin-bottom: 0.4rem; }
+  .zoom-info-desc { font-size: 0.9rem; color: rgba(232,237,242,0.92); line-height: 1.7; }
+  .zoom-controls { display: flex; justify-content: center; margin-top: 1.2rem; }
+  .zoom-btn {
+    background: linear-gradient(135deg, var(--teal), #2a9fd0); color: #04121a; border: none;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.98rem; letter-spacing: 0.02em;
+    padding: 0.85rem 2rem; border-radius: 99px; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s;
+  }
+  .zoom-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(59,200,232,0.3); }
+  .zoom-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+  .zoom-hint { text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem; }
+
+  /* ── QUIZ ── */
+  .quiz-section { background: var(--dark2); }
+  .quiz-mode-toggle {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin-bottom: 2rem;
+    background: rgba(122,143,166,0.1); border: 1.5px solid rgba(122,143,166,0.35);
+    border-radius: 14px; padding: 0.35rem; width: fit-content; margin-left: auto; margin-right: auto;
+    box-shadow: 0 0 0 4px rgba(122,143,166,0.06);
+  }
+  .mode-btn {
+    padding: 0.65rem 1.8rem; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800;
+    letter-spacing: 0.04em; transition: all 0.22s; color: rgba(122,143,166,0.55);
+    background: transparent;
+  }
+  .mode-btn:hover:not(.active) { color: rgba(159,184,204,0.8); }
+  .mode-btn.active {
+    background: linear-gradient(135deg, rgba(159,184,204,0.22) 0%, rgba(122,143,166,0.14) 100%);
+    color: #ddeaf5; border: 1px solid rgba(159,184,204,0.55);
+    box-shadow: 0 0 14px rgba(159,184,204,0.2), 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+    text-shadow: 0 0 12px rgba(159,184,204,0.6);
+  }
+  .mode-hint {
+    text-align: center; font-size: 0.82rem; font-weight: 700;
+    color: var(--text-muted); margin-top: -1.3rem; margin-bottom: 2rem; letter-spacing: 0.01em;
+  }
+  .mode-hint span { display: none; }
+  .mode-hint span.visible { display: inline; }
+  .student-info-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 2rem 2.2rem; margin-bottom: 2.5rem;
+    border-top: 3px solid var(--accent);
+  }
+  .student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.25rem; color: var(--text); margin-bottom: 0.3rem; }
+  .student-info-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+  .info-field label { display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .info-field input, .info-field select { width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600; transition: border-color 0.2s; appearance: none; -webkit-appearance: none; }
+  .info-field input:focus, .info-field select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(122,143,166,0.15); }
+  .info-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8fa6' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem; }
+  .info-field select option { background: #161e28; color: var(--text); }
+  .info-error { display: none; font-size: 0.78rem; color: #e87070; margin-top: 0.4rem; font-weight: 700; }
+  .info-error.show { display: block; }
+  .quiz-progress-sticky { position: sticky; top: 64px; z-index: 100; background: var(--dark2); padding: 0.85rem 0 0.75rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .quiz-progress { display: flex; align-items: center; gap: 1rem; }
+  .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.85rem; font-weight: 800; color: rgba(184,207,224,0.9); white-space: nowrap; }
+  .quiz-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .quiz-num {
+    font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--text-muted);
+    width: 2rem; height: 2rem; border-radius: 50%; background: rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .quiz-question-text { font-weight: 900; font-size: 1rem; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; padding-left: 3rem; }
+  .quiz-option {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.9rem 1.2rem; border-radius: 12px; border: 2px solid var(--border);
+    cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.02);
+    font-size: 0.95rem; font-weight: 600; font-family: 'Nunito', sans-serif;
+    text-align: left; color: rgba(232,237,242,0.9); width: 100%;
+  }
+  .quiz-option:hover:not(.disabled) { border-color: rgba(122,143,166,0.5); background: rgba(122,143,166,0.06); }
+  .quiz-option.selected  { border-color: var(--accent) !important; background: rgba(122,143,166,0.1) !important; }
+  .quiz-option.correct   { border-color: var(--teal) !important; background: rgba(59,200,232,0.1) !important; }
+  .quiz-option.incorrect { border-color: var(--red)  !important; background: rgba(231,76,60,0.08) !important; }
+  .quiz-option.disabled  { pointer-events: none; }
+  .quiz-option.revealed-correct { border-color: rgba(59,200,232,0.4) !important; background: rgba(59,200,232,0.05) !important; }
+  .option-letter { font-weight: 900; color: var(--text-muted); min-width: 1.2rem; font-size: 0.85rem; }
+  .option-feedback {
+    display: none; font-size: 0.85rem; margin-top: 0.8rem;
+    padding: 0.8rem 1.2rem 0.8rem 3rem; border-radius: 10px; font-weight: 700;
+  }
+  .option-feedback.correct-fb   { display: block; color: var(--teal); background: rgba(59,200,232,0.08); border-left: 3px solid var(--teal); }
+  .option-feedback.incorrect-fb { display: block; color: #ff8080; background: rgba(231,76,60,0.08); border-left: 3px solid var(--red); }
+  .quiz-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; animation: fadeIn 0.3s ease both; }
+  .quiz-submit-wrap { margin-top: 1.5rem; display: flex; justify-content: center; }
+  .quiz-submit-btn { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; padding: 1rem 3rem; border-radius: 14px; font-weight: 900; font-size: 1.05rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s; letter-spacing: 0.04em; }
+  .quiz-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(122,143,166,0.4); }
+  .quiz-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .score-board {
+    scroll-margin-top: 90px;
+    display: none; background: var(--card); border: 2px solid var(--accent);
+    border-radius: 20px; padding: 3rem; text-align: center; margin-top: 2rem;
+    box-shadow: 0 0 40px rgba(122,143,166,0.15);
+  }
+  .score-board.show { display: block; animation: fadeIn 0.5s ease; }
+  .big-score { font-family: 'Fredoka One', cursive; font-size: 4rem; color: var(--accent); margin-bottom: 0.5rem; }
+  .score-board p { color: rgba(232,237,242,0.82); font-size: 1.1rem; margin-bottom: 1.5rem; }
+  .reset-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 12px;
+    font-weight: 800; font-size: 1rem; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.25s;
+  }
+  .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,143,166,0.4); }
+  .score-submitted { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: rgba(59,200,232,0.1); border: 1px solid rgba(59,200,232,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+  .score-error { font-size: 0.8rem; font-weight: 800; color: #e87070; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem; display: block; }
+
+  /* ── CONTINUE ── */
+  #continue { background: var(--dark2); }
+  #go-further-anchor { display: block; position: relative; top: -86px; visibility: hidden; }
+  .continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 1.5rem; }
+  .cont-card {
+    border-radius: 18px; padding: 1.6rem 1.5rem; text-decoration: none;
+    transition: transform 0.25s, box-shadow 0.25s;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    position: relative; overflow: hidden;
+  }
+  .cont-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .cont-card.lesson { background: rgba(245,200,66,0.08); border: 1px solid rgba(245,200,66,0.35); }
+  .cont-card.ext    { background: rgba(180,127,255,0.12);  border: 1px solid rgba(180,127,255,0.35); }
+  .cont-card.lesson::before { background: linear-gradient(90deg, #f5c842, #f5a028); }
+  .cont-card.ext::before    { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+  .cont-card:hover { transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
+  .cont-card.lesson:hover { border-color: rgba(245,200,66,0.6); box-shadow: 0 14px 40px rgba(245,200,66,0.15); }
+  .cont-card.ext:hover    { border-color: rgba(180,127,255,0.6); box-shadow: 0 14px 40px rgba(180,127,255,0.15); }
+  .cont-card.ext.open     { cursor: default; }
+  .cont-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .cont-card.lesson .cont-icon { background: rgba(245,200,66,0.18); }
+  .cont-card.ext    .cont-icon { background: rgba(180,127,255,0.2); }
+  .cont-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); }
+  .cont-desc { font-size: 0.86rem; color: rgba(232,237,242,0.82); line-height: 1.6; }
+  .cont-more { font-size: 0.86rem; color: rgba(232,237,242,0.9); line-height: 1.7; display: none; margin-top: 0.2rem; }
+  .cont-card.ext.open .cont-more { display: block; animation: fadeIn 0.3s ease both; }
+  .cont-link {
+    display: inline-flex; align-items: center;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-decoration: none;
+    padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; transition: all 0.2s;
+    white-space: nowrap; align-self: flex-start; margin-top: auto; cursor: pointer;
+  }
+  .cont-card.lesson .cont-link { background: rgba(245,200,66,0.10); border-color: rgba(245,200,66,0.40);  color: #f5c842; }
+  .cont-card.ext    .cont-link { background: rgba(180,127,255,0.12); border-color: rgba(180,127,255,0.3);  color: #b47fff; }
+  .cont-card.lesson:hover .cont-link { background: rgba(245,200,66,0.20); border-color: rgba(245,200,66,0.55); }
+  .cont-card.ext:hover    .cont-link { background: rgba(180,127,255,0.2);  border-color: rgba(180,127,255,0.55); }
+
+  /* ── PULSING ── */
+  @keyframes vocabPulse {
+    0%   { background: rgba(122,143,166,0); box-shadow: none; border-radius: 4px; }
+    20%  { background: rgba(122,143,166,0.28); box-shadow: 0 0 0 5px rgba(122,143,166,0.18); border-radius: 4px; }
+    60%  { background: rgba(122,143,166,0.14); box-shadow: 0 0 0 7px rgba(122,143,166,0.08); border-radius: 4px; }
+    100% { background: rgba(122,143,166,0); box-shadow: none; border-radius: 4px; }
+  }
+  .vocab.pulsing { animation: vocabPulse 3s ease forwards; padding: 0 3px; margin: 0 -3px; }
+  .vterm.pulsing { animation: vocabPulse 3s ease forwards; padding: 2px 5px; margin: 0 -5px; border-radius: 4px; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #060c14; border-top: 1px solid var(--border);
+    padding: 2rem 2rem; text-align: center; margin-top: 0.5rem;
+  }
+  footer .footer-logo {
+    font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+    letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.35rem;
+  }
+  footer .footer-tagline { font-size: 0.83rem; color: rgba(232,237,242,0.6); margin-bottom: 0.6rem; }
+  footer .footer-links {
+    display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 0.6rem;
+  }
+  footer .footer-links a {
+    color: var(--gold); text-decoration: none; font-size: 0.72rem; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    border: 1px solid rgba(245,200,66,0.4); background: rgba(245,200,66,0.08);
+    padding: 0.25rem 0.75rem; border-radius: 99px; transition: border-color 0.2s, background 0.2s;
+  }
+  footer .footer-links a:hover { border-color: rgba(245,200,66,0.7); text-decoration: none; }
+  footer .footer-links a.nav-why {
+    color: #3bc8e8; border: 1px solid rgba(59,200,232,0.7);
+    background: rgba(59,200,232,0.12); font-weight: 800;
+  }
+  footer .footer-links a.nav-why:hover { background: rgba(59,200,232,0.22); border-color: rgba(59,200,232,0.95); color: #3bc8e8; }
+  footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
+
+  @media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    .quiz-options { padding-left: 0; }
+    .option-feedback { padding-left: 1rem; }
+  }
+
+  /* ── HOOK INVESTIGATION ── */
+  .hook-option {
+    text-align: left; width: 100%; padding: 0.85rem 1.1rem; border-radius: 12px;
+    border: 1.5px solid var(--border); background: rgba(255,255,255,0.02);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.95rem;
+    font-weight: 600; cursor: pointer; transition: all 0.2s; display: block;
+  }
+  .hook-option:hover:not(:disabled) { border-color: rgba(122,143,166,0.4); background: rgba(122,143,166,0.06); }
+  .hook-option:disabled { pointer-events: none; }
+  .hook-option.hook-correct { border-color: var(--green) !important; background: rgba(46,204,113,0.08) !important; }
+  .hook-option.hook-wrong   { border-color: rgba(122,143,166,0.35) !important; }
+
+  /* ── REFLECTION MC ── */
+  .reflect-options { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.9rem; }
+  .reflect-option {
+    display: flex; align-items: center; gap: 0.75rem;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.22);
+    border-radius: 10px; padding: 0.75rem 1rem; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.93rem; color: var(--text);
+    line-height: 1.55; text-align: left; transition: background 0.15s, border-color 0.15s;
+    width: 100%;
+  }
+  .reflect-option:hover:not(.r-disabled) { background: rgba(122,143,166,0.1); border-color: rgba(122,143,166,0.4); }
+  .reflect-option .r-letter {
+    flex-shrink: 0; width: 1.7rem; height: 1.7rem; border-radius: 50%;
+    background: rgba(122,143,166,0.12); border: 1px solid rgba(122,143,166,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 900; color: var(--accent); letter-spacing: 0;
+  }
+  .reflect-option.r-correct   { background: rgba(46,204,113,0.08);  border-color: rgba(46,204,113,0.45); }
+  .reflect-option.r-incorrect { background: rgba(231,76,60,0.07);   border-color: rgba(231,76,60,0.4); }
+  .reflect-option.r-revealed  { background: rgba(46,204,113,0.05);  border-color: rgba(46,204,113,0.25); }
+  .reflect-option.r-disabled  { cursor: default; }
+  .reflect-option.r-correct   .r-letter { background: rgba(46,204,113,0.2);  border-color: var(--green); color: var(--green); }
+  .reflect-option.r-incorrect .r-letter { background: rgba(231,76,60,0.18); border-color: var(--red);   color: var(--red); }
+  .reflect-option.r-revealed  .r-letter { background: rgba(46,204,113,0.12); border-color: rgba(46,204,113,0.4); color: var(--green); }
+  .reflect-feedback {
+    margin-top: 0.85rem; padding: 0.75rem 1rem; border-radius: 10px;
+    font-size: 0.88rem; line-height: 1.65; display: none;
+  }
+  .reflect-feedback.show { display: block; }
+  .reflect-feedback.fb-correct   { background: rgba(46,204,113,0.07); border-left: 3px solid var(--green); color: rgba(232,237,242,0.9); }
+  .reflect-feedback.fb-incorrect { background: rgba(231,76,60,0.06);  border-left: 3px solid var(--red);   color: rgba(232,237,242,0.9); }
+
+  .night-return {
+    max-width: 760px; margin: 2rem auto 0; padding: 1.5rem 1.7rem;
+    background: rgba(59,200,232,0.06); border: 1px solid rgba(59,200,232,0.22);
+    border-left: 4px solid var(--teal); border-radius: 14px;
+  }
+  .night-return .nr-label { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.5rem; }
+  .night-return .nr-text { font-family: 'Fredoka One', cursive; font-size: 1.15rem; color: var(--text); line-height: 1.45; }
+  .night-return .nr-sub { font-size: 0.9rem; color: rgba(232,237,242,0.8); line-height: 1.7; margin-top: 0.7rem; }
+
+  /* Learning Goals */
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+  .goal-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 16px;
+    padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .goal-icon { font-size: 1.8rem; line-height: 1; }
+  .goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+  .goal-std {
+    align-self: flex-start; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+    color: rgba(46,204,113,0.85); background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.3); padding: 0.25rem 0.8rem; border-radius: 99px;
+  }
+
+  /* Key Vocabulary (glossary cards) */
+  .glossary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.6rem; }
+  .glossary-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-top: 3px solid var(--accent2); border-radius: 14px;
+    padding: 1rem 1.1rem 1.1rem; text-align: left; color: var(--text);
+    font-family: inherit; cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease; width: 100%;
+  }
+  .glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .gc-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+  .gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.2; }
+  .gc-caret { display: inline-block; font-size: 0.95rem; color: var(--text-muted); opacity: 0.7; transition: opacity 0.2s ease; flex-shrink: 0; line-height: 1; }
+  .glossary-card.open .gc-caret { opacity: 0.95; }
+  .gc-body { display: none; margin-top: 0.5rem; }
+  .glossary-card.open .gc-body { display: block; animation: gcFade 0.25s ease both; }
+  @keyframes gcFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .gc-def { font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 0.5rem; }
+  .gc-jump { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); border-bottom: 1px dashed currentColor; padding-bottom: 1px; cursor: pointer; }
+  .gc-jump:hover { border-bottom-style: solid; }
+  .gc-slate  { border-top-color: var(--accent2); } .gc-slate .gc-term  { color: var(--accent2); }
+  .gc-teal   { border-top-color: var(--teal); }    .gc-teal .gc-term   { color: var(--teal); }
+  .gc-gold   { border-top-color: var(--gold); }    .gc-gold .gc-term   { color: var(--gold); }
+  .gc-green  { border-top-color: var(--green); }   .gc-green .gc-term  { color: var(--green); }
+  .gc-silver { border-top-color: var(--silver); }  .gc-silver .gc-term { color: var(--silver); }
+
+  /* Quick Recall cards */
+  .qr-card { max-width: 760px; margin: 0 auto 1.4rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+  .qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+  .qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+  .qr-options { display: grid; gap: 0.45rem; }
+  .qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .qr-options label:hover { border-color: var(--teal); }
+  .qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+  .qr-options input[type=radio] { accent-color: var(--teal); }
+  .qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+  .qr-options label.correct { background: rgba(61,220,132,0.12); border-color: var(--green); }
+  .qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+  .qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+  .qr-feedback.visible { display: block; }
+  .qr-feedback.ok { background: rgba(61,220,132,0.1); border: 1px solid rgba(61,220,132,0.3); color: #a8e6c4; }
+  .qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+  .qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+  .qr-actions button:hover { transform: translateY(-1px); }
+  .qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+  .qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#explore">Explore</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#go-further-anchor">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#geo" class="nav-back">← Earth &amp; Space</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">🌌</span>
+  <span class="hero-float">✨</span>
+  <span class="hero-float">🌍</span>
+  <span class="hero-float">🔭</span>
+  <div class="hero-badge">Lesson</div>
+  <h1>Earth's Place in the Universe</h1>
+  <p>Every star you can see at night is part of one galaxy. And that galaxy is one of billions. Zoom out from your own backyard to the edge of everything.</p>
+  <div class="driving-question">
+    <div class="dq-icon">🔍</div>
+    <div class="dq-body">
+      <div class="dq-label">Driving Question</div>
+      <div class="dq-text">When you look up at the night sky, what are you actually seeing, and where are you in it?</div>
+    </div>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Phenomenon-first learning activates curiosity before instruction. Starting from a belief students already hold makes the payoff land harder. (Krajcik &amp; Shin, 2014)">🔍 Phenomenon-First</span>
+  <span class="ls-badge" data-tip="Cognitive Load Theory: building one nested model, one scale at a time, keeps working memory from overloading. (Sweller et al., 2019)">🧠 One Mental Model</span>
+  <span class="ls-badge" data-tip="Dual Coding Theory: a single interactive that constructs the nesting visually builds a memory trace text alone cannot. (Noetel et al., 2022)">🖼️ Dual Coding</span>
+  <span class="ls-badge" data-tip="Retrieval Practice: low-stakes recall checks improve long-term retention more than re-reading alone. (Roediger &amp; Karpicke, 2006)">✅ Retrieval Practice</span>
+</div>
+
+<!-- LEARNING GOALS -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Learning Goals</span>
+    <h2 class="section-title">What You'll Be Able to Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">By the end of this lesson, you will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🪆</span>
+        <div class="goal-text">I can use a model to show how Earth fits inside the solar system, the Milky Way, and the universe.</div>
+        <span class="goal-std">6.MS-ESS1-5(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">☀️</span>
+        <div class="goal-text">I can explain that most stars I see at night belong to our own galaxy, the Milky Way.</div>
+        <span class="goal-std">6.MS-ESS1-5(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🌌</span>
+        <div class="goal-text">I can describe evidence that the Milky Way is one galaxy among billions.</div>
+        <span class="goal-std">6.MS-ESS1-5(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">📏</span>
+        <div class="goal-text">I can use scale to explain why space looks the way it does from Earth.</div>
+        <span class="goal-std">6.MS-ESS1-5(MA)</span>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Set transparent targets tied to 6.MS-ESS1-5(MA).</li><li>Signal that the goal is to build and use one nested model, not memorize numbers.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Student-facing "I can" language</li><li>One goal per card, short lines</li><li>Standard badge kept separate from the goal text</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY VOCABULARY -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Vocabulary to Know</h2>
+    <p class="section-desc" style="margin-bottom: 0.6rem;">Choose a card to see what each word means.</p>
+    <div class="glossary-grid">
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Solar System</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The Sun and everything its gravity holds, including the planets, moons, and smaller objects.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-solarsystem')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Star</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A giant ball of hot, glowing gas that gives off its own light. Our Sun is a star.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-star')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Galaxy</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">An enormous collection of stars, gas, and dust held together by gravity.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-galaxy')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-silver" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Milky Way</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The galaxy we live in. It holds our solar system and hundreds of billions of other stars.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-milkyway')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Universe</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">Everything that exists: all the galaxies, stars, planets, and space between them.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-universe')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Scale</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">The size of something compared to something else. Scale helps us understand distances too big to picture.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-scale')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Model</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A representation used to understand something too big or far away to observe directly.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-model')">See it in the lesson ↓</span></div>
+      </button>
+
+      <button class="glossary-card gc-slate" type="button" aria-expanded="false">
+        <div class="gc-head"><div class="gc-term">Light-Year</div><span class="gc-caret" aria-hidden="true">▾</span></div>
+        <div class="gc-body"><div class="gc-def">A distance, not a time. It is how far light travels in one year. Scientists use it to measure space.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-lightyear')">See it in the lesson ↓</span></div>
+      </button>
+
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Pre-teach the few terms students need before building the model.</li><li>Define light-year as a distance up front, heading off the year-as-time trap.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('#vocab .glossary-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      document.querySelectorAll('#vocab .glossary-card.open').forEach(function(o){
+        o.classList.remove('open');
+        o.setAttribute('aria-expanded', 'false');
+        var oc = o.querySelector('.gc-caret'); if (oc) oc.textContent = '▾';
+      });
+      if (willOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+        var c = card.querySelector('.gc-caret'); if (c) c.textContent = '▴';
+      }
+    });
+  });
+</script>
+
+<!-- ────────────────────────────────────────────────────────── -->
+<!-- ENGAGE: THE NIGHT SKY + PREDICTION                          -->
+<!-- ────────────────────────────────────────────────────────── -->
+<section id="engage" style="background: var(--dark2); padding: 4rem 2rem 3.5rem;">
+  <div class="container">
+    <span class="section-label">Engage &middot; Phenomenon</span>
+    <h2 class="section-title">Look Up. What Are You Seeing?</h2>
+    <p class="section-desc" style="margin-bottom: 2.5rem;">You have done this your whole life. On a clear, dark night you look up and the sky fills with points of light. Most people glance up and think, without really thinking about it, that they are looking at "the universe." Before we go anywhere, make one prediction.</p>
+
+    <!-- Night sky visual -->
+    <div style="display:flex; justify-content:center; margin:0 0 2.6rem;">
+      <svg viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A person standing on a hill at night looking up at a sky full of stars." style="width:100%; max-width:560px; height:auto;">
+        <defs>
+          <radialGradient id="skyGlow" cx="50%" cy="20%" r="90%">
+            <stop offset="0%" stop-color="#16253f"/>
+            <stop offset="100%" stop-color="#080d16"/>
+          </radialGradient>
+        </defs>
+        <rect x="0" y="0" width="520" height="220" rx="14" fill="url(#skyGlow)"/>
+        <!-- stars -->
+        <g fill="#dce8f6">
+          <circle cx="40" cy="30" r="1.6" opacity="0.9"/><circle cx="95" cy="55" r="1" opacity="0.6"/>
+          <circle cx="150" cy="24" r="1.3" opacity="0.8"/><circle cx="210" cy="48" r="1" opacity="0.55"/>
+          <circle cx="265" cy="26" r="1.7" opacity="0.95"/><circle cx="320" cy="60" r="1.1" opacity="0.6"/>
+          <circle cx="380" cy="30" r="1.2" opacity="0.75"/><circle cx="440" cy="52" r="1.5" opacity="0.85"/>
+          <circle cx="485" cy="28" r="1" opacity="0.6"/><circle cx="70" cy="90" r="1.1" opacity="0.6"/>
+          <circle cx="130" cy="78" r="1.4" opacity="0.8"/><circle cx="185" cy="95" r="1" opacity="0.5"/>
+          <circle cx="245" cy="80" r="1.2" opacity="0.7"/><circle cx="300" cy="98" r="1.5" opacity="0.85"/>
+          <circle cx="355" cy="82" r="1" opacity="0.55"/><circle cx="410" cy="96" r="1.3" opacity="0.75"/>
+          <circle cx="465" cy="86" r="1.1" opacity="0.6"/><circle cx="25" cy="70" r="1" opacity="0.5"/>
+          <circle cx="160" cy="120" r="1.1" opacity="0.6"/><circle cx="270" cy="130" r="1" opacity="0.5"/>
+          <circle cx="360" cy="124" r="1.2" opacity="0.65"/><circle cx="90" cy="128" r="1.3" opacity="0.7"/>
+        </g>
+        <!-- faint band of the milky way -->
+        <path d="M 10 60 Q 260 10 510 90" fill="none" stroke="rgba(200,216,232,0.10)" stroke-width="26"/>
+        <!-- ground -->
+        <path d="M 0 220 L 0 175 Q 130 155 260 172 Q 390 188 520 168 L 520 220 Z" fill="#0a1420"/>
+        <!-- figure -->
+        <g transform="translate(258,150)" fill="#05202e" stroke="#3bc8e8" stroke-width="1.4">
+          <circle cx="0" cy="-16" r="5" fill="#0a2b3a"/>
+          <line x1="0" y1="-11" x2="0" y2="6"/>
+          <line x1="0" y1="-6" x2="-7" y2="-12"/>
+          <line x1="0" y1="-6" x2="7" y2="-12"/>
+          <line x1="0" y1="6" x2="-6" y2="18"/>
+          <line x1="0" y1="6" x2="6" y2="18"/>
+        </g>
+        <text x="260" y="212" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="700" fill="rgba(184,207,224,0.6)">Thousands of points of light. But what are they, and where are you?</text>
+      </svg>
+    </div>
+
+    <!-- Prediction gate -->
+    <div style="max-width:640px; margin:0 auto;">
+      <p style="font-size:1rem; font-weight:800; color:var(--text); margin-bottom:0.4rem; line-height:1.5;">Make a prediction: When you look up at the night sky, what are you mostly seeing?</p>
+      <p style="font-size:0.85rem; font-style:italic; color:var(--text-muted); margin-bottom:1rem;">Commit to an answer first. There is no penalty for guessing, a guess is what makes the reveal stick.</p>
+      <div style="display:flex; flex-direction:column; gap:0.6rem;" id="hook-options">
+        <button class="hook-option" onclick="hookAnswer(this,'a')">A, Every star in the universe</button>
+        <button class="hook-option" onclick="hookAnswer(this,'b')">B, Mostly stars that belong to our own galaxy</button>
+        <button class="hook-option" onclick="hookAnswer(this,'c')">C, Mostly nearby galaxies</button>
+      </div>
+      <div id="hook-feedback" style="display:none; margin-top:1rem; padding:1rem 1.3rem; border-radius:12px; border-left:4px solid var(--accent); background:rgba(122,143,166,0.07); font-size:0.95rem; color:var(--text); line-height:1.75;"></div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Surface the everyday belief that the night sky is "the universe."</li><li>Force a prediction before instruction so the zoom-out has a belief to overturn.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Confront-the-misconception</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Every choice receives feedback</li><li>No penalty for a wrong prediction</li><li>Short prompt, one decision</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────────────────── -->
+<!-- EXPLORE: SIGNATURE INTERACTIVE (NESTED ZOOM MODEL)         -->
+<!-- ────────────────────────────────────────────────────────── -->
+<section id="explore">
+  <div class="container">
+    <span class="section-label">Explore &middot; Build the Model</span>
+    <h2 class="section-title">Zoom Out, One Step at a Time</h2>
+    <p class="section-desc">You are starting at home: Earth. Each time you zoom out, you will see a bigger view, and the view you just left stays inside it as a tiny labeled dot. By the last step you will have built one model in your mind: Earth, inside the solar system, inside the Milky Way, inside the universe.</p>
+
+    <div class="zoom-wrap">
+      <div class="zoom-title">Where Are We?</div>
+      <div class="zoom-sub">Press the button to zoom out. Watch how each level still holds the one before it.</div>
+
+      <!-- Nesting ladder / breadcrumb -->
+      <div class="zoom-ladder" id="zoom-ladder" aria-hidden="true">
+        <span class="zoom-step" data-step="0">Earth</span>
+        <span class="zoom-sep">⊂</span>
+        <span class="zoom-step" data-step="1">Solar System</span>
+        <span class="zoom-sep">⊂</span>
+        <span class="zoom-step" data-step="2">Milky Way</span>
+        <span class="zoom-sep">⊂</span>
+        <span class="zoom-step" data-step="3">Universe</span>
+      </div>
+
+      <!-- Stage -->
+      <div class="zoom-stage">
+        <!-- SCENE 0: EARTH -->
+        <div class="zoom-scene active" id="zscene-0">
+          <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Earth shown alone as a blue and green planet, labeled home.">
+            <g fill="#dce8f6">
+              <circle cx="40" cy="40" r="1.2" opacity="0.6"/><circle cx="430" cy="60" r="1.3" opacity="0.7"/>
+              <circle cx="70" cy="270" r="1" opacity="0.5"/><circle cx="410" cy="250" r="1.2" opacity="0.6"/>
+              <circle cx="250" cy="30" r="1" opacity="0.5"/><circle cx="130" cy="55" r="1" opacity="0.5"/>
+            </g>
+            <circle cx="240" cy="160" r="86" fill="#1a3a6e"/>
+            <ellipse cx="215" cy="140" rx="30" ry="22" fill="#2a7039" opacity="0.85"/>
+            <ellipse cx="270" cy="180" rx="26" ry="20" fill="#2a7039" opacity="0.8"/>
+            <ellipse cx="250" cy="120" rx="16" ry="12" fill="#2a7039" opacity="0.75"/>
+            <ellipse cx="205" cy="190" rx="14" ry="10" fill="#2a7039" opacity="0.7"/>
+            <circle cx="240" cy="160" r="86" fill="none" stroke="rgba(70,130,200,0.35)" stroke-width="4"/>
+            <text x="240" y="272" text-anchor="middle" font-family="Fredoka One, cursive" font-size="18" fill="#b8cfe0">EARTH</text>
+            <text x="240" y="292" text-anchor="middle" font-family="Nunito, sans-serif" font-size="11" font-weight="700" fill="rgba(184,207,224,0.7)">You are here. Home.</text>
+          </svg>
+        </div>
+
+        <!-- SCENE 1: SOLAR SYSTEM -->
+        <div class="zoom-scene" id="zscene-1">
+          <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The solar system, with the Sun at the left and planets on curved paths. Earth is a tiny marked dot on the third path, labeled you are here.">
+            <g fill="#dce8f6">
+              <circle cx="60" cy="40" r="1" opacity="0.5"/><circle cx="420" cy="40" r="1.1" opacity="0.6"/>
+              <circle cx="450" cy="280" r="1" opacity="0.5"/><circle cx="40" cy="270" r="1.1" opacity="0.55"/>
+            </g>
+            <!-- orbit paths (centered on Sun at 60,160) -->
+            <g fill="none" stroke="rgba(122,143,166,0.28)" stroke-width="1">
+              <ellipse cx="60" cy="160" rx="70" ry="66"/>
+              <ellipse cx="60" cy="160" rx="110" ry="104"/>
+              <ellipse cx="60" cy="160" rx="150" ry="142"/>
+              <ellipse cx="60" cy="160" rx="200" ry="188"/>
+              <ellipse cx="60" cy="160" rx="255" ry="240"/>
+            </g>
+            <!-- Sun -->
+            <circle cx="60" cy="160" r="34" fill="#f5c842"/>
+            <circle cx="60" cy="160" r="46" fill="rgba(245,200,66,0.18)"/>
+            <text x="60" y="222" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="800" fill="#f5c842">The Sun (a star)</text>
+            <!-- planets -->
+            <circle cx="130" cy="160" r="4" fill="#c79b6e"/>
+            <circle cx="170" cy="160" r="5" fill="#e0a86a"/>
+            <!-- Earth highlighted on 3rd orbit -->
+            <circle cx="210" cy="160" r="7" fill="#3bc8e8" stroke="#fff" stroke-width="1.5"/>
+            <circle cx="210" cy="160" r="16" fill="none" stroke="#3bc8e8" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <line x1="210" y1="140" x2="210" y2="96" stroke="#3bc8e8" stroke-width="1.4"/>
+            <text x="210" y="88" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="900" fill="#3bc8e8">You are here</text>
+            <text x="210" y="76" text-anchor="middle" font-family="Nunito, sans-serif" font-size="9" font-weight="700" fill="rgba(184,207,224,0.8)">Earth</text>
+            <circle cx="258" cy="160" r="5" fill="#d06a4a"/>
+            <circle cx="315" cy="160" r="9" fill="#d8a56a"/>
+            <text x="240" y="300" text-anchor="middle" font-family="Fredoka One, cursive" font-size="16" fill="#b8cfe0">THE SOLAR SYSTEM</text>
+          </svg>
+        </div>
+
+        <!-- SCENE 2: MILKY WAY -->
+        <div class="zoom-scene" id="zscene-2">
+          <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Milky Way galaxy seen from above as a glowing spiral. A marker on one spiral arm points to a tiny dot labeled our whole solar system, you are here.">
+            <defs>
+              <radialGradient id="mwCore" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#fff4c2"/>
+                <stop offset="45%" stop-color="#f5c842" stop-opacity="0.75"/>
+                <stop offset="100%" stop-color="#f5c842" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <!-- galaxy disk glow -->
+            <ellipse cx="240" cy="160" rx="210" ry="120" fill="rgba(120,150,220,0.06)"/>
+            <!-- spiral arms -->
+            <g fill="none" stroke="rgba(160,190,240,0.45)" stroke-width="7" stroke-linecap="round">
+              <path d="M 240 160 Q 330 120 400 165 Q 360 220 270 205" opacity="0.7"/>
+              <path d="M 240 160 Q 150 200 80 155 Q 120 100 210 115" opacity="0.7"/>
+            </g>
+            <g fill="none" stroke="rgba(200,216,232,0.30)" stroke-width="3">
+              <path d="M 240 160 Q 320 130 395 160"/>
+              <path d="M 240 160 Q 160 190 85 160"/>
+            </g>
+            <!-- scattered stars in disk -->
+            <g fill="#eaf2fb">
+              <circle cx="300" cy="150" r="1.1" opacity="0.8"/><circle cx="340" cy="175" r="1" opacity="0.7"/>
+              <circle cx="180" cy="150" r="1.1" opacity="0.8"/><circle cx="150" cy="175" r="1" opacity="0.6"/>
+              <circle cx="270" cy="190" r="1" opacity="0.7"/><circle cx="215" cy="135" r="1" opacity="0.7"/>
+              <circle cx="360" cy="150" r="1" opacity="0.6"/><circle cx="120" cy="160" r="1" opacity="0.6"/>
+            </g>
+            <!-- core -->
+            <ellipse cx="240" cy="160" rx="70" ry="42" fill="url(#mwCore)"/>
+            <ellipse cx="240" cy="160" rx="24" ry="16" fill="#fff4c2"/>
+            <!-- you are here marker on an arm -->
+            <circle cx="330" cy="180" r="3.5" fill="#3bc8e8" stroke="#fff" stroke-width="1"/>
+            <line x1="330" y1="180" x2="360" y2="245" stroke="#3bc8e8" stroke-width="1.3"/>
+            <text x="360" y="260" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="900" fill="#3bc8e8">You are here</text>
+            <text x="360" y="273" text-anchor="middle" font-family="Nunito, sans-serif" font-size="8.5" font-weight="700" fill="rgba(184,207,224,0.8)">our whole solar system</text>
+            <text x="240" y="300" text-anchor="middle" font-family="Fredoka One, cursive" font-size="16" fill="#b8cfe0">THE MILKY WAY GALAXY</text>
+          </svg>
+        </div>
+
+        <!-- SCENE 3: UNIVERSE -->
+        <div class="zoom-scene" id="zscene-3">
+          <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A dark field scattered with many small galaxies of different shapes. One is circled and labeled the Milky Way, you are here, showing our galaxy is one of billions.">
+            <rect x="0" y="0" width="480" height="320" fill="none"/>
+            <!-- many galaxies -->
+            <g>
+              <ellipse cx="70" cy="55" rx="10" ry="4" fill="rgba(230,200,150,0.6)" transform="rotate(25 70 55)"/>
+              <ellipse cx="150" cy="40" rx="7" ry="7" fill="rgba(200,216,255,0.5)"/>
+              <ellipse cx="245" cy="60" rx="12" ry="5" fill="rgba(180,200,255,0.55)" transform="rotate(-15 245 60)"/>
+              <ellipse cx="345" cy="45" rx="8" ry="4" fill="rgba(240,210,170,0.55)" transform="rotate(40 345 45)"/>
+              <ellipse cx="425" cy="70" rx="9" ry="6" fill="rgba(200,216,255,0.5)" transform="rotate(-30 425 70)"/>
+              <ellipse cx="55" cy="140" rx="8" ry="5" fill="rgba(220,200,255,0.5)" transform="rotate(15 55 140)"/>
+              <ellipse cx="150" cy="130" rx="11" ry="4" fill="rgba(240,210,170,0.55)" transform="rotate(-20 150 130)"/>
+              <ellipse cx="330" cy="150" rx="9" ry="9" fill="rgba(200,216,255,0.5)"/>
+              <ellipse cx="415" cy="155" rx="10" ry="4" fill="rgba(230,200,150,0.55)" transform="rotate(30 415 155)"/>
+              <ellipse cx="80" cy="235" rx="12" ry="5" fill="rgba(180,200,255,0.55)" transform="rotate(-25 80 235)"/>
+              <ellipse cx="180" cy="250" rx="7" ry="7" fill="rgba(240,210,170,0.5)"/>
+              <ellipse cx="260" cy="235" rx="9" ry="4" fill="rgba(200,216,255,0.5)" transform="rotate(20 260 235)"/>
+              <ellipse cx="360" cy="255" rx="10" ry="6" fill="rgba(220,200,255,0.5)" transform="rotate(-35 360 255)"/>
+              <ellipse cx="430" cy="240" rx="8" ry="4" fill="rgba(240,210,170,0.5)" transform="rotate(45 430 240)"/>
+            </g>
+            <!-- faint far galaxies as dots -->
+            <g fill="rgba(220,232,246,0.35)">
+              <circle cx="110" cy="90" r="1.4"/><circle cx="300" cy="110" r="1.4"/><circle cx="200" cy="180" r="1.4"/>
+              <circle cx="390" cy="120" r="1.4"/><circle cx="130" cy="200" r="1.4"/><circle cx="310" cy="200" r="1.4"/>
+              <circle cx="240" cy="130" r="1.4"/><circle cx="60" cy="190" r="1.4"/>
+            </g>
+            <!-- Milky Way highlighted -->
+            <ellipse cx="205" cy="150" rx="13" ry="5" fill="rgba(120,200,240,0.9)" transform="rotate(-18 205 150)"/>
+            <circle cx="205" cy="150" r="22" fill="none" stroke="#3bc8e8" stroke-width="1.6"/>
+            <line x1="205" y1="172" x2="205" y2="205" stroke="#3bc8e8" stroke-width="1.3"/>
+            <text x="205" y="220" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10" font-weight="900" fill="#3bc8e8">The Milky Way</text>
+            <text x="205" y="233" text-anchor="middle" font-family="Nunito, sans-serif" font-size="8.5" font-weight="700" fill="rgba(184,207,224,0.85)">you are here</text>
+            <text x="240" y="300" text-anchor="middle" font-family="Fredoka One, cursive" font-size="15" fill="#b8cfe0">THE UNIVERSE · one of billions of galaxies</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Info panel -->
+      <div class="zoom-info" aria-live="polite">
+        <div class="zoom-info-name" id="zoom-name">Earth</div>
+        <div class="zoom-info-desc" id="zoom-desc">This is home. Everything and everyone you have ever known lives on this one planet. Now let us zoom out, step by step, and see where Earth sits. Watch how each new view still contains the one before it.</div>
+      </div>
+
+      <div class="zoom-controls">
+        <button class="zoom-btn" id="zoom-btn" type="button" onclick="zoomStep()">Zoom Out to the Solar System →</button>
+      </div>
+      <div class="zoom-hint" id="zoom-hint">Step 1 of 4</div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Have students actively construct the one nested model the standard asks for.</li><li>Keep the previous scale visible so nesting is seen, not just told.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generative model-building</li><li>Dual coding</li><li>Progressive disclosure</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One control drives the whole experience</li><li>Keyboard operable button, live-region updates</li><li>Every scene has a text alternative</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────────────────── -->
+<!-- EXPLORE: THE FOUR SCALES (lesson notes)                     -->
+<!-- ────────────────────────────────────────────────────────── -->
+<section id="levels" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explore &middot; The Four Scales</span>
+    <h2 class="section-title">From Your Backyard to the Whole Universe</h2>
+    <p class="section-desc">You just built the model. Here is the payoff you have been zooming toward, and the notes behind each level. Click any card to open its full notes.</p>
+
+    <!-- Payoff phenomenon: Hubble Deep Field -->
+    <div class="phenomenon-card">
+      <div class="phenomenon-icon">🌌</div>
+      <div class="phenomenon-body">
+        <div class="phenomenon-tag">The Big Reveal</div>
+        <h3>A Speck of "Empty" Sky, Full of Galaxies</h3>
+        <p>Astronomers once pointed a powerful telescope at a patch of sky that looked completely empty and dark, about the size of a grain of sand held at arm's length. They left the camera open to collect light. That "empty" speck turned out to be crowded with thousands of galaxies, each one a whole city of billions of stars like our Sun. If one tiny dark patch holds that many galaxies, our own Milky Way, with all its stars, is just one galaxy among billions.</p>
+      </div>
+    </div>
+
+    <p style="font-size:0.83rem; color:rgba(184,207,224,0.88); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.45rem;">👆 Click any card below to read the full notes for that scale.</p>
+
+    <!-- Card 1: Earth and the Solar System -->
+    <div class="content-card" id="card-solarsystem" style="cursor:pointer; user-select:none;" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div class="card-title">Earth and the Solar System</div>
+      </div>
+      <div class="card-body">
+        <p>Zoom out from Earth and it becomes one small planet traveling around the Sun. The <span class="vocab" title="Solar system: the Sun and everything its gravity holds.">Sun</span> is a <span class="vocab" title="Star: a giant ball of hot, glowing gas that makes its own light.">star</span>, a giant ball of hot, glowing gas that makes its own light. Everything the Sun's gravity holds, the planets, their moons, and smaller objects, together make up our solar system.</p>
+
+        <span id="vocab-anchor-solarsystem"></span>
+        <div class="vocab-entry">
+          <div class="vterm">Solar System</div>
+          <div class="vdef">The Sun and everything held by its gravity: eight planets, their moons, and countless smaller objects. Earth is the third planet from the Sun. Compared to the whole solar system, Earth is a tiny dot, and the Sun holds it all in place.</div>
+        </div>
+
+        <span id="vocab-anchor-star"></span>
+        <div class="vocab-entry">
+          <div class="vterm">Star</div>
+          <div class="vdef">A giant ball of hot, glowing gas that gives off its own light. Our Sun is a star. It looks huge and bright to us only because it is so close. Every other star you see at night is a sun of its own, just enormously farther away.</div>
+        </div>
+
+        <div class="callout slate">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body"><strong>The first step of the model:</strong> Earth is inside the solar system. It never leaves. As we keep zooming out, the whole solar system will become the tiny dot.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: The Milky Way Galaxy -->
+    <div class="content-card" id="card-milkyway" style="cursor:pointer; user-select:none;" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div class="card-title">The Milky Way Galaxy</div>
+      </div>
+      <div class="card-body">
+        <p>Zoom out much farther and our entire solar system shrinks to a single point. Our Sun is just one of hundreds of billions of stars in the <span class="vocab" title="Milky Way: the galaxy that contains our solar system.">Milky Way</span>, our home <span class="vocab" title="Galaxy: an enormous collection of stars, gas, and dust held together by gravity.">galaxy</span>. Here is the key idea: almost every star you can see in the night sky lives inside the Milky Way. The whole night sky is a view from inside our own galaxy.</p>
+
+        <span id="vocab-anchor-galaxy"></span>
+        <div class="vocab-entry">
+          <div class="vterm">Galaxy</div>
+          <div class="vdef">An enormous collection of stars, gas, and dust held together by gravity. A single galaxy can hold hundreds of billions of stars. Gravity is what keeps a galaxy from drifting apart.</div>
+        </div>
+
+        <span id="vocab-anchor-milkyway"></span>
+        <div class="vocab-entry">
+          <div class="vterm">Milky Way</div>
+          <div class="vdef">The galaxy we live in. It contains our solar system plus hundreds of billions of other stars. On a very dark night, the Milky Way looks like a faint, hazy band of light stretching across the sky, that band is the light of countless stars in our own galaxy.</div>
+        </div>
+
+        <div class="callout teal">
+          <span class="callout-icon">🖼️</span>
+          <div class="callout-body"><strong>Why every "photo" of the Milky Way is really a model:</strong> We live inside our galaxy, so we can never step outside to photograph it. No spacecraft has traveled anywhere near far enough. The famous spiral pictures are <span class="vocab" title="Model: a representation of something too big or far away to observe directly.">models</span>, built from clues astronomers gather from inside.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: The Universe -->
+    <div class="content-card" id="card-universe" style="cursor:pointer; user-select:none;" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div class="card-title">The Universe</div>
+      </div>
+      <div class="card-body">
+        <p>Zoom out as far as we possibly can and the entire Milky Way becomes one dot of light. Our galaxy is just one of billions of galaxies scattered across the <span class="vocab" title="Universe: everything that exists.">universe</span>. That is exactly what the "empty" patch of sky revealed: thousands of galaxies hiding in a speck that looked like nothing.</p>
+
+        <span id="vocab-anchor-universe"></span>
+        <div class="vocab-entry">
+          <div class="vterm">Universe</div>
+          <div class="vdef">Everything that exists: all the galaxies, all the stars and planets inside them, and all the space in between. The Milky Way is one galaxy among billions. Earth is not the center of it, and neither is our Sun.</div>
+        </div>
+
+        <div class="callout gold">
+          <span class="callout-icon">🌌</span>
+          <div class="callout-body"><strong>The model, complete:</strong> Earth is inside the solar system. The solar system is inside the Milky Way. The Milky Way is one of billions of galaxies inside the universe. Each level still holds everything inside it.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: How We Measure Space -->
+    <div class="content-card" id="card-measuring" style="cursor:pointer; user-select:none;" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div class="card-title">How We Measure Such Huge Distances</div>
+      </div>
+      <div class="card-body">
+        <p>Two simple ideas are all you need. First, space is unimaginably large, far too big to measure in miles in any way our minds can picture. Second, scientists measure these huge distances using light.</p>
+
+        <span id="vocab-anchor-scale"></span>
+        <div class="vocab-entry">
+          <div class="vterm">Scale</div>
+          <div class="vdef">The size of something compared to something else. Scale is why space looks mostly dark and empty from Earth: the objects are real and enormous, but they are spread across distances so vast that most are far too faint to see. Space is not empty, it is just unimaginably spread out.</div>
+        </div>
+
+        <span id="vocab-anchor-lightyear"></span>
+        <div class="vocab-entry">
+          <div class="vterm">Light-Year</div>
+          <div class="vdef">A light-year is a distance, not a time. It is how far light travels in one year, and light is the fastest thing there is. Because space is so huge, scientists measure it using light-years instead of miles. That is all you need to know here: it is a giant ruler made of light.</div>
+        </div>
+
+        <span id="vocab-anchor-model"></span>
+        <div class="vocab-entry">
+          <div class="vterm">Model</div>
+          <div class="vdef">A representation used to understand something too big or far away to observe directly. The zoom-out you just used is a model. Real space cannot be drawn at true size, so scientists use models and scale to help us picture where Earth fits.</div>
+        </div>
+
+        <div class="callout purple">
+          <span class="callout-icon">📏</span>
+          <div class="callout-body"><strong>Keep it simple:</strong> Space is huge, and scientists use light to measure it. That is the whole idea. You do not need to memorize any distances.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor each scale of the model with clear notes and the deep-field payoff.</li><li><strong>Light-years are supporting knowledge only, not an assessed Grade 6 outcome.</strong> Keep it to "space is huge, scientists measure it with light." No calculations, cosmology, or Big Bang.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Elaboration on the model</li><li>Concrete payoff after prediction</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to reveal, no hover</li><li>Key terms defined in place</li><li>Short paragraphs, one idea each</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────────────────── -->
+<!-- QUICK RECALL                                                -->
+<!-- ────────────────────────────────────────────────────────── -->
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Recall</span>
+    <h2 class="section-title">Brain Check</h2>
+    <p class="section-desc">Three quick questions before you reason it through. These are not graded. Pulling answers from memory now will help them stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Recall &middot; 1 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr1Q">Which order goes from smallest to largest?</div>
+      <div class="qr-options" id="qr1Opts" role="group" aria-labelledby="qr1Q">
+        <label><input type="radio" name="qr1" value="0"><span>Earth, solar system, Milky Way, universe</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Solar system, Earth, universe, Milky Way</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Milky Way, universe, solar system, Earth</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Recall &middot; 2 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr2Q">When you look up at night, almost every star you see belongs to what?</div>
+      <div class="qr-options" id="qr2Opts" role="group" aria-labelledby="qr2Q">
+        <label><input type="radio" name="qr2" value="0"><span>Other galaxies far across the universe</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>Our own galaxy, the Milky Way</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>Only our own solar system</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard3">
+      <div class="qr-eyebrow">Quick Recall &middot; 3 of 3</div>
+      <div class="qr-sub">Just a quick brain check. Not graded.</div>
+      <div class="qr-q" id="qr3Q">The Milky Way is best described as which of these?</div>
+      <div class="qr-options" id="qr3Opts" role="group" aria-labelledby="qr3Q">
+        <label><input type="radio" name="qr3" value="0"><span>The only galaxy in the universe</span></label>
+        <label><input type="radio" name="qr3" value="1"><span>The exact center of the universe</span></label>
+        <label><input type="radio" name="qr3" value="2"><span>One of billions of galaxies</span></label>
+      </div>
+      <div class="qr-feedback" id="qr3Feedback" aria-live="polite"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr3Check">Check Answer</button>
+        <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Pull the nesting order and the "one of billions" idea from memory.</li><li>Surface gaps early, while there is still time to reread.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Try Again resets each item</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────────────────── -->
+<!-- EXPLAIN (reflection)                                        -->
+<!-- ────────────────────────────────────────────────────────── -->
+<section id="reflection" style="background: var(--dark2);">
+  <div class="container">
+    <span class="section-label">Explain &middot; Wrap-Up</span>
+    <h2 class="section-title">Reason It Through</h2>
+    <p class="section-desc">Three questions, no grade, no pressure. Put the model together before the quiz.</p>
+
+    <!-- R1: nesting containment -->
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.6rem 1.8rem; margin-bottom: 1.5rem;">
+      <p style="font-weight: 800; font-size: 0.97rem; color: var(--text); line-height: 1.6; margin-bottom: 0.2rem;">Which statement correctly describes how these fit together?</p>
+      <div class="reflect-options" id="r1-options">
+        <button class="reflect-option" onclick="reflectAnswer('r1',0)" disabled><span class="r-letter">A</span>The Milky Way is inside our solar system</button>
+        <button class="reflect-option" onclick="reflectAnswer('r1',1)" disabled><span class="r-letter">B</span>Our solar system is inside the Milky Way, which is inside the universe</button>
+        <button class="reflect-option" onclick="reflectAnswer('r1',2)" disabled><span class="r-letter">C</span>The universe is inside the Milky Way</button>
+        <button class="reflect-option" onclick="reflectAnswer('r1',3)" disabled><span class="r-letter">D</span>Earth is inside the Milky Way but outside the solar system</button>
+      </div>
+      <div class="reflect-feedback" id="r1-feedback"></div>
+    </div>
+
+    <!-- R2: why the sky looks empty -->
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.6rem 1.8rem; margin-bottom: 1.5rem;">
+      <p style="font-weight: 800; font-size: 0.97rem; color: var(--text); line-height: 1.6; margin-bottom: 0.2rem;">The universe is full of galaxies, yet the night sky looks mostly dark and empty. Why?</p>
+      <div class="reflect-options" id="r2-options">
+        <button class="reflect-option" onclick="reflectAnswer('r2',0)" disabled><span class="r-letter">A</span>There are actually very few galaxies in the universe</button>
+        <button class="reflect-option" onclick="reflectAnswer('r2',1)" disabled><span class="r-letter">B</span>Galaxies give off no light at all</button>
+        <button class="reflect-option" onclick="reflectAnswer('r2',2)" disabled><span class="r-letter">C</span>Other galaxies are so far away that their light is too faint to see without powerful telescopes</button>
+        <button class="reflect-option" onclick="reflectAnswer('r2',3)" disabled><span class="r-letter">D</span>Earth blocks the light coming from other galaxies</button>
+      </div>
+      <div class="reflect-feedback" id="r2-feedback"></div>
+    </div>
+
+    <!-- R3: why Milky Way images are models -->
+    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.6rem 1.8rem; margin-bottom: 1.5rem;">
+      <p style="font-weight: 800; font-size: 0.97rem; color: var(--text); line-height: 1.6; margin-bottom: 0.2rem;">Posters show the Milky Way as a giant spiral seen from the outside. Why is every one of those images a model, not a real photograph?</p>
+      <div class="reflect-options" id="r3-options">
+        <button class="reflect-option" onclick="reflectAnswer('r3',0)" disabled><span class="r-letter">A</span>No spacecraft has ever traveled far enough outside the galaxy to photograph it from outside</button>
+        <button class="reflect-option" onclick="reflectAnswer('r3',1)" disabled><span class="r-letter">B</span>Cameras are not able to capture galaxies</button>
+        <button class="reflect-option" onclick="reflectAnswer('r3',2)" disabled><span class="r-letter">C</span>The Milky Way is not actually shaped like a spiral</button>
+        <button class="reflect-option" onclick="reflectAnswer('r3',3)" disabled><span class="r-letter">D</span>The real photographs were lost a long time ago</button>
+      </div>
+      <div class="reflect-feedback" id="r3-feedback"></div>
+    </div>
+
+    <!-- Closing return to the phenomenon -->
+    <div class="night-return">
+      <div class="nr-label">🌙 Before You Go</div>
+      <div class="nr-text">Tonight, when you look up at the night sky, what will you understand differently than you did before this lesson?</div>
+      <div class="nr-sub">You started this lesson thinking the night sky might be "the universe." Now you know those stars almost all live in one galaxy, the Milky Way, and that our galaxy is just one of billions. Same sky. Bigger understanding.</div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Have students reason across the whole nested model before the quiz.</li><li>Close by returning to the opening night-sky phenomenon, ending where the lesson began.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Bookend / closure</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded, no time pressure</li><li>Feedback appears right away</li><li>One question at a time</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────────────────── -->
+<!-- QUIZ                                                        -->
+<!-- ────────────────────────────────────────────────────────── -->
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate &middot; Quiz</span>
+    <h2 class="section-title">Earth's Place in the Universe Quiz</h2>
+    <p class="section-desc">10 questions on how Earth fits inside the solar system, the Milky Way, and the universe. Fill in your info below, your score will be sent to your teacher when you submit.</p>
+
+    <!-- Quiz Mode Toggle -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="epuSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="epuSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+
+    <!-- Student Info Box -->
+    <div class="student-info-box" id="student-info-box">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="epu-student-name">Your Name</label>
+          <input type="text" id="epu-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="epu-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="epu-teacher-select">Teacher</label>
+          <select id="epu-teacher-select">
+            <option value="">- Select -</option>
+            <option value="MrBrown">Mr. Brown</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="epu-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="epu-block-select">Block</label>
+          <select id="epu-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="epu-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="epu-progress"></div></div>
+        <div class="progress-text" id="epu-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <div id="epu-quiz-questions"></div>
+
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="epu-submit-btn" onclick="epuSubmitQuiz()" disabled>Submit Quiz</button>
+    </div>
+
+    <div class="score-board" id="epu-score">
+      <div class="big-score" id="epu-score-num"></div>
+      <p id="epu-score-msg"></p>
+      <div id="epu-submit-status"></div>
+      <button class="reset-btn" onclick="epuResetQuiz()">Try Again</button>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Assess the nested model and scale reasoning, not memorized numbers.</li><li>Send results to the teacher for a quick check of understanding.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Plausible, evenly placed options</li><li>Try Again to review missed items</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────────────────────── -->
+<!-- CONTINUE: MORE LEARNING                                     -->
+<!-- ────────────────────────────────────────────────────────── -->
+<section id="continue">
+  <div class="container">
+    <span id="go-further-anchor"></span>
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="section-desc">The lesson is just the beginning. Here is an optional way to go deeper into Earth's place in the universe.</p>
+    <div class="continue-grid" style="text-align:left;">
+
+      <div class="cont-card ext" id="pbd-card" onclick="togglePaleBlueDot(this)">
+        <div class="cont-icon">🔵</div>
+        <div class="cont-name">The Pale Blue Dot</div>
+        <div class="cont-desc">See how one famous photograph changed the way many people think about Earth's place in the universe.</div>
+        <div class="cont-more">In 1990, a spacecraft called Voyager 1 turned its camera back toward home from beyond the outer planets, billions of miles away. In the photo, Earth is not a big blue marble. It is a single pale dot, smaller than a speck, almost lost in the glare of sunlight. Everyone you have ever known, every place you have ever been, all of it fits on that one tiny point of light. The picture became known as the Pale Blue Dot. It is a reminder of exactly what you built in this lesson: Earth is one small planet, in one solar system, in one galaxy, in a universe of billions of galaxies.</div>
+        <span class="cont-link" id="pbd-link">Extension · Read More</span>
+      </div>
+
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer optional depth for students who want to keep going.</li><li>The Pale Blue Dot is an extension, not assessed content. It reinforces the model with an emotional image.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Emotional anchoring</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>No penalty for skipping</li><li>Click to expand, no hover</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">Zooming out changes how the rest of your Earth and Space learning fits together. Here is how these ideas connect.</p>
+    <div class="continue-grid">
+
+      <a class="cont-card lesson" href="lesson_sun-earth-moon.html" aria-label="Sun-Earth-Moon System lesson">
+        <div class="cont-icon">🌌</div>
+        <div class="cont-name">Sun-Earth-Moon System</div>
+        <div class="cont-desc">You learned how our local system moves together. This lesson zooms out to find where that whole system sits: one tiny dot inside a galaxy of billions of stars.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_gravity.html" aria-label="Gravity lesson">
+        <div class="cont-icon">🍎</div>
+        <div class="cont-name">Gravity</div>
+        <div class="cont-desc">Gravity holds the Moon to Earth and Earth to the Sun. The same pull, across unimaginable distance, holds hundreds of billions of stars together as the Milky Way.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_layers-of-time.html" aria-label="Layers of Time lesson">
+        <div class="cont-icon">⏳</div>
+        <div class="cont-name">Layers of Time</div>
+        <div class="cont-desc">Rock layers stretch your thinking across deep time. Cosmic distances stretch it across deep space. Both ask you to reason about scales far beyond everyday life.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ™</div>
+  <p class="footer-tagline">Your middle school science hub · lyfelabz.com · made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<!-- REFLECTION MC ENGINE -->
+<script>
+const reflectData = {
+  r1: {
+    correct: 1,
+    feedback: [
+      'It is the other way around. The Milky Way is far larger than our solar system, and it holds our solar system inside it, not the reverse.',
+      'Correct. Our solar system sits inside the Milky Way, and the Milky Way is one of billions of galaxies inside the universe. Each level holds everything inside it.',
+      'The universe is the largest thing of all. It contains the Milky Way, not the other way around.',
+      'Earth is inside the solar system and the solar system is inside the Milky Way, so Earth is inside both. It is never outside the solar system.'
+    ]
+  },
+  r2: {
+    correct: 2,
+    feedback: [
+      'There are actually billions of galaxies, and each holds billions of stars. The sky looks empty for a different reason.',
+      'Galaxies give off enormous amounts of light. The problem is not that there is no light, it is how far that light has to travel.',
+      'Correct. The objects are real and enormous, but they are spread across distances so vast that their light is far too faint for our eyes. Space is not empty, it is unimaginably spread out.',
+      'Earth is tiny compared to space and does not block the view of distant galaxies. The real reason is distance.'
+    ]
+  },
+  r3: {
+    correct: 0,
+    feedback: [
+      'Correct. We live inside the Milky Way, and no spacecraft has traveled anywhere near far enough to photograph it from outside. The spiral pictures are models built from clues gathered from inside.',
+      'Cameras can photograph galaxies. We have real photos of other galaxies far away. We just cannot get outside our own to photograph it.',
+      'The Milky Way really is a spiral galaxy. The issue is that we cannot get outside it to take the picture.',
+      'The images were never lost. They are models because no real photograph of our galaxy from the outside has ever been possible.'
+    ]
+  }
+};
+
+function reflectAnswer(qid, chosen) {
+  const q       = reflectData[qid];
+  const options = document.querySelectorAll('#' + qid + '-options .reflect-option');
+  const fb      = document.getElementById(qid + '-feedback');
+  if (fb.classList.contains('show')) return;
+  const correct = chosen === q.correct;
+  options.forEach(function(btn, i) {
+    btn.classList.add('r-disabled');
+    btn.disabled = true;
+    if (i === q.correct && !correct) btn.classList.add('r-revealed');
+  });
+  options[chosen].classList.add(correct ? 'r-correct' : 'r-incorrect');
+  fb.textContent = q.feedback[chosen];
+  fb.className   = 'reflect-feedback show ' + (correct ? 'fb-correct' : 'fb-incorrect');
+}
+
+// Enable reflect options after page load
+window.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.reflect-option').forEach(function(btn) {
+    btn.disabled = false;
+  });
+});
+</script>
+
+<!-- PREDICTION / HOOK ENGINE -->
+<script>
+function hookAnswer(btn, choice) {
+  document.querySelectorAll('#hook-options .hook-option').forEach(b => { b.disabled = true; });
+  const msgs = {
+    a: 'Almost, but not quite. Nearly every star you can see with your eyes is inside one galaxy, ours, the Milky Way. The universe holds far more stars than the whole sky shows. Zoom out below to see how much more.',
+    b: '<strong>Exactly right.</strong> Nearly every star you can see at night belongs to our own galaxy, the Milky Way. The whole night sky is a view from inside one galaxy. So where is that galaxy? Let us zoom out and find out.',
+    c: 'Almost every faint smudge you might mistake for a nearby galaxy is really stars inside our own Milky Way. Other galaxies are so far away that only a couple can be seen at all without a telescope. Zoom out below to see where we really are.'
+  };
+  btn.classList.add(choice === 'b' ? 'hook-correct' : 'hook-wrong');
+  const fb = document.getElementById('hook-feedback');
+  fb.style.display = 'block';
+  fb.style.borderLeftColor = choice === 'b' ? 'var(--green)' : 'var(--accent)';
+  fb.innerHTML = msgs[choice];
+}
+</script>
+
+<!-- SESSION CHECK -->
+<script>
+  if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- UTILITY FUNCTIONS -->
+<script>
+function toggleCard(card) {
+  card.classList.toggle('open');
+}
+
+function togglePaleBlueDot(card) {
+  var open = card.classList.toggle('open');
+  var link = document.getElementById('pbd-link');
+  if (link) link.textContent = open ? 'Extension · Show Less' : 'Extension · Read More';
+}
+
+function vocabJump(targetId) {
+  const anchor = document.getElementById(targetId);
+  if (!anchor) return;
+  // Auto-open parent content-card if it's collapsed
+  const parentCard = anchor.closest('.content-card');
+  if (parentCard && !parentCard.classList.contains('open')) {
+    parentCard.classList.add('open');
+  }
+  const top = anchor.getBoundingClientRect().top + window.scrollY - 120;
+  window.scrollTo({ top, behavior: 'smooth' });
+  const entry = anchor.nextElementSibling;
+  const el    = (entry && entry.classList.contains('vocab-entry'))
+                  ? entry.querySelector('.vterm')
+                  : anchor;
+  if (!el) return;
+  setTimeout(() => {
+    el.classList.remove('pulsing');
+    void el.offsetWidth;
+    el.classList.add('pulsing');
+    el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+  }, 600);
+}
+</script>
+
+<!-- SIGNATURE INTERACTIVE: NESTED ZOOM MODEL ENGINE -->
+<script>
+(function(){
+  const zoomLevels = [
+    {
+      name: 'Earth',
+      desc: 'This is home. Everything and everyone you have ever known lives on this one planet. Now let us zoom out, step by step, and see where Earth sits. Watch how each new view still contains the one before it.',
+      next: 'Zoom Out to the Solar System →'
+    },
+    {
+      name: 'The Solar System',
+      desc: 'Zoom out and Earth becomes one small planet circling the Sun. The Sun and everything its gravity holds, the planets, moons, and smaller objects, make up our solar system. Earth is the tiny marked dot on the third path. It is still there, just smaller.',
+      next: 'Zoom Out to the Milky Way →'
+    },
+    {
+      name: 'The Milky Way Galaxy',
+      desc: 'Zoom out much farther and our whole solar system shrinks to a single point on one spiral arm. The Sun is just one of hundreds of billions of stars in the Milky Way. Almost every star you see at night lives right here, in our galaxy.',
+      next: 'Zoom Out to the Universe →'
+    },
+    {
+      name: 'The Universe',
+      desc: 'Zoom out as far as we can and the entire Milky Way becomes one dot of light. Our galaxy is just one of billions of galaxies scattered across the universe. Each faint smudge here is a whole galaxy, full of billions of stars of its own. That is Earth\'s place in the universe.',
+      next: '↺ Start Over at Earth'
+    }
+  ];
+
+  let cur = 0;
+  const nameEl  = document.getElementById('zoom-name');
+  const descEl  = document.getElementById('zoom-desc');
+  const btnEl   = document.getElementById('zoom-btn');
+  const hintEl  = document.getElementById('zoom-hint');
+  const steps   = document.querySelectorAll('#zoom-ladder .zoom-step');
+  const scenes  = document.querySelectorAll('.zoom-scene');
+
+  function render(){
+    scenes.forEach((s, i) => s.classList.toggle('active', i === cur));
+    steps.forEach((s, i) => {
+      s.classList.toggle('active', i === cur);
+      s.classList.toggle('done', i < cur);
+    });
+    nameEl.textContent = zoomLevels[cur].name;
+    descEl.textContent = zoomLevels[cur].desc;
+    btnEl.textContent  = zoomLevels[cur].next;
+    hintEl.textContent = 'Step ' + (cur + 1) + ' of 4';
+  }
+
+  window.zoomStep = function(){
+    cur = (cur + 1) % zoomLevels.length;
+    render();
+  };
+
+  render();
+})();
+</script>
+
+<!-- Quick Recall wiring -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+    if (!opts || !checkBtn) return;
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) { fb.className = 'qr-feedback visible no'; fb.textContent = 'Pick an answer first.'; return; }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok'; fb.textContent = okMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no'; fb.textContent = noMsg;
+        checkBtn.style.display = 'none'; retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback'; fb.textContent = '';
+      retryBtn.style.display = 'none'; checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+  wireQR('qr1', 0,
+    'Correct! Smallest to largest goes Earth, solar system, Milky Way, universe. Each one sits inside the next.',
+    'Not quite. Start at Earth, then the solar system, then the Milky Way, then the universe. Each fits inside the next.');
+  wireQR('qr2', 1,
+    'Correct! Almost every star you see at night belongs to our own galaxy, the Milky Way.',
+    'Not quite. Nearly every star you can see with your eyes lives inside our own galaxy, the Milky Way.');
+  wireQR('qr3', 2,
+    'Correct! The Milky Way is just one of billions of galaxies in the universe.',
+    'Not quite. The Milky Way is not the only galaxy and not the center of anything. It is one of billions of galaxies.');
+})();
+</script>
+
+<!-- QUIZ ENGINE -->
+<script>
+const EPU_SCRIPT_URLS = {
+  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+
+const epuQuizQuestions = [
+  {
+    q: "Which list shows the correct order from smallest to largest?",
+    options: [
+      "Milky Way, universe, solar system, Earth",
+      "Solar system, Earth, universe, Milky Way",
+      "Earth, solar system, Milky Way, universe",
+      "Universe, Milky Way, solar system, Earth"
+    ],
+    correct: 2,
+    explanation: "From smallest to largest: Earth sits inside the solar system, the solar system sits inside the Milky Way, and the Milky Way is one of billions of galaxies inside the universe."
+  },
+  {
+    q: "When you look up at the night sky, almost every star you see is part of what?",
+    options: [
+      "A different galaxy far away",
+      "Our own galaxy, the Milky Way",
+      "The Sun's surface",
+      "The Andromeda galaxy"
+    ],
+    correct: 1,
+    explanation: "Nearly every star you can see with your eyes belongs to our own galaxy, the Milky Way. The night sky is a view from inside our galaxy."
+  },
+  {
+    q: "What is the Milky Way?",
+    options: [
+      "The solar system that contains Earth",
+      "Another name for the entire universe",
+      "A single, very large star",
+      "The galaxy that contains our solar system"
+    ],
+    correct: 3,
+    explanation: "The Milky Way is our home galaxy. It contains our solar system plus hundreds of billions of other stars."
+  },
+  {
+    q: "Which statement about our Sun is correct?",
+    options: [
+      "It is one ordinary star among hundreds of billions in the Milky Way",
+      "It is the largest star in the entire universe",
+      "It is the exact center of the universe",
+      "It is the only star in the Milky Way"
+    ],
+    correct: 0,
+    explanation: "The Sun is one ordinary star among the hundreds of billions in the Milky Way. It looks huge and bright to us only because it is so close."
+  },
+  {
+    q: "The Milky Way is best described as which of these?",
+    options: [
+      "The only galaxy that exists",
+      "The exact center of the universe",
+      "One of billions of galaxies in the universe",
+      "A small group of nearby planets"
+    ],
+    correct: 2,
+    explanation: "The Milky Way is one of billions of galaxies scattered across the universe. It is not the only galaxy, and it is not the center of anything."
+  },
+  {
+    q: "What is a galaxy?",
+    options: [
+      "A single planet and its moons",
+      "An enormous collection of stars, gas, and dust held together by gravity",
+      "The curved path a planet takes around a star",
+      "A tool scientists use to measure distance"
+    ],
+    correct: 1,
+    explanation: "A galaxy is an enormous collection of stars, gas, and dust held together by gravity. A single galaxy can hold hundreds of billions of stars."
+  },
+  {
+    q: "Why do scientists use models, like a zoom-out diagram, to show Earth's place in the universe?",
+    options: [
+      "Because the universe is actually very small",
+      "Because models are always perfectly exact copies",
+      "Because photographs of space are not allowed",
+      "Because the real distances are far too large to show at true size"
+    ],
+    correct: 3,
+    explanation: "Space is far too large to draw at true size, so scientists use models and scale to help us picture where Earth fits."
+  },
+  {
+    q: "A light-year is a measure of what?",
+    options: [
+      "Distance, how far light travels in one year",
+      "How old a star is",
+      "The time it takes Earth to orbit the Sun",
+      "How bright a galaxy is"
+    ],
+    correct: 0,
+    explanation: "A light-year is a distance, not a time. It is how far light travels in one year. Scientists use it because space is far too big to measure in miles."
+  },
+  {
+    q: "Space is full of galaxies, yet the night sky looks mostly dark and empty. Why?",
+    options: [
+      "There are only a few galaxies in the universe",
+      "Galaxies do not give off any light",
+      "Most galaxies are so far away that their light is too faint to see without telescopes",
+      "The Moon hides the other galaxies from view"
+    ],
+    correct: 2,
+    explanation: "Space is not empty. The galaxies are real and enormous, but they are so far away that their light is too faint for our eyes without powerful telescopes."
+  },
+  {
+    q: "Which statement best describes where Earth fits in the universe?",
+    options: [
+      "Earth is the center of the Milky Way",
+      "Earth is one planet in the solar system, which is part of the Milky Way, which is one of billions of galaxies",
+      "Earth is the largest object in the solar system",
+      "Earth sits outside the Milky Way"
+    ],
+    correct: 1,
+    explanation: "Earth is one planet in the solar system, the solar system is one part of the Milky Way, and the Milky Way is one of billions of galaxies in the universe. That is the whole nested model."
+  }
+];
+
+const epuQuizState = { selected: [], submitted: false };
+let epuQuizMode = 'practice';
+
+function epuSetQuizMode(mode) {
+  epuQuizMode = mode;
+  const infoBox       = document.getElementById('student-info-box');
+  const btnPractice   = document.getElementById('btn-practice');
+  const btnClassroom  = document.getElementById('btn-classroom');
+  const hintPractice  = document.getElementById('hint-practice');
+  const hintClassroom = document.getElementById('hint-classroom');
+
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+
+// Auto-set mode from URL param
+(function () {
+  const params    = new URLSearchParams(window.location.search);
+  const modeParam = params.get('mode');
+  if (modeParam === 'classroom') {
+    epuSetQuizMode('classroom');
+  } else {
+    epuSetQuizMode('practice');
+  }
+})();
+
+function epuBuildQuiz() {
+  const container = document.getElementById('epu-quiz-questions');
+  container.innerHTML = '';
+  epuQuizState.selected  = new Array(epuQuizQuestions.length).fill(null);
+  epuQuizState.submitted = false;
+  document.getElementById('epu-submit-btn').disabled = true;
+  epuUpdateProgress();
+  epuQuizQuestions.forEach((q, qi) => {
+    const letters = ['A', 'B', 'C', 'D'];
+    const optionsHTML = q.options.map((opt, oi) => `
+      <button class="quiz-option" onclick="epuSelectAnswer(${qi}, ${oi})" id="epu-q-${qi}-${oi}">
+        <span class="option-letter">${letters[oi]}</span><span>${opt}</span>
+      </button>`).join('');
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML = `
+      <div class="quiz-header">
+        <div class="quiz-num">${qi + 1}</div>
+        <div class="quiz-question-text">${q.q}</div>
+      </div>
+      <div class="quiz-options">${optionsHTML}</div>
+      <div class="option-feedback" id="epu-feedback-${qi}"></div>`;
+    container.appendChild(card);
+  });
+}
+
+function epuSelectAnswer(qi, chosenIndex) {
+  if (epuQuizState.submitted) return;
+  const prev = epuQuizState.selected[qi];
+  if (prev !== null) document.getElementById(`epu-q-${qi}-${prev}`).classList.remove('selected');
+  epuQuizState.selected[qi] = chosenIndex;
+  document.getElementById(`epu-q-${qi}-${chosenIndex}`).classList.add('selected');
+  epuUpdateProgress();
+  document.getElementById('epu-submit-btn').disabled = !epuQuizState.selected.every(s => s !== null);
+}
+
+function epuUpdateProgress() {
+  const total    = epuQuizQuestions.length;
+  const answered = epuQuizState.selected.filter(s => s !== null).length;
+  document.getElementById('epu-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('epu-progress-text').textContent = `${answered} / ${total} selected`;
+}
+
+function epuValidateStudentInfo() {
+  const name    = document.getElementById('epu-student-name').value.trim();
+  const teacher = document.getElementById('epu-teacher-select').value;
+  const block   = document.getElementById('epu-block-select').value;
+  document.getElementById('epu-err-name').classList.toggle('show',    !name);
+  document.getElementById('epu-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('epu-err-block').classList.toggle('show',   !block);
+  return { valid: !!(name && teacher && block), name, teacher, block };
+}
+
+function epuSubmitQuiz() {
+  if (epuQuizState.submitted) return;
+
+  if (epuQuizMode === 'classroom') {
+    const { valid } = epuValidateStudentInfo();
+    if (!valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+
+  epuQuizState.submitted = true;
+  document.getElementById('epu-submit-btn').disabled = true;
+
+  let correct = 0;
+  epuQuizQuestions.forEach((q, qi) => {
+    const chosen    = epuQuizState.selected[qi];
+    const isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach((_, oi) => {
+      const btn = document.getElementById(`epu-q-${qi}-${oi}`);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById(`epu-q-${qi}-${chosen}`).classList.add(isCorrect ? 'correct' : 'incorrect');
+    const fb = document.getElementById(`epu-feedback-${qi}`);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+
+  const total = epuQuizQuestions.length;
+  const pct   = Math.round(correct / total * 100);
+  const score = `${correct}/${total}`;
+  const msg   = pct === 100 ? '🏆 Perfect score! You know exactly where Earth fits in the universe!'
+    : pct >= 80 ? '⭐ Great work! You clearly studied, review any you missed.'
+    : pct >= 60 ? '📚 Good effort! Go back over the lesson notes and try again.'
+    : '💪 Keep going, re-read each section carefully. You\'ve got this!';
+
+  document.getElementById('epu-score-num').textContent = score;
+  document.getElementById('epu-score-msg').textContent = msg;
+  const sb = document.getElementById('epu-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (pct === 100) {
+    epuQuizState.continueTimer = setTimeout(() => {
+      const more = document.getElementById('go-further-anchor');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  if (epuQuizMode === 'practice') {
+    document.getElementById('epu-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode, score not submitted</div>';
+    return;
+  }
+
+  const { name, teacher, block } = epuValidateStudentInfo();
+  const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  const params = new URLSearchParams({
+    tab: 'Earths-Place-Universe', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%'
+  });
+  fetch(EPU_SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(() => {
+      document.getElementById('epu-submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+    })
+    .catch(() => {
+      document.getElementById('epu-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+}
+
+function epuResetQuiz() {
+  if (epuQuizState.continueTimer) {
+    clearTimeout(epuQuizState.continueTimer);
+    epuQuizState.continueTimer = null;
+  }
+  document.getElementById('epu-score').classList.remove('show');
+  document.getElementById('epu-submit-status').innerHTML = '';
+  epuBuildQuiz();
+  const quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  const target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+epuBuildQuiz();
+</script>
+
+<!-- LOCALSTORAGE: Save/restore student info across sessions -->
+<script>
+(function () {
+  const LS_KEY = 'lyfelabz-earths-place-universe-info';
+  const nameEl    = document.getElementById('epu-student-name');
+  const teacherEl = document.getElementById('epu-teacher-select');
+  const blockEl   = document.getElementById('epu-block-select');
+
+  // Restore saved values
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    if (saved.name)    nameEl.value    = saved.name;
+    if (saved.teacher) teacherEl.value = saved.teacher;
+    if (saved.block)   blockEl.value   = saved.block;
+  } catch (e) {}
+
+  // Save on change
+  function save() {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({
+        name: nameEl.value, teacher: teacherEl.value, block: blockEl.value
+      }));
+    } catch (e) {}
+  }
+  nameEl.addEventListener('input',  save);
+  teacherEl.addEventListener('change', save);
+  blockEl.addEventListener('change',   save);
+})();
+</script>
+
+<!-- STARFIELD -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,
+      a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200,220,240,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</body>
+</html>
