@@ -1019,6 +1019,34 @@
       </svg>
     </div>
 
+    <!-- REASONING MOMENT: Coastline prediction -->
+    <script>
+    var driftHookPredicted = false;
+    function driftHookPick(btn, isCorrect) {
+      if (driftHookPredicted) return;
+      driftHookPredicted = true;
+      var card = document.getElementById('predict-coastline');
+      var opts = card.querySelectorAll('.apply-opt');
+      opts.forEach(function(o) { o.disabled = true; o.classList.add('ao-incorrect'); });
+      btn.classList.remove('ao-incorrect');
+      btn.classList.add(isCorrect ? 'ao-correct' : 'ao-incorrect');
+      document.getElementById('drift-hook-feedback').classList.add('show');
+    }
+    </script>
+
+    <div class="predict-card" id="predict-coastline" style="max-width:680px;">
+      <div class="predict-pill">Make a Prediction</div>
+      <div class="predict-q">The coastlines fit almost perfectly. What is the best explanation?</div>
+      <div class="apply-options">
+        <button class="apply-opt" onclick="driftHookPick(this, false)">A, It is a coincidence, plenty of coastlines happen to look alike</button>
+        <button class="apply-opt" onclick="driftHookPick(this, true)">B, The two continents were once joined and later drifted apart</button>
+        <button class="apply-opt" onclick="driftHookPick(this, false)">C, Ocean waves slowly carved both coasts into matching shapes</button>
+      </div>
+      <div class="apply-feedback" id="drift-hook-feedback">
+        Wegener made the same prediction, option B. But a matching shape is only a starting clue, not proof. A careful scientist asks what other evidence would turn up if the continents really had been connected. That is exactly what the rest of this lesson investigates.
+      </div>
+    </div>
+
     <div class="callout gold" style="max-width:680px;">
       <span class="callout-icon">&#129300;</span>
       <div class="callout-body"><strong>Think about it:</strong> If you can only look at the shape of the coastlines (without any other information) does that feel like enough evidence to claim the continents were once connected? Keep that question in mind as we go.</div>
