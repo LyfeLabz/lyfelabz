@@ -474,6 +474,63 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
 .ls-badge[data-tip]::before { content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(255,255,255,0.11); pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 999; }
 .ls-badge[data-tip]:hover::after, .ls-badge[data-tip]:hover::before { opacity: 1; }
 @media (max-width: 480px) { .ls-badge[data-tip]::after, .ls-badge[data-tip]::before { display: none; } body.ls-active .ls-focus { max-width: calc(100% - 2.4rem); padding: 0.75rem 1rem; gap: 0.4rem 0.5rem; } }
+
+/* ── EDUCATOR MODE NOTES ── */
+.edu-note { display: none; }
+body.ls-active .edu-note {
+  display: block; max-width: 760px; margin: 2.5rem auto 0;
+  padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+  background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+  border-left: 4px solid var(--blue); border-radius: 14px;
+  animation: lsFadeIn 0.35s ease both;
+}
+.edu-note-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(122,143,166,0.8); margin-bottom: 1rem; }
+.edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+@media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+.edu-note-head { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(59,200,232,0.75); margin-bottom: 0.35rem; }
+.edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+ul.edu-note-text li { margin-bottom: 0.2rem; }
+ul.edu-note-text li:last-child { margin-bottom: 0; }
+
+/* ── PREDICT BEFORE REVEAL ── */
+.question-pause {
+  max-width: 760px; margin: 0 auto 2rem; padding: 1.2rem 1.5rem;
+  background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+}
+.question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+.question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+.question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+.question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+.predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+.predict-btn {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+  padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+}
+.predict-btn:hover:not(.locked) { border-color: rgba(52,152,219,0.55); background: rgba(52,152,219,0.1); }
+.predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+.predict-btn.chosen { border-color: var(--blue); background: rgba(52,152,219,0.18); color: #9ed2f5; }
+.predict-btn.chosen .pb-letter { color: #9ed2f5; }
+.question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+.question-pause.locked .predict-btn.chosen { opacity: 1; }
+.predict-gated { display: none; }
+.predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+@keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── PREDICTION REVEAL ── */
+.name-it {
+  background: var(--card); border: 1px solid var(--border);
+  border-left: 4px solid var(--blue); border-radius: 14px;
+  padding: 1.4rem 1.6rem; max-width: 760px; margin: 0 auto 2rem;
+}
+.name-it-label {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: #9ed2f5; margin-bottom: 0.4rem;
+}
+.name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; margin: 0; }
+.name-it p strong { font-weight: 800; }
 </style>
 
 <!-- STE Standards Badges -->
@@ -659,6 +716,29 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
         <span class="goal-icon">🛡️</span>
         <div class="goal-text">I can use a strategy like S.T.O.P. to respond instead of react.</div>      </div>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Set transparent targets for a media literacy and behavioral science lesson.</li><li>Frame the goal as building a skill (responding, not reacting), not memorizing terms.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Student-facing "I can" language</li><li>One goal per card, short lines</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -720,6 +800,29 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
         <div class="gc-body"><div class="gc-def">The skill of analyzing media critically: who made it, why, and whether it is worth trusting.</div></div>
       </button>
 
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Pre-teach the terms students will meet in the science and defense sections.</li><li>Lower reading load before the explanations begin.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -784,6 +887,29 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
     <div class="bridge-callout">
       <strong>This isn't accidental.</strong> Rage bait is deliberately engineered to exploit how your brain is wired. The next section explains exactly what's happening inside your head, and why even smart, critical people fall for it every time.
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name the phenomenon students already experience, so the lesson starts from their lives.</li><li>Establish that anger is engineered, not accidental, before the science explains how.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Activating prior experience</li><li>Concrete before abstract</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Short, numbered concept cards</li><li>The cycle is shown as clear sequential steps</li><li>Emotionally neutral, sample content only</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -795,6 +921,24 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
     <span class="section-label">Explore &middot; The Science</span>
     <h2 class="section-title">The Science Behind the Bait</h2>
     <p class="section-desc">This isn't just a theory, researchers have studied exactly how and why rage bait works at the biological, psychological, and algorithmic level.</p>
+
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-bait">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Three posts scroll past in your feed. Before you learn the science, which one do you think is most likely to hijack your attention and pull a fast reaction out of you?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>A calm explainer: "How Do Rainbows Form?" with a labeled diagram.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>"This generation is SO LAZY!!! Share if you agree 😤"</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>A local library posting its summer reading hours.</button>
+      </div>
+    </div>
+
+    <div class="name-it predict-gated" data-gate="qp-bait">
+      <div class="name-it-label">Here's the idea</div>
+      <p>Most people pick <strong>B</strong>, and for a reason. Anger and outrage grab attention faster than calm or neutral content, so your brain reacts before you decide to. That is not a personal weakness; it is exactly the pattern the research below explains and the reason creators engineer anger on purpose.</p>
+    </div>
 
     <div class="research-grid">
       <div class="research-card">
@@ -834,6 +978,29 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
       <h3>Why Your Brain Falls for It, Every Time</h3>
       <p>Rage bait is not a willpower problem; it is a neuroscience problem. The <strong style="color:var(--text);">amygdala</strong>, the brain's threat-detection center, processes emotionally charged stimuli <em>before</em> the prefrontal cortex (responsible for rational thinking) even activates. By the time you are thinking clearly, the emotional reaction has already begun.</p>
       <p>This is sometimes called the <strong style="color:var(--text);">amygdala hijack</strong>, a split-second emotional response that bypasses slow, deliberate reasoning. Rage bait creators know this. The hook has to land before your brain can evaluate whether the content is even real.</p>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Open with a prediction so students commit a guess before the mechanism is revealed.</li><li>Explain attention capture as neuroscience, so the reaction feels normal, not shameful.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Prediction commits attention</li><li>Evidence-based conceptual change</li><li>Reframing self-blame as brain wiring</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>No penalty for a wrong prediction</li><li>Sources cited and linked</li><li>Supports emotional regulation by normalizing the reaction</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -931,6 +1098,29 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
     <div style="text-align:center;margin-top:0.5rem;">
       <button class="btn-link" onclick="resetGame()">↺ Reset Challenge</button>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Move students from knowing the definition to applying it to real-looking posts.</li><li>Build the habit of pausing to judge content before reacting.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Active learning</li><li>Immediate feedback</li><li>Discrimination between bait and safe content</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to toggle, verdict explained each time</li><li>Reset lets students retry freely</li><li>Fictional handles keep examples safe</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1007,6 +1197,29 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
         <div class="c-icon" style="background:rgba(59,200,232,0.12)">🛡️</div>
         <h4>Psychological Safety</h4>
         <p>When people don't feel safe, they stop taking risks, and stop learning.</p>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Transfer the online idea to in-person provocation students actually witness.</li><li>Name the classroom cost of provoking for a reaction.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Transfer across contexts</li><li>Relevance raises motivation</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Keep discussion about tactics, not specific classmates</li><li>Set norms before opening personal sharing</li><li>Side-by-side comparison layout</li></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -1093,6 +1306,29 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
       </div>
       <div class="cta-footer-text">You are old enough to choose.</div>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Place rage bait on a spectrum with manipulation and gaslighting.</li><li>Give students language for more serious behavior they may encounter.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Building a concept hierarchy</li><li>Worked examples for each level</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>If gaslighting hits close to home, invite a private check-in</li><li>Definitions sourced to APA and Psychology Today</li><li>Neutral, generic examples</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1165,6 +1401,29 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
         </div>
       </div>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Turn awareness into a portable, repeatable response strategy.</li><li>Give students a concrete tool (S.T.O.P.) for the moment anger spikes.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>If-then implementation intentions</li><li>Self-regulation and emotional regulation</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Checklist with large tap targets</li><li>A four-step method that is easy to recall</li><li>Progress feedback as boxes are checked</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1224,6 +1483,29 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
         <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
       </div>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Pull the three core ideas back from memory before students reflect and quiz.</li><li>Catch misconceptions early with low stakes.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Spaced review</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain-language questions</li><li>Immediate feedback</li><li>Try Again with no penalty</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1253,6 +1535,29 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
       <div class="reflect-q">In your own words, how would you explain rage bait to a friend who has never heard of it? What is the single most important thing you would want them to understand?</div>
       <textarea class="reflect-area" id="reflect3" placeholder="Write your thoughts here..." oninput="saveReflect()"></textarea>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Have students explain the idea in their own words to consolidate it.</li><li>Connect the concept to a personal plan they can actually use.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generative learning and self-explanation</li><li>Metacognition</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Evaluate</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>No right or wrong answers stated up front</li><li>Responses autosave locally, never sent</li><li>Open prompts allow varied depth</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1263,7 +1568,7 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
   <div class="container">
     <span class="section-label">Evaluate &middot; Quiz</span>
     <h2 class="section-title">Don't Take the Bait, Quiz</h2>
-    <p class="section-desc">Five questions covering rage bait, the algorithm, and how to respond. Answer all five, then submit.</p>
+    <p class="section-desc">Ten questions covering rage bait, the algorithm, and how to respond. Answer all ten, then submit.</p>
 
     <div class="quiz-mode-toggle">
       <button class="mode-btn active" id="btn-practice"  onclick="rbSetQuizMode('practice')">Practice Mode</button>
@@ -1312,7 +1617,7 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
     <div class="quiz-progress-sticky">
       <div class="quiz-progress">
         <div class="progress-bar"><div class="progress-fill" id="rb-progress"></div></div>
-        <div class="progress-text" id="rb-progress-text">0 / 5 selected</div>
+        <div class="progress-text" id="rb-progress-text">0 / 10 selected</div>
       </div>
     </div>
 
@@ -1327,6 +1632,29 @@ body.ls-active .ls-focus { display: flex; align-items: center; justify-content: 
       <p id="rb-score-msg"></p>
       <div id="rb-submit-status"></div>
       <button class="reset-btn" onclick="rbResetQuiz()">Try Again</button>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check the four goals with ten items spanning recognition, evidence, and response.</li><li>Turn each wrong answer into a short re-teach through the explanation.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback-driven correction</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Practice mode needs no personal info</li><li>Answer positions balanced across A to D</li><li>Explanation shown after each item</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1615,6 +1943,61 @@ const rbQuizQuestions = [
     ],
     correct: 3,
     explanation: "Any engagement (even angry commenting or sharing with a warning) still feeds the algorithm and rewards the creator. Not engaging at all is the most powerful move you have."
+  },
+  {
+    q: "A headline shouts \"You WON'T BELIEVE what this teacher did!!!\" in all caps. What makes this a rage bait warning sign?",
+    options: [
+      "The shock hook and all-caps are built to spike emotion fast",
+      "It was written by a verified news organization that follows careful editorial standards",
+      "It includes a calm, sourced explanation of what actually happened",
+      "It asks you to slow down and verify the claim before reacting"
+    ],
+    correct: 0,
+    explanation: "\"You won't believe\" hooks and all-caps are designed to trigger emotion before your thinking brain can check the facts. Calm, sourced, verify-first framing is the opposite of rage bait."
+  },
+  {
+    q: "Why can rage bait \"hijack\" your attention before you even decide to react?",
+    options: [
+      "Your eyes read words faster than your brain can store new memories",
+      "Your amygdala fires an emotional response before your thinking brain catches up",
+      "Your prefrontal cortex instantly blocks all incoming emotion",
+      "Your brain treats every post in your feed as equally important"
+    ],
+    correct: 1,
+    explanation: "The amygdala detects emotional threats and reacts in a split second, before the slower prefrontal cortex can weigh in. Rage bait is designed to land in that gap."
+  },
+  {
+    q: "Two posts make the same claim. Which one is showing you stronger evidence rather than manipulative framing?",
+    options: [
+      "The one covered in angry-face emojis",
+      "The one written in the biggest, boldest capital letters",
+      "The one that warns \"share this before they delete it\"",
+      "The one that links to a named source you can check"
+    ],
+    correct: 3,
+    explanation: "Strong evidence can be traced to a named, checkable source. Urgency, all-caps, and emotional emojis are framing tricks, not evidence."
+  },
+  {
+    q: "You feel a hot spike of anger the instant you read a post. Using the S.T.O.P. method, what is the first move?",
+    options: [
+      "Stop and take a breath before reacting",
+      "Immediately reply with the strongest argument you can think of",
+      "Screenshot it and send it to everyone in your group chat",
+      "Quote-share it so your followers can pile on too"
+    ],
+    correct: 0,
+    explanation: "The \"S\" in S.T.O.P. is Stop. Pausing for a breath gives your prefrontal cortex time to catch up to your amygdala, so you respond by choice instead of reflex."
+  },
+  {
+    q: "Someone in class says something outrageous just to get a big reaction from everyone. How is this like online rage bait?",
+    options: [
+      "It is completely different because no algorithm is involved",
+      "It only counts as rage bait when it happens on a phone",
+      "It uses provocation to capture attention and turn a reaction into social power",
+      "It is harmless because it happens face to face"
+    ],
+    correct: 2,
+    explanation: "Online and in person, the mechanic is the same: provoke a reaction, capture attention, and convert that attention into influence or a laugh. The stage changes, the tactic does not."
   }
 ];
 
@@ -1904,6 +2287,23 @@ function draw(t) {
 window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
 resize();
 requestAnimationFrame(draw);
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
 </script>
 
 <!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->

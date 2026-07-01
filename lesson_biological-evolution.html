@@ -178,6 +178,62 @@
   }
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
+  /* ── EDUCATOR MODE NOTES ── */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(122,143,166,0.8); margin-bottom: 1rem; }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(159,184,204,0.75); margin-bottom: 0.35rem; }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
+  /* ── PREDICT BEFORE REVEAL ── */
+  .question-pause {
+    max-width: 760px; margin: 2rem auto; padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 14px;
+  }
+  .question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+  .question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+  .question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+  .question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+  .predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .predict-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+  .predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+  .predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+  .predict-btn.chosen .pb-letter { color: var(--gold); }
+  .question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+  .question-pause.locked .predict-btn.chosen { opacity: 1; }
+  .predict-gated { display: none; }
+  .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+  @keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── PREDICTION REVEAL ── */
+  .name-it {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 14px;
+    padding: 1.4rem 1.6rem; max-width: 760px; margin: 0 auto 2rem;
+  }
+  .name-it-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; margin: 0; }
+  .name-it p strong { font-weight: 800; }
 
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
@@ -756,6 +812,29 @@
         <span class="goal-std">6.MS-LS4-1</span>
       </div>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Set transparent targets tied to the LS4 standards.</li><li>Frame evolution as an evidence-based argument, not memorized vocabulary.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Student-facing goal language</li><li>One goal per card, short lines</li><li>Standard badge kept separate from the goal text</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -878,6 +957,29 @@
       </button>
 
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Pre-teach the key terms before students meet them in context.</li><li>Lower reading load during the explanation that follows.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain definitions with a jump to context</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 <script>
@@ -913,6 +1015,24 @@
         <h3>The Whale That Could Walk</h3>
         <p>Ambulocetus natans ("the walking whale that swims") lived 48 million years ago. It had four legs for walking, webbed feet for paddling, and a flexible spine that could power it through water. It was neither fully land animal nor fully sea creature. That in-between state is exactly what makes it extraordinary: it's evolution caught in the act.</p>
       </div>
+    </div>
+
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-evo">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> A fossil with legs for walking AND webbed feet for swimming seems strange. Before scientists explain it, what do you think a half-land, half-sea fossil like this tells us?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>It was a single sick or deformed animal that did not survive long.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>The legs and the webbed feet are a coincidence with no connection to each other.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>It captures a population partway through changing from land animals into ocean animals over many generations.</button>
+      </div>
+    </div>
+
+    <div class="name-it predict-gated" data-gate="qp-evo">
+      <div class="name-it-label">Here's the idea</div>
+      <p>The best answer is <strong>C</strong>. Ambulocetus is a transitional fossil. It is not one broken animal; it is a snapshot of an entire population caught between two ways of life. Fossils like this let us read how organisms from the past slowly changed, and that is exactly what the rest of this section explains.</p>
     </div>
 
     <div class="content-card" id="card-overview">
@@ -1081,6 +1201,29 @@
         </div>
       </div>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor evolution in a real transitional fossil before any mechanism is named.</li><li>Force a prediction so the explanation has something to resolve.</li><li>Build natural selection as a repeating cause-and-effect cycle.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Phenomenon-based learning</li><li>Prediction commits attention</li><li>Interactive diagram supports schema building</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Clickable cycle steps paired with text</li><li>No penalty for a wrong prediction</li><li>Content chunked into short cards</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1187,6 +1330,29 @@
       </div>
 
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Show that several independent lines of evidence point to the same conclusion.</li><li>Let students explore each evidence type at their own pace.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Convergent evidence builds argument</li><li>Self-paced reveal manages load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to expand each card</li><li>Icons paired with labels</li><li>A concrete example for every type</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1236,6 +1402,29 @@
       <div class="qr-actions">
         <button class="qr-check" id="qr1Check">Check Answer</button>
         <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Interrupt the explore phase with a low-stakes retrieval check.</li><li>Surface the "population, not individual" idea before comparing structures.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Spaced review</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One question in plain language</li><li>Immediate feedback</li><li>Try Again with no penalty</li></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -1328,6 +1517,29 @@
         </ul>
       </div>
     </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Contrast homologous, analogous, and vestigial structures side by side.</li><li>Prevent the common mix-up between "same structure" and "same job".</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interleaving</li><li>Discrimination between look-alike concepts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Parallel card layout</li><li>Short rule tags</li><li>Familiar examples</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1403,6 +1615,29 @@
       <p id="be-score-msg"></p>
       <div id="be-submit-status"></div>
       <button class="reset-btn" onclick="beResetQuiz()">Try Again</button>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Give students a check aligned to the four goals.</li><li>Turn wrong answers into re-teaching through explanations.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback-driven correction</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Practice mode needs no personal info</li><li>Balanced answer positions</li><li>Explanation shown after each item</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1811,6 +2046,23 @@ function draw(t) {
 }
 window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
 resize(); requestAnimationFrame(draw);
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
 </script>
 
 <!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
