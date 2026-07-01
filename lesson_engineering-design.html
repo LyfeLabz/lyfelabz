@@ -2674,6 +2674,12 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
 .cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
 .cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
 .cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+.cont-card.chal { background: rgba(255,84,112,0.08); border: 1px solid rgba(255,84,112,0.38); }
+.cont-card.chal::before { background: linear-gradient(90deg, #ff8a9c, #ff5470); }
+.cont-card.chal:hover { border-color: rgba(255,84,112,0.7); box-shadow: 0 14px 40px rgba(255,84,112,0.18); transform: translateY(-4px); }
+.cont-card.chal .cont-icon { background: rgba(255,84,112,0.2); }
+.cont-card.chal .cont-cat { color: #ff8095; }
+.cont-card.chal .cont-link { background: rgba(255,84,112,0.1); border-color: rgba(255,84,112,0.3); color: #ff8095; }
 .cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
 .cont-body { flex: 1; }
 .coming-soon-tag { display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.8rem; border-radius: 99px; border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted); background: rgba(122,143,166,0.06); margin-top: 0.7rem; }
@@ -2754,6 +2760,13 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
         <div class="cont-name">Design Tradeoffs</div>
         <div class="cont-desc">Once you can run the design process, the hard part begins: no solution wins at everything. See how engineers weigh strength, cost, and safety to choose between competing designs.</div>
         <span class="cont-link">Explore</span>
+      </a>
+      <a href="challenge_welcome-to-floatia.html" class="cont-card chal">
+        <div class="cont-icon">🛟</div>
+        <div class="cont-cat">Engineering Challenge</div>
+        <div class="cont-name">Welcome to Floatia</div>
+        <div class="cont-desc">Here the design process stops being steps to read and becomes something you do. Floatia asks you to define a problem, build a prototype, test it, and improve it, the whole cycle in your own hands.</div>
+        <span class="cont-link">Take the challenge</span>
       </a>
     </div>
   </div>

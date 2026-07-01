@@ -649,6 +649,14 @@
     font-weight: 700;
   }
   .ulink.dis:hover { background: rgba(180,127,255,0.45); border-color: rgba(180,127,255,0.85); color: var(--astro); }
+  /* Engineering Challenge: distinct crimson pill, its own resource type */
+  .ulink.chal {
+    background: rgba(255,84,112,0.22);
+    color: #ff8095;
+    border-color: rgba(255,84,112,0.6);
+    font-weight: 700;
+  }
+  .ulink.chal:hover { background: rgba(255,84,112,0.38); border-color: rgba(255,84,112,0.9); color: #ff8095; }
 
 /* ===== PILL LEGEND ===== */
   .pill-legend {
@@ -960,7 +968,6 @@
       <button class="filter-pill fp-grade active" data-grade="all">All Grades</button>
       <button class="filter-pill fp-grade" data-grade="6">Grade 6</button>
       <button class="filter-pill fp-grade" data-grade="7">Grade 7</button>
-      <button class="filter-pill fp-grade" data-grade="8">Grade 8</button>
     </div>
     <hr class="cp-divider">
     <div class="cp-row-label">Topic</div>
@@ -990,6 +997,7 @@
       <span class="ulink inv legend-pill">Investigation</span>
       <span class="ulink game legend-pill">Game</span>
       <span class="ulink ext legend-pill">Extension</span>
+      <span class="ulink chal legend-pill">Engineering Challenge</span>
     </div>
 
     <!-- ─── TOPIC GROUP: LIFE SCIENCE ─────────────────────────── -->
@@ -1328,6 +1336,7 @@
             </div>
             <div class="unit-links">
               <a href="lesson_chemical-reactions.html" class="ulink live">Lesson</a>
+              <a href="extension_hidden-world-of-matter.html" class="ulink ext">Hidden World</a>
             </div>
           </div>
           <div class="unit-card" id="unit-nature-of-waves">
@@ -1404,20 +1413,6 @@
         </div>
       </div>
 
-      <!-- Physical Science - Grade 8 (Extension) -->
-      <div class="subject-block" data-topic="physical-science" data-grades="8">
-        <div class="unit-row">
-          <div class="unit-card" id="unit-hidden-world-of-matter">
-            <div class="unit-top">
-              <div class="unit-name">The Hidden World of Matter</div>
-              <div class="unit-desc">Curious about what matter is really made of? Look ahead to a big Grade 8 idea: zoom in past what your eyes can see to meet atoms and elements, and explore the hidden world inside everything around you.</div>
-            </div>
-            <div class="unit-links">
-              <a href="extension_hidden-world-of-matter.html" class="ulink ext">Extension</a>
-            </div>
-          </div>
-        </div>
-      </div>
     </div><!-- /tg-physical -->
 
     
@@ -1449,6 +1444,7 @@
             </div>
             <div class="unit-links">
               <a href="lesson_engineering-design.html" class="ulink live">Lesson</a>
+              <a href="challenge_welcome-to-floatia.html" class="ulink chal">Design Challenge</a>
             </div>
           </div>
         </div>
