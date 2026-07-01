@@ -1,0 +1,3441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9QHB5G2B5B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9QHB5G2B5B');
+</script>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://lyfelabz.com/challenge_welcome-to-floatia.html">
+<meta name="description" content="Welcome to Floatia: the first LyfeLabz Engineering Challenge. Grade 6 teams design, build, test, and explain a floating prototype for a new community, putting everything they learned about engineering design, materials, and scaled drawings to work. Aligned to Massachusetts STE standards.">
+<title>LyfeLabz | Welcome to Floatia · Engineering Challenge</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+  html { font-size: 18px; }
+
+  /* ===== CSS VARIABLES ===== */
+  :root {
+    --green:       #2ecc71;
+    --green-dark:  #27ae60;
+    --blue:        #3498db;
+    --blue-dark:   #2980b9;
+    --teal:        #3bc8e8;
+    --teal-deep:   #1abc9c;
+    --purple:      #9b59b6;
+    --red:         #e74c3c;
+    --orange:      #e67e22;
+    --yellow:      #f1c40f;
+    --gold:        #f5c842;
+    --gold-glow:   rgba(245,200,66,0.35);
+    --dark:        #1a2535;
+    --dark2:       #243447;
+    --card:        #1e2f42;
+    --text:        #e8f4f8;
+    --text-muted:  #8aafca;
+    --border:      rgba(52,152,219,0.2);
+
+    /* Materials color system */
+    --criteria:        #3bc8e8;   /* teal   - property / job */
+    --criteria-dim:    rgba(59,200,232,0.08);
+    --criteria-border: rgba(59,200,232,0.3);
+
+    --constraint:        #e67e22; /* orange - wrong-for-the-job */
+    --constraint-dim:    rgba(230,126,34,0.08);
+    --constraint-border: rgba(230,126,34,0.3);
+
+    --iterate:        #2ecc71;    /* green  - best-for-the-job */
+    --iterate-dim:    rgba(46,204,113,0.08);
+    --iterate-border: rgba(46,204,113,0.3);
+  }
+
+  /* ===== RESET ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  /* ===== STARFIELD ===== */
+  #stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.45;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(20,30,45,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 2.5rem;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 18px var(--gold-glow);
+  }
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: color 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.4);
+    padding: 0.35rem 0.9rem;
+    border-radius: 99px;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-back:hover {
+    background: rgba(245,200,66,0.18);
+    border-color: rgba(245,200,66,0.65);
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a4a 50%, #0f2535 100%);
+    padding: 6rem 2rem 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 50%, rgba(59,200,232,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(46,204,113,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 80%, rgba(230,126,34,0.04) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(245,200,66,0.15);
+    border: 1px solid rgba(245,200,66,0.4);
+    color: var(--gold);
+    padding: 0.4rem 1.2rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  /* ── Engineering Challenge identity: distinct crimson pill ── */
+  .hero-badge.challenge {
+    background: rgba(255,84,112,0.15);
+    border: 1px solid rgba(255,84,112,0.45);
+    color: #ff6b83;
+  }
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, #fff 30%, var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  .hero p.hero-sub {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 620px;
+    margin: 0 auto 2.5rem;
+    position: relative;
+  }
+  .hero-float {
+    position: absolute;
+    font-size: 4.5rem;
+    opacity: 0.045;
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+    filter: blur(0.5px);
+  }
+  .hero-float:nth-child(1) { top: 8%;    left: 4%;   animation-delay: 0s;   font-size: 5rem;   }
+  .hero-float:nth-child(2) { top: 15%;   right: 5%;  animation-delay: 1.5s; font-size: 3.8rem; }
+  .hero-float:nth-child(3) { bottom: 8%; left: 10%;  animation-delay: 3s;   font-size: 3.5rem; }
+  .hero-float:nth-child(4) { bottom: 12%;right: 4%;  animation-delay: 4.5s; font-size: 4.2rem; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* ===== DRIVING QUESTION ===== */
+  .driving-question {
+    max-width: 760px;
+    margin: 1.6rem auto 0;
+    padding: 1.1rem 1.6rem;
+    background: rgba(59,200,232,0.06);
+    border: 1px solid rgba(59,200,232,0.22);
+    border-left: 4px solid var(--teal);
+    border-radius: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    box-sizing: border-box;
+    position: relative;
+  }
+  .dq-icon  { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .dq-body  { flex: 1; text-align: left; }
+  .dq-label {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: rgba(59,200,232,0.8);
+    margin-bottom: 0.3rem;
+  }
+  .dq-text  { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--text); line-height: 1.4; }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 5rem 2rem; position: relative; scroll-margin-top: 10px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(245,200,66,0.1);
+    border: 1px solid rgba(245,200,66,0.3);
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 760px;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+  }
+
+  /* ===== BRIDGE CALLOUT ===== */
+  .bridge-callout {
+    margin: 2rem auto 0;
+    max-width: 800px;
+    padding: 1.1rem 1.4rem;
+    background: rgba(245,200,66,0.06);
+    border: 1px solid rgba(245,200,66,0.22);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    font-size: 0.98rem;
+    color: var(--text);
+    line-height: 1.65;
+  }
+  .bridge-callout strong { color: var(--gold); }
+  .bridge-callout.teal {
+    background: rgba(59,200,232,0.06);
+    border-color: rgba(59,200,232,0.22);
+    border-left-color: var(--teal);
+  }
+  .bridge-callout.teal strong { color: var(--teal); }
+  .bridge-callout.green {
+    background: rgba(46,204,113,0.06);
+    border-color: rgba(46,204,113,0.22);
+    border-left-color: var(--green);
+  }
+  .bridge-callout.green strong { color: var(--green); }
+  .bridge-callout.orange {
+    background: rgba(230,126,34,0.06);
+    border-color: rgba(230,126,34,0.22);
+    border-left-color: var(--orange);
+  }
+  .bridge-callout.orange strong { color: var(--orange); }
+
+  /* ===== FOOTER ===== */
+  footer { background:#070f17; border-top:1px solid var(--border); padding:2rem; text-align:center; margin-top:.5rem; }
+  footer .footer-logo { font-family:'Fredoka One',cursive; font-size:1.1rem; letter-spacing:.08em; color:var(--gold); margin-bottom:.35rem; }
+  footer .footer-tagline { font-size:.83rem; color:rgba(240,228,200,.6); margin-bottom:.6rem; }
+  footer .footer-links { display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:.6rem; }
+  footer .footer-links a { color:var(--gold); text-decoration:none; font-size:.72rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; border:1px solid rgba(245,200,66,.4); background:rgba(245,200,66,.08); padding:.25rem .75rem; border-radius:99px; transition:border-color .2s,background .2s; }
+  footer .footer-links a:hover { border-color:rgba(245,200,66,.7); }
+  footer .footer-links a.nav-why { color:#3bc8e8; border:1px solid rgba(59,200,232,.7); background:rgba(59,200,232,.12); }
+  footer .footer-links a.nav-why:hover { background:rgba(59,200,232,.22); border-color:rgba(59,200,232,.95); }
+  footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
+
+  /* ===== RESPONSIVE NAV ===== */
+  @media (max-width: 900px) {
+    nav { padding: 0.75rem 1.2rem; flex-wrap: wrap; gap: 0.6rem; }
+    .nav-links { gap: 0.9rem; order: 3; width: 100%; justify-content: center; }
+    .nav-links a { font-size: 0.78rem; }
+  }
+  @media (max-width: 560px) {
+    .hero { padding: 4rem 1.2rem 3.5rem; }
+    section { padding: 3.5rem 1.2rem; }
+  }
+</style>
+
+<!-- ── Learning Science Focus Bar ── -->
+<style>
+.ls-focus { display: none; }
+body.ls-active .ls-focus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.55rem;
+  width: fit-content;
+  max-width: 760px;
+  margin: 0.5rem auto 1.6rem;
+  padding: 1.1rem 1.8rem 1.2rem;
+  box-sizing: border-box;
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 16px;
+  animation: barFadeIn 0.35s ease both;
+}
+@keyframes barFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ls-focus-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(59,200,232,0.8);
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.ls-badge {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: default;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(255,255,255,0.82);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 99px;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+}
+.ls-badge[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  padding: 0.5rem 0.75rem;
+  background: #0c1a28;
+  color: #b8ccd8;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: center;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.11);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255,255,255,0.11);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 999;
+}
+.ls-badge[data-tip]:hover::after,
+.ls-badge[data-tip]:hover::before { opacity: 1; }
+@media (max-width: 480px) {
+  .ls-badge[data-tip]::after,
+  .ls-badge[data-tip]::before { display: none; }
+  body.ls-active .ls-focus { max-width: calc(100% - 2.4rem); padding: 0.75rem 1rem; gap: 0.4rem 0.5rem; }
+}
+
+/* ── Instructional Design notes · Educator Mode ── */
+.edu-note { display: none; }
+body.ls-active .edu-note {
+  display: block; max-width: 760px; margin: 2.5rem auto 0;
+  padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+  background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+  border-left: 4px solid #9fb8cc; border-radius: 14px;
+  animation: barFadeIn 0.35s ease both;
+}
+.edu-note-label {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+  color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+}
+.edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+@media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+.edu-note-head {
+  font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+}
+.edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+ul.edu-note-text li { margin-bottom: 0.2rem; }
+ul.edu-note-text li:last-child { margin-bottom: 0; }
+</style>
+
+
+<!-- ── Engagement + Content Styles ── -->
+<style>
+
+/* ── QUESTION PAUSE CARD ── */
+.question-pause {
+  max-width: 760px;
+  margin: 0.5rem auto 2rem;
+  padding: 1.2rem 1.5rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.question-pause-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+.question-pause-text {
+  font-size: 0.98rem;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.question-pause-text strong {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 800;
+}
+@media (max-width: 480px) {
+  .question-pause {
+    padding: 0.9rem 1rem;
+    gap: 0.6rem;
+    margin-top: 0;
+  }
+  .question-pause-icon { font-size: 1.2rem; }
+  .question-pause-text { font-size: 0.9rem; }
+}
+
+/* ── PREDICT BEFORE REVEAL ── */
+.question-pause.predict-pause {
+  display: block;
+}
+.question-pause.predict-pause .qp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.predict-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+.predict-btn {
+  flex: 1;
+  min-width: 140px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 0.55rem 0.7rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.predict-btn:hover:not(.locked) {
+  border-color: rgba(245,200,66,0.5);
+  background: rgba(245,200,66,0.08);
+}
+.predict-btn.chosen {
+  border-color: var(--gold);
+  background: rgba(245,200,66,0.16);
+  color: var(--gold);
+}
+.question-pause.locked .predict-btn { cursor: default; opacity: 0.45; }
+.question-pause.locked .predict-btn.chosen { opacity: 1; }
+
+.predict-gated { display: none; }
+.predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+@keyframes predictFadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── HOOK MYSTERY CARDS (Engage) ── */
+.hook-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 720px) { .hook-grid { grid-template-columns: 1fr; } }
+
+.hook-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.8rem 1.4rem 1.6rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  cursor: pointer;
+  user-select: none;
+}
+.hook-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+}
+.hook-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.hook-card.c1::before { background: linear-gradient(90deg, var(--teal), rgba(59,200,232,0.4)); }
+.hook-card.c2::before { background: linear-gradient(90deg, var(--green), rgba(46,204,113,0.4)); }
+.hook-card.c3::before { background: linear-gradient(90deg, var(--orange), rgba(230,126,34,0.4)); }
+
+.hook-card-icon { font-size: 2.8rem; margin-bottom: 0.6rem; display: block; line-height: 1; }
+.hook-card-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+.hook-card-observation {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+.hook-card-question {
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--gold);
+  line-height: 1.5;
+}
+.hook-card:hover:not(.revealed) { border-color: rgba(245,200,66,0.45); }
+.hook-card.revealed { cursor: default; }
+.hook-card-prompt {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.4rem 1rem;
+  border: 1px dashed rgba(245,200,66,0.45);
+  border-radius: 99px;
+  margin-top: 0.4rem;
+}
+.hook-card .hook-card-observation,
+.hook-card .hook-card-question { display: none; }
+.hook-card.revealed .hook-card-prompt { display: none; }
+.hook-card.revealed .hook-card-observation,
+.hook-card.revealed .hook-card-question {
+  display: block;
+  animation: predictFadeUp 0.4s ease both;
+}
+
+/* ── OBSERVE ROW ── */
+.observe-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto 2rem;
+}
+@media (max-width: 560px) { .observe-row { grid-template-columns: 1fr; } }
+.observe-card {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.93rem;
+  line-height: 1.55;
+}
+.observe-icon { font-size: 1.6rem; flex-shrink: 0; }
+.observe-card strong { color: var(--teal); }
+.observe-card.green-card { background: rgba(46,204,113,0.05); border-color: rgba(46,204,113,0.2); }
+.observe-card.green-card strong { color: var(--green); }
+.observe-card.orange-card { background: rgba(230,126,34,0.05); border-color: rgba(230,126,34,0.2); }
+.observe-card.orange-card strong { color: var(--orange); }
+
+/* ── NAME-IT REVEAL ── */
+.name-it {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 14px;
+  padding: 1.4rem 1.6rem;
+  max-width: 760px;
+  margin: 0 auto 2rem;
+}
+.name-it.teal-it { border-left-color: var(--teal); }
+.name-it.green-it { border-left-color: var(--green); }
+.name-it.orange-it { border-left-color: var(--orange); }
+.name-it-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+.name-it.teal-it .name-it-label   { color: var(--teal); }
+.name-it.green-it .name-it-label  { color: var(--green); }
+.name-it.orange-it .name-it-label { color: var(--orange); }
+.name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; }
+.name-it p strong { font-weight: 800; }
+.name-it.teal-it p strong   { color: var(--teal); }
+.name-it.green-it p strong  { color: var(--green); }
+.name-it.orange-it p strong { color: var(--orange); }
+
+/* ── FAMILY EXPLORER (click to reveal) ── */
+.cycle-card {
+  background: var(--card);
+  border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 24px;
+  padding: 2.2rem 2rem 2.4rem;
+  max-width: 980px;
+  margin: 0 auto 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+}
+.cycle-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 25px;
+  background: linear-gradient(135deg,
+    rgba(59,200,232,0.3) 0%, rgba(245,200,66,0.08) 25%,
+    rgba(46,204,113,0.25) 50%, rgba(245,200,66,0.08) 75%,
+    rgba(230,126,34,0.25) 100%
+  );
+  background-size: 400% 400%;
+  animation: borderFlow 6s ease infinite;
+  z-index: 0;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+}
+@keyframes borderFlow {
+  0%,100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.cycle-card > * { position: relative; z-index: 1; }
+.cycle-progress {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1.3rem;
+}
+.cycle-progress strong { color: var(--gold); }
+.cycle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.9rem;
+}
+@media (max-width: 860px) { .cycle-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .cycle-grid { grid-template-columns: 1fr; } }
+.cycle-step {
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.13);
+  border-radius: 16px;
+  padding: 1.2rem 1rem 1.1rem;
+  text-align: center;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.cycle-step:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.3); border-color: rgba(245,200,66,0.45); }
+.cycle-step:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.cycle-step-icon { font-size: 2.2rem; display: block; line-height: 1.2; margin-bottom: 0.3rem; }
+.cycle-step-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
+  color: var(--teal);
+}
+.cycle-step-hint {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.cycle-step-desc {
+  display: none;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-top: 0.2rem;
+  text-align: left;
+}
+.cycle-step.open .cycle-step-desc { display: block; animation: predictFadeUp 0.3s ease both; }
+.cycle-step.open .cycle-step-hint { display: none; }
+.cycle-step.open { border-color: var(--green); background: rgba(46,204,113,0.06); }
+.cycle-step.open .cycle-step-name { color: var(--green); }
+.cycle-step-desc .fp-weak { color: var(--orange); font-weight: 700; }
+.cycle-complete {
+  display: none;
+  margin-top: 1.3rem;
+  text-align: center;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.35);
+  color: #a8e6c4;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.cycle-complete.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+
+/* ── QUICK RECALL ── */
+.qr-card { max-width: 760px; margin: 0 auto 2rem; background: var(--card); border: 1.5px solid rgba(59,200,232,0.3); border-radius: 12px; padding: 1.2rem 1.4rem; }
+.qr-eyebrow { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.45rem; }
+.qr-sub { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.65rem; }
+.qr-q { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--text); margin-bottom: 0.85rem; line-height: 1.35; }
+.qr-options { display: grid; gap: 0.45rem; }
+.qr-options label { display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.85rem; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.qr-options label:hover { border-color: var(--teal); }
+.qr-options label:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(59,200,232,0.22); }
+.qr-options input[type=radio] { accent-color: var(--teal); }
+.qr-options label.selected { background: rgba(59,200,232,0.1); border-color: var(--teal); }
+.qr-options label.correct { background: rgba(46,204,113,0.1); border-color: var(--green); }
+.qr-options label.wrong { background: rgba(231,76,60,0.1); border-color: var(--red); }
+.qr-feedback { display: none; margin-top: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; }
+.qr-feedback.visible { display: block; }
+.qr-feedback.ok { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.qr-feedback.no { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+.qr-actions { display: flex; gap: 0.55rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.qr-actions button { font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 900; letter-spacing: 0.05em; border-radius: 99px; padding: 0.5rem 1.3rem; cursor: pointer; transition: transform 0.15s; }
+.qr-actions button:hover { transform: translateY(-1px); }
+.qr-actions button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.qr-check { background: var(--teal); color: #0d1f2d; border: none; }
+.qr-retry { background: transparent; color: var(--text); border: 1px solid var(--border); }
+
+/* ── WRAP-UP BEATS ── */
+.wrapup-beats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+@media (max-width: 760px) { .wrapup-beats { grid-template-columns: 1fr; } }
+
+.wrapup-beat {
+  border-radius: 16px;
+  padding: 1.4rem 1.3rem;
+  position: relative;
+}
+.wrapup-beat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+.wrapup-beat-1 {
+  background: rgba(245,200,66,0.06);
+  border: 1px solid rgba(245,200,66,0.25);
+}
+.wrapup-beat-1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+.wrapup-beat-2 {
+  background: rgba(59,200,232,0.05);
+  border: 1px solid rgba(59,200,232,0.2);
+}
+.wrapup-beat-2::before { background: linear-gradient(90deg, var(--teal), var(--green), var(--orange)); }
+.wrapup-beat-3 {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.wrapup-beat-3::before { background: linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.08)); }
+
+.wrapup-beat-label {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.wrapup-beat-1 .wrapup-beat-label { color: var(--gold); }
+.wrapup-beat-2 .wrapup-beat-label { color: var(--teal); }
+.wrapup-beat-3 .wrapup-beat-label { color: var(--text-muted); }
+
+.wrapup-beat-answer {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+.wrapup-beat-body {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.wrapup-beat-body strong { color: var(--text); font-weight: 800; }
+
+/* ── SUMMARY TABLES ── */
+.summary-table-wrap { overflow-x: auto; margin-bottom: 2rem; }
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+.summary-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(245,200,66,0.07);
+  padding: 0.8rem 1.2rem;
+  border-bottom: 1px solid rgba(245,200,66,0.25);
+}
+.summary-table td {
+  padding: 0.75rem 1.2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: var(--text-muted);
+  line-height: 1.6;
+  vertical-align: top;
+}
+.summary-table tr:last-child td { border-bottom: none; }
+.summary-table td.term { color: var(--teal); font-weight: 800; white-space: nowrap; }
+</style>
+
+<!-- ── Learning Goals + Glossary Cards ── -->
+<style>
+.goal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+@media (max-width: 720px) { .goal-grid { grid-template-columns: 1fr; } }
+.goal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.goal-icon { font-size: 1.8rem; line-height: 1; }
+.goal-text { font-size: 0.98rem; color: var(--text); line-height: 1.65; font-weight: 700; flex: 1; }
+.goal-std {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(46,204,113,0.85);
+  background: rgba(46,204,113,0.08);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+}
+
+/* Glossary cards: click-to-expand only. Hover gives subtle lift feedback
+   but never reveals the definition or changes the card height. */
+.glossary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 860px) { .glossary-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .glossary-grid { grid-template-columns: 1fr; } }
+.glossary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 16px;
+  padding: 1.2rem 1.3rem 1.3rem;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.glossary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.glossary-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.gc-term { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.35rem; }
+.gc-hint {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.gc-def { display: none; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-top: 0.2rem; }
+.glossary-card.open .gc-def { display: block; animation: predictFadeUp 0.25s ease both; }
+.glossary-card.open .gc-hint { display: none; }
+.gc-term { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.gc-term::after { content: '▾'; font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; transition: color 0.2s; }
+.glossary-card.open .gc-term::after { content: '▴'; color: var(--gold); }
+.gc-teal   { border-top-color: var(--teal);   } .gc-teal .gc-term   { color: var(--teal); }
+.gc-orange { border-top-color: var(--orange); } .gc-orange .gc-term { color: var(--orange); }
+.gc-blue   { border-top-color: #7cc8f8;       } .gc-blue .gc-term   { color: #7cc8f8; }
+.gc-green  { border-top-color: var(--green);  } .gc-green .gc-term  { color: var(--green); }
+.gc-gold   { border-top-color: var(--gold);   } .gc-gold .gc-term   { color: var(--gold); }
+.gc-purple { border-top-color: #b47fff;       } .gc-purple .gc-term { color: #b47fff; }
+</style>
+
+<!-- ── Signature Interactive + Identity Statement Styles ── -->
+<style>
+/* ── ENGINEERING IDENTITY STATEMENT ── */
+.identity-quote {
+  max-width: 820px;
+  margin: 0 auto 2rem;
+  text-align: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: var(--gold);
+  background: rgba(245,200,66,0.06);
+  border: 1px solid rgba(245,200,66,0.28);
+  border-radius: 16px;
+  padding: 1.3rem 1.5rem;
+}
+.identity-quote .iq-ask { color: var(--text); }
+.identity-quote .iq-solve { color: var(--green); }
+
+/* ── MATERIALS BENCH ── */
+.bench-card {
+  background: var(--card);
+  border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 24px;
+  padding: 2rem 1.8rem 2.2rem;
+  max-width: 900px;
+  margin: 0 auto 2rem;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+}
+.bench-progress {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+.bench-progress strong { color: var(--gold); }
+.bench-brief {
+  background: rgba(59,200,232,0.06);
+  border: 1px solid rgba(59,200,232,0.22);
+  border-left: 4px solid var(--teal);
+  border-radius: 14px;
+  padding: 1.1rem 1.3rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 1.4rem;
+}
+.bench-brief strong { color: var(--teal); }
+.bench-step { margin-bottom: 1.3rem; }
+.bench-step.locked-step { opacity: 0.4; pointer-events: none; }
+.bench-step-label {
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.bench-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem; height: 1.5rem;
+  border-radius: 50%;
+  background: rgba(245,200,66,0.12);
+  border: 1px solid rgba(245,200,66,0.35);
+  color: var(--gold);
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+.bench-hint { font-size: 0.82rem; color: var(--text-muted); font-style: italic; margin-bottom: 0.7rem; }
+.bench-options { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+.bench-opt {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 800;
+  padding: 0.6rem 1.1rem;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.16);
+  color: var(--text);
+}
+.bench-opt:hover:not(:disabled) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+.bench-opt:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.bench-opt.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+.bench-opt:disabled { cursor: default; }
+.bench-mat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+@media (max-width: 560px) { .bench-mat-grid { grid-template-columns: repeat(2, 1fr); } }
+.bench-mat {
+  text-align: center;
+  padding: 0.9rem 0.6rem;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.14);
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  transition: all 0.2s;
+}
+.bench-mat:hover:not(:disabled) { transform: translateY(-3px); border-color: rgba(245,200,66,0.5); }
+.bench-mat:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.bench-mat.chosen { border-color: var(--gold); background: rgba(245,200,66,0.12); }
+.bench-mat:disabled { cursor: default; }
+.bench-mat-icon { font-size: 1.8rem; display: block; line-height: 1; margin-bottom: 0.35rem; }
+.bench-mat-name { font-family: 'Fredoka One', cursive; font-size: 0.92rem; }
+.bench-reveal { display: none; margin-top: 0.5rem; }
+.bench-reveal.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+.bench-verdict {
+  background: rgba(59,200,232,0.06);
+  border: 1px solid rgba(59,200,232,0.25);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+.bench-verdict strong { color: var(--teal); }
+.bench-notes { display: flex; flex-direction: column; gap: 0.55rem; }
+.bench-note {
+  display: flex; gap: 0.6rem; align-items: flex-start;
+  font-size: 0.88rem; line-height: 1.55; color: var(--text-muted);
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 0.7rem 0.9rem;
+}
+.bench-note.best { border-color: rgba(46,204,113,0.4); background: rgba(46,204,113,0.08); color: #cfe9d8; }
+.bench-note-mat { font-weight: 900; color: var(--text); flex-shrink: 0; }
+.bench-note.best .bench-note-mat { color: var(--green); }
+.bench-next { margin-top: 1.3rem; text-align: center; }
+.bench-next button {
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.95rem; letter-spacing: 0.03em;
+  background: var(--teal); color: #0d1f2d; border: none;
+  padding: 0.7rem 2rem; border-radius: 99px; cursor: pointer; transition: transform 0.15s;
+}
+.bench-next button:hover { transform: translateY(-2px); }
+.bench-complete {
+  display: none; margin-top: 1rem; text-align: center;
+  padding: 1.2rem 1.4rem; border-radius: 14px;
+  background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.35);
+  color: #a8e6c4; font-size: 0.95rem; line-height: 1.65;
+}
+.bench-complete.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+.bench-complete strong { color: var(--green); }
+
+/* ── REVERSAL COMPARE ── */
+.reversal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 100%; margin: 0 auto 2rem; }
+@media (max-width: 560px) { .reversal-grid { grid-template-columns: 1fr; } }
+.reversal-card { border-radius: 16px; padding: 1.4rem 1.4rem; }
+.reversal-card.good { background: rgba(46,204,113,0.06); border: 1px solid rgba(46,204,113,0.28); }
+.reversal-card.bad  { background: rgba(230,126,34,0.06); border: 1px solid rgba(230,126,34,0.28); }
+.reversal-icon { font-size: 2rem; display: block; margin-bottom: 0.4rem; }
+.reversal-verdict { font-family: 'Fredoka One', cursive; font-size: 1.05rem; margin-bottom: 0.4rem; }
+.reversal-card.good .reversal-verdict { color: var(--green); }
+.reversal-card.bad  .reversal-verdict { color: var(--orange); }
+.reversal-body { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+</style>
+<style id="nav-hamburger-style">
+  /* Unified mobile lesson menu (hamburger). Desktop unchanged. */
+  .nav-hamburger { display: none; background: none; border: 0; cursor: pointer;
+    padding: 0.45rem; margin-left: auto; -webkit-tap-highlight-color: transparent; }
+  .nav-hamburger span { display: block; width: 24px; height: 2px; border-radius: 2px;
+    background: var(--accent2, #f0e4c8); margin: 5px 0;
+    transition: transform 0.25s ease, opacity 0.2s ease; }
+  .nav-hamburger:focus-visible { outline: 2px solid var(--accent2, #f0e4c8); outline-offset: 3px; }
+  nav.menu-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  nav.menu-open .nav-hamburger span:nth-child(2) { opacity: 0; }
+  nav.menu-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  @media (max-width: 600px) {
+    nav { flex-wrap: wrap; }
+    .nav-hamburger { display: inline-block; order: 3; }
+    nav .nav-back { order: 2; }
+    nav .nav-logo { order: 1; }
+    nav .nav-links {
+      display: none !important; order: 4; width: 100%;
+      flex-direction: column; gap: 0 !important; margin-top: 0.5rem;
+      padding-top: 0.5rem; border-top: 1px solid var(--border, rgba(255,255,255,0.1));
+    }
+    nav.menu-open .nav-links { display: flex !important; }
+    nav .nav-links li { width: 100%; }
+    nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
+  }
+</style>
+
+<!-- ── Engineering Challenge · page-type styles ── -->
+<style>
+  /* Challenge crimson accent, reused across stage labels and callouts */
+  :root {
+    --challenge:        #ff5470;
+    --challenge-soft:   #ff6b83;
+    --challenge-dim:    rgba(255,84,112,0.08);
+    --challenge-border: rgba(255,84,112,0.32);
+  }
+  .section-label.challenge {
+    color: var(--challenge-soft);
+    background: var(--challenge-dim);
+    border-color: var(--challenge-border);
+  }
+  .driving-question.challenge {
+    background: rgba(255,84,112,0.06);
+    border-color: rgba(255,84,112,0.22);
+    border-left-color: var(--challenge);
+  }
+  .driving-question.challenge .dq-label { color: rgba(255,84,112,0.85); }
+
+  /* ── Stage rail: shows the seven stages at a glance ── */
+  .stage-rail {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;
+    max-width: 900px; margin: 1.6rem auto 0;
+  }
+  .stage-rail a {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.74rem; font-weight: 800; letter-spacing: 0.02em;
+    color: var(--text-muted); text-decoration: none;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.13);
+    padding: 0.35rem 0.75rem; border-radius: 99px; transition: all 0.2s;
+  }
+  .stage-rail a:hover { color: var(--challenge-soft); border-color: var(--challenge-border); background: var(--challenge-dim); }
+  .stage-rail a .sr-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.25rem; height: 1.25rem; border-radius: 50%; flex-shrink: 0;
+    background: rgba(255,84,112,0.14); border: 1px solid var(--challenge-border);
+    color: var(--challenge-soft); font-family: 'Fredoka One', cursive; font-size: 0.7rem;
+  }
+
+  /* ── Stage stamp shown at the top of each stage section ── */
+  .stage-stamp {
+    display: inline-flex; align-items: center; gap: 0.55rem;
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--challenge-soft); margin-bottom: 0.6rem;
+  }
+  .stage-stamp .ss-dot {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.7rem; height: 1.7rem; border-radius: 50%;
+    background: rgba(255,84,112,0.14); border: 1px solid var(--challenge-border);
+    color: var(--challenge-soft); font-family: 'Fredoka One', cursive; font-size: 0.9rem;
+  }
+
+  /* ── Artifact callout: names the work product for a stage ── */
+  .artifact-note {
+    display: flex; align-items: flex-start; gap: 0.8rem;
+    max-width: 820px; margin: 2rem 0 0;
+    padding: 1rem 1.3rem; border-radius: 14px;
+    background: rgba(46,204,113,0.06); border: 1px solid rgba(46,204,113,0.25);
+    border-left: 4px solid var(--green);
+  }
+  .artifact-note .an-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .artifact-note .an-label {
+    font-size: 0.68rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--green); margin-bottom: 0.25rem;
+  }
+  .artifact-note .an-body { font-size: 0.93rem; color: var(--text); line-height: 1.6; }
+
+  /* ── Criteria / Constraint sorter ── */
+  .cc-sorter { max-width: 820px; margin: 0 auto 1.5rem; }
+  .cc-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 1rem 1.2rem; margin-bottom: 0.8rem;
+  }
+  .cc-prompt { font-size: 0.98rem; color: var(--text); line-height: 1.5; margin-bottom: 0.75rem; font-weight: 700; }
+  .cc-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .cc-btn {
+    font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 800;
+    padding: 0.5rem 1.1rem; border-radius: 99px; cursor: pointer; transition: all 0.2s;
+    background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.16); color: var(--text);
+  }
+  .cc-btn:hover:not(:disabled) { border-color: rgba(59,200,232,0.5); background: rgba(59,200,232,0.08); }
+  .cc-btn:disabled { cursor: default; }
+  .cc-btn.pick-right { border-color: var(--green); background: rgba(46,204,113,0.14); color: var(--green); }
+  .cc-btn.pick-wrong { border-color: var(--red); background: rgba(231,76,60,0.12); color: #ecb3b3; }
+  .cc-fb { display: none; margin-top: 0.7rem; font-size: 0.88rem; line-height: 1.55; color: var(--text-muted); }
+  .cc-fb.show { display: block; animation: predictFadeUp 0.3s ease both; }
+  .cc-fb strong { color: var(--teal); }
+
+  /* ── Scale checklist ── */
+  .chk-list { max-width: 760px; margin: 0 auto 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .chk-item {
+    display: flex; align-items: flex-start; gap: 0.8rem; cursor: pointer;
+    background: var(--card); border: 1.5px solid rgba(255,255,255,0.12); border-radius: 12px;
+    padding: 0.85rem 1.1rem; transition: all 0.2s;
+  }
+  .chk-item:hover { border-color: rgba(59,200,232,0.4); }
+  .chk-item input { margin-top: 0.2rem; width: 1.15rem; height: 1.15rem; accent-color: var(--teal); flex-shrink: 0; cursor: pointer; }
+  .chk-item .chk-text { font-size: 0.93rem; color: var(--text); line-height: 1.5; }
+  .chk-item .chk-text strong { color: var(--teal); }
+  .chk-item.checked { border-color: var(--green); background: rgba(46,204,113,0.06); }
+  .chk-meter { max-width: 760px; margin: 0 auto; text-align: center; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); }
+  .chk-done {
+    display: none; max-width: 760px; margin: 1rem auto 0; text-align: center;
+    padding: 0.9rem 1.2rem; border-radius: 12px; font-size: 0.92rem; line-height: 1.6;
+    background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.35); color: #a8e6c4;
+  }
+  .chk-done.show { display: block; animation: predictFadeUp 0.4s ease both; }
+  .chk-done strong { color: var(--green); }
+
+  /* ── Test lab: record and read a trial ── */
+  .lab-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 900px; margin: 0 auto 1.4rem; }
+  @media (max-width: 720px) { .lab-grid { grid-template-columns: 1fr; } }
+  .lab-cell {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem 1.2rem;
+  }
+  .lab-cell h4 { font-family: 'Fredoka One', cursive; font-size: 0.98rem; color: var(--text); margin-bottom: 0.3rem; }
+  .lab-cell p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.7rem; }
+  .lab-cell select {
+    width: 100%; padding: 0.55rem 0.7rem; border-radius: 10px;
+    background: var(--dark2); border: 1.5px solid rgba(255,255,255,0.14);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.88rem; font-weight: 700; outline: none;
+  }
+  .lab-cell select:focus { border-color: var(--teal); }
+  .lab-readout {
+    display: none; max-width: 900px; margin: 0 auto;
+    padding: 1.1rem 1.3rem; border-radius: 14px; font-size: 0.95rem; line-height: 1.65; color: var(--text);
+    background: rgba(59,200,232,0.06); border: 1px solid rgba(59,200,232,0.25); border-left: 4px solid var(--teal);
+  }
+  .lab-readout.show { display: block; animation: predictFadeUp 0.4s ease both; }
+  .lab-readout strong { color: var(--teal); }
+  .lab-btn-wrap { text-align: center; margin-bottom: 1.2rem; }
+  .lab-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.92rem; letter-spacing: 0.03em;
+    background: var(--teal); color: #0d1f2d; border: none; padding: 0.7rem 2rem; border-radius: 99px; cursor: pointer; transition: transform 0.15s;
+  }
+  .lab-btn:hover { transform: translateY(-2px); }
+
+  /* ── Claim builder ── */
+  .claim-build { max-width: 820px; margin: 0 auto 1.4rem; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem 1.6rem; }
+  .claim-line { font-size: 1.02rem; line-height: 2.2; color: var(--text); }
+  .claim-line select {
+    padding: 0.35rem 0.6rem; border-radius: 9px; margin: 0 0.15rem;
+    background: var(--dark2); border: 1.5px solid rgba(255,84,112,0.4);
+    color: var(--challenge-soft); font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 800; outline: none;
+  }
+  .claim-line select:focus { border-color: var(--challenge); }
+  .claim-out {
+    display: none; margin-top: 1.2rem; padding: 1.1rem 1.3rem; border-radius: 12px;
+    background: rgba(255,84,112,0.06); border: 1px solid var(--challenge-border); border-left: 4px solid var(--challenge);
+    font-size: 0.96rem; line-height: 1.65; color: var(--text);
+  }
+  .claim-out.show { display: block; animation: predictFadeUp 0.4s ease both; }
+  .claim-out strong { color: var(--challenge-soft); }
+  .claim-btn-wrap { text-align: center; margin-top: 1.1rem; }
+  .claim-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.92rem; letter-spacing: 0.03em;
+    background: linear-gradient(135deg, var(--challenge-soft), var(--challenge)); color: #2a0910; border: none;
+    padding: 0.7rem 2rem; border-radius: 99px; cursor: pointer; transition: transform 0.15s;
+  }
+  .claim-btn:hover { transform: translateY(-2px); }
+
+  /* ── Reflection textarea (local only, never submitted) ── */
+  .reflect-box { max-width: 820px; margin: 0 auto; }
+  .reflect-box textarea {
+    width: 100%; min-height: 110px; resize: vertical; padding: 0.9rem 1.1rem; border-radius: 12px;
+    background: var(--dark2); border: 1.5px solid rgba(255,255,255,0.14);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.95rem; line-height: 1.6; outline: none;
+  }
+  .reflect-box textarea:focus { border-color: var(--challenge); }
+  .reflect-note { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.5rem; font-style: italic; }
+
+  /* ── Identity revisit trio ── */
+  .identity-trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 100%; margin: 0 auto 1.5rem; }
+  @media (max-width: 760px) { .identity-trio { grid-template-columns: 1fr; } }
+  .identity-step {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.3rem 1.3rem; position: relative;
+  }
+  .identity-step::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .identity-step.i1::before { background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.3)); }
+  .identity-step.i2::before { background: linear-gradient(90deg, var(--orange), rgba(230,126,34,0.3)); }
+  .identity-step.i3::before { background: linear-gradient(90deg, var(--teal), rgba(59,200,232,0.3)); }
+  .identity-step .is-icon { font-size: 1.9rem; display: block; margin-bottom: 0.4rem; }
+  .identity-step .is-line { font-family: 'Fredoka One', cursive; font-size: 1rem; line-height: 1.35; margin-bottom: 0.5rem; }
+  .identity-step.i1 .is-line { color: var(--gold); }
+  .identity-step.i2 .is-line { color: var(--orange); }
+  .identity-step.i3 .is-line { color: var(--teal); }
+  .identity-step .is-body { font-size: 0.87rem; color: var(--text-muted); line-height: 1.6; }
+  .identity-now {
+    max-width: 820px; margin: 0 auto; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 1.05rem; line-height: 1.5; color: var(--challenge-soft);
+    background: rgba(255,84,112,0.06); border: 1px solid var(--challenge-border); border-radius: 16px; padding: 1.3rem 1.5rem;
+  }
+
+  /* ── Challenge card (Connections capstone tint) ── */
+  .cont-card.chal { background: rgba(255,84,112,0.08); border: 1px solid rgba(255,84,112,0.38); }
+  .cont-card.chal::before { background: linear-gradient(90deg, #ff8a9c, #ff5470); }
+  .cont-card.chal:hover { border-color: rgba(255,84,112,0.7); box-shadow: 0 14px 40px rgba(255,84,112,0.18); transform: translateY(-4px); }
+  .cont-card.chal .cont-icon { background: rgba(255,84,112,0.2); }
+  .cont-card.chal .cont-cat { color: var(--challenge-soft); }
+  .cont-card.chal .cont-link { background: rgba(255,84,112,0.1); border-color: rgba(255,84,112,0.3); color: var(--challenge-soft); }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">LYFELABZ</a>
+  <button class="nav-hamburger" type="button" aria-label="Open lesson menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#vocab">Vocab</a></li>
+    <li><a href="#stage1">Challenge</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#continue">More</a></li>
+    <li><a href="#connections">Connections</a></li>
+  </ul>
+  <a href="index.html#eng" class="nav-back">← Engineering</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <span class="hero-float">🛟</span>
+  <span class="hero-float">🏝️</span>
+  <span class="hero-float">🔧</span>
+  <span class="hero-float">📐</span>
+  <div class="hero-badge challenge">Engineering Challenge</div>
+  <h1>Welcome to Floatia</h1>
+  <p class="hero-sub">Design, build, test, and explain a floating prototype for a new community. You have learned how engineers work. This is where you become one.</p>
+  <div class="driving-question challenge">
+    <div class="dq-icon">🛟</div>
+    <div class="dq-body">
+      <div class="dq-label">The Challenge</div>
+      <div class="dq-text">Can your team design a small vessel that floats, carries the cargo Floatia needs, and can be built from your drawing alone?</div>
+    </div>
+  </div>
+  <div class="stage-rail">
+    <a href="#stage1"><span class="sr-num">1</span> Understand</a>
+    <a href="#stage2"><span class="sr-num">2</span> Criteria</a>
+    <a href="#stage3"><span class="sr-num">3</span> Materials</a>
+    <a href="#stage4"><span class="sr-num">4</span> Scale</a>
+    <a href="#stage5"><span class="sr-num">5</span> Build &amp; Test</a>
+    <a href="#stage6"><span class="sr-num">6</span> Defend</a>
+    <a href="#stage7"><span class="sr-num">7</span> Improve</a>
+  </div>
+</header>
+
+<!-- LEARNING SCIENCE BADGES -->
+<div class="ls-focus">
+  <span class="ls-focus-label">🔬 Learning Science Focus</span>
+  <span class="ls-badge" data-tip="Instead of learning a new idea, students apply three they already own to solve one real problem. Bringing prior skills to bear on a fresh, authentic task is where deep learning shows up. (Bransford et al., 2000)">🏗️ Transfer of Learning</span>
+  <span class="ls-badge" data-tip="The challenge runs as a full design cycle: build a prototype, test it, then redesign. Learning from feedback on a real attempt outperforms a single perfect try. (Schwartz et al., 2011)">🔁 Iterative Design</span>
+  <span class="ls-badge" data-tip="Students commit to predictions before they test and defend decisions before they see results, so thinking happens before the reveal. Generating an answer first strengthens what sticks. (Bertsch et al., 2007)">✏️ Generation Effect</span>
+  <span class="ls-badge" data-tip="Every stage produces a real artifact: criteria notes, a materials table, a scaled drawing, test data, and a written defense. Producing explanations forces understanding into the open. (Chi et al., 1994)">🗂️ Productive Artifacts</span>
+  <span class="ls-badge" data-tip="Stage seven asks students to judge their own prototype and decide what to change and why. Reflecting on your own reasoning is what turns one build into a durable skill. (Zimmerman, 2002)">🔍 Metacognition</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LEARNING GOALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="goals" style="background: var(--dark2); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label challenge">Challenge Goals</span>
+    <h2 class="section-title">What You'll Prove You Can Do</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">This is not a lesson. It is your chance to work like an engineer. By the end of the challenge, your team will be able to:</p>
+    <div class="goal-grid">
+      <div class="goal-card">
+        <span class="goal-icon">🛠️</span>
+        <div class="goal-text">Build a working prototype of a solution to a real problem, then test it to see how well it meets the goal.</div>
+        <span class="goal-std">6.MS-ETS2-3(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">📊</span>
+        <div class="goal-text">Use your test results to decide what to change, then refine the prototype to make it work better.</div>
+        <span class="goal-std">6.MS-ETS2-3(MA)</span>
+      </div>
+      <div class="goal-card">
+        <span class="goal-icon">🗣️</span>
+        <div class="goal-text">Explain and defend your engineering decisions by tying every choice back to the criteria and constraints.</div>
+        <span class="goal-std">6.MS-ETS2-3(MA)</span>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Name the assessed target before the challenge begins: build, test, and refine a prototype and defend the decisions behind it.</li>
+            <li>The primary assessed standard is 6.MS-ETS2-3(MA). Skills from Engineering Design (6.MS-ETS1-1), Choosing Materials (6.MS-ETS2-1/2-2), and Designing to Scale (6.MS-ETS1-5) are applied here, not re-taught or re-badged.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Goal setting</li>
+            <li>Advance organizer</li>
+            <li>Transfer of learning</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Apply to Create</li>
+            <li>DOK 3 to 4 (extended design, testing, and defense over multiple periods)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Each goal paired with an icon and the standard code</li>
+            <li>Short, plain-language statements</li>
+            <li>One card per goal, no crowding</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Teacher Playbook · Educator Mode only ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Teacher Playbook &middot; Running the Challenge</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Preparation</div>
+          <ul class="edu-note-text">
+            <li>Confirm students have completed Engineering Design, Choosing Materials, and Designing to Scale.</li>
+            <li>Set up water-test stations: a shallow tub or bin per group, towels, and a set of identical weights for cargo.</li>
+            <li>Print or share grid paper for scaled drawings. Preview each on-page organizer so you can point students to it.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Materials per team</div>
+          <ul class="edu-note-text">
+            <li>Hull stock: aluminum foil, index cards, plastic wrap, or a foam tray</li>
+            <li>Structure: craft sticks, straws, tape, small binder clips</li>
+            <li>Cargo: identical washers or pennies</li>
+            <li>Shared: ruler, grid paper, water tub, paper towels</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Pacing (five periods)</div>
+          <ul class="edu-note-text">
+            <li>Day 1: Stages 1 and 2, define the problem and lock criteria and constraints.</li>
+            <li>Day 2: Stages 3 and 4, choose materials and draw to scale.</li>
+            <li>Day 3: Stage 5, build and run the first test.</li>
+            <li>Day 4: Stage 5 retest and Stage 6, defend decisions.</li>
+            <li>Day 5: Stage 7 redesign, plus quiz.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Safety, checkpoints, extensions</div>
+          <ul class="edu-note-text">
+            <li>Safety: keep water away from outlets, wipe spills at once to prevent slips, carry scissors point-down, do not drink test water.</li>
+            <li>Checkpoints: approve criteria before building, and approve the scaled drawing before the first test.</li>
+            <li>Extension: cap the material budget, or raise the cargo target for teams that finish early.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     KEY VOCABULARY (glossary cards - click to expand only)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="vocab" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Key Vocabulary</span>
+    <h2 class="section-title">Words You Already Know</h2>
+    <p class="section-desc" style="margin-bottom: 1.8rem;">Choose a card to see what each word means. You met all of these in earlier lessons. Today you put them to work.</p>
+    <div class="glossary-grid">
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-term">Prototype</div>
+        <div class="gc-def">An early working version of a solution, built to be tested. A prototype is not the finished product. It is how engineers find out what works before it matters.</div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Criteria</div>
+        <div class="gc-def">The things a solution must do to count as a success. For Floatia, floating and carrying the cargo are criteria.</div>
+      </button>
+      <button class="glossary-card gc-orange" type="button" aria-expanded="false">
+        <div class="gc-term">Constraints</div>
+        <div class="gc-def">The limits you have to work inside, such as the materials you are given, the size allowed, or the time you have.</div>
+      </button>
+      <button class="glossary-card gc-blue" type="button" aria-expanded="false">
+        <div class="gc-term">Buoyancy</div>
+        <div class="gc-def">The upward push water gives to an object. A vessel floats when it spreads its weight over enough water to be held up instead of sinking.</div>
+      </button>
+      <button class="glossary-card gc-green" type="button" aria-expanded="false">
+        <div class="gc-term">Iterate</div>
+        <div class="gc-def">To improve a design by testing it, learning from the result, and trying again. Engineers rarely get it right on the first build.</div>
+      </button>
+      <button class="glossary-card gc-purple" type="button" aria-expanded="false">
+        <div class="gc-term">Scaled drawing</div>
+        <div class="gc-def">A drawing that shrinks a real object by the same amount everywhere, with a scale, measurements, and labels, so a teammate can build it exactly.</div>
+      </button>
+      <button class="glossary-card gc-teal" type="button" aria-expanded="false">
+        <div class="gc-term">Trade-off</div>
+        <div class="gc-def">Getting more of one thing by giving up some of another. A wider hull floats better but uses more material, so you weigh what matters most.</div>
+      </button>
+      <button class="glossary-card gc-gold" type="button" aria-expanded="false">
+        <div class="gc-term">Defend</div>
+        <div class="gc-def">To explain your engineering choices with reasons tied to the criteria and your test data, not just to say that you liked them.</div>
+      </button>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Reactivate, not pre-teach. These terms all appeared in earlier engineering lessons; the cards are a quick refresher before students apply them.</li>
+            <li>Buoyancy is a supporting concept kept qualitative. The assessed focus is building, testing, and refining a prototype, not calculating density.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Retrieval of prior vocabulary</li>
+            <li>Reduced extraneous load</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Remember to Understand</li>
+            <li>DOK 1</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Click to reveal, no hover</li>
+            <li>One card open at a time</li>
+            <li>Plain, short definitions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     STAGE 1 · UNDERSTAND THE PROBLEM
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="stage1" style="background: var(--dark2);">
+  <div class="container">
+    <div class="stage-stamp"><span class="ss-dot">1</span> Stage One &middot; Understand the Problem</div>
+    <h2 class="section-title">Welcome to Floatia</h2>
+    <p class="section-desc">Floatia is a brand new community being built on the water. Homes, gardens, and workshops all sit on floating platforms. The people of Floatia need a small vessel that can carry supplies from platform to platform without sinking. Your engineering team has been hired to design one. Before you touch a single material, an engineer does one thing first: understand the problem completely.</p>
+
+    <div class="driving-question challenge" style="margin: 0 auto 2rem; max-width: 820px;">
+      <div class="dq-icon">📨</div>
+      <div class="dq-body">
+        <div class="dq-label">The Request from Floatia</div>
+        <div class="dq-text">"Build us a small vessel that floats on its own, still floats when it carries our cargo, and stays steady enough not to tip. We will build the winning design from your drawing, so make it clear."</div>
+      </div>
+    </div>
+
+    <p class="section-desc" style="margin-bottom: 1.4rem;">Open each part of the request below. An engineer never starts building until every one of these is clear. Open all four.</p>
+
+    <!-- FAMILY EXPLORER (reuses existing click-to-reveal engine: #familyGrid / #familyCount / #familyComplete) -->
+    <div class="cycle-card">
+      <div class="cycle-progress">Opened <strong id="familyCount">0</strong> of 4</div>
+      <div class="cycle-grid" id="familyGrid">
+        <div class="cycle-step" tabindex="0" role="button" aria-expanded="false">
+          <span class="cycle-step-icon">🎯</span>
+          <div class="cycle-step-name">The Need</div>
+          <div class="cycle-step-hint">Tap to open</div>
+          <div class="cycle-step-desc">Floatia needs to move <strong>supplies between floating platforms</strong>. That is the real job. Everything you design has to serve moving cargo across water.</div>
+        </div>
+        <div class="cycle-step" tabindex="0" role="button" aria-expanded="false">
+          <span class="cycle-step-icon">👥</span>
+          <div class="cycle-step-name">Who It Is For</div>
+          <div class="cycle-step-hint">Tap to open</div>
+          <div class="cycle-step-desc">The users are the <strong>residents of Floatia</strong>, not engineers. Your vessel has to work in their hands and be simple enough that anyone can load and launch it.</div>
+        </div>
+        <div class="cycle-step" tabindex="0" role="button" aria-expanded="false">
+          <span class="cycle-step-icon">🌊</span>
+          <div class="cycle-step-name">The Setting</div>
+          <div class="cycle-step-hint">Tap to open</div>
+          <div class="cycle-step-desc">Everything happens <strong>on water</strong>. Floating is not a bonus feature here. It is the whole point. A design that sinks solves nothing.</div>
+        </div>
+        <div class="cycle-step" tabindex="0" role="button" aria-expanded="false">
+          <span class="cycle-step-icon">📐</span>
+          <div class="cycle-step-name">The Catch</div>
+          <div class="cycle-step-hint">Tap to open</div>
+          <div class="cycle-step-desc">Floatia will build your design <strong>from your drawing alone</strong>. If your plan is unclear, the wrong thing gets built. Communication counts as much as the vessel.</div>
+        </div>
+      </div>
+      <div class="cycle-complete" id="familyComplete">🧭 Now the problem is clear: a floating vessel that carries cargo across water, simple to use, and clear enough to build from a drawing. That is what you are solving.</div>
+    </div>
+
+    <!-- ── Engineering Identity revisit ── -->
+    <h3 class="section-title" style="font-size: clamp(1.4rem, 3vw, 1.9rem); margin-top: 1rem;">You Have Done This Before</h3>
+    <p class="section-desc" style="margin-bottom: 1.4rem;">You are not starting from nothing. Three lessons built the exact skills this challenge needs. Remember what each one taught you to be.</p>
+    <div class="identity-trio">
+      <div class="identity-step i1">
+        <span class="is-icon">🧩</span>
+        <div class="is-line">Engineers solve problems.</div>
+        <div class="is-body">From Engineering Design. You learned to turn a request into a solution by building, testing, and improving. That is the whole shape of today.</div>
+      </div>
+      <div class="identity-step i2">
+        <span class="is-icon">🧰</span>
+        <div class="is-line">Engineers choose materials for what they need them to do.</div>
+        <div class="is-body">From Choosing Materials. You learned that a material is right or wrong because of its properties, not because it looks nice.</div>
+      </div>
+      <div class="identity-step i3">
+        <span class="is-icon">📐</span>
+        <div class="is-line">Engineers communicate so others can build.</div>
+        <div class="is-body">From Designing to Scale. You learned that a drawing only works when someone else can build from it exactly.</div>
+      </div>
+    </div>
+    <div class="identity-now">Today you use all three at once. Solve the problem, choose the materials, and communicate the plan. That is what an engineer does. Now it is you.</div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Frame an authentic problem and slow students down to define it before building, the first move of the design process.</li>
+            <li>Deliberately revisit the three prior engineering identities so students realize they already hold every skill the challenge needs.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Problem framing</li>
+            <li>Activating prior knowledge</li>
+            <li>Curiosity and purpose</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Classroom checkpoint</div>
+          <ul class="edu-note-text">
+            <li>Ask each team to restate the problem in one sentence before moving on.</li>
+            <li>No identity statement is added; the three prior ones are intentionally reused.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     STAGE 2 · CRITERIA AND CONSTRAINTS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="stage2" style="background: var(--dark);">
+  <div class="container">
+    <div class="stage-stamp"><span class="ss-dot">2</span> Stage Two &middot; Criteria and Constraints</div>
+    <h2 class="section-title">What Counts as Success?</h2>
+    <p class="section-desc">Before designing, engineers pin down two lists. <strong style="color:var(--teal);">Criteria</strong> are what the solution must do to succeed. <strong style="color:var(--orange);">Constraints</strong> are the limits you must work inside. Read each item from Floatia's request and decide which it is. Tag all five.</p>
+
+    <div class="cc-sorter" id="ccSorter">
+      <div class="cc-item" data-answer="criteria" data-why="This is something the vessel must do to succeed. If it does not float, it has failed the job, so it is a criterion.">
+        <div class="cc-prompt">The vessel must float on the water by itself.</div>
+        <div class="cc-btns">
+          <button type="button" class="cc-btn" data-pick="criteria">Criterion</button>
+          <button type="button" class="cc-btn" data-pick="constraint">Constraint</button>
+        </div>
+        <div class="cc-fb"></div>
+      </div>
+      <div class="cc-item" data-answer="criteria" data-why="Carrying the cargo is a goal the design has to reach, so it is a criterion. It is one of the tests your prototype must pass.">
+        <div class="cc-prompt">The vessel must still float while carrying the cargo.</div>
+        <div class="cc-btns">
+          <button type="button" class="cc-btn" data-pick="criteria">Criterion</button>
+          <button type="button" class="cc-btn" data-pick="constraint">Constraint</button>
+        </div>
+        <div class="cc-fb"></div>
+      </div>
+      <div class="cc-item" data-answer="constraint" data-why="You can only use the materials handed to your team. That is a limit you design inside, which makes it a constraint.">
+        <div class="cc-prompt">You may only use the materials your team is given.</div>
+        <div class="cc-btns">
+          <button type="button" class="cc-btn" data-pick="criteria">Criterion</button>
+          <button type="button" class="cc-btn" data-pick="constraint">Constraint</button>
+        </div>
+        <div class="cc-fb"></div>
+      </div>
+      <div class="cc-item" data-answer="constraint" data-why="A time limit does not describe what the vessel does. It limits how you work, so it is a constraint.">
+        <div class="cc-prompt">Your team has a set amount of class time to build.</div>
+        <div class="cc-btns">
+          <button type="button" class="cc-btn" data-pick="criteria">Criterion</button>
+          <button type="button" class="cc-btn" data-pick="constraint">Constraint</button>
+        </div>
+        <div class="cc-fb"></div>
+      </div>
+      <div class="cc-item" data-answer="criteria" data-why="Staying steady enough not to tip is a performance goal the vessel must meet, so it is a criterion.">
+        <div class="cc-prompt">The vessel must stay steady and not tip over.</div>
+        <div class="cc-btns">
+          <button type="button" class="cc-btn" data-pick="criteria">Criterion</button>
+          <button type="button" class="cc-btn" data-pick="constraint">Constraint</button>
+        </div>
+        <div class="cc-fb"></div>
+      </div>
+    </div>
+
+    <div class="artifact-note">
+      <span class="an-icon">📝</span>
+      <div>
+        <div class="an-label">Your Artifact</div>
+        <div class="an-body">On paper, make two columns titled Criteria and Constraints. Write Floatia's five items in the right column, then add any your team decides on, such as a maximum size. You will check every design decision against this list.</div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Criteria and constraints are the backbone of the design process and the measuring stick for every later decision and defense.</li>
+            <li>The sorter forces a judgment on each item rather than passive reading, then explains the reasoning.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Categorization</li>
+            <li>Immediate feedback</li>
+            <li>Generation effect</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Analyze</li>
+            <li>DOK 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Classroom checkpoint</div>
+          <ul class="edu-note-text">
+            <li>Approve each team's criteria and constraints list before they build.</li>
+            <li>Applies 6.MS-ETS1-1 as a supporting skill inside the capstone.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     STAGE 3 · CHOOSE APPROPRIATE MATERIALS
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="stage3" style="background: var(--dark2);">
+  <div class="container">
+    <div class="stage-stamp"><span class="ss-dot">3</span> Stage Three &middot; Choose Materials</div>
+    <h2 class="section-title">Right Material for the Job</h2>
+    <p class="section-desc">A material is right or wrong because of what it does, not how it looks. For each part of your vessel, choose the material whose properties fit the job. Pick one for each. You will get an engineer's read on your choice.</p>
+
+    <div class="bench-card">
+      <div class="bench-progress">Decisions made <strong id="matCount">0</strong> of 3</div>
+      <div id="matPlan"></div>
+      <div class="bench-complete" id="matComplete"></div>
+    </div>
+
+    <div class="artifact-note">
+      <span class="an-icon">🧰</span>
+      <div>
+        <div class="an-label">Your Artifact</div>
+        <div class="an-body">Build a material decision table on paper with three columns: the part, the material you chose, and the property that makes it right for the job. This table is half of your defense in Stage 6.</div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Applies the Choosing Materials skill: match a material to a job by its properties rather than its appearance.</li>
+            <li>The reveal always names the property that made a choice work, keeping the reasoning visible.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Decision before feedback</li>
+            <li>Property to function mapping</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Apply to Analyze</li>
+            <li>DOK 2 to 3</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Classroom checkpoint</div>
+          <ul class="edu-note-text">
+            <li>Materials are a menu, not a mandate. Teams may justify a different choice with a property reason.</li>
+            <li>Applies 6.MS-ETS2-1(MA) and 6.MS-ETS2-2(MA) as supporting skills.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     STAGE 4 · CREATE A SCALED DESIGN
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="stage4" style="background: var(--dark);">
+  <div class="container">
+    <div class="stage-stamp"><span class="ss-dot">4</span> Stage Four &middot; Create a Scaled Design</div>
+    <h2 class="section-title">Draw It So a Teammate Can Build It</h2>
+    <p class="section-desc">Floatia builds from your drawing, so the plan has to communicate. Draw your vessel to scale on grid paper. Then use this checklist to be sure a teammate could build it without asking you a single question. Check each item once your drawing has it.</p>
+
+    <div class="chk-list" id="scaleCheck">
+      <label class="chk-item"><input type="checkbox">
+        <span class="chk-text">My drawing has a <strong>scale</strong>, so the size on paper connects to the real vessel.</span></label>
+      <label class="chk-item"><input type="checkbox">
+        <span class="chk-text">Every part is drawn in <strong>true proportion</strong>, shrunk by the same amount everywhere.</span></label>
+      <label class="chk-item"><input type="checkbox">
+        <span class="chk-text">The key parts have <strong>measurements</strong> written on them, such as length and width.</span></label>
+      <label class="chk-item"><input type="checkbox">
+        <span class="chk-text">Each part is <strong>labeled</strong>, so a builder knows what it is and where it goes.</span></label>
+      <label class="chk-item"><input type="checkbox">
+        <span class="chk-text">There is a <strong>scale bar</strong> or note, so any builder can read the real sizes.</span></label>
+    </div>
+    <div class="chk-meter" id="scaleMeter">0 of 5 checked</div>
+    <div class="chk-done" id="scaleDone"><strong>Blueprint ready.</strong> A teammate could now build your vessel from the drawing alone. That is what designing to scale is for. Trade drawings with another team and see if they can read yours.</div>
+
+    <div class="artifact-note">
+      <span class="an-icon">📐</span>
+      <div>
+        <div class="an-label">Your Artifact</div>
+        <div class="an-body">A scaled drawing of your vessel on grid paper with a scale, measurements, labels, and a scale bar. This drawing is the plan you build from and part of your defense.</div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Applies Designing to Scale so the plan can be built by someone else, the heart of communicating a design.</li>
+            <li>The checklist makes the standard for a buildable drawing concrete and self-checkable.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Success criteria made visible</li>
+            <li>Self-assessment</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Apply to Create</li>
+            <li>DOK 3</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Classroom checkpoint</div>
+          <ul class="edu-note-text">
+            <li>Approve the scaled drawing before any team starts building.</li>
+            <li>Applies 6.MS-ETS1-5(MA) as a supporting skill.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     STAGE 5 · BUILD AND TEST A PROTOTYPE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="stage5" style="background: var(--dark2);">
+  <div class="container">
+    <div class="stage-stamp"><span class="ss-dot">5</span> Stage Five &middot; Build and Test</div>
+    <h2 class="section-title">Build the Prototype. Then Test It.</h2>
+    <p class="section-desc">Now build your vessel from your drawing and put it in the water. A prototype is meant to be tested, not admired. Run the test, then record what actually happened below. Be honest. A test that reveals a problem is a success, because now you know what to fix.</p>
+
+    <div class="lab-grid">
+      <div class="lab-cell">
+        <h4>Test 1 &middot; Empty float</h4>
+        <p>With no cargo, does the vessel float on its own?</p>
+        <select id="labFloat" aria-label="Empty float result">
+          <option value="">Select a result</option>
+          <option value="yes">It floats</option>
+          <option value="low">Floats, but sits very low</option>
+          <option value="no">It sinks</option>
+        </select>
+      </div>
+      <div class="lab-cell">
+        <h4>Test 2 &middot; Cargo load</h4>
+        <p>Add the cargo one piece at a time. What happens?</p>
+        <select id="labCargo" aria-label="Cargo result">
+          <option value="">Select a result</option>
+          <option value="yes">Holds the full cargo</option>
+          <option value="some">Holds some, then sinks</option>
+          <option value="no">Sinks with any cargo</option>
+        </select>
+      </div>
+      <div class="lab-cell">
+        <h4>Test 3 &middot; Stability</h4>
+        <p>Does the loaded vessel stay steady, or tip?</p>
+        <select id="labStable" aria-label="Stability result">
+          <option value="">Select a result</option>
+          <option value="yes">Stays steady</option>
+          <option value="wobble">Wobbles but recovers</option>
+          <option value="no">Tips and spills</option>
+        </select>
+      </div>
+    </div>
+    <div class="lab-btn-wrap">
+      <button type="button" class="lab-btn" id="labBtn">Read My Results</button>
+    </div>
+    <div class="lab-readout" id="labReadout"></div>
+
+    <div class="artifact-note">
+      <span class="an-icon">📊</span>
+      <div>
+        <div class="an-label">Your Artifact</div>
+        <div class="an-body">A test data record: what you tried, what happened, and how much cargo it held before failing. Keep the numbers. They are the evidence you use to decide what to redesign.</div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>This is the assessed core of 6.MS-ETS2-3(MA): construct a prototype and test it against the criteria.</li>
+            <li>The readout treats a failed test as useful data, not a loss, and points toward the redesign in Stage 7.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Learning from feedback</li>
+            <li>Evidence-based reasoning</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Apply to Evaluate</li>
+            <li>DOK 3 to 4</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Safety note</div>
+          <ul class="edu-note-text">
+            <li>Water away from outlets, wipe spills at once, and no drinking the test water.</li>
+            <li>Have teams record cargo held as a number to compare across redesigns.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     STAGE 6 · EXPLAIN AND DEFEND
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="stage6" style="background: var(--dark);">
+  <div class="container">
+    <div class="stage-stamp"><span class="ss-dot">6</span> Stage Six &middot; Explain and Defend</div>
+    <h2 class="section-title">Defend Your Engineering Decisions</h2>
+    <p class="section-desc">Anyone can build something. An engineer can explain why they built it that way. To defend a decision, tie a choice to a reason and a result. Build one engineering claim below, then write your own for the rest of your design.</p>
+
+    <div class="claim-build">
+      <div class="claim-line">
+        We chose
+        <select id="claimPart" aria-label="Part or material choice">
+          <option value="">a wide, flat hull</option>
+          <option value="a wide, flat hull">a wide, flat hull</option>
+          <option value="foil for the hull">foil for the hull</option>
+          <option value="craft sticks for the frame">craft sticks for the frame</option>
+          <option value="a low, centered cargo space">a low, centered cargo space</option>
+        </select>
+        because
+        <select id="claimReason" aria-label="Reason">
+          <option value="">it spreads weight over more water</option>
+          <option value="it spreads weight over more water">it spreads weight over more water</option>
+          <option value="it is light and easy to shape">it is light and easy to shape</option>
+          <option value="it is stiff and holds its shape">it is stiff and holds its shape</option>
+          <option value="it keeps the load low and balanced">it keeps the load low and balanced</option>
+        </select>,
+        and our test showed
+        <select id="claimResult" aria-label="Test result">
+          <option value="">it held more cargo before sinking</option>
+          <option value="it held more cargo before sinking">it held more cargo before sinking</option>
+          <option value="it floated higher when empty">it floated higher when empty</option>
+          <option value="it stayed steady and did not tip">it stayed steady and did not tip</option>
+          <option value="it stopped spilling the load">it stopped spilling the load</option>
+        </select>.
+      </div>
+      <div class="claim-btn-wrap">
+        <button type="button" class="claim-btn" id="claimBtn">Read My Claim Back</button>
+      </div>
+      <div class="claim-out" id="claimOut"></div>
+    </div>
+
+    <div class="artifact-note">
+      <span class="an-icon">🗣️</span>
+      <div>
+        <div class="an-label">Your Artifact</div>
+        <div class="an-body">A written engineering explanation, two or three claims long, where each claim links a choice to a reason and to test evidence. This is how engineers show their design was a decision, not a guess.</div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Defending decisions with evidence is part of the assessed standard and the deepest thinking in the challenge.</li>
+            <li>The sentence frame models the choice, reason, evidence structure before students write their own.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Self-explanation</li>
+            <li>Claim, evidence, reasoning</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Analyze to Evaluate</li>
+            <li>DOK 3 to 4</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Classroom checkpoint</div>
+          <ul class="edu-note-text">
+            <li>Run a short design review where teams defend one decision aloud and take a question.</li>
+            <li>The frame is a scaffold, not a script. Push students to write claims in their own words.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     STAGE 7 · REFLECT AND IMPROVE
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="stage7" style="background: var(--dark2);">
+  <div class="container">
+    <div class="stage-stamp"><span class="ss-dot">7</span> Stage Seven &middot; Reflect and Improve</div>
+    <h2 class="section-title">Redesign Like an Engineer</h2>
+    <p class="section-desc">No engineer stops at the first build. The best teams look at their test data and change one thing on purpose. Before you read the engineering habit below, commit to an answer.</p>
+
+    <div class="question-pause predict-pause" id="improvePredict">
+      <div class="qp-row">
+        <span class="question-pause-icon">🔧</span>
+        <span class="question-pause-text">Your vessel held some cargo, then sank. <strong>What is the smartest next move?</strong></span>
+      </div>
+      <div class="predict-buttons">
+        <button type="button" class="predict-btn">Change one thing and test again</button>
+        <button type="button" class="predict-btn">Rebuild it completely from scratch</button>
+        <button type="button" class="predict-btn">Call the first result final</button>
+      </div>
+    </div>
+
+    <div class="predict-gated" data-gate="improvePredict">
+      <div class="name-it green-it">
+        <div class="name-it-label">The Engineering Habit</div>
+        <p>Change <strong>one thing on purpose</strong>, then test again. If you change everything at once, you never learn which change helped. A wider hull, a lower load, or a stiffer frame is one clear move you can measure against your last result. That is iteration, and it is how real designs get better.</p>
+      </div>
+      <div class="reflect-box">
+        <textarea id="reflectText" placeholder="One change we will make and why: ..."></textarea>
+        <div class="reflect-note">This box is just for your thinking. Nothing here is saved or sent. Copy your best idea onto your redesign notes.</div>
+      </div>
+    </div>
+
+    <div class="artifact-note">
+      <span class="an-icon">🔁</span>
+      <div>
+        <div class="an-label">Your Artifact</div>
+        <div class="an-body">Redesign notes: the one change you chose, the reason from your test data, and what happened when you tested the new version. A before and after is the clearest proof of engineering.</div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Refining a prototype from test results completes 6.MS-ETS2-3(MA) and models real engineering.</li>
+            <li>Predicting first, then reflecting, turns a single build into a transferable habit of mind.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Iteration and controlled change</li>
+            <li>Metacognition</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Evaluate to Create</li>
+            <li>DOK 4</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Classroom checkpoint</div>
+          <ul class="edu-note-text">
+            <li>Require one measured redesign so the before and after can be compared with numbers.</li>
+            <li>The reflection textarea is local only and never submitted anywhere.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUICK RECALL (reuses wireQR engine: qr1 / qr2)
+═══════════════════════════════════════════════════════════════════════ -->
+<section id="recall" style="background: var(--dark); padding-top: 3.5rem; padding-bottom: 3.5rem; scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Quick Check</span>
+    <h2 class="section-title">Two Quick Checks</h2>
+    <p class="section-desc">Two fast questions before the quiz. These are not graded. Pulling the answer from memory now helps it stick.</p>
+
+    <div class="qr-card" id="qrCard1">
+      <div class="qr-eyebrow">Quick Check 1</div>
+      <div class="qr-sub">Choose the best answer.</div>
+      <div class="qr-q">Your prototype sinks under half the cargo. What is the best next step?</div>
+      <div class="qr-options" id="qr1Opts">
+        <label><input type="radio" name="qr1" value="0"><span>Throw the design out and start over from nothing</span></label>
+        <label><input type="radio" name="qr1" value="1"><span>Change one thing, such as widening the hull, then test again</span></label>
+        <label><input type="radio" name="qr1" value="2"><span>Decide the first result is final and stop</span></label>
+        <label><input type="radio" name="qr1" value="3"><span>Add decoration so it looks more finished</span></label>
+      </div>
+      <div class="qr-feedback" id="qr1Feedback"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr1Check">Check Answer</button>
+        <button class="qr-retry" id="qr1Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <div class="qr-card" id="qrCard2">
+      <div class="qr-eyebrow">Quick Check 2</div>
+      <div class="qr-sub">Choose the best answer.</div>
+      <div class="qr-q">Floatia will build your vessel from your drawing. What makes the drawing good engineering?</div>
+      <div class="qr-options" id="qr2Opts">
+        <label><input type="radio" name="qr2" value="0"><span>Someone else could build it exactly from the scale, measurements, and labels</span></label>
+        <label><input type="radio" name="qr2" value="1"><span>It is shaded and colored to look realistic</span></label>
+        <label><input type="radio" name="qr2" value="2"><span>It took the longest to draw</span></label>
+        <label><input type="radio" name="qr2" value="3"><span>Only the designer can understand it</span></label>
+      </div>
+      <div class="qr-feedback" id="qr2Feedback"></div>
+      <div class="qr-actions">
+        <button class="qr-check" id="qr2Check">Check Answer</button>
+        <button class="qr-retry" id="qr2Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Two low-stakes retrieval checks on the two ideas the challenge leans on most: iteration and building from a clear drawing.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Retrieval practice</li>
+            <li>Immediate feedback</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Apply</li>
+            <li>DOK 2</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Keyboard friendly radios with visible focus</li>
+            <li>Try Again allows a second attempt with no penalty</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     QUIZ
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+.quiz-section { background: var(--dark2); }
+.quiz-mode-toggle {
+  display: flex; justify-content: center; gap: 0.6rem; margin-bottom: 0.7rem;
+}
+.mode-btn {
+  font-family: 'Nunito', sans-serif; font-size: 0.88rem; font-weight: 800;
+  letter-spacing: 0.04em; padding: 0.6rem 1.6rem; border-radius: 99px;
+  cursor: pointer; transition: all 0.2s;
+  background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.16); color: var(--text-muted);
+}
+.mode-btn:hover { border-color: rgba(245,200,66,0.5); }
+.mode-btn.active {
+  background: rgba(245,200,66,0.14); border-color: var(--gold); color: var(--gold);
+}
+.mode-hint { text-align: center; margin-bottom: 1.8rem; min-height: 1.4rem; }
+.mode-hint span { display: none; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+.mode-hint span.visible { display: inline; }
+
+.student-info-box {
+  background: var(--card); border: 1px solid rgba(245,200,66,0.25);
+  border-radius: 16px; padding: 1.5rem 1.6rem; margin-bottom: 2rem;
+}
+.student-info-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--gold); margin-bottom: 0.2rem; }
+.student-info-sub { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem; }
+.info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.9rem; }
+.info-field label {
+  display: block; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem;
+}
+.info-field input, .info-field select {
+  width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px;
+  background: var(--dark2); border: 1.5px solid rgba(255,255,255,0.14);
+  color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 700;
+  outline: none; transition: border-color 0.2s;
+}
+.info-field input:focus, .info-field select:focus { border-color: var(--gold); }
+.info-error { display: none; font-size: 0.74rem; font-weight: 800; color: #e87070; margin-top: 0.25rem; }
+.info-error.show { display: block; }
+
+.quiz-progress-sticky { position: sticky; top: 64px; z-index: 50; padding: 0.4rem 0; background: var(--dark2); }
+.quiz-progress { display: flex; align-items: center; gap: 0.9rem; }
+.progress-bar { flex: 1; height: 10px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--teal), var(--green)); border-radius: 99px; transition: width 0.3s; }
+.progress-text { font-size: 0.78rem; font-weight: 900; letter-spacing: 0.06em; color: var(--text-muted); white-space: nowrap; }
+
+.quiz-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+  padding: 1.6rem 1.7rem; margin-top: 1.4rem;
+}
+.quiz-header { display: flex; gap: 0.9rem; align-items: flex-start; margin-bottom: 1rem; }
+.quiz-num {
+  flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 50%;
+  background: rgba(245,200,66,0.12); border: 1px solid rgba(245,200,66,0.35);
+  color: var(--gold); font-family: 'Fredoka One', cursive; font-size: 0.95rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.quiz-question-text { font-family: 'Fredoka One', cursive; font-size: 1.08rem; line-height: 1.45; color: var(--text); padding-top: 0.2rem; }
+.quiz-options { display: grid; gap: 0.55rem; padding-left: 2.9rem; }
+.quiz-option {
+  display: flex; align-items: flex-start; gap: 0.7rem; text-align: left;
+  background: var(--dark2); border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 12px; padding: 0.75rem 0.95rem;
+  font-family: 'Nunito', sans-serif; font-size: 0.92rem; font-weight: 600; color: var(--text);
+  line-height: 1.5; cursor: pointer; transition: all 0.2s;
+}
+.quiz-option:hover:not(.disabled) { border-color: rgba(59,200,232,0.55); transform: translateX(3px); }
+.quiz-option.selected { border-color: var(--teal); background: rgba(59,200,232,0.1); }
+.quiz-option.correct { border-color: var(--green); background: rgba(46,204,113,0.12); }
+.quiz-option.incorrect { border-color: var(--red); background: rgba(231,76,60,0.1); }
+.quiz-option.revealed-correct { border-color: rgba(46,204,113,0.6); }
+.quiz-option.disabled { cursor: default; }
+.option-letter {
+  flex-shrink: 0; width: 1.55rem; height: 1.55rem; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.25); font-size: 0.78rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center; margin-top: 0.1rem;
+}
+.option-feedback { display: none; margin-top: 0.9rem; padding: 0.8rem 1.05rem 0.8rem 1rem; border-radius: 10px; font-size: 0.88rem; line-height: 1.6; margin-left: 2.9rem; }
+.option-feedback.correct-fb { display: block; background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.3); color: #a8e6c4; }
+.option-feedback.incorrect-fb { display: block; background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.3); color: #ecb3b3; }
+
+.quiz-submit-wrap { text-align: center; margin-top: 2rem; }
+.quiz-submit-btn {
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  color: #fff; border: none; padding: 0.95rem 3rem; border-radius: 14px;
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.03em;
+  cursor: pointer; transition: all 0.25s;
+}
+.quiz-submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(46,204,113,0.35); }
+.quiz-submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.score-board {
+  display: none; text-align: center; margin-top: 2.5rem;
+  background: var(--card); border: 1px solid rgba(245,200,66,0.3);
+  border-radius: 20px; padding: 2.2rem 1.8rem;
+}
+.score-board.show { display: block; animation: predictFadeUp 0.4s ease both; }
+.big-score { font-family: 'Fredoka One', cursive; font-size: 3rem; color: var(--gold); margin-bottom: 0.4rem; }
+.score-board p { font-size: 1rem; color: var(--text-muted); margin-bottom: 1.4rem; }
+.mystery-loop {
+  max-width: 620px; margin: 0 auto 1.5rem; text-align: left;
+  background: rgba(245,200,66,0.06); border: 1px solid rgba(245,200,66,0.22);
+  border-radius: 12px; padding: 1rem 1.3rem;
+  font-size: 0.9rem; color: var(--text-muted); line-height: 1.65;
+}
+.mystery-loop .ml-label {
+  display: block; font-size: 0.68rem; font-weight: 900;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 0.4rem;
+}
+.mystery-loop strong { color: var(--gold); }
+
+.score-submitted {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--green); background: rgba(46,204,113,0.1);
+  border: 1px solid rgba(46,204,113,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.score-error {
+  display: block; font-size: 0.8rem; font-weight: 800;
+  color: #e87070; background: rgba(231,76,60,0.1);
+  border: 1px solid rgba(231,76,60,0.3);
+  padding: 0.4rem 1rem; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.reset-btn {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  color: #fff; border: none;
+  padding: 0.85rem 2.5rem; border-radius: 12px;
+  font-weight: 800; font-size: 1rem;
+  cursor: pointer; font-family: 'Nunito', sans-serif;
+  transition: all 0.25s;
+}
+.reset-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52,152,219,0.4); }
+
+@media (max-width: 640px) { .info-fields { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .quiz-options { padding-left: 0; }
+  .option-feedback { padding-left: 1rem; margin-left: 0; }
+}
+</style>
+
+<section id="quiz" class="quiz-section">
+  <div class="container">
+    <span class="section-label">Evaluate · Quiz</span>
+    <h2 class="section-title">Check Your Understanding</h2>
+    <p class="section-desc">Ten questions covering everything you discovered, including brand new drawings to judge. For each one, ask whether another person could build it exactly. Answer every question, then submit.</p>
+
+    <!-- Mode Toggle -->
+    <div class="quiz-mode-toggle">
+      <button class="mode-btn active" id="btn-practice"  onclick="cmSetQuizMode('practice')">Practice Mode</button>
+      <button class="mode-btn"        id="btn-classroom" onclick="cmSetQuizMode('classroom')">Classroom Mode</button>
+    </div>
+    <div class="mode-hint">
+      <span id="hint-practice"  class="visible">Your score will not be sent</span>
+      <span id="hint-classroom">Your score will be sent to your teacher</span>
+    </div>
+
+    <!-- Student Info Box (Classroom Mode only) -->
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
+      <div class="info-fields">
+        <div class="info-field">
+          <label for="cm-student-name">Your Name</label>
+          <input type="text" id="cm-student-name" placeholder="First Last" autocomplete="off">
+          <div class="info-error" id="cm-err-name">Please enter your name.</div>
+        </div>
+        <div class="info-field">
+          <label for="cm-teacher-select">Teacher</label>
+          <select id="cm-teacher-select">
+            <option value="">- Select -</option>
+            <option value="MrBrown">Mr. Brown</option>
+            <option value="MsGay">Ms. Gay</option>
+          </select>
+          <div class="info-error" id="cm-err-teacher">Please select your teacher.</div>
+        </div>
+        <div class="info-field">
+          <label for="cm-block-select">Block</label>
+          <select id="cm-block-select">
+            <option value="">- Select -</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+          </select>
+          <div class="info-error" id="cm-err-block">Please select your block.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Progress Bar -->
+    <div class="quiz-progress-sticky">
+      <div class="quiz-progress">
+        <div class="progress-bar"><div class="progress-fill" id="cm-progress"></div></div>
+        <div class="progress-text" id="cm-progress-text">0 / 10 selected</div>
+      </div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="cm-quiz-questions"></div>
+
+    <!-- Submit -->
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="cm-submit-btn" onclick="cmSubmitQuiz()" disabled>Submit Quiz</button>
+    </div>
+
+    <!-- Score Board -->
+    <div class="score-board" id="cm-score">
+      <div class="big-score" id="cm-score-num"></div>
+      <p id="cm-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">🔍 The Question You Came In With</span>
+        You started this lesson with one question: <strong>"How do you share an idea so clearly that someone else can build it exactly?"</strong> If you can draw it to scale, measure it, and label it, you have answered it.
+      </div>
+      <div id="cm-submit-status"></div>
+      <button class="reset-btn" onclick="cmResetQuiz()">Try Again</button>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Measure understanding with ten items, most of them new drawings to judge rather than definitions.</li>
+            <li>Distractors are often the "make it prettier" choice, so wrong answers still surface the big idea: communication over decoration.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Retrieval practice</li>
+            <li>Transfer</li>
+            <li>Feedback loops</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Understand to Apply</li>
+            <li>DOK 1 to 2 (mix of vocabulary recall and judging fresh drawings for buildability)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Practice mode works independently with no submission</li>
+            <li>Plausible, evenly placed options of varied length</li>
+            <li>Progress bar and required fields before classroom submit</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MORE LEARNING
+═══════════════════════════════════════════════════════════════════════ -->
+<style>
+#continue { background: var(--dark); padding-top: 4rem; padding-bottom: 5rem; scroll-margin-top: 1.6rem; }
+.continue-intro {
+  text-align: left;
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 720px;
+  margin: 0 auto 2.4rem 0;
+}
+.continue-intro strong { color: var(--gold); }
+.continue-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin-top: 0;
+}
+@media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+.cont-card {
+  border-radius: 18px;
+  padding: 1.5rem 1.5rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.cont-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.cont-card.inv { background: rgba(59,130,246,0.08);  border: 1px solid rgba(59,130,246,0.38); }
+.cont-card.les { background: rgba(245,160,40,0.08);  border: 1px solid rgba(245,160,40,0.35); }
+.cont-card.ext { background: rgba(180,127,255,0.10); border: 1px solid rgba(180,127,255,0.35); }
+.cont-card.inv::before { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
+.cont-card.les::before { background: linear-gradient(90deg, #f5a028, #f5c842); }
+.cont-card.ext::before { background: linear-gradient(90deg, #b47fff, #7c3aed); }
+.cont-card.inv:hover { border-color: rgba(59,130,246,0.7);  box-shadow: 0 14px 40px rgba(59,130,246,0.2);  transform: translateY(-4px); }
+.cont-card.les:hover { border-color: rgba(245,160,40,0.65); box-shadow: 0 14px 40px rgba(245,160,40,0.18); transform: translateY(-4px); }
+.cont-card.ext:hover { border-color: rgba(180,127,255,0.65);box-shadow: 0 14px 40px rgba(180,127,255,0.15);transform: translateY(-4px); }
+.cont-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.2rem; }
+.cont-card.inv .cont-icon { background: rgba(59,130,246,0.2);  }
+.cont-card.les .cont-icon { background: rgba(245,160,40,0.18); }
+.cont-card.ext .cont-icon { background: rgba(180,127,255,0.22);}
+.cont-cat { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; }
+.cont-card.inv .cont-cat { color: #3B82F6; }
+.cont-card.les .cont-cat { color: #f5a028; }
+.cont-card.ext .cont-cat { color: #b47fff; }
+.cont-name { font-family: 'Fredoka One', cursive; font-size: 1.18rem; color: var(--text); line-height: 1.3; }
+.cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
+.cont-link { display: inline-flex; align-items: center; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-decoration: none; padding: 0.4rem 1rem; border-radius: 99px; border: 1px solid; transition: all 0.2s; white-space: nowrap; align-self: flex-start; margin-top: auto; }
+.cont-card.inv .cont-link { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #93C5FD; }
+.cont-card.les .cont-link { background: rgba(245,160,40,0.1); border-color: rgba(245,160,40,0.3); color: #f5c842; }
+.cont-card.ext .cont-link { background: rgba(180,127,255,0.1); border-color: rgba(180,127,255,0.3); color: #b47fff; }
+.cont-card.soon { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.28); }
+.cont-body { flex: 1; }
+.coming-soon-tag { display: inline-block; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.8rem; border-radius: 99px; border: 1px solid rgba(122,143,166,0.3); color: var(--text-muted); background: rgba(122,143,166,0.06); margin-top: 0.7rem; }
+</style>
+
+<section id="continue">
+  <div class="container">
+    <span class="section-label">More Learning</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">Designing to scale is a skill you will use in every build. <strong>Extension challenge:</strong> pick a small object near you, like a phone stand, a mug, or a stapler. Draw it to scale on paper: choose a scale, measure the real parts, and label them. Then hand only the drawing to someone else and see if they can tell you exactly what it is and how big. If they can, your drawing communicated.</p>
+    <div class="continue-grid">
+      <div class="cont-card soon">
+        <div class="cont-icon">&#128640;</div>
+        <div class="cont-body">
+          <div class="cont-name">More Coming Soon</div>
+          <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and build challenges that put your drawings to the test are coming soon.</div>
+          <span class="coming-soon-tag">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Offer a hands-on extension that transfers the draw-to-scale move to a real object and tests it on a real person.</li>
+            <li>Hold space for investigations, simulations, and build challenges that will lead toward the Welcome to Floatia engineering challenge.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Transfer</li>
+            <li>Interest-driven extension</li>
+            <li>Metacognition</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Apply to Analyze</li>
+            <li>DOK 2 to 3</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Optional and self-paced</li>
+            <li>No penalty for skipping</li>
+            <li>Uses everyday objects, no special materials needed</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections" style="background: var(--dark2); scroll-margin-top: 2.1rem;">
+  <div class="container">
+    <span class="section-label">Connections</span>
+    <h2 class="section-title">Connections</h2>
+    <p class="section-desc">Designing to scale is one move in a bigger engineering story. Here is where it comes from and where it leads.</p>
+    <div class="continue-grid">
+      <a href="lesson_engineering-design.html" class="cont-card les">
+        <div class="cont-icon">📐</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Engineering Design</div>
+        <div class="cont-desc">Engineering Design asks what problem you are solving. Designing to Scale is how that solution finally leaves your head: the drawing is the step where an idea becomes something another person can build.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+      <a href="lesson_choosing-materials.html" class="cont-card les">
+        <div class="cont-icon">🧰</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Choosing Materials</div>
+        <div class="cont-desc">Choosing Materials decides what your design is made of. Designing to Scale shows how big to make each of those parts and puts them on a plan, so the material choice and the drawing describe the very same build.</div>
+        <span class="cont-link">Explore</span>
+      </a>
+      <div class="cont-card soon">
+        <div class="cont-icon">🏝️</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Welcome to Floatia</div>
+        <div class="cont-desc">Floatia is where it all comes together. You will define a problem, choose materials, and draw your solution to scale so a teammate can build it. Designing to Scale is the communication skill that challenge depends on.</div>
+        <span class="coming-soon-tag">Coming Soon</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LYFELABZ™</div>
+  <p class="footer-tagline">Your middle school science hub &middot; lyfelabz.com &middot; made for curious scientists everywhere</p>
+  <div class="footer-links">
+    <a href="about_lyfelabz.html">About LyfeLabz</a>
+    <a href="about_privacy.html">Privacy Policy</a>
+    <a href="about_learning-science.html" class="nav-why">Why It Works</a>
+  </div>
+  <p>&copy; 2026 LyfeLabz &middot; Educational Use</p>
+</footer>
+
+<!-- ===== SESSION TOGGLES (LS bar) ===== -->
+<script>
+if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.add('ls-active');
+</script>
+
+<!-- ===== GLOSSARY CARDS (click to expand only; one open at a time) ===== -->
+<script>
+(function(){
+  var cards = document.querySelectorAll('.glossary-card');
+  cards.forEach(function(card){
+    card.addEventListener('click', function(){
+      var isOpen = card.classList.contains('open');
+      cards.forEach(function(c){
+        c.classList.remove('open');
+        c.setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        card.classList.add('open');
+        card.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+})();
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ===== DRAWING-LANGUAGE EXPLORER ===== -->
+<script>
+(function(){
+  var steps = document.querySelectorAll('#familyGrid .cycle-step');
+  var countEl = document.getElementById('familyCount');
+  var completeEl = document.getElementById('familyComplete');
+  var opened = 0;
+  steps.forEach(function(step){
+    step.addEventListener('click', function(){
+      if (step.classList.contains('open')) return;
+      step.classList.add('open');
+      step.setAttribute('aria-expanded', 'true');
+      opened++;
+      countEl.textContent = opened;
+      if (opened === steps.length) completeEl.classList.add('visible');
+    });
+  });
+})();
+</script>
+
+<!-- ===== BLUEPRINT STUDIO ===== -->
+<script>
+(function(){
+  var PREDICT = [
+    { key: 'yes', label: 'Yes, it now communicates the idea' },
+    { key: 'no',  label: 'No, it is still just a picture' }
+  ];
+
+  var SCENARIOS = [
+    {
+      brief: '📚 You designed a <strong>bookshelf</strong> about as tall as a doorway. Now you have one sheet of paper and a builder who has never seen it. Get your design onto that page.',
+      scales: [
+        { label: 'Full size (1 to 1)', ok: false, note: 'A doorway-tall shelf will never fit on a sheet of paper at full size. Most of it would run right off the page.' },
+        { label: '1 unit = 20',        ok: true,  note: 'This shrinks the shelf just enough to fit the whole thing on the page, while every shelf is still easy to see.' },
+        { label: '1 unit = 2,000',     ok: false, note: 'That would shrink the shelf to the size of a postage stamp. It fits, but no builder could read it.' }
+      ],
+      scaleWhy: 'a shelf that tall has to be shrunk to fit a page, but not so far that the parts vanish',
+      fix: [
+        { label: 'The measurements of each shelf', ok: true },
+        { label: 'A rich wood-grain color',         ok: false },
+        { label: 'Shadows to make it look 3D',      ok: false },
+        { label: 'A decorative border',             ok: false }
+      ],
+      fixBest: 'the measurements of each shelf',
+      fixWhy: 'without numbers, two builders would guess two different sizes and build two different shelves',
+      buildable: 'Now the drawing has a scale and real measurements, so a builder can cut every part to the right size.'
+    },
+    {
+      brief: '📱 You designed a small <strong>phone stand</strong> that sits on a desk, about the size of your hand.',
+      scales: [
+        { label: 'Full size (1 to 1)', ok: true,  note: 'It is small enough to draw at its true size. The builder could even lay a real phone on the drawing to check it.' },
+        { label: '1 unit = 100',       ok: false, note: 'That would shrink a hand-sized object to a tiny speck. It fits easily, but is far too small to read.' },
+        { label: 'Scaled up 10 to 1',  ok: false, note: 'Drawing it ten times bigger than real life would run off the page and mislead the builder about its size.' }
+      ],
+      scaleWhy: 'the stand is already small enough to draw at its real size, so no shrinking is needed',
+      fix: [
+        { label: 'Labels showing the front and the resting angle', ok: true },
+        { label: 'A glossy, realistic finish',                      ok: false },
+        { label: 'Soft shadows for depth',                         ok: false },
+        { label: "The designer's signature",                       ok: false }
+      ],
+      fixBest: 'labels showing the front and the resting angle',
+      fixWhy: 'a phone stand only works if the builder knows which side faces up and how far it leans back',
+      buildable: 'With the front and the angle labeled, the builder knows exactly how to put it together.'
+    },
+    {
+      brief: '🛝 You designed a <strong>playground slide</strong> taller than an adult, to be built in a park across town.',
+      scales: [
+        { label: 'Full size (1 to 1)', ok: false, note: 'A slide is far bigger than any sheet of paper, so full size is impossible to draw.' },
+        { label: '1 unit = 50',        ok: true,  note: 'This shrinks the whole slide down to fit one page, while the steps and ramp stay readable.' },
+        { label: '1 unit = 50,000',    ok: false, note: 'That is a city-map scale. The slide would shrink to an invisible dot.' }
+      ],
+      scaleWhy: 'a slide is too big for full size, but a park-sized scale keeps it on one readable page',
+      fix: [
+        { label: 'A scale bar showing what one unit equals', ok: true },
+        { label: 'Bright, realistic coloring',              ok: false },
+        { label: 'A background scene with trees',           ok: false },
+        { label: 'Sparkle effects on the metal',            ok: false }
+      ],
+      fixBest: 'a scale bar showing what one unit equals',
+      fixWhy: 'the builders are across town and cannot ask you, so a scale bar is the only way they can turn the drawing back into real sizes',
+      buildable: 'With a scale bar on the page, any builder can read the real height of the slide, even from across town.'
+    },
+    {
+      brief: '🏠 You designed a <strong>doghouse</strong> for a medium-sized dog, with a door the dog walks through.',
+      scales: [
+        { label: '1 unit = 10',        ok: true,  note: 'A doghouse is a little too big for full size, and this scale fits it neatly on a page with room for the door.' },
+        { label: 'Full size (1 to 1)', ok: false, note: 'A doghouse is bigger than a sheet of paper, so most of it would run off the page.' },
+        { label: '1 unit = 5,000',     ok: false, note: 'That map-sized scale would shrink the doghouse to a dot no builder could use.' }
+      ],
+      scaleWhy: 'a doghouse is a little too big for full size, so a small shrink fits it on the page',
+      fix: [
+        { label: 'Correct proportions so the door is not oversized', ok: true },
+        { label: 'Fur texture drawn on the dog',                     ok: false },
+        { label: 'A painted sky behind it',                          ok: false },
+        { label: 'Fancy lettering for the title',                    ok: false }
+      ],
+      fixBest: 'correct proportions, so the door fits the dog and not the whole wall',
+      fixWhy: 'if the door is drawn too big for the walls, the builder makes a doghouse that does not hold together, even with a scale',
+      buildable: 'With every part in true proportion, the walls, roof, and door all match the real dog.'
+    }
+  ];
+
+  var numEl      = document.getElementById('studioNum');
+  var totalEl    = document.getElementById('studioTotal');
+  var briefEl    = document.getElementById('studioBrief');
+  var step2El    = document.getElementById('studioStep2');
+  var step3El    = document.getElementById('studioStep3');
+  var scalesEl   = document.getElementById('studioScales');
+  var fixEl      = document.getElementById('studioFix');
+  var predictEl  = document.getElementById('studioPredict');
+  var revealEl   = document.getElementById('studioReveal');
+  var nextEl     = document.getElementById('studioNext');
+  var nextBtn    = document.getElementById('studioNextBtn');
+  var workEl     = document.getElementById('studioWork');
+  var completeEl = document.getElementById('studioComplete');
+  if (!briefEl) return;
+
+  totalEl.textContent = SCENARIOS.length;
+  var index = 0;
+  var pickedScale = null;
+  var pickedFix = null;
+
+  function render(i) {
+    var sc = SCENARIOS[i];
+    numEl.textContent = i + 1;
+    briefEl.innerHTML = sc.brief;
+    pickedScale = null;
+    pickedFix = null;
+
+    // Step 1: scale
+    scalesEl.innerHTML = '';
+    sc.scales.forEach(function(s){
+      var b = document.createElement('button');
+      b.className = 'bench-opt';
+      b.type = 'button';
+      b.textContent = s.label;
+      b.addEventListener('click', function(){
+        if (pickedScale) return;
+        pickedScale = s;
+        b.classList.add('chosen');
+        scalesEl.querySelectorAll('.bench-opt').forEach(function(x){ x.disabled = true; });
+        step2El.classList.remove('locked-step');
+      });
+      scalesEl.appendChild(b);
+    });
+
+    // Step 2: what the drawing needs (locked until a scale is chosen)
+    step2El.classList.add('locked-step');
+    fixEl.innerHTML = '';
+    sc.fix.forEach(function(f){
+      var b = document.createElement('button');
+      b.className = 'bench-opt';
+      b.type = 'button';
+      b.textContent = f.label;
+      b.addEventListener('click', function(){
+        if (!pickedScale || pickedFix) return;
+        pickedFix = f;
+        b.classList.add('chosen');
+        fixEl.querySelectorAll('.bench-opt').forEach(function(x){ x.disabled = true; });
+        step3El.classList.remove('locked-step');
+      });
+      fixEl.appendChild(b);
+    });
+
+    // Step 3: predict (locked until a fix is chosen)
+    step3El.classList.add('locked-step');
+    predictEl.innerHTML = '';
+    PREDICT.forEach(function(p){
+      var b = document.createElement('button');
+      b.className = 'bench-opt';
+      b.type = 'button';
+      b.textContent = p.label;
+      b.addEventListener('click', function(){
+        if (!pickedFix) return;
+        if (predictEl.querySelector('.chosen')) return;
+        b.classList.add('chosen');
+        predictEl.querySelectorAll('.bench-opt').forEach(function(x){ x.disabled = true; });
+        showReveal(i, p.key);
+      });
+      predictEl.appendChild(b);
+    });
+
+    revealEl.className = 'bench-reveal';
+    revealEl.innerHTML = '';
+    nextEl.style.display = 'none';
+  }
+
+  function showReveal(i, predictKey) {
+    var sc = SCENARIOS[i];
+    var correctPredict = pickedFix.ok ? 'yes' : 'no';
+    var matched = (predictKey === correctPredict);
+
+    var verdict;
+    if (pickedFix.ok) {
+      verdict = (matched ? '✅ Exactly. ' : 'Actually, yes. ') +
+        'You added <strong>' + sc.fixBest + '</strong>, which is just what the drawing was missing. Another builder could now build this without asking you a single question.';
+    } else {
+      verdict = (matched ? '✅ Good judgment. ' : 'Not yet. ') +
+        'You added something decorative, not the piece the drawing needed. A builder would still be guessing, because the drawing is still missing <strong>' + sc.fixBest + '</strong>.';
+    }
+
+    var notesHTML = '';
+    // scale note
+    notesHTML += '<div class="bench-note' + (pickedScale.ok ? ' best' : '') + '">' +
+      '<span class="bench-note-mat">📐 Your scale</span>' +
+      '<span>' + pickedScale.note + '</span></div>';
+    // what it needed
+    notesHTML += '<div class="bench-note best">' +
+      '<span class="bench-note-mat">🧩 What it needed</span>' +
+      '<span>The drawing was missing <strong>' + sc.fixBest + '</strong>. Without it, ' + sc.fixWhy + '. ' + sc.buildable + '</span></div>';
+    // reminder
+    notesHTML += '<div class="bench-note">' +
+      '<span class="bench-note-mat">🎨 The rest</span>' +
+      '<span>Color, shading, and fancy lettering make a drawing look nicer, but a builder cannot measure or place a single part with them. A drawing communicates; it is not artwork.</span></div>';
+
+    revealEl.innerHTML =
+      '<div class="bench-verdict">' + verdict + '</div>' +
+      '<div class="bench-notes">' + notesHTML + '</div>';
+    revealEl.classList.add('visible');
+
+    nextBtn.textContent = (i + 1 < SCENARIOS.length) ? 'Next challenge →' : 'Finish in the studio →';
+    nextEl.style.display = 'block';
+  }
+
+  nextBtn.addEventListener('click', function(){
+    if (index + 1 < SCENARIOS.length) {
+      index++;
+      render(index);
+      document.getElementById('studio').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      workEl.style.display = 'none';
+      completeEl.innerHTML = '🏁 <strong>Four challenges, four drawings.</strong> Every time, the win was the same: you chose a scale that fit, then added the one thing a builder actually needed, never the decoration. That is what designing to scale is. Good engineers do not just build great ideas. They communicate those ideas so others can build them too.';
+      completeEl.classList.add('visible');
+    }
+  });
+
+  render(0);
+})();
+</script>
+
+<!-- ===== QUICK RECALL CHECKPOINTS ===== -->
+<script>
+(function(){
+  function wireQR(prefix, correctIdx, okMsg, noMsg) {
+    var opts = document.getElementById(prefix + 'Opts');
+    var fb = document.getElementById(prefix + 'Feedback');
+    var checkBtn = document.getElementById(prefix + 'Check');
+    var retryBtn = document.getElementById(prefix + 'Retry');
+
+    opts.addEventListener('change', function(e){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('selected'); });
+      e.target.closest('label').classList.add('selected');
+    });
+    checkBtn.addEventListener('click', function(){
+      var sel = opts.querySelector('input[type=radio]:checked');
+      if (!sel) {
+        fb.className = 'qr-feedback visible no';
+        fb.textContent = 'Pick an answer first.';
+        return;
+      }
+      var val = parseInt(sel.value, 10);
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      if (val === correctIdx) {
+        sel.closest('label').classList.add('correct');
+        fb.className = 'qr-feedback visible ok';
+        fb.textContent = okMsg;
+        checkBtn.style.display = 'none';
+        retryBtn.style.display = 'none';
+        [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = true; });
+      } else {
+        sel.closest('label').classList.add('wrong');
+        fb.className = 'qr-feedback visible no';
+        fb.textContent = noMsg;
+        checkBtn.style.display = 'none';
+        retryBtn.style.display = 'inline-flex';
+      }
+    });
+    retryBtn.addEventListener('click', function(){
+      [...opts.querySelectorAll('label')].forEach(function(l){ l.classList.remove('correct','wrong','selected'); });
+      [...opts.querySelectorAll('input')].forEach(function(i){ i.disabled = false; i.checked = false; });
+      fb.className = 'qr-feedback';
+      fb.textContent = '';
+      retryBtn.style.display = 'none';
+      checkBtn.style.display = 'inline-flex';
+      opts.querySelector('input').focus();
+    });
+  }
+
+  wireQR('qr1', 1,
+    'Correct! Without labels, the builder does not know what each line is or where it goes, so parts can end up in the wrong place. A drawing has to name its parts to communicate.',
+    'Not quite. The scale and measurements are there, but without labels the builder cannot tell what each part is or where it goes, so parts can land in the wrong spot.');
+  wireQR('qr2', 0,
+    'Correct! The best engineering drawing is the one someone else can build from. The plain drawing has scale and measurements, so it communicates, even though it is not fancy.',
+    'Not quite. A drawing is judged by whether someone can build from it, not by how it looks. The plain drawing has the scale and measurements a builder actually needs.');
+})();
+</script>
+
+<!-- ===== QUIZ ===== -->
+<script>
+// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
+var CM_SCRIPT_URLS = {
+  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
+  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
+};
+
+// ── QUIZ STATE ────────────────────────────────────────────────────────
+var cmQuizState = { selected: [], submitted: false };
+var cmQuizMode  = 'practice';
+
+// ── QUIZ QUESTIONS ────────────────────────────────────────────────────
+var cmQuizQuestions = [
+  {
+    q: "What is the main job of an engineering drawing?",
+    options: [
+      "To be framed and admired as a work of art",
+      "To use up extra paper in the design room",
+      "To communicate a design so someone else can build it",
+      "To keep the design a secret from other people"
+    ],
+    correct: 2,
+    explanation: "A drawing exists to move an idea from your head into someone else's hands. Its job is communication, not decoration."
+  },
+  {
+    q: "A drawing is made to scale so a big object fits on paper. What stays true when it is drawn to scale?",
+    options: [
+      "Every part shrinks by the same amount, so the proportions stay correct",
+      "Only the tallest part is drawn and the rest are left off",
+      "The exact colors of the real object are copied",
+      "The drawing ends up larger than the real object"
+    ],
+    correct: 0,
+    explanation: "Scaling shrinks every part by the same amount, so a part twice as long in real life is still twice as long on paper. That is what keeps the drawing honest."
+  },
+  {
+    q: "You need to draw a full-size house so it fits on one sheet of paper. Which scale makes the most sense?",
+    options: [
+      "Full size, one to one, so nothing is shrunk",
+      "One unit on paper stands for 100 units in real life",
+      "Scaled up, five to one, so the drawing is bigger than the house",
+      "No scale at all, just a quick sketch"
+    ],
+    correct: 1,
+    explanation: "A house is far too big for full size, so you shrink it. A scale like 1 unit for 100 fits the whole house on the page while keeping it readable."
+  },
+  {
+    q: "What does a scale bar on a drawing tell a builder?",
+    options: [
+      "The name of the person who made the drawing",
+      "Which colors to paint the finished object",
+      "How heavy the finished object will be",
+      "What one unit on the drawing stands for in real life"
+    ],
+    correct: 3,
+    explanation: "A scale bar is the key that lets any builder turn the drawing back into real sizes, without ever meeting the designer."
+  },
+  {
+    q: "Two builders get the same drawing with a scale and measurements, but nothing on it is labeled. What is the most likely problem?",
+    options: [
+      "The drawing is far too colorful to follow",
+      "They cannot begin, because a drawing with no labels also has no scale",
+      "They may put parts in the wrong place, since nothing names what each part is",
+      "The finished object will come out the wrong color"
+    ],
+    correct: 2,
+    explanation: "Labels name each part and show how it fits. Without them, the sizes may be right but the parts can still end up in the wrong places."
+  },
+  {
+    q: "One drawing of a chair is a beautiful, shaded painting with no measurements. Another is plain but has a scale, dimensions, and labels. Which is the better engineering drawing?",
+    options: [
+      "The plain one, because a builder could make it exactly",
+      "The painting, because it looks more realistic and finished",
+      "The painting, because it clearly took much more effort",
+      "Neither, because a chair is too simple to need a drawing"
+    ],
+    correct: 0,
+    explanation: "An engineering drawing is judged by whether someone can build from it. The plain drawing communicates the real sizes; the painting only looks good."
+  },
+  {
+    q: "You are drawing a tiny watch gear so small it is hard to see. Which choice would help you show it clearly?",
+    options: [
+      "Shrink it further with a 1 unit for 100 scale",
+      "Scale it up so the drawing is larger than the real gear",
+      "Leave the scale off so no one gets confused",
+      "Draw it in several bright colors"
+    ],
+    correct: 1,
+    explanation: "Scale works both ways. For something tiny, you scale up and draw it bigger than real life so every tooth is clear, then note the scale."
+  },
+  {
+    q: "Which of these is a model an engineer might use to communicate a design?",
+    options: [
+      "A song written about the design",
+      "An idea kept only inside your head",
+      "A scaled drawing or a small build of the design",
+      "A completely blank sheet of paper"
+    ],
+    correct: 2,
+    explanation: "A model is any representation that helps others understand an idea. A scaled drawing or a small build both let other people see and build the design."
+  },
+  {
+    q: "A drawing shows a doghouse where the door is almost as big as the whole wall, even though the real door is small. What is wrong?",
+    options: [
+      "The drawing simply needs more color and shading to look finished",
+      "The scale bar has been drawn in a font that is too fancy",
+      "Nothing is wrong, because the size of the door on paper does not matter",
+      "The proportions are wrong, so the build will not match the real doghouse"
+    ],
+    correct: 3,
+    explanation: "In a scaled drawing every part must keep its true proportion. A door drawn too big means the builder makes it wrong, even if the scale is correct."
+  },
+  {
+    q: "A classmate says, \"My design is amazing, so it does not matter if anyone else understands my drawing.\" What is the best engineering response?",
+    options: [
+      "A great idea is only useful if others can understand and build it, so the drawing has to communicate",
+      "You are right; if the idea is good enough, the drawing can be skipped",
+      "Only the person who dreamed up the design should ever be allowed to build it",
+      "Drawings are only there for decoration, so it truly does not matter"
+    ],
+    correct: 0,
+    explanation: "Good engineers do not just build great ideas; they communicate them so others can build them too. A drawing no one else understands cannot do that."
+  }
+];
+
+// ── SET QUIZ MODE ─────────────────────────────────────────────────────
+function cmSetQuizMode(mode) {
+  cmQuizMode = mode;
+  var infoBox      = document.getElementById('student-info-box');
+  var btnPractice  = document.getElementById('btn-practice');
+  var btnClassroom = document.getElementById('btn-classroom');
+  var hintPractice  = document.getElementById('hint-practice');
+  var hintClassroom = document.getElementById('hint-classroom');
+  if (mode === 'practice') {
+    infoBox.style.display = 'none';
+    btnPractice.classList.add('active');
+    btnClassroom.classList.remove('active');
+    hintPractice.classList.add('visible');
+    hintClassroom.classList.remove('visible');
+  } else {
+    infoBox.style.display = 'block';
+    btnClassroom.classList.add('active');
+    btnPractice.classList.remove('active');
+    hintClassroom.classList.add('visible');
+    hintPractice.classList.remove('visible');
+  }
+}
+
+// ── URL PARAM - auto-set mode on load ─────────────────────────────────
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'classroom') cmSetQuizMode('classroom');
+  else cmSetQuizMode('practice');
+})();
+
+// ── BUILD QUIZ ────────────────────────────────────────────────────────
+function cmBuildQuiz() {
+  var container = document.getElementById('cm-quiz-questions');
+  container.innerHTML = '';
+  cmQuizState.selected  = new Array(cmQuizQuestions.length).fill(null);
+  cmQuizState.submitted = false;
+  document.getElementById('cm-submit-btn').disabled = true;
+  cmUpdateProgress();
+  var letters = ['A','B','C','D'];
+  cmQuizQuestions.forEach(function (q, qi) {
+    var optionsHTML = q.options.map(function (opt, oi) {
+      return '<button class="quiz-option" onclick="cmSelectAnswer(' + qi + ',' + oi + ')" id="cm-q-' + qi + '-' + oi + '">' +
+             '<span class="option-letter">' + letters[oi] + '</span><span>' + opt + '</span></button>';
+    }).join('');
+    var card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML =
+      '<div class="quiz-header">' +
+        '<div class="quiz-num">' + (qi + 1) + '</div>' +
+        '<div class="quiz-question-text">' + q.q + '</div>' +
+      '</div>' +
+      '<div class="quiz-options">' + optionsHTML + '</div>' +
+      '<div class="option-feedback" id="cm-feedback-' + qi + '"></div>';
+    container.appendChild(card);
+  });
+}
+
+// ── SELECT ANSWER ─────────────────────────────────────────────────────
+function cmSelectAnswer(qi, chosenIndex) {
+  if (cmQuizState.submitted) return;
+  var prev = cmQuizState.selected[qi];
+  if (prev !== null) document.getElementById('cm-q-' + qi + '-' + prev).classList.remove('selected');
+  cmQuizState.selected[qi] = chosenIndex;
+  document.getElementById('cm-q-' + qi + '-' + chosenIndex).classList.add('selected');
+  cmUpdateProgress();
+  document.getElementById('cm-submit-btn').disabled = !cmQuizState.selected.every(function (s) { return s !== null; });
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────
+function cmUpdateProgress() {
+  var total    = cmQuizQuestions.length;
+  var answered = cmQuizState.selected.filter(function (s) { return s !== null; }).length;
+  document.getElementById('cm-progress').style.width = (answered / total * 100) + '%';
+  document.getElementById('cm-progress-text').textContent = answered + ' / ' + total + ' selected';
+}
+
+// ── VALIDATE STUDENT INFO ─────────────────────────────────────────────
+function cmValidateStudentInfo() {
+  var name    = document.getElementById('cm-student-name').value.trim();
+  var teacher = document.getElementById('cm-teacher-select').value;
+  var block   = document.getElementById('cm-block-select').value;
+  document.getElementById('cm-err-name').classList.toggle('show', !name);
+  document.getElementById('cm-err-teacher').classList.toggle('show', !teacher);
+  document.getElementById('cm-err-block').classList.toggle('show', !block);
+  return { valid: !!(name && teacher && block), name: name, teacher: teacher, block: block };
+}
+
+// ── SUBMIT QUIZ ───────────────────────────────────────────────────────
+function cmSubmitQuiz() {
+  if (cmQuizState.submitted) return;
+  if (cmQuizMode === 'classroom') {
+    var info = cmValidateStudentInfo();
+    if (!info.valid) {
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  cmQuizState.submitted = true;
+  document.getElementById('cm-submit-btn').disabled = true;
+  var correct = 0;
+  cmQuizQuestions.forEach(function (q, qi) {
+    var chosen    = cmQuizState.selected[qi];
+    var isCorrect = chosen === q.correct;
+    if (isCorrect) correct++;
+    q.options.forEach(function (_, oi) {
+      var btn = document.getElementById('cm-q-' + qi + '-' + oi);
+      btn.classList.add('disabled');
+      btn.classList.remove('selected');
+      if (oi === q.correct) btn.classList.add('revealed-correct');
+    });
+    document.getElementById('cm-q-' + qi + '-' + chosen).classList.add(isCorrect ? 'correct' : 'incorrect');
+    var fb = document.getElementById('cm-feedback-' + qi);
+    fb.className = 'option-feedback ' + (isCorrect ? 'correct-fb' : 'incorrect-fb');
+    fb.innerHTML = (isCorrect ? '✅ Correct! ' : '❌ Not quite. ') + q.explanation;
+  });
+  var total = cmQuizQuestions.length;
+  var pct   = Math.round(correct / total * 100);
+  var score = correct + '/' + total;
+  var msg   = pct === 100 ? '🏆 Perfect score! You communicate a design like an engineer.'
+    : pct >= 80 ? '🌟 Great work! Review any you missed and you are ready for your next design challenge.'
+    : pct >= 60 ? '📚 Solid effort. Go back through the lesson and try again.'
+    : '💪 Keep going; review each section carefully and try again!';
+  document.getElementById('cm-score-num').textContent = score;
+  document.getElementById('cm-score-msg').textContent = msg;
+  var sb = document.getElementById('cm-score');
+  sb.classList.add('show');
+  sb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (pct === 100) {
+    cmQuizState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
+  if (cmQuizMode === 'practice') {
+    document.getElementById('cm-submit-status').innerHTML =
+      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
+    return;
+  }
+
+  var info2 = cmValidateStudentInfo();
+  var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var letters = ['A','B','C','D'];
+  var answerStr = cmQuizState.selected.map(function (idx, i) {
+    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
+  }).join(', ');
+  var params = new URLSearchParams({
+    tab: 'Designing to Scale', studentName: info2.name, teacher: teacherLabel,
+    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+  });
+  fetch(CM_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(function () {
+      document.getElementById('cm-submit-status').innerHTML =
+        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+    })
+    .catch(function () {
+      document.getElementById('cm-submit-status').innerHTML =
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+    });
+}
+
+// ── RESET QUIZ ────────────────────────────────────────────────────────
+function cmResetQuiz() {
+  if (cmQuizState.continueTimer) {
+    clearTimeout(cmQuizState.continueTimer);
+    cmQuizState.continueTimer = null;
+  }
+  document.getElementById('cm-score').classList.remove('show');
+  document.getElementById('cm-submit-status').innerHTML = '';
+  cmBuildQuiz();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+cmBuildQuiz();
+</script>
+
+<!-- ===== STARFIELD ===== -->
+<script>
+const canvas = document.getElementById('stars');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+var STAR_DENSITY = 3200;
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStars();
+}
+function generateStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / STAR_DENSITY);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,  y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,     a: Math.random() * 0.55 + 0.1,
+      speed: Math.random() * 0.3 + 0.04, phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+function draw(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    const alpha = s.a * (0.55 + 0.45 * Math.sin(t * 0.001 * s.speed + s.phase));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${alpha})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { clearTimeout(window._rt); window._rt = setTimeout(resize, 200); });
+resize();
+requestAnimationFrame(draw);
+</script>
+<!-- ===== EDUCATOR MODE HOTKEY · Ctrl+Cmd+I (Mac) / Ctrl+Alt+I (Windows) ===== -->
+<script>
+(function() {
+  document.addEventListener('keydown', function(e) {
+    var ae  = document.activeElement;
+    var tag = ae && ae.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (ae && ae.isContentEditable)) return;
+    if (!(e.ctrlKey && (e.metaKey || e.altKey) && (e.key === 'i' || e.key === 'I'))) return;
+    e.preventDefault();
+    if (typeof toggleEduMode === 'function') {
+      toggleEduMode();
+    } else {
+      if (sessionStorage.getItem('lyfelabz-ls') === 'on') { sessionStorage.removeItem('lyfelabz-ls'); }
+      else { sessionStorage.setItem('lyfelabz-ls', 'on'); }
+      if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
+    }
+    document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<script id="nav-hamburger-js">
+(function(){
+  var nav = document.querySelector('nav');
+  if(!nav) return;
+  var btn = nav.querySelector('.nav-hamburger');
+  var links = nav.querySelector('.nav-links');
+  if(!btn || !links) return;
+  function close(){ nav.classList.remove('menu-open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('menu-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+</body>
+</html>
