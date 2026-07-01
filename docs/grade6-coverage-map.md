@@ -180,7 +180,7 @@ Massachusetts assignment.
 | activity_biological-evolution.html | (none) | Evolution activity |
 | game_evolution-clicker.html | (none) | Evolution game |
 | lesson_chemical-reactions.html | MS-PS1-5, MS-PS1-6 | Chemical reactions / energy |
-| lesson_building-blocks-of-matter.html | 8.MS-PS1-1 (Grade 8) | The Hidden World of Matter - Looking Ahead extension, no longer a Grade 6 core lesson |
+| extension_hidden-world-of-matter.html | 8.MS-PS1-1 (Grade 8) | The Hidden World of Matter - Looking Ahead extension, no longer a Grade 6 core lesson |
 | lesson_measuring-matter.html | MS-PS1-7(MA) | Density / measuring matter |
 | lesson_physical-properties.html | MS-PS1-7(MA), MS-PS1-8(MA) | Physical properties |
 | lesson_pure-substances-and-mixtures.html | MS-PS1-8(MA) | Mixtures / pure substances |
@@ -262,7 +262,7 @@ are listed; gaps mark what still needs to be built.
 - **Standards:** 6.MS-PS1-6, 6.MS-PS1-7(MA), 6.MS-PS1-8(MA)
 - **Existing pages:** lesson_measuring-matter, lesson_physical-properties,
   lesson_pure-substances-and-mixtures, lesson_chemical-reactions
-- **Gaps:** No new lessons needed. **RESOLVED:** lesson_building-blocks-of-matter
+- **Gaps:** No new lessons needed. **RESOLVED:** extension_hidden-world-of-matter
   has been repositioned as "The Hidden World of Matter," a Grade 8 (8.MS-PS1-1)
   Looking Ahead extension, and removed from the Grade 6 core set. The atomic
   framing in lesson_chemical-reactions still needs an on-grade rewrite - see
@@ -344,7 +344,7 @@ The Massachusetts framework introduces **atoms and molecules in grade 8**
 model ("particles," "amount of matter"), not atomic structure. The following
 Grade-6-labeled pages teach grade-8 atomic/molecular mechanism:
 
-1. **lesson_building-blocks-of-matter.html** - **RESOLVED.** Re-leveled to grade 8.
+1. **extension_hidden-world-of-matter.html** - **RESOLVED.** Re-leveled to grade 8.
    Retitled "The Hidden World of Matter" and repositioned as a Grade 8 (8.MS-PS1-1)
    Looking Ahead extension. Removed from the Grade 6 core set on the homepage and
    now surfaces under the Grade 8 filter. Standard codes updated from 6.MS-PS1-1 to
