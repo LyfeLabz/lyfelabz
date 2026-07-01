@@ -171,6 +171,32 @@
   }
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
 
   /* ── SECTIONS ── */
   section { padding: 5rem 2rem; scroll-margin-top: 10px; }
@@ -825,6 +851,28 @@
         <span class="goal-std">SEP-4</span>
       </div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -891,6 +939,28 @@
         <div class="gc-body"><div class="gc-def">The modern theory of how Earth's plates move, providing the mechanism Wegener's idea was missing.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-platetectonics')">See it in the lesson ↓</span></div>
       </button>
 
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1051,6 +1121,28 @@
       <span class="callout-icon">&#129300;</span>
       <div class="callout-body"><strong>Think about it:</strong> If you can only look at the shape of the coastlines (without any other information) does that feel like enough evidence to claim the continents were once connected? Keep that question in mind as we go.</div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the lesson in a real observation: matching coastlines.</li><li>Raise a question students will want answered.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Concrete, familiar examples</li><li>Short framing text</li><li>Visual anchor</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1095,6 +1187,28 @@
     <!-- BRIDGE -->
     <div class="bridge-callout" style="margin-top:2.5rem; border-left-color: var(--accent2); background: rgba(122,143,166,0.05); border-color: rgba(122,143,166,0.22);">
       Wegener had a bold claim and a starting observation. But one coastline match was never going to be enough. So he did what scientists do, he went looking for more evidence. <strong>Here's what he found.</strong>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Make Wegener's claim clear before any evidence is weighed.</li><li>Distinguish a scientific theory from an everyday guess.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Prior knowledge activation</li><li>Misconception confrontation</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Key terms defined in place</li><li>Misconception called out plainly</li><li>Short paragraphs</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1298,6 +1412,28 @@
       </p>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Build the case from independent lines of evidence.</li><li>Model how fossils, rock, and climate data converge.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Worked examples</li><li>Comparison and elaboration</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One line of evidence at a time</li><li>Concrete, familiar examples</li><li>Short cards paired with visuals</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1333,6 +1469,28 @@
     <div class="callout gold">
       <span class="callout-icon">&#127775;</span>
       <div class="callout-body"><strong>The bigger lesson:</strong> Science doesn't require a perfect theory on the first try. It requires honest evidence, willingness to revise, and time. The problem wasn't Wegener's evidence. The problem was that the tools to find the missing piece didn't exist yet.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Show how science revises ideas when a mechanism is found.</li><li>Explain why strong evidence alone was not enough.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Narrative case study</li><li>Nature of science</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Side-by-side reject and accept callouts</li><li>Plain causal language</li><li>Short beats</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1380,6 +1538,28 @@
       </div>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Bring the four lines of evidence together as one argument.</li><li>Let students explore why each cannot be explained another way.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Active retrieval</li><li>Schema building</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Click to explore, one piece at a time</li><li>Keyboard-operable buttons</li><li>Short, focused panels</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1435,6 +1615,28 @@
       <div class="qr-actions">
         <button class="qr-check" id="qr3Check">Check Answer</button>
         <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -1501,6 +1703,28 @@
 
     <div id="apply-reset-wrap" style="display:none; text-align:center; margin-top:1.5rem;">
       <button onclick="applyReset()" style="background:none; border:1px solid rgba(122,143,166,0.4); color:var(--text-muted); font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; padding:0.5rem 1.4rem; border-radius:99px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(122,143,166,0.8)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='rgba(122,143,166,0.4)';this.style.color='var(--text-muted)'">Reset Questions</button>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the evidence into one cause-and-effect argument.</li><li>Answer the opening question directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Elaboration</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>No score and no submission</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1705,6 +1929,28 @@ function applyReset() {
       <div id="cd-submit-status"></div>
       <button class="reset-btn" onclick="cdResetQuiz()">Try Again</button>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1721,6 +1967,28 @@ function applyReset() {
         <div class="cont-desc">Use fossil distribution, rock bands, and coal deposits to reconstruct ancient Floatlandia, then simulate how plate motion broke it apart.</div>
         <span class="cont-link">Simulate</span>
       </a>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>

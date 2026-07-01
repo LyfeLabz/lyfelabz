@@ -171,6 +171,32 @@
   }
   .ls-badge[data-tip]:hover::before { opacity: 1; }
 
+  /* ── INSTRUCTIONAL DESIGN NOTES (Educator Mode) ──
+     Reusable teacher-facing panel. Hidden for students; revealed only when
+     Educator Mode is on (body.ls-active). */
+  .edu-note { display: none; }
+  body.ls-active .edu-note {
+    display: block; max-width: 760px; margin: 2.5rem auto 0;
+    padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box;
+    background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2);
+    border-left: 4px solid var(--accent2); border-radius: 14px;
+    animation: lsFadeIn 0.35s ease both;
+  }
+  .edu-note-label {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(122,143,166,0.8); margin-bottom: 1rem;
+  }
+  .edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+  @media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+  .edu-note-head {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(159,184,204,0.75); margin-bottom: 0.35rem;
+  }
+  .edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+  ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+  ul.edu-note-text li { margin-bottom: 0.2rem; }
+  ul.edu-note-text li:last-child { margin-bottom: 0; }
+
 
   /* ── BRIDGE CALLOUT ── */
   .bridge-callout {
@@ -845,6 +871,28 @@
         <span class="goal-std">6.MS-ESS1-4</span>
       </div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>State what students will be able to do.</li><li>Set a clear target before content begins.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Plain "I can" statements</li><li>Standard code shown for reference</li><li>Short, scannable cards</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -921,6 +969,28 @@
         <div class="gc-body"><div class="gc-def">Finding the actual age of rock in years, often by measuring radioactive decay.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-absolute')">See it in the lesson ↓</span></div>
       </button>
 
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Front-load the terms students will meet.</li><li>Lower the language barrier before reading.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Plain, short definitions</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1043,6 +1113,74 @@
     <h2 class="section-title">Can You Read the Rocks?</h2>
     <p class="section-desc">Before we explain anything, look at these three formations and trust your instincts. What do you notice?</p>
 
+    <!-- REASONING MOMENT: Rock record prediction -->
+    <style>
+      .predict-card {
+        background: rgba(180,140,90,0.06);
+        border: 1px solid rgba(180,140,90,0.25);
+        border-left: 4px solid rgba(195,158,95,0.55);
+        border-radius: 18px;
+        padding: 1.8rem;
+        margin-bottom: 1.5rem;
+      }
+      .predict-pill {
+        display: inline-block; font-size: 0.7rem; font-weight: 900;
+        letter-spacing: 0.14em; text-transform: uppercase;
+        color: #d4a96a; background: rgba(180,140,90,0.12);
+        border: 1px solid rgba(180,140,90,0.35); padding: 0.22rem 0.85rem;
+        border-radius: 99px; margin-bottom: 0.9rem;
+      }
+      .predict-q {
+        font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+        color: var(--text); line-height: 1.4; margin-bottom: 1rem;
+      }
+      .apply-options { display: flex; flex-direction: column; gap: 0.65rem; }
+      .apply-opt {
+        text-align: left; background: rgba(122,143,166,0.06);
+        border: 1px solid rgba(122,143,166,0.22); border-radius: 10px;
+        padding: 0.75rem 1.1rem; color: rgba(232,237,242,0.88);
+        font-family: 'Nunito', sans-serif; font-size: 0.93rem; font-weight: 600;
+        line-height: 1.5; cursor: pointer; transition: background 0.18s, border-color 0.18s;
+      }
+      .apply-opt:hover:not(:disabled) { background: rgba(122,143,166,0.13); border-color: rgba(122,143,166,0.45); }
+      .apply-opt:disabled { cursor: default; }
+      .apply-opt.ao-correct { background: rgba(46,204,113,0.1); border-color: rgba(46,204,113,0.55); color: #2ecc71; font-weight: 800; }
+      .apply-opt.ao-incorrect { background: rgba(231,76,60,0.08); border-color: rgba(231,76,60,0.35); color: rgba(232,237,242,0.45); }
+      .apply-feedback {
+        margin-top: 1rem; font-size: 0.9rem; line-height: 1.65;
+        color: rgba(232,237,242,0.8); display: none;
+        background: rgba(122,143,166,0.06); border-left: 3px solid var(--accent2);
+        border-radius: 0 8px 8px 0; padding: 0.75rem 1rem;
+      }
+      .apply-feedback.show { display: block; }
+    </style>
+    <script>
+    var lotHookPredicted = false;
+    function lotHookPick(btn, isCorrect) {
+      if (lotHookPredicted) return;
+      lotHookPredicted = true;
+      var card = document.getElementById('predict-record');
+      var opts = card.querySelectorAll('.apply-opt');
+      opts.forEach(function(o) { o.disabled = true; o.classList.add('ao-incorrect'); });
+      btn.classList.remove('ao-incorrect');
+      btn.classList.add(isCorrect ? 'ao-correct' : 'ao-incorrect');
+      document.getElementById('lot-hook-feedback').classList.add('show');
+    }
+    </script>
+
+    <div class="predict-card" id="predict-record" style="max-width:680px;">
+      <div class="predict-pill">Make a Prediction</div>
+      <div class="predict-q">You are about to study rock layers with no dates written on them. Before you look, predict: can scientists work out the order of events just by looking at the rock?</div>
+      <div class="apply-options">
+        <button class="apply-opt" onclick="lotHookPick(this, false)">A, No, without labels or dates there is no way to tell what came first</button>
+        <button class="apply-opt" onclick="lotHookPick(this, true)">B, Yes, the position and shape of the layers follow rules that reveal their order</button>
+        <button class="apply-opt" onclick="lotHookPick(this, false)">C, Only if someone was there to watch the rock form</button>
+      </div>
+      <div class="apply-feedback" id="lot-hook-feedback">
+        Geologists choose option B. Rock layers follow a few reliable rules, and those rules let scientists reconstruct the order of events without any dates written down. The three formations below are your first chance to test those rules yourself.
+      </div>
+    </div>
+
     <div class="inv-grid">
 
       <!-- CARD 1: Superposition -->
@@ -1147,6 +1285,28 @@
       </div>
 
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Anchor the lesson in a real puzzle: reading rock formations.</li><li>Ask students to commit to a prediction before any explanation.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Predict before explain</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Visual diagrams support each question</li><li>Choices lock after one pick</li><li>Immediate, plain feedback</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1243,6 +1403,28 @@ function invAnswer(btn, result, cardNum) {
       </div>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Explain how sediment becomes layered rock before naming the reading rules.</li><li>Ground the patterns students noticed in a cause.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling</li><li>Dual coding with diagrams</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Everyday process described in steps</li><li>Diagram paired with text</li><li>Key terms defined in place</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1465,6 +1647,28 @@ function invAnswer(btn, result, cardNum) {
       </div>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name and explain the rules that let scientists read the rock record.</li><li>Connect each rule back to a pattern students already predicted.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Worked examples</li><li>Comparison and elaboration</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One principle at a time</li><li>Interactive strata paired with plain definitions</li><li>Short, focused explanations</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1522,6 +1726,28 @@ function invAnswer(btn, result, cardNum) {
         <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
       </div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Strengthen memory through retrieval before the wrap-up.</li><li>Surface misconceptions early.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Short tasks reduce load</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1566,6 +1792,28 @@ function invAnswer(btn, result, cardNum) {
       <span class="callout-icon">💭</span>
       <div class="callout-body">
         <strong>Think About It:</strong> Scientists had access to rock strata for thousands of years before anyone formally described superposition. What do you think made it so hard to see something that now seems obvious? What had to change, in tools, in thinking, or in the questions people were asking?
+      </div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Tie the reading rules into one cause-and-effect chain.</li><li>Answer the opening question directly.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Coherent narrative</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Step-by-step beats</li><li>Plain causal language</li><li>Builds on prior sections</li></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -1647,6 +1895,28 @@ function invAnswer(btn, result, cardNum) {
       <div id="lt-submit-status"></div>
       <button class="reset-btn" onclick="ltResetQuiz()">Try Again</button>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Check understanding against the lesson goals.</li><li>Give students and teachers a clear signal.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Practice and classroom modes</li><li>Plausible, evenly placed options</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1669,6 +1939,28 @@ function invAnswer(btn, result, cardNum) {
         <div class="cont-desc">Apply what you learned about index fossils to match rock layers and determine their relative ages across multiple locations.</div>
         <span class="cont-link">Play</span>
       </a>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer pathways beyond the core lesson.</li><li>Signal that learning continues past the quiz.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer to new contexts</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>Clear labels for what is available</li><li>No penalty for skipping</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
