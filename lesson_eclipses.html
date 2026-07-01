@@ -68,6 +68,33 @@ nav { position: sticky; top: 0; z-index: 1000; background: rgba(10,14,20,0.96); 
 .ls-focus { display: none; }
 body.ls-active .ls-focus { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .45rem .55rem; width: fit-content; max-width: 760px; margin: 1.6rem auto; padding: 1.1rem 1.8rem 1.2rem; box-sizing: border-box; background: rgba(122,143,166,.05); border: 1px solid rgba(122,143,166,.2); border-radius: 16px; animation: lsFadeIn .35s ease both; }
 @keyframes lsFadeIn { from{opacity:0;transform:translateY(-3px);}to{opacity:1;transform:translateY(0);} }
+.edu-note { display: none; }
+body.ls-active .edu-note { display: block; max-width: 760px; margin: 2.5rem auto 0; padding: 1.4rem 1.7rem 1.5rem; box-sizing: border-box; background: rgba(122,143,166,0.05); border: 1px solid rgba(122,143,166,0.2); border-left: 4px solid var(--accent2); border-radius: 14px; animation: lsFadeIn 0.35s ease both; }
+.edu-note-label { font-size: 0.72rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(122,143,166,0.8); margin-bottom: 1rem; }
+.edu-note-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; }
+@media (max-width: 640px) { .edu-note-grid { grid-template-columns: 1fr; } }
+.edu-note-head { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(159,184,204,0.75); margin-bottom: 0.35rem; }
+.edu-note-text { font-size: 0.9rem; color: rgba(232,237,242,0.55); line-height: 1.6; font-style: italic; }
+ul.edu-note-text { margin: 0; padding-left: 1.1rem; }
+ul.edu-note-text li { margin-bottom: 0.2rem; }
+ul.edu-note-text li:last-child { margin-bottom: 0; }
+/* ── PREDICT BEFORE REVEAL ── */
+.question-pause { max-width: 760px; margin: 0.5rem auto 2rem; padding: 1.2rem 1.5rem; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18); border-radius: 14px; }
+.question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+.question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+.question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+.question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+.predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+.predict-btn { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800; padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left; }
+.predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+.predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+.predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+.predict-btn.chosen .pb-letter { color: var(--gold); }
+.question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+.question-pause.locked .predict-btn.chosen { opacity: 1; }
+.predict-gated { display: none; }
+.predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+@keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 .ls-focus-label { font-size:.72rem; font-weight:900; letter-spacing:.13em; text-transform:uppercase; color:rgba(122,143,166,.75); white-space:nowrap; width:100%; text-align:center; margin-bottom:.5rem; }
 .ls-badge { position:relative; display:inline-flex; align-items:center; gap:.35rem; font-family:'Nunito',sans-serif; font-size:.86rem; font-weight:700; line-height:1; color:rgba(255,255,255,.82); background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16); border-radius:99px; padding:.35rem .9rem; cursor:default; white-space:nowrap; overflow:visible; transition:background .18s,border-color .18s; }
 .ls-badge:hover { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.22); }
@@ -620,6 +647,28 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
         <span class="goal-std">6.MS-ESS1-1a</span>
       </div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Set targets for modeling how and why eclipses happen.</li><li>Name the month puzzle up front as a goal to explain.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Goal setting</li><li>Advance organizers</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 1 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Student-facing "I can" language</li><li>One goal per card, short lines</li><li>Standard badge kept separate from the goal text</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -651,6 +700,28 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
         <div class="gc-body"><div class="gc-def">One of the two points where the Moon's tilted orbit crosses Earth's orbital plane. Eclipses can only happen near a node.</div><span class="gc-jump" onclick="event.stopPropagation(); vocabJump('vocab-anchor-node')">See it in the lesson ↓</span></div>
       </button>
 
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Pre-teach shadow and orbit terms the lesson leans on.</li><li>Give a reference students can jump back to during the lab.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Pre-teaching vocabulary</li><li>Reduced extraneous load</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Remember to Understand</li><li>DOK 1</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>One card open at a time</li><li>Click to reveal, no hover</li><li>Jump link ties each term to the lesson</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -737,6 +808,45 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
 
     </div>
 
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-eclipse">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> A solar eclipse needs a new moon, and a new moon comes around every 29.5 days. So why don't we get a solar eclipse every single month? Make your best guess, there is no penalty for guessing.</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>We actually do, but clouds usually hide them.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>The Moon usually passes a little above or below the exact line to the Sun.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>The Moon only reaches new moon a few times a year.</button>
+      </div>
+    </div>
+
+    <div class="bridge-callout predict-gated" data-gate="qp-eclipse" style="margin-top:1rem;">
+      <strong>Hold that thought.</strong> The Moon really does reach new moon every month, yet a solar eclipse is rare, so something must usually keep the three from lining up exactly. Keep your prediction in mind as you run the <em>Discovery Lab</em> and reach <em>The Tilted Orbit</em>, where you will find out what it is.
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Set up the two eclipse types, then pose the month puzzle.</li><li>Force a prediction before instruction so the explanation has something to resolve.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Curiosity gap</li><li>Phenomenon-based learning</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Prediction locks in one tap, no penalty</li><li>Reveal appears only after a choice</li><li>Labeled diagrams paired with the text</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -808,6 +918,28 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
       </div>
 
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Let students find eclipse alignments themselves instead of being told.</li><li>Show that both a phase and a crossing must line up at once.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Productive struggle</li><li>Evidence-based reasoning</li><li>Dual coding</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Interactive with clear success feedback</li><li>Large drag and click targets</li><li>No penalty for repeated tries</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -852,6 +984,28 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
     </div>
     <div class="bridge-callout">
       <strong>One mystery remains.</strong> If the Moon reaches new moon every single month, the alignment you just created should repeat every month; so why don't solar eclipses happen every month? <em>The answer is in the orbit itself.</em>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Name what the lab revealed about each eclipse type.</li><li>Set up the orbit question the next section answers.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison and contrast</li><li>Concrete to abstract</li><li>Elaboration</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Side-by-side comparison table</li><li>Short, parallel rows</li><li>Bridge callout restates the open question</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1052,6 +1206,28 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
     <div class="bridge-callout">
       When an eclipse does happen, not everyone sees the same thing. Whether you witness <em>totality</em> or just a crescent Sun depends on exactly where you're standing.
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Resolve the month puzzle with the 5-degree orbital tilt.</li><li>Trace the chain from tilt to missed shadow to node alignment.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Cause-and-effect modeling</li><li>Misconception checking</li><li>Dual coding</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Flat and tilted orbits shown side by side</li><li>Key terms defined in place</li><li>Short paragraphs, one idea each</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1203,6 +1379,28 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
       <span class="callout-icon">&#128262;</span>
       <div class="callout-body"><strong>A remarkable coincidence.</strong> The Sun is 400 times wider than the Moon; but also 400 times farther away. From Earth, they appear almost exactly the same size. Without this coincidence, the umbra would never reach Earth's surface, and total solar eclipses wouldn't exist.</div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Separate the umbra from the penumbra as two shadow zones.</li><li>Tie which zone you stand in to what you actually see.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Comparison and contrast</li><li>Dual coding</li><li>Elaboration</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Labeled shadow diagram paired with text</li><li>Umbra and penumbra named where shown</li><li>Short, parallel descriptions</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1260,6 +1458,28 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
         <button class="qr-retry" id="qr3Retry" style="display:none;">Try Again</button>
       </div>
     </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Pull key eclipse facts from memory before the wrap-up.</li><li>Surface gaps early, while there is still time to reread.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Generation effect</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Ungraded and low stakes</li><li>Immediate feedback</li><li>Try Again resets each item</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1298,6 +1518,28 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
         <span class="wuc wuc-3">Solar or lunar eclipse</span>
       </div>
       <div style="margin-top: 1rem;">Eclipses are rare not because the Sun and Moon rarely line up, but because they rarely line up <em>in the same plane</em>. The tilt is the whole answer.</div>
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Answer the opening puzzle in one connected chain.</li><li>Return to the prediction students made so the loop closes.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Schema building</li><li>Coherent narrative</li><li>Elaboration</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Analyze</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Steps shown as ordered chips</li><li>One idea per step</li><li>Plain summary sentence at the end</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1380,6 +1622,28 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
       <button class="reset-btn" onclick="ecResetQuiz()">Try Again</button>
     </div>
 
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Assess solar and lunar eclipses, shadows, tilt, and nodes.</li><li>Give a quick check of understanding after the wrap-up.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Retrieval practice</li><li>Feedback loops</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Understand to Apply</li><li>DOK 1 to 2</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Answer explanations provided</li><li>Plausible, evenly placed options</li><li>Try Again to review missed items</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1396,6 +1660,28 @@ footer p { font-size:.72rem; color:rgba(180,200,220,.35); }
         <span class="cont-link">Simulation</span>
       </a>
 
+    </div>
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>Offer optional depth for students who want to keep going.</li><li>Let learners test tilt and node ideas in a simulation.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Interest-driven extension</li><li>Transfer</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Apply to Analyze</li><li>DOK 2 to 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Optional and self-paced</li><li>No penalty for skipping</li><li>Clear label on the card</li></ul>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -2066,6 +2352,23 @@ ecBuildQuiz();
       if (typeof syncEduToggleUI === 'function') { syncEduToggleUI(sessionStorage.getItem('lyfelabz-ls') === 'on'); }
     }
     document.body.classList.toggle('ls-active', sessionStorage.getItem('lyfelabz-ls') === 'on');
+  });
+})();
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(function(pause){
+    var gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(function(){ gated.classList.add('visible'); }, 250);
+      });
+    });
   });
 })();
 </script>
