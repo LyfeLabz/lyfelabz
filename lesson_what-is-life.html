@@ -337,6 +337,47 @@
   }
   .bridge-callout strong { color: var(--text); }
 
+  /* ── PREDICT BEFORE REVEAL ── */
+  .question-pause {
+    max-width: 760px; margin: 2.5rem auto 2rem; padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 14px;
+  }
+  .question-pause .qp-row { display: flex; align-items: center; gap: 0.9rem; }
+  .question-pause-icon { font-size: 1.5rem; flex-shrink: 0; opacity: 0.75; }
+  .question-pause-text { font-size: 0.98rem; font-style: italic; color: var(--text-muted); line-height: 1.6; }
+  .question-pause-text strong { color: var(--text); font-style: normal; font-weight: 800; }
+  .predict-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .predict-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem 1rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .predict-btn:hover:not(.locked) { border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.08); }
+  .predict-btn .pb-letter { font-weight: 900; color: var(--text-muted); margin-right: 0.5rem; }
+  .predict-btn.chosen { border-color: var(--gold); background: rgba(245,200,66,0.16); color: var(--gold); }
+  .predict-btn.chosen .pb-letter { color: var(--gold); }
+  .question-pause.locked .predict-btn { cursor: default; opacity: 0.5; }
+  .question-pause.locked .predict-btn.chosen { opacity: 1; }
+  .predict-gated { display: none; }
+  .predict-gated.visible { display: block; animation: predictFadeUp 0.4s ease both; }
+  @keyframes predictFadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── PREDICTION REVEAL ── */
+  .name-it {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 4px solid var(--gold); border-radius: 14px;
+    padding: 1.4rem 1.6rem; max-width: 760px; margin: 0 auto 2rem;
+  }
+  .name-it.green-it { border-left-color: var(--green); }
+  .name-it-label {
+    font-size: 0.7rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.4rem;
+  }
+  .name-it.green-it .name-it-label { color: var(--green); }
+  .name-it p { font-size: 1rem; color: var(--text); line-height: 1.7; margin: 0; }
+  .name-it p strong { font-weight: 800; }
+
   /* ===== COMPARISON TABLE (Sections 3 & 4) ===== */
   .compare-table {
     width: 100%;
@@ -1487,6 +1528,24 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
         <div class="challenge-reason">One cell. Eats, grows, responds, reproduces. All six characteristics, check.</div>
       </div>
 
+    </div>
+
+    <!-- Prediction gate -->
+    <div class="question-pause predict-pause" id="qp-life">
+      <div class="qp-row">
+        <span class="question-pause-icon">&#129300;</span>
+        <div class="question-pause-text"><strong>Make a prediction:</strong> Before scientists reveal their rule, what do you think best decides whether something counts as alive?</div>
+      </div>
+      <div class="predict-buttons">
+        <button class="predict-btn"><span class="pb-letter">A</span>Whether it can move on its own.</button>
+        <button class="predict-btn"><span class="pb-letter">B</span>Whether it does many jobs of life at once, like using energy, growing, and reproducing.</button>
+        <button class="predict-btn"><span class="pb-letter">C</span>Whether it reacts to the world around it.</button>
+      </div>
+    </div>
+
+    <div class="name-it green-it predict-gated" data-gate="qp-life">
+      <div class="name-it-label">Here's the idea</div>
+      <p>The best answer is <strong>B</strong>. Watch the trap: fire uses energy, a robot reacts, a seed just sits there, yet only some of these are alive. No single ability settles it. Living things do many jobs at once, and that is exactly the problem scientists had to solve.</p>
     </div>
 
     <div class="bridge-callout" style="margin-top:1.8rem; border-left-color:var(--green); border-color:rgba(46,204,113,0.22); background:rgba(46,204,113,0.05);">
@@ -2935,6 +2994,23 @@ requestAnimationFrame(draw);
   links.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape' && nav.classList.contains('menu-open')){ close(); btn.focus(); }
+  });
+})();
+</script>
+
+<!-- ===== PREDICT BEFORE REVEAL ===== -->
+<script>
+(function(){
+  document.querySelectorAll('.question-pause.predict-pause').forEach(pause => {
+    const gated = document.querySelector('.predict-gated[data-gate="' + pause.id + '"]');
+    pause.querySelectorAll('.predict-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (pause.classList.contains('locked')) return;
+        btn.classList.add('chosen');
+        pause.classList.add('locked');
+        if (gated) setTimeout(() => gated.classList.add('visible'), 250);
+      });
+    });
   });
 })();
 </script>
