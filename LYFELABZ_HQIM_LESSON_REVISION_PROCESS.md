@@ -267,6 +267,20 @@ student-visible surface; `KEY IDEA: [TERM]` for explanatory cards and `NAME IT`
 only for literal identification. Add Educator Mode notes for every new element as
 you add it, rated conservatively, so the rationale never falls out of sync.
 
+Implement the canonical Show Your Thinking workflow. This is the permanent
+implementation standard, and every revised lesson must:
+
+* include the canonical Show Your Thinking section, immediately before Submit.
+* remove any standalone "Compare Your Thinking" button.
+* disable Submit until all quiz questions are complete and the Show Your
+  Thinking response contains non-whitespace text.
+* reveal the model answer only after Submit.
+* preserve identical student workflows in Practice Mode and Classroom Mode; the
+  only difference is that Classroom Mode submits Assessment v2 data while
+  Practice Mode does not.
+* preserve the Assessment v2 payload exactly: `tab`, `studentName`, `block`,
+  `q1`-`qN`, `score`, and `thinking`.
+
 Keep the diff small and legible. A reviewer should be able to see that each change
 maps to a line in the plan.
 

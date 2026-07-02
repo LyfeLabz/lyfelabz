@@ -49,10 +49,12 @@ Registering a new lesson is one line in TAB_CONFIG (tab name, optional header co
 schema is always the same, so there is nothing else to configure.
 
 ## STRUCTURE
-1. The 🧠 Show Your Thinking prompt and its textarea sit immediately before Submit (see the framework's Show Your Thinking section).
+1. The 🧠 Show Your Thinking prompt and its textarea sit immediately before Submit (see the framework's Show Your Thinking section). Show Your Thinking is a required submission field.
 2. Submission card near the page end: name/block fields, submit button.
-3. On submit, send the Assessment v2 payload above, including the `thinking` field, to the lesson's script URL.
-4. Visible success/failure state; failure leaves student work intact on screen.
+3. Front-end validation blocks submission until every quiz question is answered and the Show Your Thinking response contains non-whitespace text. Submit stays disabled until both conditions are met.
+4. On submit, send the Assessment v2 payload above, including the `thinking` field, to the lesson's script URL. The `thinking` field is submitted only when the student presses Submit; the model answer is revealed only after Submit.
+5. Practice Mode follows the identical student workflow but performs no network submission. Classroom Mode submits `tab`, `studentName`, `block`, `q1`-`qN`, `score`, and `thinking`.
+6. Visible success/failure state; failure leaves student work intact on screen.
 
 ## COMMON CLASS NAMES
 Existing submit button and field patterns from the pages above; endpoint and payload field names must match the Assessment v2 contract in LyfeLabz_GScript_v2.js exactly.

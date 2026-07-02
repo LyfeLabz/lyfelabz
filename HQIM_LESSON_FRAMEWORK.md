@@ -570,6 +570,22 @@ Show Your Thinking follows these rules in every flagship lesson:
 
 ---
 
+### Canonical Submission Workflow
+
+Show Your Thinking is a required instructional element, and completing it is a
+condition of submission. Every flagship lesson follows this workflow:
+
+* Students must complete Show Your Thinking before they can submit.
+* Submit is enabled only when every quiz question has been answered and the
+  Show Your Thinking response contains non-whitespace text.
+* Students write their own explanation before seeing the model answer.
+* The model answer is revealed only after Submit.
+* Practice Mode and Classroom Mode intentionally provide the same student
+  experience. The only difference between modes is that Classroom Mode submits
+  Assessment v2 data while Practice Mode does not.
+
+---
+
 ### Implementation Philosophy
 
 The ten-question quiz and Show Your Thinking measure different things, and the
