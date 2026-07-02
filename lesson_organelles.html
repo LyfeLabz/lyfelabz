@@ -2028,12 +2028,9 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <div class="think-box" id="og-think">
       <div class="think-eyebrow">🧠 Show Your Thinking</div>
       <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
-      <p class="think-sub">Use what you learned in this lesson to explain the main scientific idea. This is not graded, it is sent in with your quiz so your teacher can see how you reason.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
       <p class="think-prompt">In one or two sentences, explain what keeps a cell alive on the inside. Describe how the organelles work together, not just what one of them does. Use the word <strong>specialized</strong>.</p>
       <textarea class="think-input" id="og-thinking" placeholder="Write your explanation here..." aria-label="Explain what keeps a cell alive on the inside"></textarea>
-      <div class="think-actions">
-        <button type="button" class="think-reveal-btn" id="og-think-reveal">Compare your thinking</button>
-      </div>
       <div class="think-model" id="og-think-model">
         <span class="tm-label">One strong way to say it</span>
         A cell stays alive because its work is divided among <strong>specialized</strong> organelles that depend on one another, the nucleus directs with DNA, mitochondria supply energy, ribosomes build proteins, and the rest transport, store, and clean up, so no single part keeps the cell alive on its own. If your sentence shows the parts working together as a team, you have it.
@@ -2064,7 +2061,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     </div>
 
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="og-submit-btn" onclick="ogSubmitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="og-submit-btn" onclick="ogSubmitQuiz()" disabled>Submit</button>
     </div>
 
     <div class="score-board" id="og-score">
@@ -2281,7 +2278,7 @@ function ogSelectAnswer(qi, chosenIndex) {
   ogQuizState.selected[qi] = chosenIndex;
   document.getElementById(`og-q-${qi}-${chosenIndex}`).classList.add('selected');
   ogUpdateProgress();
-  document.getElementById('og-submit-btn').disabled = !ogQuizState.selected.every(s => s !== null);
+  ogRefreshSubmitState();
 }
 
 function ogUpdateProgress() {
@@ -2303,6 +2300,11 @@ function ogValidateStudentInfo() {
 
 function ogSubmitQuiz() {
   if (ogQuizState.submitted) return;
+
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!ogQuizState.selected.every(s => s !== null)) return;
+  const ogThinkGate = document.getElementById('og-thinking');
+  if (ogThinkGate && !ogThinkGate.value.trim()) return;
 
   // ── Classroom mode: validate student info first ──────────────────
   if (ogQuizMode === 'classroom') {
@@ -2432,13 +2434,16 @@ function vocabJump(targetId) {
   }, 600);
 }
 
-// ── SHOW YOUR THINKING: self-check reveal ─────────────────────────────
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function ogRefreshSubmitState() {
+  const quizDone  = ogQuizState.selected.every(s => s !== null);
+  const thinkEl   = document.getElementById('og-thinking');
+  const thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('og-submit-btn').disabled = ogQuizState.submitted || !(quizDone && thinkDone);
+}
 (function () {
-  const btn   = document.getElementById('og-think-reveal');
-  const model = document.getElementById('og-think-model');
-  if (btn && model) {
-    btn.addEventListener('click', () => model.classList.add('show'));
-  }
+  const thinkEl = document.getElementById('og-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', ogRefreshSubmitState);
 })();
 
 ogBuildQuiz();

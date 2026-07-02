@@ -2613,12 +2613,9 @@ function virusVote(choice) {
     <div class="think-box" id="wl-think">
       <div class="think-eyebrow">🧠 Show Your Thinking</div>
       <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
-      <p class="think-sub">Use what you learned in this lesson to explain the main scientific idea. This is not graded, it is sent in with your quiz so your teacher can see how you reason.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
       <p class="think-prompt">In one sentence, explain what a virus is missing that keeps it from being truly alive. Use the word <strong>cell</strong>.</p>
       <textarea class="think-input" id="wl-thinking" placeholder="Write your one-sentence explanation here..." aria-label="Explain what a virus is missing that keeps it from being truly alive"></textarea>
-      <div class="think-actions">
-        <button type="button" class="think-reveal-btn" id="wl-think-reveal">Compare your thinking</button>
-      </div>
       <div class="think-model" id="wl-think-model">
         <span class="tm-label">One strong way to say it</span>
         A virus is not made of a <strong>cell</strong> of its own, so it cannot carry out the functions of life on its own, and because the cell is the smallest unit of life, a virus falls short of being truly alive. If your sentence names the missing cell and why that matters, you have it.
@@ -2650,7 +2647,7 @@ function virusVote(choice) {
 
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="wl-submit-btn" onclick="wlSubmitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="wl-submit-btn" onclick="wlSubmitQuiz()" disabled>Submit</button>
     </div>
 
     <!-- Score Board -->
@@ -2846,7 +2843,7 @@ function wlSelectAnswer(qi, chosenIndex) {
   wlQuizState.selected[qi] = chosenIndex;
   document.getElementById(`wl-q-${qi}-${chosenIndex}`).classList.add('selected');
   wlUpdateProgress();
-  document.getElementById('wl-submit-btn').disabled = !wlQuizState.selected.every(s => s !== null);
+  wlRefreshSubmitState();
 }
 
 // ── PROGRESS BAR ──────────────────────────────────────────────────────
@@ -2871,6 +2868,10 @@ function wlValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function wlSubmitQuiz() {
   if (wlQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!wlQuizState.selected.every(s => s !== null)) return;
+  const wlThinkGate = document.getElementById('wl-thinking');
+  if (wlThinkGate && !wlThinkGate.value.trim()) return;
   if (wlQuizMode === 'classroom') {
     const { valid } = wlValidateStudentInfo();
     if (!valid) {
@@ -2998,13 +2999,16 @@ function vocabJump(targetId) {
   }, 600);
 }
 
-// ── SHOW YOUR THINKING: self-check reveal ─────────────────────────────
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function wlRefreshSubmitState() {
+  const quizDone  = wlQuizState.selected.every(s => s !== null);
+  const thinkEl   = document.getElementById('wl-thinking');
+  const thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('wl-submit-btn').disabled = wlQuizState.submitted || !(quizDone && thinkDone);
+}
 (function () {
-  const btn   = document.getElementById('wl-think-reveal');
-  const model = document.getElementById('wl-think-model');
-  if (btn && model) {
-    btn.addEventListener('click', () => model.classList.add('show'));
-  }
+  const thinkEl = document.getElementById('wl-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', wlRefreshSubmitState);
 })();
 
 // ── INIT ──────────────────────────────────────────────────────────────

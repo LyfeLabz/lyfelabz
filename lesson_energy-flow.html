@@ -1549,12 +1549,9 @@
     <div class="think-box" id="el-think">
       <div class="think-eyebrow">🧠 Show Your Thinking</div>
       <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
-      <p class="think-sub">Use what you learned in this lesson to explain the main scientific idea. This is not graded, it is sent in with your quiz so your teacher can see how you reason.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
       <p class="think-prompt">In one or two sentences, explain why the amount of life shrinks as you move up a food chain. Trace what happens to the energy at each step, not just which animals are involved. Use the word <strong>lost</strong>.</p>
       <textarea class="think-input" id="el-thinking" placeholder="Write your explanation here..." aria-label="Explain why the amount of life shrinks as you move up a food chain"></textarea>
-      <div class="think-actions">
-        <button type="button" class="think-reveal-btn" id="el-think-reveal">Compare your thinking</button>
-      </div>
       <div class="think-model" id="el-think-model">
         <span class="tm-label">One strong way to say it</span>
         Energy enters from the Sun and producers capture it, but each time one organism eats another, only about 10% is passed on and the rest is used to live or <strong>lost</strong> as heat. By the top of the food chain there is too little energy left to support many organisms, so the amount of life shrinks. If your sentence follows the energy shrinking step by step, you have it.
@@ -1586,7 +1583,7 @@
 
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit Score</button>
+      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit</button>
     </div>
 
     <!-- Score Board -->
@@ -2037,7 +2034,7 @@ function elSelectAnswer(qi, chosenIndex) {
   elQuizState.selected[qi] = chosenIndex;
   document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
   elUpdateProgress();
-  document.getElementById('el-submit-btn').disabled = !elQuizState.selected.every(function (s) { return s !== null; });
+  elRefreshSubmitState();
 }
 
 function elUpdateProgress() {
@@ -2059,6 +2056,10 @@ function elValidateStudentInfo() {
 
 function elSubmitQuiz() {
   if (elQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!elQuizState.selected.every(function (s) { return s !== null; })) return;
+  var elThinkGate = document.getElementById('el-thinking');
+  if (elThinkGate && !elThinkGate.value.trim()) return;
   if (elQuizMode === 'classroom') {
     var info = elValidateStudentInfo();
     if (!info.valid) {
@@ -2163,13 +2164,16 @@ function elResetQuiz() {
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ── SHOW YOUR THINKING: self-check reveal ─────────────────────────────
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function elRefreshSubmitState() {
+  var quizDone  = elQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('el-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('el-submit-btn').disabled = elQuizState.submitted || !(quizDone && thinkDone);
+}
 (function () {
-  var btn   = document.getElementById('el-think-reveal');
-  var model = document.getElementById('el-think-model');
-  if (btn && model) {
-    btn.addEventListener('click', function () { model.classList.add('show'); });
-  }
+  var thinkEl = document.getElementById('el-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', elRefreshSubmitState);
 })();
 
 elBuildQuiz();

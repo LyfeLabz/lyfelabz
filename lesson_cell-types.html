@@ -2193,12 +2193,9 @@ buildReflection();
     <div class="think-box" id="ct-think">
       <div class="think-eyebrow">🧠 Show Your Thinking</div>
       <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
-      <p class="think-sub">Use what you learned in this lesson to explain the main scientific idea. This is not graded, it is sent in with your quiz so your teacher can see how you reason.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
       <p class="think-prompt">In one sentence, explain why living things have so many different cell types when every cell is built from the same basic unit. Use the word <strong>strategy</strong>.</p>
       <textarea class="think-input" id="ct-thinking" placeholder="Write your one-sentence explanation here..." aria-label="Explain why living things have so many different cell types"></textarea>
-      <div class="think-actions">
-        <button type="button" class="think-reveal-btn" id="ct-think-reveal">Compare your thinking</button>
-      </div>
       <div class="think-model" id="ct-think-model">
         <span class="tm-label">One strong way to say it</span>
         Different cell types are different <strong>strategies</strong> for solving the same survival problems, so no cell type ranks above another, each is suited to a different set of jobs. If your sentence frames the differences as strategies rather than a ranking, you have it.
@@ -2229,7 +2226,7 @@ buildReflection();
     </div>
 
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="ct-submit-btn" onclick="ctSubmitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="ct-submit-btn" onclick="ctSubmitQuiz()" disabled>Submit</button>
     </div>
 
     <style>
@@ -2539,7 +2536,7 @@ function ctSelectAnswer(qi, chosenIndex) {
   ctQuizState.selected[qi] = chosenIndex;
   document.getElementById(`ct-q-${qi}-${chosenIndex}`).classList.add('selected');
   ctUpdateProgress();
-  document.getElementById('ct-submit-btn').disabled = !ctQuizState.selected.every(s => s !== null);
+  ctRefreshSubmitState();
 }
 
 // ── PROGRESS BAR ──────────────────────────────────────────────────────
@@ -2564,6 +2561,10 @@ function ctValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function ctSubmitQuiz() {
   if (ctQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!ctQuizState.selected.every(s => s !== null)) return;
+  const ctThinkGate = document.getElementById('ct-thinking');
+  if (ctThinkGate && !ctThinkGate.value.trim()) return;
   if (ctQuizMode === 'classroom') {
     const { valid } = ctValidateStudentInfo();
     if (!valid) {
@@ -2677,13 +2678,16 @@ function ctResetQuiz() {
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ── SHOW YOUR THINKING: self-check reveal ─────────────────────────────
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function ctRefreshSubmitState() {
+  const quizDone  = ctQuizState.selected.every(s => s !== null);
+  const thinkEl   = document.getElementById('ct-thinking');
+  const thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('ct-submit-btn').disabled = ctQuizState.submitted || !(quizDone && thinkDone);
+}
 (function () {
-  const btn   = document.getElementById('ct-think-reveal');
-  const model = document.getElementById('ct-think-model');
-  if (btn && model) {
-    btn.addEventListener('click', () => model.classList.add('show'));
-  }
+  const thinkEl = document.getElementById('ct-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', ctRefreshSubmitState);
 })();
 
 // ── INIT ──────────────────────────────────────────────────────────────
