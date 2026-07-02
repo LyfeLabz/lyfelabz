@@ -114,6 +114,32 @@ Keep this order unless explicitly instructed otherwise.
 
 ---
 
+# STANDARDS PRESENTATION
+
+Standards are never displayed as standalone banners.
+
+All instructional page types use the canonical beneath-hero implementation consisting of:
+
+* Learning Science Focus (`.ls-focus`)
+* MA STE Standards (`.stem-focus`)
+
+This applies to every instructional page type, including:
+
+* Lessons
+* Investigations
+* Extensions
+* Simulations
+* Engineering Challenges
+* Hidden World pages
+* Games
+* Any future instructional page type
+
+Do not introduce new standards presentation styles.
+
+The canonical beneath-hero implementation is now the permanent LyfeLabz standard.
+
+---
+
 # STICKY NAVIGATION
 
 The sticky navigation is a student quick-return menu, not a table of contents.
