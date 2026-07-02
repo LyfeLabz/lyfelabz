@@ -346,7 +346,9 @@ wrong option into diagnostic information about which model the student is holdin
 **How it improves understanding.** Answer explanations turn the quiz itself into
 a last round of feedback and teaching, not just scoring.
 
-**Status.** Mandatory. Follow the quiz standard: ten questions, a mix of DOK 1
+**Status.** Mandatory. Follow the quiz standard: ten questions by default (some
+lessons intentionally have more, for example Body Systems has fifteen; Assessment
+v2 posts one `qN` field per question and adjusts automatically), a mix of DOK 1
 and DOK 2, plausible distractors, answer explanations, answer positions and
 lengths balanced so the longest or most detailed option is not reliably correct.
 Favor conceptual understanding over trivia. Use the existing classroom-mode

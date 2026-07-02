@@ -22,17 +22,27 @@ Assessment v2 is a clean break. Every future lesson submits to LyfeLabz_GScript_
 on the new Assessment v2 Google Sheet. The backend gives every lesson tab one shared,
 teacher-friendly schema. The tab name identifies the lesson, so there is no Lesson column.
 
-Each response row is exactly:
+Each response row is:
 
-Timestamp, Student Name, Block, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Score, 🧠 Show Your Thinking
+Timestamp, Student Name, Block, Q1, Q2, ... QN, Score, 🧠 Show Your Thinking
+
+where N is the number of quiz questions in that lesson. Most lessons have ten
+(Q1-Q10), but a lesson may have more; Body Systems, for example, has fifteen
+(Q1-Q15). Only the number of Q columns varies. The leading columns and the
+trailing Score / 🧠 Show Your Thinking columns are the same for every lesson,
+and the backend grows the row to fit however many answers the lesson posts.
 
 Timestamp is added by the server. Every future lesson posts these fields, named exactly:
 
 - `tab` - the lesson's tab name, which must be registered in TAB_CONFIG in LyfeLabz_GScript_v2.js.
 - `studentName`, `block`
-- `q1` through `q10` - the student's selected answer for each of the ten quiz questions.
-- `score` - the score string, for example `9/10`.
+- `q1` through `qN` - one field per quiz question, named sequentially, where N equals the number of quiz questions in that lesson (for example `q1`-`q10` for a ten-question lesson, `q1`-`q15` for Body Systems).
+- `score` - the score string, for example `9/10` or `14/15`.
 - `thinking` - the 🧠 Show Your Thinking response, written into the final column.
+
+The teacher workflow is unchanged: registering a lesson is still one line in
+TAB_CONFIG, the sheet stays simple, and the digest reads the same columns by
+name regardless of how many questions a lesson has.
 
 No Teacher, Percent, Lesson, or Missed Questions columns. Do not add metadata columns.
 Registering a new lesson is one line in TAB_CONFIG (tab name, optional header color); the

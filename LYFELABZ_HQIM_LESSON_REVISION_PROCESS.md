@@ -48,8 +48,9 @@ Not identical. Equally strong, each in its own kind.
 
 ## The Revision Workflow
 
-Eight phases. The first six are thinking. The seventh is the only phase that
-touches the lesson. The eighth confirms the work. Do not begin editing until
+Nine phases. The first six are thinking. The seventh is the only phase that
+touches the lesson. The eighth confirms the work. The ninth records what the
+pilot taught us and binds every future revision to it. Do not begin editing until
 Phases 1 through 6 are done, because the whole point is that the edits in Phase 7
 are deliberate consequences of the analysis, not improvisation.
 
@@ -301,6 +302,29 @@ Finish by answering the two questions that define success for this whole process
 2. Would a curious middle school student now do more real thinking than before?
 
 If either answer is no, the revision is not done.
+
+---
+
+### Phase 9. Lessons Learned
+
+Findings from the What Is Life pilot. These are binding on every future revision.
+
+* **Show Your Thinking is the required student-constructed explanation for each
+  lesson.** Earlier wrap-up synthesis may support it, but it must not replace it
+  or duplicate it.
+* **Assessment v2 compatibility is required for every revised lesson.** The
+  submission payload must include: `tab`, `studentName`, `block`, `q1`-`qN`
+  (one field per quiz question, named sequentially, where N is the number of
+  questions in that lesson), `score`, and `thinking`. Most lessons have ten
+  questions (`q1`-`q10`); some intentionally have more (Body Systems has fifteen,
+  `q1`-`q15`).
+* **Reuse the What Is Life pilot as the canonical implementation pattern** for
+  Show Your Thinking, the `thinking` field submission, and the Assessment v2
+  payload structure.
+* **Check badge accuracy before implementation**, not only during the final
+  audit.
+* **Prefer additive revisions over replacement** whenever the existing lesson
+  has strong instructional moves.
 
 ---
 

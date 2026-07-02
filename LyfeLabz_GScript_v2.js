@@ -10,8 +10,11 @@
 // What is new in v2:
 //   - Every lesson tab shares ONE simple schema. The tab name identifies the
 //     lesson, so there is no Lesson column.
-//   - Each response row stores the ten individual quiz answers (Q1-Q10), the
-//     Score, and the 🧠 Show Your Thinking response as the final column.
+//   - Each response row stores one column per quiz question (Q1..QN, where N is
+//     the number of questions in that lesson), the Score, and the 🧠 Show Your
+//     Thinking response as the final column. Most lessons have ten questions,
+//     but a lesson may have more (for example Body Systems has fifteen); the
+//     row grows to fit however many q1..qN answers the lesson posts.
 //   - No Teacher column, no Percent column, no Missed Questions transform, and
 //     no per-lesson header/field lists. Teachers wanted the sheet kept simple.
 //   - Show Your Thinking is submitted together with the quiz data (field:
@@ -33,21 +36,47 @@ const DAILY_DIGEST_HOUR = 7; // 7 AM
 const DAILY_DIGEST_PROPERTY_KEY = 'LYFELABZ_V2_LAST_DIGEST_SENT_AT';
 
 // ── The one shared schema for every lesson tab ────────────────────────────
-// Column order is fixed. The tab name identifies the lesson, so no Lesson
-// column exists. 🧠 Show Your Thinking is always the final column.
-const STANDARD_HEADERS = [
-  'Timestamp', 'Student Name', 'Block',
-  'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10',
-  'Score', '🧠 Show Your Thinking',
-];
+// Column order is fixed: the identity columns, then one column per quiz
+// question (Q1..QN), then Score and 🧠 Show Your Thinking. The tab name
+// identifies the lesson, so no Lesson column exists, and 🧠 Show Your Thinking
+// is always the final column.
+//
+// Only the number of quiz-answer columns varies between lessons. The leading
+// and trailing columns are constant, and the answer columns are generated to
+// match however many q1..qN answers the lesson posts (see buildSchema).
+const LEADING_HEADERS  = ['Timestamp', 'Student Name', 'Block'];
+const TRAILING_HEADERS = ['Score', '🧠 Show Your Thinking'];
 
-// The URL-parameter names each lesson posts, in the same order as the headers
-// above (Timestamp is added by the server and is not a submitted field).
-const STANDARD_FIELDS = [
-  'studentName', 'block',
-  'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10',
-  'score', 'thinking',
-];
+// The URL-parameter names each lesson posts. Timestamp is added by the server
+// and is not a submitted field; the quiz answers (q1..qN) sit between these
+// leading and trailing field lists.
+const LEADING_FIELDS  = ['studentName', 'block'];
+const TRAILING_FIELDS = ['score', 'thinking'];
+
+// Build the header and field lists for a lesson with `questionCount` questions.
+// headers include the server-added Timestamp; fields do not.
+function buildSchema(questionCount) {
+  var qHeaders = [];
+  var qFields  = [];
+  for (var i = 1; i <= questionCount; i++) {
+    qHeaders.push('Q' + i);
+    qFields.push('q' + i);
+  }
+  return {
+    headers: LEADING_HEADERS.concat(qHeaders, TRAILING_HEADERS),
+    fields:  LEADING_FIELDS.concat(qFields, TRAILING_FIELDS),
+  };
+}
+
+// Count how many quiz answers a submission carries by walking q1, q2, ... until
+// the first missing one. Lessons always post a contiguous q1..qN.
+function countQuestions(params) {
+  var n = 0;
+  while (params['q' + (n + 1)] !== undefined) {
+    n++;
+  }
+  return n;
+}
 
 // Default header styling. A lesson may override the color in TAB_CONFIG below.
 const DEFAULT_HEADER_COLOR = '#2ecc71';
@@ -55,8 +84,9 @@ const DEFAULT_FONT_COLOR   = '#0a1f0a';
 
 // ── Registered lesson tabs ────────────────────────────────────────────────
 // Every lesson or extension gets its own tab. Registering a new lesson is one
-// line: the tab name, and optionally a header color. The schema is always
-// STANDARD_HEADERS, so there is nothing else to configure.
+// line: the tab name, and optionally a header color. The schema is always the
+// same shape (only the number of Q columns follows the lesson), so there is
+// nothing else to configure.
 //
 // The registry is also the allowlist: doGet rejects any tab that is not listed
 // here, so a typo in a lesson never creates a stray tab.
@@ -77,16 +107,17 @@ function doGet(e) {
     }
 
     var config = TAB_CONFIG[tabName];
+    var schema = buildSchema(countQuestions(params));
     var ss     = SpreadsheetApp.openById(SPREADSHEET_ID);
-    var sheet  = getOrCreateSheet(ss, tabName, config);
+    var sheet  = getOrCreateSheet(ss, tabName, config, schema);
 
     var row = [new Date()];
-    STANDARD_FIELDS.forEach(function(field) {
+    schema.fields.forEach(function(field) {
       row.push(params[field] !== undefined ? params[field] : '');
     });
 
     sheet.insertRows(2, 1);
-    sheet.getRange(2, 1, 1, STANDARD_HEADERS.length).setValues([row]).setWrap(true);
+    sheet.getRange(2, 1, 1, schema.headers.length).setValues([row]).setWrap(true);
 
     return respond('success', 'Row added to ' + tabName);
   } catch (err) {
@@ -95,24 +126,24 @@ function doGet(e) {
 }
 
 // ── Helper: get or create sheet ───────────────────────────────────────────
-function getOrCreateSheet(ss, name, config) {
+function getOrCreateSheet(ss, name, config, schema) {
   var sheet = ss.getSheetByName(name);
   if (!sheet) {
     sheet = ss.insertSheet(name);
     sheet.setFrozenRows(1);
   }
 
-  var headerRange = sheet.getRange(1, 1, 1, STANDARD_HEADERS.length);
-  headerRange.setValues([STANDARD_HEADERS]);
+  var headerRange = sheet.getRange(1, 1, 1, schema.headers.length);
+  headerRange.setValues([schema.headers]);
   headerRange.setFontWeight('bold');
   headerRange.setBackground(config.headerColor || DEFAULT_HEADER_COLOR);
   headerRange.setFontColor(config.fontColor || DEFAULT_FONT_COLOR);
   headerRange.setFontSize(11);
   headerRange.setWrap(true);
 
-  // Timestamp and Student Name get wider columns; the ten answer columns stay
+  // Timestamp and Student Name get wider columns; the quiz answer columns stay
   // narrow; Score narrow; Show Your Thinking (last) is the widest.
-  var lastCol = STANDARD_HEADERS.length;
+  var lastCol = schema.headers.length;
   for (var i = 1; i <= lastCol; i++) {
     var width;
     if (i === 1)            width = 180; // Timestamp
@@ -120,7 +151,7 @@ function getOrCreateSheet(ss, name, config) {
     else if (i === 3)       width = 70;  // Block
     else if (i === lastCol) width = 360; // 🧠 Show Your Thinking
     else if (i === lastCol - 1) width = 80; // Score
-    else                    width = 55;  // Q1-Q10
+    else                    width = 55;  // Q1..QN
     sheet.setColumnWidth(i, width);
   }
   return sheet;
@@ -335,9 +366,10 @@ function escapeHtml(value) {
 function testWhatIsLife() {
   var ss     = SpreadsheetApp.openById(SPREADSHEET_ID);
   var config = TAB_CONFIG['What Is Life'];
-  var sheet  = getOrCreateSheet(ss, 'What Is Life', config);
+  var schema = buildSchema(10);
+  var sheet  = getOrCreateSheet(ss, 'What Is Life', config, schema);
   sheet.insertRows(2, 1);
-  sheet.getRange(2, 1, 1, STANDARD_HEADERS.length).setValues([[
+  sheet.getRange(2, 1, 1, schema.headers.length).setValues([[
     new Date(),
     'Test Student',
     'B',
