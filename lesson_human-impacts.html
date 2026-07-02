@@ -1529,9 +1529,65 @@
     <!-- Questions injected by JS -->
     <div id="el-quiz-questions"></div>
 
+    <!-- ── 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) ── -->
+    <style>
+      @keyframes elThinkFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(29,233,182,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(29,233,182,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-actions { margin-top:0.9rem; }
+      .think-reveal-btn { font-family:'Nunito', sans-serif; font-size:0.85rem; font-weight:900; letter-spacing:0.04em; border-radius:99px; padding:0.55rem 1.3rem; cursor:pointer; background:transparent; color:var(--teal); border:1px solid rgba(29,233,182,0.5); transition:transform 0.15s; }
+      .think-reveal-btn:hover { transform:translateY(-1px); }
+      .think-reveal-btn:focus-visible { outline:2px solid var(--teal); outline-offset:2px; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(29,233,182,0.07); border:1px solid rgba(29,233,182,0.25); border-left:4px solid var(--teal); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: elThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
+    <div class="think-box" id="el-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In one or two sentences, explain how one human activity, fertilizer runoff, changed the whole lake. Trace the change from one part of the ecosystem to the next, not just the beginning and the end. Use the word <strong>connected</strong>.</p>
+      <textarea class="think-input" id="el-thinking" placeholder="Write your explanation here..." aria-label="Explain how fertilizer runoff changed the whole lake"></textarea>
+      <div class="think-model" id="el-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        The fertilizer runoff fed an algae bloom, the dying algae used up the oxygen, the low oxygen killed the fish, and losing the fish dropped the lake's biodiversity. Because every part of an ecosystem is <strong>connected</strong>, one human activity on the land spread all the way through the water and the food web. If your explanation follows the chain from one part to the next, you have it.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode (Show Your Thinking) ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>End the lesson with the student constructing the central idea in their own words, not selecting it.</li><li>Give the one place where the student generates rather than clicks.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Systems thinking: tracing a change through connected parts</li><li>Self-check reveal for comparison, ungraded</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Sentence-length response, not an essay</li><li>Keyword scaffold ("connected")</li><li>Model answer to compare against</li></ul>
+        </div>
+      </div>
+    </div>
+
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit Score</button>
+      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit</button>
     </div>
 
     <!-- Score Board -->
@@ -1650,6 +1706,22 @@
         <div class="cont-cat">Lesson</div>
         <div class="cont-name">Renewable and Nonrenewable Resources</div>
         <div class="cont-desc">How we power our lives is one of our largest impacts. See which resources nature renews and which we use up faster than they can be replaced.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_parts-of-an-ecosystem.html" aria-label="Parts of an Ecosystem lesson">
+        <div class="cont-icon">&#127760;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Parts of an Ecosystem</div>
+        <div class="cont-desc">Every living and nonliving part you met there is exactly what human activity disrupts. It shows the connected system that carries a change from the land all the way to the fish.</div>
+        <span class="cont-status">Explore</span>
+      </a>
+
+      <a class="cont-card lesson" href="lesson_energy-flow.html" aria-label="Energy Flow in Ecosystems lesson">
+        <div class="cont-icon">&#9889;</div>
+        <div class="cont-cat">Lesson</div>
+        <div class="cont-name">Energy Flow in Ecosystems</div>
+        <div class="cont-desc">When the lake lost its fish, it lost links in the food web. The same energy pathways you traced there are what a human disruption breaks when a population collapses.</div>
         <span class="cont-status">Explore</span>
       </a>
 
@@ -1982,7 +2054,7 @@ function elSelectAnswer(qi, chosenIndex) {
   elQuizState.selected[qi] = chosenIndex;
   document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
   elUpdateProgress();
-  document.getElementById('el-submit-btn').disabled = !elQuizState.selected.every(function (s) { return s !== null; });
+  elRefreshSubmitState();
 }
 
 function elUpdateProgress() {
@@ -2004,6 +2076,10 @@ function elValidateStudentInfo() {
 
 function elSubmitQuiz() {
   if (elQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!elQuizState.selected.every(function (s) { return s !== null; })) return;
+  var elThinkGate = document.getElementById('el-thinking');
+  if (elThinkGate && !elThinkGate.value.trim()) return;
   if (elQuizMode === 'classroom') {
     var info = elValidateStudentInfo();
     if (!info.valid) {
@@ -2013,6 +2089,12 @@ function elSubmitQuiz() {
   }
   elQuizState.submitted = true;
   document.getElementById('el-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('el-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('el-think-model').classList.add('show');
   var correct = 0;
   elQuizQuestions.forEach(function (q, qi) {
     var chosen    = elQuizState.selected[qi];
@@ -2057,15 +2139,17 @@ function elSubmitQuiz() {
 
   var info2 = elValidateStudentInfo();
   var teacherLabel = info2.teacher === 'MrKankel' ? 'Mr. Kankel' : 'Mr. Rovner';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var answerStr = elQuizState.selected.map(function (idx, i) {
-    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
-  }).join(', ');
-  var params = new URLSearchParams({
-    tab: 'Human Impacts', lesson: 'Human Impacts', studentName: info2.name, teacher: teacherLabel,
-    block: info2.block, score: score, total: total, percent: pct + '%',
-    timestamp: new Date().toISOString(), answers: answerStr
+  var params = new URLSearchParams({ tab: 'Human Impacts', studentName: info2.name, block: info2.block });
+  elQuizState.selected.forEach(function (idx, i) {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
   });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
   var endpoint = EL_SCRIPT_URLS[info2.teacher];
   if (!endpoint || endpoint.indexOf('REPLACE_WITH') !== -1) {
     document.getElementById('el-submit-status').innerHTML =
@@ -2090,11 +2174,27 @@ function elResetQuiz() {
   }
   document.getElementById('el-score').classList.remove('show');
   document.getElementById('el-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('el-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('el-think-model').classList.remove('show');
   elBuildQuiz();
   var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
   var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function elRefreshSubmitState() {
+  var quizDone  = elQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('el-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('el-submit-btn').disabled = elQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('el-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', elRefreshSubmitState);
+})();
 
 elBuildQuiz();
 </script>
