@@ -557,7 +557,10 @@ claim, cite evidence from the lesson, and reason from one to the other.
 Show Your Thinking follows these rules in every flagship lesson:
 
 * It is **not graded separately** from the lesson.
-* It is **collected as part of the normal lesson submission**.
+* It is **collected as part of the normal lesson submission**. The response is
+  sent in the `thinking` field of the Assessment v2 payload and lands in the
+  final "🧠 Show Your Thinking" column of the lesson's tab. See
+  `docs/components/submission-system.md` and `LyfeLabz_GScript_v2.js`.
 * It **appears immediately before Submit**.
 * It **focuses on the lesson's central idea or driving question**.
 * It **never asks for isolated vocabulary definitions or trivial recall**.
