@@ -3107,9 +3107,61 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <!-- Questions injected by JS -->
     <div id="ds-quiz-questions"></div>
 
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      @keyframes dsThinkFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(59,200,232,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(59,200,232,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(59,200,232,0.07); border:1px solid rgba(59,200,232,0.25); border-left:4px solid var(--teal); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: dsThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
+    <div class="think-box" id="ds-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In one or two sentences, explain how a FaceTime call can cross the world and still sound clear. Trace the journey - encode, transmit, decode - and explain why turning your voice into 0s and 1s keeps the message safe from <strong>noise</strong> along the way.</p>
+      <textarea class="think-input" id="ds-thinking" placeholder="Write your explanation here..." aria-label="Explain how a FaceTime call stays clear across the world"></textarea>
+      <div class="think-model" id="ds-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        Your voice starts as a sound wave, but sound can't cross an ocean. The <strong>encoder</strong> turns it into binary code, just 0s and 1s. Those bits travel as wave pulses through cables, towers, and satellites (<strong>transmission</strong>). Along the way the signal picks up <strong>noise</strong>, but because binary has only two possible values, a pulse with a little noise added is still clearly a 0 or a 1. The <strong>decoder</strong> reads each pulse, rebuilds the exact message, and plays your voice back. If your answer names encode, transmit, and decode, and says two clean values let the receiver ignore noise, you have it.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode (Show Your Thinking) ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>End the lesson with the student building the encode-transmit-decode mechanism in their own words, not selecting it.</li><li>Give the one place where the student generates the explanation rather than clicks.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Cause-and-effect: tracing why two clean binary values survive noise across distance</li><li>Self-check reveal for comparison, ungraded</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3 - construct the signal-journey mechanism and explain noise resistance</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Sentence-length response, not an essay</li><li>Keyword scaffold ("noise")</li><li>Model answer to compare against</li></ul>
+        </div>
+      </div>
+    </div>
+
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="ds-submit-btn" onclick="dsSubmitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="ds-submit-btn" onclick="dsSubmitQuiz()" disabled>Submit</button>
     </div>
 
     <!-- Score Board -->
@@ -3632,8 +3684,8 @@ function dsBuildQuiz() {
   container.innerHTML = '';
   dsQuizState.selected  = new Array(dsQuizQuestions.length).fill(null);
   dsQuizState.submitted = false;
-  document.getElementById('ds-submit-btn').disabled = true;
   dsUpdateProgress();
+  dsRefreshSubmitState();
   var letters = ['A','B','C','D'];
   dsQuizQuestions.forEach(function (q, qi) {
     var optionsHTML = q.options.map(function (opt, oi) {
@@ -3661,7 +3713,7 @@ function dsSelectAnswer(qi, chosenIndex) {
   dsQuizState.selected[qi] = chosenIndex;
   document.getElementById('ds-q-' + qi + '-' + chosenIndex).classList.add('selected');
   dsUpdateProgress();
-  document.getElementById('ds-submit-btn').disabled = !dsQuizState.selected.every(function (s) { return s !== null; });
+  dsRefreshSubmitState();
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────────
@@ -3686,6 +3738,10 @@ function dsValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function dsSubmitQuiz() {
   if (dsQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!dsQuizState.selected.every(function (s) { return s !== null; })) return;
+  var dsThinkGate = document.getElementById('ds-thinking');
+  if (dsThinkGate && !dsThinkGate.value.trim()) return;
   if (dsQuizMode === 'classroom') {
     var info = dsValidateStudentInfo();
     if (!info.valid) {
@@ -3695,6 +3751,12 @@ function dsSubmitQuiz() {
   }
   dsQuizState.submitted = true;
   document.getElementById('ds-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('ds-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('ds-think-model').classList.add('show');
   var correct = 0;
   dsQuizQuestions.forEach(function (q, qi) {
     var chosen    = dsQuizState.selected[qi];
@@ -3739,14 +3801,17 @@ function dsSubmitQuiz() {
 
   var info2 = dsValidateStudentInfo();
   var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var answerStr = dsQuizState.selected.map(function (idx, i) {
-    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
-  }).join(', ');
-  var params = new URLSearchParams({
-    tab: 'Digital Signals', studentName: info2.name, teacher: teacherLabel,
-    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+  var params = new URLSearchParams({ tab: 'Digital Signals', studentName: info2.name, block: info2.block });
+  dsQuizState.selected.forEach(function (idx, i) {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
   });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
   fetch(DS_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(function () {
       document.getElementById('ds-submit-status').innerHTML =
@@ -3766,11 +3831,27 @@ function dsResetQuiz() {
   }
   document.getElementById('ds-score').classList.remove('show');
   document.getElementById('ds-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('ds-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('ds-think-model').classList.remove('show');
   dsBuildQuiz();
   var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
   var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function dsRefreshSubmitState() {
+  var quizDone  = dsQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('ds-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('ds-submit-btn').disabled = dsQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('ds-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', dsRefreshSubmitState);
+})();
 
 // ── INIT ──────────────────────────────────────────────────────────────
 dsBuildQuiz();

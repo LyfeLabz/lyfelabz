@@ -5185,6 +5185,58 @@ document.querySelectorAll('.glossary-card').forEach(function(card){
     <!-- Questions injected here by JS -->
     <div id="nw-quiz-questions"></div>
 
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      @keyframes nwThinkFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(59,200,232,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(59,200,232,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(59,200,232,0.07); border:1px solid rgba(59,200,232,0.25); border-left:4px solid var(--teal); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: nwThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
+    <div class="think-box" id="nw-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In one or two sentences, explain how an ocean wave can carry <strong>energy</strong> all the way to shore while the water itself mostly stays in place. Describe what the particles actually do as the wave passes.</p>
+      <textarea class="think-input" id="nw-thinking" placeholder="Write your explanation here..." aria-label="Explain how a wave carries energy to shore while the water stays in place"></textarea>
+      <div class="think-model" id="nw-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        As the wave passes, each water particle lifts up and drops back down, then returns to its resting position; it never travels to shore. Each particle passes the disturbance to the next particle, and that passing-along is what moves <strong>energy</strong> forward across the ocean. So the energy travels the whole way, but the matter stays where it started. If your sentences separate what travels (energy) from what stays put (the water), you have it.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode (Show Your Thinking) ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>End the lesson with the student building the wave mechanism in their own words, not selecting it.</li><li>Give the one place where the student generates an explanation rather than clicks.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Cause-and-effect: tracing the disturbance passing particle to particle while matter returns to rest</li><li>Self-check reveal for comparison, ungraded</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3 - construct the energy-transfer mechanism from the phenomenon</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Sentence-length response, not an essay</li><li>Keyword scaffold ("energy")</li><li>Model answer to compare against</li></ul>
+        </div>
+      </div>
+    </div>
+
     <!-- Submit -->
     <div class="quiz-submit-wrap">
       <button class="quiz-submit-btn" id="nw-submit-btn" onclick="nwSubmitQuiz()" disabled>Submit Quiz</button>
@@ -5471,7 +5523,7 @@ function nwSelectAnswer(qi, chosenIndex) {
   nwQuizState.selected[qi] = chosenIndex;
   document.getElementById(`nw-q-${qi}-${chosenIndex}`).classList.add('selected');
   nwUpdateProgress();
-  document.getElementById('nw-submit-btn').disabled = !nwQuizState.selected.every(s => s !== null);
+  nwRefreshSubmitState();
 }
 
 // ── PROGRESS BAR ──────────────────────────────────────────────────────
@@ -5496,6 +5548,10 @@ function nwValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function nwSubmitQuiz() {
   if (nwQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!nwQuizState.selected.every(s => s !== null)) return;
+  const nwThinkGate = document.getElementById('nw-thinking');
+  if (nwThinkGate && !nwThinkGate.value.trim()) return;
   if (nwQuizMode === 'classroom') {
     const { valid } = nwValidateStudentInfo();
     if (!valid) {
@@ -5505,6 +5561,12 @@ function nwSubmitQuiz() {
   }
   nwQuizState.submitted = true;
   document.getElementById('nw-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  const thinkInput = document.getElementById('nw-thinking');
+  const thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('nw-think-model').classList.add('show');
   let correct = 0;
   nwQuizQuestions.forEach((q, qi) => {
     const chosen    = nwQuizState.selected[qi];
@@ -5557,14 +5619,17 @@ function nwSubmitQuiz() {
 
   const { name, teacher, block } = nwValidateStudentInfo();
   const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
   const letters = ['A','B','C','D'];
-  const answerStr = nwQuizState.selected.map((idx, i) =>
-    'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-')
-  ).join(', ');
-  const params = new URLSearchParams({
-    tab: 'Nature of Waves', studentName: name, teacher: teacherLabel,
-    block, score, percent: pct + '%', answers: answerStr
+  const params = new URLSearchParams({ tab: 'Nature of Waves', studentName: name, block });
+  nwQuizState.selected.forEach((idx, i) => {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
   });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
   fetch(NW_SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(() => {
       document.getElementById('nw-submit-status').innerHTML =
@@ -5585,6 +5650,10 @@ function nwResetQuiz() {
   }
   document.getElementById('nw-score').classList.remove('show');
   document.getElementById('nw-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  const thinkInput = document.getElementById('nw-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('nw-think-model').classList.remove('show');
   nwBuildQuiz();
   // Return the student to the quiz's natural beginning. Reuse the Quiz nav
   // link's target so there is only one canonical quiz destination, and scroll
@@ -5595,6 +5664,18 @@ function nwResetQuiz() {
   const target = quizLink && document.querySelector(quizLink.getAttribute('href'));
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function nwRefreshSubmitState() {
+  const quizDone  = nwQuizState.selected.every(s => s !== null);
+  const thinkEl   = document.getElementById('nw-thinking');
+  const thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('nw-submit-btn').disabled = nwQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  const thinkEl = document.getElementById('nw-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', nwRefreshSubmitState);
+})();
 
 // ── INIT ──────────────────────────────────────────────────────────────
 nwBuildQuiz();
