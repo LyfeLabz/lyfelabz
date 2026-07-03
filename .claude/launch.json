@@ -42,6 +42,36 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3472", "."],
       "port": 3472
+    },
+    {
+      "name": "electricity-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3481", "."],
+      "port": 3481
+    },
+    {
+      "name": "earthquake-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3482", "."],
+      "port": 3482
+    },
+    {
+      "name": "volcano-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3483", "."],
+      "port": 3483
+    },
+    {
+      "name": "weathering-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3484", "."],
+      "port": 3484
+    },
+    {
+      "name": "hotspot-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3485", "."],
+      "port": 3485
     }
   ]
 }
