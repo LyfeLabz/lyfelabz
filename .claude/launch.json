@@ -72,6 +72,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3485", "."],
       "port": 3485
+    },
+    {
+      "name": "layers-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3486", "."],
+      "port": 3486
     }
   ]
 }
