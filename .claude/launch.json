@@ -90,6 +90,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3488", "."],
       "port": 3488
+    },
+    {
+      "name": "sem-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3489", "."],
+      "port": 3489
     }
   ]
 }
