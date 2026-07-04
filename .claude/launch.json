@@ -102,6 +102,18 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3490", "."],
       "port": 3490
+    },
+    {
+      "name": "eclipses-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3491", "."],
+      "port": 3491
+    },
+    {
+      "name": "reproductive-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3492", "."],
+      "port": 3492
     }
   ]
 }

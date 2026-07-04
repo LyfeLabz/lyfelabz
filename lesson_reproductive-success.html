@@ -1486,9 +1486,61 @@
     <!-- Questions injected by JS -->
     <div id="rs-quiz-questions"></div>
 
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      @keyframes rsThinkFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(159,184,204,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--accent2); box-shadow:0 0 0 3px rgba(122,143,166,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(29,233,182,0.07); border:1px solid rgba(29,233,182,0.25); border-left:4px solid var(--teal); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: rsThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
+    <div class="think-box" id="rs-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">Pick one strange trait from this lesson: an animal behavior like the peacock's display, or a plant structure like the maple seed's spinning wing. In one or two sentences, explain how it raises the organism's chance of successful reproduction, and why a costly trait like that still gets passed down. Build the chain in order, and use the word <strong>offspring</strong>.</p>
+      <textarea class="think-input" id="rs-thinking" placeholder="Write your explanation here..." aria-label="Explain how a behavior or structure raises an organism's chance of successful reproduction"></textarea>
+      <div class="think-model" id="rs-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        A peacock's huge tail is a <strong>mating display</strong>. Peahens choose males with the largest, brightest tails, so those males reproduce more and leave behind more surviving <strong>offspring</strong>. Because the trait raises <strong>reproductive success</strong>, it gets passed to the next generation again and again, even though the tail is heavy and easy for predators to spot. A maple seed's spinning wing does the same job a different way: it carries the seed far from the parent so more seeds find room to grow. A trait does not have to help an organism survive. It only has to help it leave more surviving offspring, and then it lasts.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode (Show Your Thinking) ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text"><li>End the lesson with the student building the explanation in their own words, not selecting it.</li><li>Give the one place where the student generates rather than clicks.</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text"><li>Generation effect and self-explanation</li><li>Cause and effect: trait to reproduction to more surviving offspring to trait passed on</li><li>Self-check reveal for comparison, ungraded</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text"><li>Analyze to Evaluate</li><li>DOK 3</li></ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text"><li>Short, one-to-two sentence response</li><li>Keyword scaffold ("offspring") to anchor the chain</li><li>Model answer to self-check against</li></ul>
+        </div>
+      </div>
+    </div>
+
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="rs-submit-btn" onclick="rsSubmitQuiz()" disabled>Submit Score</button>
+      <button class="quiz-submit-btn" id="rs-submit-btn" onclick="rsSubmitQuiz()" disabled>Submit</button>
     </div>
 
     <!-- Score Board -->
@@ -1918,7 +1970,7 @@ function rsSelectAnswer(qi, chosenIndex) {
   rsQuizState.selected[qi] = chosenIndex;
   document.getElementById('rs-q-' + qi + '-' + chosenIndex).classList.add('selected');
   rsUpdateProgress();
-  document.getElementById('rs-submit-btn').disabled = !rsQuizState.selected.every(function (s) { return s !== null; });
+  rsRefreshSubmitState();
 }
 
 function rsUpdateProgress() {
@@ -1940,6 +1992,10 @@ function rsValidateStudentInfo() {
 
 function rsSubmitQuiz() {
   if (rsQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!rsQuizState.selected.every(function (s) { return s !== null; })) return;
+  var rsThinkGate = document.getElementById('rs-thinking');
+  if (rsThinkGate && !rsThinkGate.value.trim()) return;
   if (rsQuizMode === 'classroom') {
     var info = rsValidateStudentInfo();
     if (!info.valid) {
@@ -1949,6 +2005,12 @@ function rsSubmitQuiz() {
   }
   rsQuizState.submitted = true;
   document.getElementById('rs-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('rs-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('rs-think-model').classList.add('show');
   var correct = 0;
   rsQuizQuestions.forEach(function (q, qi) {
     var chosen    = rsQuizState.selected[qi];
@@ -1993,15 +2055,17 @@ function rsSubmitQuiz() {
 
   var info2 = rsValidateStudentInfo();
   var teacherLabel = info2.teacher === 'MrKankel' ? 'Mr. Kankel' : 'Mr. Rovner';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var answerStr = rsQuizState.selected.map(function (idx, i) {
-    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
-  }).join(', ');
-  var params = new URLSearchParams({
-    tab: 'Reproductive Success', lesson: 'Reproductive Success', studentName: info2.name, teacher: teacherLabel,
-    block: info2.block, score: score, total: total, percent: pct + '%',
-    timestamp: new Date().toISOString(), answers: answerStr
+  var params = new URLSearchParams({ tab: 'Reproductive Success', studentName: info2.name, block: info2.block });
+  rsQuizState.selected.forEach(function (idx, i) {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
   });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
   var endpoint = RS_SCRIPT_URLS[info2.teacher];
   if (!endpoint || endpoint.indexOf('REPLACE_WITH') !== -1) {
     document.getElementById('rs-submit-status').innerHTML =
@@ -2026,11 +2090,27 @@ function rsResetQuiz() {
   }
   document.getElementById('rs-score').classList.remove('show');
   document.getElementById('rs-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('rs-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('rs-think-model').classList.remove('show');
   rsBuildQuiz();
   var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
   var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function rsRefreshSubmitState() {
+  var quizDone  = rsQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('rs-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('rs-submit-btn').disabled = rsQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('rs-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', rsRefreshSubmitState);
+})();
 
 rsBuildQuiz();
 </script>

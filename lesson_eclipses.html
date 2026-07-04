@@ -2238,7 +2238,9 @@ function ecSelectAnswer(qi, chosen) {
   ecQuizState.selected[qi] = chosen;
   document.getElementById('ec-q-' + qi + '-' + chosen).classList.add('selected');
   ecUpdateProgress();
-  document.getElementById('ec-submit-btn').disabled = !ecQuizState.selected.every(function(s) { return s !== null; });
+  // Submit unlocks only when every question is answered AND a written
+  // explanation exists (see ecRefreshSubmitState).
+  ecRefreshSubmitState();
 }
 
 function ecUpdateProgress() {
@@ -2260,12 +2262,22 @@ function ecValidateStudentInfo() {
 
 function ecSubmitQuiz() {
   if (ecQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!ecQuizState.selected.every(function(s) { return s !== null; })) return;
+  var ecThinkGate = document.getElementById('ec-thinking');
+  if (ecThinkGate && !ecThinkGate.value.trim()) return;
   if (ecQuizMode === 'classroom') {
     var v = ecValidateStudentInfo();
     if (!v.valid) { document.getElementById('student-info-box').scrollIntoView({ behavior:'smooth', block:'center' }); return; }
   }
   ecQuizState.submitted = true;
   document.getElementById('ec-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('ec-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('ec-think-model').classList.add('show');
   var correct = 0;
   ecQuizQuestions.forEach(function(q, qi) {
     var chosen = ecQuizState.selected[qi];
@@ -2316,7 +2328,17 @@ function ecSubmitQuiz() {
   var url  = EC_SCRIPT_URLS[info.teacher];
   if (!url) { document.getElementById('ec-submit-status').innerHTML = '<div class="score-error">\u26a0\ufe0f Script URL not configured.</div>'; return; }
   var teacherLabel = info.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
-  var params = new URLSearchParams({ tab:'Eclipses', studentName:info.name, teacher:teacherLabel, block:info.block, score:score, percent:pct+'%' });
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
+  var letters = ['A','B','C','D'];
+  var params = new URLSearchParams({ tab:'Eclipses', studentName:info.name, block:info.block });
+  ecQuizState.selected.forEach(function(chosenIndex, qi) {
+    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
+  });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
   fetch(url + '?' + params.toString(), { method:'GET', mode:'no-cors' })
     .then(function() { document.getElementById('ec-submit-status').innerHTML = '<div class="score-submitted">\u2705 Score submitted to ' + teacherLabel + '</div>'; })
     .catch(function() { document.getElementById('ec-submit-status').innerHTML = '<div class="score-error">\u26a0\ufe0f Could not reach the server. Check your connection.</div>'; });
@@ -2330,6 +2352,10 @@ function ecResetQuiz() {
   }
   document.getElementById('ec-score').classList.remove('show');
   document.getElementById('ec-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('ec-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('ec-think-model').classList.remove('show');
   ecBuildQuiz();
   // Return the student to the quiz's natural beginning. Reuse the Quiz nav
   // link's target so there is only one canonical quiz destination, and scroll
@@ -2340,6 +2366,19 @@ function ecResetQuiz() {
   const target = quizLink && document.querySelector(quizLink.getAttribute('href'));
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function ecRefreshSubmitState() {
+  var quizDone  = ecQuizState.selected.every(function(s) { return s !== null; });
+  var thinkEl   = document.getElementById('ec-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('ec-submit-btn').disabled = ecQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('ec-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', ecRefreshSubmitState);
+})();
+
 ecBuildQuiz();
 </script>
 
