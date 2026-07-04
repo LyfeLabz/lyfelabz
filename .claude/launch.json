@@ -96,6 +96,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3489", "."],
       "port": 3489
+    },
+    {
+      "name": "phases-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3490", "."],
+      "port": 3490
     }
   ]
 }
