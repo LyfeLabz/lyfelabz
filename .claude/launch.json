@@ -78,6 +78,18 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3486", "."],
       "port": 3486
+    },
+    {
+      "name": "drift-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3487", "."],
+      "port": 3487
+    },
+    {
+      "name": "gravity-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3488", "."],
+      "port": 3488
     }
   ]
 }

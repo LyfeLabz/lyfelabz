@@ -1543,13 +1543,51 @@
 
     <div id="grav-quiz-questions"></div>
 
-    <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="grav-submit-btn" onclick="gravSubmitQuiz()" disabled>Submit Quiz</button>
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(159,184,204,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:112px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(122,143,166,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(59,200,232,0.07); border:1px solid rgba(59,200,232,0.25); border-left:4px solid var(--teal); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: gravThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#a8f0ff; margin-bottom:0.4rem; }
+      @keyframes gravThinkFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+    <div class="think-box" id="grav-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">Earth's gravity pulls the Moon toward us every second, yet the Moon has never crashed in 4.5 billion years. Explain <strong>why</strong>. Build the whole chain: what gravity is doing to the Moon, what else the Moon is doing at the same time, and how those two together make an orbit. Use the word <strong>sideways</strong>.</p>
+      <textarea class="think-input" id="grav-thinking" placeholder="Start with what gravity does to the Moon, then add what the Moon's own motion does..." aria-label="Explain why the Moon never crashes into Earth even though gravity constantly pulls it inward"></textarea>
+      <div class="think-model" id="grav-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        Earth's gravity is constantly pulling the Moon inward, the same attractive pull that makes a dropped ball fall. But the Moon is also moving <strong>sideways</strong> very fast. As gravity pulls it down, that sideways speed carries it forward, and Earth's surface curves away beneath it at the same rate. So the Moon is always falling toward Earth but never getting any closer. That balance between the inward pull and the sideways motion is an <strong>orbit</strong>. Take away gravity and the Moon would fly off in a straight line; take away the sideways motion and it would fall straight in.
+      </div>
     </div>
 
+    <div class="quiz-submit-wrap">
+      <button class="quiz-submit-btn" id="grav-submit-btn" onclick="gravSubmitQuiz()" disabled>Submit</button>
+    </div>
+
+    <style>
+      .mystery-loop { background: rgba(122,143,166,0.06); border: 1px solid rgba(122,143,166,0.2); border-radius: 14px; padding: 1.1rem 1.3rem; font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 1.5rem; text-align: left; }
+      .mystery-loop strong { color: var(--text); }
+      .mystery-loop .ml-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; }
+    </style>
     <div class="score-board" id="grav-score">
       <div class="big-score" id="grav-score-num"></div>
       <p id="grav-score-msg"></p>
+      <div class="mystery-loop">
+        <span class="ml-label">🔍 The Question You Came In With</span>
+        You started this lesson asking: <strong>"If gravity is always pulling the Moon toward Earth, why doesn't the Moon ever crash into us?"</strong> Gravity really is pulling the Moon inward the whole time. But the Moon is also racing sideways, so as it falls, Earth curves away beneath it and it keeps missing. Always falling, never arriving, that is an orbit.
+      </div>
       <div id="grav-submit-status"></div>
       <button class="reset-btn" onclick="gravResetQuiz()">Try Again</button>
     </div>
@@ -2062,7 +2100,9 @@ function gravSelectAnswer(qi, chosenIndex) {
   gravQuizState.selected[qi] = chosenIndex;
   document.getElementById(`grav-q-${qi}-${chosenIndex}`).classList.add('selected');
   gravUpdateProgress();
-  document.getElementById('grav-submit-btn').disabled = !gravQuizState.selected.every(s => s !== null);
+  // Submit unlocks only when every question is answered AND a written
+  // explanation exists (see gravRefreshSubmitState).
+  gravRefreshSubmitState();
 }
 
 function gravUpdateProgress() {
@@ -2084,6 +2124,10 @@ function gravValidateStudentInfo() {
 
 function gravSubmitQuiz() {
   if (gravQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!gravQuizState.selected.every(s => s !== null)) return;
+  const gravThinkGate = document.getElementById('grav-thinking');
+  if (gravThinkGate && !gravThinkGate.value.trim()) return;
 
   if (gravQuizMode === 'classroom') {
     const { valid } = gravValidateStudentInfo();
@@ -2095,6 +2139,13 @@ function gravSubmitQuiz() {
 
   gravQuizState.submitted = true;
   document.getElementById('grav-submit-btn').disabled = true;
+
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  const thinkInput = document.getElementById('grav-thinking');
+  const thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('grav-think-model').classList.add('show');
 
   let correct = 0;
   gravQuizQuestions.forEach((q, qi) => {
@@ -2142,9 +2193,17 @@ function gravSubmitQuiz() {
 
   const { name, teacher, block } = gravValidateStudentInfo();
   const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
-  const params = new URLSearchParams({
-    tab: 'Gravity', studentName: name, teacher: teacherLabel, block, score, percent: pct + '%'
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
+  const letters = ['A', 'B', 'C', 'D'];
+  const params = new URLSearchParams({ tab: 'Gravity', studentName: name, block });
+  gravQuizState.selected.forEach((chosenIndex, qi) => {
+    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
   fetch(GRAV_SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(() => {
       document.getElementById('grav-submit-status').innerHTML =
@@ -2163,11 +2222,27 @@ function gravResetQuiz() {
   }
   document.getElementById('grav-score').classList.remove('show');
   document.getElementById('grav-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  const thinkInput = document.getElementById('grav-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('grav-think-model').classList.remove('show');
   gravBuildQuiz();
   const quizLink = document.querySelector('.nav-links a[href="#quiz"]');
   const target = quizLink && document.querySelector(quizLink.getAttribute('href'));
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function gravRefreshSubmitState() {
+  const quizDone  = gravQuizState.selected.every(s => s !== null);
+  const thinkEl   = document.getElementById('grav-thinking');
+  const thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('grav-submit-btn').disabled = gravQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  const thinkEl = document.getElementById('grav-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', gravRefreshSubmitState);
+})();
 
 gravBuildQuiz();
 </script>
