@@ -114,6 +114,18 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3492", "."],
       "port": 3492
+    },
+    {
+      "name": "renewable-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3493", "."],
+      "port": 3493
+    },
+    {
+      "name": "measuring-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3494", "."],
+      "port": 3494
     }
   ]
 }

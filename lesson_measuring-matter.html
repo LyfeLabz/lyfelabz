@@ -2572,9 +2572,38 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <!-- Questions injected by JS -->
     <div id="mm-quiz-questions"></div>
 
+    <!-- 🧠 Show Your Thinking -->
+    <style>
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(59,200,232,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(59,200,232,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.25); border-left:4px solid var(--density); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: mmThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#f0b070; margin-bottom:0.4rem; }
+      @keyframes mmThinkFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+    <div class="think-box" id="mm-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In one sentence, explain what actually decides whether an object floats or sinks in water, then use it to explain how a giant steel ship floats while a tiny pebble sinks. Use the word <strong>density</strong>.</p>
+      <textarea class="think-input" id="mm-thinking" placeholder="Write your one-sentence explanation here..." aria-label="Explain what decides whether an object floats or sinks and how a steel ship floats"></textarea>
+      <div class="think-model" id="mm-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        What decides floating or sinking is <strong>density</strong>, not mass or size: an object floats when its density is less than water's (1 g/cm³) and sinks when it is greater. A giant steel ship floats because its hull is mostly air, so its large mass spread over a huge volume gives it a low overall density, while a pebble packs its matter tightly into a small volume, giving it a density well above water's. If your sentence names density as the deciding factor and uses it to explain both, you have it.
+      </div>
+    </div>
+
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="mm-submit-btn" onclick="mmSubmitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="mm-submit-btn" onclick="mmSubmitQuiz()" disabled>Submit</button>
     </div>
 
     <!-- Score Board -->
@@ -3241,7 +3270,8 @@ function mmSelectAnswer(qi, chosenIndex) {
   mmQuizState.selected[qi] = chosenIndex;
   document.getElementById('mm-q-' + qi + '-' + chosenIndex).classList.add('selected');
   mmUpdateProgress();
-  document.getElementById('mm-submit-btn').disabled = !mmQuizState.selected.every(function (s) { return s !== null; });
+  // Submit stays gated on a written explanation too (see mmRefreshSubmitState).
+  mmRefreshSubmitState();
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────────
@@ -3266,6 +3296,10 @@ function mmValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function mmSubmitQuiz() {
   if (mmQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!mmQuizState.selected.every(function (s) { return s !== null; })) return;
+  var mmThinkGate = document.getElementById('mm-thinking');
+  if (mmThinkGate && !mmThinkGate.value.trim()) return;
   if (mmQuizMode === 'classroom') {
     var info = mmValidateStudentInfo();
     if (!info.valid) {
@@ -3275,6 +3309,12 @@ function mmSubmitQuiz() {
   }
   mmQuizState.submitted = true;
   document.getElementById('mm-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('mm-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('mm-think-model').classList.add('show');
   var correct = 0;
   mmQuizQuestions.forEach(function (q, qi) {
     var chosen    = mmQuizState.selected[qi];
@@ -3319,14 +3359,17 @@ function mmSubmitQuiz() {
 
   var info2 = mmValidateStudentInfo();
   var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var answerStr = mmQuizState.selected.map(function (idx, i) {
-    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
-  }).join(', ');
-  var params = new URLSearchParams({
-    tab: 'Measuring Matter', studentName: info2.name, teacher: teacherLabel,
-    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+  var params = new URLSearchParams({ tab: 'Measuring Matter', studentName: info2.name, block: info2.block });
+  mmQuizState.selected.forEach(function (chosenIndex, qi) {
+    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
   fetch(MM_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(function () {
       document.getElementById('mm-submit-status').innerHTML =
@@ -3346,11 +3389,27 @@ function mmResetQuiz() {
   }
   document.getElementById('mm-score').classList.remove('show');
   document.getElementById('mm-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('mm-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('mm-think-model').classList.remove('show');
   mmBuildQuiz();
   var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
   var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function mmRefreshSubmitState() {
+  var quizDone  = mmQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('mm-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('mm-submit-btn').disabled = mmQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('mm-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', mmRefreshSubmitState);
+})();
 
 // ── INIT ──────────────────────────────────────────────────────────────
 mmBuildQuiz();
