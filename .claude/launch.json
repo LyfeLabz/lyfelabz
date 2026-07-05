@@ -144,6 +144,24 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3497", "."],
       "port": 3497
+    },
+    {
+      "name": "engdesign-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3498", "."],
+      "port": 3498
+    },
+    {
+      "name": "tradeoffs-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3499", "."],
+      "port": 3499
+    },
+    {
+      "name": "structural-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3500", "."],
+      "port": 3500
     }
   ]
 }
