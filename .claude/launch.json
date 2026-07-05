@@ -126,6 +126,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3494", "."],
       "port": 3494
+    },
+    {
+      "name": "physprop-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3495", "."],
+      "port": 3495
     }
   ]
 }
