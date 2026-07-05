@@ -192,6 +192,24 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3505", "."],
       "port": 3505
+    },
+    {
+      "name": "bioevo-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3506", "."],
+      "port": 3506
+    },
+    {
+      "name": "conducting-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3507", "."],
+      "port": 3507
+    },
+    {
+      "name": "epu-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3508", "."],
+      "port": 3508
     }
   ]
 }

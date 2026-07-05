@@ -2501,6 +2501,72 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <!-- Questions injected by JS -->
     <div id="ce-quiz-questions"></div>
 
+    <!-- 🧠 SHOW YOUR THINKING (Mini CER synthesis, immediately before Submit) -->
+    <style>
+      .ce-think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(59,200,232,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .ce-think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .ce-think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .ce-think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .ce-think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .ce-think-prompt strong { font-weight:800; }
+      .ce-think-input { width:100%; box-sizing:border-box; min-height:112px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .ce-think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(59,200,232,0.22); }
+      .ce-think-input:disabled { opacity:0.7; }
+      .ce-think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(46,204,113,0.07); border:1px solid rgba(46,204,113,0.25); border-left:4px solid var(--green); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .ce-think-model.show { display:block; animation: ceThinkFadeUp 0.35s ease both; }
+      .ce-think-model strong { color:var(--text); }
+      .ce-think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#7fe0b0; margin-bottom:0.4rem; }
+      @keyframes ceThinkFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+    <div class="ce-think-box" id="ce-think">
+      <div class="ce-think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="ce-think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="ce-think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="ce-think-prompt">You tested the Mentos mystery: the same candy, three different sodas, and you measured how high each eruption reached. Make a <strong>claim</strong> about which soda erupts biggest, back it with <strong>evidence</strong> (the observations from your fair test), and explain your <strong>reasoning</strong> - how those observations let you <strong>infer</strong> an answer you can trust. Use the words <strong>observation</strong> and <strong>inference</strong>.</p>
+      <textarea class="ce-think-input" id="ce-thinking" placeholder="Write your claim, then your evidence, then your reasoning..." aria-label="Make a claim about which soda erupts biggest, cite your evidence, and explain your reasoning"></textarea>
+      <div class="ce-think-model" id="ce-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        <strong>Claim:</strong> diet soda causes the biggest eruption. <strong>Evidence:</strong> in a fair test you change only the type of soda and keep the candy, the amount, and the bottle the same, then record quantitative observations - the diet-soda foam reached the highest measured height. <strong>Reasoning:</strong> because every other factor was controlled, the difference in eruption height had to be caused by the soda, so you can infer the soda is the cause, not luck. That is how an observation becomes an answer you can trust: a fair test lets you infer a cause from an effect. If your answer makes a claim, backs it with observations from a controlled test, and reasons from evidence to an inference, you have it.
+      </div>
+    </div>
+
+    <!-- ── Instructional Design note · Educator Mode ── -->
+    <div class="edu-note">
+      <div class="edu-note-label">&#128218; Instructional Design</div>
+      <div class="edu-note-grid">
+        <div class="edu-note-item">
+          <div class="edu-note-head">Why this section exists</div>
+          <ul class="edu-note-text">
+            <li>Close the lesson with the student constructing an evidence-based answer, not selecting one.</li>
+            <li>Return to the Mentos anchor so hypothesis, fair test, observation, and inference combine into one conclusion.</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Cognitive science</div>
+          <ul class="edu-note-text">
+            <li>Generation and self-explanation surface gaps that multiple choice hides</li>
+            <li>Mini CER matches an evidence-and-inference lesson: claim, evidence, reasoning</li>
+            <li>Model answer revealed only after submitting supports honest self-check</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Bloom's / DOK</div>
+          <ul class="edu-note-text">
+            <li>Analyze to Evaluate</li>
+            <li>DOK 3 (construct and defend a conclusion from evidence)</li>
+          </ul>
+        </div>
+        <div class="edu-note-item">
+          <div class="edu-note-head">Accessibility considerations</div>
+          <ul class="edu-note-text">
+            <li>Sentence-starter scaffold names claim, evidence, and reasoning</li>
+            <li>Required before submit, with a model answer to compare against</li>
+            <li>The same closing routine students meet in every lesson</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
     <!-- Submit -->
     <div class="quiz-submit-wrap">
       <button class="quiz-submit-btn" id="ce-submit-btn" onclick="ceSubmitQuiz()" disabled>Submit Quiz</button>
@@ -3098,7 +3164,15 @@ function ceSelectAnswer(qi, chosenIndex) {
   ceQuizState.selected[qi] = chosenIndex;
   document.getElementById('ce-q-' + qi + '-' + chosenIndex).classList.add('selected');
   ceUpdateProgress();
-  document.getElementById('ce-submit-btn').disabled = !ceQuizState.selected.every(function (s) { return s !== null; });
+  ceRefreshSubmitState();
+}
+
+// ── SUBMIT GATE (all questions answered AND a written explanation) ─────
+function ceRefreshSubmitState() {
+  var allAnswered = ceQuizState.selected.every(function (s) { return s !== null; });
+  var think = document.getElementById('ce-thinking');
+  var hasThinking = !!(think && think.value.trim());
+  document.getElementById('ce-submit-btn').disabled = ceQuizState.submitted || !(allAnswered && hasThinking);
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────────
@@ -3132,6 +3206,12 @@ function ceSubmitQuiz() {
   }
   ceQuizState.submitted = true;
   document.getElementById('ce-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and reveal the model answer so the
+  // student compares only after committing to their own explanation.
+  var ceThinkEl = document.getElementById('ce-thinking');
+  var ceThinkingText = ceThinkEl ? ceThinkEl.value.trim() : '';
+  if (ceThinkEl) ceThinkEl.disabled = true;
+  document.getElementById('ce-think-model').classList.add('show');
   var correct = 0;
   ceQuizQuestions.forEach(function (q, qi) {
     var chosen    = ceQuizState.selected[qi];
@@ -3177,13 +3257,14 @@ function ceSubmitQuiz() {
   var info2 = ceValidateStudentInfo();
   var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
   var letters = ['A','B','C','D'];
-  var answerStr = ceQuizState.selected.map(function (idx, i) {
-    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
-  }).join(', ');
-  var params = new URLSearchParams({
-    tab: 'How to Conduct Experiments', studentName: info2.name, teacher: teacherLabel,
-    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+  // Assessment v2 payload: tab, studentName, block, q1..q10, score, thinking.
+  // Teacher selects the endpoint but is not sent in the payload.
+  var params = new URLSearchParams({ tab: 'How to Conduct Experiments', studentName: info2.name, block: info2.block });
+  ceQuizState.selected.forEach(function (idx, i) {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
   });
+  params.set('score', score);
+  params.set('thinking', ceThinkingText);
   fetch(CE_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(function () {
       document.getElementById('ce-submit-status').innerHTML =
@@ -3203,6 +3284,10 @@ function ceResetQuiz() {
   }
   document.getElementById('ce-score').classList.remove('show');
   document.getElementById('ce-submit-status').innerHTML = '';
+  // Restore Show Your Thinking for a fresh attempt.
+  var ceThinkEl = document.getElementById('ce-thinking');
+  if (ceThinkEl) { ceThinkEl.disabled = false; ceThinkEl.value = ''; }
+  document.getElementById('ce-think-model').classList.remove('show');
   ceBuildQuiz();
   var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
   var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
@@ -3211,6 +3296,10 @@ function ceResetQuiz() {
 
 // ── INIT ──────────────────────────────────────────────────────────────
 ceBuildQuiz();
+(function () {
+  var ceThinkEl = document.getElementById('ce-thinking');
+  if (ceThinkEl) ceThinkEl.addEventListener('input', ceRefreshSubmitState);
+})();
 </script>
 
 <!-- ===== STARFIELD ===== -->
