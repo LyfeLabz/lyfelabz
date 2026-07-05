@@ -2909,9 +2909,38 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <!-- Questions injected by JS -->
     <div id="cr-quiz-questions"></div>
 
+    <!-- 🧠 Show Your Thinking -->
+    <style>
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(59,200,232,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(59,200,232,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.25); border-left:4px solid var(--energy); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: crThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#f0b884; margin-bottom:0.4rem; }
+      @keyframes crThinkFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+    <div class="think-box" id="cr-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In one sentence, explain how you can tell that a chemical reaction has happened, and how you would decide whether that reaction is exothermic or endothermic by watching the <strong>energy</strong> move between the reaction and its surroundings.</p>
+      <textarea class="think-input" id="cr-thinking" placeholder="Write your one-sentence explanation here..." aria-label="Explain how you can tell a chemical reaction happened and whether it is exothermic or endothermic"></textarea>
+      <div class="think-model" id="cr-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        A chemical reaction has happened when a brand-new substance forms - you see signs like a new gas, a new color, a new solid, or a temperature change - and you classify it by which way the <strong>energy</strong> moves: it is exothermic if the reaction releases thermal energy and warms its surroundings, or endothermic if it absorbs thermal energy and cools its surroundings. If your sentence names the new-substance test and says which way heat moves, you have it.
+      </div>
+    </div>
+
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="cr-submit-btn" onclick="crSubmitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="cr-submit-btn" onclick="crSubmitQuiz()" disabled>Submit</button>
     </div>
 
     <!-- Score Board -->
@@ -3541,7 +3570,8 @@ function crSelectAnswer(qi, chosenIndex) {
   crQuizState.selected[qi] = chosenIndex;
   document.getElementById('cr-q-' + qi + '-' + chosenIndex).classList.add('selected');
   crUpdateProgress();
-  document.getElementById('cr-submit-btn').disabled = !crQuizState.selected.every(function (s) { return s !== null; });
+  // Submit stays gated on a written explanation too (see crRefreshSubmitState).
+  crRefreshSubmitState();
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────────
@@ -3566,6 +3596,10 @@ function crValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function crSubmitQuiz() {
   if (crQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!crQuizState.selected.every(function (s) { return s !== null; })) return;
+  var crThinkGate = document.getElementById('cr-thinking');
+  if (crThinkGate && !crThinkGate.value.trim()) return;
   if (crQuizMode === 'classroom') {
     var info = crValidateStudentInfo();
     if (!info.valid) {
@@ -3575,6 +3609,12 @@ function crSubmitQuiz() {
   }
   crQuizState.submitted = true;
   document.getElementById('cr-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('cr-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('cr-think-model').classList.add('show');
   var correct = 0;
   crQuizQuestions.forEach(function (q, qi) {
     var chosen    = crQuizState.selected[qi];
@@ -3619,14 +3659,17 @@ function crSubmitQuiz() {
 
   var info2 = crValidateStudentInfo();
   var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var answerStr = crQuizState.selected.map(function (idx, i) {
-    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
-  }).join(', ');
-  var params = new URLSearchParams({
-    tab: 'Chemical Reactions', studentName: info2.name, teacher: teacherLabel,
-    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+  var params = new URLSearchParams({ tab: 'Chemical Reactions', studentName: info2.name, block: info2.block });
+  crQuizState.selected.forEach(function (chosenIndex, qi) {
+    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
   fetch(CR_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(function () {
       document.getElementById('cr-submit-status').innerHTML =
@@ -3646,11 +3689,27 @@ function crResetQuiz() {
   }
   document.getElementById('cr-score').classList.remove('show');
   document.getElementById('cr-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('cr-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('cr-think-model').classList.remove('show');
   crBuildQuiz();
   var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
   var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function crRefreshSubmitState() {
+  var quizDone  = crQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('cr-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('cr-submit-btn').disabled = crQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('cr-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', crRefreshSubmitState);
+})();
 
 // ── INIT ──────────────────────────────────────────────────────────────
 crBuildQuiz();

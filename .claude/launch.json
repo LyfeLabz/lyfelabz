@@ -132,6 +132,18 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3495", "."],
       "port": 3495
+    },
+    {
+      "name": "puresubmix-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3496", "."],
+      "port": 3496
+    },
+    {
+      "name": "chemreax-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3497", "."],
+      "port": 3497
     }
   ]
 }

@@ -2670,9 +2670,38 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <!-- Questions injected by JS -->
     <div id="psm-quiz-questions"></div>
 
+    <!-- 🧠 Show Your Thinking -->
+    <style>
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(59,200,232,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:96px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(59,200,232,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(180,127,255,0.07); border:1px solid rgba(180,127,255,0.25); border-left:4px solid var(--separate); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: psmThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#cbb0ff; margin-bottom:0.4rem; }
+      @keyframes psmThinkFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+    <div class="think-box" id="psm-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Scientists don't just know the answer. They explain their thinking.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">In one sentence, explain how you can tell whether a sample is a pure substance or a mixture, and why that tells you whether its parts can be separated by <strong>physical</strong> methods like evaporation or filtration.</p>
+      <textarea class="think-input" id="psm-thinking" placeholder="Write your one-sentence explanation here..." aria-label="Explain how to tell a pure substance from a mixture and why a mixture can be separated by physical means"></textarea>
+      <div class="think-model" id="psm-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        A sample is a mixture when it is two or more substances physically blended together with each part still keeping its own properties, while a pure substance is a single kind of matter all the way through - and because a mixture's parts are only <strong>physically</strong> combined and never chemically changed, you can pull them back apart with physical methods like evaporation, filtration, or magnetism. If your sentence says a mixture's parts keep their own properties and can be separated by physical means, you have it.
+      </div>
+    </div>
+
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="psm-submit-btn" onclick="psmSubmitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="psm-submit-btn" onclick="psmSubmitQuiz()" disabled>Submit</button>
     </div>
 
     <!-- Score Board -->
@@ -3357,7 +3386,8 @@ function psmSelectAnswer(qi, chosenIndex) {
   psmQuizState.selected[qi] = chosenIndex;
   document.getElementById('psm-q-' + qi + '-' + chosenIndex).classList.add('selected');
   psmUpdateProgress();
-  document.getElementById('psm-submit-btn').disabled = !psmQuizState.selected.every(function (s) { return s !== null; });
+  // Submit stays gated on a written explanation too (see psmRefreshSubmitState).
+  psmRefreshSubmitState();
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────────
@@ -3382,6 +3412,10 @@ function psmValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function psmSubmitQuiz() {
   if (psmQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!psmQuizState.selected.every(function (s) { return s !== null; })) return;
+  var psmThinkGate = document.getElementById('psm-thinking');
+  if (psmThinkGate && !psmThinkGate.value.trim()) return;
   if (psmQuizMode === 'classroom') {
     var info = psmValidateStudentInfo();
     if (!info.valid) {
@@ -3391,6 +3425,12 @@ function psmSubmitQuiz() {
   }
   psmQuizState.submitted = true;
   document.getElementById('psm-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('psm-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('psm-think-model').classList.add('show');
   var correct = 0;
   psmQuizQuestions.forEach(function (q, qi) {
     var chosen    = psmQuizState.selected[qi];
@@ -3435,14 +3475,17 @@ function psmSubmitQuiz() {
 
   var info2 = psmValidateStudentInfo();
   var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var answerStr = psmQuizState.selected.map(function (idx, i) {
-    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
-  }).join(', ');
-  var params = new URLSearchParams({
-    tab: 'Pure Substances and Mixtures', studentName: info2.name, teacher: teacherLabel,
-    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+  var params = new URLSearchParams({ tab: 'Pure Substances and Mixtures', studentName: info2.name, block: info2.block });
+  psmQuizState.selected.forEach(function (chosenIndex, qi) {
+    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
   fetch(PSM_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(function () {
       document.getElementById('psm-submit-status').innerHTML =
@@ -3462,11 +3505,27 @@ function psmResetQuiz() {
   }
   document.getElementById('psm-score').classList.remove('show');
   document.getElementById('psm-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('psm-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('psm-think-model').classList.remove('show');
   psmBuildQuiz();
   var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
   var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function psmRefreshSubmitState() {
+  var quizDone  = psmQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('psm-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('psm-submit-btn').disabled = psmQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('psm-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', psmRefreshSubmitState);
+})();
 
 // ── INIT ──────────────────────────────────────────────────────────────
 psmBuildQuiz();
