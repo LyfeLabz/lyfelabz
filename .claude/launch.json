@@ -162,6 +162,36 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3500", "."],
       "port": 3500
+    },
+    {
+      "name": "transportation-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3501", "."],
+      "port": 3501
+    },
+    {
+      "name": "comms-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3502", "."],
+      "port": 3502
+    },
+    {
+      "name": "engsys-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3503", "."],
+      "port": 3503
+    },
+    {
+      "name": "techsociety-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3504", "."],
+      "port": 3504
+    },
+    {
+      "name": "ragebait-verify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3505", "."],
+      "port": 3505
     }
   ]
 }

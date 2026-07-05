@@ -1411,9 +1411,38 @@
     <!-- Questions injected by JS -->
     <div id="el-quiz-questions"></div>
 
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(29,233,182,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:112px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(29,233,182,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(61,220,132,0.07); border:1px solid rgba(61,220,132,0.25); border-left:4px solid var(--green); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: elThinkFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#8be0a8; margin-bottom:0.4rem; }
+      @keyframes elThinkFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+    <div class="think-box" id="el-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Engineers don't just name the subsystems. They trace how a problem in one reaches the others.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">A car's <strong>suspension fails</strong> on a bumpy road: a spring breaks, so the wheels can no longer soak up the bumps. <strong>Trace how that one failure spreads.</strong> Name at least <strong>two other subsystems</strong> it affects, and explain why the trouble does not stay in one place. Use the word <strong>depend</strong>.</p>
+      <textarea class="think-input" id="el-thinking" placeholder="Start with the broken spring, then follow the trouble from one subsystem to the next..." aria-label="Trace how a suspension failure spreads to the other subsystems of the vehicle"></textarea>
+      <div class="think-model" id="el-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        The broken spring is a failure in the <strong>suspension</strong> subsystem, whose job is to keep the tires pressed to the road. With the spring gone, the wheels bounce and lose their grip. That reaches the <strong>guidance</strong> subsystem, because steering only works when the tires hold the road, so the car gets harder to point down the lane. It also reaches the <strong>control</strong> subsystem, because brakes can only slow wheels that are gripping, so stopping takes longer. Even the <strong>structural</strong> subsystem takes a harder pounding from every bump. None of this stays put, because the subsystems <strong>depend</strong> on one another. A change in one changes how the others behave, which is why a single failure reaches the whole vehicle.
+      </div>
+    </div>
+
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit Score</button>
+      <button class="quiz-submit-btn" id="el-submit-btn" onclick="elSubmitQuiz()" disabled>Submit</button>
     </div>
 
     <!-- Score Board -->
@@ -1819,7 +1848,7 @@ function elSelectAnswer(qi, chosenIndex) {
   elQuizState.selected[qi] = chosenIndex;
   document.getElementById('el-q-' + qi + '-' + chosenIndex).classList.add('selected');
   elUpdateProgress();
-  document.getElementById('el-submit-btn').disabled = !elQuizState.selected.every(function (s) { return s !== null; });
+  elRefreshSubmitState();
 }
 
 function elUpdateProgress() {
@@ -1841,6 +1870,11 @@ function elValidateStudentInfo() {
 
 function elSubmitQuiz() {
   if (elQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!elQuizState.selected.every(function (s) { return s !== null; })) return;
+  var elThinkGate = document.getElementById('el-thinking');
+  if (elThinkGate && !elThinkGate.value.trim()) return;
+
   if (elQuizMode === 'classroom') {
     var info = elValidateStudentInfo();
     if (!info.valid) {
@@ -1850,6 +1884,14 @@ function elSubmitQuiz() {
   }
   elQuizState.submitted = true;
   document.getElementById('el-submit-btn').disabled = true;
+
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('el-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('el-think-model').classList.add('show');
+
   var correct = 0;
   elQuizQuestions.forEach(function (q, qi) {
     var chosen    = elQuizState.selected[qi];
@@ -1894,15 +1936,17 @@ function elSubmitQuiz() {
 
   var info2 = elValidateStudentInfo();
   var teacherLabel = info2.teacher === 'MrKankel' ? 'Mr. Kankel' : 'Mr. Rovner';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var answerStr = elQuizState.selected.map(function (idx, i) {
-    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
-  }).join(', ');
-  var params = new URLSearchParams({
-    tab: 'Transportation Systems', lesson: "Transportation Systems", studentName: info2.name, teacher: teacherLabel,
-    block: info2.block, score: score, total: total, percent: pct + '%',
-    timestamp: new Date().toISOString(), answers: answerStr
+  var params = new URLSearchParams({ tab: 'Transportation Systems', studentName: info2.name, block: info2.block });
+  elQuizState.selected.forEach(function (chosenIndex, qi) {
+    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
   var endpoint = EL_SCRIPT_URLS[info2.teacher];
   if (!endpoint || endpoint.indexOf('REPLACE_WITH') !== -1) {
     document.getElementById('el-submit-status').innerHTML =
@@ -1927,11 +1971,27 @@ function elResetQuiz() {
   }
   document.getElementById('el-score').classList.remove('show');
   document.getElementById('el-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('el-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('el-think-model').classList.remove('show');
   elBuildQuiz();
   var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
   var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function elRefreshSubmitState() {
+  var quizDone  = elQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('el-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('el-submit-btn').disabled = elQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('el-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', elRefreshSubmitState);
+})();
 
 elBuildQuiz();
 </script>
