@@ -19,6 +19,22 @@ No opportunistic cleanup.
 
 ---
 
+# REPOSITORY HARDENING RULE
+
+During the Repository Hardening phase, consistency takes priority over introducing new features. Prefer repository-wide patterns over one-off fixes, preserve instructional behavior, and defer feature development until hardening is complete.
+
+---
+
+# CANONICAL LESSON ARCHITECTURE RULE
+
+Every instructional lesson should implement the complete canonical lesson architecture unless there is a documented pedagogical reason for an intentional exception.
+
+Repository Hardening assumes lesson architecture is complete and standardizes implementation rather than adding missing instructional components.
+
+When architectural differences are discovered during Repository Hardening, they should be documented and deferred to a Canonical Lesson Architecture phase unless they are simple implementation inconsistencies.
+
+---
+
 # STYLE
 
 No em dashes.
@@ -118,10 +134,9 @@ Keep this order unless explicitly instructed otherwise.
 
 Standards are never displayed as standalone banners.
 
-All instructional page types use the canonical beneath-hero implementation consisting of:
+All instructional page types use the canonical beneath-hero implementation. The required block is:
 
 * Learning Science Focus (`.ls-focus`)
-* MA STE Standards (`.stem-focus`)
 
 This applies to every instructional page type, including:
 
@@ -133,6 +148,12 @@ This applies to every instructional page type, including:
 * Hidden World pages
 * Games
 * Any future instructional page type
+
+## MA STE Standards (`.stem-focus`)
+
+`.stem-focus` is an additional, optional beneath-hero block. It currently appears on supporting page types (investigations, simulations, games, systems, diseases, extensions) and may remain there.
+
+`.stem-focus` is intentionally NOT present on the 50 core lessons, which remain `.ls-focus`-only. Do not migrate `.stem-focus` into lessons during Repository Hardening. It would only become universal if we later make a deliberate decision to standardize it across every lesson.
 
 Do not introduce new standards presentation styles.
 
