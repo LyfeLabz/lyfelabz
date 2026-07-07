@@ -1834,8 +1834,36 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body data-phase="1">
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 
 <!-- Starfield canvas -->
 <canvas id="stars"></canvas>
@@ -1853,6 +1881,9 @@ body.stem-active .stem-detail {
   </ul>
   <a href="lesson_eclipses.html" class="nav-back">&#8592; Eclipses</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 <!-- ── BADGE BARS ────────────────────────────────────────── -->
 
@@ -1912,7 +1943,7 @@ body.stem-active .stem-detail {
       <div class="callout-card solar observation-card locked" id="obs-solar" onclick="revealObservation(this)">
         <div class="obs-lock-overlay" aria-hidden="true">
           <div class="obs-lock-content">
-            <svg class="obs-lock-icon" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <svg class="obs-lock-icon" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
             <div class="obs-lock-text">Click to unlock</div>
           </div>
         </div>
@@ -1925,7 +1956,7 @@ body.stem-active .stem-detail {
       <div class="callout-card lunar observation-card locked" id="obs-lunar" onclick="revealObservation(this)">
         <div class="obs-lock-overlay" aria-hidden="true">
           <div class="obs-lock-content">
-            <svg class="obs-lock-icon" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <svg class="obs-lock-icon" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
             <div class="obs-lock-text">Click to unlock</div>
           </div>
         </div>
@@ -1938,7 +1969,7 @@ body.stem-active .stem-detail {
       <div class="callout-card no-eclipse observation-card locked" id="obs-nomiss" onclick="revealObservation(this)">
         <div class="obs-lock-overlay" aria-hidden="true">
           <div class="obs-lock-content">
-            <svg class="obs-lock-icon" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <svg class="obs-lock-icon" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
             <div class="obs-lock-text">Click to unlock</div>
           </div>
         </div>
@@ -1960,7 +1991,7 @@ body.stem-active .stem-detail {
 <div class="scroll-gate" data-gate="1">
   <div class="scroll-gate-inner">
     <div class="phase-lock-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
     </div>
     <div class="phase-lock-text">
       <div class="phase-lock-eyebrow">Locked</div>
@@ -2030,7 +2061,7 @@ body.stem-active .stem-detail {
       <div class="sim-stage-wrap">
       <div class="sim-stage" id="sim-stage">
         <!-- Idle placeholder SVG - full diagram built in Micropass 3 -->
-        <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:640px; opacity:0.35;">
+        <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:640px; opacity:0.35;" aria-hidden="true">
           <defs>
             <radialGradient id="idS" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stop-color="#fff7c0"/>
@@ -2143,7 +2174,7 @@ body.stem-active .stem-detail {
 <div class="scroll-gate" data-gate="2">
   <div class="scroll-gate-inner">
     <div class="phase-lock-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
     </div>
     <div class="phase-lock-text">
       <div class="phase-lock-eyebrow">Locked</div>
@@ -2157,7 +2188,7 @@ body.stem-active .stem-detail {
   <div class="sim-section">
     <div class="phase-lock-banner" role="status">
       <div class="phase-lock-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
       </div>
       <div class="phase-lock-text">
         <div class="phase-lock-eyebrow">Locked</div>
@@ -2211,7 +2242,7 @@ body.stem-active .stem-detail {
   <div class="sim-section">
     <div class="phase-lock-banner" role="status">
       <div class="phase-lock-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
       </div>
       <div class="phase-lock-text">
         <div class="phase-lock-eyebrow">Locked</div>
@@ -2369,7 +2400,7 @@ body.stem-active .stem-detail {
 <div class="scroll-gate" data-gate="3">
   <div class="scroll-gate-inner">
     <div class="phase-lock-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
     </div>
     <div class="phase-lock-text">
       <div class="phase-lock-eyebrow">Locked</div>
@@ -2383,7 +2414,7 @@ body.stem-active .stem-detail {
   <div class="sim-section">
     <div class="phase-lock-banner" role="status">
       <div class="phase-lock-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
       </div>
       <div class="phase-lock-text">
         <div class="phase-lock-eyebrow">Locked</div>
@@ -2668,7 +2699,7 @@ function buildSVG(type, phase, height) {
   else if (type==='lunar' && phase==='new')                       out='lunar-wrong-new';
   else                                                             out='quarter';
 
-  var svg = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">';
+  var svg = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" aria-hidden="true">';
 
   /* ── DEFS ── */
   svg += '<defs>';
@@ -2804,7 +2835,7 @@ function buildSVG(type, phase, height) {
 /* ── IDLE SVG ──────────────────────────────────────────── */
 function idleSVG() {
   var W=640, H=240, CY=120, SX=60, SY=CY, SR=44, EX=420, EY=CY, ER=32;
-  return '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;opacity:.36;">' +
+  return '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;opacity:.36;" aria-hidden="true">' +
     '<defs><radialGradient id="iS" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff7c0"/><stop offset="100%" stop-color="#c07820" stop-opacity=".85"/></radialGradient>' +
     '<radialGradient id="iE" cx="34%" cy="30%" r="70%"><stop offset="0%" stop-color="#6abce8"/><stop offset="100%" stop-color="#0e1d38"/></radialGradient></defs>' +
     '<line x1="0" y1="'+CY+'" x2="'+W+'" y2="'+CY+'" stroke="rgba(122,143,200,.16)" stroke-width="1" stroke-dasharray="8,6"/>' +
@@ -3946,5 +3977,6 @@ if (typeof restoreDeepTimeState === 'function') restoreDeepTimeState();
 })();
 </script>
 
+</main>
 </body>
 </html>

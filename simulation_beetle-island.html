@@ -628,14 +628,45 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 
 <!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <a href="lesson_biological-evolution.html" class="nav-back">← Biological Evolution</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 <!-- BADGE BARS -->
 
@@ -698,7 +729,7 @@ body.stem-active .stem-detail {
           <div class="ev-desc">You are watching <strong>natural selection</strong> happen in real time. The beetle population starts with two coat colors; this is called <strong>variation</strong>. Beetles that blend into their environment are harder for predators to spot, so they survive longer, reproduce more, and pass their <strong>heritable trait</strong> (coat color) to offspring. Over many generations, the population shifts toward whichever color helps survival. This is <strong>adaptation</strong> through natural selection.</div>
           <div class="ev-lock-overlay" aria-hidden="true">
             <div class="ev-lock-content">
-              <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
               <div class="ev-lock-text">Click to read</div>
             </div>
           </div>
@@ -712,7 +743,7 @@ body.stem-active .stem-detail {
           <div class="ev-desc"><strong>Variation</strong> exists naturally in every population, no two individuals are exactly identical. Both light and dark beetles have always lived on this island. Their color is encoded in their genes and passed from parent to offspring. Before the simulation starts, neither color has an advantage. Once you choose an environment, the <strong>environmental pressure</strong> changes; and natural selection begins acting on that existing variation.</div>
           <div class="ev-lock-overlay" aria-hidden="true">
             <div class="ev-lock-content">
-              <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
               <div class="ev-lock-text">Click to read</div>
             </div>
           </div>
@@ -726,7 +757,7 @@ body.stem-active .stem-detail {
           <div class="ev-desc">The beetles did not move anywhere. <strong>The island itself changed around them.</strong> Environments change all the time: droughts turn forests into deserts, volcanic ash darkens soil, floods shift ground cover. This is exactly what happened to the peppered moths in England, the Industrial Revolution changed the trees they already lived on. <strong>The island changes, and the population must adapt or decline.</strong></div>
           <div class="ev-lock-overlay" aria-hidden="true">
             <div class="ev-lock-content">
-              <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
               <div class="ev-lock-text">Click to read</div>
             </div>
           </div>
@@ -740,7 +771,7 @@ body.stem-active .stem-detail {
           <div class="ev-desc">Because natural selection is <strong>probabilistic, not guaranteed</strong>. Even a poorly-camouflaged beetle might get lucky and avoid a predator. And even a well-camouflaged beetle might still get eaten. <strong>What changes over generations is the <em>probability</em> of survival, not a guarantee.</strong> This is why the wrong-color beetles never disappear entirely; they just become <strong>rarer</strong> as the better-adapted trait becomes more common. Chance is always part of the process.</div>
           <div class="ev-lock-overlay" aria-hidden="true">
             <div class="ev-lock-content">
-              <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
               <div class="ev-lock-text">Click to read</div>
             </div>
           </div>
@@ -899,11 +930,11 @@ body.stem-active .stem-detail {
   <div class="sim-panel">
     <div class="chart-legend">
       <div class="legend-item">
-        <svg width="24" height="10"><line x1="0" y1="5" x2="24" y2="5" stroke="#f5c842" stroke-width="2.5"/></svg>
+        <svg width="24" height="10" aria-hidden="true"><line x1="0" y1="5" x2="24" y2="5" stroke="#f5c842" stroke-width="2.5"/></svg>
         Light beetles
       </div>
       <div class="legend-item">
-        <svg width="24" height="10"><line x1="0" y1="5" x2="24" y2="5" stroke="#8b5a2b" stroke-width="2.5" stroke-dasharray="4,3"/></svg>
+        <svg width="24" height="10" aria-hidden="true"><line x1="0" y1="5" x2="24" y2="5" stroke="#8b5a2b" stroke-width="2.5" stroke-dasharray="4,3"/></svg>
         Dark beetles
       </div>
     </div>
@@ -2074,5 +2105,6 @@ window.addEventListener('load', function() {
 })();
 </script>
 
+</main>
 </body>
 </html>

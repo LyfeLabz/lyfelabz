@@ -474,8 +474,36 @@
     .mystery-canvas-card { overflow-x: auto; }
   }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 
 <canvas id="stars"></canvas>
 
@@ -491,6 +519,9 @@
   </ul>
   <a href="lesson_phases-of-the-moon.html" class="nav-back">← Moon Phases</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 <!-- HERO -->
 <header class="hero">
@@ -522,7 +553,7 @@
       <div class="tonight-badge">Live, Tonight</div>
       <div class="phase-moon-wrap">
         <div class="phase-moon-glow"></div>
-        <svg id="phase-svg" width="110" height="110" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+        <svg id="phase-svg" width="110" height="110" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <defs><clipPath id="moon-clip"><circle cx="45" cy="45" r="40"/></clipPath></defs>
           <circle cx="45" cy="45" r="40" fill="rgba(180,200,220,0.07)" stroke="rgba(200,216,232,0.18)" stroke-width="1.5"/>
           <path id="moon-lit" clip-path="url(#moon-clip)" fill="rgba(215,230,245,0.92)"/>
@@ -608,7 +639,7 @@
       <div class="moon-name-card" id="card-super">
         <div class="moon-name-header" onclick="toggleMoonCard('card-super')">
           <div class="moon-name-icon" style="filter: drop-shadow(0 0 10px rgba(245,200,66,0.65));">
-            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <circle cx="26" cy="26" r="22" fill="rgba(235,245,255,0.95)"/>
               <circle cx="22" cy="21" r="8" fill="rgba(255,255,255,0.18)"/>
             </svg>
@@ -629,7 +660,7 @@
       <div class="moon-name-card" id="card-blood">
         <div class="moon-name-header" onclick="toggleMoonCard('card-blood')">
           <div class="moon-name-icon" style="filter: drop-shadow(0 0 10px rgba(231,76,60,0.65));">
-            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <defs>
                 <radialGradient id="blood-grad" cx="40%" cy="38%" r="55%">
                   <stop offset="0%" stop-color="#e8604a"/>
@@ -656,7 +687,7 @@
       <div class="moon-name-card" id="card-blue">
         <div class="moon-name-header" onclick="toggleMoonCard('card-blue')">
           <div class="moon-name-icon" style="filter: drop-shadow(0 0 10px rgba(59,200,232,0.5));">
-            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <circle cx="26" cy="26" r="22" fill="rgba(215,235,250,0.92)"/>
               <circle cx="21" cy="20" r="8" fill="rgba(255,255,255,0.15)"/>
             </svg>
@@ -677,7 +708,7 @@
       <div class="moon-name-card" id="card-harvest">
         <div class="moon-name-header" onclick="toggleMoonCard('card-harvest')">
           <div class="moon-name-icon" style="filter: drop-shadow(0 0 10px rgba(230,126,34,0.65));">
-            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+            <svg width="52" height="52" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <defs>
                 <radialGradient id="harvest-grad" cx="40%" cy="38%" r="55%">
                   <stop offset="0%" stop-color="#f5a623"/>
@@ -1259,5 +1290,6 @@ function toggleHorizon() {
 })();
 </script>
 
+</main>
 </body>
 </html>

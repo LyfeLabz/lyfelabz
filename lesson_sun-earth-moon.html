@@ -707,8 +707,36 @@
     nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
   }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 
 <canvas id="stars"></canvas>
 
@@ -725,6 +753,9 @@
   </ul>
   <a href="index.html#geo" class="nav-back">← Earth &amp; Space</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 <!-- HERO -->
 <header class="hero">
@@ -1001,7 +1032,7 @@
 
     <!-- Two-panel comparison SVG -->
     <div style="display:flex; justify-content:center; margin:0 0 2.8rem;">
-      <svg viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:560px; height:auto;">
+      <svg viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:560px; height:auto;" aria-hidden="true">
         <defs>
           <marker id="sem-arr-d" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
             <polygon points="0 0, 7 3.5, 0 7" fill="rgba(122,143,166,0.7)"/>
@@ -1397,7 +1428,7 @@
 
           <!-- REVOLUTION VIEW -->
           <div class="motion-view" id="view-revolution">
-            <svg viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg" style="max-width:480px; display:block; margin:0 auto;">
+            <svg viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg" style="max-width:480px; display:block; margin:0 auto;" aria-hidden="true">
               <defs>
                 <radialGradient id="sunGlowRev" cx="50%" cy="50%" r="50%">
                   <stop offset="0%"   stop-color="#f5c842" stop-opacity="0.20"/>
@@ -2739,5 +2770,6 @@ requestAnimationFrame(draw);
   });
 })();
 </script>
+</main>
 </body>
 </html>

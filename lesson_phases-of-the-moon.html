@@ -665,8 +665,36 @@
     nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
   }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 
 <canvas id="stars"></canvas>
 
@@ -683,6 +711,9 @@
   </ul>
   <a href="index.html#geo" class="nav-back">← Earth &amp; Space</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 <!-- HERO -->
 <header class="hero">
@@ -978,7 +1009,7 @@
 
       <!-- Night 1: Full Moon -->
       <div style="text-align:center;">
-        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="45" cy="45" r="40" fill="rgba(215,230,245,0.92)" stroke="rgba(200,216,232,0.3)" stroke-width="1.5"/>
         </svg>
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.6rem; font-weight:800; letter-spacing:0.08em;">NIGHT 1</div>
@@ -986,7 +1017,7 @@
 
       <!-- Night 8: Waning Gibbous - left ~75% lit, small dark crescent right -->
       <div style="text-align:center;">
-        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <defs><clipPath id="hmc2"><circle cx="45" cy="45" r="40"/></clipPath></defs>
           <circle cx="45" cy="45" r="40" fill="rgba(180,200,220,0.07)" stroke="rgba(200,216,232,0.18)" stroke-width="1.5"/>
           <path d="M 45,5 A 40,40 0 0,0 45,85 A 28,40 0 0,0 45,5 Z" fill="rgba(215,230,245,0.92)" clip-path="url(#hmc2)"/>
@@ -996,7 +1027,7 @@
 
       <!-- Night 15: Third Quarter - exactly left half lit -->
       <div style="text-align:center;">
-        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <defs><clipPath id="hmc3"><circle cx="45" cy="45" r="40"/></clipPath></defs>
           <circle cx="45" cy="45" r="40" fill="rgba(180,200,220,0.07)" stroke="rgba(200,216,232,0.18)" stroke-width="1.5"/>
           <path d="M 45,5 A 40,40 0 0,0 45,85 L 45,5 Z" fill="rgba(215,230,245,0.92)" clip-path="url(#hmc3)"/>
@@ -1006,7 +1037,7 @@
 
       <!-- Night 22: Waning Crescent - thin sliver on left -->
       <div style="text-align:center;">
-        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <defs><clipPath id="hmc4"><circle cx="45" cy="45" r="40"/></clipPath></defs>
           <circle cx="45" cy="45" r="40" fill="rgba(180,200,220,0.07)" stroke="rgba(200,216,232,0.18)" stroke-width="1.5"/>
           <path d="M 45,5 A 40,40 0 0,0 45,85 A 14,40 0 0,1 45,5 Z" fill="rgba(215,230,245,0.92)" clip-path="url(#hmc4)"/>
@@ -1371,7 +1402,7 @@
       <div class="orbit-title">Click a Moon Position to See Its Phase</div>
       <div class="orbit-sub">The Sun is always to the right. Earth is in the center. Click any Moon position in the orbit.</div>
       <div class="orbit-body">
-      <svg id="orbitSVG" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+      <svg id="orbitSVG" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <radialGradient id="spaceGlow" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stop-color="#1a2535" stop-opacity="1"/>
           <stop offset="100%" stop-color="#0d1117" stop-opacity="1"/>
@@ -2452,5 +2483,6 @@ requestAnimationFrame(draw);
   });
 })();
 </script>
+</main>
 </body>
 </html>

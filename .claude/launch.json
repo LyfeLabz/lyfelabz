@@ -210,6 +210,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3508", "."],
       "port": 3508
+    },
+    {
+      "name": "a11y-pass3",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3520", "."],
+      "port": 3520
     }
   ]
 }

@@ -544,13 +544,44 @@ body.stem-active .stem-detail {
   @media(max-width:600px){ .quiz-wrap{padding:0 1rem 2rem;} .quiz-turnin-bar{flex-direction:column;align-items:flex-start;} .quiz-turnin-right{width:100%;flex-direction:column;} .quiz-name-input{width:100%;} .quiz-btn-turnin{width:100%;justify-content:center;} }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 <canvas id="stars"></canvas>
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <a href="body-system-interactions.html" class="nav-back">← Body Systems</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 <div class="page-header">
   <div class="header-inner">
     <div>
@@ -1156,5 +1187,6 @@ resize(); requestAnimationFrame(draw);
 })();
 </script>
 
+</main>
 </body>
 </html>

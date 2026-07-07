@@ -804,8 +804,36 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 
 <!-- ======================================================
      NAV
@@ -814,6 +842,9 @@ body.stem-active .stem-detail {
   <a class="nav-logo" href="index.html">LYFELABZ</a>
   <a class="nav-back" href="lesson_what-is-life.html">← What Is Life?</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 <!-- ======================================================
      BADGE BARS
@@ -1011,7 +1042,7 @@ body.stem-active .stem-detail {
           <span class="psg-val" id="p2SunVal">65%</span>
         </div>
         <input class="photo-slider" id="p2SunSlider" type="range" min="0" max="100" value="65"
-               oninput="setP2Input('sun',this.value)">
+               oninput="setP2Input('sun',this.value)" aria-label="Sunlight input">
       </div>
 
       <div class="photo-slider-group">
@@ -1020,7 +1051,7 @@ body.stem-active .stem-detail {
           <span class="psg-val" id="p2WatVal">70%</span>
         </div>
         <input class="photo-slider" id="p2WatSlider" type="range" min="0" max="100" value="70"
-               oninput="setP2Input('water',this.value)">
+               oninput="setP2Input('water',this.value)" aria-label="Water input">
       </div>
 
       <div class="photo-slider-group">
@@ -1029,7 +1060,7 @@ body.stem-active .stem-detail {
           <span class="psg-val" id="p2CO2Val">60%</span>
         </div>
         <input class="photo-slider" id="p2CO2Slider" type="range" min="0" max="100" value="60"
-               oninput="setP2Input('co2',this.value)">
+               oninput="setP2Input('co2',this.value)" aria-label="Carbon dioxide input">
       </div>
 
       <div class="lf-box">
@@ -1112,7 +1143,7 @@ body.stem-active .stem-detail {
           <span class="psg-val" id="p3GlucVal">65%</span>
         </div>
         <input class="photo-slider" id="p3GlucSlider" type="range" min="0" max="100" value="65"
-               oninput="setP3Input('gluc',this.value)">
+               oninput="setP3Input('gluc',this.value)" aria-label="Glucose input">
       </div>
 
       <div class="photo-slider-group">
@@ -1121,7 +1152,7 @@ body.stem-active .stem-detail {
           <span class="psg-val" id="p3O2Val">70%</span>
         </div>
         <input class="photo-slider" id="p3O2Slider" type="range" min="0" max="100" value="70"
-               oninput="setP3Input('o2',this.value)">
+               oninput="setP3Input('o2',this.value)" aria-label="Oxygen input">
       </div>
 
       <div class="lf-box">
@@ -1210,19 +1241,19 @@ body.stem-active .stem-detail {
 
       <div class="photo-slider-group">
         <div class="psg-header"><span class="psg-name">Sunlight</span><span class="psg-val" id="p4SunVal">75%</span></div>
-        <input class="photo-slider" id="p4SunSlider" type="range" min="0" max="100" value="75" oninput="setP4Input('sun',this.value)">
+        <input class="photo-slider" id="p4SunSlider" type="range" min="0" max="100" value="75" oninput="setP4Input('sun',this.value)" aria-label="Sunlight input">
       </div>
       <div class="photo-slider-group">
         <div class="psg-header"><span class="psg-name">Water</span><span class="psg-val" id="p4WatVal">75%</span></div>
-        <input class="photo-slider" id="p4WatSlider" type="range" min="0" max="100" value="75" oninput="setP4Input('wat',this.value)">
+        <input class="photo-slider" id="p4WatSlider" type="range" min="0" max="100" value="75" oninput="setP4Input('wat',this.value)" aria-label="Water input">
       </div>
       <div class="photo-slider-group">
         <div class="psg-header"><span class="psg-name">Carbon Dioxide</span><span class="psg-val" id="p4CO2Val">70%</span></div>
-        <input class="photo-slider" id="p4CO2Slider" type="range" min="0" max="100" value="70" oninput="setP4Input('co2',this.value)">
+        <input class="photo-slider" id="p4CO2Slider" type="range" min="0" max="100" value="70" oninput="setP4Input('co2',this.value)" aria-label="Carbon dioxide input">
       </div>
       <div class="photo-slider-group">
         <div class="psg-header"><span class="psg-name">Oxygen</span><span class="psg-val" id="p4O2Val">72%</span></div>
-        <input class="photo-slider" id="p4O2Slider" type="range" min="0" max="100" value="72" oninput="setP4Input('o2',this.value)">
+        <input class="photo-slider" id="p4O2Slider" type="range" min="0" max="100" value="72" oninput="setP4Input('o2',this.value)" aria-label="Oxygen input">
       </div>
 
       <span class="photo-outputs-label">System Meters</span>
@@ -4699,5 +4730,6 @@ window.LyfeLabzAudio = {
 })();
 </script>
 
+</main>
 </body>
 </html>

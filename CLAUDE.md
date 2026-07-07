@@ -73,6 +73,22 @@ Encourage curiosity and exploration rather than simply announcing additional res
 
 ---
 
+# REPOSITORY STATUS
+
+The instructional architecture of LyfeLabz is considered complete.
+
+Repository Hardening Passes 0 through 2 established the canonical instructional architecture, canonical visual language, editorial standards, and repository-wide implementation patterns.
+
+Future repository work should assume these standards unless a deliberate repository-wide decision is made to evolve them.
+
+Individual lessons should not introduce new instructional components, visual patterns, or architectural variations without a documented repository-level reason.
+
+Preserve existing canonical implementations whenever possible.
+
+Favor repository-wide consistency over one-off improvements.
+
+---
+
 # STYLE
 
 No em dashes.

@@ -784,14 +784,45 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 
 <!-- NAV -->
 <nav>
   <a class="nav-logo" href="index.html">LYFELABZ</a>
   <a class="nav-back" href="lesson_sun-earth-moon.html">← Sun-Earth-Moon</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 <!-- BADGE BARS -->
 
@@ -871,7 +902,7 @@ body.stem-active .stem-detail {
         <div class="ev-desc">A small object creates a shallow gravity well. Its pull is weaker and affects nearby objects less strongly, like a golf ball resting on a trampoline.</div>
         <div aria-hidden="true" class="ev-lock-overlay">
           <div class="ev-lock-content">
-            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
             <div class="ev-lock-text">Click to unlock</div>
           </div>
         </div>
@@ -885,7 +916,7 @@ body.stem-active .stem-detail {
         <div class="ev-desc">A massive object creates a deeper gravity well. Its stronger pull can bend paths into orbit across enormous distances, like a bowling ball warping a trampoline sheet.</div>
         <div aria-hidden="true" class="ev-lock-overlay">
           <div class="ev-lock-content">
-            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
             <div class="ev-lock-text">Click to unlock</div>
           </div>
         </div>
@@ -899,7 +930,7 @@ body.stem-active .stem-detail {
         <div class="ev-desc">Gravity alone does not make an orbit. An object also needs sideways motion. Too slow means crash. Too fast means escape. The right balance creates a stable orbit.</div>
         <div aria-hidden="true" class="ev-lock-overlay">
           <div class="ev-lock-content">
-            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
             <div class="ev-lock-text">Click to unlock</div>
           </div>
         </div>
@@ -1070,7 +1101,7 @@ body.stem-active .stem-detail {
     </div>
     <div class="launch-guide-diagrams">
       <div class="launch-diagram">
-        <svg viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <ellipse cx="55" cy="42" rx="34" ry="26" fill="none" stroke="#2ecc71" stroke-width="1.5" stroke-dasharray="5 3"/>
           <circle cx="55" cy="42" r="8" fill="#3bc8e8" opacity="0.9"/>
           <circle cx="89" cy="42" r="4.5" fill="#fff" opacity="0.9"/>
@@ -1080,7 +1111,7 @@ body.stem-active .stem-detail {
         <div class="launch-diagram-label" style="color:#2ecc71;">Orbit</div>
       </div>
       <div class="launch-diagram">
-        <svg viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="55" cy="50" r="9" fill="#3bc8e8" opacity="0.9"/>
           <line x1="85" y1="14" x2="61" y2="44" stroke="#e87070" stroke-width="2"/>
           <circle cx="85" cy="14" r="4.5" fill="#fff" opacity="0.9"/>
@@ -1090,7 +1121,7 @@ body.stem-active .stem-detail {
         <div class="launch-diagram-label" style="color:#e87070;">Crash</div>
       </div>
       <div class="launch-diagram">
-        <svg viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="55" cy="50" r="9" fill="#f5c842" opacity="0.85"/>
           <path d="M34 18 Q32 30 40 38 Q55 50 73 56 Q87 61 98 58" stroke="#f5c842" stroke-width="2" fill="none"/>
           <circle cx="34" cy="18" r="4.5" fill="#fff" opacity="0.9"/>
@@ -2590,5 +2621,6 @@ function toast(msg, type='info') {
 })();
 </script>
 
+</main>
 </body>
 </html>

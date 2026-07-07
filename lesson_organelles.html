@@ -942,8 +942,36 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
   }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 <canvas id="stars"></canvas>
 
 <!-- NAV -->
@@ -959,6 +987,9 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
   </ul>
   <a href="index.html#bio" class="nav-back">← Life Science</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 <!-- HERO -->
 <header class="hero">
@@ -1218,7 +1249,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
       You already know a cell is the smallest unit of life. But life isn't passive, a cell is constantly building proteins, generating energy, cleaning out waste, reading its own DNA. Something inside is doing all of it. That something has a name.
     </p>
 
-    <svg viewBox="0 0 700 330" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:700px;display:block;margin:0 auto;">
+    <svg viewBox="0 0 700 330" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:700px;display:block;margin:0 auto;" aria-hidden="true">
       <defs>
         <radialGradient id="cytoplasm-grad" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stop-color="rgba(52,152,219,0.07)"/>
@@ -1767,7 +1798,7 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <h2 class="section-title">Plant Cell vs. Animal Cell</h2>
     <p class="section-desc">Both are eukaryotic cells with a nucleus and shared organelles; but they're not identical. Study the diagram below. The green labels mark something specific, what do you notice about which cell has them?</p>
 
-    <svg viewBox="0 0 860 385" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;margin:0 auto;overflow:visible;">
+    <svg viewBox="0 0 860 385" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;margin:0 auto;overflow:visible;" aria-hidden="true">
       <defs>
         <radialGradient id="animal-fill" cx="40%" cy="40%" r="60%">
           <stop offset="0%" stop-color="rgba(52,152,219,0.09)"/>
@@ -2540,5 +2571,6 @@ resize(); requestAnimationFrame(draw);
   });
 })();
 </script>
+</main>
 </body>
 </html>

@@ -495,8 +495,36 @@ body.ls-active .ls-focus {
     nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
   }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 <canvas id="stars"></canvas>
 
 <!-- NAV -->
@@ -512,6 +540,9 @@ body.ls-active .ls-focus {
   </ul>
   <a href="index.html#chem" class="nav-back">← Physical Science</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 <!-- HERO -->
 <header class="hero">
@@ -3860,6 +3891,7 @@ window.revealWavelength = function() {
       <div class="inverse-slider-wrap">
         <span class="inverse-slider-label">Wavelength</span>
         <input type="range" min="0" max="100" value="20" class="inverse-slider" id="inv-slider"
+               aria-label="Wavelength"
                oninput="updateInverseWave(this.value)">
       </div>
       <div class="inverse-slider-ends">
@@ -3891,7 +3923,7 @@ window.revealWavelength = function() {
       <!-- Two-arrow rule visual -->
       <div class="rule-vis">
         <div class="rule-card">
-          <svg viewBox="0 0 220 40" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 220 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M 5 20 C 25 5, 45 5, 65 20 C 85 35, 105 35, 125 20 C 145 5, 165 5, 185 20 C 205 35, 215 35, 215 20"
                   fill="none" stroke="#3bc8e8" stroke-width="2.5" stroke-linecap="round"/>
           </svg>
@@ -3902,7 +3934,7 @@ window.revealWavelength = function() {
           </div>
         </div>
         <div class="rule-card">
-          <svg viewBox="0 0 220 40" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 220 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M 5 20 C 12 5, 19 5, 26 20 C 33 35, 40 35, 47 20 C 54 5, 61 5, 68 20 C 75 35, 82 35, 89 20
                      C 96 5, 103 5, 110 20 C 117 35, 124 35, 131 20 C 138 5, 145 5, 152 20 C 159 35, 166 35, 173 20
                      C 180 5, 187 5, 194 20 C 201 35, 208 35, 215 20"
@@ -5984,5 +6016,6 @@ requestAnimationFrame(draw);
   });
 })();
 </script>
+</main>
 </body>
 </html>

@@ -685,8 +685,36 @@
     nav .nav-links a { display: block; padding: 0.85rem 0.4rem; font-size: 0.95rem; }
   }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 
 <canvas id="stars"></canvas>
 
@@ -703,6 +731,9 @@
   </ul>
   <a href="index.html#geo" class="nav-back">← Earth &amp; Space</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 <!-- HERO -->
 <header class="hero">
@@ -1189,7 +1220,7 @@
       <div class="inv-card">
         <div class="inv-question">In this undisturbed stack, which layer formed first?</div>
         <div class="inv-visual">
-          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" aria-hidden="true">
             <defs>
               <pattern id="g1" x="0" y="0" width="40" height="6" patternUnits="userSpaceOnUse">
                 <line x1="0" y1="3" x2="40" y2="3" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
@@ -1222,7 +1253,7 @@
       <div class="inv-card">
         <div class="inv-question">An igneous rock punched through these layers after they formed. Is it older or younger than the layers it cut?</div>
         <div class="inv-visual">
-          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" aria-hidden="true">
             <defs>
               <pattern id="g2" x="0" y="0" width="40" height="6" patternUnits="userSpaceOnUse">
                 <line x1="0" y1="3" x2="40" y2="3" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
@@ -1262,7 +1293,7 @@
       <div class="inv-card">
         <div class="inv-question">These rock layers are tilted at a steep angle. What does that tell you?</div>
         <div class="inv-visual">
-          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" aria-hidden="true">
             <clipPath id="inv3-clip">
               <rect x="0" y="0" width="280" height="148"/>
             </clipPath>
@@ -1487,7 +1518,7 @@ function invAnswer(btn, result, cardNum) {
     <!-- Four principles -->
     <!-- CONCEPTUAL SVG: Superposition + Cross-Cutting -->
     <div style="margin: 2rem 0 1.8rem;">
-      <svg viewBox="0 0 740 295" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+      <svg viewBox="0 0 740 295" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" aria-hidden="true">
         <defs>
           <pattern id="grain" x="0" y="0" width="40" height="8" patternUnits="userSpaceOnUse">
             <line x1="0" y1="4" x2="40" y2="4" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
@@ -2644,5 +2675,6 @@ resize(); requestAnimationFrame(draw);
   });
 })();
 </script>
+</main>
 </body>
 </html>

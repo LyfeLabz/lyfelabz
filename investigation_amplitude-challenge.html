@@ -900,8 +900,36 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 
 <!-- ======================================================
      NAV
@@ -910,6 +938,9 @@ body.stem-active .stem-detail {
   <a class="nav-logo" href="index.html">LYFELABZ</a>
   <a class="nav-back" href="lesson_nature-of-waves.html">← Nature of Waves</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 
 <!-- ======================================================
@@ -1007,11 +1038,11 @@ body.stem-active .stem-detail {
     <div class="phase-controls">
       <div class="control">
         <label>Amplitude <span class="value-pill" id="p1AmpVal">5</span></label>
-        <input type="range" id="p1Amp" min="1" max="10" value="5" step="1">
+        <input type="range" id="p1Amp" min="1" max="10" value="5" step="1" aria-label="Amplitude">
       </div>
       <div class="control">
         <label>Frequency <span class="value-pill" id="p1FreqVal">3</span></label>
-        <input type="range" id="p1Freq" min="1" max="5" value="3" step="1">
+        <input type="range" id="p1Freq" min="1" max="5" value="3" step="1" aria-label="Frequency">
       </div>
     </div>
 
@@ -1071,7 +1102,7 @@ body.stem-active .stem-detail {
     <div class="phase-controls">
       <div class="control">
         <label>Amplitude <span class="value-pill" id="p2AmpVal">3</span></label>
-        <input type="range" id="p2Amp" min="1" max="8" value="3" step="1">
+        <input type="range" id="p2Amp" min="1" max="8" value="3" step="1" aria-label="Amplitude">
       </div>
       <div class="control">
         <label>&nbsp;</label>
@@ -1145,7 +1176,7 @@ body.stem-active .stem-detail {
         <div class="target-name">Ring a Bell</div>
         <div class="target-need">Needs ≥ 5 J</div>
         <div class="target-row">
-          <input type="number" min="1" max="8" value="1" id="tBellAmp">
+          <input type="number" min="1" max="8" value="1" id="tBellAmp" aria-label="Amplitude to send toward the bell">
           <button class="btn btn-orange" data-target-btn="bell">Send Wave</button>
         </div>
         <div class="target-result" id="tBellResult"></div>
@@ -1156,7 +1187,7 @@ body.stem-active .stem-detail {
         <div class="target-name">Spin a Wheel</div>
         <div class="target-need">Needs ≥ 20 J</div>
         <div class="target-row">
-          <input type="number" min="1" max="8" value="1" id="tFanAmp">
+          <input type="number" min="1" max="8" value="1" id="tFanAmp" aria-label="Amplitude to send toward the wheel">
           <button class="btn btn-orange" data-target-btn="fan">Send Wave</button>
         </div>
         <div class="target-result" id="tFanResult"></div>
@@ -1167,7 +1198,7 @@ body.stem-active .stem-detail {
         <div class="target-name">Lift a Weight</div>
         <div class="target-need">Needs ≥ 45 J</div>
         <div class="target-row">
-          <input type="number" min="1" max="8" value="1" id="tWeightAmp">
+          <input type="number" min="1" max="8" value="1" id="tWeightAmp" aria-label="Amplitude to send toward the weight">
           <button class="btn btn-orange" data-target-btn="weight">Send Wave</button>
         </div>
         <div class="target-result" id="tWeightResult"></div>
@@ -3293,5 +3324,6 @@ document.addEventListener('DOMContentLoaded', boot);
 })();
 </script>
 
+</main>
 </body>
 </html>

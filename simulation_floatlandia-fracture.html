@@ -871,14 +871,45 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 
 <!-- NAV -->
 <nav>
   <a class="nav-logo" href="index.html">LYFELABZ</a>
   <a class="nav-back" href="lesson_continental-drift.html">← Continental Drift</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 <!-- BADGE BARS -->
 
@@ -956,7 +987,7 @@ body.stem-active .stem-detail {
         <div class="ev-desc">Fossilized ocean creatures found at high altitudes suggest these rocks were once deep underwater; and the continents have moved dramatically since.</div>
         <div aria-hidden="true" class="ev-lock-overlay">
           <div class="ev-lock-content">
-            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
             <div class="ev-lock-text">Click to unlock</div>
           </div>
         </div>
@@ -970,7 +1001,7 @@ body.stem-active .stem-detail {
         <div class="ev-desc">Identical rock bands (same minerals, same age, same diagonal striations) appear on coastlines thousands of kilometers apart. They must have once been connected.</div>
         <div aria-hidden="true" class="ev-lock-overlay">
           <div class="ev-lock-content">
-            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
             <div class="ev-lock-text">Click to unlock</div>
           </div>
         </div>
@@ -984,7 +1015,7 @@ body.stem-active .stem-detail {
         <div class="ev-desc">Coal deposits form in warm, tropical swamp forests. Finding coal far from the equator suggests those landmasses were once in very different positions.</div>
         <div aria-hidden="true" class="ev-lock-overlay">
           <div class="ev-lock-content">
-            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+            <svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
             <div class="ev-lock-text">Click to unlock</div>
           </div>
         </div>
@@ -2305,5 +2336,6 @@ function toast(msg,type='info'){
 })();
 </script>
 
+</main>
 </body>
 </html>

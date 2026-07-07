@@ -706,13 +706,44 @@ body.stem-active .stem-detail {
   .stem-badge[data-tip]::before { display: none; }
 }
 </style>
+<style id="a11y-canonical">
+/* Repository Hardening Pass 3 - canonical accessibility */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:10000;
+  background:var(--gold,#ffd54a); color:#0b0f1a;
+  padding:.75rem 1rem; font-weight:700; text-decoration:none;
+  border-radius:0 0 8px 0;
+}
+.skip-link:focus{ left:0; outline:none; }
+*:focus-visible{
+  outline:2px solid var(--gold,#ffd54a) !important;
+  outline-offset:2px !important;
+  border-radius:2px;
+}
+main[tabindex="-1"]:focus{ outline:none; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    animation-delay:0ms !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .hero-float,.hero-glow{ animation:none !important; }
+}
+</style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to lesson</a>
+
 
 <nav>
   <a href="index.html" class="nav-logo">LYFELABZ</a>
   <a href="lesson_biological-evolution.html" class="nav-back">Back to Biological Evolution</a>
 </nav>
+
+<main id="main" tabindex="-1">
+
 
 
 <div class="hero">
@@ -765,7 +796,7 @@ body.stem-active .stem-detail {
         <div class="ev-title">What is this simulation showing?</div>
         <div class="ev-body">
           <div class="ev-desc">You are watching how <strong>a population can change over time</strong> in response to an environmental event. The frog population begins with different <strong>melanin levels</strong>; this is called <strong>variation</strong>. When radiation enters the environment, data shows that certain frog colors become more common across generations. Your job is to <strong>observe the pattern</strong>, record the evidence, and construct an explanation for what the data shows.</div>
-          <div class="ev-lock-overlay" aria-hidden="true"><div class="ev-lock-content"><svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="ev-lock-text">Click to read</div></div></div>
+          <div class="ev-lock-overlay" aria-hidden="true"><div class="ev-lock-content"><svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="ev-lock-text">Click to read</div></div></div>
         </div>
       </div>
       <div class="evidence-card locked" id="ev-colors" onclick="unlockCard(this)">
@@ -773,7 +804,7 @@ body.stem-active .stem-detail {
         <div class="ev-title">Why are there different frog colors to begin with?</div>
         <div class="ev-body">
           <div class="ev-desc"><strong>Variation</strong> exists naturally in every population. Some frogs start lighter and some start darker because of inherited differences in melanin. Natural selection does not create that variation from nothing; <strong>it acts on the variation that is already there.</strong> Before the Chernobyl event, neither color has a strong advantage. Once radiation enters the environment, <strong>selection pressure</strong> begins to act on that existing variation.</div>
-          <div class="ev-lock-overlay" aria-hidden="true"><div class="ev-lock-content"><svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="ev-lock-text">Click to read</div></div></div>
+          <div class="ev-lock-overlay" aria-hidden="true"><div class="ev-lock-content"><svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="ev-lock-text">Click to read</div></div></div>
         </div>
       </div>
       <div class="evidence-card locked" id="ev-pressure" onclick="unlockCard(this)">
@@ -781,7 +812,7 @@ body.stem-active .stem-detail {
         <div class="ev-title">What makes this different from the beetle simulation?</div>
         <div class="ev-body">
           <div class="ev-desc">In the beetle simulation, selection pressure came from predators spotting beetles by sight. Here, the pressure is <strong>radiation</strong>, an <strong>invisible environmental change</strong>. Survival depends on protection from cellular damage, not camouflage. The Chernobyl disaster changed the environment suddenly, just as the Industrial Revolution changed the trees that peppered moths already lived on.</div>
-          <div class="ev-lock-overlay" aria-hidden="true"><div class="ev-lock-content"><svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="ev-lock-text">Click to read</div></div></div>
+          <div class="ev-lock-overlay" aria-hidden="true"><div class="ev-lock-content"><svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="ev-lock-text">Click to read</div></div></div>
         </div>
       </div>
       <div class="evidence-card locked" id="ev-chance" onclick="unlockCard(this)">
@@ -789,7 +820,7 @@ body.stem-active .stem-detail {
         <div class="ev-title">Why do some light frogs still survive?</div>
         <div class="ev-body">
           <div class="ev-desc">Because natural selection is <strong>probabilistic, not guaranteed</strong>. A lighter frog can still survive by chance, and a darker frog can still die. <strong>What changes over generations is the probability of survival, not a guarantee.</strong> This is why lighter frogs never completely disappear from the population; they just become <strong>rarer</strong> as the better-adapted trait becomes more common.</div>
-          <div class="ev-lock-overlay" aria-hidden="true"><div class="ev-lock-content"><svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="ev-lock-text">Click to read</div></div></div>
+          <div class="ev-lock-overlay" aria-hidden="true"><div class="ev-lock-content"><svg class="ev-lock-icon" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect height="10" rx="2" width="14" x="5" y="11"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div class="ev-lock-text">Click to read</div></div></div>
         </div>
       </div>
     </div>
@@ -850,9 +881,9 @@ body.stem-active .stem-detail {
       <div class="sim-panel-title">Population</div>
       <div class="gen-display"><div class="gen-num" id="genNum">0</div><div class="gen-lbl">Generation</div></div>
       <div class="legend">
-        <div class="legend-item"><svg width="24" height="10"><line x1="0" y1="5" x2="24" y2="5" stroke="#90f1a2" stroke-width="2.5"/></svg>Light frogs</div>
-        <div class="legend-item"><svg width="24" height="10"><line x1="0" y1="5" x2="24" y2="5" stroke="#68d67e" stroke-width="2.5"/></svg>Medium frogs</div>
-        <div class="legend-item"><svg width="24" height="10"><line x1="0" y1="5" x2="24" y2="5" stroke="#b4dec0" stroke-width="2.5" stroke-dasharray="4,3"/></svg>Dark frogs</div>
+        <div class="legend-item"><svg width="24" height="10" aria-hidden="true"><line x1="0" y1="5" x2="24" y2="5" stroke="#90f1a2" stroke-width="2.5"/></svg>Light frogs</div>
+        <div class="legend-item"><svg width="24" height="10" aria-hidden="true"><line x1="0" y1="5" x2="24" y2="5" stroke="#68d67e" stroke-width="2.5"/></svg>Medium frogs</div>
+        <div class="legend-item"><svg width="24" height="10" aria-hidden="true"><line x1="0" y1="5" x2="24" y2="5" stroke="#b4dec0" stroke-width="2.5" stroke-dasharray="4,3"/></svg>Dark frogs</div>
       </div>
       <div class="pop-bar-wrap"><div class="pop-bar-label"><span id="lightPct" style="color:var(--frog-light);">40% light</span><span id="midPct" style="color:var(--frog-mid);">35% medium</span><span id="darkPct" style="color:var(--frog-dark);">25% dark</span></div><div class="triple-bar-track"><div class="pop-bar-light" id="lightBar" style="width:40%"></div><div class="pop-bar-mid" id="midBar" style="width:35%"></div><div class="pop-bar-dark" id="darkBar" style="width:25%"></div></div></div>
       <div class="stat-row"><div class="stat-box"><div class="stat-num" id="statLight" style="color:var(--frog-light);">20</div><div class="stat-lbl">Light</div></div><div class="stat-box"><div class="stat-num" id="statMid" style="color:var(--frog-mid);">18</div><div class="stat-lbl">Medium</div></div><div class="stat-box"><div class="stat-num" id="statDark" style="color:var(--frog-dark);">12</div><div class="stat-lbl">Dark</div></div><div class="stat-box"><div class="stat-num" id="statTotal" style="color:#76e0b3;">50</div><div class="stat-lbl">Total</div></div></div>
@@ -860,7 +891,7 @@ body.stem-active .stem-detail {
   </div>
 
   <div class="sim-panel">
-    <div class="chart-legend"><div class="legend-item"><svg width="24" height="10"><line x1="0" y1="5" x2="24" y2="5" stroke="#90f1a2" stroke-width="2.5"/></svg>Light frogs</div><div class="legend-item"><svg width="24" height="10"><line x1="0" y1="5" x2="24" y2="5" stroke="#68d67e" stroke-width="2.5"/></svg>Medium frogs</div><div class="legend-item"><svg width="24" height="10"><line x1="0" y1="5" x2="24" y2="5" stroke="#b4dec0" stroke-width="2.5" stroke-dasharray="4,3"/></svg>Dark frogs</div></div>
+    <div class="chart-legend"><div class="legend-item"><svg width="24" height="10" aria-hidden="true"><line x1="0" y1="5" x2="24" y2="5" stroke="#90f1a2" stroke-width="2.5"/></svg>Light frogs</div><div class="legend-item"><svg width="24" height="10" aria-hidden="true"><line x1="0" y1="5" x2="24" y2="5" stroke="#68d67e" stroke-width="2.5"/></svg>Medium frogs</div><div class="legend-item"><svg width="24" height="10" aria-hidden="true"><line x1="0" y1="5" x2="24" y2="5" stroke="#b4dec0" stroke-width="2.5" stroke-dasharray="4,3"/></svg>Dark frogs</div></div>
     <canvas id="chartCanvas" height="360" style="width:100%; min-height:360px;"></canvas>
   </div>
 </section>
@@ -2042,5 +2073,6 @@ window.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+</main>
 </body>
 </html>
