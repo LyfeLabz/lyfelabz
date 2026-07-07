@@ -2298,6 +2298,34 @@ ul.edu-note-text li:last-child { margin-bottom: 0; }
     <!-- Questions injected by JS -->
     <div id="cm-quiz-questions"></div>
 
+    <!-- 🧠 SHOW YOUR THINKING (synthesis step, immediately before Submit) -->
+    <style>
+      .think-box { max-width: 760px; margin: 2.6rem auto 0; background: var(--card); border: 1.5px solid rgba(59,200,232,0.4); border-radius: 16px; padding: 1.6rem 1.7rem; }
+      .think-eyebrow { font-family:'Fredoka One', cursive; font-size:1.2rem; color:var(--text); margin-bottom:0.6rem; display:flex; align-items:center; gap:0.5rem; }
+      .think-lead { font-size:1rem; color:var(--text); line-height:1.6; margin-bottom:0.4rem; font-weight:800; }
+      .think-sub { font-size:0.92rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.1rem; }
+      .think-prompt { font-size:0.96rem; color:var(--text); line-height:1.6; margin-bottom:0.8rem; }
+      .think-prompt strong { font-weight:800; }
+      .think-input { width:100%; box-sizing:border-box; min-height:112px; resize:vertical; background:var(--dark); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.9rem; color:var(--text); font-family:'Nunito', sans-serif; font-size:0.95rem; line-height:1.55; }
+      .think-input:focus { outline:none; border-color:var(--teal); box-shadow:0 0 0 3px rgba(59,200,232,0.22); }
+      .think-input:disabled { opacity:0.7; }
+      .think-model { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:12px; background:rgba(46,204,113,0.07); border:1px solid rgba(46,204,113,0.25); border-left:4px solid var(--green); font-size:0.93rem; line-height:1.65; color:var(--text-muted); }
+      .think-model.show { display:block; animation: predictFadeUp 0.35s ease both; }
+      .think-model strong { color:var(--text); }
+      .think-model .tm-label { display:block; font-size:0.68rem; font-weight:900; letter-spacing:0.1em; text-transform:uppercase; color:#8be0a8; margin-bottom:0.4rem; }
+    </style>
+    <div class="think-box" id="cm-think">
+      <div class="think-eyebrow">🧠 Show Your Thinking</div>
+      <p class="think-lead">Engineers don't just make a drawing. They defend that someone else could build from it.</p>
+      <p class="think-sub">Write your own explanation first. Then submit your work to compare your thinking with a model answer.</p>
+      <p class="think-prompt">A student draws a treehouse and writes the <strong>scale</strong> "1 cm = 1 m" on it, but leaves off every measurement, figuring the builder can just eyeball the drawing. Make a <strong>claim</strong> about whether the builder can build it exactly, back it with <strong>evidence</strong> about what a scaled drawing needs, and explain your <strong>reasoning</strong>. Use the word <strong>scale</strong>.</p>
+      <textarea class="think-input" id="cm-thinking" placeholder="Write your claim, then your evidence, then your reasoning..." aria-label="Make a claim about whether the builder can build the treehouse exactly, cite evidence about what a scaled drawing needs, and explain your reasoning"></textarea>
+      <div class="think-model" id="cm-think-model">
+        <span class="tm-label">One strong way to say it</span>
+        <strong>Claim:</strong> The builder cannot build it exactly. <strong>Evidence:</strong> a scaled drawing communicates a design only when it has both a <strong>scale</strong> and labeled dimensions. The scale "1 cm = 1 m" tells the builder how to convert drawing distances into real ones, but without measurements there is nothing to convert. <strong>Reasoning:</strong> the whole point of a scaled drawing is to share a design so precisely that someone else can reproduce it. The scale and proportion keep the shape right, but exact sizes come from labeled dimensions. Eyeballing gives a different size every time, so the treehouse would not match the design.
+      </div>
+    </div>
+
     <!-- Submit -->
     <div class="quiz-submit-wrap">
       <button class="quiz-submit-btn" id="cm-submit-btn" onclick="cmSubmitQuiz()" disabled>Submit Quiz</button>
@@ -3058,7 +3086,7 @@ function cmSelectAnswer(qi, chosenIndex) {
   cmQuizState.selected[qi] = chosenIndex;
   document.getElementById('cm-q-' + qi + '-' + chosenIndex).classList.add('selected');
   cmUpdateProgress();
-  document.getElementById('cm-submit-btn').disabled = !cmQuizState.selected.every(function (s) { return s !== null; });
+  cmRefreshSubmitState();
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────────
@@ -3083,6 +3111,10 @@ function cmValidateStudentInfo() {
 // ── SUBMIT QUIZ ───────────────────────────────────────────────────────
 function cmSubmitQuiz() {
   if (cmQuizState.submitted) return;
+  // Require every quiz item answered and a written explanation before submitting.
+  if (!cmQuizState.selected.every(function (s) { return s !== null; })) return;
+  var cmThinkGate = document.getElementById('cm-thinking');
+  if (cmThinkGate && !cmThinkGate.value.trim()) return;
   if (cmQuizMode === 'classroom') {
     var info = cmValidateStudentInfo();
     if (!info.valid) {
@@ -3092,6 +3124,12 @@ function cmSubmitQuiz() {
   }
   cmQuizState.submitted = true;
   document.getElementById('cm-submit-btn').disabled = true;
+  // Lock the Show Your Thinking response and surface the model answer so the
+  // student can compare their own explanation against a strong one.
+  var thinkInput = document.getElementById('cm-thinking');
+  var thinkingText = thinkInput ? thinkInput.value.trim() : '';
+  if (thinkInput) thinkInput.disabled = true;
+  document.getElementById('cm-think-model').classList.add('show');
   var correct = 0;
   cmQuizQuestions.forEach(function (q, qi) {
     var chosen    = cmQuizState.selected[qi];
@@ -3136,14 +3174,17 @@ function cmSubmitQuiz() {
 
   var info2 = cmValidateStudentInfo();
   var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
+  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
+  // Thinking rides along in the final `thinking` field. Teacher selects the
+  // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var answerStr = cmQuizState.selected.map(function (idx, i) {
-    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
-  }).join(', ');
-  var params = new URLSearchParams({
-    tab: 'Designing to Scale', studentName: info2.name, teacher: teacherLabel,
-    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+  var params = new URLSearchParams({ tab: 'Designing to Scale', studentName: info2.name, block: info2.block });
+  cmQuizState.selected.forEach(function (chosenIndex, qi) {
+    params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
+  params.set('score', score);
+  params.set('thinking', thinkingText);
   fetch(CM_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
     .then(function () {
       document.getElementById('cm-submit-status').innerHTML =
@@ -3163,11 +3204,27 @@ function cmResetQuiz() {
   }
   document.getElementById('cm-score').classList.remove('show');
   document.getElementById('cm-submit-status').innerHTML = '';
+  // Reset Show Your Thinking for a fresh attempt.
+  var thinkInput = document.getElementById('cm-thinking');
+  if (thinkInput) { thinkInput.disabled = false; thinkInput.value = ''; }
+  document.getElementById('cm-think-model').classList.remove('show');
   cmBuildQuiz();
   var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
   var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── SHOW YOUR THINKING: gate Submit on a written explanation ──────────
+function cmRefreshSubmitState() {
+  var quizDone  = cmQuizState.selected.every(function (s) { return s !== null; });
+  var thinkEl   = document.getElementById('cm-thinking');
+  var thinkDone = !!(thinkEl && thinkEl.value.trim());
+  document.getElementById('cm-submit-btn').disabled = cmQuizState.submitted || !(quizDone && thinkDone);
+}
+(function () {
+  var thinkEl = document.getElementById('cm-thinking');
+  if (thinkEl) thinkEl.addEventListener('input', cmRefreshSubmitState);
+})();
 
 // ── INIT ──────────────────────────────────────────────────────────────
 cmBuildQuiz();
