@@ -35,6 +35,44 @@ When architectural differences are discovered during Repository Hardening, they 
 
 ---
 
+# CANONICAL ARCHITECTURE CLARIFICATION
+
+Canonical lesson architecture is defined by educational function rather than identical implementation.
+
+A lesson does not need to use identical HTML components if it already accomplishes the same instructional purpose through a well-designed, intentional structure.
+
+Repository consistency should preserve effective instructional design whenever possible rather than forcing identical implementations.
+
+During future hardening work, architectural equivalence should be preferred over unnecessary structural rewrites.
+
+---
+
+# MORE LEARNING EDITORIAL STANDARD
+
+The More Learning introduction should briefly preview the scientific ideas students are about to explore rather than serving as generic transition text.
+
+When appropriate, naturally introduce two to three meaningful scientific concepts drawn directly from the linked learning experiences.
+
+Use the existing gold emphasis through the canonical implementation:
+
+```css
+.continue-intro strong {
+    color: var(--gold);
+}
+```
+
+Preserve lesson tone.
+
+Avoid emphasizing verbs.
+
+Avoid emphasizing navigation language.
+
+Avoid emphasizing generic boilerplate.
+
+Encourage curiosity and exploration rather than simply announcing additional resources.
+
+---
+
 # STYLE
 
 No em dashes.
