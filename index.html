@@ -920,6 +920,35 @@
     font-style: italic;
   }
 
+  /* ===== REPOSITORY HARDENING PASS 4 - HOMEPAGE MOBILE ===== */
+  @media (max-width: 600px) {
+    nav { padding: 0.75rem 1rem; }
+    .hero { padding: 1.75rem 1rem 1rem; min-height: auto; }
+    .hero-sub { font-size: 1rem; margin-bottom: 1.2rem; }
+    .control-panel { padding: 1rem 1.1rem 1.15rem; margin-bottom: 2rem; }
+    .cp-panel-title { font-size: 0.62rem; }
+    .cp-pills { gap: 0.4rem; }
+    .filter-pill { font-size: 0.75rem; padding: 0.4rem 0.85rem; }
+    section { padding: 2.2rem 1rem; }
+    .stats-bar { padding: 1.3rem 1rem; }
+    .stats-inner { gap: 2rem; }
+    .stat-num { font-size: 1.7rem; }
+    .subject-header { gap: 0.6rem; margin-bottom: 1rem; }
+    .subject-title { font-size: 1rem; }
+    .unit-row { grid-template-columns: 1fr; gap: 0.9rem; }
+    .unit-top { padding: 1.15rem 1.15rem 0.7rem; }
+    .unit-links { padding: 0.8rem 1.15rem 1.1rem; gap: 0.5rem; }
+    .topic-group-divider { gap: 0.6rem; padding: 1.15rem 0 0.85rem; flex-wrap: wrap; }
+    .topic-group-name { font-size: 1.15rem; }
+    .topic-group-tag { margin-left: 0; font-size: 0.62rem; }
+    .how-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .how-card { padding: 1.5rem 1.3rem; }
+    footer { padding: 2rem 1rem; }
+  }
+  @media (max-width: 380px) {
+    .filter-pill { font-size: 0.72rem; padding: 0.35rem 0.7rem; }
+  }
+
 </style>
 <style id="a11y-canonical">
 /* Repository Hardening Pass 3 - canonical accessibility */
@@ -946,6 +975,72 @@ main[tabindex="-1"]:focus{ outline:none; }
   }
   .hero-float,.hero-glow{ animation:none !important; }
 }
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  .mode-btn,
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </style>
 </head>
 <body>

@@ -187,7 +187,7 @@ body.ls-active .badge-bar.ls-bar { display:flex; }
 .well-toolbar { display:flex; align-items:center; gap:0.6rem; padding:0.65rem 1rem; background:var(--bg-secondary); border-bottom:1px solid var(--border); flex-wrap:wrap; }
 .well-toolbar-title { font-weight:800; font-size:0.82rem; color:#c9d1d9; }
 .well-toolbar-note { font-size:0.68rem; font-weight:700; color:var(--text-muted); margin-top:0.12rem; line-height:1.35; }
-#wellCanvas { display:block; width:100%; background:#040c18; }
+#wellCanvas { display:block; width:100%; background:#040c18; touch-action:pan-y; }
 .well-info-box { margin:0.8rem 1rem 0.8rem; background:rgba(180,127,255,0.06); border:1px solid rgba(180,127,255,0.2); border-radius:var(--radius-sm); padding:0.7rem 0.85rem; min-height:62px; }
 .well-info-label { font-size:0.65rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--purple); margin-bottom:0.2rem; }
 .well-info-text { font-size:0.82rem; font-weight:600; color:#c9d1d9; line-height:1.5; }
@@ -334,7 +334,7 @@ body.ls-active .badge-bar.ls-bar { display:flex; }
   box-shadow:0 0 0 2px rgba(180,127,255,0.15), 0 0 24px rgba(180,127,255,0.55), inset 0 0 20px rgba(180,127,255,0.14);
   text-shadow:0 0 11px rgba(180,127,255,0.78);
 }
-#orbitCanvas { display:block; width:100%; background:#030c16; cursor:crosshair; }
+#orbitCanvas { display:block; width:100%; background:#030c16; cursor:crosshair; touch-action:none; }
 .orbit-controls { display:flex; align-items:center; gap:0.6rem; padding:0.7rem 1rem; background:var(--bg-secondary); border-top:1px solid var(--border); flex-wrap:wrap; }
 .outcome-badge { display:inline-flex; align-items:center; gap:0.3rem; padding:0.28rem 0.75rem; border-radius:20px; font-size:0.72rem; font-weight:900; letter-spacing:0.06em; border:1.5px solid; }
 .outcome-badge.flying   { background:var(--teal-dim);   color:var(--teal);   border-color:rgba(59,200,232,0.4); }
@@ -809,6 +809,72 @@ main[tabindex="-1"]:focus{ outline:none; }
   }
   .hero-float,.hero-glow{ animation:none !important; }
 }
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  .mode-btn,
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </style>
 </head>
 <body>

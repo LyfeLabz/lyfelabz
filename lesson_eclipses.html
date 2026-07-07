@@ -491,6 +491,72 @@ main[tabindex="-1"]:focus{ outline:none; }
   .hero-float,.hero-glow{ animation:none !important; }
 }
 </style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  .mode-btn,
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to lesson</a>
@@ -788,7 +854,7 @@ main[tabindex="-1"]:focus{ outline:none; }
       <div class="briefing-card solar">
         <div class="briefing-type">Solar Eclipse</div>
         <div class="briefing-title">Moon Casts Shadow on Earth</div>
-        <svg viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;margin-bottom:.8rem;" aria-hidden="true">
+        <svg viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;margin-bottom:.8rem;" role="img" aria-label="Solar eclipse alignment: Sun on the left, Moon in the middle blocking sunlight, Earth on the right receiving the Moon's shadow.">
           <defs>
             <radialGradient id="bSun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff7c0"/><stop offset="60%" stop-color="#f5c842"/><stop offset="100%" stop-color="#d49030" stop-opacity=".8"/></radialGradient>
             <radialGradient id="bMoon" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#6a7a9a"/><stop offset="100%" stop-color="#2a3448"/></radialGradient>
@@ -814,7 +880,7 @@ main[tabindex="-1"]:focus{ outline:none; }
       <div class="briefing-card lunar">
         <div class="briefing-type">Lunar Eclipse</div>
         <div class="briefing-title">Earth Casts Shadow on Moon</div>
-        <svg viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;margin-bottom:.8rem;" aria-hidden="true">
+        <svg viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;margin-bottom:.8rem;" role="img" aria-label="Lunar eclipse alignment: Sun on the left, Earth in the middle blocking sunlight, Moon on the right passing through Earth's shadow.">
           <defs>
             <radialGradient id="bSunL" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff7c0"/><stop offset="60%" stop-color="#f5c842"/><stop offset="100%" stop-color="#d49030" stop-opacity=".8"/></radialGradient>
             <radialGradient id="bEarthL" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#4a90d9"/><stop offset="100%" stop-color="#1a4070"/></radialGradient>

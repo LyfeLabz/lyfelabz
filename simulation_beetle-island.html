@@ -197,7 +197,7 @@ body.ls-active   .badge-bar.ls-bar   { display:flex; }
 .island-header { padding:0.65rem 1rem; background:var(--bg-secondary); border-bottom:1px solid var(--border); }
 .island-header-title { font-family:'Fredoka One',cursive; font-size:0.95rem; color:var(--text-primary); }
 .island-canvas-wrap { position:relative; }
-#islandCanvas { width:100%; display:block; background:#060f09; }
+#islandCanvas { width:100%; display:block; background:#060f09; touch-action:pan-y; }
 .event-overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; opacity:0; transition:opacity 0.3s; z-index:10; }
 .event-overlay.show   { opacity:1; }
 .event-overlay.arrive { background:rgba(232,112,112,0.86); }
@@ -653,6 +653,72 @@ main[tabindex="-1"]:focus{ outline:none; }
   }
   .hero-float,.hero-glow{ animation:none !important; }
 }
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  .mode-btn,
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </style>
 </head>
 <body>

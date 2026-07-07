@@ -341,7 +341,7 @@ footer p { font-size:0.72rem; color:rgba(180,200,220,0.35); }
 .cell-type-btn { padding:0.45rem 1.2rem; border-radius:99px; border:1.5px solid var(--border-light); background:var(--bg-card); color:var(--text-muted); font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:800; cursor:pointer; transition:all 0.2s; letter-spacing:0.04em; }
 .cell-type-btn.active { background:var(--orange-dim); border-color:var(--orange); color:var(--orange); box-shadow:0 0 10px rgba(59,130,246,0.15); }
 .cell-type-btn:hover:not(.active) { border-color:var(--border-light); color:var(--text-primary); }
-#p1Canvas { display:block; width:100%; cursor:default; }
+#p1Canvas { display:block; width:100%; cursor:default; touch-action:manipulation; }
 .p1-hover-label { position:absolute; background:rgba(10,15,24,0.96); border:1px solid var(--border-light); border-radius:8px; padding:0.28rem 0.65rem; font-family:'Nunito',sans-serif; font-size:0.76rem; font-weight:800; color:var(--text-primary); pointer-events:none; z-index:10; white-space:nowrap; transform:translate(-50%, calc(-100% - 10px)); box-shadow:0 2px 10px rgba(0,0,0,0.5); }
 .discovery-tracker { margin-top:0.9rem; padding:0.85rem 1rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius-sm); }
 .discovery-tracker-title { font-size:0.68rem; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.7rem; }
@@ -829,6 +829,72 @@ main[tabindex="-1"]:focus{ outline:none; }
   }
   .hero-float,.hero-glow{ animation:none !important; }
 }
+</style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  .mode-btn,
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </style>
 </head>
 <body>

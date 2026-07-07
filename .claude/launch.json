@@ -216,6 +216,18 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "3520", "."],
       "port": 3520
+    },
+    {
+      "name": "mobile-pass4",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3530", "."],
+      "port": 3530
+    },
+    {
+      "name": "pass5-certify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3540", "."],
+      "port": 3540
     }
   ]
 }

@@ -25,6 +25,56 @@ During the Repository Hardening phase, consistency takes priority over introduci
 
 ---
 
+# REPOSITORY HARDENING PASS 5 (REPOSITORY CLEANUP & DEPLOYMENT READINESS)
+
+## Final SVG Accessibility Review
+
+During Repository Hardening Pass 3, any SVG lacking explicit accessibility attributes was conservatively marked as decorative using:
+
+`aria-hidden="true"`
+
+This was the correct repository-wide hardening decision because it avoided inventing instructional descriptions during a mechanical accessibility sweep.
+
+During Repository Hardening Pass 5, perform one final content-level accessibility review of those SVGs.
+
+Determine whether any SVG currently marked as decorative actually conveys meaningful scientific or engineering information.
+
+For each SVG reviewed:
+
+- If it is purely decorative, retain `aria-hidden="true"`.
+
+- If it communicates instructional content, replace the decorative designation with:
+
+  - `role="img"`
+
+  - a concise educational `aria-label`
+
+Descriptions should:
+
+- explain only the instructional purpose of the graphic
+
+- avoid describing artistic style or appearance
+
+- remain concise and objective
+
+This review should be treated as editorial verification rather than a repository-wide mechanical accessibility change.
+
+The final Pass 5 report should include:
+
+- total SVGs reviewed
+
+- decorative SVGs retained
+
+- instructional SVGs upgraded
+
+- files modified
+
+- representative examples
+
+This review should be completed before Repository Hardening is declared complete and before the repository is considered deployment-ready.
+
+---
+
 # CANONICAL LESSON ARCHITECTURE RULE
 
 Every instructional lesson should implement the complete canonical lesson architecture unless there is a documented pedagogical reason for an intentional exception.
@@ -671,6 +721,47 @@ Mobile friendly.
 Avoid information overload.
 
 One vocabulary card open at a time.
+
+---
+
+# CANONICAL RESPONSIVE BREAKPOINTS
+
+Repository Hardening Pass 4 established a shared vocabulary for future mobile work.
+
+Three canonical breakpoints:
+
+* 480px, single-column phone
+* 720px, tablet portrait and split-screen Chromebook
+* 960px, tablet landscape and small laptop
+
+Two supporting queries:
+
+* `@media (pointer: coarse)`, touch-target minimums
+* `@media (orientation: landscape) and (max-width: 950px)`, notch-clearing padding on iPhone landscape
+
+Existing per-lesson breakpoints (380, 540, 600, 640, 700, 720, 760, 860) are preserved.
+
+Do not rewrite the repository to converge on the canonical breakpoints.
+
+New responsive rules should adopt the canonical values. Existing rules migrate gradually during unrelated future edits.
+
+---
+
+# CANONICAL MOBILE STYLESHEET
+
+Every page in the repository loads a shared `<style id="mobile-canonical">` block immediately after `<style id="a11y-canonical">`.
+
+This block owns:
+
+* safe-area padding for notched devices
+* touch-target minimums on coarse-pointer devices
+* tap-highlight normalization
+* the `.table-scroll` utility for wide tables
+* sticky quiz progress offset behavior
+
+Do not add page-specific mobile rules that duplicate canonical behavior.
+
+If new mobile behavior needs to apply repository-wide, extend the canonical block rather than adding one-off implementations.
 
 ---
 

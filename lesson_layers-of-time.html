@@ -711,6 +711,72 @@ main[tabindex="-1"]:focus{ outline:none; }
   .hero-float,.hero-glow{ animation:none !important; }
 }
 </style>
+<style id="mobile-canonical">
+/* Repository Hardening Pass 4 - canonical mobile experience */
+
+/* Tap-highlight normalization on interactive controls */
+a, button, [role="button"], summary, label, .glossary-card {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area protection for notched devices - footer bottom is always safe */
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+
+/* Narrow viewports - nav and footer inline padding respects safe-area */
+@media (max-width: 600px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  footer {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+  section {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape phone / small tablet - preserve existing padding but clear the notch */
+@media (orientation: landscape) and (max-width: 950px) {
+  nav {
+    padding-left: max(1.2rem, env(safe-area-inset-left));
+    padding-right: max(1.2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-target minimums - coarse pointer devices only, no desktop impact */
+@media (pointer: coarse) {
+  .ulink,
+  .nav-back,
+  .footer-links a,
+  .predict-btn,
+  .qr-actions button,
+  .mode-btn,
+  .qr-check,
+  .qr-retry {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Canonical horizontal-scroll wrapper for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.table-scroll > table { min-width: 480px; }
+
+/* Sticky quiz-progress bar - lower the offset on mobile and lift out of flow
+   when the hamburger menu is open so the expanded menu never overlaps the bar */
+@media (max-width: 600px) {
+  .quiz-progress-sticky { top: 52px; }
+}
+body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
+</style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to lesson</a>
@@ -1220,7 +1286,7 @@ main[tabindex="-1"]:focus{ outline:none; }
       <div class="inv-card">
         <div class="inv-question">In this undisturbed stack, which layer formed first?</div>
         <div class="inv-visual">
-          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" aria-hidden="true">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" role="img" aria-label="Undisturbed horizontal rock layers stacked top to bottom: Layer A, Layer B, Layer C, Layer D.">
             <defs>
               <pattern id="g1" x="0" y="0" width="40" height="6" patternUnits="userSpaceOnUse">
                 <line x1="0" y1="3" x2="40" y2="3" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
@@ -1253,7 +1319,7 @@ main[tabindex="-1"]:focus{ outline:none; }
       <div class="inv-card">
         <div class="inv-question">An igneous rock punched through these layers after they formed. Is it older or younger than the layers it cut?</div>
         <div class="inv-visual">
-          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" aria-hidden="true">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" role="img" aria-label="Four horizontal rock layers A through D with a vertical igneous intrusion cutting through every layer.">
             <defs>
               <pattern id="g2" x="0" y="0" width="40" height="6" patternUnits="userSpaceOnUse">
                 <line x1="0" y1="3" x2="40" y2="3" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
@@ -1293,7 +1359,7 @@ main[tabindex="-1"]:focus{ outline:none; }
       <div class="inv-card">
         <div class="inv-question">These rock layers are tilted at a steep angle. What does that tell you?</div>
         <div class="inv-visual">
-          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" aria-hidden="true">
+          <svg viewBox="0 0 280 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" role="img" aria-label="Rock layers A through D tilted at a steep angle rather than lying flat.">
             <clipPath id="inv3-clip">
               <rect x="0" y="0" width="280" height="148"/>
             </clipPath>
@@ -1518,7 +1584,7 @@ function invAnswer(btn, result, cardNum) {
     <!-- Four principles -->
     <!-- CONCEPTUAL SVG: Superposition + Cross-Cutting -->
     <div style="margin: 2rem 0 1.8rem;">
-      <svg viewBox="0 0 740 295" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" aria-hidden="true">
+      <svg viewBox="0 0 740 295" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" role="img" aria-label="Two-panel diagram summarizing Superposition (older layers lie below younger ones) and Cross-Cutting Relationships (features that cut across rock layers are younger than the layers they cut).">
         <defs>
           <pattern id="grain" x="0" y="0" width="40" height="8" patternUnits="userSpaceOnUse">
             <line x1="0" y1="4" x2="40" y2="4" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
