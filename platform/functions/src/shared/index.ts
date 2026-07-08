@@ -13,6 +13,7 @@ export {
   auditEventsCollectionRef,
   schoolDocRef,
   userDocRef,
+  userRecordDocRef,
 } from "./firestore/typed-ref";
 export { log, type LogPayload } from "./logging/logger";
 export {
@@ -28,6 +29,7 @@ export {
   USERS_COLLECTION,
   type ConsentState,
   type Role,
+  type StudentActivationWrite,
   type StudentProfile,
   type TeacherProfile,
   type UserProvisioningWrite,

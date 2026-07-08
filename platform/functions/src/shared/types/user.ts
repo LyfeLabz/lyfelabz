@@ -61,3 +61,16 @@ export type UserProvisioningWrite = {
   readonly email?: string;
   readonly displayName?: string;
 };
+
+// Write shape for the student onboarding callable
+// (studentsCompleteOnboarding). Conforms to Data Model §3.1: the
+// activation-required fields (role, schoolId, displayName) become required
+// on the transition out of `provisioned`, and `status` moves to `active`
+// per the transition table in PLATFORM_STATE_MACHINE.md §3. Every field is
+// a plain scalar because activation writes carry no FieldValue sentinels.
+export type StudentActivationWrite = {
+  readonly role: "student";
+  readonly schoolId: string;
+  readonly displayName: string;
+  readonly status: "active";
+};

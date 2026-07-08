@@ -1,3 +1,7 @@
-// students/ domain entry point. No exports in Sprint 1.
+// students/ domain entry point.
 
-export {};
+export {
+  studentsCompleteOnboarding,
+  type StudentsCompleteOnboardingRequest,
+  type StudentsCompleteOnboardingResponse,
+} from "./students-complete-onboarding";
