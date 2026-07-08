@@ -1,13 +1,75 @@
 rules_version = '2';
 
 // LyfeLabz Firestore Security Rules
-// Sprint 1: strict default-deny baseline.
-// No collection is opened to clients. users/{uid} is written server-side by
-// the authOnUserCreate trigger (Admin SDK bypasses these rules). Every future
-// sprint opens its own collections with its own tests.
+// Sprint 2 Step 7: first narrowly-scoped affirmative rules over the
+// Sprint 1 default-deny baseline. Every other path remains default-deny.
+//
+// Scope opened in this pass:
+//   users/{uid}     - self get; self update limited to { displayName }.
+//   schools/{id}    - authenticated get; no list; no writes.
+//   auditEvents/{}  - server-only. No client reads or writes.
+//
+// Every collection not matched below inherits the terminal deny rule at
+// the bottom of the file. New rules must be additive and narrowly scoped;
+// existing rules must not be weakened.
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Sprint 2 fixed allowlist of self-mutable fields on users/{uid}.
+    // Extending this allowlist is a repository-level decision and must
+    // be paired with new Rules tests per Engineering Standards §9.
+    function affectedKeysAreAllowlisted() {
+      return request.resource.data.diff(resource.data)
+        .affectedKeys()
+        .hasOnly(["displayName"]);
+    }
+
+    // ---------- users/{uid} ----------
+    //
+    // Self read only. Self update limited to the { displayName } allowlist.
+    // Every other field (authUid, role, schoolId, status, createdAt,
+    // email, grade, consentState, teacherProfile, studentProfile) is
+    // server-managed and denied to clients. Cross-user reads denied.
+    // create/delete remain server-only.
+    match /users/{uid} {
+      allow get: if isSelf(uid);
+      allow update: if isSelf(uid) && affectedKeysAreAllowlisted();
+    }
+
+    // ---------- schools/{schoolId} ----------
+    //
+    // Any authenticated caller may get a school document. The Sprint 2
+    // Data Model defines the client-visible metadata as name, shortName,
+    // and timezone; per Data Model §3.2 the collection carries no
+    // non-metadata fields that must be hidden from clients, so the
+    // allowlist is enforced by the write path (server-only) rather than
+    // by the read rule. List and every write are denied.
+    match /schools/{schoolId} {
+      allow get: if isSignedIn();
+    }
+
+    // ---------- auditEvents/{eventId} ----------
+    //
+    // Append-only server-write, server-read per Security Model §11 and
+    // Cloud Function Charter §2. This match block is present only to
+    // make the server-only intent explicit; every client operation
+    // remains denied.
+    match /auditEvents/{eventId} {
+      allow read, write: if false;
+    }
+
+    // ---------- Terminal default-deny ----------
     match /{document=**} {
       allow read, write: if false;
     }
