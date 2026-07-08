@@ -177,22 +177,34 @@ Each subsection defines the purpose of the document, the fields it must carry, t
 
 Purpose: The domain record for a person who signs in.
 
-Required fields:
+The user document has a two-stage field-requirement contract that reflects the platform lifecycle:
 
-- authUid: The Firebase Auth UID. Required because it is the join key between the identity token and the domain record.
-- role: One of `teacher`, `student`, `platformAdministrator`. Required because every security rule branches on role. Reserved future values: `parent`, `schoolAdministrator`, `districtAdministrator`.
-- displayName: Shown throughout the UI. Required because anonymous participation is not supported.
-- schoolId: Reference to the school this user belongs to. Required because every access decision starts from school membership.
+- Provisioning-required fields are written by the authentication trigger the first time a Firebase Auth user is created. They must be present on every user document at all times.
+- Activation-required fields become required when the account leaves the `provisioned` state and enters `active` or `pendingVerification`. They are absent on a provisioned-but-not-yet-activated user.
+
+The canonical lifecycle enumeration and the transitions between states live in `PLATFORM_STATE_MACHINE.md`. This section names the fields; the state machine names the transitions.
+
+Provisioning-required fields:
+
+- authUid: The Firebase Auth UID. The join key between the identity token and the domain record.
+- status: One of `provisioned`, `pendingVerification`, `active`, `suspended`, `archived`. The canonical lifecycle field. Its enumerated values and transitions are the canonical account lifecycle for the entire platform and are defined in `PLATFORM_STATE_MACHINE.md`. There must never be a second lifecycle field on this document.
 - createdAt: Timestamp of first provisioning. Required for auditing.
+
+Activation-required fields (required when `status` is `active` or `pendingVerification`; absent when `status` is `provisioned`):
+
+- role: One of `teacher`, `student`, `platformAdministrator`. Every security rule branches on role. Reserved future values: `parent`, `schoolAdministrator`, `districtAdministrator`.
+- schoolId: Reference to the school this user belongs to. Every access decision starts from school membership.
+- displayName: Shown throughout the UI. Anonymous participation is not supported.
 
 Optional fields:
 
-- email: Present for teachers and administrators. May be absent for students who authenticate through a school-managed identity provider or classroom mode.
+- email: Present for teachers and administrators. May be absent for students who authenticate through a school-managed identity provider or classroom mode. May also be populated at provisioning from the Firebase Auth record.
 - grade: Present for students. Absent for teachers and administrators.
 - teacherProfile: A nested object holding teacher-specific settings such as default block visibility. Absent for other roles.
 - studentProfile: A nested object holding student-specific settings such as accommodations flags. Absent for other roles.
 - consentState: Records parental consent and terms acceptance for future compliance. Optional in Version 1 but reserved.
-- status: active, suspended, archived. Optional because active is the default and is inferred when absent.
+
+Outcomes of individual onboarding attempts (personal-account rejections, unverified-domain requests, denials, and any future activation-failure mode) are recorded in the `auditEvents` collection, never in `status`. The lifecycle field describes where the account is in the platform. The audit stream describes what happened to the account. See `PLATFORM_STATE_MACHINE.md`.
 
 Relationships: Belongs to one school. Referenced by classes (as teacher), by enrollments (as student), and by every ownership field elsewhere in the system.
 

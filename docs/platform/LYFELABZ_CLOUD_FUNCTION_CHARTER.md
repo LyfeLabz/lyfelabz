@@ -62,6 +62,14 @@ Elevating an account to teacher status, binding a teacher to a school or distric
 **Custom claims issuance.**
 Any change to a user's `role`, `schoolId`, `districtId`, or equivalent claim is written exclusively by a Cloud Function. Claims are the foundation of authorization, and the client must never influence them directly.
 
+*Canonical custom claims shape.* Every custom claims write in the platform uses exactly this shape:
+
+- `role`: one of the values defined by PDR-004 and the Firestore Data Model. Present only when the user is `active`.
+- `schoolId`: the school reference stamped on the user's document. Present only when the user is `active`.
+- `districtId`: reserved slot for the district expansion path in PDR-015. Not written by Version 1 functions.
+
+Claims are written only when the user's `status` (see `PLATFORM_STATE_MACHINE.md`) is `active`. A user in any other state, including `pendingVerification`, `provisioned`, `suspended`, or `archived`, carries no claims. The absence of claims is the canonical signal that the user has no active authorization and is distinct from the presence of claims with any particular values. Every custom claims write in the platform flows through the single canonical helper defined by the Engineering Standards (PDR-017); no second write path exists.
+
 **Audit event creation.**
 Security-relevant events (role changes, roster changes, assignment publication, teacher score annotations, data exports, deletions) are written to the Firestore `auditEvents` collection by the server as a side effect of the operation itself. That collection is the platform's authoritative append-only audit sink (Security Model 11; PDR-013). Clients cannot write to it, and no role, including Platform Administrator, may update or delete records in it.
 

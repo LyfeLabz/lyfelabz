@@ -29,15 +29,13 @@ function buildPayload(user: UserRecord): UserProvisioningWrite {
   const optional: {
     email?: string;
     displayName?: string;
-    photoURL?: string;
   } = {};
   if (user.email) optional.email = user.email;
   if (user.displayName) optional.displayName = user.displayName;
-  if (user.photoURL) optional.photoURL = user.photoURL;
 
   return {
-    uid: user.uid,
-    provider: resolveProvider(user),
+    authUid: user.uid,
+    status: "provisioned",
     createdAt: FieldValue.serverTimestamp(),
     ...optional,
   };
