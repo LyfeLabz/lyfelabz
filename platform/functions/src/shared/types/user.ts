@@ -62,6 +62,21 @@ export type UserProvisioningWrite = {
   readonly displayName?: string;
 };
 
+// Write shape for the teacher verification-request callable
+// (teachersRequestVerification). Conforms to Data Model §3.1: the
+// activation-required fields (role, schoolId, displayName) become required
+// on the transition out of `provisioned`, and `status` moves to
+// `pendingVerification` per the transition table in
+// PLATFORM_STATE_MACHINE.md §3. Custom claims are intentionally not
+// issued at this step; the teacher only becomes claim-bearing after
+// administrative approval in a later step.
+export type TeacherVerificationRequestWrite = {
+  readonly role: "teacher";
+  readonly schoolId: string;
+  readonly displayName: string;
+  readonly status: "pendingVerification";
+};
+
 // Write shape for the student onboarding callable
 // (studentsCompleteOnboarding). Conforms to Data Model §3.1: the
 // activation-required fields (role, schoolId, displayName) become required

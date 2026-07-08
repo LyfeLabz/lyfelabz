@@ -1,3 +1,7 @@
-// teachers/ domain entry point. No exports in Sprint 1.
+// teachers/ domain entry point.
 
-export {};
+export {
+  teachersRequestVerification,
+  type TeachersRequestVerificationRequest,
+  type TeachersRequestVerificationResponse,
+} from "./teachers-request-verification";

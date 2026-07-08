@@ -32,6 +32,7 @@ export {
   type StudentActivationWrite,
   type StudentProfile,
   type TeacherProfile,
+  type TeacherVerificationRequestWrite,
   type UserProvisioningWrite,
   type UserRecord,
   type UserStatus,
