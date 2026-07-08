@@ -4,7 +4,7 @@ Authentication triggers and helpers.
 
 ## Scope
 
-- Firebase Auth `onCreate` trigger that mirrors the user into `users/{uid}` (lands in Sprint 1 Step 8 as `authOnUserCreate`).
+- `authOnUserCreate`: Firebase Auth `onCreate` trigger that provisions the canonical `users/{uid}` document. Idempotent via `.create()` + `ALREADY_EXISTS` handling. Writes only provisioning fields (`uid`, `email`, `displayName`, `photoURL`, `provider`, `createdAt`); `role` and `schoolId` are populated by later onboarding sprints.
 - Future: role assignment helpers, custom claims management, sign-out cleanup.
 
 ## Not in scope

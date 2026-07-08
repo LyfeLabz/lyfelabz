@@ -8,6 +8,7 @@ Sprint 1 development and verification happen exclusively against the Firebase Em
 |--------------|------|
 | Auth         | 9099 |
 | Firestore    | 8080 |
+| Functions    | 5001 |
 | Emulator UI  | 4000 |
 
 `singleProjectMode` is enabled so the emulators only accept requests for the configured project (`lyfelabz-prod`), preventing accidental cross-project contamination during local development.
@@ -26,7 +27,6 @@ The Emulator UI will be available at `http://localhost:4000` once the suite is r
 
 The following emulators are intentionally not configured yet. Each will be added by the sprint step that introduces its backing configuration:
 
-- **Functions** — deferred until Sprint 1 Step 7 (Cloud Functions scaffold). The Functions emulator requires initialized Functions source, which does not exist yet.
 - **Storage** — deferred until Sprint 1 Step 9 (Storage rules). The Storage emulator requires a `storage.rules` file, which does not exist yet.
 - **Hosting** — deferred until a `hosting` block exists in `firebase.json`. Sprint 1 does not configure Hosting for production; it will be initialized minimally in a later step so future sprints can build on it.
 
