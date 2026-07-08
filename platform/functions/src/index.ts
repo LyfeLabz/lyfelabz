@@ -1,3 +1,7 @@
 export { authOnUserCreate } from "./auth";
 export { studentsCompleteOnboarding } from "./students";
-export { teachersRequestVerification } from "./teachers";
+export {
+  teachersApproveVerification,
+  teachersDenyVerification,
+  teachersRequestVerification,
+} from "./teachers";

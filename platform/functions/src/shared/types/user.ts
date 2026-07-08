@@ -77,6 +77,31 @@ export type TeacherVerificationRequestWrite = {
   readonly status: "pendingVerification";
 };
 
+// Write shape for the teacher-approval callable
+// (teachersApproveVerification). Conforms to Data Model §3.1: the
+// activation-required fields are already present on the record (they were
+// written by teachersRequestVerification), so approval only advances
+// `status` from `pendingVerification` to `active` per the transition
+// table in PLATFORM_STATE_MACHINE.md §3. Custom claims are issued
+// alongside this write via the canonical claims helper.
+export type TeacherApprovalWrite = {
+  readonly status: "active";
+};
+
+// Write shape for the teacher-denial callable
+// (teachersDenyVerification). Conforms to Data Model §3.1: the target
+// returns to `provisioned` per the transition table in
+// PLATFORM_STATE_MACHINE.md §3, and the activation-required fields
+// (role, schoolId, displayName) that were recorded on the transition into
+// `pendingVerification` are cleared with the `FieldValue.delete()`
+// sentinel so the record matches the canonical `provisioned` shape.
+export type TeacherDenialWrite = {
+  readonly status: "provisioned";
+  readonly role: FieldValue;
+  readonly schoolId: FieldValue;
+  readonly displayName: FieldValue;
+};
+
 // Write shape for the student onboarding callable
 // (studentsCompleteOnboarding). Conforms to Data Model §3.1: the
 // activation-required fields (role, schoolId, displayName) become required

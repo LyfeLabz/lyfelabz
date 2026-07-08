@@ -31,6 +31,8 @@ export {
   type Role,
   type StudentActivationWrite,
   type StudentProfile,
+  type TeacherApprovalWrite,
+  type TeacherDenialWrite,
   type TeacherProfile,
   type TeacherVerificationRequestWrite,
   type UserProvisioningWrite,
