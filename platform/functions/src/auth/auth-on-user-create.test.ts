@@ -4,6 +4,7 @@ const mockCreate = jest.fn();
 const mockUserDocRef = jest.fn(() => ({ create: mockCreate }));
 const mockLogInfo = jest.fn();
 const mockLogError = jest.fn();
+const mockWriteAuditEvent = jest.fn();
 const mockCaptured: { handler?: (user: UserRecord) => Promise<void> } = {};
 
 jest.mock("firebase-admin/firestore", () => ({
@@ -31,6 +32,7 @@ jest.mock("../shared", () => {
     PlatformError,
     log: { info: mockLogInfo, error: mockLogError },
     userDocRef: mockUserDocRef,
+    writeAuditEvent: mockWriteAuditEvent,
   };
 });
 
@@ -61,6 +63,11 @@ describe("authOnUserCreate", () => {
     mockUserDocRef.mockClear();
     mockLogInfo.mockReset();
     mockLogError.mockReset();
+    mockWriteAuditEvent.mockReset();
+    mockWriteAuditEvent.mockResolvedValue({
+      eventId: "evt-provisioned-1",
+      record: {},
+    });
   });
 
   it("provisions users/{uid} with canonical fields and optional email + displayName", async () => {
@@ -147,5 +154,34 @@ describe("authOnUserCreate", () => {
       expect.objectContaining({ uid: "uid-abc", reason: "already-exists" }),
     );
     expect(mockLogError).not.toHaveBeenCalled();
+  });
+
+  it("happy path emits exactly one auth.userProvisioned audit event with actorRole 'system' and no schoolId", async () => {
+    mockCreate.mockResolvedValueOnce(undefined);
+
+    await invokeHandler(makeUser());
+
+    expect(mockWriteAuditEvent).toHaveBeenCalledTimes(1);
+    const event = mockWriteAuditEvent.mock.calls[0][0];
+    expect(event).toEqual({
+      actorUserId: "uid-abc",
+      actorRole: "system",
+      action: "auth.userProvisioned",
+      targetType: "user",
+      targetId: "uid-abc",
+    });
+    expect(Object.prototype.hasOwnProperty.call(event, "schoolId")).toBe(false);
+  });
+
+  it("idempotent-skip branch emits zero provisioning audit events", async () => {
+    const alreadyExists: Error & { code?: number } = new Error(
+      "6 ALREADY_EXISTS: Document already exists",
+    );
+    alreadyExists.code = 6;
+    mockCreate.mockRejectedValueOnce(alreadyExists);
+
+    await expect(invokeHandler(makeUser())).resolves.toBeUndefined();
+
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 });

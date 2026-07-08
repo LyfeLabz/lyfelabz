@@ -7,6 +7,7 @@ import {
   PlatformError,
   log,
   userDocRef,
+  writeAuditEvent,
   type UserProvisioningWrite,
 } from "../shared";
 
@@ -69,6 +70,12 @@ export const authOnUserCreate = auth.user().onCreate(async (user) => {
     await userDocRef(user.uid).create(buildPayload(user));
   } catch (err) {
     if (isAlreadyExistsError(err)) {
+      // Idempotent replay: a prior invocation already provisioned this
+      // user and already emitted the `auth.userProvisioned` audit event.
+      // Emitting the event here would violate the
+      // one-audit-event-per-state-transition invariant in
+      // PLATFORM_STATE_MACHINE.md §3, so this branch remains observability
+      // only.
       safeLog(() =>
         log.info("auth.userCreateSkipped", {
           uid: user.uid,
@@ -79,6 +86,32 @@ export const authOnUserCreate = auth.user().onCreate(async (user) => {
     }
     const cause = err instanceof Error ? err.name : "unknown";
     safeLog(() => log.error("auth.userCreateFailed", { uid: user.uid, cause }));
+    throw err;
+  }
+
+  // Canonical `auth.userProvisioned` audit event per Sprint 2 §4.5 and the
+  // transition table in PLATFORM_STATE_MACHINE.md §3. Emitted only after
+  // the users/{uid} create succeeds so the audit stream never records a
+  // transition that did not happen.
+  //
+  // System-authored per the amended Data Model §3.8: actorRole is `system`
+  // because no user actor initiated the transition, and schoolId is
+  // omitted because no school association exists at provisioning time.
+  // The subject of the event is the newly provisioned user, recorded as
+  // both actorUserId and targetId per §3.8.
+  try {
+    await writeAuditEvent({
+      actorUserId: user.uid,
+      actorRole: "system",
+      action: "auth.userProvisioned",
+      targetType: "user",
+      targetId: user.uid,
+    });
+  } catch (err) {
+    const cause = err instanceof Error ? err.name : "unknown";
+    safeLog(() =>
+      log.error("auth.userProvisionedAuditFailed", { uid: user.uid, cause }),
+    );
     throw err;
   }
 

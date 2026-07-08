@@ -82,7 +82,7 @@ Custom claims contain exactly `role` and `schoolId`. `districtId` is a documente
 
 Sprint 2 introduces the following audit `action` values. Every value follows the Engineering Standards §7 log-event convention: dotted, past-tense, domain-first. The domain prefix matches the Cloud Functions folder that owns the writer.
 
-- `auth.userProvisioned` - `authOnUserCreate` writes the provisioning record.
+- `auth.userProvisioned` - `authOnUserCreate` writes the provisioning record. This event is system-authored: `actorRole` is `system` and `schoolId` is absent because no school association exists at provisioning time. It is the sole Sprint 2 event that omits `schoolId`, per the conditional-requirement rule added to Data Model §3.8.
 - `auth.activationRejected` - onboarding callable rejects an activation attempt without mutating state.
 - `students.activated` - `studentsCompleteOnboarding` transitions the user to `active`.
 - `teachers.verificationRequested` - `teachersRequestVerification` transitions the user to `pendingVerification`.

@@ -209,6 +209,85 @@ describe("writeAuditEvent", () => {
     expect(mockAdd).not.toHaveBeenCalled();
   });
 
+  it("system-actor event: writes without schoolId when schoolId is omitted", async () => {
+    mockAdd.mockResolvedValueOnce({ id: "evt-sys-1" });
+
+    const result = await writeAuditEvent({
+      actorUserId: "uid-new",
+      actorRole: "system",
+      action: "auth.userProvisioned",
+      targetType: "user",
+      targetId: "uid-new",
+    });
+
+    expect(mockAdd).toHaveBeenCalledTimes(1);
+    const written = mockAdd.mock.calls[0][0];
+    expect(written).toEqual({
+      actorUserId: "uid-new",
+      actorRole: "system",
+      action: "auth.userProvisioned",
+      targetType: "user",
+      targetId: "uid-new",
+      occurredAt: SERVER_TIMESTAMP_SENTINEL,
+    });
+    expect(Object.prototype.hasOwnProperty.call(written, "schoolId")).toBe(false);
+    expect(result.record).not.toHaveProperty("schoolId");
+  });
+
+  it("system-actor event: rejects an empty-string schoolId if explicitly supplied", async () => {
+    await expect(
+      writeAuditEvent({
+        actorUserId: "uid-new",
+        actorRole: "system",
+        action: "auth.userProvisioned",
+        targetType: "user",
+        targetId: "uid-new",
+        schoolId: "",
+      }),
+    ).rejects.toMatchObject({ code: "audit.invalidSchoolId" });
+
+    await expect(
+      writeAuditEvent({
+        actorUserId: "uid-new",
+        actorRole: "system",
+        action: "auth.userProvisioned",
+        targetType: "user",
+        targetId: "uid-new",
+        schoolId: "   ",
+      }),
+    ).rejects.toMatchObject({ code: "audit.invalidSchoolId" });
+
+    expect(mockAdd).not.toHaveBeenCalled();
+  });
+
+  it("system-actor event: preserves schoolId when a resolvable school is supplied", async () => {
+    mockAdd.mockResolvedValueOnce({ id: "evt-sys-2" });
+
+    await writeAuditEvent({
+      actorUserId: "uid-new",
+      actorRole: "system",
+      action: "auth.userProvisioned",
+      targetType: "user",
+      targetId: "uid-new",
+      schoolId: "school-123",
+    });
+
+    expect(mockAdd.mock.calls[0][0].schoolId).toBe("school-123");
+  });
+
+  it("user-actor event: still requires schoolId when schoolId is omitted entirely", async () => {
+    await expect(
+      writeAuditEvent({
+        actorUserId: "user-abc",
+        actorRole: "student",
+        action: "students.activated",
+        targetType: "user",
+        targetId: "user-abc",
+      }),
+    ).rejects.toMatchObject({ code: "audit.invalidSchoolId" });
+    expect(mockAdd).not.toHaveBeenCalled();
+  });
+
   it("wraps a downstream Firestore failure as audit.writeFailed and preserves the cause", async () => {
     const downstream = new Error("firestore unavailable");
     mockAdd.mockRejectedValueOnce(downstream);

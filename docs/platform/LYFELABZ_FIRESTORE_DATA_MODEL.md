@@ -376,15 +376,23 @@ Lifecycle: `submitted` → `finalized` within the finalization transaction. Rete
 
 Purpose: The single append-only event log for the platform. This Firestore collection **is** the authoritative audit sink referenced in PDR-013. It is made append-only by Security Rules that permit `create` from trusted server context only and forbid `update` and `delete` for every role, including Platform Administrator. Retention export to cold storage is a mirror for retention, not a second authoritative sink.
 
-Required fields:
+Audit events have a two-stage field-requirement contract that reflects the actor context of the event:
 
-- actorUserId: Who performed the action.
-- actorRole: Role at the time of the action, because a user's role may change later.
+- User-actor events are written in response to an authenticated caller's action. Every user-actor event carries a resolvable `schoolId`.
+- System-actor events are written by triggers, scheduled jobs, or other trusted-server contexts where no user actor initiated the action. A system-actor event may pre-date the target's school association, in which case `schoolId` is absent from the record.
+
+Required fields (all events):
+
+- actorUserId: Who performed the action. For system-actor events, this is the subject of the event (for example, the newly provisioned user's uid).
+- actorRole: Role at the time of the action, because a user's role may change later. Permitted values are the canonical `Role` enumeration (`teacher`, `student`, `platformAdministrator`) or the sentinel `system` for trusted-server contexts where no user actor initiated the action.
 - action: A short verb such as class.created, assignment.published, submission.finalized.
 - targetType: The kind of object acted upon.
 - targetId: The document ID of the object acted upon.
-- schoolId: For administrative scoping.
 - occurredAt: Timestamp.
+
+Conditionally required field:
+
+- schoolId: For administrative scoping. Required for every user-actor event. Required for every system-actor event that has a resolvable school association at write time. Absent only when no school association exists at write time, as with `auth.userProvisioned`, which fires before the user has selected or been assigned to a school. An empty-string `schoolId` is never permitted.
 
 Optional fields:
 

@@ -3,6 +3,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { PlatformError } from "../errors/platform-error";
 import { auditEventsCollectionRef } from "../firestore/typed-ref";
 import type {
+  ActorRole,
   AuditAction,
   AuditEventWrite,
   AuditPayload,
@@ -19,11 +20,11 @@ import type { Role } from "../types/user";
 // evidentiary-value guarantee stated in Cloud Function Charter §2.
 export type WriteAuditEventInput = {
   readonly actorUserId: string;
-  readonly actorRole: Role;
+  readonly actorRole: ActorRole;
   readonly action: AuditAction;
   readonly targetType: AuditTargetType;
   readonly targetId: string;
-  readonly schoolId: string;
+  readonly schoolId?: string;
   readonly payload?: AuditPayload;
   readonly correlationId?: string;
 };
@@ -43,6 +44,12 @@ const VALID_ROLES: readonly Role[] = [
   "platformAdministrator",
 ];
 
+// Canonical actor roles accepted by the audit writer per Data Model §3.8.
+// Adds the `system` sentinel used by triggers and other trusted-server
+// contexts. The domain `Role` union is unchanged, so no user-record shape
+// or custom-claims path can accidentally acquire the sentinel.
+const VALID_ACTOR_ROLES: readonly ActorRole[] = [...VALID_ROLES, "system"];
+
 const VALID_ACTIONS: readonly AuditAction[] = [
   "auth.userProvisioned",
   "auth.activationRejected",
@@ -56,9 +63,10 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function isValidRole(value: unknown): value is Role {
+function isValidActorRole(value: unknown): value is ActorRole {
   return (
-    typeof value === "string" && (VALID_ROLES as readonly string[]).includes(value)
+    typeof value === "string" &&
+    (VALID_ACTOR_ROLES as readonly string[]).includes(value)
   );
 }
 
@@ -97,10 +105,10 @@ export async function writeAuditEvent(
       "actorUserId must be a non-empty string.",
     );
   }
-  if (!isValidRole(input.actorRole)) {
+  if (!isValidActorRole(input.actorRole)) {
     throw new PlatformError(
       "audit.invalidActorRole",
-      `actorRole must be one of: ${VALID_ROLES.join(", ")}.`,
+      `actorRole must be one of: ${VALID_ACTOR_ROLES.join(", ")}.`,
     );
   }
   if (!isValidAction(input.action)) {
@@ -121,10 +129,23 @@ export async function writeAuditEvent(
       "targetId must be a non-empty string.",
     );
   }
-  if (!isNonEmptyString(input.schoolId)) {
+  // schoolId is conditionally required per Data Model §3.8:
+  //   - User-actor events must carry a non-empty schoolId.
+  //   - System-actor events may omit schoolId when no school association
+  //     exists at write time (e.g. `auth.userProvisioned`). If the caller
+  //     does supply a schoolId for a system-actor event, it must still be
+  //     a non-empty string; empty-string is never a permitted value.
+  if (input.actorRole === "system") {
+    if (input.schoolId !== undefined && !isNonEmptyString(input.schoolId)) {
+      throw new PlatformError(
+        "audit.invalidSchoolId",
+        "schoolId, when supplied, must be a non-empty string.",
+      );
+    }
+  } else if (!isNonEmptyString(input.schoolId)) {
     throw new PlatformError(
       "audit.invalidSchoolId",
-      "schoolId must be a non-empty string.",
+      "schoolId must be a non-empty string for user-actor events.",
     );
   }
   if (input.correlationId !== undefined && !isNonEmptyString(input.correlationId)) {
@@ -149,7 +170,7 @@ export async function writeAuditEvent(
     action: input.action,
     targetType: input.targetType,
     targetId: input.targetId,
-    schoolId: input.schoolId,
+    ...(input.schoolId !== undefined ? { schoolId: input.schoolId } : {}),
     ...(input.payload !== undefined ? { payload: input.payload } : {}),
     ...(input.correlationId !== undefined
       ? { correlationId: input.correlationId }

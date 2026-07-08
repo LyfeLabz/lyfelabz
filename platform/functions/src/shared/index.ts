@@ -18,6 +18,7 @@ export {
 export { log, type LogPayload } from "./logging/logger";
 export {
   AUDIT_EVENTS_COLLECTION,
+  type ActorRole,
   type AuditAction,
   type AuditEventRecord,
   type AuditEventWrite,
