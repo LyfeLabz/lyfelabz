@@ -87,4 +87,108 @@ Subsequent sprints inherit and depend on:
 
 ---
 
+## Sprint 2: Onboarding and Teacher Verification
+
+**Dates:** 2026-07-08
+**Status:** Complete, pending engineering review
+**Detailed report:** SPRINT_2_COMPLETION_REPORT.md
+
+### Objective
+
+Turn the Sprint 1 `users/{uid}` provisioning record into a fully activated identity for both students and teachers, through a documented onboarding flow, a teacher verification workflow, and the first narrowly-scoped Firestore Rules over the default-deny baseline. Emulator-only.
+
+### Scope
+
+- Canonical `UserRecord` shape aligned with the amended Data Model §3.1, plus transition-specific write shapes.
+- Canonical `SchoolRecord` shape and typed reference.
+- Canonical `writeCustomClaims` helper, enforcing the `{ role, schoolId }` shape and the active-only invariant.
+- Canonical `writeAuditEvent` helper, enforcing the Sprint 2 audit vocabulary and the server-time invariant.
+- `studentsCompleteOnboarding` callable, transitioning `provisioned` to `active` for students.
+- `teachersRequestVerification` callable, transitioning `provisioned` to `pendingVerification` for teachers.
+- `teachersApproveVerification` callable, transitioning `pendingVerification` to `active`, gated on `platformAdministrator`.
+- `teachersDenyVerification` callable, transitioning `pendingVerification` back to `provisioned`, gated on `platformAdministrator`.
+- Extension of `authOnUserCreate` to the amended Data Model §3.1, including `authUid` rename, `status: "provisioned"` at create, and the `auth.userProvisioned` audit event.
+- First affirmative Firestore Rules for `users/{uid}` (self get, self update of `displayName` only), `schools/{schoolId}` (authenticated get, no writes), and `auditEvents/{eventId}` (explicit server-only).
+- Rules tests and unit tests for every rule and function introduced.
+
+### Commits
+
+- `2d4e97b` Implement canonical user record shape and function tests
+- `efb354a` Add canonical school shared types
+- `3fa3bcb` Add canonical custom claims helper
+- `8b488c9` Add canonical audit event helper
+- `164cb25` Add student onboarding callable
+- `705129e` Add teacher verification request callable
+- `4766d56` Add first affirmative Firestore rules
+- `d19011e` Add teacher verification approval callables
+- `6cc1697` Add system audit event support for provisioning
+
+### Important engineering decisions
+
+- The `users/{uid}` document is the single canonical user record from provisioning onward. Additive writes grow the record through the lifecycle.
+- The account lifecycle is defined in exactly one place: `PLATFORM_STATE_MACHINE.md`. No second lifecycle field is permitted on any document.
+- Custom claims contain exactly `{ role, schoolId }`. `districtId` remains a documented reserved slot for the PDR-015 expansion path.
+- Every audit write and every claims write flows through exactly one helper. No callable reaches Firestore or Auth outside typed refs and canonical helpers.
+- Every callable orders side effects: user record update, then claims (when applicable), then audit event. Failures short-circuit before the next side effect.
+- Every callable is idempotent. Replays of a completed transition return `alreadyActive` / `alreadyPending` / `alreadyProvisioned` and perform no writes.
+- Firestore Rules are strictly additive to the default-deny baseline. Every new self-mutable field is a repository-level decision paired with a rules test.
+- The provisioning trigger remains universal. Personal-account rejection is scoped to onboarding callables via the `auth.activationRejected` vocabulary.
+
+### Verification performed
+
+- `platform/functions` builds, typechecks, and lints cleanly.
+- 106 Cloud Function unit tests pass across 8 suites.
+- 28 Firestore Rules tests pass across 4 suites, driven by the Firestore emulator.
+- The lifecycle pipeline (provisioned to active for students; provisioned to pendingVerification to active or provisioned for teachers) is exercised by unit and rules tests; every transition, audit event, claim, idempotency branch, and security boundary is asserted.
+- CI (`platform-ci.yml`) remained green throughout the sprint.
+
+### Lessons learned
+
+- Naming the audit vocabulary as a closed TypeScript union up front made every downstream helper trivially safe. Callers cannot introduce a new action without touching the shared type.
+- Separating read shape (`UserRecord`) from write shape per transition (`StudentActivationWrite`, `TeacherDenialWrite`, ...) made the `FieldValue.delete()` sentinel a first-class citizen without polluting the read type.
+- Explicit `alreadyX` short-circuits at the top of every callable made idempotency provable rather than emergent.
+- The `safeLog` wrapper established in Sprint 1 continued to pay off. Logger failures never became lifecycle failures.
+- Writing the amended Data Model §3.1, §3.8 and the amended Cloud Function Charter §2 before implementing the helpers meant every downstream decision had a written rule to appeal to.
+
+### Engineering improvements
+
+- Added `shared/auth/admin.ts` as the single admin-SDK auth accessor, mirroring the `shared/firestore/admin.ts` pattern.
+- Added typed-ref builders for `schools` and `auditEvents` so no Cloud Function reaches those collections through a string path.
+- Introduced `ActorRole = Role | "system"` so triggers and callables share one audit vocabulary without leaking the `system` sentinel into user records or claims.
+- Introduced a conditional-`schoolId` rule on the audit writer so the `auth.userProvisioned` event can legitimately omit `schoolId` while every user-actor event still requires it.
+
+### Cumulative test counts
+
+| Sprint | Rules tests | Function unit tests | Total |
+|---|---|---|---|
+| Sprint 1 | 4 (default-deny only) | (trigger covered by rules + emulator) | 4 |
+| Sprint 2 | 28 | 106 | 134 |
+| Cumulative (current) | 28 | 106 | **134** |
+
+Sprint 1 rules tests are preserved as `default-deny.rules.test.ts` and are included in the current 28-test total.
+
+### Future dependencies created
+
+Subsequent sprints inherit and depend on:
+
+- The canonical `UserRecord`, `SchoolRecord`, `AuditEventRecord` shapes.
+- The canonical `writeCustomClaims` and `writeAuditEvent` helpers as the sole write paths.
+- The `AuditAction` vocabulary and the `Role` / `UserStatus` unions.
+- The first affirmative Firestore Rules and the self-update allowlist convention.
+- The five-function callable surface: provisioning trigger plus student, teacher-request, admin-approve, admin-deny.
+- The Sprint 2 side-effect ordering: user record, then claims (when applicable), then audit event.
+
+### Repository state at sprint close
+
+- The instructional repository remains untouched throughout Sprint 2.
+- `platform/functions/` carries the five-function callable surface, the canonical shared helpers, and 106 unit tests.
+- `platform/firebase/firestore.rules` carries the first affirmative rules over default-deny, backed by 28 rules tests.
+- `docs/platform/` carries the Sprint 2 specification, the Platform State Machine, the Sprint 2 preview, the Sprint 2 completion report, and this history append.
+
+### Completed milestone
+
+**Identity trust layer established.** The full onboarding lifecycle - provisioning, student activation, teacher verification request, administrative approval, administrative denial - is implemented, tested, and internally consistent with the amended architecture. Sprint 3 may begin the client-facing onboarding surface.
+
+---
+
 <!-- Append future sprints below this line using the same section structure. -->
