@@ -852,6 +852,63 @@ Provided these companion artifacts are produced alongside the first implementati
 
 ---
 
+# 16. Authenticated Teacher Platform Boundary
+
+This section describes the security posture of the Authenticated Teacher Platform introduced by Sprint 3. It is architectural and behavioral only. It does not introduce a new trust boundary, a new claim, a new lifecycle state, or a new Firestore collection. It refers to concepts defined in Section 3 (Trust Boundaries), Section 9 (Authentication vs Authorization), `PLATFORM_STATE_MACHINE.md`, and `LYFELABZ_PLATFORM_ARCHITECTURE.md` §16.
+
+## 16.1 Canonical Session Bootstrap
+
+Every authenticated LyfeLabz surface initializes its session through exactly one canonical bootstrap. The bootstrap is defined architecturally in `LYFELABZ_PLATFORM_ARCHITECTURE.md` §16.2. From a security perspective, the following invariants hold:
+
+- The bootstrap consumes Firebase Authentication, custom claims, and the Firestore user record in that order. Each is treated as observational; the bootstrap performs no writes.
+- The bootstrap forces an ID token refresh before reading claims, closing the narrow window in which an administrative approval has issued fresh claims that a stale token has not yet reflected.
+- The bootstrap performs exactly one client-initiated read of `users/{callerUid}` and at most one client-initiated read of `schools/{schoolId}`. Both are already permitted by the affirmative Sprint 2 Firestore Rules. No `list` operation, no cross-user read, and no `auditEvents` read is performed by the client.
+- On any disagreement between custom claims and the Firestore user record, the Firestore record is authoritative for `status`, `role`, and `schoolId`. This mirrors the principle in `PLATFORM_STATE_MACHINE.md` §4 that current account state comes from Firestore.
+
+Client-side gating derived from the bootstrap exists for user experience only. Enforcement remains the exclusive responsibility of Firestore Security Rules and Cloud Functions, per Section 1.4 (Defense in Depth). A caller who circumvents the client bootstrap gains no additional authorization; the server-side layers refuse the request regardless.
+
+## 16.2 Protected Teacher Route Authorization
+
+A protected teacher route is any client path whose contents are visible only to an active teacher. The client renders a protected teacher route only when *all* of the following are true, evaluated against the Canonical Session Object:
+
+- The caller is authenticated.
+- The caller possesses the teacher custom claim (`role === "teacher"`).
+- The caller possesses a valid, non-empty `schoolId` claim.
+- The caller has a valid Firestore user record readable under the Sprint 2 self-get rule.
+- The user record's `status` is `active`.
+- The user record's `role` is `teacher`.
+- The user record's `schoolId` matches the `schoolId` on the claim.
+
+These conditions describe client-side gating. They do not replace, weaken, or duplicate the rule and function layers. Every server-side decision continues to derive from the canonical `{ role, schoolId }` claim shape and the affirmative Sprint 2 Firestore Rules.
+
+## 16.3 Authentication Failure State Behavior
+
+The following behavioral descriptions define how the Authenticated Teacher Platform responds when a caller fails the protected-teacher-route conditions. Each name refers to an existing artifact defined by `PLATFORM_STATE_MACHINE.md` §1 or by the Sprint 2 audit vocabulary. Sprint 3 introduces no new lifecycle state.
+
+- **Signed out.** The caller has no Firebase Authentication session. Behavior: the client refuses every protected route and routes to the sign-in surface. No Firestore read is attempted.
+- **Provisioned.** `users/{uid}.status === "provisioned"`. Behavior: the client refuses every protected route and routes to the onboarding surface, from which the Sprint 2 onboarding callables may be invoked.
+- **Pending verification.** `users/{uid}.status === "pendingVerification"`. Behavior: the client refuses every protected route and routes to a pending surface. The pending surface performs no polling and no write.
+- **Rejected teacher activation.** The caller invoked a Sprint 2 onboarding callable and the callable emitted `auth.activationRejected`. The user record remains in `provisioned`. Behavior: the client surfaces a plain-language rejection message. The lifecycle field is not mutated; the rejection is recorded only in the audit stream.
+- **Suspended.** `users/{uid}.status === "suspended"`. Behavior: the client refuses every protected route and displays a plain-language message. `suspended` remains a reserved state; Sprint 3 introduces no transition into or out of it.
+- **Archived.** `users/{uid}.status === "archived"`. Behavior: the client refuses every protected route and displays a plain-language message. `archived` remains a reserved state; Sprint 3 introduces no transition into or out of it.
+
+In every failure state the client performs no write, initiates no lifecycle transition, and issues no request that would broaden the caller's authorization. Every lifecycle transition remains the exclusive responsibility of the five Sprint 2 callables.
+
+## 16.4 Constraints Preserved
+
+Sprint 3 preserves every Sprint 2 architectural decision. In particular:
+
+- `status` remains the sole lifecycle field.
+- Custom claims remain exactly `{ role, schoolId }`. `districtId` is not introduced.
+- No new Firestore collection is introduced. No new field is introduced on `users/{uid}`, `schools/{schoolId}`, or `auditEvents/{eventId}`.
+- No new affirmative Firestore Rule is introduced beyond the Sprint 2 baseline. The client bootstrap operates entirely inside that baseline.
+- No new Cloud Function is introduced. The callable surface remains the five functions delivered in Sprint 2.
+- No classroom, enrollment, join-code, assignment, submission, analytics, gradebook, or administrator UI surface is introduced.
+
+Any Sprint 3 pull request that expands the authorization surface beyond what is described here is out of scope and is a defect against this section.
+
+---
+
 ## Governance
 
 This document is canonical. It does not change through incidental edits. Modifications require an explicit architectural review, a stated reason, and an updated readiness assessment. Every future Firebase Security Rule, Cloud Function, dashboard, and API must conform to this model. Where a proposed implementation cannot conform, this document is revised first, and the implementation follows.

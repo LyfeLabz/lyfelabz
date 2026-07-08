@@ -493,3 +493,112 @@ These questions do not have provisional answers. Each requires a deliberate deci
 - What is the review cadence to ensure this document remains accurate as the platform evolves?
 
 Answering these questions is the prerequisite for Firebase implementation. Until each has a recorded decision, this document is the operative reference and no production code should be written against assumptions that contradict it.
+
+---
+
+## 16. Authenticated Teacher Platform Foundation
+
+This section documents the architectural concepts introduced by Sprint 3. It is conceptual only. It does not authorize or specify implementation. Any code, rules, or configuration described here follows this section, not the reverse. Every concept in this section is subordinate to the Sprint 2 identity trust layer and to `PLATFORM_STATE_MACHINE.md`.
+
+### 16.1 Authenticated Teacher Platform
+
+The Authenticated Teacher Platform is the first authenticated surface built on top of the Sprint 2 identity trust layer. It is a protected teacher-only platform whose sole purpose is to serve as the authenticated entry point for future teacher tools. It is not a dashboard. It is not a gradebook. It is not a classroom management console. It carries no teacher features of its own.
+
+**Authentication prerequisites.** Access to the Authenticated Teacher Platform depends entirely on artifacts produced by Sprint 2. No new authentication concept, no new claim, and no new lifecycle state is introduced. Specifically, a caller may enter the platform only when the Sprint 2 provisioning trigger has run, the Sprint 2 onboarding callable has moved the caller into `pendingVerification`, and the Sprint 2 administrative approval callable has issued the canonical `{ role, schoolId }` custom claims and advanced `status` to `active`.
+
+**Relationship to the identity trust layer.** The Authenticated Teacher Platform is a pure consumer of the identity trust layer. It observes `users/{uid}`, it observes custom claims, and it observes the caller's Firebase Authentication session. It never mutates any of them. Every lifecycle transition continues to flow through the five Sprint 2 callables, and no client action bypasses that path.
+
+### 16.2 Canonical Session Bootstrap
+
+Every authenticated LyfeLabz surface uses the same canonical session initialization process. There is exactly one session bootstrap for the entire platform. Divergent bootstraps are prohibited.
+
+The canonical sequence is:
+
+```
+Firebase Authentication
+      ↓
+Custom Claims
+      ↓
+Firestore User Record
+      ↓
+Authorization Validation
+      ↓
+School Context
+      ↓
+Canonical Session Object
+```
+
+Each step consumes the output of the step before it. Each step is observational; no step mutates any Sprint 2 artifact.
+
+- **Firebase Authentication.** The bootstrap begins only after Firebase Authentication resolves a definitive signed-in or signed-out result. Unresolved auth state is never treated as authenticated.
+- **Custom Claims.** The bootstrap reads the caller's ID token claims exactly once per session, after a forced refresh that guarantees the token reflects any claims a Cloud Function has recently written. Only the canonical `{ role, schoolId }` shape is consumed.
+- **Firestore User Record.** The bootstrap performs exactly one self-read of `users/{callerUid}` under the caller's own credentials, permitted by the Sprint 2 self-get rule. This read is the authoritative source for `status`, and it is cross-checked against the claims for `role` and `schoolId`. The Firestore record wins on disagreement, per `PLATFORM_STATE_MACHINE.md` §4.
+- **Authorization Validation.** The bootstrap computes the caller's authorization posture from the joined view of claims and the user record. Authorization is derived, never inferred from URL, local storage, or client-side heuristics.
+- **School Context.** When a valid `schoolId` is present, the bootstrap reads `schools/{schoolId}` under the caller's own credentials, permitted by the Sprint 2 authenticated-get rule. This produces the school-context view used for display in the platform shell.
+- **Canonical Session Object.** The bootstrap produces exactly one immutable object that every subsequent page and component consumes.
+
+**One canonical session per surface.** Every future teacher-facing page consumes this single canonical session object rather than performing independent Firebase Authentication, ID token, custom claims, or Firestore lookups. A page that reaches around the canonical session to re-derive identity, role, status, schoolId, or school context is a defect.
+
+### 16.3 Teacher Platform Shell
+
+The Teacher Platform Shell is the minimal authenticated surface that renders when the caller passes the active teacher gate. It exists to prove that the Sprint 2 identity trust layer produces a durable, observable session end-to-end from a real browser.
+
+The shell is not a dashboard. It carries no analytics, no classroom list, no assignment list, no roster view, and no gradebook. It renders the caller's `displayName`, the caller's school context, and a sign-out control. Every teacher feature added in later sprints mounts inside this shell; the shell itself remains minimal.
+
+The shell is the authenticated entry point for future teacher tools. It is not the destination.
+
+### 16.4 Protected Teacher Routes
+
+A protected teacher route is any client path whose contents are visible only to an active teacher. A caller may enter a protected teacher route only when *all* of the following are true:
+
+- The caller is authenticated.
+- The caller possesses teacher custom claims (`role === "teacher"`).
+- The caller possesses a valid, non-empty `schoolId` claim.
+- The caller has a valid Firestore user record readable under the Sprint 2 self-get rule.
+- The user record's `status` is `active`.
+
+The gate evaluates against the Canonical Session Object produced in §16.2. Every failure routes the caller to the appropriate failure surface described in §16.5. Client-side gating is UX only; the security enforcement layer remains Firestore Rules and Cloud Functions, as defined by the Firebase Security Model.
+
+### 16.5 Authentication Failure States
+
+The following behavioral descriptions define how the platform responds when the caller does not satisfy the protected-teacher-route conditions. These are behavioral descriptions only. No new lifecycle state, no new claim, and no new field is introduced. Every state name below refers to an existing artifact defined by `PLATFORM_STATE_MACHINE.md` or by the Sprint 2 audit vocabulary.
+
+- **Signed out.** The caller has no authenticated Firebase session. Behavior: the platform routes to the sign-in surface. No Firestore read is performed.
+- **Provisioned.** The caller is authenticated and `users/{uid}.status === "provisioned"`. Behavior: the platform routes to the onboarding surface where the caller may declare a role via the Sprint 2 onboarding callables.
+- **Pending verification.** The caller is authenticated and `users/{uid}.status === "pendingVerification"`. Behavior: the platform routes to the pending surface. No teacher route is rendered. No polling or write is performed by the client.
+- **Rejected teacher activation.** The caller attempted teacher activation and the Sprint 2 vocabulary recorded `auth.activationRejected`. The user record remains in `provisioned`. Behavior: the platform surfaces a plain-language rejection message and routes back to the sign-in or onboarding surface. No lifecycle field is set; the rejection lives only in the audit stream.
+- **Suspended.** The caller is authenticated and `users/{uid}.status === "suspended"`. Behavior: the platform refuses every protected route and displays a plain-language, non-technical message. `suspended` remains a reserved state per `PLATFORM_STATE_MACHINE.md` §3; Sprint 3 introduces no transition into or out of it.
+- **Archived.** The caller is authenticated and `users/{uid}.status === "archived"`. Behavior: the platform refuses every protected route and displays a plain-language, non-technical message. `archived` remains a reserved state per `PLATFORM_STATE_MACHINE.md` §3; Sprint 3 introduces no transition into or out of it.
+
+In every failure state, the client performs no write. Every lifecycle transition remains the exclusive responsibility of the five Sprint 2 callables.
+
+### 16.6 Architecture Constraints
+
+Sprint 3 documents the Authenticated Teacher Platform Foundation and nothing further. The following capabilities are explicitly *not* introduced by Sprint 3 and remain the domain of later sprints, each preceded by its own architectural review:
+
+- Classrooms
+- Enrollments
+- Join codes
+- Assignments
+- Submissions
+- Analytics
+- Gradebooks
+- Administrator UI
+
+No collection, no field, no claim, no lifecycle state, and no Cloud Function related to the capabilities above is introduced by Sprint 3. Any of the above appearing in a Sprint 3 pull request is a defect.
+
+### 16.7 Canonical Session Object
+
+The Canonical Session Object is the single architectural contract that every authenticated LyfeLabz surface consumes. It is produced exclusively by the Canonical Session Bootstrap (§16.2) and is never assembled ad hoc by an individual page.
+
+Conceptually, the Canonical Session Object exposes:
+
+- The authenticated user (the Firebase Authentication identity and the resolved `users/{uid}` reference).
+- The caller's `role`, as observed on the Firestore user record and cross-checked against custom claims.
+- The caller's `status`, as observed on the Firestore user record.
+- The caller's `schoolId`, as observed on the Firestore user record and cross-checked against custom claims.
+- The caller's derived permissions, expressed as an authorization posture derived from the above; not a new claim, not a new field, and not a broadening of the canonical `{ role, schoolId }` claim shape.
+
+This section defines an architectural contract only. It does not define implementation types, module boundaries, or serialization shapes. Those artifacts are downstream of this contract and are produced when Sprint 3 implementation begins.
+
+The Canonical Session Object is immutable for the duration of a session. Any change to the caller's underlying `role`, `status`, or `schoolId` requires a fresh session bootstrap; there is no in-place mutation path.
