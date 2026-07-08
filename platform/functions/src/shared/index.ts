@@ -1,6 +1,7 @@
 export { PlatformError } from "./errors/platform-error";
-export { userDocRef } from "./firestore/typed-ref";
+export { schoolDocRef, userDocRef } from "./firestore/typed-ref";
 export { log, type LogPayload } from "./logging/logger";
+export { SCHOOLS_COLLECTION, type SchoolRecord } from "./types/school";
 export {
   USERS_COLLECTION,
   type ConsentState,
