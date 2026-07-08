@@ -1,0 +1,16 @@
+rules_version = '2';
+
+// LyfeLabz Cloud Storage Security Rules
+// Sprint 1: strict default-deny baseline.
+// Storage is initialized so future sprints can open specific paths under
+// their own rules and tests. Sprint 1 grants no read or write access to
+// any actor. Admin SDK (server-side) bypasses these rules; every client
+// path is closed.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
