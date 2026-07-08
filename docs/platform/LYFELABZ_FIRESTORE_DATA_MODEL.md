@@ -10,7 +10,7 @@ This document assumes the reader is already familiar with:
 
 - LYFELABZ_PLATFORM_DOMAIN_MODEL.md
 - LYFELABZ_PLATFORM_ARCHITECTURE.md
-- LYFELABZ_TECHNICAL_CERTIFICATION_V1.md
+- LYFELABZ_PLATFORM_ARCHITECTURE_CERTIFICATION.md
 
 ---
 
@@ -20,7 +20,7 @@ The following principles guide every decision in this document. Where later sect
 
 ### 1.1 Single Source of Truth
 
-Every fact about the platform lives in exactly one authoritative location. A student's name lives on the student record. An assignment's due date lives on the assignment. When another document needs that fact, it references the source rather than copying it.
+Every fact about the platform lives in exactly one authoritative location. A student's name lives on the student record. An assignment's window-close timestamp lives on the assignment. When another document needs that fact, it references the source rather than copying it.
 
 Copies are permitted only as deliberate performance denormalizations, and every such copy must be labeled as derived data with a clear rebuild path.
 
@@ -72,7 +72,9 @@ Purpose: Canonical identity for every human that authenticates against the platf
 
 Why it exists: Firebase Authentication provides an identity token, but the platform needs a domain record for each person that carries role, profile, and consent state. Splitting identity (Auth) from profile (Firestore) is the standard Firebase pattern and keeps auth concerns separate from domain concerns.
 
-What belongs here: One document per authenticated human. Roles include teacher, student, and administrator. Future roles (parent, district admin) fit here without new collections.
+What belongs here: One document per authenticated human. Roles include `teacher`, `student`, and `platformAdministrator`. Future roles (`parent`, `schoolAdministrator`, `districtAdministrator`) fit here without new collections.
+
+**Terminology note.** The word "assignment" in this document is the neutral internal schema term for the pointer record described by PDR-010 (Curation). It is used at the schema and query layer only. User-facing surfaces (teacher UI, student UI, notifications) never render the words "assigned," "due," "late," "overdue," or "graded" to students or teachers. This distinction is normative across every document in this corpus.
 
 Why top level: Users cross classroom and school boundaries. A student may move schools. A teacher may teach in multiple classes. Nesting users under any parent collection would create migration pain the moment that assumption breaks.
 
@@ -118,11 +120,11 @@ Why top level: Lessons are referenced by every assignment and submission, and ar
 
 ### 2.6 assignments
 
-Purpose: A teacher's instantiation of a lesson for a specific class.
+Purpose: A teacher's curation of a lesson for a specific class. "Assignment" is the schema term for the pointer record described by PDR-010; the user-facing vocabulary is always "curation."
 
-Why it exists: The same lesson may be assigned by many teachers with different due dates, instructions, and configurations. The assignment is where instructional intent meets classroom context.
+Why it exists: The same lesson may be surfaced by many teachers with different windows, instructions, and configurations. The assignment record is where instructional intent meets classroom context.
 
-What belongs here: One document per assignment. References one class, one lesson version, and one teacher. Carries due date, mode (practice, graded), and optional instructions.
+What belongs here: One document per assignment record. References one class, one lesson version, and one teacher. Carries an optional window-close timestamp, mode (`practice` or `classroom`), and optional instructions.
 
 Why top level: Assignments are queried per class, per teacher, per lesson, and (for administrative views) per school. Top level with indexed fields supports all four without duplication.
 
@@ -178,7 +180,7 @@ Purpose: The domain record for a person who signs in.
 Required fields:
 
 - authUid: The Firebase Auth UID. Required because it is the join key between the identity token and the domain record.
-- role: One of teacher, student, administrator. Required because every security rule branches on role.
+- role: One of `teacher`, `student`, `platformAdministrator`. Required because every security rule branches on role. Reserved future values: `parent`, `schoolAdministrator`, `districtAdministrator`.
 - displayName: Shown throughout the UI. Required because anonymous participation is not supported.
 - schoolId: Reference to the school this user belongs to. Required because every access decision starts from school membership.
 - createdAt: Timestamp of first provisioning. Required for auditing.
@@ -257,7 +259,7 @@ Required fields:
 - studentId: Reference to the student user.
 - classId: Reference to the class.
 - schoolId: Denormalized from the class for authorization. This is one of the very few permitted denormalizations, and it is justified because every security rule for enrollments must be able to test school membership without a second read.
-- status: active, transferred, withdrawn.
+- status: `active`, `transferred`, `withdrawn`, `archived`. `archived` is the terminal state applied when the enrolling class is archived; it preserves history without implying an ongoing relationship.
 - enrolledAt: Timestamp of enrollment.
 
 Optional fields:
@@ -308,24 +310,23 @@ Required fields:
 - teacherId: Reference to the assigning teacher. Denormalized from the class for authorization efficiency.
 - schoolId: Denormalized from the class for administrative queries.
 - lessonSlug: The lesson slug being assigned.
-- lessonVersion: The specific version being assigned. Freezing the version at assignment time protects students from mid-assignment content changes.
-- mode: practice or graded. Aligns with the existing quiz-flow standard.
-- status: draft, published, closed.
+- lessonVersion: The specific version being surfaced. Freezing the version at record creation protects students from mid-window content changes.
+- mode: `practice` or `classroom`. Aligns with the Practice Mode and Classroom Mode terminology already documented in CLAUDE.md. There is no `graded` mode.
+- status: `draft`, `published`, `closed`, `archived`. `archived` is the terminal state that removes the record from active teacher views while preserving history so past submissions remain resolvable.
 - createdAt: For auditing.
 
 Optional fields:
 
 - title: A teacher-provided title. Optional because the lesson title is the default.
 - instructions: A short teacher note shown above the lesson.
-- dueAt: Optional. Practice assignments often have no due date.
-- availableAt: Optional. If present, the assignment is hidden from students until this time.
-- allowLateSubmissions: Optional flag. Default is inferred from mode.
+- windowClosesAt: Optional. When present, defines the moment after which the record leaves active student views. This is not a due date; the platform does not render "due," "late," or "overdue" language to students or teachers, and finalization is not blocked by the window closing. See PDR-010.
+- availableAt: Optional. If present, the record is hidden from students until this time.
 
 Relationships: References one class, one teacher, one school, and one lesson version. Has many submissions.
 
 Ownership: Created by the owning teacher. Updated by the owning teacher until closed. Never updated by students or by other teachers.
 
-Lifecycle: Draft, published to students, closed at end of window, retained indefinitely so submissions resolve.
+Lifecycle: Draft, published to students, closed at end of window, archived when the class is archived. Records are retained indefinitely so submissions resolve.
 
 ### 3.7 submissions
 
@@ -339,9 +340,9 @@ Required fields:
 - teacherId: Denormalized from the assignment for teacher dashboards.
 - schoolId: Denormalized from the assignment for administrative queries.
 - lessonSlug: Denormalized for analytics and grade views.
-- lessonVersion: The frozen lesson version the student experienced. Denormalized deliberately, because the assignment could theoretically be recreated but the version the student saw must be preserved.
-- status: in-progress, submitted, finalized.
-- startedAt: Timestamp of first attempt.
+- lessonVersion: The frozen lesson version the student experienced. Denormalized deliberately, because the assignment record could theoretically be recreated but the version the student saw must be preserved.
+- status: `submitted`, `finalized`. There is no client-authored `in-progress` state on the authoritative submission collection: the document is created by the server-side finalization Cloud Function (PDR-008). `submitted` is the transient state inside the finalization transaction; every readable submission is `finalized`. In-progress client draft state, if any, is held in a working area outside this collection and is not authoritative.
+- startedAt: Timestamp of first attempt. Set by the finalization Cloud Function from the client-reported start moment, retained for pedagogical analytics; not used for authorization.
 - submittedAt: Timestamp of final submission.
 - score: Numeric score if applicable.
 - responses: Per-question responses inline in Version 1. Escape hatch to subcollection if size becomes a concern.
@@ -355,13 +356,13 @@ Optional fields:
 
 Relationships: References one assignment, one student, one class, one teacher, one school, and one frozen lesson version. Denormalization on this document is heavier than anywhere else in the model, and it is justified in Section 12.
 
-Ownership: Created and updated by the student until finalized. After finalization, immutable to students. Teachers may append notes and flag for review. Administrators may not edit content, only archive.
+Ownership: Created by the server-side finalization Cloud Function on behalf of the student (PDR-008). Students never write directly to this collection. After creation, the document is immutable to students. Teachers may append notes and flag for review through an adjacent record, not by mutating the submission. Platform Administrators may not edit content; retention actions are audited.
 
-Lifecycle: Started, submitted, finalized, retained. Never edited after finalization.
+Lifecycle: `submitted` → `finalized` within the finalization transaction. Retention is a policy applied to the finalized document; it is not a status. Never edited after finalization.
 
 ### 3.8 auditEvents
 
-Purpose: An append-only event log.
+Purpose: The single append-only event log for the platform. This Firestore collection **is** the authoritative audit sink referenced in PDR-013. It is made append-only by Security Rules that permit `create` from trusted server context only and forbid `update` and `delete` for every role, including Platform Administrator. Retention export to cold storage is a mirror for retention, not a second authoritative sink.
 
 Required fields:
 
@@ -575,11 +576,11 @@ For each collection, this section describes who creates, updates, finalizes, arc
 
 ### 7.1 users
 
-- Created by administrators (or platform provisioning).
+- Created by Platform Administrators (or platform provisioning).
 - Profile fields updated by the user.
-- Role and status updated by administrators only.
+- Role and status updated by Platform Administrators only.
 - Never updated by other users of the same role.
-- Read by the user themselves and by administrators.
+- Read by the user themselves and by Platform Administrators.
 
 ### 7.2 schools
 

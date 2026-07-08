@@ -122,7 +122,7 @@ Permissions: read aggregate information about classes and teachers in their scho
 Responsibilities: onboarding, offboarding, and policy alignment within a school.
 Future expansion: district-level coordination, roster synchronization with SIS providers.
 
-**LyfeLabz Administrator.**
+**Platform Administrator.**
 Purpose: operate the platform.
 Permissions: full administrative access to the platform, subject to audit logging. Never used for routine teacher or student actions.
 Responsibilities: platform health, incident response, support escalations, curriculum governance.
@@ -140,7 +140,7 @@ Authentication exists to answer a single question: whose data is this? Everythin
 
 *Tradeoff.* Google Sign-In creates a dependency on Google identity and excludes schools that do not use it. That is an acceptable Version 1 constraint. The identity abstraction is designed so an additional provider can be added later without changing the user model.
 
-**First Login.** On first successful sign-in, the platform creates a durable user record keyed to the Google identity. The user is prompted once to select a role (student or teacher). Teacher role assignment is provisional until verified by a LyfeLabz administrator or, later, a school administrator. Students are not required to select a school or class at first login; they can explore the repository as an authenticated student before joining a class.
+**First Login.** On first successful sign-in, the platform creates a durable user record keyed to the Google identity. The user is prompted once to select a role (student or teacher). Teacher role assignment is provisional until verified by a Platform Administrator or, later, a school administrator. Students are not required to select a school or class at first login; they can explore the repository as an authenticated student before joining a class.
 
 *Why this matters.* Deferring class join to a separate step preserves the "lessons are the home base" principle. A student who signs in to see a lesson is not forced through a classroom enrollment funnel.
 
@@ -156,7 +156,7 @@ Authentication exists to answer a single question: whose data is this? Everythin
 
 **Logout.** Logout is available from every authenticated surface. It clears local session state and revokes the client's authenticated context. Logging out never destroys durable data. A student can log back in and find everything as they left it.
 
-**Impersonation and support.** LyfeLabz administrators never impersonate a user. Support workflows are designed so that operators can diagnose issues without assuming a user's identity. This is a permanent constraint.
+**Impersonation and support.** Platform Administrators never impersonate a user. Support workflows are designed so that operators can diagnose issues without assuming a user's identity. This is a permanent constraint.
 
 ---
 
@@ -174,11 +174,13 @@ The platform manages a small number of conceptual domains. These are described h
 
 **Classes.** A teacher-owned unit of classroom organization. A class has a grade level, a block designation, a school year, an active/archived state, and a rotating join code.
 
-**Enrollments.** The relationship between a student and a class. Enrollments carry their own state (active, removed, archived) so history is preserved without deleting records.
+**Enrollments.** The relationship between a student and a class. Enrollments carry their own state (`active`, `transferred`, `withdrawn`, `archived`) so history is preserved without deleting records. This vocabulary is canonical across the Domain Model and the Firestore Data Model.
 
 **Lessons.** The instructional repository. Lessons are canonical, versioned by file path, and referenced by stable identifiers derived from filenames. The platform never stores a copy of lesson content. It references lessons by identifier.
 
 **Assignments.** The teacher's expression that a specific lesson (or investigation, extension, simulation, or challenge) is currently surfaced for a specific class. Assignments are lightweight pointers, not copies. They carry an optional window during which the resource is surfaced.
+
+*Terminology.* "Assignment" is the canonical **schema and domain** name for this pointer record. It is used at the storage and query layer. User-facing surfaces never render "assigned," "due," "late," "overdue," or "graded" language to Teachers or Students. See PDR-010.
 
 **Assessment Submissions.** A student's completed in-lesson assessment, stamped with ownership, class context, lesson identifier, timestamp, and lesson version. Submissions are append-only from the student's perspective and immutable once finalized.
 
@@ -204,7 +206,7 @@ Classrooms are the coordination unit between teachers and students. The model is
 
 **Student Enrollment.** Students join by entering a join code. Teachers can remove students from a class, which archives the enrollment rather than deleting it, so that historical submissions remain attributable. Teachers can invite specific students by identifier once a directory exists; that is a future capability.
 
-**Archived Classes.** At the end of a school year, classes are archived rather than deleted. Archived classes remain readable to their teacher (and to LyfeLabz administrators) but are excluded from active views. Students of archived classes retain read access to their own historical submissions.
+**Archived Classes.** At the end of a school year, classes are archived rather than deleted. Archived classes remain readable to their teacher (and to Platform Administrators) but are excluded from active views. Students of archived classes retain read access to their own historical submissions.
 
 **School Years.** Every class carries a school year. School year boundaries are platform settings, not per-teacher configuration, to keep archival behavior consistent. Rollover is a scheduled, opt-in action for teachers, not an automatic mass update.
 
@@ -474,7 +476,7 @@ These questions do not have provisional answers. Each requires a deliberate deci
 
 **Security and privacy.**
 - What is the concrete data retention policy for submissions, enrollments, and archived classes?
-- Under what circumstances, and with what audit trail, may a LyfeLabz administrator read student submissions?
+- Under what circumstances, and with what audit trail, may a Platform Administrator read student submissions?
 - What is the platform's stance on parental access before parent accounts exist?
 
 **Operations.**

@@ -136,7 +136,7 @@ Each entity is described in conceptual terms only.
 
 **Owner.** The Platform, on behalf of both the Teacher and the Student.
 
-**Lifecycle.** Created when a Student joins a Class, Active while the Student participates, Ended when the Student leaves or the Class ends, Archived.
+**Lifecycle.** Active while the Student participates, Transferred when the Student moves to a different Class, Withdrawn when the Student leaves the Class, Archived when the containing Class is archived. The canonical status vocabulary is `active`, `transferred`, `withdrawn`, `archived`, matching the Firestore Data Model.
 
 **Relationships.** References exactly one Student and exactly one Class.
 
@@ -194,9 +194,11 @@ Each entity is described in conceptual terms only.
 
 ### Assignment
 
-**Purpose.** A Teacher's decision to make a Lesson part of the work of a specific Class.
+**Purpose.** A Teacher's decision to surface a Lesson for a specific Class, expressed as the pointer record defined by PDR-010 (Curation).
 
-**Description.** An Assignment records that a particular Class is expected to engage with a particular Lesson under conditions chosen by the Teacher. Those conditions may include a window of time, a mode of assessment, or a stated purpose.
+**Description.** An Assignment records that a particular Class has been offered a particular Lesson under conditions chosen by the Teacher. Those conditions may include a window of time, a mode of engagement, or a stated purpose.
+
+The word "Assignment" is the canonical **domain and schema** term for this pointer record. It is used in this document, in the Firestore Data Model, and in the Query Strategy at the storage layer only. **User-facing surfaces never render the words "assigned," "due," "late," "overdue," "required," or "graded" to Teachers or Students.** The user-facing vocabulary is always "curation," "surfaced," "window closes," and "Classroom Mode" or "Practice Mode." This distinction reconciles the load-bearing decision in PDR-010 with the need for a stable schema name.
 
 **Owner.** The Teacher who created it.
 
@@ -216,7 +218,7 @@ Each entity is described in conceptual terms only.
 
 **Owner.** The Student. The Teacher of the associated Class has permission to view.
 
-**Lifecycle.** Started, Submitted, Finalized, Retained.
+**Lifecycle.** `submitted` → `finalized` within the server-side finalization transaction. There is no client-authored Started state on the authoritative Submission record: any in-progress work exists only in a transient working area outside the authoritative collection. Retention is a policy applied to finalized records, not a lifecycle state.
 
 **Relationships.** References exactly one Student. References exactly one Assignment. Indirectly references one Class and one Lesson through that Assignment.
 
@@ -417,7 +419,7 @@ Created, Active, Archived, Copied into New School Year. Copying is a deliberate 
 
 ### Enrollment
 
-Created, Active, Ended, Archived. Ended Enrollments preserve the historical fact that a Student participated.
+`active`, `transferred`, `withdrawn`, `archived`. Transferred and withdrawn Enrollments preserve the historical fact that a Student participated; Archived is the terminal state applied when the containing Class is archived.
 
 ### Grade, Unit, Lesson
 
@@ -429,7 +431,7 @@ Draft, Published, Closed, Archived. Draft Assignments are private to the Teacher
 
 ### Assessment Submission
 
-Started, Submitted, Finalized, Retained. Started Submissions are in-progress. Submitted Submissions have been offered by the Student. Finalized Submissions are immutable. Retained Submissions remain on the Platform for the period defined by policy.
+`submitted` → `finalized`, both applied inside the server-side finalization transaction. Every readable Submission is Finalized. Retention is a policy applied to Finalized Submissions, not a lifecycle state.
 
 ### Join Code
 
@@ -538,7 +540,7 @@ The following statements are domain invariants. They should remain true regardle
 - Assignments reference Lessons; they never contain Lesson content.
 - Ownership of an entity is immutable once established.
 - Assessment history is immutable once finalized.
-- Roles are closed. The role set is Student, Teacher, Platform Administrator, with anticipated additions of Parent and District Administrator. New roles are governance decisions, not runtime configurations.
+- Roles are closed. The role set is Anonymous Visitor, Student, Teacher, and Platform Administrator, with anticipated additions of Parent, School Administrator, and District Administrator. New roles are governance decisions, not runtime configurations.
 - Authentication establishes identity. Authorization determines permissions. The two are distinct.
 - A Class belongs to exactly one school year.
 - Students belong to Classes through Enrollments, not through direct containment.

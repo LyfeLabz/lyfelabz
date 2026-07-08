@@ -150,7 +150,7 @@ Add a second provider when a school with documented need adopts LyfeLabz and pro
 
 ### Decision
 
-Teacher role assignment is provisional at first sign-in and confirmed by a verification pathway. Verification prefers automation via known school Workspace domains, backed by manual override by a LyfeLabz administrator. Later, school administrators may verify their own teachers.
+Teacher role assignment is provisional at first sign-in and confirmed by a verification pathway. Verification prefers automation via known school Workspace domains, backed by manual override by a Platform Administrator. Later, school administrators may verify their own teachers.
 
 ### Status
 
@@ -171,7 +171,7 @@ A teacher account grants access to student submissions and the ability to create
 - Teachers are provisional at first sign-in.
 - The platform maintains a list of verified school Workspace domains. A sign-in from a verified domain that self-declares as teacher is auto-verified.
 - A sign-in from an unverified domain that self-declares as teacher is placed in provisional state, with a clearly explained pending screen and a manual review path.
-- Manual verification is performed by a LyfeLabz administrator.
+- Manual verification is performed by a Platform Administrator.
 - School administrators (future) may verify their own teachers within their domain.
 
 ### Rationale
@@ -188,7 +188,7 @@ Benefits:
 
 Limitations:
 
-- LyfeLabz administrators are on the critical path for new schools.
+- Platform Administrators are on the critical path for new schools.
 - A verified domain list must be maintained as data, not code.
 
 ### Future Reconsideration Criteria
@@ -201,7 +201,7 @@ Reconsider when a district integration provides authoritative teacher rosters, o
 
 ### Decision
 
-LyfeLabz has a small closed set of roles: Anonymous Visitor, Student, Teacher, School Administrator (future), and LyfeLabz Administrator. Every role is additive relative to Anonymous Visitor. A user holds exactly one primary role at a time.
+LyfeLabz has a small closed set of roles: Anonymous Visitor, Student, Teacher, School Administrator (future), and Platform Administrator. Every role is additive relative to Anonymous Visitor. A user holds exactly one primary role at a time.
 
 ### Status
 
@@ -272,7 +272,7 @@ Classroom ownership determines who can read student work, who can rotate join co
 - Single primary teacher per class in Version 1.
 - Stable class identifier assigned at creation and never changed.
 - Archive, do not delete.
-- Ownership transfers exist only through an audited LyfeLabz administrator path.
+- Ownership transfers exist only through an audited Platform Administrator path.
 - The class model expresses teacher ownership as a reference set of size one, so co-teaching is additive later.
 
 ### Rationale
@@ -531,7 +531,20 @@ The line between "surfacing" and "assigning" is where a content library becomes 
 - The same model applies to investigations, extensions, simulations, and engineering challenges.
 - Games follow lessons; they are not separately curated.
 - Public repository access is never removed by curation.
-- Curation never expresses "due," "assigned," or "required."
+- Curation never expresses "due," "assigned," or "required" to users.
+
+### Terminology Amendment (2026-07-07)
+
+Downstream documents refer to the pointer record by the neutral schema name `assignment` (collection `assignments`, document type Assignment). This is accepted here as the canonical **schema and domain** term. It appears in the Firestore Data Model, the Query Strategy, the Rollup Strategy, the Security Model, and the Cloud Function Charter at the storage and workflow layer.
+
+The **user-facing vocabulary** is bound by the following rules, which are load-bearing under PDR-010:
+
+- Teacher UI and Student UI never render the words "assigned," "due," "late," "overdue," "required," or "graded."
+- Teacher UI uses "curation," "surface," "hide," "window closes," "Classroom Mode," and "Practice Mode."
+- Student UI uses "available," "closing soon," and lesson-native vocabulary.
+- Field names on the Assignment record are neutral: `windowClosesAt` (not `dueAt`), `availableAt`, `mode: practice | classroom` (not `graded`). Fields expressing lateness or forced completion do not exist.
+
+This amendment reconciles PDR-010's philosophy with the practical need for a stable schema name. The intent of PDR-010 is unchanged; only the terminology boundary between schema and UI is made explicit.
 
 ### Rationale
 
@@ -606,13 +619,23 @@ Middle school students include the under-13 cohort. The architecture review flag
 **Data retention.**
 
 - Active-year submissions are retained through the school year.
-- Archived-class submissions are retained for a defined period (recommended: through the student's expected time in middle school plus one year), then redacted.
+- Archived-class submissions are retained for a defined period, then redacted.
 - Audit logs are retained separately with their own retention (see PDR-013).
+
+**Recommended Version 1 retention defaults.** These values are tunable and are not on the formal-review list. They are the concrete numbers that should ship in Version 1 unless a documented alternative is chosen.
+
+- Active-year submissions: retained live through the end of the school year in which they were finalized.
+- Finalized submissions in archived classes: retained live for **three (3) years** from the class's archival date, then redacted (identifying fields cleared, structural record preserved).
+- Fully-redacted submissions: retained indefinitely for aggregate integrity, without identifying fields.
+- Enrollment records: retained live for **three (3) years** after enrollment ends, then redacted.
+- Archived classes: retained live for **five (5) years** from archival, then metadata-only.
+- User records: retained live while the user is active, then archived on the same schedule as their most recent class.
+- Audit events: see PDR-013.
 
 **Guardian considerations.**
 
 - Parent accounts are a future capability with explicit per-student consent.
-- Until parent accounts exist, guardian access to a student's LyfeLabz data is provided by the student themselves or by the teacher on request. LyfeLabz administrators do not disclose student data to third parties, including guardians, without an audited process.
+- Until parent accounts exist, guardian access to a student's LyfeLabz data is provided by the student themselves or by the teacher on request. Platform Administrators do not disclose student data to third parties, including guardians, without an audited process.
 
 **Third-party integrations.**
 
@@ -703,9 +726,18 @@ Each tier has documented handling rules for storage, transit, logging, and third
 - Sign-in attempts, join-code guesses, and submission writes are rate-limited per identity, per IP, and per resource.
 - Rate-limit violations produce audit records.
 
+**Recommended Version 1 rate-limit defaults.** These are tunable operational values, not architectural decisions.
+
+- Sign-in attempts: **10 per minute per IP**, **20 per hour per identity**.
+- Join-code guesses: **5 per minute per authenticated user**, **20 per hour per authenticated user**. Repeated invalid attempts trigger a temporary lock and an audit event.
+- Submission writes (finalization requests): **30 per minute per authenticated student**. Bulk operations exceeding this rate are treated as anomalous.
+- Assignment publication writes: **60 per minute per teacher**.
+- Audit-log reads by Platform Administrators: no rate limit, but every read is itself audited.
+
 **Sessions.**
 
-- Session length is set to a value appropriate for shared classroom devices, with an explicit documented number.
+- Session length is set to a value appropriate for shared classroom devices.
+- **Recommended Version 1 default: 12 hours** of idle-tolerant session, extended sliding by activity, with a hard maximum of **24 hours** since last authentication event. This matches a classroom day plus after-school work without becoming a security hazard on shared devices.
 - Explicit logout clears session state immediately without a required network round trip.
 - No impersonation. Ever.
 
@@ -792,8 +824,10 @@ The architecture review flagged operational systems as the largest cluster of mi
 
 **Audit logs.**
 
-- Streamed to a separate append-only sink that is not readable or writable by application code.
-- Retention: minimum two years, longer for legally significant actions.
+- The Firestore `auditEvents` collection **is** the platform's append-only audit sink. Its append-only property is enforced by Security Rules that permit `create` from trusted server context only and that forbid `update` and `delete` for every role, including Platform Administrator.
+- Application code (client-side, and non-audit server code) cannot read or write `auditEvents`. Reads are permitted only through Platform Administrator surfaces, and every read of `auditEvents` itself produces a further audit event.
+- **Recommended Version 1 retention:** live retention of **24 months** in `auditEvents`. On a scheduled cadence, events older than 24 months are exported to a cold-storage bucket (retention **5 years**, then destroyed) and pruned from the live collection. The exported records are a mirror for retention; they are not a second authoritative sink.
+- Retention for legally significant actions (role changes, ownership transfers, retention actions, emergency access) is **7 years** live plus indefinite cold storage.
 - Access to audit logs is itself audited.
 
 **Support tools.**

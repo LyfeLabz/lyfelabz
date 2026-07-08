@@ -46,7 +46,9 @@ LyfeLabz lessons run in a classroom context where connectivity is uneven. Cloud 
 The following responsibilities belong to the trusted server. This list is intentionally scoped to what LyfeLabz needs today, with room for the near-term expansion described in Section 8.
 
 **Assessment finalization.**
-When a student submits a graded quiz in Classroom Mode, the server is responsible for recording the canonical result. The client sends answers; the server computes the score against the authoritative answer key, stamps the submission timestamp, associates the submission with the correct assignment and roster, and writes the immutable result document. This prevents client-side score tampering and ensures every submission is reproducible.
+When a student submits a Classroom Mode quiz, the server is responsible for recording the canonical result. The client sends answers; the server computes the score against the authoritative answer key, stamps the submission timestamp, associates the submission with the correct assignment record and roster, and writes the immutable result document. This prevents client-side score tampering and ensures every submission is reproducible.
+
+**Terminology note.** LyfeLabz has two runtime modes: **Practice Mode** (client-only, no persistence) and **Classroom Mode** (server-finalized, persisted). The Assignment record's `mode` field takes exactly these two values (`practice`, `classroom`). The word "graded" is deliberately not used at any layer, per PDR-010; a `classroom`-mode Assignment record is not a "graded assignment," it is a Classroom Mode surface.
 
 **Rollup updates.**
 Class-level, assignment-level, and student-level rollups (aggregate scores, completion counts, mastery indicators) are computed server-side in response to submission events. Rollups must reflect the authoritative submission record, not client-reported summaries.
@@ -61,7 +63,7 @@ Elevating an account to teacher status, binding a teacher to a school or distric
 Any change to a user's `role`, `schoolId`, `districtId`, or equivalent claim is written exclusively by a Cloud Function. Claims are the foundation of authorization, and the client must never influence them directly.
 
 **Audit event creation.**
-Security-relevant events (role changes, roster changes, assignment publication, grade overrides, data exports, deletions) are written to the audit log by the server as a side effect of the operation itself. Clients cannot write to the audit log, and audit records are immutable once written.
+Security-relevant events (role changes, roster changes, assignment publication, teacher score annotations, data exports, deletions) are written to the Firestore `auditEvents` collection by the server as a side effect of the operation itself. That collection is the platform's authoritative append-only audit sink (Security Model 11; PDR-013). Clients cannot write to it, and no role, including Platform Administrator, may update or delete records in it.
 
 **Assignment publication.**
 Publishing an assignment to a class is a server-mediated action. The server validates that the teacher owns the class, the assignment references a real lesson, the roster snapshot is current, and the open/close window is coherent. Once published, the assignment record becomes the authoritative reference for all subsequent submissions and rollups.
@@ -70,7 +72,7 @@ Publishing an assignment to a class is a server-mediated action. The server vali
 Deletion of student, class, or teacher data (whether triggered by administrative action, account deletion, or retention policy) runs on the server so it can traverse every dependent document, revoke claims, and produce a deletion receipt.
 
 **Scheduled maintenance.**
-Periodic jobs (expiring stale join codes, closing overdue assignment windows, pruning temporary artifacts, generating scheduled reports) run as scheduled functions. These jobs must be idempotent and safe to re-run.
+Periodic jobs (expiring stale join codes, closing Assignment record windows whose `windowClosesAt` has passed, pruning temporary artifacts, generating scheduled reports, exporting aged `auditEvents` to cold storage) run as scheduled functions. These jobs must be idempotent and safe to re-run. Closing a window is not "closing an overdue assignment"; it is transitioning an Assignment record's `status` from `published` to `closed`.
 
 **Future notifications.**
 When notifications ship (teacher summaries, parent updates, district reports), the composition and delivery of those messages will be server-side. Clients will never dispatch external communication on the platform's behalf.

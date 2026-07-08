@@ -46,7 +46,7 @@ A submission moves through a fixed sequence of stages. Each stage has a clear bo
 
 7. Submission remains part of permanent class history. The submission stays in the class's historical record for the lifetime of the class. Class archival, described in Section 5, does not delete submissions.
 
-The lifecycle does not include a draft stage, an editable stage, or a client-authored finalization stage. A submission either does not yet exist or is finalized.
+The lifecycle does not include a draft stage, an editable stage, or a client-authored finalization stage. A submission either does not yet exist or is finalized. The `submitted` state exists only inside the server-side finalization transaction as the transient state before the `finalized` write commits; it is never observable to any reader. This reconciles the submission lifecycle across the Domain Model, the Firestore Data Model, and this document.
 
 ---
 
@@ -84,11 +84,11 @@ Rollups are cheap-to-read documents that store precomputed summaries of submissi
 
 Possible rollup scopes:
 
-- Assignment-level rollup. One document per assignment. Captures how many students have submitted, how many are missing, distribution of scores, and last activity timestamp. Answers the teacher question "how is this assignment going right now."
+- Assignment-level rollup. One document per assignment record. Captures how many students have submitted, how many have not yet submitted, distribution of scores, and last activity timestamp. Answers the teacher question "how is this curation going right now."
 
-- Student-level rollup. One document per student per class. Captures which assignments the student has submitted, which are outstanding, most recent submission timestamp, and a compact per-assignment status. Answers the teacher question "what is this student's current standing" and the student question "what have I submitted."
+- Student-level rollup. One document per student per class. Captures which assignment records the student has submitted, which are not-yet-submitted, most recent submission timestamp, and a compact per-record status. Answers the teacher question "what is this student's current standing" and the student question "what have I submitted."
 
-- Class-level rollup. One document per class. Captures the class's overall submission activity, count of open assignments, count of pending review items, and recent activity timestamp. Answers the teacher question "is anything new in this class."
+- Class-level rollup. One document per class. Captures the class's overall submission activity, count of open assignment records, count of pending review items, and recent activity timestamp. Answers the teacher question "is anything new in this class."
 
 - Teacher-level review queue. One document per teacher across all their classes. Captures pending review items across every class the teacher owns. Answers the teacher question "where should I look first this morning."
 
@@ -136,7 +136,7 @@ Workflow needs the rollups must support:
 
 - Reviewing student work. When the teacher chooses a specific submission to review, the client reads the authoritative submission directly. This is a targeted read, one document at a time, and it is acceptable because it is initiated by the teacher, not by the dashboard's initial render.
 
-- Identifying missing submissions. The assignment-level rollup captures which students in the class have not yet submitted an open assignment. The dashboard reads a small number of assignment rollups to render this view, rather than scanning submissions and computing the complement.
+- Identifying not-yet-submitted work. The assignment-level rollup captures which students in the class have not yet submitted an open assignment record. The dashboard reads a small number of assignment rollups to render this view, rather than scanning submissions and computing the complement. This surface uses "not yet submitted," never "missing," "overdue," or "late," per PDR-010.
 
 - Viewing assignment completion. The assignment-level rollup contains completion counts and score distribution. The dashboard renders these directly.
 

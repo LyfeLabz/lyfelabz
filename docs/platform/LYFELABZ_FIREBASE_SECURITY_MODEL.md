@@ -636,11 +636,12 @@ The following events are recorded without exception:
 
 Audit events are:
 
-- Append-only.
-- Immutable to ordinary users, including administrators.
-- Retained on a documented schedule.
+- Written to the Firestore `auditEvents` collection, which **is** the platform's authoritative append-only sink. Cold-storage export is a retention mirror, not a second sink.
+- Append-only, enforced by Security Rules that permit `create` from trusted server context only and forbid `update` and `delete` for every role, including Platform Administrator.
+- Immutable to every actor, including Platform Administrator. Retention operations export records to cold storage and prune the live collection; they never edit records in place.
+- Retained on the documented schedule in PDR-013.
 - Structured, with a defined schema per event type.
-- Searchable by actor, target, and time range.
+- Searchable by actor, target, and time range through Platform Administrator surfaces.
 
 Audit is not observability. It is not analytics. It has a different retention policy, a different access model, and a different tolerance for gaps (which is zero).
 

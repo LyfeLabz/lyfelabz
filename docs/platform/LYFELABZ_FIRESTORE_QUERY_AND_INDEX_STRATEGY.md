@@ -183,11 +183,11 @@ Recommended: issue one query per class, with a small parallel fan-out (2.2.2a). 
 
 Collection: `assignments`
 Filters: `classId == C`, `status == published`, `availableAt <= now`
-Order: `dueAt asc`
+Order: `windowClosesAt asc`
 Page size: 20.
 Frequency: Continuous.
 Scale: Small.
-Performance considerations: Composite index on `(classId, status, availableAt)` with a secondary consideration for `dueAt` ordering. Because Firestore requires the range field to be the last ordering clause, the platform issues the query as `where classId == C and status == published and availableAt <= now order by availableAt`, then sorts by `dueAt` client side within the small result. The alternative index `(classId, status, dueAt)` is added only if analysis shows the client-side sort exceeds a threshold.
+Performance considerations: Composite index on `(classId, status, availableAt)` with a secondary consideration for `windowClosesAt` ordering. Because Firestore requires the range field to be the last ordering clause, the platform issues the query as `where classId == C and status == published and availableAt <= now order by availableAt`, then sorts by `windowClosesAt` client side within the small result. The alternative index `(classId, status, windowClosesAt)` is added only if analysis shows the client-side sort exceeds a threshold. Note: `windowClosesAt` is not a due date; it is the moment the record leaves active student views, and it never surfaces to students as "due."
 
 #### 2.2.3 My Submissions
 
