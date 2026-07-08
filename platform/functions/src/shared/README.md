@@ -7,6 +7,9 @@ Cross-domain utilities. Nothing here knows about a specific domain.
 - `types/` - Firestore document types. Single source of truth for document shapes.
 - `errors/` - `PlatformError` base class and named subclasses.
 - `logging/` - Structured logger wrapper over `firebase-functions/logger`.
+- `auth/` - Canonical custom-claims writer.
+- `firestore/` - Admin Firestore accessor and typed reference builders.
+- `audit/` - Canonical `auditEvents` writer.
 
 ## Rules
 
