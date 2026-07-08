@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// LyfeLabz Firestore Security Rules
+// Sprint 1: strict default-deny baseline.
+// No collection is opened to clients. users/{uid} is written server-side by
+// the authOnUserCreate trigger (Admin SDK bypasses these rules). Every future
+// sprint opens its own collections with its own tests.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
