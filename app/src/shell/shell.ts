@@ -2,7 +2,7 @@ import type { Session } from "../session/types";
 import { renderHeader } from "./header";
 import { renderNavigation } from "./navigation";
 import { renderFooter } from "./footer";
-import { renderHomeSurface } from "./surfaces/home";
+import { mountWorkspaceOutlet } from "./surfaces/workspace";
 
 // Top-level teacher-platform shell mount.
 //
@@ -34,18 +34,12 @@ export function mountTeacherShell(
   renderNavigation(body);
 
   // The outer #app-root already carries role="main" on this page.
-  // Rendering a nested <main> would be invalid HTML, so we use a
-  // labelled <section> as the content area and reference the Home
-  // surface headline via aria-labelledby. See implementation notes.
-  const contentArea = doc.createElement("section");
-  contentArea.id = "app-main";
-  contentArea.className = "shell-main";
-  contentArea.setAttribute("aria-labelledby", "surface-headline");
-  contentArea.setAttribute("data-testid", "shell-main");
-
-  renderHomeSurface(contentArea, session);
-
-  body.appendChild(contentArea);
+  // Rendering a nested <main> would be invalid HTML, so the workspace
+  // outlet is a labelled <section> whose active surface owns the
+  // #surface-headline referenced via aria-labelledby. Home is the only
+  // active workspace surface in Sprint 6A. See
+  // SPRINT_6A_SPECIFICATION.md.
+  mountWorkspaceOutlet(body, session, "home");
   mount.appendChild(body);
 
   renderFooter(mount);

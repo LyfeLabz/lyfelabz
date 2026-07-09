@@ -9,6 +9,10 @@ import { renderHeader } from "./header";
 import { renderNavigation, NAVIGATION_ITEMS } from "./navigation";
 import { renderFooter } from "./footer";
 import { renderHomeSurface } from "./surfaces/home";
+import {
+  WORKSPACE_SURFACES,
+  mountWorkspaceOutlet,
+} from "./surfaces/workspace";
 
 const freeze = <T>(v: T): T => Object.freeze(v) as T;
 
@@ -323,6 +327,75 @@ describe("Data and callable posture (spec §6.6, §11.2)", () => {
       expect(text).not.toContain("sessionStorage");
       expect(text).not.toContain("document.cookie");
     }
+  });
+});
+
+describe("Workspace outlet (Sprint 6A)", () => {
+  test("shell mounts exactly one workspace outlet region", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    const outlets = mount.querySelectorAll("[data-testid=workspace-outlet]");
+    expect(outlets).toHaveLength(1);
+    expect(outlets[0]?.id).toBe("app-main");
+  });
+
+  test("outlet advertises the active surface via data-active-surface=home", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    const outlet = mount.querySelector("[data-testid=workspace-outlet]");
+    expect(outlet?.getAttribute("data-active-surface")).toBe("home");
+  });
+
+  test("home surface renders through the outlet, not as a shell sibling", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    const headline = mount.querySelector("[data-testid=surface-headline]");
+    const outlet = mount.querySelector("[data-testid=workspace-outlet]");
+    expect(headline).not.toBeNull();
+    expect(outlet?.contains(headline!)).toBe(true);
+    expect(headline?.textContent).toBe("Welcome, Ada Lovelace.");
+  });
+
+  test("WORKSPACE_SURFACES registers exactly the five navigation keys", () => {
+    expect(Object.keys(WORKSPACE_SURFACES).sort()).toEqual(
+      ["assignments", "classes", "home", "settings", "students"],
+    );
+  });
+
+  test("mountWorkspaceOutlet with an unavailable key still returns an outlet (contract completeness)", () => {
+    // The shell never dispatches to an unavailable key in Sprint 6A because
+    // every non-home nav item is disabled. This test only asserts the
+    // contract shape: the outlet renderer is total across NavigationKey.
+    const mount = mkMount();
+    const outlet = mountWorkspaceOutlet(mount, teacherSession(), "classes");
+    expect(outlet.getAttribute("data-testid")).toBe("workspace-outlet");
+    expect(outlet.getAttribute("data-active-surface")).toBe("classes");
+  });
+
+  test("disabled navigation buttons do not change the outlet's active surface", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    const before = mount.querySelector("[data-testid=workspace-outlet]")
+      ?.getAttribute("data-active-surface");
+    const event = new MouseEvent("click", { bubbles: true, cancelable: true });
+    for (const key of ["classes", "students", "assignments", "settings"]) {
+      const btn = mount.querySelector<HTMLButtonElement>(
+        `[data-testid=nav-${key}]`,
+      );
+      expect(() => btn?.dispatchEvent(event)).not.toThrow();
+    }
+    const after = mount.querySelector("[data-testid=workspace-outlet]")
+      ?.getAttribute("data-active-surface");
+    expect(after).toBe(before);
+    expect(after).toBe("home");
+  });
+
+  test("focus lands on the workspace surface headline after shell mount", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    expect(document.activeElement?.getAttribute("data-testid")).toBe(
+      "surface-headline",
+    );
   });
 });
 

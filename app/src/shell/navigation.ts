@@ -2,8 +2,15 @@
 // item in Step 5. Every other item is a coming-soon placeholder that
 // must not read as clickable-but-broken. See spec §5.
 
+export type NavigationKey =
+  | "home"
+  | "classes"
+  | "students"
+  | "assignments"
+  | "settings";
+
 export type NavigationItem = {
-  readonly key: "home" | "classes" | "students" | "assignments" | "settings";
+  readonly key: NavigationKey;
   readonly label: string;
   readonly available: boolean;
 };

@@ -352,3 +352,51 @@ Unchanged from the Sprint 5A baseline. Re-verified at closure time:
 ### Recommendation
 
 Proceed to Sprint 6 after Technical Lead review of `SPRINT_5B_CERTIFICATION.md` and local verification by Chris. No commit is recommended until both reviews are complete.
+
+---
+
+## Sprint 6A - Teacher Workspace Foundation
+
+**Date:** 2026-07-09
+**Status:** Implementation complete; awaiting Technical Lead review and local verification by Chris. No commit produced by Sprint 6A itself.
+**Detailed report:** SPRINT_6A_COMPLETION_REPORT.md
+**Specification:** SPRINT_6A_SPECIFICATION.md
+
+### Scope delivered
+
+Sprint 6A ships the client-side Teacher Workspace outlet foundation and nothing else.
+
+- Introduced the typed `WorkspaceSurface` contract and the `WORKSPACE_SURFACES` registry keyed by the canonical `NavigationKey` union in `app/src/shell/surfaces/workspace.ts`.
+- Added `mountWorkspaceOutlet`, which mounts exactly one `<section id="app-main" data-testid="workspace-outlet">` region and renders the registered surface for the requested active key.
+- Refactored `mountTeacherShell` to render the Home surface through the outlet at `activeKey = "home"` instead of calling `renderHomeSurface` directly. The Home surface itself is unchanged and remains the only active workspace surface.
+- Extracted and exported the `NavigationKey` type from `navigation.ts` so the contract and the navigation list share one canonical set of keys. The runtime navigation array and the disabled posture of every non-home item are unchanged.
+- Added a shared, minimal "coming soon" renderer at `app/src/shell/surfaces/shared/emptyState.ts` used by the registered classes/students/assignments/settings surfaces. Unreachable through the shell in Sprint 6A because those navigation items remain disabled; present only for contract completeness.
+- Extended `app/src/shell/shell.test.ts` with a `Workspace outlet (Sprint 6A)` block: outlet mounting, home rendering through the outlet, active-key advertisement, registry shape, contract totality, disabled-navigation no-op on active surface, and focus regression on the surface headline.
+
+Explicitly out of scope and not shipped in Sprint 6A: live classes/students/assignments/settings surfaces, submissions review, analytics, grading, teacher feedback, student UI, administrator UI, new Cloud Functions, Firestore Rules changes, Firestore indexes, Storage Rules changes, teacher preferences documents, URL or history routing, deep links, nav persistence, new custom claims, and any change to the Immutable Session Object, Session Bootstrap, or protected router state machine.
+
+### Architectural guarantees preserved
+
+- Firestore remains authoritative; the outlet performs zero reads and opens zero listeners.
+- All writes remain server mediated; the outlet issues no writes and invokes no callables.
+- Firestore Rules remain default-deny and unchanged from the Sprint 5B baseline.
+- `status` remains the sole lifecycle field; no lifecycle-adjacent state was introduced.
+- Audit events remain append-only through `writeAuditEvent`; the canonical vocabulary is unchanged.
+- The Immutable Session Object, Session Bootstrap, and protected router state machine are unchanged.
+- Custom claims remain `{ role, schoolId }`; `districtId` remains reserved.
+- No new backend behavior. `platform/functions/**`, `platform/firebase/firestore.rules`, and `platform/firebase/tests/**` were not modified.
+- Navigation posture is preserved: `home` remains the only enabled item; every other item remains `disabled`, `aria-disabled="true"`, `tabindex="-1"`, with a `"Label - Coming soon"` label and a no-op click handler.
+
+### Repository validation
+
+- `app` typecheck clean.
+- `app` lint clean.
+- `app` build clean (esbuild).
+- `app` unit tests: **111 pass across 5 suites** (Sprint 5B baseline: 104 / 5; +7 outlet tests, no suite added).
+- `platform/functions` typecheck, lint, and build clean.
+- `platform/functions` unit tests: **295 pass across 22 suites** (unchanged).
+- `platform/firebase` Rules tests: **94 pass across 8 suites** (unchanged).
+
+### Recommendation
+
+Proceed to the first live non-home workspace surface after Technical Lead review of `SPRINT_6A_COMPLETION_REPORT.md` and local verification by Chris. No commit is recommended until both reviews are complete.
