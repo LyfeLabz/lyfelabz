@@ -9,6 +9,12 @@ import {
   type ClassRecord,
 } from "../types/class";
 import {
+  ENROLLMENTS_COLLECTION,
+  type EnrollmentCreationWrite,
+  type EnrollmentRecord,
+  type EnrollmentStatusChangeWrite,
+} from "../types/enrollment";
+import {
   SCHOOLS_COLLECTION,
   type SchoolCreationWrite,
   type SchoolRecord,
@@ -54,6 +60,14 @@ export function schoolCreationDocRef(
   return getAdminFirestore()
     .collection(SCHOOLS_COLLECTION)
     .doc(schoolId) as DocumentReference<SchoolCreationWrite>;
+}
+
+// Collection-level typed reference for classes. Used by the
+// enrollmentsJoinByCode callable to resolve a class by its (joinCode,
+// schoolId) tuple without reaching through to the raw Firestore instance.
+export function classesCollectionRef(): CollectionReference<ClassRecord> {
+  return getAdminFirestore()
+    .collection(CLASSES_COLLECTION) as CollectionReference<ClassRecord>;
 }
 
 // Read typed reference for classes/{classId}. Reads return a
@@ -112,4 +126,55 @@ export function classArchiveDocRef(
 export function auditEventsCollectionRef(): CollectionReference<AuditEventWrite> {
   return getAdminFirestore()
     .collection(AUDIT_EVENTS_COLLECTION) as CollectionReference<AuditEventWrite>;
+}
+
+// Read typed reference for enrollments/{enrollmentId}. Reads return a
+// DocumentSnapshot<EnrollmentRecord> aligned with the canonical Data Model
+// §3.4 read shape. Callers that need to perform a creation write or a
+// status transition use `enrollmentCreationDocRef` or
+// `enrollmentStatusChangeDocRef` respectively so that FieldValue-safe write
+// shapes are preserved at the write boundary.
+export function enrollmentDocRef(
+  enrollmentId: string,
+): DocumentReference<EnrollmentRecord> {
+  return getAdminFirestore()
+    .collection(ENROLLMENTS_COLLECTION)
+    .doc(enrollmentId) as DocumentReference<EnrollmentRecord>;
+}
+
+// Creation-write typed reference for enrollments/{enrollmentId}. The
+// enrollmentsJoinByCode and enrollmentsTeacherAdd callables use this
+// reference to `.set()` a canonical `EnrollmentCreationWrite` payload so
+// that `FieldValue.serverTimestamp()` can be used at the write boundary
+// while the read-side `enrollmentDocRef` remains typed as
+// `EnrollmentRecord`.
+export function enrollmentCreationDocRef(
+  enrollmentId: string,
+): DocumentReference<EnrollmentCreationWrite> {
+  return getAdminFirestore()
+    .collection(ENROLLMENTS_COLLECTION)
+    .doc(enrollmentId) as DocumentReference<EnrollmentCreationWrite>;
+}
+
+// Status-change typed reference for enrollments/{enrollmentId}. The
+// enrollmentsSetStatus callable uses this reference to `.update()` a narrow
+// `EnrollmentStatusChangeWrite` payload. Ownership fields (studentId,
+// classId, schoolId) and enrolledAt are absent from the write shape so no
+// status transition can silently reassign ownership or overwrite the
+// creation timestamp.
+export function enrollmentStatusChangeDocRef(
+  enrollmentId: string,
+): DocumentReference<EnrollmentStatusChangeWrite> {
+  return getAdminFirestore()
+    .collection(ENROLLMENTS_COLLECTION)
+    .doc(enrollmentId) as DocumentReference<EnrollmentStatusChangeWrite>;
+}
+
+// Collection-level typed reference for enrollments. Used by the
+// join-by-code and teacher-add callables to look up an existing (studentId,
+// classId) enrollment by indexed query for idempotency, and by the
+// join-by-code callable to look up a class by joinCode.
+export function enrollmentsCollectionRef(): CollectionReference<EnrollmentRecord> {
+  return getAdminFirestore()
+    .collection(ENROLLMENTS_COLLECTION) as CollectionReference<EnrollmentRecord>;
 }

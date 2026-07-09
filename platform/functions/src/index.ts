@@ -4,6 +4,11 @@ export {
   classesCreate,
   classesUpdateMetadata,
 } from "./classes";
+export {
+  enrollmentsJoinByCode,
+  enrollmentsSetStatus,
+  enrollmentsTeacherAdd,
+} from "./enrollments";
 export { schoolsCreate } from "./schools";
 export { studentsCompleteOnboarding } from "./students";
 export {

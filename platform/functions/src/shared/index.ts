@@ -15,6 +15,11 @@ export {
   classCreationDocRef,
   classDocRef,
   classMetadataUpdateDocRef,
+  classesCollectionRef,
+  enrollmentCreationDocRef,
+  enrollmentDocRef,
+  enrollmentStatusChangeDocRef,
+  enrollmentsCollectionRef,
   schoolCreationDocRef,
   schoolDocRef,
   userDocRef,
@@ -38,6 +43,13 @@ export {
   type ClassRecord,
   type ClassStatus,
 } from "./types/class";
+export {
+  ENROLLMENTS_COLLECTION,
+  type EnrollmentCreationWrite,
+  type EnrollmentRecord,
+  type EnrollmentStatus,
+  type EnrollmentStatusChangeWrite,
+} from "./types/enrollment";
 export {
   SCHOOLS_COLLECTION,
   type SchoolCreationWrite,

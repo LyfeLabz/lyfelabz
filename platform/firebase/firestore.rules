@@ -91,6 +91,54 @@ service cloud.firestore {
         && resource.data.teacherId == request.auth.uid;
     }
 
+    // ---------- enrollments/{enrollmentId} ----------
+    //
+    // Sprint 4C Enrollment Foundation.
+    //
+    // Reads:
+    //   - `get`: two admissible callers per Security Model §4.4.
+    //       * The enrolled student may get their own enrollment. The
+    //         document carries `studentId` directly per Data Model §3.4,
+    //         so authorization is decided on the document itself with no
+    //         second read.
+    //       * The teacher of the referenced class may get any enrollment
+    //         in a class they own. Enrollments do not carry `teacherId`,
+    //         so ownership is resolved by a get() against the referenced
+    //         `classes/{classId}` document. Immutable ownership per Data
+    //         Model §1.2 guarantees the traversed teacherId cannot drift.
+    //   - `list`: two admissible query shapes.
+    //       * A student query filtered by `studentId == request.auth.uid`
+    //         returns only their own enrollments.
+    //       * A teacher query filtered by `classId == C` returns the
+    //         roster for a single class they own; the teacher-ownership
+    //         check is a get() against `classes/{classId}`.
+    //     Every other list shape (unscoped, cross-student, cross-class)
+    //     is denied.
+    //
+    // Writes:
+    //   - All client writes remain denied. `enrollmentsJoinByCode`,
+    //     `enrollmentsTeacherAdd`, and `enrollmentsSetStatus` write
+    //     through the Admin SDK from the Cloud Function trust boundary
+    //     and therefore bypass Rules. Direct client `create`, `update`,
+    //     or `delete` against enrollments/{enrollmentId} is denied by the
+    //     terminal deny rule.
+    match /enrollments/{enrollmentId} {
+      allow get: if isSignedIn() && (
+        resource.data.studentId == request.auth.uid
+        || (
+          exists(/databases/$(database)/documents/classes/$(resource.data.classId))
+          && get(/databases/$(database)/documents/classes/$(resource.data.classId)).data.teacherId == request.auth.uid
+        )
+      );
+      allow list: if isSignedIn() && (
+        resource.data.studentId == request.auth.uid
+        || (
+          exists(/databases/$(database)/documents/classes/$(resource.data.classId))
+          && get(/databases/$(database)/documents/classes/$(resource.data.classId)).data.teacherId == request.auth.uid
+        )
+      );
+    }
+
     // ---------- auditEvents/{eventId} ----------
     //
     // Append-only server-write, server-read per Security Model §11 and
