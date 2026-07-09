@@ -400,3 +400,52 @@ Explicitly out of scope and not shipped in Sprint 6A: live classes/students/assi
 ### Recommendation
 
 Proceed to the first live non-home workspace surface after Technical Lead review of `SPRINT_6A_COMPLETION_REPORT.md` and local verification by Chris. No commit is recommended until both reviews are complete.
+
+---
+
+## Sprint 6B - Classroom Workspace (Read-Only)
+
+**Dates:** 2026-07-09
+**Status:** Implementation complete; awaiting Technical Lead review and local verification by Chris. No commit produced by Sprint 6B itself.
+**Detailed report:** SPRINT_6B_COMPLETION_REPORT.md
+**Specification:** SPRINT_6B_SPECIFICATION.md
+
+### Objective
+
+Activate the first live non-home workspace surface: a read-only Classroom Workspace inside the Teacher Platform Shell. Verified teachers can navigate from Home to Classes and see the classrooms they own, rendered from the certified `classes/{classId}` backend under the Sprint 4B teacher-owned list rule.
+
+### Major accomplishments
+
+- Introduced a client-side `ClassSummary` shape and a `ListClasses` seam at `app/src/classes/**`. The Firestore adapter `createFirestoreListClasses(db)` issues the certified-admissible `where("teacherId", "==", uid)` query and reads only the fields the workspace consumes (`title`, `grade`, `status`).
+- Delivered `renderClassesSurface` (`app/src/shell/surfaces/classes.ts`): loading state, empty state, error state, and a keyboard-accessible read-only card grid with title, optional grade line, and status pill.
+- Activated the Classes item in `NAVIGATION_ITEMS`. Home and Classes are now the enabled items; Students, Assignments, and Settings retain the Sprint 6A `"Label - Coming soon"` disabled posture.
+- Added a mutable active-surface key inside `mountTeacherShell`. On Classes or Home selection the shell swaps the workspace outlet content, moves `aria-current="page"` to the newly active nav button, and lands focus on the surface headline.
+- Wired the fetcher through the existing dependency-injection path: `SurfaceDeps.listClasses` → `ShellDeps.listClasses` → `WorkspaceDeps.listClasses` → `renderClassesSurface`. The shell continues to import no `firebase/*` module.
+
+### Architecture posture
+
+Sprint 6B introduces no new backend behavior.
+
+- Firestore remains authoritative. The client read is admitted by the same Sprint 4B rule; no rule change was made.
+- All writes remain server-mediated. The Classroom Workspace issues no writes and invokes no callables.
+- `status` remains the sole lifecycle field; no lifecycle-adjacent state was introduced.
+- Audit events remain append-only through `writeAuditEvent`; the canonical vocabulary is unchanged.
+- The Immutable Session Object, Session Bootstrap, and protected router state machine are unchanged.
+- Custom claims remain `{ role, schoolId }`; `districtId` remains reserved.
+- No new Cloud Functions, no Firestore Rules changes, no Firestore indexes changes. `platform/functions/**`, `platform/firebase/firestore.rules`, `platform/firebase/firestore.indexes.json`, and `platform/firebase/tests/**` were not modified.
+- Navigation posture for deferred items is preserved: Students, Assignments, and Settings remain `disabled`, `aria-disabled="true"`, `tabindex="-1"`, with a `"Label - Coming soon"` label and a no-op click handler.
+- The shell no-Firebase-import invariant is preserved. The Firestore-touching module lives outside `app/src/shell/**` and is injected as a fetcher.
+
+### Repository validation
+
+- `app` typecheck clean.
+- `app` lint clean.
+- `app` build clean (esbuild).
+- `app` unit tests: **120 pass across 5 suites** (Sprint 6A baseline: 111 / 5; +9 tests, no suite added).
+- `platform/functions` typecheck, lint, and build clean.
+- `platform/functions` unit tests: **295 pass across 22 suites** (unchanged).
+- `platform/firebase` Rules tests: **94 pass across 8 suites** (unchanged).
+
+### Recommendation
+
+Proceed to the Enrollment or Roster surface after Technical Lead review of `SPRINT_6B_COMPLETION_REPORT.md` and local verification by Chris. No commit is recommended until both reviews are complete.

@@ -4,7 +4,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import type { Session } from "../session/types";
-import { mountTeacherShell } from "./shell";
+import type { ClassSummary } from "../classes/types";
+import type { ListClasses } from "../classes/listClasses";
+import { mountTeacherShell, type ShellDeps } from "./shell";
 import { renderHeader } from "./header";
 import { renderNavigation, NAVIGATION_ITEMS } from "./navigation";
 import { renderFooter } from "./footer";
@@ -13,6 +15,20 @@ import {
   WORKSPACE_SURFACES,
   mountWorkspaceOutlet,
 } from "./surfaces/workspace";
+
+const emptyListClasses: ListClasses = () =>
+  Promise.resolve(Object.freeze<ClassSummary[]>([]));
+
+const makeShellDeps = (
+  overrides: Partial<ShellDeps> = {},
+): ShellDeps => ({
+  onSignOut: () => undefined,
+  listClasses: emptyListClasses,
+  ...overrides,
+});
+
+const flush = (): Promise<void> =>
+  new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 const freeze = <T>(v: T): T => Object.freeze(v) as T;
 
@@ -33,7 +49,7 @@ const teacherSession = (): Extract<Session, { kind: "activeTeacher" }> =>
 describe("Teacher Platform Shell - layout regions", () => {
   test("renders exactly one banner, one navigation, one main content region, and one contentinfo landmark", () => {
     const mount = mkMount();
-    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    mountTeacherShell(teacherSession(), mount, makeShellDeps());
 
     expect(mount.querySelectorAll('[role="banner"]')).toHaveLength(1);
     expect(mount.querySelectorAll("nav")).toHaveLength(1);
@@ -43,7 +59,7 @@ describe("Teacher Platform Shell - layout regions", () => {
 
   test("renders regions in DOM order: header, body (nav + main), footer", () => {
     const mount = mkMount();
-    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const children = Array.from(mount.children);
     expect(children[0]?.getAttribute("role")).toBe("banner");
     expect(children[1]?.classList.contains("shell-body")).toBe(true);
@@ -52,7 +68,7 @@ describe("Teacher Platform Shell - layout regions", () => {
 
   test("main content area references the welcome headline via aria-labelledby", () => {
     const mount = mkMount();
-    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const main = mount.querySelector("#app-main");
     expect(main?.getAttribute("aria-labelledby")).toBe("surface-headline");
     expect(mount.querySelector("#surface-headline")?.textContent).toBe(
@@ -148,13 +164,34 @@ describe("Navigation composition and disabled posture", () => {
     ]);
   });
 
-  test("Home is the only enabled item and carries aria-current=page", () => {
+  test("Home and Classes are the enabled items; Home carries aria-current=page by default", () => {
     const mount = mkMount();
     renderNavigation(mount);
     const home = mount.querySelector<HTMLButtonElement>("[data-testid=nav-home]");
     expect(home?.disabled).toBe(false);
     expect(home?.getAttribute("aria-current")).toBe("page");
     expect(home?.textContent).toBe("Home");
+    const classes = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-classes]",
+    );
+    expect(classes?.disabled).toBe(false);
+    expect(classes?.getAttribute("aria-current")).toBeNull();
+    expect(classes?.textContent).toBe("Classes");
+  });
+
+  test("renderNavigation with activeKey=classes moves aria-current onto Classes", () => {
+    const mount = mkMount();
+    renderNavigation(mount, { activeKey: "classes", onSelect: () => undefined });
+    expect(
+      mount
+        .querySelector("[data-testid=nav-home]")
+        ?.getAttribute("aria-current"),
+    ).toBeNull();
+    expect(
+      mount
+        .querySelector("[data-testid=nav-classes]")
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
   });
 
   test("every future navigation item is disabled, marked coming-soon, and not in the tab order", () => {
@@ -298,7 +335,7 @@ describe("Data and callable posture (spec §6.6, §11.2)", () => {
   test("mounting the shell runs to completion with no runtime errors (no Firestore or callable reach)", () => {
     const mount = mkMount();
     expect(() =>
-      mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined }),
+      mountTeacherShell(teacherSession(), mount, makeShellDeps()),
     ).not.toThrow();
   });
 
@@ -333,7 +370,7 @@ describe("Data and callable posture (spec §6.6, §11.2)", () => {
 describe("Workspace outlet (Sprint 6A)", () => {
   test("shell mounts exactly one workspace outlet region", () => {
     const mount = mkMount();
-    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const outlets = mount.querySelectorAll("[data-testid=workspace-outlet]");
     expect(outlets).toHaveLength(1);
     expect(outlets[0]?.id).toBe("app-main");
@@ -341,14 +378,14 @@ describe("Workspace outlet (Sprint 6A)", () => {
 
   test("outlet advertises the active surface via data-active-surface=home", () => {
     const mount = mkMount();
-    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const outlet = mount.querySelector("[data-testid=workspace-outlet]");
     expect(outlet?.getAttribute("data-active-surface")).toBe("home");
   });
 
   test("home surface renders through the outlet, not as a shell sibling", () => {
     const mount = mkMount();
-    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const headline = mount.querySelector("[data-testid=surface-headline]");
     const outlet = mount.querySelector("[data-testid=workspace-outlet]");
     expect(headline).not.toBeNull();
@@ -362,23 +399,26 @@ describe("Workspace outlet (Sprint 6A)", () => {
     );
   });
 
-  test("mountWorkspaceOutlet with an unavailable key still returns an outlet (contract completeness)", () => {
-    // The shell never dispatches to an unavailable key in Sprint 6A because
-    // every non-home nav item is disabled. This test only asserts the
-    // contract shape: the outlet renderer is total across NavigationKey.
+  test("mountWorkspaceOutlet with a not-yet-implemented key still returns an outlet (contract completeness)", () => {
+    // Sprint 6B activates Home and Classes. Every other nav item remains
+    // disabled and its outlet render path is unreachable through the shell.
+    // This test only asserts the contract shape: the outlet renderer is
+    // total across NavigationKey.
     const mount = mkMount();
-    const outlet = mountWorkspaceOutlet(mount, teacherSession(), "classes");
+    const outlet = mountWorkspaceOutlet(mount, teacherSession(), "students", {
+      listClasses: emptyListClasses,
+    });
     expect(outlet.getAttribute("data-testid")).toBe("workspace-outlet");
-    expect(outlet.getAttribute("data-active-surface")).toBe("classes");
+    expect(outlet.getAttribute("data-active-surface")).toBe("students");
   });
 
   test("disabled navigation buttons do not change the outlet's active surface", () => {
     const mount = mkMount();
-    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const before = mount.querySelector("[data-testid=workspace-outlet]")
       ?.getAttribute("data-active-surface");
     const event = new MouseEvent("click", { bubbles: true, cancelable: true });
-    for (const key of ["classes", "students", "assignments", "settings"]) {
+    for (const key of ["students", "assignments", "settings"]) {
       const btn = mount.querySelector<HTMLButtonElement>(
         `[data-testid=nav-${key}]`,
       );
@@ -392,7 +432,7 @@ describe("Workspace outlet (Sprint 6A)", () => {
 
   test("focus lands on the workspace surface headline after shell mount", () => {
     const mount = mkMount();
-    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
+    mountTeacherShell(teacherSession(), mount, makeShellDeps());
     expect(document.activeElement?.getAttribute("data-testid")).toBe(
       "surface-headline",
     );
@@ -403,7 +443,7 @@ describe("mountTeacherShell integration", () => {
   test("sign-out control in the shell header invokes onSignOut exactly once", () => {
     const mount = mkMount();
     const signOut = jest.fn();
-    mountTeacherShell(teacherSession(), mount, { onSignOut: signOut });
+    mountTeacherShell(teacherSession(), mount, makeShellDeps({ onSignOut: signOut }));
     mount
       .querySelector<HTMLButtonElement>("[data-testid=sign-out]")
       ?.click();
@@ -412,13 +452,170 @@ describe("mountTeacherShell integration", () => {
 
   test("clicking a disabled navigation item does not throw and does not navigate", () => {
     const mount = mkMount();
-    mountTeacherShell(teacherSession(), mount, { onSignOut: () => undefined });
-    const classes = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=nav-classes]",
+    mountTeacherShell(teacherSession(), mount, makeShellDeps());
+    const students = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-students]",
     );
     // Disabled buttons in jsdom do not fire click; explicitly dispatch to
     // simulate assistive-tech automation.
     const event = new MouseEvent("click", { bubbles: true, cancelable: true });
-    expect(() => classes?.dispatchEvent(event)).not.toThrow();
+    expect(() => students?.dispatchEvent(event)).not.toThrow();
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("home");
+  });
+});
+
+describe("Classroom Workspace surface (Sprint 6B)", () => {
+  const teacher = teacherSession();
+
+  const makeListClasses = (
+    rows: ReadonlyArray<ClassSummary>,
+  ): jest.Mock<Promise<ReadonlyArray<ClassSummary>>, [string]> =>
+    jest.fn<Promise<ReadonlyArray<ClassSummary>>, [string]>(() =>
+      Promise.resolve(Object.freeze(rows)),
+    );
+
+  const clickClasses = (mount: HTMLElement): void => {
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-classes]",
+    );
+    btn?.click();
+  };
+
+  test("clicking the Classes nav item switches the outlet to the classes surface", async () => {
+    const mount = mkMount();
+    const listClasses = makeListClasses([]);
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses }));
+    clickClasses(mount);
+    const outlet = mount.querySelector("[data-testid=workspace-outlet]");
+    expect(outlet?.getAttribute("data-active-surface")).toBe("classes");
+    expect(
+      mount.querySelector("[data-testid=surface-headline]")?.textContent,
+    ).toBe("Classes");
+    await flush();
+    expect(listClasses).toHaveBeenCalledTimes(1);
+    expect(listClasses).toHaveBeenCalledWith("u1");
+  });
+
+  test("navigating away and back does not double-mount the outlet", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickClasses(mount);
+    expect(mount.querySelectorAll("[data-testid=workspace-outlet]")).toHaveLength(
+      1,
+    );
+    mount.querySelector<HTMLButtonElement>("[data-testid=nav-home]")?.click();
+    expect(mount.querySelectorAll("[data-testid=workspace-outlet]")).toHaveLength(
+      1,
+    );
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("home");
+  });
+
+  test("renders a card per classroom with title, grade, and status", async () => {
+    const mount = mkMount();
+    const listClasses = makeListClasses([
+      freeze({ id: "c1", title: "6A Life Science", grade: "6", status: "active" }),
+      freeze({ id: "c2", title: "7B Systems", grade: "7", status: "archived" }),
+    ]);
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses }));
+    clickClasses(mount);
+    await flush();
+    const list = mount.querySelector("[data-testid=classes-list]");
+    expect(list).not.toBeNull();
+    expect(list?.children.length).toBe(2);
+    expect(
+      mount.querySelector("[data-testid=class-title-c1]")?.textContent,
+    ).toBe("6A Life Science");
+    expect(
+      mount.querySelector("[data-testid=class-grade-c1]")?.textContent,
+    ).toBe("Grade 6");
+    expect(
+      mount.querySelector("[data-testid=class-status-c1]")?.textContent,
+    ).toBe("Active");
+    expect(
+      mount.querySelector("[data-testid=class-status-c2]")?.textContent,
+    ).toBe("Archived");
+  });
+
+  test("renders an empty state when the teacher owns no classrooms", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickClasses(mount);
+    await flush();
+    expect(mount.querySelector("[data-testid=classes-empty]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=classes-list]")).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=classes-status]")?.textContent,
+    ).toBe("You do not have any classrooms yet.");
+  });
+
+  test("shows a loading status before the fetcher resolves", () => {
+    const mount = mkMount();
+    let resolve: (rows: ReadonlyArray<ClassSummary>) => void = () => undefined;
+    const listClasses: ListClasses = () =>
+      new Promise<ReadonlyArray<ClassSummary>>((r) => {
+        resolve = r;
+      });
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses }));
+    clickClasses(mount);
+    expect(
+      mount.querySelector("[data-testid=classes-status]")?.textContent,
+    ).toBe("Loading classes");
+    resolve(Object.freeze([]));
+  });
+
+  test("shows an error state when the fetcher rejects", async () => {
+    const mount = mkMount();
+    const listClasses: ListClasses = () =>
+      Promise.reject(new Error("permission-denied"));
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses }));
+    clickClasses(mount);
+    await flush();
+    expect(mount.querySelector("[data-testid=classes-error]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=classes-list]")).toBeNull();
+  });
+
+  test("clicking a classroom card marks it selected without leaving the surface", async () => {
+    const mount = mkMount();
+    const listClasses = makeListClasses([
+      freeze({ id: "c1", title: "6A", grade: "6", status: "active" }),
+      freeze({ id: "c2", title: "6B", grade: "6", status: "active" }),
+    ]);
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses }));
+    clickClasses(mount);
+    await flush();
+    const card = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=class-card-c1]",
+    );
+    card?.click();
+    expect(card?.getAttribute("aria-pressed")).toBe("true");
+    expect(
+      mount
+        .querySelector("[data-testid=class-card-c2]")
+        ?.getAttribute("aria-pressed"),
+    ).toBe("false");
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("classes");
+  });
+
+  test("focus lands on the Classes headline when the surface is activated", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickClasses(mount);
+    await flush();
+    expect(document.activeElement?.getAttribute("data-testid")).toBe(
+      "surface-headline",
+    );
+    expect(document.activeElement?.textContent).toBe("Classes");
   });
 });

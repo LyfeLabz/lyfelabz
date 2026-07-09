@@ -1,4 +1,5 @@
 import type { RouteSurface } from "../router";
+import type { ListClasses } from "../../classes/listClasses";
 import { mountTeacherShell } from "../../shell/shell";
 import {
   clear,
@@ -27,6 +28,7 @@ export type SurfaceDeps = {
     readonly schoolId: string;
     readonly displayName: string;
   }) => Promise<void>;
+  readonly listClasses: ListClasses;
 };
 
 // -----------------------------------------------------------------------------
@@ -297,7 +299,10 @@ export const makeActiveTeacherSurface =
     if (session.kind !== "activeTeacher") return;
     // Step 5: minimal Step 4 body replaced by the Teacher Platform Shell.
     // The router still owns dispatch; the shell owns layout and Home.
-    mountTeacherShell(session, mount, { onSignOut: deps.onSignOut });
+    mountTeacherShell(session, mount, {
+      onSignOut: deps.onSignOut,
+      listClasses: deps.listClasses,
+    });
   };
 
 // -----------------------------------------------------------------------------

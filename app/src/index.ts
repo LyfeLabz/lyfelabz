@@ -1,3 +1,4 @@
+import { createFirestoreListClasses } from "./classes/listClasses";
 import {
   createAuthInput,
   createFirestoreInput,
@@ -102,11 +103,14 @@ async function run(): Promise<void> {
     await callable(input);
   };
 
+  const listClasses = createFirestoreListClasses(db);
+
   const table = createRouteTable({
     onSignOut,
     onSignIn,
     onRefreshSession,
     onRequestVerification,
+    listClasses,
   });
 
   await rerun();

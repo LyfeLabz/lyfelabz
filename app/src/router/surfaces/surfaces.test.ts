@@ -21,6 +21,7 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
     signIn: jest.Mock<Promise<void>>;
     refresh: jest.Mock<Promise<void>>;
     requestVerification: jest.Mock<Promise<void>>;
+    listClasses: jest.Mock<Promise<ReadonlyArray<never>>, [string]>;
   };
 } {
   const signOut = jest.fn();
@@ -30,14 +31,21 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
     Promise<void>,
     [{ role: "teacher"; schoolId: string; displayName: string }]
   >(() => Promise.resolve());
+  const listClasses = jest.fn<Promise<ReadonlyArray<never>>, [string]>(
+    () => Promise.resolve(Object.freeze([])),
+  );
   const deps: SurfaceDeps = {
     onSignOut: signOut,
     onSignIn: signIn,
     onRefreshSession: refresh,
     onRequestVerification: requestVerification,
+    listClasses,
     ...overrides,
   };
-  return { deps, spies: { signOut, signIn, refresh, requestVerification } };
+  return {
+    deps,
+    spies: { signOut, signIn, refresh, requestVerification, listClasses },
+  };
 }
 
 const flush = () => new Promise<void>((r) => setTimeout(r, 0));

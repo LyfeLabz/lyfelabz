@@ -1,34 +1,53 @@
 import type { Session } from "../../session/types";
+import type { ListClasses } from "../../classes/listClasses";
 import type { NavigationKey } from "../navigation";
 import { renderHomeSurface } from "./home";
+import { renderClassesSurface } from "./classes";
 import { renderComingSoonSurface } from "./shared/emptyState";
 
 // Typed contract for a Teacher Platform workspace surface.
 //
 // A workspace surface is a self-contained region rendered inside the
 // single shell outlet. It reads only fields already present on the
-// activeTeacher Session Object and performs no Firestore reads, no
-// callable invocations, and opens no listeners. See
-// SPRINT_6A_SPECIFICATION.md.
+// activeTeacher Session Object or data retrieved through injected
+// fetchers wired at the client entry point. It performs no Firestore
+// reads and opens no listeners directly. See
+// SPRINT_6A_SPECIFICATION.md and SPRINT_6B_SPECIFICATION.md.
 
 type ActiveTeacher = Extract<Session, { kind: "activeTeacher" }>;
 
-export type WorkspaceSurface = {
-  readonly key: NavigationKey;
-  readonly render: (mount: HTMLElement, session: ActiveTeacher) => void;
+export type WorkspaceDeps = {
+  readonly listClasses: ListClasses;
 };
 
-// Home is the only active surface in Sprint 6A. Every other navigation
-// key remains unavailable and its outlet render path is unreachable
-// through the shell today; the coming-soon renderer exists so the
-// contract is complete for future sprints.
+export type WorkspaceSurface = {
+  readonly key: NavigationKey;
+  readonly render: (
+    mount: HTMLElement,
+    session: ActiveTeacher,
+    deps: WorkspaceDeps,
+  ) => void;
+};
+
+// Home and Classes are the active surfaces in Sprint 6B. Every other
+// navigation key remains unavailable and its outlet render path is
+// unreachable through the shell today; the coming-soon renderer exists
+// so the contract is complete for future sprints.
 export const WORKSPACE_SURFACES: Readonly<Record<NavigationKey, WorkspaceSurface>> =
   Object.freeze({
-    home: Object.freeze({ key: "home", render: renderHomeSurface }),
+    home: Object.freeze({
+      key: "home",
+      render: (mount: HTMLElement, session: ActiveTeacher) =>
+        renderHomeSurface(mount, session),
+    }),
     classes: Object.freeze({
       key: "classes",
-      render: (mount: HTMLElement) =>
-        renderComingSoonSurface(mount, { title: "Classes" }),
+      render: (
+        mount: HTMLElement,
+        session: ActiveTeacher,
+        deps: WorkspaceDeps,
+      ) =>
+        renderClassesSurface(mount, session, { listClasses: deps.listClasses }),
     }),
     students: Object.freeze({
       key: "students",
@@ -55,6 +74,7 @@ export function mountWorkspaceOutlet(
   mount: HTMLElement,
   session: ActiveTeacher,
   activeKey: NavigationKey,
+  deps: WorkspaceDeps,
 ): HTMLElement {
   const doc = mount.ownerDocument;
 
@@ -65,9 +85,8 @@ export function mountWorkspaceOutlet(
   outlet.setAttribute("data-testid", "workspace-outlet");
   outlet.setAttribute("data-active-surface", activeKey);
 
-  const surface = WORKSPACE_SURFACES[activeKey];
-  surface.render(outlet, session);
-
   mount.appendChild(outlet);
+  const surface = WORKSPACE_SURFACES[activeKey];
+  surface.render(outlet, session, deps);
   return outlet;
 }
