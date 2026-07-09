@@ -13,13 +13,15 @@
     justify-content: center;
     line-height: 1.5;
   }
-  main { text-align: center; padding: 1.5rem; }
-  h1 { font-size: 1.5rem; font-weight: 500; margin: 0; }
+  #app-root { text-align: center; padding: 1.5rem; max-width: 40rem; }
+  h1 { font-size: 1.5rem; font-weight: 500; margin: 0 0 0.5rem 0; }
+  p { margin: 0.25rem 0; }
+  button { margin-top: 1rem; padding: 0.5rem 1rem; font: inherit; cursor: pointer; }
+  [role="alert"] { color: #a00; }
 </style>
 </head>
 <body>
-<main>
-  <h1>LyfeLabz Platform</h1>
-</main>
+<main id="app-root" role="main"><p role="status">Loading LyfeLabz Platform</p></main>
+<script type="module" src="./dist/bundle.js"></script>
 </body>
 </html>
