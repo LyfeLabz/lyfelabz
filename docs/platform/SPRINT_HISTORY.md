@@ -304,3 +304,51 @@ Explicitly out of scope and not shipped in Sprint 4A:
 - Immutable Session Object, Session Bootstrap, router, Teacher Platform Shell, authentication flow, teacher verification flow, and student onboarding flow are unchanged.
 - Firestore Rules remain unchanged. `schoolsCreate` writes through the Admin SDK, which bypasses Rules, so the existing `schools/{schoolId}` client contract (authenticated get, no list, no writes) continues to hold and the default-deny terminal rule is preserved.
 - No new collection beyond the certified `schools` collection was introduced.
+
+---
+
+## Sprint 5B - Closed as Satisfied by Sprint 5A
+
+**Date:** 2026-07-09
+**Status:** Closed without code changes; awaiting Technical Lead review and local verification by Chris. No commit produced by Sprint 5B.
+**Certification:** SPRINT_5B_CERTIFICATION.md
+
+### Finding
+
+A pre-implementation architecture review confirmed that the Sprint 5A commit (`28cd62b Sprint 5A: Implement Submission Foundation`) shipped the full server-side Submission Foundation - both `submissionsCreate` and `submissionsFinalize` - together with the Firestore Rules, canonical types, audit vocabulary (`submissions.created`, `submissions.finalized`), and tests that Sprint 5B was scoped to introduce. Every Sprint 5B invariant is already implemented and covered by tests.
+
+Sprint 5B is closed as satisfied. No file affecting runtime, Rules, Cloud Functions, `/app/**`, or any deployment surface was modified.
+
+### Files created or modified by Sprint 5B closure
+
+- Created `docs/platform/SPRINT_5B_CERTIFICATION.md` (this closure record).
+- Appended this section to `docs/platform/SPRINT_HISTORY.md`.
+
+No other files were created, edited, renamed, or deleted.
+
+### Architectural guarantees preserved
+
+- Firestore remains authoritative.
+- `status` remains the only lifecycle field on every domain document, including `submissions/{submissionId}` (values `submitted` and `finalized` per Data Model §3.7).
+- Audit events remain append-only and flow exclusively through `writeAuditEvent`; the canonical vocabulary is unchanged by this closure.
+- Custom claims remain `{ role, schoolId }`; `districtId` remains reserved only.
+- Immutable Session Object, Session Bootstrap, router, Teacher Platform Shell, authentication flow, teacher verification flow, and student onboarding flow are unchanged.
+- Firestore Rules remain unchanged from the Sprint 5A baseline. Client writes to `submissions/{submissionId}` remain denied; both submission callables write through the Admin SDK from the Cloud Function trust boundary.
+- No new collection was introduced.
+
+### Repository validation
+
+Unchanged from the Sprint 5A baseline. Re-verified at closure time:
+
+- `platform/functions` typecheck clean.
+- `platform/functions` lint clean.
+- `platform/functions` build clean (`tsc -p tsconfig.build.json`).
+- `platform/functions` unit tests: **295 pass across 22 suites**.
+- `platform/firebase` Rules tests: **94 pass across 8 suites** (driven by the Firestore emulator).
+- `app` typecheck clean.
+- `app` lint clean.
+- `app` unit tests: **104 pass across 5 suites**.
+
+### Recommendation
+
+Proceed to Sprint 6 after Technical Lead review of `SPRINT_5B_CERTIFICATION.md` and local verification by Chris. No commit is recommended until both reviews are complete.
