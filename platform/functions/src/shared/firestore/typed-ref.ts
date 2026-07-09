@@ -29,6 +29,12 @@ import {
   type SchoolRecord,
 } from "../types/school";
 import {
+  SUBMISSIONS_COLLECTION,
+  type SubmissionCreationWrite,
+  type SubmissionFinalizationWrite,
+  type SubmissionRecord,
+} from "../types/submission";
+import {
   USERS_COLLECTION,
   type UserProvisioningWrite,
   type UserRecord,
@@ -270,4 +276,55 @@ export function assignmentArchiveDocRef(
   return getAdminFirestore()
     .collection(ASSIGNMENTS_COLLECTION)
     .doc(assignmentId) as DocumentReference<AssignmentArchiveWrite>;
+}
+
+// Collection-level typed reference for submissions. Reserved for future
+// admin scans and rollup jobs; not used by the current callable set but
+// exported alongside the record-level references for symmetry with the
+// other domains.
+export function submissionsCollectionRef(): CollectionReference<SubmissionRecord> {
+  return getAdminFirestore()
+    .collection(SUBMISSIONS_COLLECTION) as CollectionReference<SubmissionRecord>;
+}
+
+// Read typed reference for submissions/{submissionId}. Reads return a
+// DocumentSnapshot<SubmissionRecord> aligned with the canonical Data Model
+// §3.7 read shape. Callers that need to perform a creation write or a
+// finalization transition use the narrow write references below so that
+// FieldValue-safe write shapes are preserved at the write boundary.
+export function submissionDocRef(
+  submissionId: string,
+): DocumentReference<SubmissionRecord> {
+  return getAdminFirestore()
+    .collection(SUBMISSIONS_COLLECTION)
+    .doc(submissionId) as DocumentReference<SubmissionRecord>;
+}
+
+// Creation-write typed reference for submissions/{submissionId}. The
+// submissionsCreate callable uses this reference to `.set()` a canonical
+// `SubmissionCreationWrite` payload so that `FieldValue.serverTimestamp()`
+// can be used at the write boundary while the read-side `submissionDocRef`
+// remains typed as `SubmissionRecord`.
+export function submissionCreationDocRef(
+  submissionId: string,
+): DocumentReference<SubmissionCreationWrite> {
+  return getAdminFirestore()
+    .collection(SUBMISSIONS_COLLECTION)
+    .doc(submissionId) as DocumentReference<SubmissionCreationWrite>;
+}
+
+// Finalization-write typed reference for submissions/{submissionId}. The
+// submissionsFinalize callable uses this reference to `.update()` a narrow
+// `SubmissionFinalizationWrite` payload that advances the lifecycle field
+// from `submitted` to `finalized` and stamps `submittedAt`. Ownership
+// fields, `startedAt`, `assignmentId`, `studentId`, `lessonSlug`, and
+// `lessonVersion` are absent from the write shape so no finalization can
+// silently reassign ownership, backdate the start moment, or edit the
+// frozen lesson version.
+export function submissionFinalizationDocRef(
+  submissionId: string,
+): DocumentReference<SubmissionFinalizationWrite> {
+  return getAdminFirestore()
+    .collection(SUBMISSIONS_COLLECTION)
+    .doc(submissionId) as DocumentReference<SubmissionFinalizationWrite>;
 }

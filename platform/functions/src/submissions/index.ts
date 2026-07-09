@@ -1,3 +1,12 @@
-// submissions/ domain entry point. No exports in Sprint 1.
+// submissions/ domain entry point.
 
-export {};
+export {
+  submissionsCreate,
+  type SubmissionsCreateRequest,
+  type SubmissionsCreateResponse,
+} from "./submissions-create";
+export {
+  submissionsFinalize,
+  type SubmissionsFinalizeRequest,
+  type SubmissionsFinalizeResponse,
+} from "./submissions-finalize";

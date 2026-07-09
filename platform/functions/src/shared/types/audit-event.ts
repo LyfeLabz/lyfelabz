@@ -27,7 +27,9 @@ export type AuditAction =
   | "assignments.updated"
   | "assignments.published"
   | "assignments.closed"
-  | "assignments.archived";
+  | "assignments.archived"
+  | "submissions.created"
+  | "submissions.finalized";
 
 // Audit events are indexed by target type and target id per Data Model §3.8.
 // The set is left open as `string` because target types cross domain

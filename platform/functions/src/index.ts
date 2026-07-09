@@ -18,6 +18,7 @@ export {
 } from "./enrollments";
 export { schoolsCreate } from "./schools";
 export { studentsCompleteOnboarding } from "./students";
+export { submissionsCreate, submissionsFinalize } from "./submissions";
 export {
   teachersApproveVerification,
   teachersDenyVerification,

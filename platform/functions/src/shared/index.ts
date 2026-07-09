@@ -29,6 +29,10 @@ export {
   enrollmentsCollectionRef,
   schoolCreationDocRef,
   schoolDocRef,
+  submissionCreationDocRef,
+  submissionDocRef,
+  submissionFinalizationDocRef,
+  submissionsCollectionRef,
   userDocRef,
   userRecordDocRef,
 } from "./firestore/typed-ref";
@@ -73,6 +77,14 @@ export {
   type SchoolCreationWrite,
   type SchoolRecord,
 } from "./types/school";
+export {
+  SUBMISSIONS_COLLECTION,
+  type SubmissionCreationWrite,
+  type SubmissionFinalizationWrite,
+  type SubmissionRecord,
+  type SubmissionResponse,
+  type SubmissionStatus,
+} from "./types/submission";
 export {
   USERS_COLLECTION,
   type ConsentState,
