@@ -7,6 +7,8 @@ rules_version = '2';
 // Scope opened in this pass:
 //   users/{uid}     - self get; self update limited to { displayName }.
 //   schools/{id}    - authenticated get; no list; no writes.
+//   classes/{id}    - owning-teacher get; owning-teacher list only via
+//                     teacherId equality on their own uid; no writes.
 //   auditEvents/{}  - server-only. No client reads or writes.
 //
 // Every collection not matched below inherits the terminal deny rule at
@@ -57,6 +59,36 @@ service cloud.firestore {
     // by the read rule. List and every write are denied.
     match /schools/{schoolId} {
       allow get: if isSignedIn();
+    }
+
+    // ---------- classes/{classId} ----------
+    //
+    // Sprint 4B Classroom Foundation.
+    //
+    // Reads:
+    //   - `get`: the owning teacher may read their own class document. A
+    //     classroom's `teacherId` is set at creation and never changes
+    //     (Data Model §1.2), so ownership can be authorized on the
+    //     document itself without a second read.
+    //   - `list`: the owning teacher may list only classes they own. The
+    //     Rules engine sees the incoming query's `resource` per matched
+    //     document; requiring `resource.data.teacherId == request.auth.uid`
+    //     forces every list query to be scoped by owner and prevents a
+    //     cross-teacher or cross-school enumeration. The Rules engine
+    //     additionally requires the client query to include the matching
+    //     `teacherId` filter for the rule to be admissible.
+    //
+    // Writes:
+    //   - All client writes remain denied. `classesCreate`,
+    //     `classesUpdateMetadata`, and `classesArchive` write through the
+    //     Admin SDK from the Cloud Function trust boundary and therefore
+    //     bypass Rules. Direct client `create`, `update`, or `delete`
+    //     against classes/{classId} is denied by the terminal deny rule.
+    match /classes/{classId} {
+      allow get: if isSignedIn()
+        && resource.data.teacherId == request.auth.uid;
+      allow list: if isSignedIn()
+        && resource.data.teacherId == request.auth.uid;
     }
 
     // ---------- auditEvents/{eventId} ----------

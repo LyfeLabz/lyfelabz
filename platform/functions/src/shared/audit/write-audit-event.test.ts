@@ -171,6 +171,9 @@ describe("writeAuditEvent", () => {
       "teachers.verificationApproved",
       "teachers.verificationDenied",
       "schools.created",
+      "classes.created",
+      "classes.metadataUpdated",
+      "classes.archived",
     ] as const;
     for (const action of actions) {
       await writeAuditEvent(validInput({ action, actorRole: "teacher" }));

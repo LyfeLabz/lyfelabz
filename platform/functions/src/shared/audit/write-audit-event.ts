@@ -58,6 +58,9 @@ const VALID_ACTIONS: readonly AuditAction[] = [
   "teachers.verificationApproved",
   "teachers.verificationDenied",
   "schools.created",
+  "classes.created",
+  "classes.metadataUpdated",
+  "classes.archived",
 ];
 
 function isNonEmptyString(value: unknown): value is string {

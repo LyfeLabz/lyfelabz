@@ -6,7 +6,16 @@ jest.mock("./admin", () => ({
   getAdminFirestore: mockGetAdminFirestore,
 }));
 
-import { schoolCreationDocRef, schoolDocRef, userDocRef } from "./typed-ref";
+import {
+  classArchiveDocRef,
+  classCreationDocRef,
+  classDocRef,
+  classMetadataUpdateDocRef,
+  schoolCreationDocRef,
+  schoolDocRef,
+  userDocRef,
+} from "./typed-ref";
+import { CLASSES_COLLECTION } from "../types/class";
 import { SCHOOLS_COLLECTION } from "../types/school";
 import { USERS_COLLECTION } from "../types/user";
 
@@ -50,6 +59,64 @@ describe("typed-ref", () => {
       schoolDocRef("any-id");
 
       expect(mockCollection).toHaveBeenCalledWith("schools");
+    });
+  });
+
+  describe("classDocRef", () => {
+    it("resolves to classes/{classId} on the admin Firestore instance", () => {
+      const sentinelRef = { __ref: "classes/class-abc" };
+      mockDoc.mockReturnValueOnce(sentinelRef);
+
+      const ref = classDocRef("class-abc");
+
+      expect(mockCollection).toHaveBeenCalledWith(CLASSES_COLLECTION);
+      expect(mockDoc).toHaveBeenCalledWith("class-abc");
+      expect(ref).toBe(sentinelRef);
+    });
+
+    it("targets the canonical 'classes' collection identifier", () => {
+      mockDoc.mockReturnValueOnce({});
+      classDocRef("any-id");
+      expect(mockCollection).toHaveBeenCalledWith("classes");
+    });
+  });
+
+  describe("classCreationDocRef", () => {
+    it("resolves to classes/{classId} for creation writes", () => {
+      const sentinelRef = { __ref: "classes/class-abc" };
+      mockDoc.mockReturnValueOnce(sentinelRef);
+
+      const ref = classCreationDocRef("class-abc");
+
+      expect(mockCollection).toHaveBeenCalledWith(CLASSES_COLLECTION);
+      expect(mockDoc).toHaveBeenCalledWith("class-abc");
+      expect(ref).toBe(sentinelRef);
+    });
+  });
+
+  describe("classMetadataUpdateDocRef", () => {
+    it("resolves to classes/{classId} for metadata-update writes", () => {
+      const sentinelRef = { __ref: "classes/class-abc" };
+      mockDoc.mockReturnValueOnce(sentinelRef);
+
+      const ref = classMetadataUpdateDocRef("class-abc");
+
+      expect(mockCollection).toHaveBeenCalledWith(CLASSES_COLLECTION);
+      expect(mockDoc).toHaveBeenCalledWith("class-abc");
+      expect(ref).toBe(sentinelRef);
+    });
+  });
+
+  describe("classArchiveDocRef", () => {
+    it("resolves to classes/{classId} for archive writes", () => {
+      const sentinelRef = { __ref: "classes/class-abc" };
+      mockDoc.mockReturnValueOnce(sentinelRef);
+
+      const ref = classArchiveDocRef("class-abc");
+
+      expect(mockCollection).toHaveBeenCalledWith(CLASSES_COLLECTION);
+      expect(mockDoc).toHaveBeenCalledWith("class-abc");
+      expect(ref).toBe(sentinelRef);
     });
   });
 

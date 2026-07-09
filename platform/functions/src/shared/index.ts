@@ -11,6 +11,10 @@ export {
 export { PlatformError } from "./errors/platform-error";
 export {
   auditEventsCollectionRef,
+  classArchiveDocRef,
+  classCreationDocRef,
+  classDocRef,
+  classMetadataUpdateDocRef,
   schoolCreationDocRef,
   schoolDocRef,
   userDocRef,
@@ -26,6 +30,14 @@ export {
   type AuditPayload,
   type AuditTargetType,
 } from "./types/audit-event";
+export {
+  CLASSES_COLLECTION,
+  type ClassArchiveWrite,
+  type ClassCreationWrite,
+  type ClassMetadataUpdateWrite,
+  type ClassRecord,
+  type ClassStatus,
+} from "./types/class";
 export {
   SCHOOLS_COLLECTION,
   type SchoolCreationWrite,

@@ -1,3 +1,17 @@
-// classes/ domain entry point. No exports in Sprint 1.
+// classes/ domain entry point.
 
-export {};
+export {
+  classesArchive,
+  type ClassesArchiveRequest,
+  type ClassesArchiveResponse,
+} from "./classes-archive";
+export {
+  classesCreate,
+  type ClassesCreateRequest,
+  type ClassesCreateResponse,
+} from "./classes-create";
+export {
+  classesUpdateMetadata,
+  type ClassesUpdateMetadataRequest,
+  type ClassesUpdateMetadataResponse,
+} from "./classes-update-metadata";
