@@ -11,6 +11,7 @@ export {
 export { PlatformError } from "./errors/platform-error";
 export {
   auditEventsCollectionRef,
+  schoolCreationDocRef,
   schoolDocRef,
   userDocRef,
   userRecordDocRef,
@@ -25,7 +26,11 @@ export {
   type AuditPayload,
   type AuditTargetType,
 } from "./types/audit-event";
-export { SCHOOLS_COLLECTION, type SchoolRecord } from "./types/school";
+export {
+  SCHOOLS_COLLECTION,
+  type SchoolCreationWrite,
+  type SchoolRecord,
+} from "./types/school";
 export {
   USERS_COLLECTION,
   type ConsentState,

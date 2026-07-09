@@ -1,7 +1,11 @@
 import type { CollectionReference, DocumentReference } from "firebase-admin/firestore";
 
 import { AUDIT_EVENTS_COLLECTION, type AuditEventWrite } from "../types/audit-event";
-import { SCHOOLS_COLLECTION, type SchoolRecord } from "../types/school";
+import {
+  SCHOOLS_COLLECTION,
+  type SchoolCreationWrite,
+  type SchoolRecord,
+} from "../types/school";
 import {
   USERS_COLLECTION,
   type UserProvisioningWrite,
@@ -30,6 +34,19 @@ export function schoolDocRef(schoolId: string): DocumentReference<SchoolRecord> 
   return getAdminFirestore()
     .collection(SCHOOLS_COLLECTION)
     .doc(schoolId) as DocumentReference<SchoolRecord>;
+}
+
+// Creation-write typed reference for schools/{schoolId}. The schoolsCreate
+// callable uses this reference to `.set()` a canonical `SchoolCreationWrite`
+// payload so that `FieldValue.serverTimestamp()` can be used at the write
+// boundary while the read-side `schoolDocRef` remains typed as
+// `SchoolRecord`.
+export function schoolCreationDocRef(
+  schoolId: string,
+): DocumentReference<SchoolCreationWrite> {
+  return getAdminFirestore()
+    .collection(SCHOOLS_COLLECTION)
+    .doc(schoolId) as DocumentReference<SchoolCreationWrite>;
 }
 
 // Audit-event document IDs are opaque and system-generated per Data Model

@@ -160,7 +160,7 @@ describe("writeAuditEvent", () => {
     expect(mockAdd).not.toHaveBeenCalled();
   });
 
-  it("accepts every Sprint 2 canonical action value", async () => {
+  it("accepts every canonical action value", async () => {
     mockAdd.mockResolvedValue({ id: "evt-any" });
 
     const actions = [
@@ -170,6 +170,7 @@ describe("writeAuditEvent", () => {
       "teachers.verificationRequested",
       "teachers.verificationApproved",
       "teachers.verificationDenied",
+      "schools.created",
     ] as const;
     for (const action of actions) {
       await writeAuditEvent(validInput({ action, actorRole: "teacher" }));

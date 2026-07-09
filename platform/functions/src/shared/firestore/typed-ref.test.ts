@@ -6,7 +6,7 @@ jest.mock("./admin", () => ({
   getAdminFirestore: mockGetAdminFirestore,
 }));
 
-import { schoolDocRef, userDocRef } from "./typed-ref";
+import { schoolCreationDocRef, schoolDocRef, userDocRef } from "./typed-ref";
 import { SCHOOLS_COLLECTION } from "../types/school";
 import { USERS_COLLECTION } from "../types/user";
 
@@ -50,6 +50,20 @@ describe("typed-ref", () => {
       schoolDocRef("any-id");
 
       expect(mockCollection).toHaveBeenCalledWith("schools");
+    });
+  });
+
+  describe("schoolCreationDocRef", () => {
+    it("resolves to schools/{schoolId} on the admin Firestore instance", () => {
+      const sentinelRef = { __ref: "schools/school-abc" };
+      mockDoc.mockReturnValueOnce(sentinelRef);
+
+      const ref = schoolCreationDocRef("school-abc");
+
+      expect(mockGetAdminFirestore).toHaveBeenCalledTimes(1);
+      expect(mockCollection).toHaveBeenCalledWith(SCHOOLS_COLLECTION);
+      expect(mockDoc).toHaveBeenCalledWith("school-abc");
+      expect(ref).toBe(sentinelRef);
     });
   });
 });

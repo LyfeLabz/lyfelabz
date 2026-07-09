@@ -15,7 +15,8 @@ export type AuditAction =
   | "students.activated"
   | "teachers.verificationRequested"
   | "teachers.verificationApproved"
-  | "teachers.verificationDenied";
+  | "teachers.verificationDenied"
+  | "schools.created";
 
 // Audit events are indexed by target type and target id per Data Model §3.8.
 // The set is left open as `string` because target types cross domain

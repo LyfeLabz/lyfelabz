@@ -299,3 +299,21 @@ It is aligned with LYFELABZ_FIREBASE_SECURITY_MODEL.md, which handles structural
 **Nothing outstanding requires clarification before adoption.** The companion documents identified in the readiness assessment (data model, audit specification, deployment and operations guide) remain separately scoped and do not block approval of this charter.
 
 This document is now the authoritative reference for every Cloud Function that exists, or will ever exist, within LyfeLabz.
+
+---
+
+## Appendix A. Registered Cloud Functions
+
+Every Cloud Function currently deployed by the platform is enumerated here. A function does not enter this list until it has shipped under a certified sprint. Each entry names the responsibility it discharges under §2, the trigger category it belongs to under §4, and the authorization gate it enforces at the trust boundary described in §5.
+
+**authOnUserCreate** (Authentication events). Provisioning trigger for Firebase Authentication `user.create`. Writes the canonical `users/{uid}` provisioning record and emits a single `auth.userProvisioned` audit event. No custom claims are issued at this step. Sprint 2.
+
+**studentsCompleteOnboarding** (Callable). Transitions the authenticated caller from `provisioned` to `active` under `role: "student"`. Issues canonical claims `{ role, schoolId }` and emits a single `students.activated` audit event. Idempotent under a matching already-`active` record. Sprint 2.
+
+**teachersRequestVerification** (Callable). Transitions the authenticated caller from `provisioned` to `pendingVerification` under `role: "teacher"`. Does not issue custom claims. Emits a single `teachers.verificationRequested` audit event. Idempotent under a matching already-`pendingVerification` record. Sprint 2.
+
+**teachersApproveVerification** (Administrative callable). Platform Administrator only. Transitions a target teacher from `pendingVerification` to `active`, issues canonical claims `{ role, schoolId }`, and emits a single `teachers.verificationApproved` audit event. Idempotent under an already-`active` target. Sprint 2.
+
+**teachersDenyVerification** (Administrative callable). Platform Administrator only. Transitions a target teacher from `pendingVerification` back to `provisioned`, clears the activation-required fields via `FieldValue.delete()`, and emits a single `teachers.verificationDenied` audit event. Idempotent under an already-`provisioned` target. Sprint 2.
+
+**schoolsCreate** (Administrative callable). Platform Administrator only. Creates a canonical `schools/{schoolId}` document under the Data Model §3.2 shape (`name`, `shortName`, `timezone`, `createdAt`; optional `district`, `gradeLevels`, `brandingRef`). Emits a single `schools.created` audit event. Idempotent under a client-supplied `schoolId`: an existing document whose canonical fields match the request returns `alreadyCreated: true` with no second write and no second audit event; an existing document whose canonical fields differ is rejected with `schools.conflict`. No new lifecycle field, no new custom claim, and no new Firestore collection is introduced. Sprint 4A.

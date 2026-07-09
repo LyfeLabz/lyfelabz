@@ -191,4 +191,116 @@ Subsequent sprints inherit and depend on:
 
 ---
 
+## Sprint 3: Teacher Platform Foundation
+
+**Dates:** 2026-07-08 to 2026-07-09
+**Status:** Complete, pending engineering review
+**Detailed report:** SPRINT_3_COMPLETION_REPORT.md
+**Certification:** SPRINT_3_CERTIFICATION.md
+
+### Objective
+
+Carry the Sprint 2 identity trust layer into a real browser. Deliver a Firebase Hosting scaffold for a distinct `/app/**` client bundle, a Canonical Session Bootstrap that resolves an authenticated caller into an Immutable Session Object, a protected router that dispatches by Session kind, the teacher entry experience (signed-out sign-in through pending verification), and the permanent Teacher Platform Shell that hosts the approved teacher's authenticated home. Introduce no new lifecycle state, no new claim, no new Cloud Function, no new Firestore collection, and no new Firestore Rule. Emulator-only.
+
+### Major deliverables
+
+- Firebase Hosting scaffold in `platform/firebase/firebase.json`: repository root as `public`, a single rewrite mapping `/app/**` -> `/app/index.html`, and ignores that keep `platform/**`, `docs/**`, and `blog/**` out of the deployed surface.
+- Placeholder `app/index.html` at Step 2 that established the `/app/**` prefix without loading any Firebase SDK.
+- `app/` TypeScript client bundle (`@lyfelabz/app`) with esbuild build, `tsc` typecheck, ESLint lint, and Jest tests under JSDOM.
+- Canonical Session Bootstrap (`app/src/session/bootstrap.ts`) with isolated authorization consistency check (`app/src/session/consistency.ts`), defensive user-record parser (`app/src/session/user-record.ts`), and shared `refreshSession()` helper.
+- Immutable Session Object union in `app/src/session/types.ts` covering `unauthenticated`, `provisioned`, `pendingVerification`, `activeTeacher`, `activeStudent`, `activeAdministrator`, `suspendedUser`, `archivedUser`, and `error`.
+- Protected router (`app/src/router/router.ts`) that dispatches by Session kind, with per-kind route surfaces under `app/src/router/surfaces/`.
+- Teacher onboarding role picker and pending-verification surface wired to the Sprint 2 callables `teachersRequestVerification` and `studentsCompleteOnboarding`.
+- Teacher Platform Shell (`app/src/shell/`) with header, navigation, home surface, and footer; placeholder navigation entries for Classes, Students, Assignments, and Settings.
+- Canonical Firebase project alignment on `lyfelabz-platform` in `platform/firebase/.firebaserc`, with matching updates to `LYFELABZ_EMULATOR_SUITE_GUIDE.md` and `LYFELABZ_FIREBASE_BUILD_CHECKLIST.md` where the earlier name was referenced.
+- Sprint 3 step specifications (Step 1 through Step 5) recorded under `docs/platform/`.
+
+### Important engineering decisions
+
+- `/app/**` is the sole authenticated Hosting surface. Every other path continues to serve the anonymous instructional repository.
+- The Canonical Session Bootstrap is the sole client-side derivation path for lifecycle-derived UI state. No route surface derives lifecycle, role, or school from any other source.
+- The Session Object is deep-frozen and immutable. State changes are realized by re-running the bootstrap, not by mutation.
+- Firestore is authoritative for lifecycle state. On disagreement with claims, the record wins.
+- Fail closed on every error or drift path.
+- No new Firestore Rule was added. Sprint 3 relies entirely on the Sprint 2 self-get and authenticated-get rules.
+- No new Cloud Function was added. The client invokes only Sprint 2 callables.
+- No new lifecycle state, no new claim, no new collection.
+- Emulator-only. No production deployment was performed.
+
+### Commits
+
+- `7292ef0` Sprint 3: establish teacher platform architecture and hosting foundation
+- `e6ce0fe` Sprint 3: add canonical session bootstrap foundation
+- `1e818da` Sprint 3: implement teacher platform entry experience
+- `5777d2f` Sprint 3: implement teacher platform shell and complete onboarding flow
+
+### Repository validation
+
+- `app` typecheck clean.
+- `app` lint clean.
+- `app` tests: 104 pass across 5 suites.
+- `app` build: esbuild produces `dist/bundle.js` cleanly.
+- `platform/functions` build, typecheck, and lint clean.
+- `platform/functions` unit tests: 106 pass across 8 suites.
+- Firestore Rules tests: 28 pass across 4 suites.
+- `platform-ci.yml` continued green through the sprint's commit series.
+
+### Local verification
+
+- Emulator Suite hosts the `/app/**` client bundle and continues to serve the anonymous instructional repository unchanged.
+- End-to-end onboarding walkthrough verified from a real browser: Google sign-in -> `authOnUserCreate` -> provisioned onboarding role picker -> `teachersRequestVerification` -> pending verification screen -> direct `teachersApproveVerification` call under a `platformAdministrator` claim -> Teacher Platform Shell.
+- Every gate failure and error path routed the caller to a fail-closed surface without exposing protected content.
+
+### Certification summary
+
+Sprint 3 is certified complete pending engineering review. Every Sprint 2 architectural guarantee is preserved. The identity trust layer now has a browser-reachable client surface through which the Sprint 2 callables have been exercised end to end under the Emulator Suite. Sprint 3 introduced no new lifecycle state, no new claim, no new Cloud Function, no new Firestore collection, no new Firestore Rule, no classroom model, no enrollment model, no assignment model, and no dashboard functionality.
+
+### Completed milestone
+
+**Teacher platform foundation established.** The `/app/**` authenticated shell is live under the Emulator Suite. The Canonical Session Bootstrap, the Immutable Session Object, the protected router, the teacher entry experience, and the Teacher Platform Shell together form the permanent home that every future teacher feature will live inside. Sprint 4 may begin the first teacher feature.
+
+---
+
 <!-- Append future sprints below this line using the same section structure. -->
+
+## Sprint 4A - School Foundation (in progress)
+
+**Dates:** 2026-07-09
+**Status:** Implementation complete; awaiting Technical Lead review and local verification by Chris. No commit produced by Sprint 4A itself.
+**Companion documents:** LYFELABZ_CLOUD_FUNCTION_CHARTER.md (Appendix A), LYFELABZ_FIRESTORE_DATA_MODEL.md §3.2, TEACHER_PLATFORM_DOMAIN_ROADMAP.md Phase 2.
+
+### Scope delivered
+
+Sprint 4A ships the first callable in the Schools domain and nothing else.
+
+- Extended the canonical shared School types with `SchoolCreationWrite`, matching Data Model §3.2 with `createdAt` as a `FieldValue` at the write boundary and the read-side `SchoolRecord` unchanged.
+- Extended the canonical typed-reference layer with `schoolCreationDocRef`, mirroring the existing `userDocRef` (write) versus `userRecordDocRef` (read) split.
+- Extended the canonical `AuditAction` union with `schools.created` in exactly one place (`shared/types/audit-event.ts`) and extended the `writeAuditEvent` `VALID_ACTIONS` allowlist to match.
+- Implemented `schoolsCreate` (`platform/functions/src/schools/schools-create.ts`), Platform Administrator-only, that validates the payload, creates a canonical `schools/{schoolId}` document via the typed reference, and emits exactly one `schools.created` audit event through the canonical `writeAuditEvent` helper. Idempotent under a client-supplied `schoolId`: an existing document whose canonical fields match returns `alreadyCreated: true`; a conflict returns `schools.conflict`.
+- Registered `schoolsCreate` in `platform/functions/src/index.ts` and enumerated it in Cloud Function Charter Appendix A alongside the Sprint 2 callables.
+
+Explicitly out of scope and not shipped in Sprint 4A:
+
+- Any school update, archive, or resolution callable.
+- Any administrator client surface inside `/app/**`.
+- Any classroom, roster, enrollment, assignment, submission, gradebook, or analytics work.
+- Any change to Firestore Rules, custom claims, lifecycle states, Session Bootstrap, Session types, router, Teacher Platform Shell, authentication flow, teacher verification flow, or student onboarding flow.
+
+### Repository validation
+
+- `platform/functions` typecheck clean.
+- `platform/functions` lint clean.
+- `platform/functions` build clean (`tsc -p tsconfig.build.json`).
+- `platform/functions` unit tests: 128 pass across 9 suites (Sprint 3 baseline: 106 pass across 8 suites; +22 tests, +1 suite).
+- `app` typecheck, lint, and unit tests (104 / 5) continue to pass; no `app/` file was modified in Sprint 4A.
+- Firestore Rules tests: 28 pass across 4 suites; `firestore.rules` was not modified.
+
+### Architectural guarantees preserved
+
+- Firestore remains authoritative.
+- `status` remains the only lifecycle field on `users/{uid}`; no lifecycle field was introduced on `schools/{schoolId}`.
+- Audit events remain append-only and flow exclusively through `writeAuditEvent`. The canonical vocabulary grew by exactly one value (`schools.created`) in one file.
+- Custom claims remain `{ role, schoolId }`; `districtId` remains reserved only. No new claim was introduced and no claim was written by `schoolsCreate`.
+- Immutable Session Object, Session Bootstrap, router, Teacher Platform Shell, authentication flow, teacher verification flow, and student onboarding flow are unchanged.
+- Firestore Rules remain unchanged. `schoolsCreate` writes through the Admin SDK, which bypasses Rules, so the existing `schools/{schoolId}` client contract (authenticated get, no list, no writes) continues to hold and the default-deny terminal rule is preserved.
+- No new collection beyond the certified `schools` collection was introduced.
