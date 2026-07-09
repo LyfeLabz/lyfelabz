@@ -259,8 +259,8 @@ describe("pending verification surface", () => {
   });
 });
 
-describe("active teacher surface", () => {
-  test("renders greeting with displayName and schoolName, plus return link", () => {
+describe("active teacher surface (Step 5 shell)", () => {
+  test("delegates to the Teacher Platform Shell and preserves sign-out and return-to-lessons controls", () => {
     const { deps } = makeDeps();
     const table = createRouteTable(deps);
     const mount = mkMount();
@@ -268,15 +268,21 @@ describe("active teacher surface", () => {
       freeze<Session>({
         kind: "activeTeacher",
         uid: "u1",
-        schoolId: "Rivertown Middle",
+        schoolId: "s1",
         displayName: "Ada",
       }),
       mount,
     );
-    expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ada.");
-    expect(mount.textContent).toContain("Rivertown Middle");
+    // Step 5 replaces the minimal Step 4 surface with the shell. The
+    // welcome message is now an h2; product brand is the h1.
+    expect(mount.querySelector("h1")?.textContent).toBe(
+      "LyfeLabz Teacher Platform",
+    );
+    expect(mount.querySelector("h2")?.textContent).toBe("Welcome, Ada.");
     expect(mount.querySelector("[data-testid=return-link]")).not.toBeNull();
     expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
+    // Opaque schoolId is never rendered in the shell (spec §7.2).
+    expect(mount.textContent).not.toContain("s1");
   });
 });
 

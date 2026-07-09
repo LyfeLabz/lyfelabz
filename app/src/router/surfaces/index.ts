@@ -1,4 +1,5 @@
 import type { RouteSurface } from "../router";
+import { mountTeacherShell } from "../../shell/shell";
 import {
   clear,
   clearButtonPending,
@@ -294,18 +295,9 @@ export const makeActiveTeacherSurface =
   (deps: SurfaceDeps): RouteSurface =>
   (session, mount) => {
     if (session.kind !== "activeTeacher") return;
-    renderHeader(mount, "LyfeLabz Teacher Platform");
-    renderHeadline(mount, `Welcome, ${session.displayName}.`);
-    renderParagraph(
-      mount,
-      `You are signed in as a teacher at ${session.schoolId}.`,
-    );
-    renderParagraph(
-      mount,
-      "The teacher tools are being built. Classrooms, assignments, and student rosters will appear here as they are released. Thank you for helping us build LyfeLabz.",
-    );
-    renderReturnLink(mount);
-    renderSignOut(mount, deps.onSignOut);
+    // Step 5: minimal Step 4 body replaced by the Teacher Platform Shell.
+    // The router still owns dispatch; the shell owns layout and Home.
+    mountTeacherShell(session, mount, { onSignOut: deps.onSignOut });
   };
 
 // -----------------------------------------------------------------------------

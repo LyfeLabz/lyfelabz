@@ -19,6 +19,231 @@
   button { margin-top: 1rem; padding: 0.5rem 1rem; font: inherit; cursor: pointer; }
   [role="alert"] { color: #a00; }
 </style>
+<style id="shell-canonical">
+  /* Teacher Platform Shell layout tokens. Reuses inherited typography;
+     introduces no new design system. See SPRINT_3_STEP_5_SPECIFICATION.md. */
+  #app-root:has(> .shell-header) {
+    display: block;
+    text-align: left;
+    padding: 0;
+    max-width: none;
+    width: 100%;
+    align-self: stretch;
+  }
+  body:has(#app-root > .shell-header) {
+    display: block;
+    align-items: initial;
+    justify-content: initial;
+  }
+  .shell-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 1.25rem;
+    height: 56px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fff;
+    box-sizing: border-box;
+  }
+  .shell-brand {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 0 0 auto;
+  }
+  .shell-header-identity {
+    flex: 1 1 auto;
+    text-align: right;
+    font-size: 0.95rem;
+    color: #444;
+    min-width: 0;
+  }
+  .shell-header-name {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+  .shell-notifications {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: #b8b8b8;
+    font-size: 1.15rem;
+    line-height: 1;
+    flex: 0 0 auto;
+    user-select: none;
+  }
+  .shell-signout {
+    margin: 0;
+    padding: 0.4rem 0.9rem;
+    background: transparent;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font: inherit;
+    flex: 0 0 auto;
+    min-height: 36px;
+  }
+  .shell-signout:hover, .shell-signout:focus-visible {
+    border-color: #666;
+  }
+  .shell-body {
+    display: grid;
+    grid-template-columns: 224px 1fr;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 1.25rem;
+    gap: 1.5rem;
+    box-sizing: border-box;
+  }
+  .shell-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .shell-nav-button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.55rem 0.75rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font: inherit;
+    margin: 0;
+    min-height: 40px;
+    box-sizing: border-box;
+  }
+  .shell-nav-active {
+    background: #f4f4f4;
+    font-weight: 600;
+    cursor: default;
+  }
+  .shell-nav-disabled {
+    color: #8a8a8a;
+    cursor: not-allowed;
+  }
+  .shell-nav-disabled:hover, .shell-nav-disabled:focus { color: #8a8a8a; }
+  .shell-main {
+    display: block;
+    min-width: 0;
+  }
+  .shell-welcome {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 0 0 0.5rem 0;
+    outline: none;
+  }
+  .shell-welcome:focus-visible { outline: 2px solid #444; outline-offset: 2px; }
+  .shell-status {
+    color: #555;
+    margin: 0 0 1.25rem 0;
+  }
+  .shell-card {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.09);
+    border-radius: 6px;
+    padding: 1rem 1.15rem;
+    margin: 0 0 1rem 0;
+  }
+  .shell-identity-list {
+    display: grid;
+    grid-template-columns: minmax(120px, auto) 1fr;
+    gap: 0.35rem 1rem;
+    margin: 0;
+  }
+  .shell-identity-row {
+    display: contents;
+  }
+  .shell-identity-row dt {
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+  }
+  .shell-identity-row dd {
+    margin: 0;
+    color: #222;
+    word-break: break-word;
+  }
+  .shell-pill {
+    display: inline-block;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .shell-pill-verified {
+    background: rgba(207, 168, 60, 0.18);
+    color: #8a6d15;
+    border: 1px solid rgba(138, 109, 21, 0.25);
+  }
+  .shell-placeholder-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 0.5rem 0 1.5rem 0;
+  }
+  .shell-placeholder-card {
+    background: #fafafa;
+    color: #666;
+    cursor: not-allowed;
+  }
+  .shell-placeholder-card:hover, .shell-placeholder-card:focus { background: #fafafa; }
+  .shell-placeholder-title {
+    font-size: 1rem;
+    margin: 0 0 0.35rem 0;
+    color: #333;
+  }
+  .shell-placeholder-purpose { margin: 0 0 0.5rem 0; }
+  .shell-placeholder-status { margin: 0; font-size: 0.9rem; }
+  .shell-return-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: #555;
+  }
+  .shell-footer {
+    text-align: center;
+    padding: 1rem;
+    color: #888;
+    font-size: 0.85rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    margin-top: 1.5rem;
+  }
+  @media (max-width: 960px) {
+    .shell-placeholder-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 720px) {
+    .shell-body { grid-template-columns: 1fr; padding: 1rem; gap: 1rem; }
+    .shell-nav-list { flex-direction: row; overflow-x: auto; }
+    .shell-nav-button { min-width: 140px; }
+    .shell-placeholder-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .shell-header { height: 48px; padding: 0.35rem 0.75rem; gap: 0.5rem; }
+    .shell-brand { font-size: 0.95rem; }
+    .shell-header-identity { display: none; }
+  }
+  @media (pointer: coarse) {
+    .shell-nav-button, .shell-signout { min-height: 44px; }
+    .shell-notifications { width: 44px; height: 44px; }
+  }
+  @media (orientation: landscape) and (max-width: 950px) {
+    .shell-body { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .shell-main, .shell-card { transition: none !important; animation: none !important; }
+  }
+</style>
 </head>
 <body>
 <main id="app-root" role="main"><p role="status">Loading LyfeLabz Platform</p></main>

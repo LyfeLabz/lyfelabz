@@ -2,17 +2,17 @@
 
 A repeatable checklist for manually creating or verifying a LyfeLabz Firebase project through the Firebase Console.
 
-This checklist reflects the exact configuration used for the current production project, `lyfelabz-prod`, and is written so that future `lyfelabz-dev` and `lyfelabz-test` projects can be brought up identically.
+This checklist reflects the exact configuration used for the current production project, `lyfelabz-platform`, and is written so that future `lyfelabz-dev` and `lyfelabz-test` projects can be brought up identically.
 
 GitHub Pages remains the production website. Firebase is the backend platform for authentication, data, storage, and future Cloud Functions. Hosting is initialized but not used for the public site.
 
 ---
 
-## 1. Canonical Configuration (lyfelabz-prod)
+## 1. Canonical Configuration (lyfelabz-platform)
 
-The following configuration is the current, verified state of `lyfelabz-prod` and is the reference used by every subsequent LyfeLabz Firebase project.
+The following configuration is the current, verified state of `lyfelabz-platform` and is the reference used by every subsequent LyfeLabz Firebase project.
 
-- Project ID: `lyfelabz-prod`
+- Project ID: `lyfelabz-platform`
 - Google Analytics: disabled
 - Billing plan: Blaze (pay-as-you-go)
 - Firestore mode: Native mode
@@ -46,7 +46,7 @@ All steps below assume you are signed in at https://console.firebase.google.com/
 ### 2.1 Create the project
 
 1. Firebase Console home -> Add project
-2. Enter project name -> confirm Project ID (must exactly match target, e.g. `lyfelabz-prod`)
+2. Enter project name -> confirm Project ID (must exactly match target, e.g. `lyfelabz-platform`)
 3. Google Analytics step -> Disable Google Analytics -> Create project
 4. Wait for provisioning to complete -> Continue
 
@@ -95,7 +95,7 @@ Skip entirely. Cloud Functions must not be manually initialized in the Console. 
 
 ## 3. Future Project Checklist (lyfelabz-dev, lyfelabz-test)
 
-Use this section verbatim when standing up `lyfelabz-dev` or `lyfelabz-test`. The intent is byte-for-byte parity with `lyfelabz-prod` except for the Project ID.
+Use this section verbatim when standing up `lyfelabz-dev` or `lyfelabz-test`. The intent is byte-for-byte parity with `lyfelabz-platform` except for the Project ID.
 
 - [ ] Create project with Project ID exactly `lyfelabz-dev` or `lyfelabz-test`
 - [ ] Google Analytics: disabled during creation

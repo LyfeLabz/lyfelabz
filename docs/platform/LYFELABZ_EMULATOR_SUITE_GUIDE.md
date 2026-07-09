@@ -12,7 +12,7 @@ Sprint 1 development and verification happen exclusively against the Firebase Em
 | Storage      | 9199 |
 | Emulator UI  | 4000 |
 
-`singleProjectMode` is enabled so the emulators only accept requests for the configured project (`lyfelabz-prod`), preventing accidental cross-project contamination during local development.
+`singleProjectMode` is enabled so the emulators only accept requests for the configured project (`lyfelabz-platform`), preventing accidental cross-project contamination during local development.
 
 ## Starting the emulators
 

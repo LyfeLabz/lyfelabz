@@ -117,7 +117,7 @@ describe("dispatch — renders the correct surface into the mount", () => {
     expect(hist.calls[0].url).toBe("/app/onboarding");
   });
 
-  test("renders the active teacher surface with displayName and schoolId", () => {
+  test("renders the active teacher shell with the welcome message and product brand", () => {
     const mount = mkMount();
     const hist = fakeHistory();
     dispatch(
@@ -131,8 +131,14 @@ describe("dispatch — renders the correct surface into the mount", () => {
       mount,
       hist,
     );
-    expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ada.");
-    expect(mount.textContent).toContain("s1");
+    // Product mark is the h1 per shell spec §8.1.
+    expect(mount.querySelector("h1")?.textContent).toBe(
+      "LyfeLabz Teacher Platform",
+    );
+    // Welcome message is an h2 inside the Home surface.
+    expect(mount.querySelector("h2")?.textContent).toBe("Welcome, Ada.");
+    // Opaque schoolId must never render in the shell (spec §7.2).
+    expect(mount.textContent).not.toContain("s1");
     expect(hist.calls[0].url).toBe("/app/teacher");
   });
 
@@ -256,7 +262,12 @@ describe("dispatch — renders the correct surface into the mount", () => {
       mount,
       hist,
     );
+    // After switching to the teacher shell the mount contains exactly
+    // one h1 (product mark) and one h2 (welcome message).
     expect(mount.querySelectorAll("h1")).toHaveLength(1);
-    expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ada.");
+    expect(mount.querySelector("h1")?.textContent).toBe(
+      "LyfeLabz Teacher Platform",
+    );
+    expect(mount.querySelector("h2")?.textContent).toBe("Welcome, Ada.");
   });
 });
