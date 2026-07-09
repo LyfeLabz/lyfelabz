@@ -1,18 +1,14 @@
 import type { Session, SessionKind } from "../session/types";
 
 // Canonical route path for each Session kind. The router owns the
-// mapping. Sprint 3 surfaces are stubs; Step 4 replaces the placeholder
-// stubs at /app/signin, /app/onboarding, and /app/pending with the real
-// sign-in, role picker, and pending screen.
+// mapping. Step 4 replaces the Step 3 stub surfaces with designed
+// experiences and introduces distinct URLs for the suspended, archived,
+// administrator, and error surfaces so that observability tools can
+// distinguish them without inspecting DOM.
 //
-// Approved Sprint 3 route set (SPRINT_3_STEP_1_SPECIFICATION.md §5):
-//   /app/, /app/signin, /app/onboarding, /app/pending, /app/teacher,
-//   /app/student.
-//
-// Session kinds without an approved landing route (activeAdministrator,
-// suspendedUser, archivedUser) fail closed to /app/signin. New landing
-// routes require an approved architecture amendment before they are
-// introduced.
+// The URL under /app/** is a reflection of the resolved Session, not a
+// routing input. Every surface renders from the caller's Session kind;
+// deep links and back/forward re-render the current Session's surface.
 export const ROUTE_FOR_KIND: Readonly<Record<SessionKind, string>> = Object.freeze({
   unauthenticated: "/app/signin",
   provisioned: "/app/onboarding",
@@ -25,20 +21,16 @@ export const ROUTE_FOR_KIND: Readonly<Record<SessionKind, string>> = Object.free
   error: "/app/signin",
 });
 
-// A route surface is a plain render function. Sprint 3 keeps them
-// deliberately minimal: each stub renders a small piece of DOM into the
-// caller-supplied mount node. Real UI is later work.
+// A route surface is a plain render function. Each surface is a
+// deterministic function of its Session input.
 export type RouteSurface = (session: Session, mount: HTMLElement) => void;
 
 // Dispatch table. Each Session kind maps to exactly one surface. A
-// missing entry is a bug; the router's default-case triggers the
-// unauthenticated surface as a fail-closed default.
+// missing entry is a bug; TypeScript exhaustiveness protects against
+// that at compile time.
 export type RouteTable = Readonly<Record<SessionKind, RouteSurface>>;
 
-// Deterministic route decision for a Session. Sprint 3 spec §11-§16
-// requires that every /app/** path collapses to the caller's Session
-// kind, so the current URL is deliberately ignored here; the router
-// updates history to reflect the resolved kind.
+// Deterministic route decision for a Session.
 export function routeForSession(session: Session): string {
   return ROUTE_FOR_KIND[session.kind];
 }
@@ -54,7 +46,6 @@ export function dispatch(
 ): void {
   const path = routeForSession(session);
   const surface = table[session.kind];
-  // Clear previous surface before rendering the next.
   while (mount.firstChild) mount.removeChild(mount.firstChild);
   surface(session, mount);
   if (history && typeof history.replaceState === "function") {

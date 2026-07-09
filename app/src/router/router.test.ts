@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import { dispatch, ROUTE_FOR_KIND, routeForSession } from "./router";
-import { createRouteTable } from "./routes";
+import { createSignOutOnlyRouteTable } from "./routes";
 import type { Session } from "../session/types";
 
 const freeze = <T>(v: T): T => Object.freeze(v) as T;
@@ -85,35 +85,39 @@ describe("dispatch — renders the correct surface into the mount", () => {
     };
   };
 
-  test("renders the sign-in stub for unauthenticated", () => {
+  test("renders the signed-out surface for unauthenticated (no sign-out control)", () => {
     const mount = mkMount();
     const hist = fakeHistory();
     dispatch(
       freeze<Session>({ kind: "unauthenticated" }),
-      createRouteTable(noop),
+      createSignOutOnlyRouteTable(noop),
       mount,
       hist,
     );
-    expect(mount.querySelector("h1")?.textContent).toBe("Sign in");
+    expect(mount.querySelector("h1")?.textContent).toBe(
+      "Sign in to your teacher account.",
+    );
     expect(mount.querySelector("[data-testid=sign-out]")).toBeNull();
     expect(hist.calls[0].url).toBe("/app/signin");
   });
 
-  test("renders the onboarding stub with a sign-out control for provisioned", () => {
+  test("renders the provisioned surface with a sign-out control", () => {
     const mount = mkMount();
     const hist = fakeHistory();
     dispatch(
       freeze<Session>({ kind: "provisioned", uid: "u1" }),
-      createRouteTable(noop),
+      createSignOutOnlyRouteTable(noop),
       mount,
       hist,
     );
-    expect(mount.querySelector("h1")?.textContent).toBe("Welcome to LyfeLabz");
+    expect(mount.querySelector("h1")?.textContent).toBe(
+      "Welcome to the LyfeLabz teacher platform.",
+    );
     expect(mount.querySelector("[data-testid=sign-out]")).not.toBeNull();
     expect(hist.calls[0].url).toBe("/app/onboarding");
   });
 
-  test("renders the teacher stub with displayName and schoolId", () => {
+  test("renders the active teacher surface with displayName and schoolId", () => {
     const mount = mkMount();
     const hist = fakeHistory();
     dispatch(
@@ -123,17 +127,16 @@ describe("dispatch — renders the correct surface into the mount", () => {
         schoolId: "s1",
         displayName: "Ada",
       }),
-      createRouteTable(noop),
+      createSignOutOnlyRouteTable(noop),
       mount,
       hist,
     );
-    expect(mount.querySelector("h1")?.textContent).toBe("Teacher");
-    const lines = Array.from(mount.querySelectorAll("p")).map((p) => p.textContent);
-    expect(lines).toEqual(["Ada", "s1"]);
+    expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ada.");
+    expect(mount.textContent).toContain("s1");
     expect(hist.calls[0].url).toBe("/app/teacher");
   });
 
-  test("renders the pending stub with the caller displayName", () => {
+  test("renders the pending surface with a check-status button", () => {
     const mount = mkMount();
     const hist = fakeHistory();
     dispatch(
@@ -143,39 +146,45 @@ describe("dispatch — renders the correct surface into the mount", () => {
         schoolId: "s1",
         displayName: "Ada",
       }),
-      createRouteTable(noop),
+      createSignOutOnlyRouteTable(noop),
       mount,
       hist,
     );
-    expect(mount.querySelector("h1")?.textContent).toBe("Awaiting verification");
-    expect(mount.querySelector("p")?.textContent).toBe("Ada");
+    expect(mount.querySelector("h1")?.textContent).toBe(
+      "Your verification is pending.",
+    );
+    expect(mount.querySelector("[data-testid=check-status]")).not.toBeNull();
     expect(hist.calls[0].url).toBe("/app/pending");
   });
 
-  test("falls back to the sign-in surface for suspended, archived, and administrator kinds (no approved landing route)", () => {
-    const mount = mkMount();
+  test("renders distinct surfaces for suspended, archived, administrator", () => {
+    const s = mkMount();
     const hist = fakeHistory();
     dispatch(
       freeze<Session>({ kind: "suspendedUser", uid: "u1" }),
-      createRouteTable(noop),
-      mount,
+      createSignOutOnlyRouteTable(noop),
+      s,
       hist,
     );
-    expect(mount.querySelector("h1")?.textContent).toBe("Sign in");
-    expect(mount.querySelector("[data-testid=error-banner]")).toBeNull();
-    expect(mount.querySelector("[data-testid=sign-out]")).toBeNull();
-    expect(hist.calls[0].url).toBe("/app/signin");
+    expect(s.querySelector("h1")?.textContent).toBe(
+      "Your account is not available right now.",
+    );
+    expect(s.querySelector("[data-testid=sign-out]")).not.toBeNull();
+    expect(hist.calls.at(-1)?.url).toBe("/app/signin");
 
-    const mount2 = mkMount();
+    const a = mkMount();
     dispatch(
       freeze<Session>({ kind: "archivedUser", uid: "u1" }),
-      createRouteTable(noop),
-      mount2,
+      createSignOutOnlyRouteTable(noop),
+      a,
       hist,
     );
-    expect(mount2.querySelector("h1")?.textContent).toBe("Sign in");
+    expect(a.querySelector("h1")?.textContent).toBe(
+      "This account has been archived.",
+    );
+    expect(hist.calls.at(-1)?.url).toBe("/app/signin");
 
-    const mount3 = mkMount();
+    const ad = mkMount();
     dispatch(
       freeze<Session>({
         kind: "activeAdministrator",
@@ -183,25 +192,29 @@ describe("dispatch — renders the correct surface into the mount", () => {
         schoolId: "s1",
         displayName: "Chris",
       }),
-      createRouteTable(noop),
-      mount3,
+      createSignOutOnlyRouteTable(noop),
+      ad,
       hist,
     );
-    expect(mount3.querySelector("h1")?.textContent).toBe("Sign in");
+    expect(ad.querySelector("h1")?.textContent).toBe(
+      "You are signed in as a platform administrator.",
+    );
+    expect(hist.calls.at(-1)?.url).toBe("/app/signin");
   });
 
-  test("renders the sign-in stub with an error banner for error sessions", () => {
+  test("renders the error surface with the specified copy per reason", () => {
     const mount = mkMount();
     const hist = fakeHistory();
     dispatch(
       freeze<Session>({ kind: "error", reason: "userRecordUnreadable" }),
-      createRouteTable(noop),
+      createSignOutOnlyRouteTable(noop),
       mount,
       hist,
     );
-    expect(mount.querySelector("h1")?.textContent).toBe("Sign in");
-    expect(mount.querySelector("[data-testid=error-banner]")).not.toBeNull();
-    expect(mount.querySelector("[data-testid=sign-out]")).toBeNull();
+    expect(mount.querySelector("h1")?.textContent).toBe(
+      "We could not load your account.",
+    );
+    expect(mount.querySelector("[data-testid=retry]")).not.toBeNull();
     expect(hist.calls[0].url).toBe("/app/signin");
   });
 
@@ -210,7 +223,7 @@ describe("dispatch — renders the correct surface into the mount", () => {
     let calls = 0;
     dispatch(
       freeze<Session>({ kind: "provisioned", uid: "u1" }),
-      createRouteTable(() => {
+      createSignOutOnlyRouteTable(() => {
         calls += 1;
       }),
       mount,
@@ -228,7 +241,7 @@ describe("dispatch — renders the correct surface into the mount", () => {
     const hist = fakeHistory();
     dispatch(
       freeze<Session>({ kind: "provisioned", uid: "u1" }),
-      createRouteTable(noop),
+      createSignOutOnlyRouteTable(noop),
       mount,
       hist,
     );
@@ -239,11 +252,11 @@ describe("dispatch — renders the correct surface into the mount", () => {
         schoolId: "s1",
         displayName: "Ada",
       }),
-      createRouteTable(noop),
+      createSignOutOnlyRouteTable(noop),
       mount,
       hist,
     );
     expect(mount.querySelectorAll("h1")).toHaveLength(1);
-    expect(mount.querySelector("h1")?.textContent).toBe("Teacher");
+    expect(mount.querySelector("h1")?.textContent).toBe("Welcome, Ada.");
   });
 });
