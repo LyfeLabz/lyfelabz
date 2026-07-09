@@ -1,3 +1,10 @@
+export {
+  assignmentsArchive,
+  assignmentsClose,
+  assignmentsCreateDraft,
+  assignmentsPublish,
+  assignmentsUpdateDraft,
+} from "./assignments";
 export { authOnUserCreate } from "./auth";
 export {
   classesArchive,

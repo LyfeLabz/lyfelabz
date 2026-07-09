@@ -1,5 +1,14 @@
 import type { CollectionReference, DocumentReference } from "firebase-admin/firestore";
 
+import {
+  ASSIGNMENTS_COLLECTION,
+  type AssignmentArchiveWrite,
+  type AssignmentCloseWrite,
+  type AssignmentCreationWrite,
+  type AssignmentDraftUpdateWrite,
+  type AssignmentPublishWrite,
+  type AssignmentRecord,
+} from "../types/assignment";
 import { AUDIT_EVENTS_COLLECTION, type AuditEventWrite } from "../types/audit-event";
 import {
   CLASSES_COLLECTION,
@@ -177,4 +186,88 @@ export function enrollmentStatusChangeDocRef(
 export function enrollmentsCollectionRef(): CollectionReference<EnrollmentRecord> {
   return getAdminFirestore()
     .collection(ENROLLMENTS_COLLECTION) as CollectionReference<EnrollmentRecord>;
+}
+
+// Collection-level typed reference for assignments. Reserved for future
+// Sprint 4D admin scans; not used by the current callable set but exported
+// alongside the record-level references for symmetry with the other domains.
+export function assignmentsCollectionRef(): CollectionReference<AssignmentRecord> {
+  return getAdminFirestore()
+    .collection(ASSIGNMENTS_COLLECTION) as CollectionReference<AssignmentRecord>;
+}
+
+// Read typed reference for assignments/{assignmentId}. Reads return a
+// DocumentSnapshot<AssignmentRecord> aligned with the canonical Data Model
+// §3.6 read shape. Callers that need to perform a creation write, a draft
+// update, or a lifecycle transition use the narrow write references below
+// so that FieldValue-safe write shapes are preserved at the write boundary.
+export function assignmentDocRef(
+  assignmentId: string,
+): DocumentReference<AssignmentRecord> {
+  return getAdminFirestore()
+    .collection(ASSIGNMENTS_COLLECTION)
+    .doc(assignmentId) as DocumentReference<AssignmentRecord>;
+}
+
+// Creation-write typed reference for assignments/{assignmentId}. The
+// assignmentsCreateDraft callable uses this reference to `.set()` a
+// canonical `AssignmentCreationWrite` payload so that
+// `FieldValue.serverTimestamp()` can be used at the write boundary while
+// the read-side `assignmentDocRef` remains typed as `AssignmentRecord`.
+export function assignmentCreationDocRef(
+  assignmentId: string,
+): DocumentReference<AssignmentCreationWrite> {
+  return getAdminFirestore()
+    .collection(ASSIGNMENTS_COLLECTION)
+    .doc(assignmentId) as DocumentReference<AssignmentCreationWrite>;
+}
+
+// Draft-update typed reference for assignments/{assignmentId}. The
+// assignmentsUpdateDraft callable uses this reference to `.update()` a
+// narrow `AssignmentDraftUpdateWrite` payload. Ownership fields
+// (classId, teacherId, schoolId), `status`, and `createdAt` are absent
+// from the write shape so no draft update can silently reassign ownership
+// or drive the lifecycle field.
+export function assignmentDraftUpdateDocRef(
+  assignmentId: string,
+): DocumentReference<AssignmentDraftUpdateWrite> {
+  return getAdminFirestore()
+    .collection(ASSIGNMENTS_COLLECTION)
+    .doc(assignmentId);
+}
+
+// Publish-write typed reference for assignments/{assignmentId}. The
+// assignmentsPublish callable uses this reference to `.update()` a narrow
+// `AssignmentPublishWrite` payload that advances the lifecycle field from
+// `draft` to `published` and modifies no other field.
+export function assignmentPublishDocRef(
+  assignmentId: string,
+): DocumentReference<AssignmentPublishWrite> {
+  return getAdminFirestore()
+    .collection(ASSIGNMENTS_COLLECTION)
+    .doc(assignmentId) as DocumentReference<AssignmentPublishWrite>;
+}
+
+// Close-write typed reference for assignments/{assignmentId}. The
+// assignmentsClose callable uses this reference to `.update()` a narrow
+// `AssignmentCloseWrite` payload that advances the lifecycle field from
+// `published` to `closed` and modifies no other field.
+export function assignmentCloseDocRef(
+  assignmentId: string,
+): DocumentReference<AssignmentCloseWrite> {
+  return getAdminFirestore()
+    .collection(ASSIGNMENTS_COLLECTION)
+    .doc(assignmentId) as DocumentReference<AssignmentCloseWrite>;
+}
+
+// Archive-write typed reference for assignments/{assignmentId}. The
+// assignmentsArchive callable uses this reference to `.update()` a narrow
+// `AssignmentArchiveWrite` payload that advances the lifecycle field to
+// the terminal `archived` state and modifies no other field.
+export function assignmentArchiveDocRef(
+  assignmentId: string,
+): DocumentReference<AssignmentArchiveWrite> {
+  return getAdminFirestore()
+    .collection(ASSIGNMENTS_COLLECTION)
+    .doc(assignmentId) as DocumentReference<AssignmentArchiveWrite>;
 }

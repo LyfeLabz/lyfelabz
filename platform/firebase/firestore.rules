@@ -139,6 +139,40 @@ service cloud.firestore {
       );
     }
 
+    // ---------- assignments/{assignmentId} ----------
+    //
+    // Sprint 4D Assignment Foundation.
+    //
+    // Reads:
+    //   - `get`: the owning teacher may read their own assignment
+    //     document. An assignment's `teacherId` is set at creation and
+    //     never changes (Data Model §1.2 and §3.6), so ownership can be
+    //     authorized on the document itself without a second read.
+    //   - `list`: the owning teacher may list only assignments they own.
+    //     Requiring `resource.data.teacherId == request.auth.uid` forces
+    //     every list query to be scoped by owner and prevents a
+    //     cross-teacher or cross-school enumeration. The Rules engine
+    //     additionally requires the client query to include the matching
+    //     `teacherId` filter for the rule to be admissible.
+    //
+    // Student assignment reads are intentionally deferred to a future
+    // sprint; the terminal deny rule denies them.
+    //
+    // Writes:
+    //   - All client writes remain denied. `assignmentsCreateDraft`,
+    //     `assignmentsUpdateDraft`, `assignmentsPublish`,
+    //     `assignmentsClose`, and `assignmentsArchive` write through the
+    //     Admin SDK from the Cloud Function trust boundary and therefore
+    //     bypass Rules. Direct client `create`, `update`, or `delete`
+    //     against assignments/{assignmentId} is denied by the terminal
+    //     deny rule.
+    match /assignments/{assignmentId} {
+      allow get: if isSignedIn()
+        && resource.data.teacherId == request.auth.uid;
+      allow list: if isSignedIn()
+        && resource.data.teacherId == request.auth.uid;
+    }
+
     // ---------- auditEvents/{eventId} ----------
     //
     // Append-only server-write, server-read per Security Model §11 and

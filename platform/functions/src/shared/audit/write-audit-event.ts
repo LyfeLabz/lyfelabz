@@ -64,6 +64,11 @@ const VALID_ACTIONS: readonly AuditAction[] = [
   "classes.joinCodeRotated",
   "enrollments.created",
   "enrollments.statusChanged",
+  "assignments.created",
+  "assignments.updated",
+  "assignments.published",
+  "assignments.closed",
+  "assignments.archived",
 ];
 
 function isNonEmptyString(value: unknown): value is string {

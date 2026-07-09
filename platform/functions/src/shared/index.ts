@@ -10,6 +10,13 @@ export {
 } from "./auth/claims";
 export { PlatformError } from "./errors/platform-error";
 export {
+  assignmentArchiveDocRef,
+  assignmentCloseDocRef,
+  assignmentCreationDocRef,
+  assignmentDocRef,
+  assignmentDraftUpdateDocRef,
+  assignmentPublishDocRef,
+  assignmentsCollectionRef,
   auditEventsCollectionRef,
   classArchiveDocRef,
   classCreationDocRef,
@@ -26,6 +33,17 @@ export {
   userRecordDocRef,
 } from "./firestore/typed-ref";
 export { log, type LogPayload } from "./logging/logger";
+export {
+  ASSIGNMENTS_COLLECTION,
+  type AssignmentArchiveWrite,
+  type AssignmentCloseWrite,
+  type AssignmentCreationWrite,
+  type AssignmentDraftUpdateWrite,
+  type AssignmentMode,
+  type AssignmentPublishWrite,
+  type AssignmentRecord,
+  type AssignmentStatus,
+} from "./types/assignment";
 export {
   AUDIT_EVENTS_COLLECTION,
   type ActorRole,

@@ -22,7 +22,12 @@ export type AuditAction =
   | "classes.archived"
   | "classes.joinCodeRotated"
   | "enrollments.created"
-  | "enrollments.statusChanged";
+  | "enrollments.statusChanged"
+  | "assignments.created"
+  | "assignments.updated"
+  | "assignments.published"
+  | "assignments.closed"
+  | "assignments.archived";
 
 // Audit events are indexed by target type and target id per Data Model §3.8.
 // The set is left open as `string` because target types cross domain
