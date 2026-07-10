@@ -664,3 +664,54 @@ Sprint 6D is now certified. The teacher curriculum landing page no longer relies
 ### Recommendation
 
 Sprint 6D is certified. Proceed to the Sprint 6D certification review pass after Technical Lead review of this history entry, the Sprint 6D completion report, and local verification by Chris. No commit is recommended until both reviews are complete.
+
+---
+
+## Documentation - Teacher Journey Narrative
+
+**Date:** 2026-07-10
+**Status:** Documentation only. Awaiting Technical Lead review and local verification by Chris.
+**Companion documents:** TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, PRESENT_MODE_ARCHITECTURE.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md.
+
+### Objective
+
+Create a foundational product narrative describing what it should feel like to teach with LyfeLabz across a full school day. The narrative complements the certified philosophy and architecture documents; it does not replace them.
+
+### Deliverables
+
+- Created `docs/platform/TEACHER_JOURNEY.md`. Nine chapters: Purpose, Core Philosophy, Before the First Bell, Teaching a Lesson, Between Classes, Planning Period, After School, Guiding Product Rules, Future Vision. Each chapter ends with a small Product Rules section that distills the design principles discovered from that moment.
+- Updated `docs/platform/TEACHER_PLATFORM_DOMAIN_ROADMAP.md` to add TEACHER_JOURNEY.md to the companion-documents line and to insert a short reference block directing future teacher-facing implementation work to the journey.
+- Updated `docs/platform/SPRINT_HISTORY.md` with this entry.
+
+### Architecture posture
+
+- No runtime code, Firebase configuration, Firestore Rules, Cloud Functions, or instructional content is modified.
+- No Firestore collection, callable, custom claim, lifecycle field, Session field, or audit vocabulary term is introduced.
+- The certified architecture (LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, PLATFORM_STATE_MACHINE.md, LYFELABZ_PLATFORM_DECISIONS.md) is unchanged.
+- The Teacher Experience Philosophy and the Present Mode Architecture remain authoritative for their respective concerns. The journey defers to both in every case of conflict.
+- Preservation mode is intact. The instructional repository at the repository root is not touched.
+
+### Philosophy summary
+
+The Teacher Journey names, in narrative form, the following load-bearing product principles.
+
+- Curriculum is the teacher's home. The Teacher Workspace opens on curriculum, not on a dashboard.
+- Preparation comes before analytics. Every class opens on a Snapshot before it exposes a spreadsheet.
+- The one-dialog day. Scheduling for all classes happens in a single dialog, with each class independently configurable, the default date always Today, and release time a per-day teacher decision.
+- Defaults reflect the common case. Preferences are remembered. Schedules are not assumed.
+- Present Mode is separate by construction. Its privacy guarantees are structural, not conditional.
+- One canonical curriculum. Teacher browsing, Present Mode, and student access all reference the same instructional experience.
+- Complement Google Classroom and PowerSchool. Do not replace them.
+- Reduce clicks honestly. Removed clicks that also remove a decision the teacher wanted to make are regressions, not wins.
+- Teachers are never trapped. LyfeLabz is one tab among many.
+
+### Validation
+
+- No em dashes present in the new or edited documents. Verified with a repository grep for the em-dash character across `TEACHER_JOURNEY.md` and `TEACHER_PLATFORM_DOMAIN_ROADMAP.md`, which returned no matches.
+- Internal document references (TEACHER_EXPERIENCE_PHILOSOPHY.md, PRESENT_MODE_ARCHITECTURE.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, SPRINT_HISTORY.md, SPRINT_6D_0_COMPLETION_REPORT.md, SPRINT_6D_COMPLETION_REPORT.md) resolve to existing files under `docs/platform/`.
+- No runtime files were modified. No `app/**`, `platform/**`, `firebase/**`, root `index.html`, or lesson HTML was touched.
+- No new features, callables, roles, claims, lifecycle fields, or Firestore collections are introduced.
+
+### Recommendation
+
+No commit is recommended until Technical Lead review of this history entry, review of TEACHER_JOURNEY.md, and local verification by Chris are complete.
