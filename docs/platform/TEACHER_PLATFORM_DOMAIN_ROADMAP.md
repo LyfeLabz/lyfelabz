@@ -1,13 +1,15 @@
 # LyfeLabz Teacher Platform Domain Roadmap
 
 Status: Canonical
-Companion documents: LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DOMAIN_MODEL.md, LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, PLATFORM_STATE_MACHINE.md, SPRINT_HISTORY.md, SPRINT_3_CERTIFICATION.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_JOURNEY.md
+Companion documents: LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DOMAIN_MODEL.md, LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, PLATFORM_STATE_MACHINE.md, SPRINT_HISTORY.md, SPRINT_3_CERTIFICATION.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_JOURNEY.md, ASSIGN_EXPERIENCE.md
 
 ---
 
 ## Teacher-Facing Implementation Reference
 
 Future sprint specifications that shape a teacher-facing surface (Curriculum, Classes, Present Mode, Settings, assignment scheduling, class Snapshots, class workspaces, or any subsequent teacher surface) must read `TEACHER_JOURNEY.md` alongside `TEACHER_EXPERIENCE_PHILOSOPHY.md` before proposing a surface shape. The philosophy states the principles; the journey grounds those principles in the concrete moments of a teacher's day. A surface that cannot be located inside a moment in the journey is a signal to reconsider the surface, not to add a moment. The journey defers to the certified architecture in every case of conflict.
+
+`ASSIGN_EXPERIENCE.md` is the canonical workflow document for assignment-related implementation. Any future sprint that touches the Assign control, the Assignment Dialog, per-class scheduling rows, the "✓ Assigned" card state, or the confirmation and revisit behavior for a scheduled resource must reconcile its surface with `ASSIGN_EXPERIENCE.md`. Assignment scheduling is one workflow. Alternate assignment surfaces or parallel assign dialogs are not proposed by a sprint specification; they require a documented amendment to `ASSIGN_EXPERIENCE.md` first. The document defers to the Assignment Foundation phase (Phase 5) and to the certified architecture in every case of conflict.
 
 ---
 

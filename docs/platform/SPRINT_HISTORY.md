@@ -715,3 +715,56 @@ The Teacher Journey names, in narrative form, the following load-bearing product
 ### Recommendation
 
 No commit is recommended until Technical Lead review of this history entry, review of TEACHER_JOURNEY.md, and local verification by Chris are complete.
+
+---
+
+## Documentation - Assign Experience Product Specification
+
+**Date:** 2026-07-10
+**Status:** Documentation only. Awaiting Technical Lead review and local verification by Chris.
+**Companion documents:** ASSIGN_EXPERIENCE.md, TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, PRESENT_MODE_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md.
+
+### Objective
+
+Document the canonical Assign Experience before Sprint 6E implementation begins. Give future sprints a shared product specification for the teacher assignment workflow so that Assignment Foundation surfaces implement the experience rather than invent it.
+
+### Deliverables
+
+- Created `docs/platform/ASSIGN_EXPERIENCE.md`. Ten chapters: Purpose, Design Philosophy, Opening the Assignment Dialog, Preparing an Entire Day, Configuring Individual Classes, Scheduling, Confirmation, Revisiting Existing Assignments, Design Rules, Future Growth. Each of chapters 1 through 8 and chapter 10 ends with a Design Rules block that distills the product decisions from that section.
+- Updated `docs/platform/TEACHER_PLATFORM_DOMAIN_ROADMAP.md` to add ASSIGN_EXPERIENCE.md to the companion-documents line and to insert a short reference block identifying the Assign Experience as the canonical workflow document for assignment-related implementation.
+- Updated `docs/platform/SPRINT_HISTORY.md` with this entry.
+
+### Architecture posture
+
+- No runtime code, Firebase configuration, Firestore Rules, Cloud Functions, or instructional content is modified.
+- No Firestore collection, callable, custom claim, lifecycle field, Session field, or audit vocabulary term is introduced.
+- The certified architecture (LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, PLATFORM_STATE_MACHINE.md, LYFELABZ_PLATFORM_DECISIONS.md) is unchanged.
+- The Teacher Experience Philosophy, the Teacher Journey, and the Present Mode Architecture remain authoritative for their respective concerns. The Assign Experience defers to all of them and to the Assignment Foundation phase in every case of conflict.
+- Preservation mode is intact. The instructional repository at the repository root is not touched.
+
+### Philosophy summary
+
+The Assign Experience names, in specification form, the following load-bearing product principles.
+
+- Assigning is one workflow. LyfeLabz has one dialog for scheduling every selected class.
+- Preparation, not delivery. The workflow is designed for the moment before students arrive.
+- Every class the teacher teaches appears as its own row. Every class is selected by default.
+- Each row is independently configurable. Exceptions live inside the same dialog, never in a second one.
+- The default assignment date is always Today. Release time and Google Classroom topic are prefilled from the teacher's remembered preferences.
+- Points default to the total possible quiz score for the resource.
+- LyfeLabz remembers preferences. LyfeLabz does not assume today's schedule.
+- Scheduling is a single confirmation for the entire day. Validation errors surface in place.
+- The lesson card updates to "✓ Assigned" in place. Clicking it reopens the same dialog with the current information populated.
+- Unassign is a deselection inside the dialog, not a dedicated workflow.
+- After scheduling, the teacher returns to exactly where she was. Curriculum is a control panel, not a dashboard.
+
+### Validation
+
+- No em dashes present in the new or edited documents. Verified with a repository grep for the em-dash character across `ASSIGN_EXPERIENCE.md`, the updated portion of `TEACHER_PLATFORM_DOMAIN_ROADMAP.md`, and this history entry, which returned no matches.
+- Internal document references (TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, PRESENT_MODE_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, SPRINT_HISTORY.md) resolve to existing files under `docs/platform/`.
+- No runtime files were modified. No `app/**`, `platform/**`, `firebase/**`, root `index.html`, or lesson HTML was touched.
+- No new features, callables, roles, claims, lifecycle fields, or Firestore collections are introduced.
+
+### Recommendation
+
+No commit is recommended until Technical Lead review of this history entry, review of ASSIGN_EXPERIENCE.md, review of the roadmap reference block, and local verification by Chris are complete.
