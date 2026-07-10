@@ -18,6 +18,7 @@ import {
   WORKSPACE_SURFACES,
   mountWorkspaceOutlet,
 } from "./surfaces/workspace";
+import { renderPresentModeSurface } from "./surfaces/presentMode";
 
 const emptyListClasses: ListClasses = () =>
   Promise.resolve(Object.freeze<ClassSummary[]>([]));
@@ -226,25 +227,22 @@ describe("Navigation composition and disabled posture (Sprint 6C)", () => {
     ).toBe("page");
   });
 
-  test("Present Mode and Settings render as disabled coming-soon items and are not in the tab order", () => {
+  test("Present Mode is now an available workspace destination (Sprint 6F) and Settings remains a disabled coming-soon item", () => {
     const mount = mkMount();
     renderNavigation(mount);
-    for (const key of ["present-mode", "settings"] as const) {
-      const btn = mount.querySelector<HTMLButtonElement>(
-        `[data-testid=nav-${key}]`,
-      );
-      expect(btn?.disabled).toBe(true);
-      expect(btn?.getAttribute("aria-disabled")).toBe("true");
-      expect(btn?.getAttribute("tabindex")).toBe("-1");
-    }
-    expect(
-      mount
-        .querySelector("[data-testid=nav-present-mode]")
-        ?.textContent,
-    ).toBe("Present Mode - Coming soon");
-    expect(
-      mount.querySelector("[data-testid=nav-settings]")?.textContent,
-    ).toBe("Settings - Coming soon");
+    const presentMode = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-present-mode]",
+    );
+    expect(presentMode?.disabled).toBe(false);
+    expect(presentMode?.getAttribute("aria-disabled")).toBeNull();
+    expect(presentMode?.textContent).toBe("Present Mode");
+    const settings = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-settings]",
+    );
+    expect(settings?.disabled).toBe(true);
+    expect(settings?.getAttribute("aria-disabled")).toBe("true");
+    expect(settings?.getAttribute("tabindex")).toBe("-1");
+    expect(settings?.textContent).toBe("Settings - Coming soon");
   });
 
   test("every unavailable navigation item preserves the disabled contract", () => {
@@ -549,25 +547,23 @@ describe("Workspace outlet (Sprint 6C)", () => {
 
   test("mountWorkspaceOutlet with a not-yet-implemented key still returns an outlet (contract completeness)", () => {
     const mount = mkMount();
-    const outlet = mountWorkspaceOutlet(mount, teacherSession(), "present-mode", {
+    const outlet = mountWorkspaceOutlet(mount, teacherSession(), "settings", {
       listClasses: emptyListClasses,
     });
     expect(outlet.getAttribute("data-testid")).toBe("workspace-outlet");
-    expect(outlet.getAttribute("data-active-surface")).toBe("present-mode");
+    expect(outlet.getAttribute("data-active-surface")).toBe("settings");
   });
 
-  test("disabled navigation buttons do not change the outlet's active surface", () => {
+  test("the remaining disabled navigation button does not change the outlet's active surface", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const before = mount.querySelector("[data-testid=workspace-outlet]")
       ?.getAttribute("data-active-surface");
     const event = new MouseEvent("click", { bubbles: true, cancelable: true });
-    for (const key of ["present-mode", "settings"]) {
-      const btn = mount.querySelector<HTMLButtonElement>(
-        `[data-testid=nav-${key}]`,
-      );
-      expect(() => btn?.dispatchEvent(event)).not.toThrow();
-    }
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-settings]",
+    );
+    expect(() => btn?.dispatchEvent(event)).not.toThrow();
     const after = mount.querySelector("[data-testid=workspace-outlet]")
       ?.getAttribute("data-active-surface");
     expect(after).toBe(before);
@@ -597,11 +593,11 @@ describe("mountTeacherShell integration", () => {
   test("clicking a disabled navigation item does not throw and does not navigate", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
-    const presentMode = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=nav-present-mode]",
+    const settings = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-settings]",
     );
     const event = new MouseEvent("click", { bubbles: true, cancelable: true });
-    expect(() => presentMode?.dispatchEvent(event)).not.toThrow();
+    expect(() => settings?.dispatchEvent(event)).not.toThrow();
     expect(
       mount
         .querySelector("[data-testid=workspace-outlet]")
@@ -1100,5 +1096,226 @@ describe("Assign Experience - Sprint 6E", () => {
         "[data-testid=assign-confirm]",
       )?.disabled,
     ).toBe(true);
+  });
+});
+
+describe("Present Mode workspace surface (Sprint 6F)", () => {
+  const teacher = teacherSession();
+
+  const clickPresentMode = (mount: HTMLElement): void => {
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-present-mode]")
+      ?.click();
+  };
+
+  test("nav item is available (not disabled) and does not carry aria-current by default", () => {
+    const mount = mkMount();
+    renderNavigation(mount);
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-present-mode]",
+    );
+    expect(btn?.disabled).toBe(false);
+    expect(btn?.getAttribute("aria-disabled")).toBeNull();
+    expect(btn?.textContent).toBe("Present Mode");
+    expect(btn?.getAttribute("aria-current")).toBeNull();
+  });
+
+  test("nav item carries aria-current=page when Present Mode is the active surface", () => {
+    const mount = mkMount();
+    renderNavigation(mount, {
+      activeKey: "present-mode",
+      onSelect: () => undefined,
+    });
+    expect(
+      mount
+        .querySelector("[data-testid=nav-present-mode]")
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
+    expect(
+      mount
+        .querySelector("[data-testid=nav-curriculum]")
+        ?.getAttribute("aria-current"),
+    ).toBeNull();
+    expect(
+      mount
+        .querySelector("[data-testid=nav-classes]")
+        ?.getAttribute("aria-current"),
+    ).toBeNull();
+  });
+
+  test("WORKSPACE_SURFACES still registers exactly the four canonical keys", () => {
+    expect(Object.keys(WORKSPACE_SURFACES).sort()).toEqual(
+      ["classes", "curriculum", "present-mode", "settings"],
+    );
+    expect(WORKSPACE_SURFACES["present-mode"].key).toBe("present-mode");
+  });
+
+  test("clicking Present Mode switches the outlet to the Present Mode surface", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickPresentMode(mount);
+    const outlet = mount.querySelector("[data-testid=workspace-outlet]");
+    expect(outlet?.getAttribute("data-active-surface")).toBe("present-mode");
+    expect(mount.querySelectorAll("[data-testid=workspace-outlet]")).toHaveLength(
+      1,
+    );
+  });
+
+  test("Present Mode renders through the workspace outlet, not as a shell sibling", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickPresentMode(mount);
+    const outlet = mount.querySelector("[data-testid=workspace-outlet]");
+    const headline = mount.querySelector("[data-testid=surface-headline]");
+    expect(headline?.textContent).toBe("Present Mode");
+    expect(outlet?.contains(headline!)).toBe(true);
+  });
+
+  test("selecting Present Mode moves aria-current onto the Present Mode nav item", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickPresentMode(mount);
+    expect(
+      mount
+        .querySelector("[data-testid=nav-present-mode]")
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
+    expect(
+      mount
+        .querySelector("[data-testid=nav-curriculum]")
+        ?.getAttribute("aria-current"),
+    ).toBeNull();
+  });
+
+  test("selecting Curriculum after Present Mode returns the outlet to Curriculum", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickPresentMode(mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")
+      ?.click();
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("curriculum");
+  });
+
+  test("selecting LYFELABZ from Present Mode returns the outlet to Curriculum", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickPresentMode(mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-lyfelabz]")
+      ?.click();
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("curriculum");
+  });
+
+  test("focus lands on the Present Mode headline when the surface is activated", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickPresentMode(mount);
+    expect(document.activeElement?.getAttribute("data-testid")).toBe(
+      "surface-headline",
+    );
+    expect(document.activeElement?.textContent).toBe("Present Mode");
+  });
+
+  test("renders the title, intro, preparation-focused steps, and future-controls notice", () => {
+    const mount = mkMount();
+    renderPresentModeSurface(mount, teacher);
+    expect(
+      mount.querySelector("[data-testid=surface-headline]")?.textContent,
+    ).toBe("Present Mode");
+    expect(
+      mount.querySelector("[data-testid=present-mode-intro]")?.textContent,
+    ).toBe(
+      "Present Mode is your preparation surface for teaching a LyfeLabz lesson in front of your class. It keeps the classroom projector focused on the curriculum without exposing teacher or student information.",
+    );
+    expect(
+      mount.querySelector("[data-testid=present-mode-preparation]")
+        ?.textContent,
+    ).toBe(
+      "When you are getting ready to teach, prepare from Curriculum first. Present Mode is the moment your preparation reaches the projector.",
+    );
+    for (const testId of [
+      "present-mode-step-choose",
+      "present-mode-step-open",
+      "present-mode-step-teach",
+    ]) {
+      expect(mount.querySelector(`[data-testid=${testId}]`)).not.toBeNull();
+    }
+    expect(
+      mount.querySelector("[data-testid=present-mode-future-notice]")
+        ?.textContent,
+    ).toContain("Presentation controls will become available");
+  });
+
+  test("does not render any 'coming soon', 'under construction', 'dashboard' label, forbidden per Sprint 6F", () => {
+    const mount = mkMount();
+    renderPresentModeSurface(mount, teacher);
+    const text = (mount.textContent ?? "").toLowerCase();
+    expect(text).not.toContain("coming soon");
+    expect(text).not.toContain("under construction");
+    expect(text).not.toContain("dashboard");
+  });
+
+  test("does not render any form controls, disabled inputs, or fake classroom data", () => {
+    const mount = mkMount();
+    renderPresentModeSurface(mount, teacher);
+    expect(mount.querySelectorAll("input")).toHaveLength(0);
+    expect(mount.querySelectorAll("select")).toHaveLength(0);
+    expect(mount.querySelectorAll("textarea")).toHaveLength(0);
+    expect(mount.querySelectorAll("button")).toHaveLength(0);
+    expect(mount.querySelectorAll("form")).toHaveLength(0);
+  });
+
+  test("does not render uid, schoolId, email, or any Session claim payload", () => {
+    const mount = mkMount();
+    renderPresentModeSurface(mount, teacher);
+    const text = mount.textContent ?? "";
+    expect(text).not.toContain("u1");
+    expect(text).not.toContain("school-abc");
+    expect(text).not.toContain("claim");
+    expect(text).not.toContain("Ada Lovelace");
+  });
+
+  test("does not include the assign controls or class rosters that would be teacher-scoped in a projection", () => {
+    const mount = mkMount();
+    renderPresentModeSurface(mount, teacher);
+    expect(
+      mount.querySelector("[data-testid=assign-overlay]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=classes-list]"),
+    ).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=curriculum-grid]"),
+    ).toBeNull();
+  });
+
+  test("navigating away and back to Present Mode does not double-mount the outlet", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickPresentMode(mount);
+    expect(
+      mount.querySelectorAll("[data-testid=workspace-outlet]"),
+    ).toHaveLength(1);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-classes]")
+      ?.click();
+    clickPresentMode(mount);
+    expect(
+      mount.querySelectorAll("[data-testid=workspace-outlet]"),
+    ).toHaveLength(1);
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("present-mode");
   });
 });

@@ -1,10 +1,11 @@
-// Persistent teacher-workspace navigation. Sprint 6C replaces the
-// Sprint 6A/6B top-nav shape with the permanent left-side panel defined
-// in TEACHER_EXPERIENCE_PHILOSOPHY.md §3.3. The panel contains, in
-// order: LYFELABZ, Curriculum, Classes, Present Mode, Settings.
-// Curriculum and Classes are active surfaces. Present Mode and Settings
-// remain disabled coming-soon items until their dedicated
-// implementation sprints. See SPRINT_6C_SPECIFICATION.md §4.
+// Persistent teacher-workspace navigation. Sprint 6C established the
+// permanent left-side panel defined in TEACHER_EXPERIENCE_PHILOSOPHY.md
+// §3.3. The panel contains, in order: LYFELABZ, Curriculum, Classes,
+// Present Mode, Settings. Sprint 6F promotes Present Mode from a
+// coming-soon placeholder to a real workspace destination that renders
+// a preparation foundation state through the shared workspace outlet.
+// Settings remains a disabled coming-soon item until its own
+// implementation sprint. See SPRINT_6F_SPECIFICATION.
 
 // The workspace-surface keys are the identities of the outlet regions
 // that renderNavigation can activate. LYFELABZ is a brand item that
@@ -57,7 +58,7 @@ export const NAVIGATION_ITEMS: ReadonlyArray<NavigationItem> = Object.freeze([
   Object.freeze({
     key: "present-mode" as const,
     label: "Present Mode",
-    available: false,
+    available: true,
     targetSurface: "present-mode" as const,
     variant: "item" as const,
   }),

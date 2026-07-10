@@ -812,3 +812,56 @@ Deliver the first working version of the Assign Experience described in ASSIGN_E
 ### Recommendation
 
 No commit is recommended until Technical Lead review of `SPRINT_6E_COMPLETION_REPORT.md` and local verification by Chris are complete.
+
+---
+
+## Sprint 6F - Present Mode Workspace Foundation
+
+**Date:** 2026-07-10
+**Status:** Implementation complete. Awaiting Technical Lead review and local verification by Chris.
+**Companion documents:** PRESENT_MODE_ARCHITECTURE.md, TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md.
+
+### Objective
+
+Establish Present Mode as a real Teacher Workspace destination inside the authenticated shell. Deliver a preparation-focused foundation state that answers the teacher question "What can I prepare to present?" and reserves the eventual presentation launch mechanism for a future sprint. No presentation engine, no lesson launch controls, no backend persistence.
+
+### Major accomplishments
+
+- Created `app/src/shell/surfaces/presentMode.ts`. The surface renders a Present Mode title, an intro explaining the surface's purpose, a preparation-focused paragraph, an ordered list of three preparation steps (choose a lesson from Curriculum, open Present Mode when ready to teach, teach without leaving the workflow), and a concise future-controls notice. The surface loads no teacher-scoped or student-scoped data, opens no Firestore listener, invokes no callable, and imports no `firebase/*` module.
+- Promoted the Present Mode navigation item from a disabled coming-soon entry to a real available destination in `app/src/shell/navigation.ts`. Selecting the item switches the workspace outlet to the Present Mode surface and carries `aria-current="page"` when active. Settings remains a disabled coming-soon item until its own implementation sprint.
+- Wired the Present Mode entry in `WORKSPACE_SURFACES` (`app/src/shell/surfaces/workspace.ts`) to `renderPresentModeSurface`. The four canonical workspace-surface keys (`curriculum`, `classes`, `present-mode`, `settings`) are unchanged. The workspace outlet advertises `data-active-surface="present-mode"` when Present Mode is active.
+- Preserved every Sprint 6C, 6D, and 6E behavior. Curriculum remains the default landing surface; Classes retains its listing behavior; the Assign Experience dialog is untouched; the shared shell header, footer, sign-out, and identity-summary contracts are intact. Focus lands on the surface headline when Present Mode is activated, matching the accessibility posture of Curriculum and Classes.
+- Added Sprint 6F tests to `app/src/shell/shell.test.ts`. The new suite covers navigation availability, `aria-current` activation, canonical outlet routing, focus management, absence of coming-soon or dashboard labels, absence of form controls and disabled inputs, absence of Session or claim payload rendering, absence of curriculum or class rosters that would be teacher-scoped in a projection, and no-double-mount behavior when navigating away and back. The pre-existing "disabled coming-soon" and "clicking a disabled navigation item" tests were updated to reflect Settings as the only remaining disabled destination.
+
+### Architecture posture
+
+- No Cloud Function, callable, Firestore Rule, custom claim, lifecycle field, Session field, audit vocabulary term, Hosting rewrite, or `/app/**` URL route was introduced.
+- The certified architecture (`LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `PLATFORM_STATE_MACHINE.md`, `LYFELABZ_PLATFORM_DECISIONS.md`) is unchanged.
+- The shell "no firebase imports" invariant (Sprint 3 Step 5) is preserved. The Present Mode surface imports only the Session type.
+- Sprint 6F implements the Teacher Workspace-side foundation for Present Mode. The eventual full-page launch of the canonical LyfeLabz surface described by `PRESENT_MODE_ARCHITECTURE.md` section 3 remains the responsibility of a future sprint. The current preparation surface renders no curriculum content and duplicates nothing from canonical LyfeLabz, so `PDR-018` is preserved.
+- Preservation mode is intact. The instructional repository at the repository root is not touched.
+
+### Accessibility and responsive behavior
+
+- The surface headline is a keyboard-focusable `h2#surface-headline` marked `tabIndex=-1`. The workspace outlet references it via `aria-labelledby`. Focus lands on the headline when the surface mounts, matching Curriculum and Classes.
+- No form control, disabled input, or misleading control is rendered. Assistive technology encounters only heading, text, and list elements.
+- The surface reuses shell CSS conventions (`shell-welcome`, `shell-status`, `shell-present-*`) so responsive behavior follows the existing workspace shell layout.
+
+### Explicit non-goals confirmed
+
+- No presentation engine was added.
+- No lesson slide extraction, launch control, full-screen mode, timer, poll, quiz control, or student device control was added.
+- No Google Classroom, Google Meet, or PowerSchool integration was added.
+- No Firestore read or write, Cloud Function, callable, or `localStorage`/`sessionStorage`/`document.cookie` usage was added.
+- No mock classroom data, fake analytics, recent-lesson history, or favorites were added.
+
+### Verification performed
+
+- `app`: TypeScript typecheck clean; ESLint clean; esbuild bundle produced (`dist/bundle.js`); Jest suite runs 174/174 passing across 6 suites.
+- `platform/functions`: TypeScript typecheck clean; ESLint clean; TypeScript build clean; Jest suite runs 295/295 passing across 22 suites.
+- `platform/firebase`: Firestore Rules test suite runs 94/94 passing across 8 suites under the Firestore emulator.
+- Fifteen new Present Mode tests exercise navigation availability, active-state routing, outlet composition, focus management, absence of forbidden labels and controls, absence of teacher-scoped or curriculum payload, and no-double-mount behavior.
+
+### Recommendation
+
+No commit is recommended until Technical Lead review of this history entry and local verification by Chris are complete.
