@@ -449,3 +449,56 @@ Sprint 6B introduces no new backend behavior.
 ### Recommendation
 
 Proceed to the Enrollment or Roster surface after Technical Lead review of `SPRINT_6B_COMPLETION_REPORT.md` and local verification by Chris. No commit is recommended until both reviews are complete.
+
+---
+
+## Sprint 6C - Teacher Workspace Navigation Foundation
+
+**Date:** 2026-07-09
+**Status:** Implementation complete; awaiting Technical Lead review and local verification by Chris.
+**Companion documents:** SPRINT_6C_SPECIFICATION.md, PRESENT_MODE_ARCHITECTURE.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, PHASE_2_ARCHITECTURE_PLANNING_REPORT.md.
+
+### Objective
+
+Replace the Sprint 6A/6B top-nav shape with the persistent left-side navigation panel defined in §3.3 of `TEACHER_EXPERIENCE_PHILOSOPHY.md`. Introduce the permanent teacher-workspace navigation identity: LYFELABZ, Curriculum, Classes, Present Mode, Settings. Rename the Sprint 6B Home surface to Curriculum as a copy-only change with a transitional status paragraph.
+
+### Major accomplishments
+
+- Introduced the persistent left-side navigation contract: LYFELABZ (brand item that activates the Curriculum surface), Curriculum (active), Classes (active), Present Mode (disabled coming-soon), Settings (disabled coming-soon).
+- Added the `WorkspaceSurfaceKey` type (`curriculum | classes | present-mode | settings`) and the `NavigationItem` `variant` distinction (`brand | item`). The brand item never carries `aria-current` and dispatches to the Curriculum surface.
+- Renamed the Sprint 6B Home surface to Curriculum. `app/src/shell/surfaces/home.ts` becomes `app/src/shell/surfaces/curriculum.ts`; `renderHomeSurface` becomes `renderCurriculumSurface`. Behavior is identical except that the transitional status paragraph now reads `"The curriculum landing arrives in a future sprint. New capabilities will appear here as they are released."`, mitigating the §11 risk called out in the Phase 2 Architecture Planning Report.
+- Rewired the workspace registry: `WORKSPACE_SURFACES` now registers `curriculum`, `classes`, `present-mode`, and `settings`. The `home`, `students`, and `assignments` surface keys are removed.
+- Set the default active surface on shell mount to `curriculum` in `mountTeacherShell`. Selecting LYFELABZ from any surface returns the outlet to Curriculum without double-mounting.
+- Preserved the keyboard-accessible disabled contract for Present Mode and Settings: `disabled`, `aria-disabled="true"`, `tabindex="-1"`, `"Label - Coming soon"` copy, no dispatch on click.
+- Preserved the responsive shell-body grid: 224px sidebar plus 1fr outlet above 720px, single-column with horizontally scrolling nav row below 720px, and touch-target minimums under `@media (pointer: coarse)`.
+- Added a `PRESENT_MODE_ARCHITECTURE.md` architecture-only document. It defines Present Mode's purpose, entry, exit, security posture, privacy posture, prohibited data, filter behavior, grade persistence strategy, URL strategy, the reason Present Mode reuses the canonical LyfeLabz surface rather than duplicating it, and the deferred implementation-sprint decisions.
+- Expanded `app/src/shell/shell.test.ts` to cover: the new nav item order and copy, the LYFELABZ brand posture, the Curriculum surface rename, the removed `home`/`students`/`assignments`/`reports` items, the disabled coming-soon contract for Present Mode and Settings, the `data-active-surface="curriculum"` default, the four-key `WORKSPACE_SURFACES` registry, and the LYFELABZ re-render behavior from both Curriculum and Classes.
+
+### Architecture posture
+
+Sprint 6C introduces no new backend behavior.
+
+- Firestore remains authoritative. No client read change.
+- All writes remain server-mediated. No callable is invoked by the navigation change.
+- Firestore Rules remain default-deny. No rule change.
+- `status` remains the sole lifecycle field.
+- Audit events remain append-only through `writeAuditEvent`; vocabulary is unchanged.
+- The Immutable Session Object, Session Bootstrap, and protected router state machine are unchanged.
+- Custom claims remain `{ role, schoolId }`; `districtId` remains reserved.
+- No new Cloud Functions, no Firestore Rules changes, no Firestore indexes changes, no Storage Rules changes. `platform/functions/**`, `platform/firebase/firestore.rules`, `platform/firebase/firestore.indexes.json`, `platform/firebase/storage.rules`, and `platform/firebase/tests/**` were not modified.
+- The shell no-Firebase-import invariant is preserved. The static-source assertion in `shell.test.ts` continues to guard it.
+- Preservation mode remains intact. No file at the repository root is modified.
+
+### Repository validation
+
+- `app` typecheck clean.
+- `app` lint clean.
+- `app` build clean (esbuild).
+- `app` unit tests: **125 pass across 5 suites** (Sprint 6B baseline: 120 / 5; +5 tests, no suite added).
+- `platform/functions` typecheck, lint, and build clean.
+- `platform/functions` unit tests: **295 pass across 22 suites** (unchanged).
+- `platform/firebase` Rules tests: **94 pass across 8 suites** (unchanged).
+
+### Recommendation
+
+Proceed to Sprint 6D (Curriculum Landing bridge) after Technical Lead review of `SPRINT_6C_COMPLETION_REPORT.md` and local verification by Chris. No commit is recommended until both reviews are complete.

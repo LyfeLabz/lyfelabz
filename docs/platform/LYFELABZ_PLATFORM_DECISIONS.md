@@ -1186,6 +1186,87 @@ These twelve are the platform's constitutional layer. Every other decision may e
 
 ---
 
+## PDR-018: Teacher Experience Surface Boundaries
+
+### Decision
+
+LyfeLabz complements existing LMS and SIS platforms rather than replacing them. Present Mode uses the canonical original LyfeLabz curriculum experience, not a parallel implementation. Resource activation controls student access only. Present Mode remains unrestricted for teachers.
+
+### Status
+
+Accepted.
+
+### Background
+
+The teacher experience direction was clarified through educator-centered UX planning ahead of Sprint 6C. Three sub-decisions have architectural weight because they name what the teacher platform is not, in the same way PDR-001 named what the platform is not. Naming them here prevents future sprints from silently redefining the teacher surface.
+
+Placement rationale. `TEACHER_EXPERIENCE_PHILOSOPHY.md` records the full teacher-experience philosophy. This record captures only the three sub-decisions that carry PDR-weight because they:
+
+- constrain the identity of the product (LMS/SIS boundary),
+- constrain the structure of an entire surface family (Present Mode),
+- constrain the semantics of a load-bearing teacher control (activation).
+
+Recording them alongside PDR-001, PDR-007, and PDR-010 keeps the "why did we choose this?" answer in the canonical decision log rather than dispersing it across roadmap and philosophy documents.
+
+### Alternatives Considered
+
+- **Fold these into a future sprint specification.** Rejected: sprint specifications are implementation artifacts; identity-level commitments belong here.
+- **Record them only in `TEACHER_EXPERIENCE_PHILOSOPHY.md`.** Rejected: philosophy documents describe intent; PDRs record locked commitments with reconsideration criteria.
+- **Add each sub-decision as its own PDR.** Rejected as needlessly granular; the three sub-decisions share a single motivating principle (teacher surface boundaries) and are naturally read together.
+
+### Decision
+
+**PDR-018a. LyfeLabz complements existing LMS and SIS platforms.**
+
+- LyfeLabz manages instruction; the district's LMS (typically Google Classroom) manages assignment communication where present.
+- LyfeLabz collects mastery evidence; the district's SIS (typically PowerSchool) remains the gradebook of record.
+- LyfeLabz never publishes itself as an LMS or SIS replacement to schools.
+
+**PDR-018b. Present Mode uses the canonical original LyfeLabz curriculum experience.**
+
+- Present Mode restores the original curriculum surface at the repository root, including the existing grade and topic filter box, the lesson-card organization, and normal student-facing lesson navigation.
+- No parallel curriculum implementation exists for Present Mode.
+- Improvements to the canonical curriculum surface automatically benefit Present Mode.
+
+**PDR-018c. Resource activation controls student access only. Present Mode remains unrestricted for teachers.**
+
+- Teacher-controlled activation determines whether a resource is available to students in the activating class.
+- Activation does not affect teacher preview or teacher presentation.
+- All curriculum resources remain available in Present Mode regardless of activation status.
+- Present Mode never loads student names, scores, accommodations, class data, assignment-management controls, teacher notes, or private teacher settings. The restriction is enforced by entry-point design, not by conditional rendering inside a shared surface.
+
+### Rationale
+
+Each sub-decision closes a specific class of drift.
+
+- 018a prevents the platform from being marketed or built as an LMS/SIS substitute. It is the natural extension of PDR-001 into the surface layer.
+- 018b prevents the emergence of a Present-Mode-specific curriculum implementation, which would silently violate PDR-007 and PDR-017.
+- 018c prevents the emergence of two different curation semantics (one for students, one for teachers) and prevents Present Mode from becoming a teacher-tools shell in disguise.
+
+### Consequences
+
+Benefits:
+
+- One canonical curriculum experience serves teacher browsing, presentation, and student access.
+- Teachers retain unrestricted access to the full LyfeLabz curriculum for planning and presentation.
+- Student privacy in classroom presentation contexts is protected by a genuine surface boundary, not by CSS.
+- Marketing and positioning stay unambiguous.
+
+Limitations:
+
+- Feature requests to add LMS-style gradebook, communication, or SIS-style rostering are declined and referred back to the district system.
+- Present Mode cannot show teacher analytics inline; teachers switch surfaces to see teacher-only data.
+- The teacher-facing verb for activation must be reconciled with PDR-010's terminology amendment when the Assignment domain UI sprint begins (see §5 of `TEACHER_EXPERIENCE_PHILOSOPHY.md`).
+
+### Future Reconsideration Criteria
+
+- 018a reconsidered only if LyfeLabz's mission is redefined by its owners (see PDR-001).
+- 018b reconsidered only if the canonical curriculum surface itself is fundamentally reorganized (see PDR-007).
+- 018c reconsidered only if a new documented use case cannot be expressed without loosening one of the three constraints. Growth pressure alone is not sufficient.
+
+---
+
 ## Change Log
 
 - 2026-07-07 - Initial platform decision record established.
+- 2026-07-09 - PDR-018 (Teacher Experience Surface Boundaries) added.

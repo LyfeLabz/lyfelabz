@@ -10,7 +10,7 @@ import { mountTeacherShell, type ShellDeps } from "./shell";
 import { renderHeader } from "./header";
 import { renderNavigation, NAVIGATION_ITEMS } from "./navigation";
 import { renderFooter } from "./footer";
-import { renderHomeSurface } from "./surfaces/home";
+import { renderCurriculumSurface } from "./surfaces/curriculum";
 import {
   WORKSPACE_SURFACES,
   mountWorkspaceOutlet,
@@ -46,7 +46,7 @@ const teacherSession = (): Extract<Session, { kind: "activeTeacher" }> =>
     displayName: "Ada Lovelace",
   });
 
-describe("Teacher Platform Shell - layout regions", () => {
+describe("Teacher Workspace Shell - layout regions", () => {
   test("renders exactly one banner, one navigation, one main content region, and one contentinfo landmark", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
@@ -148,29 +148,55 @@ describe("Header composition and identity-display rules", () => {
   });
 });
 
-describe("Navigation composition and disabled posture", () => {
-  test("renders items in the specified order: Home, Classes, Students, Assignments, Settings", () => {
+describe("Navigation composition and disabled posture (Sprint 6C)", () => {
+  test("renders items in the specified order: LYFELABZ, Curriculum, Classes, Present Mode, Settings", () => {
     const mount = mkMount();
     renderNavigation(mount);
     const buttons = Array.from(
       mount.querySelectorAll<HTMLButtonElement>("button.shell-nav-button"),
     );
     expect(buttons.map((b) => b.getAttribute("data-testid"))).toEqual([
-      "nav-home",
+      "nav-lyfelabz",
+      "nav-curriculum",
       "nav-classes",
-      "nav-students",
-      "nav-assignments",
+      "nav-present-mode",
       "nav-settings",
     ]);
   });
 
-  test("Home and Classes are the enabled items; Home carries aria-current=page by default", () => {
+  test("LYFELABZ renders as the brand variant and is not disabled", () => {
     const mount = mkMount();
     renderNavigation(mount);
-    const home = mount.querySelector<HTMLButtonElement>("[data-testid=nav-home]");
-    expect(home?.disabled).toBe(false);
-    expect(home?.getAttribute("aria-current")).toBe("page");
-    expect(home?.textContent).toBe("Home");
+    const brand = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-lyfelabz]",
+    );
+    expect(brand?.disabled).toBe(false);
+    expect(brand?.getAttribute("data-nav-variant")).toBe("brand");
+    expect(brand?.classList.contains("shell-nav-brand")).toBe(true);
+    expect(brand?.textContent).toBe("LYFELABZ");
+  });
+
+  test("LYFELABZ never carries aria-current, even when Curriculum is the active surface", () => {
+    const mount = mkMount();
+    renderNavigation(mount, {
+      activeKey: "curriculum",
+      onSelect: () => undefined,
+    });
+    const brand = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-lyfelabz]",
+    );
+    expect(brand?.getAttribute("aria-current")).toBeNull();
+  });
+
+  test("Curriculum and Classes are the active items; Curriculum carries aria-current=page by default", () => {
+    const mount = mkMount();
+    renderNavigation(mount);
+    const curriculum = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-curriculum]",
+    );
+    expect(curriculum?.disabled).toBe(false);
+    expect(curriculum?.getAttribute("aria-current")).toBe("page");
+    expect(curriculum?.textContent).toBe("Curriculum");
     const classes = mount.querySelector<HTMLButtonElement>(
       "[data-testid=nav-classes]",
     );
@@ -181,10 +207,13 @@ describe("Navigation composition and disabled posture", () => {
 
   test("renderNavigation with activeKey=classes moves aria-current onto Classes", () => {
     const mount = mkMount();
-    renderNavigation(mount, { activeKey: "classes", onSelect: () => undefined });
+    renderNavigation(mount, {
+      activeKey: "classes",
+      onSelect: () => undefined,
+    });
     expect(
       mount
-        .querySelector("[data-testid=nav-home]")
+        .querySelector("[data-testid=nav-curriculum]")
         ?.getAttribute("aria-current"),
     ).toBeNull();
     expect(
@@ -194,7 +223,28 @@ describe("Navigation composition and disabled posture", () => {
     ).toBe("page");
   });
 
-  test("every future navigation item is disabled, marked coming-soon, and not in the tab order", () => {
+  test("Present Mode and Settings render as disabled coming-soon items and are not in the tab order", () => {
+    const mount = mkMount();
+    renderNavigation(mount);
+    for (const key of ["present-mode", "settings"] as const) {
+      const btn = mount.querySelector<HTMLButtonElement>(
+        `[data-testid=nav-${key}]`,
+      );
+      expect(btn?.disabled).toBe(true);
+      expect(btn?.getAttribute("aria-disabled")).toBe("true");
+      expect(btn?.getAttribute("tabindex")).toBe("-1");
+    }
+    expect(
+      mount
+        .querySelector("[data-testid=nav-present-mode]")
+        ?.textContent,
+    ).toBe("Present Mode - Coming soon");
+    expect(
+      mount.querySelector("[data-testid=nav-settings]")?.textContent,
+    ).toBe("Settings - Coming soon");
+  });
+
+  test("every unavailable navigation item preserves the disabled contract", () => {
     const mount = mkMount();
     renderNavigation(mount);
     for (const item of NAVIGATION_ITEMS) {
@@ -209,17 +259,20 @@ describe("Navigation composition and disabled posture", () => {
     }
   });
 
-  test("has aria-label 'Teacher platform sections'", () => {
+  test("has aria-label 'Teacher workspace sections'", () => {
     const mount = mkMount();
     renderNavigation(mount);
     expect(
       mount.querySelector("nav")?.getAttribute("aria-label"),
-    ).toBe("Teacher platform sections");
+    ).toBe("Teacher workspace sections");
   });
 
-  test("does not include Reports in the navigation", () => {
+  test("does not include the removed Home, Students, Assignments, or Reports items", () => {
     const mount = mkMount();
     renderNavigation(mount);
+    expect(mount.querySelector("[data-testid=nav-home]")).toBeNull();
+    expect(mount.querySelector("[data-testid=nav-students]")).toBeNull();
+    expect(mount.querySelector("[data-testid=nav-assignments]")).toBeNull();
     expect(mount.querySelector("[data-testid=nav-reports]")).toBeNull();
   });
 });
@@ -235,15 +288,15 @@ describe("Footer", () => {
   });
 });
 
-describe("Home surface composition", () => {
-  test("renders welcome message, platform status sentence, identity card, five placeholder cards, and return link", () => {
+describe("Curriculum surface composition (Sprint 6C rename)", () => {
+  test("renders welcome message, transitional status sentence, identity card, five placeholder cards, and return link", () => {
     const mount = mkMount();
-    renderHomeSurface(mount, teacherSession());
+    renderCurriculumSurface(mount, teacherSession());
     expect(mount.querySelector("[data-testid=surface-headline]")?.textContent)
       .toBe("Welcome, Ada Lovelace.");
     expect(mount.querySelector("[data-testid=platform-status]")?.textContent)
       .toBe(
-        "The teacher platform is being built. New capabilities will appear here as they are released.",
+        "The curriculum landing arrives in a future sprint. New capabilities will appear here as they are released.",
       );
     expect(mount.querySelector("[data-testid=identity-card]")).not.toBeNull();
     const grid = mount.querySelector("[data-testid=placeholder-grid]");
@@ -256,7 +309,7 @@ describe("Home surface composition", () => {
 
   test("renders the placeholder cards in the specified order", () => {
     const mount = mkMount();
-    renderHomeSurface(mount, teacherSession());
+    renderCurriculumSurface(mount, teacherSession());
     const cards = Array.from(
       mount.querySelectorAll("[data-testid^=placeholder-]"),
     ).filter((el) => el.getAttribute("data-testid") !== "placeholder-grid");
@@ -271,7 +324,7 @@ describe("Home surface composition", () => {
 
   test("every placeholder card reads 'Coming in a future sprint.' and is aria-disabled", () => {
     const mount = mkMount();
-    renderHomeSurface(mount, teacherSession());
+    renderCurriculumSurface(mount, teacherSession());
     const cards = mount.querySelectorAll(".shell-placeholder-card");
     expect(cards.length).toBe(5);
     for (const card of Array.from(cards)) {
@@ -282,7 +335,7 @@ describe("Home surface composition", () => {
 
   test("identity card renders display name, Teacher role, and Verified pill", () => {
     const mount = mkMount();
-    renderHomeSurface(mount, teacherSession());
+    renderCurriculumSurface(mount, teacherSession());
     expect(mount.querySelector("[data-testid=identity-name]")?.textContent)
       .toBe("Ada Lovelace");
     expect(mount.querySelector("[data-testid=identity-role]")?.textContent)
@@ -296,7 +349,7 @@ describe("Home surface composition", () => {
 
   test("does not render uid, schoolId, or claim payload in the DOM", () => {
     const mount = mkMount();
-    renderHomeSurface(mount, teacherSession());
+    renderCurriculumSurface(mount, teacherSession());
     const text = mount.textContent ?? "";
     expect(text).not.toContain("u1");
     expect(text).not.toContain("school-abc");
@@ -305,7 +358,7 @@ describe("Home surface composition", () => {
 
   test("falls back to a generic welcome when the display name is empty", () => {
     const mount = mkMount();
-    renderHomeSurface(
+    renderCurriculumSurface(
       mount,
       freeze({
         kind: "activeTeacher" as const,
@@ -320,18 +373,14 @@ describe("Home surface composition", () => {
 
   test("focus lands on the welcome headline at mount", () => {
     const mount = mkMount();
-    renderHomeSurface(mount, teacherSession());
+    renderCurriculumSurface(mount, teacherSession());
     expect(document.activeElement?.getAttribute("data-testid")).toBe(
       "surface-headline",
     );
   });
 });
 
-describe("Data and callable posture (spec §6.6, §11.2)", () => {
-  // These assertions document the Step 5 invariant: the shell reads only
-  // fields already present on the Session Object. It never reaches for
-  // Firestore or callables at mount, at navigation, or on refresh.
-
+describe("Data and callable posture (Step 5 invariant)", () => {
   test("mounting the shell runs to completion with no runtime errors (no Firestore or callable reach)", () => {
     const mount = mkMount();
     expect(() =>
@@ -340,8 +389,6 @@ describe("Data and callable posture (spec §6.6, §11.2)", () => {
   });
 
   test("shell modules do not import from firebase/firestore, firebase/functions, or firebase/auth, and open no listeners or callables", () => {
-    // Static assertion via source text. Documents the Step 5 invariant
-    // that the shell reads only fields already present on the Session.
     const shellDir = path.resolve(__dirname);
     const walk = (dir: string): string[] => {
       const out: string[] = [];
@@ -367,7 +414,7 @@ describe("Data and callable posture (spec §6.6, §11.2)", () => {
   });
 });
 
-describe("Workspace outlet (Sprint 6A)", () => {
+describe("Workspace outlet (Sprint 6C)", () => {
   test("shell mounts exactly one workspace outlet region", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
@@ -376,14 +423,14 @@ describe("Workspace outlet (Sprint 6A)", () => {
     expect(outlets[0]?.id).toBe("app-main");
   });
 
-  test("outlet advertises the active surface via data-active-surface=home", () => {
+  test("outlet advertises the active surface via data-active-surface=curriculum", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const outlet = mount.querySelector("[data-testid=workspace-outlet]");
-    expect(outlet?.getAttribute("data-active-surface")).toBe("home");
+    expect(outlet?.getAttribute("data-active-surface")).toBe("curriculum");
   });
 
-  test("home surface renders through the outlet, not as a shell sibling", () => {
+  test("curriculum surface renders through the outlet, not as a shell sibling", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
     const headline = mount.querySelector("[data-testid=surface-headline]");
@@ -393,23 +440,19 @@ describe("Workspace outlet (Sprint 6A)", () => {
     expect(headline?.textContent).toBe("Welcome, Ada Lovelace.");
   });
 
-  test("WORKSPACE_SURFACES registers exactly the five navigation keys", () => {
+  test("WORKSPACE_SURFACES registers exactly the four workspace-surface keys", () => {
     expect(Object.keys(WORKSPACE_SURFACES).sort()).toEqual(
-      ["assignments", "classes", "home", "settings", "students"],
+      ["classes", "curriculum", "present-mode", "settings"],
     );
   });
 
   test("mountWorkspaceOutlet with a not-yet-implemented key still returns an outlet (contract completeness)", () => {
-    // Sprint 6B activates Home and Classes. Every other nav item remains
-    // disabled and its outlet render path is unreachable through the shell.
-    // This test only asserts the contract shape: the outlet renderer is
-    // total across NavigationKey.
     const mount = mkMount();
-    const outlet = mountWorkspaceOutlet(mount, teacherSession(), "students", {
+    const outlet = mountWorkspaceOutlet(mount, teacherSession(), "present-mode", {
       listClasses: emptyListClasses,
     });
     expect(outlet.getAttribute("data-testid")).toBe("workspace-outlet");
-    expect(outlet.getAttribute("data-active-surface")).toBe("students");
+    expect(outlet.getAttribute("data-active-surface")).toBe("present-mode");
   });
 
   test("disabled navigation buttons do not change the outlet's active surface", () => {
@@ -418,7 +461,7 @@ describe("Workspace outlet (Sprint 6A)", () => {
     const before = mount.querySelector("[data-testid=workspace-outlet]")
       ?.getAttribute("data-active-surface");
     const event = new MouseEvent("click", { bubbles: true, cancelable: true });
-    for (const key of ["students", "assignments", "settings"]) {
+    for (const key of ["present-mode", "settings"]) {
       const btn = mount.querySelector<HTMLButtonElement>(
         `[data-testid=nav-${key}]`,
       );
@@ -427,7 +470,7 @@ describe("Workspace outlet (Sprint 6A)", () => {
     const after = mount.querySelector("[data-testid=workspace-outlet]")
       ?.getAttribute("data-active-surface");
     expect(after).toBe(before);
-    expect(after).toBe("home");
+    expect(after).toBe("curriculum");
   });
 
   test("focus lands on the workspace surface headline after shell mount", () => {
@@ -453,22 +496,67 @@ describe("mountTeacherShell integration", () => {
   test("clicking a disabled navigation item does not throw and does not navigate", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
-    const students = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=nav-students]",
+    const presentMode = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-present-mode]",
     );
-    // Disabled buttons in jsdom do not fire click; explicitly dispatch to
-    // simulate assistive-tech automation.
     const event = new MouseEvent("click", { bubbles: true, cancelable: true });
-    expect(() => students?.dispatchEvent(event)).not.toThrow();
+    expect(() => presentMode?.dispatchEvent(event)).not.toThrow();
     expect(
       mount
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
-    ).toBe("home");
+    ).toBe("curriculum");
   });
 });
 
-describe("Classroom Workspace surface (Sprint 6B)", () => {
+describe("LYFELABZ brand navigation (Sprint 6C)", () => {
+  test("selecting LYFELABZ from Curriculum is a no-op re-render", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacherSession(), mount, makeShellDeps());
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("curriculum");
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-lyfelabz]")
+      ?.click();
+    expect(mount.querySelectorAll("[data-testid=workspace-outlet]")).toHaveLength(
+      1,
+    );
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("curriculum");
+  });
+
+  test("selecting LYFELABZ from Classes returns the outlet to Curriculum", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacherSession(), mount, makeShellDeps());
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-classes]")
+      ?.click();
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("classes");
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-lyfelabz]")
+      ?.click();
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("curriculum");
+    expect(mount.querySelectorAll("[data-testid=workspace-outlet]")).toHaveLength(
+      1,
+    );
+  });
+});
+
+describe("Classroom Workspace surface (Sprint 6B, preserved by 6C)", () => {
   const teacher = teacherSession();
 
   const makeListClasses = (
@@ -507,7 +595,9 @@ describe("Classroom Workspace surface (Sprint 6B)", () => {
     expect(mount.querySelectorAll("[data-testid=workspace-outlet]")).toHaveLength(
       1,
     );
-    mount.querySelector<HTMLButtonElement>("[data-testid=nav-home]")?.click();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")
+      ?.click();
     expect(mount.querySelectorAll("[data-testid=workspace-outlet]")).toHaveLength(
       1,
     );
@@ -515,7 +605,7 @@ describe("Classroom Workspace surface (Sprint 6B)", () => {
       mount
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
-    ).toBe("home");
+    ).toBe("curriculum");
   });
 
   test("renders a card per classroom with title, grade, and status", async () => {

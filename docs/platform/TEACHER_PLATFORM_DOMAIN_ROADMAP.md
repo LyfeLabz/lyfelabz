@@ -1,7 +1,7 @@
 # LyfeLabz Teacher Platform Domain Roadmap
 
 Status: Canonical
-Companion documents: LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DOMAIN_MODEL.md, LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, PLATFORM_STATE_MACHINE.md, SPRINT_HISTORY.md, SPRINT_3_CERTIFICATION.md
+Companion documents: LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DOMAIN_MODEL.md, LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, PLATFORM_STATE_MACHINE.md, SPRINT_HISTORY.md, SPRINT_3_CERTIFICATION.md, TEACHER_EXPERIENCE_PHILOSOPHY.md
 
 ---
 
@@ -439,6 +439,30 @@ Phases are strictly sequential. A phase does not begin until the phase before it
 **Architectural risks.** All retired.
 
 **Explicit non-goals.** No classroom, roster, enrollment, assignment, submission, gradebook, or analytics surface. No production deployment.
+
+---
+
+### Phase 2 UX Direction Amendment (2026-07-09)
+
+The teacher experience direction is now clarified by `TEACHER_EXPERIENCE_PHILOSOPHY.md`. The philosophy document does not change the domain sequence in Sections 2 and 3; every domain remains authoritative for its own records. It does, however, revise the Phase 2 implementation sequence to seat the following surfaces in the correct order.
+
+The revised Phase 2 sequence is:
+
+1. **Sprint 6C - Teacher Workspace navigation restructuring.** Replace the Sprint 6A/6B top-nav with the persistent left-side navigation defined in §3.3 of the philosophy: LYFELABZ, Curriculum, Classes, Present Mode, Settings. Curriculum and Classes are the only active items in this sprint. Present Mode and Settings render coming-soon surfaces under the same contract used for unavailable navigation items in Sprint 6B. No new Firestore reads, no new callables, no new claim, no new lifecycle field. Session model unchanged.
+
+2. **Sprint 6D - Curriculum landing surface (read-only bridge).** Replace the placeholder Home surface with a teacher curriculum landing page that references the canonical instructional repository. Introduces no lesson content into the platform. The bridge mechanism is a Phase 2 architecture decision recorded in the Phase 2 Architecture Planning Report.
+
+3. **Phase 2 continues** with the School Foundation objectives originally recorded below, executed in parallel with or after Sprints 6C and 6D as the sprint specifications dictate. Nothing in Sprints 6C or 6D relaxes the administrator-mediated school-write contract described in the Phase 2 Objectives.
+
+Every subsequent phase (Classrooms through Administrator Platform) remains as recorded in Sections 3 and 4. The philosophy document does not compress or expand any phase; it only names the teacher-facing shape that each phase's surfaces must ultimately satisfy.
+
+Present Mode, curriculum activation, class workspaces, private student supports, and Google Classroom integration are called out in the philosophy for architectural clarity, but they are not moved into Phase 2. They remain in their respective downstream phases:
+
+- Curriculum activation and the assignment workflow: Phase 5 (Assignment Foundation).
+- Class workspaces (roster + assignment columns + mastery data): span Phases 4 - 7.
+- Private student supports and accommodations: require their own architecture specification before any implementation sprint.
+- Google Classroom and PowerSchool responsibilities: PDR-015 (Future Expansion). No integration ships in the current sprint sequence.
+- Present Mode: architecture foundation may be scheduled inside Phase 2 as a Phase 2 - or later - narrow architecture sprint. Its runtime is deferred until its architecture is certified.
 
 ---
 
