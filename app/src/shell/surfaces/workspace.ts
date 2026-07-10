@@ -39,8 +39,12 @@ export const WORKSPACE_SURFACES: Readonly<
 > = Object.freeze({
   curriculum: Object.freeze({
     key: "curriculum" as const,
-    render: (mount: HTMLElement, session: ActiveTeacher) =>
-      renderCurriculumSurface(mount, session),
+    render: (
+      mount: HTMLElement,
+      session: ActiveTeacher,
+      deps: WorkspaceDeps,
+    ) =>
+      renderCurriculumSurface(mount, session, { listClasses: deps.listClasses }),
   }),
   classes: Object.freeze({
     key: "classes" as const,

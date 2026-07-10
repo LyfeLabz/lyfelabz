@@ -1,4 +1,6 @@
 import type { Session } from "../../session/types";
+import type { ClassSummary } from "../../classes/types";
+import type { ListClasses } from "../../classes/listClasses";
 import {
   getSurfaceableLessons,
   TOPIC_LABEL,
@@ -8,24 +10,80 @@ import {
 } from "../../curriculum/curriculumManifest";
 
 // Curriculum surface. The teacher curriculum landing page introduced by
-// Sprint 6D. Reuses the canonical LyfeLabz lesson-card organization
-// (grade + topic) and links out to the canonical instructional
-// repository for preview. Introduces placeholder-only activation
-// controls: no Firestore reads, no callables, no listeners. See
-// TEACHER_EXPERIENCE_PHILOSOPHY.md §3.2 and §3.4,
-// TEACHER_PLATFORM_DOMAIN_ROADMAP.md Phase 2 amendment (Sprint 6D),
-// and PRESENT_MODE_ARCHITECTURE.md.
+// Sprint 6D and extended in Sprint 6E with the first working version of
+// the Assign Experience described in ASSIGN_EXPERIENCE.md.
 //
-// Activation state lives in module-local, per-mount client state. It is
-// discarded on remount by design; PDR-010 curation semantics land in
-// Phase 5 (Assignment Foundation) and will replace this placeholder.
+// Sprint 6E is a UI implementation sprint. There is no backend
+// scheduling, no Firestore write, no callable, no Google Classroom
+// integration, and no teacher-preference persistence. The dialog reads
+// the teacher's class list through the injected `listClasses` fetcher
+// and holds all assignment state in module-scoped, in-memory session
+// memory. Nothing is retained across a full page reload; PDR-010 and
+// the Assignment Foundation phase own persistence.
+//
+// The activation toggle from Sprint 6D remains in place because
+// preservation mode forbids opportunistic removal of instructional
+// controls. Assign is added as an additional per-card action.
 
 type ActiveTeacher = Extract<Session, { kind: "activeTeacher" }>;
 
 type GradeFilter = "all" | LessonGrade;
 type TopicFilter = "all" | LessonTopic;
 
+export type CurriculumSurfaceDeps = {
+  readonly listClasses: ListClasses;
+};
+
+const DEFAULT_LIST_CLASSES: ListClasses = () =>
+  Promise.resolve(Object.freeze<ClassSummary[]>([]));
+
 const LESSONS: ReadonlyArray<SurfaceableLesson> = getSurfaceableLessons();
+
+// LyfeLabz standard quiz score. The canonical curriculum manifest does
+// not yet expose per-lesson quiz totals; a follow-up sprint will
+// surface a per-resource points value. Ten matches the ten-question
+// LyfeLabz quiz standard.
+const DEFAULT_POINTS = 10;
+
+// Session-remembered defaults. Sprint 6E is UI-only, so these live in
+// module scope and are cleared by a full page reload. When the
+// Assignment Foundation phase certifies teacher-preference persistence,
+// this surface will read from a real preference source.
+const DEFAULT_RELEASE_TIME = "07:45";
+const sessionPreferences: {
+  releaseTime: string;
+  topic: string;
+} = {
+  releaseTime: DEFAULT_RELEASE_TIME,
+  topic: "",
+};
+
+type RowConfig = {
+  enabled: boolean;
+  date: string;
+  time: string;
+  topic: string;
+  points: number;
+};
+
+type Assignment = {
+  rows: Map<string, RowConfig>;
+};
+
+// Assignments the teacher has scheduled during this UI session. Keyed
+// by lesson slug. A lesson is considered assigned when at least one row
+// is enabled; the last-enabled row's deselection returns the card to
+// its unassigned state, mirroring section 8 of ASSIGN_EXPERIENCE.md.
+const sessionAssignments: Map<string, Assignment> = new Map();
+
+// Teacher class list cache. Populated lazily on surface mount so the
+// dialog opens without a round trip. Keyed by uid to avoid returning a
+// prior teacher's cache after a sign-out/sign-in in the same tab.
+let cachedClasses: {
+  readonly uid: string;
+  readonly rows: ReadonlyArray<ClassSummary>;
+} | null = null;
+let classesInFlight: Promise<void> | null = null;
 
 const GRADE_FILTERS: ReadonlyArray<{
   readonly key: GradeFilter;
@@ -47,9 +105,45 @@ const TOPIC_FILTERS: ReadonlyArray<{
   { key: "tech-engineering", label: "Tech & Engineering" },
 ]);
 
+function todayIsoDate(doc: Document): string {
+  const win = doc.defaultView ?? window;
+  const d = new win.Date();
+  const yyyy = String(d.getFullYear()).padStart(4, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function isAssigned(slug: string): boolean {
+  const a = sessionAssignments.get(slug);
+  if (!a) return false;
+  for (const row of a.rows.values()) if (row.enabled) return true;
+  return false;
+}
+
+function ensureClasses(
+  uid: string,
+  listClasses: ListClasses,
+): Promise<void> {
+  if (cachedClasses && cachedClasses.uid === uid) return Promise.resolve();
+  if (classesInFlight) return classesInFlight;
+  classesInFlight = listClasses(uid)
+    .then((rows) => {
+      cachedClasses = Object.freeze({ uid, rows });
+    })
+    .catch(() => {
+      cachedClasses = Object.freeze({ uid, rows: Object.freeze([]) });
+    })
+    .finally(() => {
+      classesInFlight = null;
+    });
+  return classesInFlight;
+}
+
 export function renderCurriculumSurface(
   mount: HTMLElement,
   session: ActiveTeacher,
+  deps: CurriculumSurfaceDeps = { listClasses: DEFAULT_LIST_CLASSES },
 ): void {
   const doc = mount.ownerDocument;
 
@@ -117,6 +211,16 @@ export function renderCurriculumSurface(
   topicRow.setAttribute("aria-label", "Filter by topic");
   topicRow.setAttribute("data-testid", "filter-topic-row");
   controls.appendChild(topicRow);
+
+  // Live region for the concise, self-dismissing success confirmation
+  // described by ASSIGN_EXPERIENCE.md section 7.
+  const successBanner = doc.createElement("p");
+  successBanner.className = "shell-curriculum-success";
+  successBanner.setAttribute("data-testid", "assign-success");
+  successBanner.setAttribute("role", "status");
+  successBanner.setAttribute("aria-live", "polite");
+  successBanner.hidden = true;
+  mount.appendChild(successBanner);
 
   const applyFilters = (): void => {
     let visible = 0;
@@ -186,10 +290,26 @@ export function renderCurriculumSurface(
 
   renderControls();
 
+  const openAssignDialog = (lesson: SurfaceableLesson, card: HTMLElement): void => {
+    void openDialog({
+      doc,
+      lesson,
+      session,
+      listClasses: deps.listClasses,
+      onConfirm: (summary) => {
+        refreshAssignControl(card, lesson);
+        showSuccess(successBanner, summary);
+      },
+    });
+  };
+
   for (const lesson of LESSONS) {
-    grid.appendChild(renderLessonCard(doc, lesson, state.activation));
+    grid.appendChild(renderLessonCard(doc, lesson, state.activation, openAssignDialog));
   }
   applyFilters();
+
+  // Prefetch classes so the dialog opens with the class list ready.
+  void ensureClasses(session.uid, deps.listClasses);
 
   const returnLink = doc.createElement("a");
   returnLink.href = "/";
@@ -199,10 +319,43 @@ export function renderCurriculumSurface(
   mount.appendChild(returnLink);
 }
 
+function refreshAssignControl(
+  card: HTMLElement,
+  lesson: SurfaceableLesson,
+): void {
+  const btn = card.querySelector<HTMLButtonElement>(
+    `[data-testid=lesson-assign-${lesson.slug}]`,
+  );
+  if (!btn) return;
+  const assigned = isAssigned(lesson.slug);
+  btn.textContent = assigned ? "✓ Assigned" : "Assign";
+  btn.setAttribute("data-assigned", assigned ? "true" : "false");
+  btn.classList.toggle("shell-lesson-assign-assigned", assigned);
+  btn.setAttribute(
+    "aria-label",
+    assigned
+      ? `Review assignment for ${lesson.title}`
+      : `Assign ${lesson.title}`,
+  );
+  card.setAttribute("data-lesson-assigned", assigned ? "true" : "false");
+}
+
+function showSuccess(banner: HTMLElement, summary: string): void {
+  banner.textContent = summary;
+  banner.hidden = false;
+  const doc = banner.ownerDocument;
+  const win = doc.defaultView ?? window;
+  win.setTimeout(() => {
+    banner.hidden = true;
+    banner.textContent = "";
+  }, 4000);
+}
+
 function renderLessonCard(
   doc: Document,
   lesson: SurfaceableLesson,
   activation: Map<string, boolean>,
+  onAssign: (lesson: SurfaceableLesson, card: HTMLElement) => void,
 ): HTMLElement {
   const card = doc.createElement("article");
   card.className = "shell-card shell-lesson-card";
@@ -274,6 +427,361 @@ function renderLessonCard(
   });
   actions.appendChild(toggle);
 
+  const assign = doc.createElement("button");
+  assign.type = "button";
+  assign.className = "shell-lesson-assign";
+  assign.setAttribute("data-testid", `lesson-assign-${lesson.slug}`);
+  const assigned = isAssigned(lesson.slug);
+  assign.textContent = assigned ? "✓ Assigned" : "Assign";
+  assign.setAttribute("data-assigned", assigned ? "true" : "false");
+  assign.classList.toggle("shell-lesson-assign-assigned", assigned);
+  assign.setAttribute(
+    "aria-label",
+    assigned
+      ? `Review assignment for ${lesson.title}`
+      : `Assign ${lesson.title}`,
+  );
+  card.setAttribute("data-lesson-assigned", assigned ? "true" : "false");
+  assign.addEventListener("click", () => {
+    onAssign(lesson, card);
+  });
+  actions.appendChild(assign);
+
   card.appendChild(actions);
   return card;
+}
+
+// -----------------------------------------------------------------------------
+// Assignment Dialog
+// -----------------------------------------------------------------------------
+
+type OpenDialogInput = {
+  readonly doc: Document;
+  readonly lesson: SurfaceableLesson;
+  readonly session: ActiveTeacher;
+  readonly listClasses: ListClasses;
+  readonly onConfirm: (summary: string) => void;
+};
+
+async function openDialog(input: OpenDialogInput): Promise<void> {
+  const { doc, lesson, session, listClasses, onConfirm } = input;
+
+  const overlay = doc.createElement("div");
+  overlay.className = "shell-assign-overlay";
+  overlay.setAttribute("data-testid", "assign-overlay");
+
+  const dialog = doc.createElement("div");
+  dialog.className = "shell-assign-dialog";
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  dialog.setAttribute("aria-labelledby", "assign-dialog-title");
+  dialog.setAttribute("data-testid", "assign-dialog");
+  dialog.setAttribute("data-lesson-slug", lesson.slug);
+
+  const title = doc.createElement("h3");
+  title.id = "assign-dialog-title";
+  title.className = "shell-assign-title";
+  title.setAttribute("data-testid", "assign-dialog-title");
+  title.textContent = `Assign ${lesson.title}`;
+  dialog.appendChild(title);
+
+  const body = doc.createElement("div");
+  body.className = "shell-assign-body";
+  body.setAttribute("data-testid", "assign-body");
+  dialog.appendChild(body);
+
+  const footer = doc.createElement("div");
+  footer.className = "shell-assign-footer";
+  dialog.appendChild(footer);
+
+  const cancel = doc.createElement("button");
+  cancel.type = "button";
+  cancel.className = "shell-assign-cancel";
+  cancel.setAttribute("data-testid", "assign-cancel");
+  cancel.textContent = "Cancel";
+  footer.appendChild(cancel);
+
+  const confirm = doc.createElement("button");
+  confirm.type = "button";
+  confirm.className = "shell-assign-confirm";
+  confirm.setAttribute("data-testid", "assign-confirm");
+  confirm.textContent = "Assign";
+  footer.appendChild(confirm);
+
+  overlay.appendChild(dialog);
+  doc.body.appendChild(overlay);
+
+  const close = (): void => {
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    doc.removeEventListener("keydown", onKey);
+  };
+  const onKey = (ev: KeyboardEvent): void => {
+    if (ev.key === "Escape") {
+      ev.preventDefault();
+      close();
+    }
+  };
+  doc.addEventListener("keydown", onKey);
+  cancel.addEventListener("click", close);
+  overlay.addEventListener("click", (ev) => {
+    if (ev.target === overlay) close();
+  });
+
+  // Loading placeholder while classes resolve.
+  const loading = doc.createElement("p");
+  loading.className = "shell-assign-loading";
+  loading.setAttribute("data-testid", "assign-loading");
+  loading.textContent = "Loading your classes";
+  body.appendChild(loading);
+
+  await ensureClasses(session.uid, listClasses);
+  if (!overlay.isConnected) return;
+  body.removeChild(loading);
+
+  const classes = (cachedClasses?.rows ?? []).filter((c) => c.status === "active");
+
+  if (classes.length === 0) {
+    const empty = doc.createElement("p");
+    empty.className = "shell-assign-empty";
+    empty.setAttribute("data-testid", "assign-empty");
+    empty.textContent =
+      "You do not have any active classes yet. Create a class before assigning.";
+    body.appendChild(empty);
+    confirm.disabled = true;
+    confirm.setAttribute("aria-disabled", "true");
+    try {
+      cancel.focus({ preventScroll: true });
+    } catch {
+      // ignored
+    }
+    return;
+  }
+
+  const existing = sessionAssignments.get(lesson.slug);
+  const rowState: Map<string, RowConfig> = new Map();
+  for (const c of classes) {
+    const prior = existing?.rows.get(c.id);
+    rowState.set(
+      c.id,
+      prior
+        ? { ...prior }
+        : {
+            enabled: true,
+            date: todayIsoDate(doc),
+            time: sessionPreferences.releaseTime,
+            topic: sessionPreferences.topic,
+            points: DEFAULT_POINTS,
+          },
+    );
+  }
+
+  const rowsHost = doc.createElement("div");
+  rowsHost.className = "shell-assign-rows";
+  rowsHost.setAttribute("data-testid", "assign-rows");
+  body.appendChild(rowsHost);
+
+  const updateConfirmState = (): void => {
+    let anyEnabled = false;
+    for (const r of rowState.values()) if (r.enabled) anyEnabled = true;
+    confirm.disabled = !anyEnabled;
+    confirm.setAttribute("aria-disabled", anyEnabled ? "false" : "true");
+  };
+
+  for (const c of classes) {
+    rowsHost.appendChild(renderRow(doc, c, rowState, updateConfirmState));
+  }
+  updateConfirmState();
+
+  confirm.addEventListener("click", () => {
+    // Persist to session memory.
+    const stored: Assignment = { rows: new Map() };
+    let enabledCount = 0;
+    let firstEnabledTime = "";
+    let firstEnabledTopic = "";
+    for (const [cid, cfg] of rowState) {
+      stored.rows.set(cid, { ...cfg });
+      if (cfg.enabled) {
+        enabledCount += 1;
+        if (!firstEnabledTime) firstEnabledTime = cfg.time;
+        if (!firstEnabledTopic && cfg.topic) firstEnabledTopic = cfg.topic;
+      }
+    }
+    if (enabledCount === 0) {
+      sessionAssignments.delete(lesson.slug);
+    } else {
+      sessionAssignments.set(lesson.slug, stored);
+    }
+    if (firstEnabledTime) sessionPreferences.releaseTime = firstEnabledTime;
+    if (firstEnabledTopic) sessionPreferences.topic = firstEnabledTopic;
+
+    const summary =
+      enabledCount === 0
+        ? `${lesson.title}: no classes selected. Assignment removed.`
+        : enabledCount === 1
+          ? `Assigned ${lesson.title} to 1 class.`
+          : `Assigned ${lesson.title} to ${enabledCount} classes.`;
+    close();
+    onConfirm(summary);
+  });
+
+  try {
+    confirm.focus({ preventScroll: true });
+  } catch {
+    // ignored
+  }
+}
+
+function renderRow(
+  doc: Document,
+  cls: ClassSummary,
+  rowState: Map<string, RowConfig>,
+  onChange: () => void,
+): HTMLElement {
+  const cfg = rowState.get(cls.id);
+  if (!cfg) throw new Error(`missing row state for class ${cls.id}`);
+
+  const row = doc.createElement("div");
+  row.className = "shell-assign-row";
+  row.setAttribute("data-testid", `assign-row-${cls.id}`);
+  row.setAttribute("data-class-id", cls.id);
+
+  // Enabled checkbox + class identity.
+  const header = doc.createElement("label");
+  header.className = "shell-assign-row-header";
+  const checkbox = doc.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.checked = cfg.enabled;
+  checkbox.setAttribute("data-testid", `assign-row-enabled-${cls.id}`);
+  checkbox.setAttribute(
+    "aria-label",
+    `Include ${cls.title} in this assignment`,
+  );
+  header.appendChild(checkbox);
+  const label = doc.createElement("span");
+  label.className = "shell-assign-row-label";
+  label.textContent =
+    cls.grade.length > 0
+      ? `${cls.title} · Grade ${cls.grade}`
+      : cls.title;
+  header.appendChild(label);
+  row.appendChild(header);
+
+  const fields = doc.createElement("div");
+  fields.className = "shell-assign-row-fields";
+  row.appendChild(fields);
+
+  const dateInput = fieldInput(doc, {
+    id: `assign-row-date-${cls.id}`,
+    label: "Date",
+    type: "date",
+    value: cfg.date,
+    onInput: (v) => {
+      cfg.date = v;
+    },
+  });
+  fields.appendChild(dateInput.wrapper);
+
+  const timeInput = fieldInput(doc, {
+    id: `assign-row-time-${cls.id}`,
+    label: "Release time",
+    type: "time",
+    value: cfg.time,
+    onInput: (v) => {
+      cfg.time = v;
+    },
+  });
+  fields.appendChild(timeInput.wrapper);
+
+  const topicInput = fieldInput(doc, {
+    id: `assign-row-topic-${cls.id}`,
+    label: "Google Classroom topic",
+    type: "text",
+    value: cfg.topic,
+    placeholder: "None",
+    onInput: (v) => {
+      cfg.topic = v;
+    },
+  });
+  fields.appendChild(topicInput.wrapper);
+
+  const pointsInput = fieldInput(doc, {
+    id: `assign-row-points-${cls.id}`,
+    label: "Points",
+    type: "number",
+    value: String(cfg.points),
+    min: 0,
+    onInput: (v) => {
+      const n = Number(v);
+      cfg.points = Number.isFinite(n) && n >= 0 ? n : 0;
+    },
+  });
+  fields.appendChild(pointsInput.wrapper);
+
+  const setRowEnabled = (enabled: boolean): void => {
+    cfg.enabled = enabled;
+    row.setAttribute("data-enabled", enabled ? "true" : "false");
+    row.classList.toggle("shell-assign-row-disabled", !enabled);
+    for (const el of [
+      dateInput.input,
+      timeInput.input,
+      topicInput.input,
+      pointsInput.input,
+    ]) {
+      el.disabled = !enabled;
+    }
+    onChange();
+  };
+  setRowEnabled(cfg.enabled);
+  checkbox.addEventListener("change", () => {
+    setRowEnabled(checkbox.checked);
+  });
+
+  return row;
+}
+
+type FieldInputInput = {
+  readonly id: string;
+  readonly label: string;
+  readonly type: "date" | "time" | "text" | "number";
+  readonly value: string;
+  readonly placeholder?: string;
+  readonly min?: number;
+  readonly onInput: (value: string) => void;
+};
+
+function fieldInput(
+  doc: Document,
+  spec: FieldInputInput,
+): { wrapper: HTMLElement; input: HTMLInputElement } {
+  const wrapper = doc.createElement("label");
+  wrapper.className = "shell-assign-field";
+  const caption = doc.createElement("span");
+  caption.className = "shell-assign-field-label";
+  caption.textContent = spec.label;
+  wrapper.appendChild(caption);
+  const input = doc.createElement("input");
+  input.type = spec.type;
+  input.value = spec.value;
+  input.setAttribute("data-testid", spec.id);
+  if (spec.placeholder !== undefined) input.placeholder = spec.placeholder;
+  if (spec.min !== undefined) input.min = String(spec.min);
+  input.addEventListener("input", () => {
+    spec.onInput(input.value);
+  });
+  wrapper.appendChild(input);
+  return { wrapper, input };
+}
+
+// -----------------------------------------------------------------------------
+// Test helpers
+// -----------------------------------------------------------------------------
+
+// Test-only reset. Clears the module-scoped session state so unit tests
+// can exercise a clean surface. Not called by production code.
+export function _resetCurriculumSessionStateForTest(): void {
+  sessionAssignments.clear();
+  cachedClasses = null;
+  classesInFlight = null;
+  sessionPreferences.releaseTime = DEFAULT_RELEASE_TIME;
+  sessionPreferences.topic = "";
 }

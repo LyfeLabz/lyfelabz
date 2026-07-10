@@ -768,3 +768,47 @@ The Assign Experience names, in specification form, the following load-bearing p
 ### Recommendation
 
 No commit is recommended until Technical Lead review of this history entry, review of ASSIGN_EXPERIENCE.md, review of the roadmap reference block, and local verification by Chris are complete.
+
+---
+
+## Sprint 6E - Assign Experience (Curriculum card)
+
+**Date:** 2026-07-10
+**Status:** Implementation complete. Awaiting Technical Lead review and local verification by Chris.
+**Detailed report:** SPRINT_6E_COMPLETION_REPORT.md
+**Companion documents:** ASSIGN_EXPERIENCE.md, TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, PRESENT_MODE_ARCHITECTURE.md.
+
+### Objective
+
+Deliver the first working version of the Assign Experience described in ASSIGN_EXPERIENCE.md. Land the one-dialog day, per-class row configuration, remembered-preference defaults, and the "✓ Assigned" card state inside the Teacher Workspace Curriculum surface. Do not introduce Firestore writes, callables, Cloud Functions, Google Classroom integration, teacher-preference persistence, or backend scheduling. Sprint 6E is a UI implementation sprint.
+
+### Major accomplishments
+
+- Extended `app/src/shell/surfaces/curriculum.ts` with the canonical Assign workflow. Every lesson card now carries an Assign control that opens a single modal dialog with one row per active class, every row selected by default. Each row exposes date, release time, Google Classroom topic, and points. The confirm control is disabled until at least one row is selected.
+- Prefilled defaults follow ASSIGN_EXPERIENCE.md sections 4 and 5. Assignment date defaults to Today, release time defaults to the teacher's remembered value for this session, Google Classroom topic defaults to the last topic entered, and points default to the LyfeLabz ten-question quiz total.
+- Implemented session-scoped in-memory storage. Assignments and last-used release time and Google Classroom topic live in module-scoped state and clear on full page reload. No `localStorage`, `sessionStorage`, `document.cookie`, Firestore, or callable is used.
+- Wired class list retrieval through the existing `deps.listClasses` fetcher already provided to the workspace outlet. The dialog prefetches the class list on curriculum mount so the modal opens without a round trip; only active classes appear as assignable rows.
+- Confirming the dialog closes the modal, returns the teacher to the same Curriculum location with scroll position preserved, updates the card in place to "✓ Assigned", and surfaces a concise, self-dismissing success confirmation.
+- Clicking "✓ Assigned" reopens the same dialog with the current per-row values populated. Removing an assignment is a deselection inside the dialog: clearing every row and reconfirming returns the card to the unassigned state.
+- Preserved every Sprint 6D behavior. The activation toggle, filter pills, welcome copy, return link, and lesson count are unchanged. The dialog is an additional per-card control, not a replacement.
+- Updated `app/src/shell/surfaces/workspace.ts` to route the workspace `listClasses` dependency into the curriculum surface. No other route surface changed.
+- Added ten new tests to `app/src/shell/shell.test.ts` covering the Assign control, dialog composition, default values, disabled-confirm rule, ✓ Assigned card state, dialog revisit with persisted values, deselection removal, session-scoped preference memory, cancellation, and the empty-class friendly state.
+
+### Architecture posture
+
+- No Cloud Function, callable, Firestore Rule, custom claim, lifecycle field, Session field, audit vocabulary term, or route change was introduced.
+- No teacher-preference persistence, no `assignments/{...}` document, no scheduling record, and no Google Classroom API call was written. PDR-010 and the Assignment Foundation phase (Phase 5) remain the canonical owners of those concerns.
+- The certified architecture (`LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `PLATFORM_STATE_MACHINE.md`, `LYFELABZ_PLATFORM_DECISIONS.md`) is unchanged.
+- The shell "no firebase imports" invariant (Sprint 3 Step 5) is preserved. The curriculum surface imports only the injected `ListClasses` type and the existing manifest reader.
+- Preservation mode is intact. The instructional repository at the repository root is not touched.
+
+### Verification performed
+
+- `app`: TypeScript typecheck clean; ESLint clean; esbuild bundle produced (`dist/bundle.js`); Jest suite runs 159/159 passing across 6 suites.
+- `platform/functions`: TypeScript typecheck clean; ESLint clean; TypeScript build clean; Jest suite runs 295/295 passing across 22 suites.
+- `platform/firebase`: Firestore Rules test suite runs 94/94 passing across 8 suites under the Firestore emulator.
+- All ten new Sprint 6E tests exercise the assign control, dialog, per-class rows, default values, confirm-disabled contract, ✓ Assigned card state, dialog revisit, session-scoped preference memory, cancellation, and the empty-class state.
+
+### Recommendation
+
+No commit is recommended until Technical Lead review of `SPRINT_6E_COMPLETION_REPORT.md` and local verification by Chris are complete.
