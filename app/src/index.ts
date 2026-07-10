@@ -10,6 +10,7 @@ import { dispatch } from "./router/router";
 import { createRouteTable } from "./router/routes";
 import { renderLoadingSurface } from "./router/surfaces";
 import { bootstrapSession } from "./session/bootstrap";
+import { createBrowserLaunchPresentMode } from "./presentMode/launchContext";
 
 // Client entry point. Waits for the Canonical Session Bootstrap to
 // resolve, then hands the resulting immutable Session to the router.
@@ -104,6 +105,7 @@ async function run(): Promise<void> {
   };
 
   const listClasses = createFirestoreListClasses(db);
+  const onLaunchPresentMode = createBrowserLaunchPresentMode(window);
 
   const table = createRouteTable({
     onSignOut,
@@ -111,6 +113,7 @@ async function run(): Promise<void> {
     onRefreshSession,
     onRequestVerification,
     listClasses,
+    onLaunchPresentMode,
   });
 
   await rerun();

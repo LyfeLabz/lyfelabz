@@ -908,3 +908,100 @@ No App, Functions, or Firestore test suite was executed. Repository policy does 
 ### Recommendation
 
 No commit is recommended until Technical Lead review is complete. Future implementation sprints must follow the certified contracts registered in `PLATFORM_CONTRACTS.md`.
+
+---
+
+## Sprint 6G: Present Mode Launch and Return
+
+**Date:** 2026-07-10
+**Status:** Implemented. No commits.
+**Companion documents:** PRESENT_MODE_ARCHITECTURE.md (section 14), PLATFORM_CONTRACTS.md (sections 4, 5, 6, 8, 9), TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_JOURNEY.md, ASSIGN_EXPERIENCE.md.
+
+### Objective
+
+Implement the certified launch-and-return flow between the Teacher Platform and the canonical LyfeLabz instructional experience. Preserve the canonical instructional experience as the sole presentation engine. Give the teacher a single semantic launch action in Present Mode and, on the canonical instructional experience, a small return affordance that appears only when a valid, non-sensitive return marker is present.
+
+### What was implemented
+
+- Present Mode launch button on the Present Mode workspace surface, exposing the accessible name `Launch Present Mode` and rendering as a semantic keyboard-operable button.
+- Certified sessionStorage return-context creation, keyed by the certified string `lyfelabz.presentMode.returnContext` under the platform namespace pattern `lyfelabz.<feature>.<purpose>`.
+- Same-tab launch navigation using `window.location.assign("/")`.
+- Return-context validation that fails safely on absent markers, malformed JSON, unsupported schema versions, unsupported returnSurface values, and missing required fields.
+- Lightweight return script for the canonical instructional experience, shipped as a self-contained plain-JS artifact at `assets/present-mode-return.js` and loaded from the canonical curriculum root `index.html`. The script imports no Firebase SDK, reads no authentication state, and injects nothing when the marker is absent or invalid.
+- Conditional return affordance rendered by the script when a valid marker is present, exposing the certified accessible name `Return to Teacher Workspace`.
+- Return navigation that same-tab hands the tab back to the Teacher Workspace entry URL (`/app/teacher`), where the shell resolves Curriculum as the default landing surface.
+- Marker cleanup performed by the return script before it navigates back to the Teacher Workspace.
+- Accessibility support on both controls: semantic `<button>` elements with explicit `aria-label` values, keyboard operability, and no icon-only affordances.
+
+### Certified contracts respected
+
+- Storage key: `lyfelabz.presentMode.returnContext`.
+- Schema: `{ version: 1, returnSurface: "curriculum" }`. The stored payload carries only the two certified fields and no teacher, class, or student data.
+- Launch navigation: `window.location.assign("/")` (same-tab).
+- Return script posture: always loads on the canonical instructional experience, no-ops without a valid marker, imports no Firebase SDK, reads no authenticated state, and preserves public instructional behavior.
+- Projector safety: no teacher, class, or student identifier is stored, read, or rendered by either the launch button or the return control.
+
+### Architecture protection
+
+- No parallel router. No parallel Teacher Workspace shell. No parallel instructional surface. The Teacher Platform lives under `/app/**`, the canonical instructional experience lives at the repository root, and both share a single Firebase Hosting origin as certified.
+- No backend persistence introduced. No Firestore record. No callable. No custom claim. No lifecycle field. No audit vocabulary term. No Session Object field.
+- No second presentation engine introduced. The canonical instructional experience remains the presentation experience.
+- The public instructional experience is unchanged for a visitor without a valid marker. The return script exits immediately when the marker is absent or invalid.
+- The Assign Experience, Curriculum surface, Classes surface, and shell composition are preserved and their existing tests continue to pass unchanged.
+- The shell posture invariant (no `sessionStorage`, `localStorage`, `document.cookie`, `firebase/auth`, `firebase/firestore`, `firebase/functions`, `onSnapshot`, or `httpsCallable` in `app/src/shell/**`) is preserved by keeping every launch-context and return-script implementation outside `src/shell/`.
+
+### Files created
+
+- `app/src/presentMode/launchContext.ts` (certified schema, key, validators, launch-handler factory).
+- `app/src/presentMode/launchContext.test.ts` (contract, validation, and launch-behavior tests).
+- `app/src/presentMode/returnControl.ts` (TypeScript reference implementation for the return script).
+- `app/src/presentMode/returnControl.test.ts` (jsdom tests for both the reference implementation and the plain-JS artifact).
+- `assets/present-mode-return.js` (plain-JS return script loaded by the canonical instructional experience).
+
+### Files modified
+
+- `app/src/shell/surfaces/presentMode.ts` (renders the launch button; invokes the injected handler).
+- `app/src/shell/surfaces/workspace.ts` (threads the launch handler through the workspace outlet).
+- `app/src/shell/shell.ts` (widens `ShellDeps` with the injected launch handler).
+- `app/src/shell/shell.test.ts` (adds launch-button, invocation, and privacy assertions; updates the Sprint 6F no-button assertion to expect the single certified launch button).
+- `app/src/router/surfaces/index.ts` (widens `SurfaceDeps`; passes the handler through the active-teacher surface).
+- `app/src/router/routes.ts` (updates `createSignOutOnlyRouteTable` with a noop launch handler).
+- `app/src/router/surfaces/surfaces.test.ts` (default deps include the launch handler).
+- `app/src/index.ts` (wires the browser-backed launch handler at the entry point).
+- `app/src/curriculum/curriculum.manifest.json` (regenerated: only the `canonicalSourceSha256` field changes because `index.html` now includes the return-script tag; no unit, resource, or topic changes).
+- `index.html` (adds `<script src="assets/present-mode-return.js" defer></script>` immediately before `</body>`).
+- `docs/platform/SPRINT_HISTORY.md` (this entry).
+
+### Tests added
+
+- `launchContext.test.ts`: certified storage key, schema version, returnSurface allowlist, launch URL, safe validation for malformed, missing, unsupported-version, unsupported-surface, and non-object inputs, safe failure on private-mode storage, and launch-handler payload privacy.
+- `returnControl.test.ts`: no-op for absent, malformed, unsupported-version, and unsupported-surface markers; semantic-button rendering with the certified accessible name; return navigation to the Teacher Workspace entry URL; marker cleanup; and identical behavior between the TypeScript reference implementation and the plain-JS artifact under jsdom.
+- `shell.test.ts`: launch button renders with the certified accessible name; clicking it invokes the injected handler exactly once; the button exposes no teacher, class, or student identifiers; existing shell, curriculum, classes, and Present Mode behavior is preserved.
+
+### Verification performed
+
+App package (working directory `/Users/breezy/Documents/GitHub/lyfelabz/app`):
+
+- `npm run typecheck` passed.
+- `npm run lint` passed.
+- `npm run build` produced `dist/bundle.js` (956.6 kB).
+- `npm test -- --runInBand` passed 214 tests across 8 suites.
+- `npm run curriculum:build` regenerated the canonical curriculum manifest; only the `canonicalSourceSha256` field changed, reflecting the added return-script tag in `index.html`.
+
+Functions package (working directory `/Users/breezy/Documents/GitHub/lyfelabz/platform/functions`):
+
+- `npm run typecheck` passed.
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test -- --runInBand` passed 295 tests across 22 suites.
+
+Firestore Rules package (working directory `/Users/breezy/Documents/GitHub/lyfelabz/platform/firebase`):
+
+- `npm run test:rules` passed 94 tests across 8 suites.
+
+### Confirmations
+
+- No backend persistence was added.
+- No presentation engine was added.
+- Public instructional access is unchanged when no marker is present.
+- No commits were made.

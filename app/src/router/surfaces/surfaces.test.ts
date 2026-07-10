@@ -40,6 +40,7 @@ function makeDeps(overrides: Partial<SurfaceDeps> = {}): {
     onRefreshSession: refresh,
     onRequestVerification: requestVerification,
     listClasses,
+    onLaunchPresentMode: () => undefined,
     ...overrides,
   };
   return {

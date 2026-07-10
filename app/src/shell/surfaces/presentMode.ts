@@ -1,5 +1,12 @@
 import type { Session } from "../../session/types";
 
+// Sprint 6G: Present Mode Launch and Return. The surface exposes a
+// single semantic launch button. Selecting it invokes the injected
+// launch handler wired at the entry point (see
+// src/presentMode/launchContext.ts). The shell tree performs no browser
+// storage or navigation itself; those responsibilities live outside
+// src/shell/ so the shell posture invariant remains intact.
+
 // Present Mode workspace surface. Sprint 6F establishes Present Mode as
 // a real Teacher Workspace destination while the presentation engine
 // itself remains deferred to a future sprint. See
@@ -39,9 +46,16 @@ const PREPARATION_STEPS: ReadonlyArray<PreparationStep> = Object.freeze([
   }),
 ]);
 
+export type PresentModeSurfaceDeps = {
+  readonly onLaunchPresentMode: () => void;
+};
+
+const NOOP_LAUNCH: () => void = () => undefined;
+
 export function renderPresentModeSurface(
   mount: HTMLElement,
   session: ActiveTeacher,
+  deps: PresentModeSurfaceDeps = { onLaunchPresentMode: NOOP_LAUNCH },
 ): void {
   void session;
   const doc = mount.ownerDocument;
@@ -105,4 +119,20 @@ export function renderPresentModeSurface(
   futureNotice.textContent =
     "Presentation controls will become available through future lesson selection and preparation workflows. Until then, prepare and preview lessons from Curriculum.";
   mount.appendChild(futureNotice);
+
+  // Certified launch action. Sprint 6G. See
+  // docs/platform/PRESENT_MODE_ARCHITECTURE.md §14.3.
+  const launchWrap = doc.createElement("p");
+  launchWrap.className = "shell-present-launch";
+  const launchBtn = doc.createElement("button");
+  launchBtn.type = "button";
+  launchBtn.className = "shell-present-launch-button";
+  launchBtn.textContent = "Launch Present Mode";
+  launchBtn.setAttribute("data-testid", "present-mode-launch");
+  launchBtn.setAttribute("aria-label", "Launch Present Mode");
+  launchBtn.addEventListener("click", () => {
+    deps.onLaunchPresentMode();
+  });
+  launchWrap.appendChild(launchBtn);
+  mount.appendChild(launchWrap);
 }

@@ -29,6 +29,9 @@ export type SurfaceDeps = {
     readonly displayName: string;
   }) => Promise<void>;
   readonly listClasses: ListClasses;
+  // Sprint 6G: injected launch handler. See
+  // src/presentMode/launchContext.ts.
+  readonly onLaunchPresentMode: () => void;
 };
 
 // -----------------------------------------------------------------------------
@@ -302,6 +305,7 @@ export const makeActiveTeacherSurface =
     mountTeacherShell(session, mount, {
       onSignOut: deps.onSignOut,
       listClasses: deps.listClasses,
+      onLaunchPresentMode: deps.onLaunchPresentMode,
     });
   };
 

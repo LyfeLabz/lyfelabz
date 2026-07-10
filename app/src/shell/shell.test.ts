@@ -28,6 +28,7 @@ const makeShellDeps = (
 ): ShellDeps => ({
   onSignOut: () => undefined,
   listClasses: emptyListClasses,
+  onLaunchPresentMode: () => undefined,
   ...overrides,
 });
 
@@ -549,6 +550,7 @@ describe("Workspace outlet (Sprint 6C)", () => {
     const mount = mkMount();
     const outlet = mountWorkspaceOutlet(mount, teacherSession(), "settings", {
       listClasses: emptyListClasses,
+      onLaunchPresentMode: () => undefined,
     });
     expect(outlet.getAttribute("data-testid")).toBe("workspace-outlet");
     expect(outlet.getAttribute("data-active-surface")).toBe("settings");
@@ -1264,14 +1266,18 @@ describe("Present Mode workspace surface (Sprint 6F)", () => {
     expect(text).not.toContain("dashboard");
   });
 
-  test("does not render any form controls, disabled inputs, or fake classroom data", () => {
+  test("does not render form controls or fake classroom data (Sprint 6G authorizes exactly one launch button)", () => {
     const mount = mkMount();
     renderPresentModeSurface(mount, teacher);
     expect(mount.querySelectorAll("input")).toHaveLength(0);
     expect(mount.querySelectorAll("select")).toHaveLength(0);
     expect(mount.querySelectorAll("textarea")).toHaveLength(0);
-    expect(mount.querySelectorAll("button")).toHaveLength(0);
     expect(mount.querySelectorAll("form")).toHaveLength(0);
+    const buttons = mount.querySelectorAll("button");
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0]?.getAttribute("data-testid")).toBe(
+      "present-mode-launch",
+    );
   });
 
   test("does not render uid, schoolId, email, or any Session claim payload", () => {
@@ -1296,6 +1302,48 @@ describe("Present Mode workspace surface (Sprint 6F)", () => {
     expect(
       mount.querySelector("[data-testid=curriculum-grid]"),
     ).toBeNull();
+  });
+
+  test("Sprint 6G: renders a semantic launch button with the certified accessible name", () => {
+    const mount = mkMount();
+    renderPresentModeSurface(mount, teacher);
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=present-mode-launch]",
+    );
+    expect(btn).not.toBeNull();
+    expect(btn?.tagName.toLowerCase()).toBe("button");
+    expect(btn?.getAttribute("type")).toBe("button");
+    expect(btn?.textContent).toBe("Launch Present Mode");
+    expect(btn?.getAttribute("aria-label")).toBe("Launch Present Mode");
+    expect(btn?.disabled).toBe(false);
+  });
+
+  test("Sprint 6G: clicking the launch button invokes the injected handler exactly once", () => {
+    const mount = mkMount();
+    const launch = jest.fn<void, []>();
+    mountTeacherShell(
+      teacher,
+      mount,
+      makeShellDeps({ onLaunchPresentMode: launch }),
+    );
+    clickPresentMode(mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=present-mode-launch]")
+      ?.click();
+    expect(launch).toHaveBeenCalledTimes(1);
+  });
+
+  test("Sprint 6G: launch button exposes no teacher, class, or student identifiers", () => {
+    const mount = mkMount();
+    renderPresentModeSurface(mount, teacher);
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=present-mode-launch]",
+    );
+    const text = btn?.textContent ?? "";
+    expect(text).not.toContain("u1");
+    expect(text).not.toContain("school-abc");
+    expect(text).not.toContain("Ada Lovelace");
+    expect(text).not.toMatch(/uid|email|claim|assignment|student/i);
   });
 
   test("navigating away and back to Present Mode does not double-mount the outlet", () => {

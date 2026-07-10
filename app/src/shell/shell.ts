@@ -24,6 +24,9 @@ type ActiveTeacher = Extract<Session, { kind: "activeTeacher" }>;
 export type ShellDeps = {
   readonly onSignOut: () => void;
   readonly listClasses: ListClasses;
+  // Sprint 6G: injected same-tab launch handler. The real
+  // implementation is wired at the entry point; tests pass a spy.
+  readonly onLaunchPresentMode: () => void;
 };
 
 export function mountTeacherShell(
@@ -47,7 +50,10 @@ export function mountTeacherShell(
   outletHost.className = "shell-outlet-host";
   body.appendChild(outletHost);
 
-  const workspaceDeps = { listClasses: deps.listClasses };
+  const workspaceDeps = {
+    listClasses: deps.listClasses,
+    onLaunchPresentMode: deps.onLaunchPresentMode,
+  };
 
   const renderNav = (): void => {
     navMount.textContent = "";

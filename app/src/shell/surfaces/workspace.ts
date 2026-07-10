@@ -18,8 +18,16 @@ import { renderComingSoonSurface } from "./shared/emptyState";
 
 type ActiveTeacher = Extract<Session, { kind: "activeTeacher" }>;
 
+// Present Mode launch is an injected side effect. The shell tree must
+// not import browser storage or navigation APIs directly (see
+// shell.test.ts data-and-callable-posture invariant). The entry point
+// wires the real implementation from src/presentMode/launchContext;
+// unit tests inject a spy.
+export type LaunchPresentMode = () => void;
+
 export type WorkspaceDeps = {
   readonly listClasses: ListClasses;
+  readonly onLaunchPresentMode: LaunchPresentMode;
 };
 
 export type WorkspaceSurface = {
@@ -58,8 +66,14 @@ export const WORKSPACE_SURFACES: Readonly<
   }),
   "present-mode": Object.freeze({
     key: "present-mode" as const,
-    render: (mount: HTMLElement, session: ActiveTeacher) =>
-      renderPresentModeSurface(mount, session),
+    render: (
+      mount: HTMLElement,
+      session: ActiveTeacher,
+      deps: WorkspaceDeps,
+    ) =>
+      renderPresentModeSurface(mount, session, {
+        onLaunchPresentMode: deps.onLaunchPresentMode,
+      }),
   }),
   settings: Object.freeze({
     key: "settings" as const,
