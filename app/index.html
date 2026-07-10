@@ -225,6 +225,131 @@
     font-size: 0.9rem;
     color: #555;
   }
+  /* Curriculum landing (Sprint 6D). Reuses the shell card language and
+     introduces teacher-only activation controls. Placeholder-only:
+     activation state is client-local per mount. */
+  .shell-curriculum-intro {
+    max-width: 46rem;
+  }
+  .shell-curriculum-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0 0 1rem 0;
+  }
+  .shell-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .shell-filter-pill {
+    padding: 0.35rem 0.75rem;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    min-height: 32px;
+  }
+  .shell-filter-pill:hover, .shell-filter-pill:focus-visible {
+    border-color: #666;
+  }
+  .shell-filter-pill-active {
+    background: #eef1f5;
+    border-color: #666;
+    font-weight: 600;
+  }
+  .shell-curriculum-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.85rem;
+    margin: 0.75rem 0 1.25rem 0;
+  }
+  .shell-lesson-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.9rem 1rem;
+    transition: opacity 0.15s ease-in-out;
+  }
+  .shell-lesson-card[hidden] { display: none; }
+  .shell-lesson-card-inactive {
+    background: #f6f6f6;
+    opacity: 0.72;
+  }
+  .shell-lesson-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+  }
+  .shell-lesson-badge {
+    display: inline-block;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    background: #eef1f5;
+    color: #444;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .shell-lesson-topic-life-science       { background: rgba(61,220,132,0.14);  color: #1f6b3d; }
+  .shell-lesson-topic-earth-space        { background: rgba(180,127,255,0.14); color: #5b3a99; }
+  .shell-lesson-topic-physical-science   { background: rgba(255,112,67,0.14);  color: #a24218; }
+  .shell-lesson-topic-tech-engineering   { background: rgba(245,200,66,0.18);  color: #7a5b0a; }
+  .shell-lesson-title {
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: #222;
+    margin: 0;
+  }
+  .shell-lesson-card-inactive .shell-lesson-title { color: #555; }
+  .shell-lesson-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: auto;
+  }
+  .shell-lesson-preview {
+    font-size: 0.9rem;
+    color: #444;
+    text-decoration: underline;
+  }
+  .shell-lesson-toggle {
+    padding: 0.3rem 0.7rem;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 4px;
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    min-height: 32px;
+  }
+  .shell-lesson-toggle-active {
+    background: rgba(61, 140, 89, 0.12);
+    border-color: rgba(61, 140, 89, 0.45);
+    color: #1f6b3d;
+    font-weight: 600;
+  }
+  .shell-lesson-toggle-inactive {
+    background: #fff;
+    border-color: rgba(0, 0, 0, 0.18);
+    color: #666;
+  }
+  .shell-lesson-toggle:hover, .shell-lesson-toggle:focus-visible {
+    border-color: #333;
+  }
+  .shell-curriculum-empty {
+    color: #666;
+    margin: 0.25rem 0 1rem 0;
+  }
+  @media (pointer: coarse) {
+    .shell-filter-pill, .shell-lesson-toggle { min-height: 44px; }
+  }
   .shell-footer {
     text-align: center;
     padding: 1rem;

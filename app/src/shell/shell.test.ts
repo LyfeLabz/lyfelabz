@@ -288,63 +288,161 @@ describe("Footer", () => {
   });
 });
 
-describe("Curriculum surface composition (Sprint 6C rename)", () => {
-  test("renders welcome message, transitional status sentence, identity card, five placeholder cards, and return link", () => {
+describe("Curriculum surface composition (Sprint 6D)", () => {
+  test("renders welcome, curriculum intro, filter controls, lesson grid, and return link", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacherSession());
     expect(mount.querySelector("[data-testid=surface-headline]")?.textContent)
       .toBe("Welcome, Ada Lovelace.");
-    expect(mount.querySelector("[data-testid=platform-status]")?.textContent)
+    expect(mount.querySelector("[data-testid=curriculum-intro]")?.textContent)
       .toBe(
-        "The curriculum landing arrives in a future sprint. New capabilities will appear here as they are released.",
+        "Activate the LyfeLabz lessons your students can access. Preview any lesson at any time.",
       );
-    expect(mount.querySelector("[data-testid=identity-card]")).not.toBeNull();
-    const grid = mount.querySelector("[data-testid=placeholder-grid]");
-    expect(grid?.children.length).toBe(5);
+    expect(mount.querySelector("[data-testid=curriculum-filters]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=curriculum-grid]")).not.toBeNull();
     expect(
       mount.querySelector<HTMLAnchorElement>("[data-testid=return-link]")
         ?.getAttribute("href"),
     ).toBe("/");
   });
 
-  test("renders the placeholder cards in the specified order", () => {
+  test("renders a lesson card for every lesson in the catalog", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacherSession());
-    const cards = Array.from(
-      mount.querySelectorAll("[data-testid^=placeholder-]"),
-    ).filter((el) => el.getAttribute("data-testid") !== "placeholder-grid");
-    expect(cards.map((c) => c.getAttribute("data-testid"))).toEqual([
-      "placeholder-classes",
-      "placeholder-students",
-      "placeholder-assignments",
-      "placeholder-reports",
-      "placeholder-settings",
-    ]);
+    const cards = mount.querySelectorAll(".shell-lesson-card");
+    expect(cards.length).toBe(47);
   });
 
-  test("every placeholder card reads 'Coming in a future sprint.' and is aria-disabled", () => {
+  test("each lesson card renders title, grade, topic, preview link, and activation toggle", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacherSession());
-    const cards = mount.querySelectorAll(".shell-placeholder-card");
-    expect(cards.length).toBe(5);
-    for (const card of Array.from(cards)) {
-      expect(card.getAttribute("aria-disabled")).toBe("true");
-      expect(card.textContent ?? "").toContain("Coming in a future sprint.");
+    const card = mount.querySelector<HTMLElement>(
+      "[data-testid=lesson-card-earths-layers]",
+    );
+    expect(card).not.toBeNull();
+    expect(card?.getAttribute("data-grade")).toBe("7");
+    expect(card?.getAttribute("data-topic")).toBe("earth-space");
+    expect(
+      mount.querySelector("[data-testid=lesson-title-earths-layers]")?.textContent,
+    ).toBe("Earth's Layers");
+    expect(
+      mount.querySelector("[data-testid=lesson-grade-earths-layers]")?.textContent,
+    ).toBe("Grade 7");
+    expect(
+      mount.querySelector("[data-testid=lesson-topic-earths-layers]")?.textContent,
+    ).toBe("Earth & Space");
+    expect(
+      mount
+        .querySelector<HTMLAnchorElement>(
+          "[data-testid=lesson-preview-earths-layers]",
+        )
+        ?.getAttribute("href"),
+    ).toBe("/lesson_earths-layers.html");
+    const toggle = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-toggle-earths-layers]",
+    );
+    expect(toggle).not.toBeNull();
+    expect(toggle?.getAttribute("aria-pressed")).toBe("true");
+    expect(toggle?.textContent).toBe("Active");
+  });
+
+  test("lessons default to active state", () => {
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacherSession());
+    for (const card of Array.from(
+      mount.querySelectorAll<HTMLElement>(".shell-lesson-card"),
+    )) {
+      expect(card.getAttribute("data-lesson-active")).toBe("true");
+      expect(card.classList.contains("shell-lesson-card-inactive")).toBe(false);
     }
   });
 
-  test("identity card renders display name, Teacher role, and Verified pill", () => {
+  test("clicking a lesson toggle flips activation state and visual distinguishability", () => {
     const mount = mkMount();
     renderCurriculumSurface(mount, teacherSession());
-    expect(mount.querySelector("[data-testid=identity-name]")?.textContent)
-      .toBe("Ada Lovelace");
-    expect(mount.querySelector("[data-testid=identity-role]")?.textContent)
-      .toBe("Teacher");
-    const pill = mount.querySelector("[data-testid=verification-pill]");
-    expect(pill?.textContent).toBe("Verified");
-    expect(pill?.getAttribute("aria-label")).toBe(
-      "Verification: Verified",
+    const toggle = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-toggle-what-is-life]",
     );
+    const card = mount.querySelector<HTMLElement>(
+      "[data-testid=lesson-card-what-is-life]",
+    );
+    toggle?.click();
+    expect(toggle?.getAttribute("aria-pressed")).toBe("false");
+    expect(toggle?.textContent).toBe("Inactive");
+    expect(card?.getAttribute("data-lesson-active")).toBe("false");
+    expect(card?.classList.contains("shell-lesson-card-inactive")).toBe(true);
+    toggle?.click();
+    expect(toggle?.getAttribute("aria-pressed")).toBe("true");
+    expect(toggle?.textContent).toBe("Active");
+    expect(card?.getAttribute("data-lesson-active")).toBe("true");
+    expect(card?.classList.contains("shell-lesson-card-inactive")).toBe(false);
+  });
+
+  test("grade filter hides lessons that do not match the selected grade", () => {
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacherSession());
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=filter-grade-6]")
+      ?.click();
+    for (const card of Array.from(
+      mount.querySelectorAll<HTMLElement>(".shell-lesson-card"),
+    )) {
+      if (card.getAttribute("data-grade") === "6") {
+        expect(card.hidden).toBe(false);
+      } else {
+        expect(card.hidden).toBe(true);
+      }
+    }
+    expect(
+      mount
+        .querySelector("[data-testid=filter-grade-6]")
+        ?.getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      mount
+        .querySelector("[data-testid=filter-grade-all]")
+        ?.getAttribute("aria-pressed"),
+    ).toBe("false");
+  });
+
+  test("topic filter hides lessons that do not match the selected topic", () => {
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacherSession());
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=filter-topic-life-science]",
+      )
+      ?.click();
+    for (const card of Array.from(
+      mount.querySelectorAll<HTMLElement>(".shell-lesson-card"),
+    )) {
+      if (card.getAttribute("data-topic") === "life-science") {
+        expect(card.hidden).toBe(false);
+      } else {
+        expect(card.hidden).toBe(true);
+      }
+    }
+  });
+
+  test("grade and topic filters combine (AND)", () => {
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacherSession());
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=filter-grade-6]")
+      ?.click();
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=filter-topic-tech-engineering]",
+      )
+      ?.click();
+    const visible = Array.from(
+      mount.querySelectorAll<HTMLElement>(".shell-lesson-card"),
+    ).filter((c) => !c.hidden);
+    expect(visible.length).toBeGreaterThan(0);
+    for (const card of visible) {
+      expect(card.getAttribute("data-grade")).toBe("6");
+      expect(card.getAttribute("data-topic")).toBe("tech-engineering");
+    }
   });
 
   test("does not render uid, schoolId, or claim payload in the DOM", () => {

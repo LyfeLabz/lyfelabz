@@ -502,3 +502,114 @@ Sprint 6C introduces no new backend behavior.
 ### Recommendation
 
 Proceed to Sprint 6D (Curriculum Landing bridge) after Technical Lead review of `SPRINT_6C_COMPLETION_REPORT.md` and local verification by Chris. No commit is recommended until both reviews are complete.
+
+---
+
+## Sprint 6D - Teacher Curriculum Landing Page
+
+**Date:** 2026-07-09
+**Status:** Implementation complete. Sprint 6D certification is now gated on Sprint 6D.0 (Canonical Curriculum Manifest Extraction). See the Sprint 6D.0 entry below.
+**Companion documents:** TEACHER_EXPERIENCE_PHILOSOPHY.md (§3.2, §3.4, §3.9, §4.2), TEACHER_PLATFORM_DOMAIN_ROADMAP.md (Phase 2 amendment), PRESENT_MODE_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md (PDR-010).
+
+### Objective
+
+Replace the Sprint 6C transitional Curriculum surface with the teacher curriculum landing page. Deliver the teacher-facing view of the LyfeLabz curriculum described in §3.2 and §4.2 of the philosophy: the familiar grade-and-topic organization of the canonical curriculum, teacher-only activation controls per lesson, and an unrestricted preview link back to the canonical instructional repository. Activation is UI-only; no backend surface is added.
+
+### Major accomplishments
+
+- Introduced `app/src/shell/surfaces/shared/lessonCatalog.ts`, a static, read-only catalog of the 47 lessons currently published in the canonical curriculum index at the repository root. The catalog stores slug, title, grade, topic, and href (`/lesson_${slug}.html`) per entry. No lesson content is duplicated; the catalog references the canonical instructional repository per PDR-007 and §3.9 of the philosophy.
+- Rewrote `renderCurriculumSurface` to mount the teacher curriculum landing page. The surface renders a welcome headline, a brief teacher-facing intro, grade and topic filter rows that mirror the canonical filter box (All Grades / Grade 6 / Grade 7; All Topics / Life Science / Earth & Space / Physical Science / Tech & Engineering), a responsive lesson grid, a curriculum-empty notice, and the preserved return-to-lessons link.
+- Reused the canonical LyfeLabz lesson-card language. Each card renders a grade badge, topic badge with topic-tinted background, lesson title, a preview link that opens the canonical lesson, and a placeholder activation toggle. The card's `data-lesson-active`, `data-grade`, and `data-topic` attributes make lesson activation state and filter posture machine-readable.
+- Introduced the placeholder activation contract. Every lesson defaults to `Active`. The per-card toggle flips state between `Active` and `Inactive`, updates `aria-pressed`, updates the aria-label (`Activate ${lesson.title} for students` / `Deactivate ${lesson.title} for students`), and applies the `shell-lesson-card-inactive` class for visual distinguishability (reduced opacity, muted background, muted title color). Activation state lives in client-local memory per mount and is discarded on remount by design. PDR-010 curation semantics land in Phase 5.
+- Introduced the filter contract. Grade and topic filter pills carry `aria-pressed`, dispatch on click, and combine with AND semantics against `data-grade` and `data-topic` on each card. The curriculum-empty notice appears only when no cards match.
+- Added the surface CSS to `app/index.html` under the canonical shell stylesheet: `.shell-curriculum-*`, `.shell-filter-*`, `.shell-lesson-*` selectors. Responsive grid uses `repeat(auto-fill, minmax(240px, 1fr))`. Touch-target minimums under `@media (pointer: coarse)` are preserved on filter pills and toggles.
+- Expanded `app/src/shell/shell.test.ts` `Curriculum surface composition` block to cover: welcome copy, intro copy, filter controls, lesson grid population, per-card composition (title, grade badge, topic badge, preview link, toggle), default activation state, toggle click flipping activation and visual state, grade filter behavior, topic filter behavior, AND-combined filter behavior, absence of uid/schoolId/claim payload, empty-name fallback, and focus behavior. Total: **129 tests across 5 suites**.
+
+### Architecture posture
+
+Sprint 6D introduces no new backend behavior.
+
+- Firestore remains authoritative. No client read change. No `lessons/{lessonId}` read is issued; the catalog is a static, teacher-facing bridge.
+- All writes remain server-mediated. The activation toggle writes only to per-mount memory. No callable is invoked.
+- Firestore Rules remain default-deny. No rule change.
+- `status` remains the sole lifecycle field. No lifecycle field is introduced for activation.
+- Audit events remain append-only. No new vocabulary is registered.
+- The Immutable Session Object, Session Bootstrap, and protected router state machine are unchanged.
+- Custom claims remain `{ role, schoolId }`; `districtId` remains reserved.
+- No new Cloud Functions, no Firestore Rules changes, no Firestore indexes changes, no Storage Rules changes. `platform/functions/**` and `platform/firebase/**` were not modified.
+- The shell no-Firebase-import invariant is preserved. The static-source assertion in `shell.test.ts` continues to guard it.
+- Preservation mode remains intact. No file at the repository root is modified.
+- The `active teacher surface (Step 5 shell)` assertion in `app/src/router/surfaces/surfaces.test.ts` continues to pass because the Curriculum surface preserves the `Welcome, Ada.` headline.
+
+### Repository validation
+
+- `app` typecheck clean.
+- `app` lint clean.
+- `app` build clean (esbuild).
+- `app` unit tests: **129 pass across 5 suites** (Sprint 6C baseline: 125 / 5; +4 tests net, no suite added).
+- `platform/functions` typecheck, lint, and build clean.
+- `platform/functions` unit tests: **295 pass across 22 suites** (unchanged).
+- `platform/firebase` Rules tests: **94 pass across 8 suites** (unchanged).
+
+### Recommendation
+
+Proceed to the Sprint 6D review pass after Technical Lead review of this history entry and local verification by Chris. No commit is recommended until both reviews are complete.
+
+---
+
+## Sprint 6D.0 - Canonical Curriculum Manifest Extraction
+
+**Date:** 2026-07-10
+**Status:** Implementation complete; awaiting Technical Lead review and local verification by Chris.
+**Companion documents:** SPRINT_6D_0_SPECIFICATION.md, SPRINT_6D_0_COMPLETION_REPORT.md, TEACHER_EXPERIENCE_PHILOSOPHY.md (§3.9), PRESENT_MODE_ARCHITECTURE.md (§12), TEACHER_PLATFORM_DOMAIN_ROADMAP.md (Phase 2 amendment), LYFELABZ_PLATFORM_DECISIONS.md (PDR-007, PDR-010, PDR-018).
+
+### Objective
+
+Replace the manually maintained TypeScript curriculum registry introduced by Sprint 6D with a deterministic build-time extraction from the canonical root `index.html`. Preserve the one-canonical-curriculum principle (PDR-007 and TEACHER_EXPERIENCE_PHILOSOPHY.md §3.9) by making the manifest a derived artifact rather than an independently editable source of truth. Sprint 6D certification depends on this prerequisite.
+
+### Major accomplishments
+
+- Introduced `app/scripts/curriculumParser.cjs`, a dependency-free deterministic parser that reads the canonical curriculum markup - `.topic-group[data-group]` -> `.subject-block[data-topic][data-grades]` -> `.unit-card[id="unit-*"]` -> `.unit-links a.ulink.*` - and emits a normalized manifest.
+- Introduced `app/scripts/build-curriculum-manifest.cjs`, the CLI entry point. Regenerates `app/src/curriculum/curriculum.manifest.json` on invocation and runs a byte-for-byte drift check under `--check` mode. Exposes `npm run curriculum:build` and `npm run curriculum:verify` on the `app` package.
+- Generated `app/src/curriculum/curriculum.manifest.json`. Marked `"generated": true` with `canonicalSource: "index.html"` and a SHA-256 fingerprint of the parsed source. Contains topic groups, units, resources, orphan placeholders, and total counts by grade, topic, and resource type. Timestamps are intentionally omitted so regeneration on an unchanged canonical index is byte-identical.
+- Introduced `app/src/curriculum/curriculumManifest.ts`, the sole authoritative curriculum accessor for the teacher application. Exposes `CURRICULUM_MANIFEST`, `TOPIC_LABEL`, `getAllUnits`, `getSurfaceableLessons`, `getTopicGroups`, `getOrphanUnits`, and the resource / unit / topic / grade types.
+- Rewired `app/src/shell/surfaces/curriculum.ts` to consume `getSurfaceableLessons()` and `TOPIC_LABEL` from the typed selector. Filter logic, activation semantics, aria contract, and rendering are unchanged. The 47 non-gated lesson-card assertion in `shell.test.ts` continues to pass unchanged.
+- Removed `app/src/shell/surfaces/shared/lessonCatalog.ts` entirely. No thin wrapper remains; the shadow curriculum registry is gone.
+- Added `app/src/curriculum/curriculumManifest.test.ts` covering: manifest fingerprint sanity, drift (checked-in JSON equals a freshly parsed manifest), unique slugs and hrefs, topic group order and labels, gated behavioral-science, `getSurfaceableLessons` filtering (47 non-gated lessons), orphan reporting on gated topic groups only, resource totals reconciliation, and 12 parser strict-failure guarantees. Total: **20 new tests across 1 new suite**.
+- Recorded the manifest prerequisite in `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` (Phase 2 UX Direction Amendment, Sprint 6D subsection).
+
+### Architecture posture
+
+Sprint 6D.0 introduces no new backend behavior.
+
+- No Firestore read, no callable, no rule change, no lifecycle field, no custom claim, no Session field, no audit vocabulary term.
+- The shell no-Firebase-import invariant is preserved. The static-source assertion in `shell.test.ts` continues to guard it. The manifest is a checked-in JSON asset imported through TypeScript's `resolveJsonModule`.
+- No `localStorage`, `sessionStorage`, or `document.cookie` access is introduced.
+- Preservation mode remains intact. Root `index.html` is unmodified.
+- Sprint 6D activation-toggle, filter, welcome-copy, and empty-name-fallback tests continue to pass unchanged.
+
+### Canonical resource totals
+
+Extracted from the current canonical `index.html` (SHA-256 `dc46aa78…101b69`).
+
+- Total units: **48** (47 non-gated lesson units + 1 gated behavioral-science lesson unit).
+- Orphan placeholders (gated topic groups only): 2.
+- Units by grade: 6 -> 22, 7 -> 26.
+- Units by topic: Life Science 12, Earth & Space 15, Physical Science 11, Tech & Engineering 9, Behavioral Science 1 (gated).
+- Resources by type: lesson 48, extension 5, investigation 4, simulation 3, challenge 1, activity 0, game 0, map 0, disease 0. Total resources: **61**.
+
+### Repository validation
+
+- `app` typecheck clean.
+- `app` lint clean.
+- `app` build clean (esbuild).
+- `app` unit tests: **149 pass across 6 suites** (Sprint 6D baseline: 129 / 5; delta +20 tests, +1 suite).
+- `app` curriculum manifest verification: `npm run curriculum:verify` reports `manifest matches canonical index.html (units=48)`.
+- `app` curriculum manifest regeneration: `npm run curriculum:build` is byte-stable on an unchanged canonical `index.html`.
+- `platform/functions` typecheck, lint, and build clean.
+- `platform/functions` unit tests: **295 pass across 22 suites** (unchanged).
+- `platform/firebase` Rules tests: **94 pass across 8 suites** (unchanged).
+
+### Recommendation
+
+Proceed to the Sprint 6D certification pass after Technical Lead review of this history entry and local verification by Chris. No commit is recommended until both reviews are complete.

@@ -7,7 +7,9 @@
     "build": "esbuild src/index.ts --bundle --format=esm --target=es2022 --outfile=dist/bundle.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --ext .ts src",
-    "test": "jest"
+    "test": "jest",
+    "curriculum:build": "node scripts/build-curriculum-manifest.cjs",
+    "curriculum:verify": "node scripts/build-curriculum-manifest.cjs --check"
   },
   "dependencies": {
     "firebase": "^10.12.2"
