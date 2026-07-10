@@ -613,3 +613,54 @@ Extracted from the current canonical `index.html` (SHA-256 `dc46aa78…101b69`).
 ### Recommendation
 
 Proceed to the Sprint 6D certification pass after Technical Lead review of this history entry and local verification by Chris. No commit is recommended until both reviews are complete.
+
+---
+
+## Sprint 6D - Teacher Curriculum Landing Page (Certification)
+
+**Date:** 2026-07-09
+**Status:** Certified. Sprint 6D.0 satisfied the sole outstanding prerequisite; no additional runtime code changes were required. Awaiting Technical Lead review and local verification by Chris.
+**Companion documents:** SPRINT_6D_COMPLETION_REPORT.md, SPRINT_6D_0_COMPLETION_REPORT.md, TEACHER_EXPERIENCE_PHILOSOPHY.md (§3.2, §3.4, §3.9, §4.2), PRESENT_MODE_ARCHITECTURE.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md (Phase 2 amendment), LYFELABZ_PLATFORM_DECISIONS.md (PDR-007, PDR-010, PDR-018).
+
+### Objective
+
+Certify the Teacher Curriculum Landing Page using the generated canonical curriculum manifest established by Sprint 6D.0. Do not redesign the feature or expand scope. Finish the sprint.
+
+### Certification outcome
+
+Sprint 6D.0 became a prerequisite sprint. The manually maintained shadow curriculum registry (`app/src/shell/surfaces/shared/lessonCatalog.ts`) was removed and the Curriculum surface (`app/src/shell/surfaces/curriculum.ts`) was rewired to read only through the typed selector `app/src/curriculum/curriculumManifest.ts` over the generated `curriculum.manifest.json`. The Sprint 6D behavioral contract - welcome copy, curriculum intro, filter controls, 47 non-gated lesson cards in canonical order, per-card composition, default activation, click-to-toggle activation, grade filter, topic filter, AND-combined filter, absence of uid/schoolId/claim payload, empty-name fallback, focus behavior, and the return-to-public-lessons link - continues to pass unchanged. No further runtime code changes were required for Sprint 6D certification.
+
+Sprint 6D is now certified. The teacher curriculum landing page no longer relies on a manually maintained curriculum registry; all curriculum metadata reads flow through the canonical generated manifest.
+
+### Architecture posture
+
+- No conflict with the certified architecture; no architecture amendment required.
+- No Firestore read, no callable, no rule change, no lifecycle field, no custom claim, no Session field, no audit vocabulary term is introduced.
+- Activation remains UI-only per-mount client state; PDR-010 curation semantics land in Phase 5.
+- Preview links launch canonical instructional pages (`/lesson_${slug}.html`), preserving PDR-007.
+- Shell no-Firebase-import invariant preserved. No `localStorage`, `sessionStorage`, or `document.cookie` access. No `firebase/*` import reaches `app/src/shell/**`.
+- Preservation mode intact. Root `index.html` unmodified.
+- The generated manifest is the sole curriculum metadata source consumed by the authenticated application. `grep -rn "lessonCatalog\|LESSON_CATALOG\|curriculum.manifest.json" app/src` returns only the three expected occurrences inside `curriculumManifest.ts` (module comment, JSON import, and a historical `LESSON_CATALOG` reference in a code comment).
+
+### UX posture
+
+- Curriculum remains the teacher's primary landing experience.
+- The curriculum remains recognizable as LyfeLabz. Grade + topic organization, badge vocabulary, and lesson labels mirror the canonical index byte-for-byte.
+- The Teacher Platform manages instruction (per-lesson activation controls scoped to the authenticated shell). Canonical LyfeLabz delivers instruction (Preview link).
+- No dashboard mentality. No analytics chrome, no KPI tile, no submission rollup.
+- Simplicity preserved. Welcome + intro + two filter rows + one lesson grid + empty-state notice + return link.
+- Scales naturally: adding grades or topics is a canonical-index change followed by `npm run curriculum:build`; the typed unions and filter contracts extend without a surface code change.
+
+### Repository validation
+
+- `app` `npm run curriculum:verify` clean.
+- `app` typecheck, lint, build clean.
+- `app` unit tests: **149 pass across 6 suites** (Sprint 6D.0 baseline: 149 / 6; delta 0 / 0).
+- `platform/functions` typecheck, lint, build clean.
+- `platform/functions` unit tests: **295 pass across 22 suites** (unchanged).
+- `platform/firebase` Rules tests: **94 pass across 8 suites** (unchanged).
+- Aggregate: **538 tests / 36 suites**.
+
+### Recommendation
+
+Sprint 6D is certified. Proceed to the Sprint 6D certification review pass after Technical Lead review of this history entry, the Sprint 6D completion report, and local verification by Chris. No commit is recommended until both reviews are complete.
