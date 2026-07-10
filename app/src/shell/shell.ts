@@ -4,6 +4,7 @@ import { renderHeader } from "./header";
 import { renderNavigation, type WorkspaceSurfaceKey } from "./navigation";
 import { renderFooter } from "./footer";
 import { mountWorkspaceOutlet } from "./surfaces/workspace";
+import type { SnapshotPreview } from "./surfaces/snapshot";
 
 // Top-level teacher-workspace shell mount.
 //
@@ -27,6 +28,10 @@ export type ShellDeps = {
   // Sprint 6G: injected same-tab launch handler. The real
   // implementation is wired at the entry point; tests pass a spy.
   readonly onLaunchPresentMode: () => void;
+  // Sprint 7B: optional static Snapshot preview payload. Defaults to
+  // null (no preview) so production renders the certified no-data
+  // state. Tests inject the fictional preview to validate hierarchy.
+  readonly snapshotPreview?: SnapshotPreview | null;
 };
 
 export function mountTeacherShell(
@@ -53,6 +58,7 @@ export function mountTeacherShell(
   const workspaceDeps = {
     listClasses: deps.listClasses,
     onLaunchPresentMode: deps.onLaunchPresentMode,
+    snapshotPreview: deps.snapshotPreview ?? null,
   };
 
   const renderNav = (): void => {

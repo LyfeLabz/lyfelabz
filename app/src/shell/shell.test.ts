@@ -20,6 +20,7 @@ import {
 } from "./surfaces/workspace";
 import { renderPresentModeSurface } from "./surfaces/presentMode";
 import { renderSettingsSurface } from "./surfaces/settings";
+import type * as SnapshotModule from "./surfaces/snapshot";
 
 const emptyListClasses: ListClasses = () =>
   Promise.resolve(Object.freeze<ClassSummary[]>([]));
@@ -754,7 +755,7 @@ describe("Classroom Workspace surface (Sprint 6B, preserved by 6C)", () => {
     expect(mount.querySelector("[data-testid=classes-list]")).toBeNull();
   });
 
-  test("clicking a classroom card marks it selected without leaving the surface", async () => {
+  test("Sprint 7B: clicking a classroom card opens its class workspace without leaving the Classes surface", async () => {
     const mount = mkMount();
     const listClasses = makeListClasses([
       freeze({ id: "c1", title: "6A", grade: "6", status: "active" }),
@@ -767,17 +768,20 @@ describe("Classroom Workspace surface (Sprint 6B, preserved by 6C)", () => {
       "[data-testid=class-card-c1]",
     );
     card?.click();
-    expect(card?.getAttribute("aria-pressed")).toBe("true");
-    expect(
-      mount
-        .querySelector("[data-testid=class-card-c2]")
-        ?.getAttribute("aria-pressed"),
-    ).toBe("false");
+    // Drill-in mounts the class workspace inside the classes outlet
+    const workspace = mount.querySelector("[data-testid=class-workspace]");
+    expect(workspace).not.toBeNull();
+    expect(workspace?.getAttribute("data-class-id")).toBe("c1");
+    expect(workspace?.getAttribute("data-class-tab")).toBe("snapshot");
+    // The permanent workspace-surface identifier is unchanged
     expect(
       mount
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
     ).toBe("classes");
+    // The class list is no longer visible; the other class card is gone
+    expect(mount.querySelector("[data-testid=classes-list]")).toBeNull();
+    expect(mount.querySelector("[data-testid=class-card-c2]")).toBeNull();
   });
 
   test("focus lands on the Classes headline when the surface is activated", async () => {
@@ -1552,5 +1556,439 @@ describe("Settings workspace surface (Sprint 6H)", () => {
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
     ).toBe("settings");
+  });
+});
+
+describe("Class Snapshot foundation (Sprint 7B)", () => {
+  const teacher = teacherSession();
+
+  const twoClasses: ReadonlyArray<ClassSummary> = freeze([
+    freeze({ id: "c1", title: "6A Life Science", grade: "6", status: "active" }),
+    freeze({ id: "c2", title: "7B Systems", grade: "7", status: "active" }),
+  ] as ClassSummary[]);
+  const listTwo: ListClasses = () => Promise.resolve(twoClasses);
+
+  const clickClasses = (mount: HTMLElement): void => {
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-classes]")
+      ?.click();
+  };
+
+  const openC1 = async (mount: HTMLElement): Promise<void> => {
+    clickClasses(mount);
+    await flush();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=class-card-c1]")
+      ?.click();
+  };
+
+  test("navigation lists exactly the four permanent workspace destinations after Sprint 7B", () => {
+    // Snapshot must not become a fifth permanent Teacher Workspace
+    // destination. See CLASS_SNAPSHOT_EXPERIENCE.md §6 and
+    // SNAPSHOT_ARCHITECTURE.md §6.
+    expect(Object.keys(WORKSPACE_SURFACES).sort()).toEqual(
+      ["classes", "curriculum", "present-mode", "settings"],
+    );
+    const mount = mkMount();
+    renderNavigation(mount);
+    expect(mount.querySelector("[data-testid=nav-snapshot]")).toBeNull();
+    expect(
+      mount.querySelectorAll<HTMLButtonElement>(
+        "button.shell-nav-button[data-nav-variant=item]",
+      ).length,
+    ).toBe(4);
+  });
+
+  test("no-classes state: Classes surface renders the certified empty state, no class workspace", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickClasses(mount);
+    await flush();
+    expect(mount.querySelector("[data-testid=classes-empty]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=class-workspace]")).toBeNull();
+    expect(mount.querySelector("[data-testid=class-nav]")).toBeNull();
+    expect(mount.querySelector("[data-testid=snapshot-region]")).toBeNull();
+    expect(
+      mount.querySelector("[data-testid=classes-status]")?.textContent,
+    ).toBe("You do not have any classrooms yet.");
+  });
+
+  test("no-selected-class state: classes exist but nothing is selected renders the class list with a chooser prompt", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    clickClasses(mount);
+    await flush();
+    expect(mount.querySelector("[data-testid=classes-list]")).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=classes-prompt]")?.textContent,
+    ).toBe("Choose a class to open its workspace.");
+    expect(mount.querySelector("[data-testid=class-workspace]")).toBeNull();
+    expect(mount.querySelector("[data-testid=snapshot-region]")).toBeNull();
+  });
+
+  test("selecting a class opens its class workspace with Snapshot as the default class-level surface", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    const workspace = mount.querySelector("[data-testid=class-workspace]");
+    expect(workspace).not.toBeNull();
+    expect(workspace?.getAttribute("data-class-id")).toBe("c1");
+    expect(workspace?.getAttribute("data-class-tab")).toBe("snapshot");
+    // The permanent workspace-surface identifier is unchanged
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("classes");
+    // The Snapshot region is present with the class name as its headline
+    expect(mount.querySelector("[data-testid=snapshot-region]")).not.toBeNull();
+    expect(
+      mount.querySelector("[data-testid=surface-headline]")?.textContent,
+    ).toBe("6A Life Science");
+  });
+
+  test("Snapshot with no data renders the certified no-data language, no fictional students", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    expect(
+      mount.querySelector("[data-testid=snapshot-empty]")?.textContent,
+    ).toBe(
+      "Classroom activity will appear here when assignments and submissions exist.",
+    );
+    expect(mount.querySelector("[data-testid=snapshot-groups]")).toBeNull();
+    // No preview groupings render without a preview payload
+    for (const key of ["check-in-next", "working", "finished"]) {
+      expect(mount.querySelector(`[data-testid=snapshot-group-${key}]`)).toBeNull();
+    }
+  });
+
+  test("Snapshot renders the class identity, purpose, and grade + status context", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    expect(
+      mount.querySelector("[data-testid=snapshot-purpose]")?.textContent,
+    ).toBe("One place to check in on your class between moments.");
+    expect(
+      mount.querySelector("[data-testid=snapshot-class-grade]")?.textContent,
+    ).toBe("Grade 6");
+    expect(
+      mount.querySelector("[data-testid=snapshot-class-status]")?.textContent,
+    ).toBe("Active");
+    expect(
+      mount
+        .querySelector("[data-testid=snapshot-class-status]")
+        ?.getAttribute("aria-label"),
+    ).toBe("Class status: Active");
+  });
+
+  test("Snapshot renders no dashboard, analytics, or evaluation language", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    const text = (
+      mount.querySelector("[data-testid=snapshot-region]")?.textContent ?? ""
+    ).toLowerCase();
+    expect(text).not.toContain("dashboard");
+    expect(text).not.toContain("analytics");
+    expect(text).not.toContain("performance");
+    expect(text).not.toContain("percent");
+    expect(text).not.toContain("%");
+    expect(text).not.toContain("mastery");
+    expect(text).not.toContain("grade average");
+    expect(text).not.toContain("trend");
+    expect(text).not.toContain("ranking");
+    expect(text).not.toContain("accommodation");
+  });
+
+  test("static representative preview renders the three attention groupings in the certified order", async () => {
+    const mount = mkMount();
+    const { STATIC_SNAPSHOT_PREVIEW } = jest.requireActual(
+      "./surfaces/snapshot",
+    ) as typeof SnapshotModule;
+    mountTeacherShell(
+      teacher,
+      mount,
+      makeShellDeps({
+        listClasses: listTwo,
+        snapshotPreview: STATIC_SNAPSHOT_PREVIEW,
+      }),
+    );
+    await openC1(mount);
+    const groups = mount.querySelector("[data-testid=snapshot-groups]");
+    expect(groups).not.toBeNull();
+    const items = Array.from(
+      groups?.querySelectorAll<HTMLElement>("[data-testid^=snapshot-group-]") ??
+        [],
+    ).filter((el) =>
+      /^snapshot-group-(check-in-next|working|finished)$/.test(
+        el.getAttribute("data-testid") ?? "",
+      ),
+    );
+    expect(items.map((el) => el.getAttribute("data-testid"))).toEqual([
+      "snapshot-group-check-in-next",
+      "snapshot-group-working",
+      "snapshot-group-finished",
+    ]);
+    expect(
+      mount.querySelector("[data-testid=snapshot-preview-notice]")?.textContent,
+    ).toContain("Preview only.");
+    // Placeholder names are anonymous; no real student data
+    const preview = mount.querySelector("[data-testid=snapshot-region]");
+    const previewText = preview?.textContent ?? "";
+    expect(previewText).toMatch(/Student \d/);
+  });
+
+  test("static preview never leaves the class workspace and never affects other surfaces", async () => {
+    const mount = mkMount();
+    const { STATIC_SNAPSHOT_PREVIEW } = jest.requireActual(
+      "./surfaces/snapshot",
+    ) as typeof SnapshotModule;
+    mountTeacherShell(
+      teacher,
+      mount,
+      makeShellDeps({
+        listClasses: listTwo,
+        snapshotPreview: STATIC_SNAPSHOT_PREVIEW,
+      }),
+    );
+    // Curriculum default view does not render preview data
+    expect(mount.querySelector("[data-testid=snapshot-groups]")).toBeNull();
+    // Present Mode does not render preview data
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-present-mode]")
+      ?.click();
+    expect(mount.querySelector("[data-testid=snapshot-groups]")).toBeNull();
+    // Settings does not render preview data
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-settings]")
+      ?.click();
+    expect(mount.querySelector("[data-testid=snapshot-groups]")).toBeNull();
+  });
+
+  test("class-level navigation exposes Snapshot and Roster and marks Snapshot as active by default", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    const nav = mount.querySelector("[data-testid=class-nav]");
+    expect(nav).not.toBeNull();
+    expect(nav?.getAttribute("aria-label")).toBe("Class sections");
+    const snapshotBtn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=class-nav-snapshot]",
+    );
+    const rosterBtn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=class-nav-roster]",
+    );
+    expect(snapshotBtn).not.toBeNull();
+    expect(rosterBtn).not.toBeNull();
+    expect(snapshotBtn?.getAttribute("aria-current")).toBe("page");
+    expect(rosterBtn?.getAttribute("aria-current")).toBeNull();
+  });
+
+  test("selecting Roster moves aria-current and renders the roster foundation surface", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=class-nav-roster]")
+      ?.click();
+    const workspace = mount.querySelector("[data-testid=class-workspace]");
+    expect(workspace?.getAttribute("data-class-tab")).toBe("roster");
+    expect(
+      mount
+        .querySelector("[data-testid=class-nav-roster]")
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
+    expect(
+      mount
+        .querySelector("[data-testid=class-nav-snapshot]")
+        ?.getAttribute("aria-current"),
+    ).toBeNull();
+    expect(mount.querySelector("[data-testid=roster-purpose]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=snapshot-region]")).toBeNull();
+  });
+
+  test("switching between Snapshot and Roster preserves the class context", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=class-nav-roster]")
+      ?.click();
+    expect(
+      mount
+        .querySelector("[data-testid=class-workspace]")
+        ?.getAttribute("data-class-id"),
+    ).toBe("c1");
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=class-nav-snapshot]")
+      ?.click();
+    expect(
+      mount
+        .querySelector("[data-testid=class-workspace]")
+        ?.getAttribute("data-class-id"),
+    ).toBe("c1");
+    expect(
+      mount.querySelector("[data-testid=surface-headline]")?.textContent,
+    ).toBe("6A Life Science");
+  });
+
+  test("Back to Classes returns the surface to the class list without a refetch", async () => {
+    const mount = mkMount();
+    const listClasses = jest.fn<Promise<ReadonlyArray<ClassSummary>>, [string]>(
+      () => Promise.resolve(twoClasses),
+    );
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses }));
+    await openC1(mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=class-workspace-back]")
+      ?.click();
+    expect(mount.querySelector("[data-testid=class-workspace]")).toBeNull();
+    expect(mount.querySelector("[data-testid=classes-list]")).not.toBeNull();
+    // The list fetcher must not be invoked again on Back
+    expect(listClasses).toHaveBeenCalledTimes(1);
+  });
+
+  test("re-opening the same class after Back preserves class context and re-lands on Snapshot", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=class-workspace-back]")
+      ?.click();
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=class-card-c1]")
+      ?.click();
+    expect(
+      mount
+        .querySelector("[data-testid=class-workspace]")
+        ?.getAttribute("data-class-id"),
+    ).toBe("c1");
+    expect(
+      mount
+        .querySelector("[data-testid=class-workspace]")
+        ?.getAttribute("data-class-tab"),
+    ).toBe("snapshot");
+  });
+
+  test("focus lands on the Snapshot headline (the class name) when the class workspace opens", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    expect(document.activeElement?.getAttribute("data-testid")).toBe(
+      "surface-headline",
+    );
+    expect(document.activeElement?.textContent).toBe("6A Life Science");
+  });
+
+  test("focus lands on the Roster headline when Roster is selected", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=class-nav-roster]")
+      ?.click();
+    expect(document.activeElement?.getAttribute("data-testid")).toBe(
+      "surface-headline",
+    );
+    expect(document.activeElement?.textContent).toBe("6A Life Science");
+  });
+
+  test("Snapshot does not render Present Mode controls, assign controls, or grading controls", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    const snapshot = mount.querySelector("[data-testid=snapshot-region]");
+    expect(snapshot).not.toBeNull();
+    // Present Mode launch button belongs to the Present Mode surface only
+    expect(mount.querySelector("[data-testid=present-mode-launch]")).toBeNull();
+    // Assign controls belong to Curriculum only
+    expect(mount.querySelector("[data-testid=assign-dialog]")).toBeNull();
+    expect(mount.querySelector("[data-testid=curriculum-grid]")).toBeNull();
+  });
+
+  test("Snapshot exposes no teacher, uid, schoolId, or claim payload", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    const region = mount.querySelector("[data-testid=snapshot-region]");
+    const text = region?.textContent ?? "";
+    expect(text).not.toContain("u1");
+    expect(text).not.toContain("school-abc");
+    expect(text).not.toContain("Ada Lovelace");
+    expect(text).not.toContain("claim");
+  });
+
+  test("Snapshot never links to Present Mode and never exposes accommodations", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    const workspace = mount.querySelector("[data-testid=class-workspace]");
+    const html = workspace?.innerHTML.toLowerCase() ?? "";
+    expect(html).not.toContain("present-mode-launch");
+    expect(html).not.toContain("accommodation");
+    expect(html).not.toContain("iep");
+    expect(html).not.toContain("504");
+    expect(html).not.toContain("modification");
+  });
+
+  test("permanent left-side navigation remains unchanged after opening a class workspace", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    const buttons = Array.from(
+      mount.querySelectorAll<HTMLButtonElement>("button.shell-nav-button"),
+    );
+    expect(buttons.map((b) => b.getAttribute("data-testid"))).toEqual([
+      "nav-lyfelabz",
+      "nav-curriculum",
+      "nav-classes",
+      "nav-present-mode",
+      "nav-settings",
+    ]);
+    // The Classes nav item still carries aria-current
+    expect(
+      mount
+        .querySelector("[data-testid=nav-classes]")
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
+  });
+
+  test("clicking Present Mode from the class workspace leaves Classes and returns to Present Mode; Back into Classes returns to the class list", async () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps({ listClasses: listTwo }));
+    await openC1(mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-present-mode]")
+      ?.click();
+    expect(mount.querySelector("[data-testid=class-workspace]")).toBeNull();
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("present-mode");
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-classes]")
+      ?.click();
+    // Because Classes was re-mounted, its internal state resets to the
+    // class list. Class context is not persisted across top-level nav
+    // (per SNAPSHOT_ARCHITECTURE.md §9: session-scoped memory only).
+    await flush();
+    expect(mount.querySelector("[data-testid=classes-list]")).not.toBeNull();
+    expect(mount.querySelector("[data-testid=class-workspace]")).toBeNull();
+  });
+
+  test("Snapshot does not import from firebase/* or use browser storage (snapshot.ts posture)", () => {
+    const p = path.resolve(__dirname, "surfaces/snapshot.ts");
+    const text = fs.readFileSync(p, "utf8");
+    expect(text).not.toContain('from "firebase/firestore"');
+    expect(text).not.toContain('from "firebase/functions"');
+    expect(text).not.toContain('from "firebase/auth"');
+    expect(text).not.toContain("onSnapshot(");
+    expect(text).not.toContain("httpsCallable(");
+    expect(text).not.toContain("localStorage");
+    expect(text).not.toContain("sessionStorage");
+    expect(text).not.toContain("document.cookie");
   });
 });

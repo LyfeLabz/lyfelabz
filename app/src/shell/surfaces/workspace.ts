@@ -5,6 +5,7 @@ import { renderCurriculumSurface } from "./curriculum";
 import { renderClassesSurface } from "./classes";
 import { renderPresentModeSurface } from "./presentMode";
 import { renderSettingsSurface } from "./settings";
+import type { SnapshotPreview } from "./snapshot";
 
 // Typed contract for a Teacher Workspace surface.
 //
@@ -28,6 +29,13 @@ export type LaunchPresentMode = () => void;
 export type WorkspaceDeps = {
   readonly listClasses: ListClasses;
   readonly onLaunchPresentMode: LaunchPresentMode;
+  // Sprint 7B: development-safe static Snapshot preview payload. When
+  // null (production default), the Snapshot surface renders the
+  // certified no-data state. When present, the static representative
+  // preview groupings are rendered. Preview data is
+  // implementation-local, never persisted, and never sourced from
+  // Firestore or Cloud Functions. See snapshot.ts.
+  readonly snapshotPreview?: SnapshotPreview | null;
 };
 
 export type WorkspaceSurface = {
@@ -61,7 +69,10 @@ export const WORKSPACE_SURFACES: Readonly<
       session: ActiveTeacher,
       deps: WorkspaceDeps,
     ) =>
-      renderClassesSurface(mount, session, { listClasses: deps.listClasses }),
+      renderClassesSurface(mount, session, {
+        listClasses: deps.listClasses,
+        snapshotPreview: deps.snapshotPreview ?? null,
+      }),
   }),
   "present-mode": Object.freeze({
     key: "present-mode" as const,
