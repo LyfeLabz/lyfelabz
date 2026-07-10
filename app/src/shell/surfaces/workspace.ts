@@ -4,7 +4,7 @@ import type { WorkspaceSurfaceKey } from "../navigation";
 import { renderCurriculumSurface } from "./curriculum";
 import { renderClassesSurface } from "./classes";
 import { renderPresentModeSurface } from "./presentMode";
-import { renderComingSoonSurface } from "./shared/emptyState";
+import { renderSettingsSurface } from "./settings";
 
 // Typed contract for a Teacher Workspace surface.
 //
@@ -39,10 +39,9 @@ export type WorkspaceSurface = {
   ) => void;
 };
 
-// Curriculum, Classes, and Present Mode are the active workspace
-// surfaces after Sprint 6F. Settings remains unavailable and its outlet
-// render path is unreachable through the shell today; the coming-soon
-// renderer exists so the contract is complete for the Settings sprint.
+// Curriculum, Classes, Present Mode, and Settings are the active
+// workspace surfaces after Sprint 6H. Every canonical workspace-surface
+// key now renders a real teacher-facing destination.
 export const WORKSPACE_SURFACES: Readonly<
   Record<WorkspaceSurfaceKey, WorkspaceSurface>
 > = Object.freeze({
@@ -77,8 +76,8 @@ export const WORKSPACE_SURFACES: Readonly<
   }),
   settings: Object.freeze({
     key: "settings" as const,
-    render: (mount: HTMLElement) =>
-      renderComingSoonSurface(mount, { title: "Settings" }),
+    render: (mount: HTMLElement, session: ActiveTeacher) =>
+      renderSettingsSurface(mount, session),
   }),
 });
 

@@ -1005,3 +1005,96 @@ Firestore Rules package (working directory `/Users/breezy/Documents/GitHub/lyfel
 - No presentation engine was added.
 - Public instructional access is unchanged when no marker is present.
 - No commits were made.
+
+---
+
+## Sprint 6H: Settings Workspace Foundation
+
+**Dates:** 2026-07-10
+**Status:** Complete
+
+### Objective
+
+Promote Settings from a disabled coming-soon placeholder into a real Teacher Workspace destination that renders through the shared workspace outlet. Establish only the canonical Settings workspace foundation. No teacher preferences are implemented. No persistence is added. No backend functionality is introduced. Completes the permanent Teacher Workspace navigation defined in TEACHER_EXPERIENCE_PHILOSOPHY.md §3.3.
+
+### Certified scope
+
+Settings answers one teacher question: "Where will I manage how LyfeLabz works for me?" The surface is a private, teacher-only foundation state. It renders a title, an introductory paragraph, a purpose explanation, a list of future preference categories, and a growth notice. It renders no controls, opens no Firestore listener, invokes no callable, imports no `firebase/*` module, and loads no teacher-scoped or student-scoped data.
+
+The future categories named on the surface are informational only:
+
+- Classroom Preferences
+- Present Mode Preferences
+- Notification Preferences
+- Connected Services
+- Account Preferences
+
+No controls exist for any of them. Their eventual implementation is deferred to future sprints in the Teachers domain (see TEACHER_PLATFORM_DOMAIN_ROADMAP.md).
+
+### Navigation activation
+
+The persistent left-side navigation defined in Sprint 6C now activates every canonical workspace-surface key. Settings is promoted from `available: false` to `available: true` in `NAVIGATION_ITEMS`. The nav item is fully selectable, keyboard accessible, and highlighted through the existing `aria-current="page"` mechanism. No new routing is introduced. No new navigation component is introduced. The workspace outlet contract from Sprint 6C is preserved.
+
+### Workspace outlet integration
+
+`WORKSPACE_SURFACES.settings` now renders `renderSettingsSurface` instead of the shared coming-soon renderer. All four canonical workspace-surface keys - `curriculum`, `classes`, `present-mode`, and `settings` - render a real teacher-facing destination. Every permanent left-side navigation item is now an available workspace destination.
+
+### Accessibility
+
+- The Settings headline is a semantic `<h2>` with `id="surface-headline"`, `tabindex="-1"`, and receives focus on activation, matching the pattern established by Curriculum, Classes, and Present Mode.
+- The future preference categories render as a semantic `<ul>` labelled by a semantic `<h3>` heading via `aria-labelledby`.
+- The Settings nav item exposes `aria-current="page"` when active, matching the other workspace destinations.
+- The surface uses no color-only meaning.
+- No form controls, no disabled controls, and no fake settings are rendered.
+
+### Architecture protection
+
+- Teacher Workspace shell, left navigation, Curriculum, Classes, Present Mode, Assign Experience, authenticated routing, and the workspace outlet are preserved.
+- No new routes were introduced.
+- No browser storage, backend persistence, Firebase, preferences, profile editing, notifications, Google Classroom, Google Drive, analytics, or account management was introduced.
+- The shell posture invariant (no `sessionStorage`, `localStorage`, `document.cookie`, `firebase/auth`, `firebase/firestore`, `firebase/functions`, `onSnapshot`, or `httpsCallable` in `app/src/shell/**`) is preserved: the Settings surface loads nothing.
+
+### Files created
+
+- `app/src/shell/surfaces/settings.ts` (Settings workspace surface: title, intro, purpose, future-category list, growth notice; focuses the headline on mount).
+
+### Files modified
+
+- `app/src/shell/navigation.ts` (Settings promoted to `available: true`; header comment updated to describe Sprint 6H).
+- `app/src/shell/surfaces/workspace.ts` (Settings workspace-surface entry now renders `renderSettingsSurface`; comment updated).
+- `app/src/shell/shell.test.ts` (Sprint 6H test suite; existing Sprint 6C/6F assertions that assumed Settings was a disabled coming-soon item are updated to reflect Settings as an available destination; no existing assertion has been weakened).
+- `docs/platform/SPRINT_HISTORY.md` (this entry).
+
+### Tests added or updated
+
+- New `Settings workspace surface (Sprint 6H)` describe block with behavioral tests covering: nav availability, `aria-current` behavior, workspace-outlet switching, headline focus, LYFELABZ-return behavior, structural content (headline, intro, purpose, category list, growth notice), the five certified future categories, prohibition of `coming soon`/`under construction`/placeholder text, absence of form controls or sample data, absence of Session claim payload, and no double-mounting on repeat activation.
+- The Sprint 6C `Navigation composition and disabled posture` assertions are updated to reflect that every navigation item is now available; the disabled contract still holds vacuously because `NAVIGATION_ITEMS` no longer contains an unavailable entry.
+- The Sprint 6C outlet-completeness assertion continues to exercise the `settings` surface through `mountWorkspaceOutlet` (its description is updated to note that Settings is now an implemented surface).
+- The Sprint 6F Present Mode assertions and the Curriculum, Classes, and Assign Experience assertions are preserved unchanged.
+
+### Verification performed
+
+App package (working directory `/Users/breezy/Documents/GitHub/lyfelabz/app`):
+
+- `npm run typecheck` passed.
+- `npm run lint` passed.
+- `npm run build` produced `dist/bundle.js` (959.6 kB).
+- `npm test -- --runInBand` passed 227 tests across 8 suites (up from 214).
+
+Functions package (working directory `/Users/breezy/Documents/GitHub/lyfelabz/platform/functions`):
+
+- `npm run typecheck` passed.
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test -- --runInBand` passed 295 tests across 22 suites.
+
+Firestore Rules package (working directory `/Users/breezy/Documents/GitHub/lyfelabz/platform/firebase`):
+
+- `npm run test:rules` passed 94 tests across 8 suites.
+
+### Confirmations
+
+- No backend persistence was added.
+- No teacher preferences were implemented.
+- No runtime behavior outside the Settings workspace changed.
+- No commits were made.

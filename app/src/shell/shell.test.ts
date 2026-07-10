@@ -19,6 +19,7 @@ import {
   mountWorkspaceOutlet,
 } from "./surfaces/workspace";
 import { renderPresentModeSurface } from "./surfaces/presentMode";
+import { renderSettingsSurface } from "./surfaces/settings";
 
 const emptyListClasses: ListClasses = () =>
   Promise.resolve(Object.freeze<ClassSummary[]>([]));
@@ -228,7 +229,7 @@ describe("Navigation composition and disabled posture (Sprint 6C)", () => {
     ).toBe("page");
   });
 
-  test("Present Mode is now an available workspace destination (Sprint 6F) and Settings remains a disabled coming-soon item", () => {
+  test("Present Mode and Settings are both available workspace destinations after Sprint 6H", () => {
     const mount = mkMount();
     renderNavigation(mount);
     const presentMode = mount.querySelector<HTMLButtonElement>(
@@ -240,24 +241,22 @@ describe("Navigation composition and disabled posture (Sprint 6C)", () => {
     const settings = mount.querySelector<HTMLButtonElement>(
       "[data-testid=nav-settings]",
     );
-    expect(settings?.disabled).toBe(true);
-    expect(settings?.getAttribute("aria-disabled")).toBe("true");
-    expect(settings?.getAttribute("tabindex")).toBe("-1");
-    expect(settings?.textContent).toBe("Settings - Coming soon");
+    expect(settings?.disabled).toBe(false);
+    expect(settings?.getAttribute("aria-disabled")).toBeNull();
+    expect(settings?.getAttribute("tabindex")).toBeNull();
+    expect(settings?.textContent).toBe("Settings");
   });
 
-  test("every unavailable navigation item preserves the disabled contract", () => {
+  test("every navigation item is available after Sprint 6H (no disabled coming-soon items)", () => {
     const mount = mkMount();
     renderNavigation(mount);
     for (const item of NAVIGATION_ITEMS) {
-      if (item.available) continue;
+      expect(item.available).toBe(true);
       const btn = mount.querySelector<HTMLButtonElement>(
         `[data-testid=nav-${item.key}]`,
       );
-      expect(btn?.disabled).toBe(true);
-      expect(btn?.getAttribute("aria-disabled")).toBe("true");
-      expect(btn?.getAttribute("tabindex")).toBe("-1");
-      expect(btn?.textContent).toBe(`${item.label} - Coming soon`);
+      expect(btn?.disabled).toBe(false);
+      expect(btn?.getAttribute("aria-disabled")).toBeNull();
     }
   });
 
@@ -546,7 +545,7 @@ describe("Workspace outlet (Sprint 6C)", () => {
     );
   });
 
-  test("mountWorkspaceOutlet with a not-yet-implemented key still returns an outlet (contract completeness)", () => {
+  test("mountWorkspaceOutlet with the settings key returns an outlet advertising the settings surface", () => {
     const mount = mkMount();
     const outlet = mountWorkspaceOutlet(mount, teacherSession(), "settings", {
       listClasses: emptyListClasses,
@@ -554,22 +553,6 @@ describe("Workspace outlet (Sprint 6C)", () => {
     });
     expect(outlet.getAttribute("data-testid")).toBe("workspace-outlet");
     expect(outlet.getAttribute("data-active-surface")).toBe("settings");
-  });
-
-  test("the remaining disabled navigation button does not change the outlet's active surface", () => {
-    const mount = mkMount();
-    mountTeacherShell(teacherSession(), mount, makeShellDeps());
-    const before = mount.querySelector("[data-testid=workspace-outlet]")
-      ?.getAttribute("data-active-surface");
-    const event = new MouseEvent("click", { bubbles: true, cancelable: true });
-    const btn = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=nav-settings]",
-    );
-    expect(() => btn?.dispatchEvent(event)).not.toThrow();
-    const after = mount.querySelector("[data-testid=workspace-outlet]")
-      ?.getAttribute("data-active-surface");
-    expect(after).toBe(before);
-    expect(after).toBe("curriculum");
   });
 
   test("focus lands on the workspace surface headline after shell mount", () => {
@@ -592,19 +575,19 @@ describe("mountTeacherShell integration", () => {
     expect(signOut).toHaveBeenCalledTimes(1);
   });
 
-  test("clicking a disabled navigation item does not throw and does not navigate", () => {
+  test("clicking a navigation item does not throw", () => {
     const mount = mkMount();
     mountTeacherShell(teacherSession(), mount, makeShellDeps());
-    const settings = mount.querySelector<HTMLButtonElement>(
-      "[data-testid=nav-settings]",
-    );
-    const event = new MouseEvent("click", { bubbles: true, cancelable: true });
-    expect(() => settings?.dispatchEvent(event)).not.toThrow();
-    expect(
-      mount
-        .querySelector("[data-testid=workspace-outlet]")
-        ?.getAttribute("data-active-surface"),
-    ).toBe("curriculum");
+    for (const key of ["curriculum", "classes", "present-mode", "settings"]) {
+      const btn = mount.querySelector<HTMLButtonElement>(
+        `[data-testid=nav-${key}]`,
+      );
+      const event = new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+      });
+      expect(() => btn?.dispatchEvent(event)).not.toThrow();
+    }
   });
 });
 
@@ -1365,5 +1348,209 @@ describe("Present Mode workspace surface (Sprint 6F)", () => {
         .querySelector("[data-testid=workspace-outlet]")
         ?.getAttribute("data-active-surface"),
     ).toBe("present-mode");
+  });
+});
+
+describe("Settings workspace surface (Sprint 6H)", () => {
+  const teacher = teacherSession();
+
+  const clickSettings = (mount: HTMLElement): void => {
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-settings]")
+      ?.click();
+  };
+
+  test("nav item is available and does not carry aria-current by default", () => {
+    const mount = mkMount();
+    renderNavigation(mount);
+    const btn = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=nav-settings]",
+    );
+    expect(btn?.disabled).toBe(false);
+    expect(btn?.getAttribute("aria-disabled")).toBeNull();
+    expect(btn?.textContent).toBe("Settings");
+    expect(btn?.getAttribute("aria-current")).toBeNull();
+  });
+
+  test("nav item carries aria-current=page when Settings is the active surface", () => {
+    const mount = mkMount();
+    renderNavigation(mount, {
+      activeKey: "settings",
+      onSelect: () => undefined,
+    });
+    expect(
+      mount
+        .querySelector("[data-testid=nav-settings]")
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
+    expect(
+      mount
+        .querySelector("[data-testid=nav-curriculum]")
+        ?.getAttribute("aria-current"),
+    ).toBeNull();
+  });
+
+  test("clicking Settings switches the outlet to the Settings surface", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickSettings(mount);
+    const outlet = mount.querySelector("[data-testid=workspace-outlet]");
+    expect(outlet?.getAttribute("data-active-surface")).toBe("settings");
+    expect(
+      mount.querySelectorAll("[data-testid=workspace-outlet]"),
+    ).toHaveLength(1);
+  });
+
+  test("Settings renders through the workspace outlet, not as a shell sibling", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickSettings(mount);
+    const outlet = mount.querySelector("[data-testid=workspace-outlet]");
+    const headline = mount.querySelector("[data-testid=surface-headline]");
+    expect(headline?.textContent).toBe("Settings");
+    expect(outlet?.contains(headline!)).toBe(true);
+  });
+
+  test("selecting Settings moves aria-current onto the Settings nav item", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickSettings(mount);
+    expect(
+      mount
+        .querySelector("[data-testid=nav-settings]")
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
+    expect(
+      mount
+        .querySelector("[data-testid=nav-curriculum]")
+        ?.getAttribute("aria-current"),
+    ).toBeNull();
+  });
+
+  test("selecting Curriculum after Settings returns the outlet to Curriculum", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickSettings(mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-curriculum]")
+      ?.click();
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("curriculum");
+  });
+
+  test("selecting LYFELABZ from Settings returns the outlet to Curriculum", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickSettings(mount);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-lyfelabz]")
+      ?.click();
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("curriculum");
+  });
+
+  test("focus lands on the Settings headline when the surface is activated", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickSettings(mount);
+    expect(document.activeElement?.getAttribute("data-testid")).toBe(
+      "surface-headline",
+    );
+    expect(document.activeElement?.textContent).toBe("Settings");
+  });
+
+  test("renders the title, introductory copy, purpose explanation, and future-growth notice", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher);
+    expect(
+      mount.querySelector("[data-testid=surface-headline]")?.textContent,
+    ).toBe("Settings");
+    expect(
+      mount.querySelector("[data-testid=settings-intro]")?.textContent,
+    ).toContain("Settings is where you will manage how LyfeLabz works for you.");
+    expect(
+      mount.querySelector("[data-testid=settings-purpose]")?.textContent,
+    ).toContain("not a dashboard");
+    expect(
+      mount.querySelector("[data-testid=settings-growth-notice]")?.textContent,
+    ).toContain(
+      "Additional preferences will appear here as the Teacher Platform grows.",
+    );
+  });
+
+  test("renders the five certified future preference categories", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher);
+    for (const testId of [
+      "settings-category-classroom",
+      "settings-category-present-mode",
+      "settings-category-notifications",
+      "settings-category-connected-services",
+      "settings-category-account",
+    ]) {
+      expect(mount.querySelector(`[data-testid=${testId}]`)).not.toBeNull();
+    }
+    const list = mount.querySelector("[data-testid=settings-categories]");
+    expect(list?.tagName.toLowerCase()).toBe("ul");
+    expect(list?.getAttribute("aria-labelledby")).toBe(
+      "settings-categories-heading",
+    );
+    expect(list?.children.length).toBe(5);
+  });
+
+  test("does not render any 'coming soon', 'under construction', or placeholder-controls labels", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher);
+    const text = (mount.textContent ?? "").toLowerCase();
+    expect(text).not.toContain("coming soon");
+    expect(text).not.toContain("under construction");
+    expect(text).not.toContain("placeholder");
+  });
+
+  test("does not render form controls or sample settings data", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher);
+    expect(mount.querySelectorAll("input")).toHaveLength(0);
+    expect(mount.querySelectorAll("select")).toHaveLength(0);
+    expect(mount.querySelectorAll("textarea")).toHaveLength(0);
+    expect(mount.querySelectorAll("form")).toHaveLength(0);
+    expect(mount.querySelectorAll("button")).toHaveLength(0);
+  });
+
+  test("does not render uid, schoolId, email, or any Session claim payload", () => {
+    const mount = mkMount();
+    renderSettingsSurface(mount, teacher);
+    const text = mount.textContent ?? "";
+    expect(text).not.toContain("u1");
+    expect(text).not.toContain("school-abc");
+    expect(text).not.toContain("claim");
+    expect(text).not.toContain("Ada Lovelace");
+  });
+
+  test("navigating away and back to Settings does not double-mount the outlet", () => {
+    const mount = mkMount();
+    mountTeacherShell(teacher, mount, makeShellDeps());
+    clickSettings(mount);
+    expect(
+      mount.querySelectorAll("[data-testid=workspace-outlet]"),
+    ).toHaveLength(1);
+    mount
+      .querySelector<HTMLButtonElement>("[data-testid=nav-classes]")
+      ?.click();
+    clickSettings(mount);
+    expect(
+      mount.querySelectorAll("[data-testid=workspace-outlet]"),
+    ).toHaveLength(1);
+    expect(
+      mount
+        .querySelector("[data-testid=workspace-outlet]")
+        ?.getAttribute("data-active-surface"),
+    ).toBe("settings");
   });
 });
