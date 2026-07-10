@@ -865,3 +865,46 @@ Establish Present Mode as a real Teacher Workspace destination inside the authen
 ### Recommendation
 
 No commit is recommended until Technical Lead review of this history entry and local verification by Chris are complete.
+
+---
+
+## Platform Contracts Documentation Amendment
+
+**Date:** 2026-07-10
+**Status:** Documentation amendment. Awaiting Technical Lead review.
+**Companion documents:** PLATFORM_CONTRACTS.md, PRESENT_MODE_ARCHITECTURE.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_JOURNEY.md, ASSIGN_EXPERIENCE.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md.
+
+### Objective
+
+Create `docs/platform/PLATFORM_CONTRACTS.md` as the canonical home for cross-cutting technical contracts shared across multiple LyfeLabz platform features. Centralize agreements previously implicit in feature architecture, without moving feature-specific behavior out of feature architecture.
+
+### Major accomplishments
+
+- Created `PLATFORM_CONTRACTS.md` with twelve numbered sections covering purpose and scope, authority and conflict resolution, naming and namespace conventions, browser storage roles, versioned client-side schemas, route and navigation boundaries, the public and authenticated surface boundary, projector-safety rules, accessibility minimums, safe-failure rules, a certified contract registry, and the amendment process.
+- Registered the certified Present Mode contracts (namespace pattern, return-context storage key, schema version, initial return surface, same-tab launch, and public-surface return behavior) in the cross-cutting contract registry without moving any feature-specific detail out of `PRESENT_MODE_ARCHITECTURE.md`.
+- Added a concise cross-reference to `PRESENT_MODE_ARCHITECTURE.md` recording that its certified storage key, schema, navigation, and safe-return behavior are also registered in `PLATFORM_CONTRACTS.md`.
+- Reviewed `LYFELABZ_PLATFORM_DECISIONS.md`. Its structure is a per-decision PDR log, not a cross-reference index. No modification was made; adding a new PDR is not required for this documentation amendment.
+
+### Architecture posture
+
+- No production code changed.
+- No test changed.
+- No runtime behavior changed.
+- No Cloud Function, callable, Firestore Rule, custom claim, lifecycle field, Session field, audit vocabulary term, Hosting rewrite, or `/app/**` URL route was introduced.
+- No feature architecture behavior was relocated. `PRESENT_MODE_ARCHITECTURE.md` remains authoritative for Present Mode.
+- Sprint 6G was not implemented. This amendment is documentation only.
+- No speculative contracts were added for future Snapshot, Settings, notifications, or analytics surfaces.
+
+### Verification performed
+
+- Working directory: `/Users/breezy/Documents/GitHub/lyfelabz`.
+- Confirmed the required source documents exist under `docs/platform/` via `ls docs/platform/`.
+- Read the certified architecture and product documents named in the sprint brief before writing.
+- Confirmed no em dashes were introduced in the new or modified documentation via a repository-wide em-dash grep against `docs/platform/PLATFORM_CONTRACTS.md`, `docs/platform/PRESENT_MODE_ARCHITECTURE.md`, and `docs/platform/SPRINT_HISTORY.md`. Zero matches in prose.
+- Confirmed only the three intended documentation files changed via `git status`.
+
+No App, Functions, or Firestore test suite was executed. Repository policy does not require runtime test execution for documentation-only changes and none of the modified files are consumed by those suites.
+
+### Recommendation
+
+No commit is recommended until Technical Lead review is complete. Future implementation sprints must follow the certified contracts registered in `PLATFORM_CONTRACTS.md`.

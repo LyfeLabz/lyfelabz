@@ -1,7 +1,9 @@
 # Present Mode Architecture
 
 Status: Architecture only. Implementation is deferred.
-Companion documents: TEACHER_EXPERIENCE_PHILOSOPHY.md (§3.8, §4.5), PHASE_2_ARCHITECTURE_PLANNING_REPORT.md (§4, §6), LYFELABZ_PLATFORM_DECISIONS.md (PDR-007, PDR-011, PDR-012, PDR-017, PDR-018), LYFELABZ_PLATFORM_ARCHITECTURE.md.
+Companion documents: TEACHER_EXPERIENCE_PHILOSOPHY.md (§3.8, §4.5), PHASE_2_ARCHITECTURE_PLANNING_REPORT.md (§4, §6), LYFELABZ_PLATFORM_DECISIONS.md (PDR-007, PDR-011, PDR-012, PDR-017, PDR-018), LYFELABZ_PLATFORM_ARCHITECTURE.md, PLATFORM_CONTRACTS.md.
+
+The Present Mode storage key, versioned return-context schema, same-tab launch behavior, and safe-return posture certified in §14 are also registered in the cross-cutting contract registry in `PLATFORM_CONTRACTS.md` §11. Feature-specific detail continues to live in this document; the registry entry is a reference, not a relocation.
 
 This document defines the Present Mode surface at the architecture level. It is implementation-neutral. No runtime code ships as part of Sprint 6C; Present Mode remains a disabled navigation item in the Teacher Workspace.
 
@@ -48,7 +50,7 @@ The return-context marker contains only a workspace path (for example `curriculu
 
 Present Mode never renders inside the Teacher Workspace router. Rendering the canonical curriculum inside the Teacher Workspace surface tree would violate PDR-018 (no parallel implementation) and the surface-boundary rule (§4.5 of the philosophy).
 
-The choice between same-tab and new-tab navigation is a Present Mode implementation-sprint decision. Same tab is simpler; new tab preserves teacher-side state against accidental navigation. Either mechanism is compatible with this architecture.
+Same-tab launch is the certified navigation behavior. See §14.3.
 
 ---
 
@@ -61,7 +63,7 @@ Exit from Present Mode is a teacher-controlled action rendered on top of the can
 - Selecting the affordance navigates back to the recorded Teacher Workspace path.
 - If the marker is absent (for example, a public browser opened the canonical surface directly), no exit affordance is shown, and the canonical surface behaves exactly as it does for a public visitor.
 
-Whether the exit affordance is rendered by an inline overlay on the canonical `index.html`, a small standalone script, or a lightweight adjacent page is a Present Mode implementation-sprint decision. The affordance must remain small, isolated, and free of session-scoped data.
+The certified mechanism is a lightweight return script that loads on the canonical instructional experience. See §14.4. The affordance must remain small, isolated, and free of session-scoped data.
 
 The teacher may also exit Present Mode by closing the tab, using browser navigation, or entering a different URL. None of these paths leak teacher-scoped data because the canonical surface has none loaded.
 
@@ -171,7 +173,7 @@ Present Mode uses public canonical URLs.
 
 The recorded path is opaque to the canonical surface. It is treated as a string to hand back to the Teacher Workspace, not as data to interpret.
 
-Whether the return-context marker lives in `sessionStorage`, a URL fragment (`/app/#return=…`), or another lightweight mechanism is a Present Mode implementation-sprint decision. Either mechanism preserves the immutable Session Object contract and introduces no new Firestore record, callable, or claim.
+The return-context marker is certified to live in `sessionStorage` under the canonical key defined in §14.2. It is never encoded into a URL, fragment, cookie, `localStorage` value, or Firestore record. This preserves the immutable Session Object contract and introduces no new Firestore record, callable, or claim.
 
 Persistent restoration across tabs (for example, restoring the exact class workspace tab a teacher had open before entering Present Mode) is not proposed. Teacher workspace context is treated as tab-local.
 
@@ -195,19 +197,191 @@ The trade-off is that Present Mode cannot layer teacher-scoped controls directly
 
 ## 13. Future Implementation Considerations
 
-The following decisions are recorded for the Present Mode implementation sprint. None are resolved by this document.
+The following decisions were originally recorded for the Present Mode implementation sprint. The load-bearing items among them have since been certified by the Architecture Amendment in §14 and are no longer open.
 
-- **Return-context marker mechanism.** `sessionStorage` versus URL fragment. See §11.
-- **Entry tab behavior.** Same tab versus new tab. See §3.
-- **Exit affordance mechanism.** Inline overlay versus standalone script versus adjacent page. See §4.
-- **Return-marker namespace.** The exact key or fragment name, chosen so it cannot collide with future instructional-side keys.
+Certified in §14:
+
+- **Return-context marker mechanism.** Certified as `sessionStorage`. See §14.1.
+- **Return-marker namespace.** Certified. See §14.2.
+- **Entry tab behavior.** Certified as same-tab. See §14.3.
+- **Exit affordance mechanism.** Certified as a lightweight return script loaded on the canonical instructional experience. See §14.4.
+- **Marker lifetime and validation.** Certified. See §14.5.
+- **Canonical instructional experience posture.** Certified. See §14.6.
+
+Remaining implementation-sprint scope:
+
 - **Grade persistence choice.** No persistence versus per-device `localStorage`. See §9.
-- **Content Security Policy.** Whether the exit affordance requires a CSP adjustment on the canonical origin.
-- **Cache correctness.** Whether the exit affordance script must be revved or versioned to survive Hosting cache behavior.
+- **Content Security Policy.** Whether the return script requires a CSP adjustment on the canonical origin.
+- **Cache correctness.** Whether the return script must be revved or versioned to survive Hosting cache behavior.
 - **Analytics.** Whether a small non-identifying entry and exit signal is desired. If so, it is a separate architecture pass and must not read authenticated Session data.
 - **Interaction with future Google Classroom integration.** Present Mode is separate from any assignment-publishing workflow. If Google Classroom integration later requires a projection surface, it composes with Present Mode rather than replacing it.
 
-Each of these is scoped to the Present Mode implementation sprint. None expand the certified architecture, add a Firestore record, add a callable, add a claim, add a lifecycle field, or add an audit vocabulary term. If any implementation decision later requires one of those changes, it is a formal architecture amendment and requires its own decision record.
+Each remaining item is scoped to the Present Mode implementation sprint. None expand the certified architecture, add a Firestore record, add a callable, add a claim, add a lifecycle field, or add an audit vocabulary term. If any implementation decision later requires one of those changes, it is a formal architecture amendment and requires its own decision record.
+
+---
+
+## 14. Architecture Amendment: Certified Implementation Decisions
+
+This section certifies the implementation-critical decisions that §13 originally deferred. It exists so that the Present Mode implementation sprint is a straightforward implementation rather than an architecture exercise. It does not change the surface boundary, the security posture, or the privacy posture defined in §1 through §12. It resolves ambiguity that would otherwise force implementation-time architecture work.
+
+This amendment authorizes adding a lightweight return script to the canonical instructional experience during the Present Mode implementation sprint. That authorization is narrow. It does not authorize redesigning lesson pages, modifying instructional content, altering the canonical surface's static behavior for public visitors, or introducing a second presentation system. The canonical instructional architecture, the canonical visual language, and the repository preservation-mode rules in `CLAUDE.md` remain in force.
+
+### 14.1 Return-Context Storage
+
+Present Mode return context is stored in `sessionStorage` on the canonical origin.
+
+The following storage mechanisms are prohibited for return context:
+
+- URL query parameters,
+- URL fragments,
+- `localStorage`,
+- cookies,
+- Firestore,
+- any backend persistence.
+
+`sessionStorage` is the canonical mechanism because it is the only mechanism that satisfies every Present Mode constraint simultaneously:
+
+- It is scoped to a single browser tab, which matches Present Mode's same-tab teacher journey.
+- It expires automatically when the tab closes, which matches the tab-local scope of teacher workspace context described in §11.
+- It never appears in URLs, which preserves projector privacy: a URL bar visible on a classroom projector never reveals that the visitor arrived from a Teacher Workspace.
+- It requires no backend, no Firestore record, no callable, and no custom claim.
+
+### 14.2 Canonical Storage Key and Schema
+
+The certified `sessionStorage` key is:
+
+```text
+lyfelabz.presentMode.returnContext
+```
+
+The stored value is a JSON-encoded object with exactly the following schema:
+
+```ts
+{
+  version: 1;
+  returnSurface: string;
+}
+```
+
+The `version` field is a schema version integer. The initial certified value is `1`. Future schema evolutions require an architecture amendment.
+
+The `returnSurface` field names a Teacher Workspace surface. It is not a URL path, not a route fragment, and not a routing directive. It is a Teacher Workspace concept that the Teacher Workspace router interprets when the teacher returns from Present Mode.
+
+The initial certified value of `returnSurface` is:
+
+```text
+curriculum
+```
+
+Additional `returnSurface` values may be added by later architecture amendments as the Teacher Workspace grows new surfaces from which Present Mode can be launched. The Present Mode implementation sprint must not invent new `returnSurface` values.
+
+The stored object must never contain any of the fields enumerated in §14.7. Only the two certified fields are permitted.
+
+### 14.3 Launch Navigation
+
+Present Mode launches in the same browser tab. The certified navigation call is:
+
+```ts
+window.location.assign("/")
+```
+
+The following launch behaviors are prohibited:
+
+- opening Present Mode in a new tab,
+- opening Present Mode in a popup window,
+- opening any duplicate instructional window alongside the Teacher Workspace.
+
+Same-tab launch is certified for four reasons:
+
+- It matches the teacher journey described in `TEACHER_JOURNEY.md`, in which the teacher exits Present Mode and "the teacher workspace returns exactly where it was, on the same class, in the same tab."
+- It prevents a second projector-visible tab from carrying the Teacher Workspace origin.
+- It removes the ambiguity of two live LyfeLabz tabs during instruction.
+- It keeps the return contract simple: `sessionStorage` on the canonical origin is the only mechanism required.
+
+### 14.4 Return Affordance and Return Script
+
+The Present Mode implementation sprint is authorized to add a lightweight return script to the canonical instructional experience. The script must satisfy the following certified contract:
+
+- It always loads on the canonical instructional experience.
+- On load, it immediately checks `sessionStorage` for a valid return context under the key defined in §14.2.
+- If no valid return context is present, it injects nothing into the DOM and takes no further action.
+- It never reads Firebase Authentication state.
+- It never imports the Firebase Authentication, Firestore, or Functions SDK.
+- It never reads teacher session data, teacher identity, class data, or student data.
+- It never changes the ordinary public behavior of the canonical instructional experience.
+- It never affects the student experience.
+
+When a valid return context is present, the script renders a single visible control whose only capability is navigation. The control:
+
+- appears only while a valid return context is present in `sessionStorage`,
+- navigates the current tab back to the Teacher Workspace,
+- exposes an accessible label equivalent to:
+
+```text
+Return to Teacher Workspace
+```
+
+CSS implementation of the control is intentionally left to the implementation sprint beyond broad architectural guidance: the control must match the canonical LyfeLabz visual language, must remain unobtrusive on a classroom projector, and must satisfy the accessibility standards already enforced on the canonical surface. It must not introduce a new design system.
+
+The return script is the only new artifact this amendment authorizes on the canonical instructional experience.
+
+### 14.5 Marker Lifetime and Validation
+
+The return-context marker lifetime is exactly the browser tab session. There is no timestamp field. There is no expiration clock. There is no persistent restoration across tabs.
+
+After a successful return navigation to the Teacher Workspace, the marker is removed from `sessionStorage`.
+
+The return script must validate the marker before acting on it. Validation must reject:
+
+- an unsupported `version` value,
+- a malformed JSON payload,
+- an object missing required fields,
+- an unsupported `returnSurface` value.
+
+Any rejected marker is treated as if no marker were present: nothing is injected, and no control is shown.
+
+### 14.6 Public Instructional Experience
+
+The canonical instructional experience remains fully public. This amendment does not change that posture.
+
+- The return script may execute on every page of the canonical instructional experience, but it must immediately exit when a valid return context is absent.
+- The canonical instructional experience performs no authentication checks.
+- No routing changes are introduced on the canonical origin.
+- No new student-visible behavior is introduced.
+- No additional instructional UI is added.
+- No canonical lesson, investigation, simulation, extension, game, engineering challenge, or index page is modified for Present Mode beyond loading the return script.
+
+The canonical surface's behavior for a public visitor who arrives without a return context is identical before and after this amendment.
+
+### 14.7 Privacy Requirements for Return Context
+
+The return-context object certified in §14.2 must never contain any of the following:
+
+- teacher name,
+- teacher email,
+- teacher ID or `uid`,
+- school ID,
+- class ID,
+- student ID,
+- assignment ID,
+- submission ID,
+- authentication claims,
+- analytics identifiers or events,
+- lesson progress signals,
+- scores, mastery signals, or accommodation data.
+
+Only the certified `version` and `returnSurface` fields are permitted. Any future field requires an architecture amendment and must satisfy the classroom-projection privacy contract in §6 and §7.
+
+### 14.8 Product Philosophy Alignment
+
+This amendment reinforces the load-bearing product commitments already documented in the companion architecture documents:
+
+- **Curriculum is the teacher's home.** The teacher journey remains centered on the canonical instructional experience during live instruction.
+- **Present Mode prepares teachers to teach.** The Teacher Workspace launches Present Mode; Present Mode does not attempt to replace the Teacher Workspace.
+- **The canonical instructional experience remains the presentation experience.** There is no parallel instructional surface, in agreement with PDR-007, PDR-017, and PDR-018.
+- **Teachers are never trapped inside LyfeLabz.** The return affordance is a lightweight navigation control, not a captured shell. Teachers may also exit by closing the tab or navigating away, exactly as before.
+- **Public instructional access remains unchanged.** A public visitor experiences the canonical instructional experience exactly as they did before this amendment.
+- **Teacher privacy is preserved on classroom projectors.** The return context contains no teacher-scoped or student-scoped data, is never present in URLs, and expires with the tab.
 
 ---
 
