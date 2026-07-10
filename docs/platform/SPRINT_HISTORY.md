@@ -1098,3 +1098,68 @@ Firestore Rules package (working directory `/Users/breezy/Documents/GitHub/lyfel
 - No teacher preferences were implemented.
 - No runtime behavior outside the Settings workspace changed.
 - No commits were made.
+
+---
+
+## Sprint 6 Certification: Teacher Workspace Version 1
+
+**Date:** 2026-07-10
+**Status:** Certified. Documentation-only sprint. No production code, tests, runtime behavior, or commits.
+**Detailed certification:** `SPRINT_6_CERTIFICATION.md`
+**Completion report:** `SPRINT_6_COMPLETION_REPORT.md`
+**Companion documents:** `LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_PLATFORM_DECISIONS.md`, `PLATFORM_CONTRACTS.md`, `TEACHER_PLATFORM_DOMAIN_ROADMAP.md`, `TEACHER_EXPERIENCE_PHILOSOPHY.md`, `TEACHER_JOURNEY.md`, `ASSIGN_EXPERIENCE.md`, `PRESENT_MODE_ARCHITECTURE.md`, and per-sprint completion reports for 6A through 6H.
+
+### Objective
+
+Certify the completed Teacher Workspace produced across Sprints 6A, 6B, 6C, 6D, 6D.0, 6D Certification, 6E, 6F, 6G, and 6H (with the accompanying Present Mode Architecture Amendment and Platform Contracts Documentation Amendment) as Teacher Workspace Version 1. Distinguish explicitly between Completed and Intentionally Deferred scope.
+
+### What was certified
+
+- Teacher Workspace shell, workspace outlet, and persistent left-side navigation (LYFELABZ, Curriculum, Classes, Present Mode, Settings) with `aria-current="page"` on the active item and `data-active-surface` on the outlet.
+- Curriculum surface backed by the canonical `curriculum.manifest.json`, with grade and topic filters, activation toggle, welcome copy, and the Assign Experience dialog per lesson card.
+- Assign Experience: one dialog per lesson card, independent per-class rows, default selections, session-scoped remembered preferences, the `✓ Assigned` card state, and the reopen workflow. Sprint 6G did not alter Assign behavior.
+- Classes surface as a canonical read-only foundation with no Snapshot, no analytics, and no backend persistence.
+- Present Mode preparation surface with a single semantic `Launch Present Mode` action, certified same-tab launch via `window.location.assign("/")`, certified return-context marker under `lyfelabz.presentMode.returnContext` with schema `{ version: 1, returnSurface: "curriculum" }`, and the certified `Return to Teacher Workspace` control on the canonical instructional experience.
+- Settings surface as a canonical teacher-only foundation state with informational future preference categories and no controls, persistence, or fake settings.
+- Platform contract conformance: namespace, browser storage, versioned client-side schema, routing boundary, public/authenticated separation, projector safety, accessibility, and safe failure, per `PLATFORM_CONTRACTS.md`.
+- Teacher Journey shape supported end-to-end: Prepare → Assign → Present Mode → Teach → Return.
+
+### Intentionally deferred (not part of Version 1)
+
+Snapshot for Classes; class analytics and spreadsheet-style workspace; teacher preferences and backend persistence for Assign; Google Classroom, Google Drive, and Google Meet integration; notifications; presentation tools, speaker notes, timers, broadcasting, and classroom synchronization; accommodations and private student supports.
+
+### Files created
+
+- `docs/platform/SPRINT_6_CERTIFICATION.md`
+- `docs/platform/SPRINT_6_COMPLETION_REPORT.md`
+
+### Files modified
+
+- `docs/platform/SPRINT_HISTORY.md` (this entry).
+
+### Repository validation
+
+App package (working directory `/Users/breezy/Documents/GitHub/lyfelabz/app`):
+
+- `npm run typecheck` passed.
+- `npm run lint` passed.
+- `npm run build` produced `dist/bundle.js` (959.6 kB).
+- `npm test -- --runInBand` passed 227 tests across 8 suites.
+
+Functions package (working directory `/Users/breezy/Documents/GitHub/lyfelabz/platform/functions`):
+
+- `npm run typecheck` passed.
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test -- --runInBand` passed 295 tests across 22 suites.
+
+Firestore Rules package (working directory `/Users/breezy/Documents/GitHub/lyfelabz/platform/firebase`):
+
+- `npm run test:rules` passed 94 tests across 8 suites.
+
+### Confirmations
+
+- No production code was modified.
+- No tests were modified.
+- No runtime behavior was changed.
+- No commits were made.
