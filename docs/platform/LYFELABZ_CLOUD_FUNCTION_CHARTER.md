@@ -39,6 +39,24 @@ Cloud Functions should be small, single-purpose, deterministic, and idempotent. 
 **Preserve the offline-friendly client.**
 LyfeLabz lessons run in a classroom context where connectivity is uneven. Cloud Functions must never be placed in the critical path of lesson rendering, navigation, or Practice Mode.
 
+### 1.a External Integrations
+
+External integrations (learning management systems, student information systems, and other district-owned upstream systems) are governed by the guiding philosophy above and by the following additional constraints. These constraints are ratified into this charter by `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` and PDR-019.
+
+**External integrations are a first-class case of "the client is never authoritative."** OAuth tokens, upstream API credentials, and upstream identifiers of authoritative external records are held server-side only. The client asks the server to act; the server decides whether the request is legitimate.
+
+**External-integration tokens are never sent to the client.** No callable response, no Firestore document readable by any client role (including Platform Administrator without an audited elevation), and no downstream mirror record ever contains an OAuth access token or refresh token. Token storage, encryption posture, and rotation cadence are server responsibilities.
+
+**External integrations are never in the critical path of lesson rendering, navigation, Practice Mode, or Classroom Mode finalization.** A lesson renders whether the LMS is reachable or not. A submission finalizes whether the LMS is reachable or not.
+
+**External integrations are never in the critical path of Present Mode.** Present Mode remains a structurally separate surface with no Firebase SDK on the canonical instructional origin. No LMS token, OAuth flow, LMS bundle, or LMS-scoped payload reaches the canonical origin. This preserves PDR-018b, PDR-018c, and PDR-019l.
+
+**Incremental authorization.** External-integration OAuth scopes are requested incrementally. The first scope requested is the minimum required for the teacher's immediate opt-in workflow. Additional scopes are requested only when the teacher initiates a workflow that requires them.
+
+**Revocation is honored immediately.** If the upstream returns an authorization error, the server marks the connection revoked, marks affected mirror records stale, and surfaces a plain-language message to the teacher on next visit. No silent retries against a revoked token.
+
+**Every consequential external-integration operation produces an `auditEvents` record** under the vocabulary reserved in `LYFELABZ_FIREBASE_SECURITY_MODEL.md` §11.7.a.
+
 ---
 
 ## 2. Responsibilities of Cloud Functions
@@ -84,6 +102,24 @@ Periodic jobs (expiring stale join codes, closing Assignment record windows whos
 
 **Future notifications.**
 When notifications ship (teacher summaries, parent updates, district reports), the composition and delivery of those messages will be server-side. Clients will never dispatch external communication on the platform's behalf.
+
+**LMS OAuth initiation and completion.**
+Reserved by the ratified LMS integration architecture (`LMS_INTEGRATION_ARCHITECTURE.md` §5, PDR-019e). When the LMS Integration Foundation phase is scheduled, the server initiates the OAuth flow with the provider on the teacher's behalf, completes the flow, and records the resulting connection in `lmsConnections`. The client asks; the server decides which scopes to request under the incremental-authorization rule.
+
+**LMS token storage, refresh, and revocation handling.**
+Server-only. Access tokens and refresh tokens are stored under a mechanism selected by the LMS Integration Foundation phase specification and never exposed to the client. Refresh is performed on demand, not speculatively. Revocation events are honored immediately and reflected in the mirror.
+
+**LMS class discovery and roster read.**
+The server reads the teacher's LMS class list and the roster of a class the teacher has opted to inspect. The client sees only the results the server chooses to write into the mirror. Cross-teacher and cross-school reads are impossible by construction.
+
+**LMS class import, refresh, and unlink.**
+The server owns the workflow that creates a LyfeLabz class record from an LMS class, refreshes a linked class on teacher demand, and unlinks a class while preserving the historical mirror for audit. Import validates that the requesting teacher is the LMS teacher of record. Refresh reconciles the LMS roster against the LyfeLabz enrollments under the certified vocabulary (`active`, `transferred`, `withdrawn`, `archived`) and never hard-deletes an enrollment record.
+
+**LyfeLabz-to-LMS assignment publication.**
+The server publishes a LyfeLabz assignment to a linked LMS class when the teacher explicitly opts in on the Assignment Dialog. Publication is one-way per PDR-019d. The LyfeLabz assignment is authoritative. Publication is a side effect and is recorded in `lmsAssignmentPublications`.
+
+**LMS revocation and ownership-drift handling.**
+The server marks connections revoked when upstream authorization fails, marks class links stale when the upstream teacher of record changes, and never silently reassigns LyfeLabz class ownership. The teacher sees a plain-language message and chooses a next step, including the audited administrative ownership transfer path recorded by PDR-005.
 
 Each of these responsibilities belongs on the server for one of three reasons: the operation must be verifiable against authoritative data the client does not see; the operation issues or depends on trust artifacts the client cannot be permitted to forge; or the operation must produce a durable, tamper-resistant record.
 
@@ -225,7 +261,14 @@ The charter anticipates growth. New categories of responsibility will be added u
 Server-mediated calls to language models for open-response scoring, feedback generation, or teacher summaries. All model interactions run server-side so that API credentials, prompt templates, and safety controls remain trusted. Model outputs are validated before they are shown to students or written to authoritative records.
 
 **LMS synchronization.**
-Grade passback, roster import, and assignment linking with external learning management systems. These integrations exchange trust artifacts with third parties and must be entirely server-side.
+Roster import and refresh, class discovery, class linking and unlinking, and one-way assignment publication to external learning management systems. These integrations exchange trust artifacts with third parties and are entirely server-side. Grade passback is deliberately not on the roadmap and would require its own decision record per PDR-019d. The canonical architecture is `LMS_INTEGRATION_ARCHITECTURE.md`. The responsibilities added by this charter for LMS integration are enumerated in §2. Rate-limit defaults consistent with PDR-012's rate-limit posture are:
+
+- LMS discovery calls: bounded per teacher per minute.
+- LMS import calls: bounded per teacher per hour.
+- LMS refresh calls: bounded per class per hour.
+- LMS publication calls: aligned with the existing assignment publication rate limit recorded in PDR-012 (60 per minute per teacher).
+
+Concrete numbers are set by the LMS Integration Foundation phase specification.
 
 **District reporting.**
 Aggregate reports across schools, classes, and standards. Reports are computed from the authoritative rollups and delivered through scheduled or on-demand functions with district-scoped authorization.

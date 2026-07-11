@@ -1,5 +1,9 @@
 import type { RouteSurface } from "../router";
 import type { ListClasses } from "../../classes/listClasses";
+import type {
+  AssignmentsCallables,
+  IntegrationsDeps,
+} from "../../settings/integrations/types";
 import { mountTeacherShell } from "../../shell/shell";
 import {
   clear,
@@ -32,6 +36,19 @@ export type SurfaceDeps = {
   // Sprint 6G: injected launch handler. See
   // src/presentMode/launchContext.ts.
   readonly onLaunchPresentMode: () => void;
+  // Sprint 8C: Teacher Integrations dependencies. Null in tests; the
+  // real entry point wires the LMS callable seam. Accepts a getter so
+  // the entry point can re-establish per-session state across reruns
+  // without rebuilding the route table. See LMS_EXPERIENCE.md and
+  // PDR-020c.
+  readonly integrations?: IntegrationsDeps | null | (() => IntegrationsDeps | null);
+  // Sprint 8D.1: authoritative assignment lifecycle callable seam. Same
+  // getter pattern as `integrations` so per-session state can rebind
+  // across reruns without rebuilding the route table.
+  readonly assignments?:
+    | AssignmentsCallables
+    | null
+    | (() => AssignmentsCallables | null);
 };
 
 // -----------------------------------------------------------------------------
@@ -302,10 +319,20 @@ export const makeActiveTeacherSurface =
     if (session.kind !== "activeTeacher") return;
     // Step 5: minimal Step 4 body replaced by the Teacher Platform Shell.
     // The router still owns dispatch; the shell owns layout and Home.
+    const integrations =
+      typeof deps.integrations === "function"
+        ? deps.integrations()
+        : (deps.integrations ?? null);
+    const assignments =
+      typeof deps.assignments === "function"
+        ? deps.assignments()
+        : (deps.assignments ?? null);
     mountTeacherShell(session, mount, {
       onSignOut: deps.onSignOut,
       listClasses: deps.listClasses,
       onLaunchPresentMode: deps.onLaunchPresentMode,
+      integrations,
+      assignments,
     });
   };
 

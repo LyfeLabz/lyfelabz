@@ -1,5 +1,7 @@
 import type { FieldValue, Timestamp } from "firebase-admin/firestore";
 
+import type { ClassEnrollmentSource, LmsProviderId } from "./lms";
+
 export const CLASSES_COLLECTION = "classes";
 
 // Canonical classroom lifecycle field per Data Model §3.3. `status` is the
@@ -34,6 +36,14 @@ export type ClassRecord = {
   readonly coTeacherIds?: readonly string[];
   readonly academicTerm?: string;
   readonly joinCodeExpiresAt?: Timestamp;
+  // Additive optional fields reserved by the ratified LMS integration
+  // architecture (Data Model §3.3, Amendment §3.4, PDR-019g, PDR-019i).
+  // Absent on every pre-existing class. `enrollmentSource` defaults to
+  // `joinCode` when absent; `lmsProviderRef` is present only when the
+  // class carries `enrollmentSource: "lms"` and points to the
+  // `lmsProviders/{providerId}` document that owns the linked class.
+  readonly enrollmentSource?: ClassEnrollmentSource;
+  readonly lmsProviderRef?: LmsProviderId;
 };
 
 // Write shape for the class-creation callable (classesCreate). Conforms to
@@ -67,6 +77,17 @@ export type ClassMetadataUpdateWrite = {
   readonly grade?: string;
   readonly block?: string;
   readonly academicTerm?: string;
+};
+
+// Write shape for the LMS class-import callable. Narrow by design: only
+// the additive enrollment-source fields are writable through this path.
+// Ownership fields (teacherId, schoolId), lifecycle field (status), title,
+// grade, block, joinCode, and createdAt are intentionally absent so an
+// LMS import can never launder into an ownership change, a metadata edit,
+// or a lifecycle transition per PDR-019i and PDR-019j.
+export type ClassLmsLinkWrite = {
+  readonly enrollmentSource: "lms";
+  readonly lmsProviderRef: LmsProviderId;
 };
 
 // Write shape for the archive callable (classesArchive). Conforms to Data

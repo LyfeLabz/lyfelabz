@@ -11,6 +11,14 @@ import { createRouteTable } from "./router/routes";
 import { renderLoadingSurface } from "./router/surfaces";
 import { bootstrapSession } from "./session/bootstrap";
 import { createBrowserLaunchPresentMode } from "./presentMode/launchContext";
+import {
+  createAssignmentsCallables,
+  createIntegrationsDeps,
+} from "./settings/integrations/wire";
+import type {
+  AssignmentsCallables,
+  IntegrationsDeps,
+} from "./settings/integrations/types";
 
 // Client entry point. Waits for the Canonical Session Bootstrap to
 // resolve, then hands the resulting immutable Session to the router.
@@ -33,7 +41,12 @@ async function run(): Promise<void> {
   const auth = getFirebaseAuth();
   const db = getFirebaseFirestore();
 
+  const listClasses = createFirestoreListClasses(db);
+  const onLaunchPresentMode = createBrowserLaunchPresentMode(window);
+
   let currentRunToken = 0;
+  let integrations: IntegrationsDeps | null = null;
+  let assignments: AssignmentsCallables | null = null;
   const rerun = async (): Promise<void> => {
     const runToken = ++currentRunToken;
     renderLoadingSurface(mount);
@@ -42,6 +55,34 @@ async function run(): Promise<void> {
       createFirestoreInput(db),
     );
     if (runToken !== currentRunToken) return;
+    if (session.kind === "activeTeacher") {
+      const { getFunctions, connectFunctionsEmulator } = await import(
+        "firebase/functions"
+      );
+      const functions = getFunctions();
+      if (
+        typeof window !== "undefined" &&
+        (window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1")
+      ) {
+        try {
+          connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+        } catch {
+          // already connected
+        }
+      }
+      integrations = createIntegrationsDeps({
+        functions,
+        listClasses,
+        teacherUid: session.uid,
+        win: window,
+        db,
+      });
+      assignments = createAssignmentsCallables(functions);
+    } else {
+      integrations = null;
+      assignments = null;
+    }
     dispatch(session, table, mount, window.history);
   };
 
@@ -104,9 +145,6 @@ async function run(): Promise<void> {
     await callable(input);
   };
 
-  const listClasses = createFirestoreListClasses(db);
-  const onLaunchPresentMode = createBrowserLaunchPresentMode(window);
-
   const table = createRouteTable({
     onSignOut,
     onSignIn,
@@ -114,6 +152,8 @@ async function run(): Promise<void> {
     onRequestVerification,
     listClasses,
     onLaunchPresentMode,
+    integrations: () => integrations,
+    assignments: () => assignments,
   });
 
   await rerun();

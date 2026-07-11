@@ -110,6 +110,7 @@ Additional rules that apply repository-wide:
 - Client-side values must always be validated before use. Malformed or unsupported values must be rejected.
 - Backend-authoritative state (roles, claims, lifecycle status, class ownership, enrollment, assignment, submission, score, and audit records) must not be replaced by browser storage. Browser storage may hold ephemeral navigation context only.
 - The Present Mode return context is a certified example of tab-scoped navigation context. It is not a template for storing teacher or student data.
+- **LMS integration artifacts are never persisted in browser storage.** OAuth access tokens, refresh tokens, LMS discovery results, LMS roster snapshots, LMS mirror records, and any payload that references an LMS-issued identifier must not be written to `localStorage`, `sessionStorage`, cookies, URL query parameters, or URL fragments. LMS tokens are server-only artifacts per PDR-019e and the External LMS Providers trust boundary in `LYFELABZ_FIREBASE_SECURITY_MODEL.md` §3.10. This rule is a restatement of the certified storage posture applied to the ratified LMS domain; no exception is authorized.
 
 ---
 
@@ -255,8 +256,14 @@ Only contracts already certified by the platform or feature architecture appear 
 | Present Mode initial return surface | `returnSurface: "curriculum"` | `PRESENT_MODE_ARCHITECTURE.md` §14.2 | Present Mode | Certified |
 | Present Mode launch navigation | Same-tab (`window.location.assign("/")`) | `PRESENT_MODE_ARCHITECTURE.md` §14.3 | Present Mode | Certified |
 | Present Mode public-surface return behavior | Return script loads on the canonical instructional experience, no-ops without a valid marker, imports no Firebase SDK | `PRESENT_MODE_ARCHITECTURE.md` §14.4 through §14.6 | Present Mode | Certified |
+| LMS integration surface identifier | `settings/integrations` under the workspace-surface identifier convention of §7 | `LMS_INTEGRATION_ARCHITECTURE.md` §3.5, `LMS_EXPERIENCE.md` §3 | LMS Integration Foundation phase | Reserved (live at Phase 9 certification) |
+| LMS provider namespace | Closed set `lmsProviders` with initial value `googleClassroom` | `LMS_INTEGRATION_ARCHITECTURE.md` §3.3, §4.1, PDR-019h | LMS Integration Foundation phase | Reserved (live at Phase 9 certification) |
+| LMS mirror record ownership convention | Every mirror record (`lmsConnections`, `lmsClassLinks`, `lmsRosterLinks`, `lmsAssignmentPublications`) carries an `ownerUid` denormalization to preserve rule-evaluation performance | `LYFELABZ_FIRESTORE_DATA_MODEL.md` §2.9.a, `LYFELABZ_FIREBASE_SECURITY_MODEL.md` §3.10 | LMS Integration Foundation phase | Reserved (live at Phase 9 certification) |
+| LMS token storage prohibition on the client | LMS OAuth access tokens, refresh tokens, discovery results, roster snapshots, and mirror records are never written to `localStorage`, `sessionStorage`, cookies, URL query parameters, or URL fragments | This document §5; PDR-019e | LMS Integration Foundation phase | Certified |
 
 Additions to this registry require the amendment process in Section 13.
+
+Contracts marked "Reserved (live at Phase 9 certification)" are ratified into the certified corpus by `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` and become live public interfaces when the LMS Integration Foundation phase (`TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §4, Phase 9) certifies. Their reservation prevents a future sprint from inventing a parallel value silently.
 
 ---
 

@@ -158,6 +158,42 @@ What belongs here: One document per event. Actor, action, target, timestamp, and
 
 Why top level: Audit events are queried by actor, by target, and by time range. They are never nested under the object they describe, because the object may be deleted while the audit trail must survive.
 
+### 2.9.a LMS integration collections (reserved by ratified architecture, not yet live)
+
+The five collections below are reserved by `LMS_INTEGRATION_ARCHITECTURE.md` and its ratified amendment. They become live only when the LMS Integration Foundation phase (`TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §4, Phase 9) is scheduled. Each is a top-level collection, follows the certified conventions of Section 2 (stable identifier at the document root, server-set timestamps, explicit `ownerUid` and `schoolId` denormalization where security-rule performance requires it, additive schema evolution), and is subordinate to the certified records it mirrors.
+
+**lmsProviders**
+
+- Closed set of supported LMS providers. Version 1 contains the single document `googleClassroom`.
+- Read-only reference data. Contains no PII and no token.
+- Additional providers require an amendment to `LMS_INTEGRATION_ARCHITECTURE.md`.
+
+**lmsConnections**
+
+- One document per (teacher, provider) pair. The teacher's opt-in to a specific LMS provider.
+- Carries the granted OAuth scopes, a server-only reference to the token record (never the token itself), and a connection status (`active`, `revoked`, `stale`).
+- Never readable by the client on any field that references the token.
+
+**lmsClassLinks**
+
+- One document per (LyfeLabz class, LMS class) pair. The mirroring link between a `classes/{classId}` record and its upstream LMS class identifier.
+- Carries an `ownerUid` denormalization to preserve rule-evaluation performance under class-scoped reads.
+- A LyfeLabz class carries at most one active link at a time.
+
+**lmsRosterLinks**
+
+- One document per (LyfeLabz enrollment, LMS roster entry) pair. The mirroring link between an `enrollments/{enrollmentId}` record and its upstream LMS roster entry.
+- Carries an `ownerUid` denormalization scoped to the class's teacher for security-rule performance.
+
+**lmsAssignmentPublications**
+
+- One document per publication attempt from a LyfeLabz assignment to an LMS. Carries the outcome and the LMS assignment identifier where the attempt succeeded.
+- A LyfeLabz assignment may hold zero, one, or more publication records over its lifetime (successive attempts).
+
+None of these records is authoritative for the upstream LMS state. All are mirroring records. The upstream LMS remains the authoritative source for classroom identity, teacher ownership, and roster per PDR-019b. The mirror is the operational read-side for LyfeLabz surfaces.
+
+Garbage-collection contract. Unlinking a class marks the mirror records `unlinked` and preserves them. Deleting a class (an administrative operation) cascades to the mirror through a server-only path. Historical mirror records are retained for audit under PDR-013.
+
 ### 2.10 Subcollections used sparingly
 
 The model uses subcollections in only two cases:
@@ -255,6 +291,8 @@ Optional fields:
 - coTeacherIds: Reserved for future co-teaching. Absent in Version 1.
 - academicTerm: Fall, spring, full year. Optional because the school-level calendar can supply a default.
 - joinCodeExpiresAt: Optional expiration timestamp. Recommended for future security posture.
+- enrollmentSource: One of `joinCode` (default) or `lms`. Reserved by the ratified LMS integration architecture. Absent or `joinCode` on every pre-existing class. `lms` becomes writable when the LMS Integration Foundation phase is scheduled. A class with `enrollmentSource: "lms"` refuses join-code redemption per PDR-019i.
+- lmsProviderRef: Optional reference to the `lmsProviders/{providerId}` document associated with this class when `enrollmentSource` is `lms`. Absent for join-code classes.
 
 Relationships: Belongs to one school. Belongs to one primary teacher. Has many enrollments. Has many assignments.
 
@@ -278,6 +316,7 @@ Optional fields:
 
 - displayNameOverride: Some students prefer a different name in one class than another (nickname, preferred name). Optional.
 - exitedAt: Timestamp when status became transferred or withdrawn.
+- lmsRosterRef: Optional reference to the `lmsRosterLinks/{rosterLinkId}` mirror document for this enrollment when the enrolling class is LMS-linked. Reserved by the ratified LMS integration architecture. Absent on every pre-existing enrollment. Never renamed. Presence never widens the caller's authorization; it is a mirror pointer, not an ownership field.
 
 Relationships: References one student, one class, and one school.
 
@@ -333,6 +372,7 @@ Optional fields:
 - instructions: A short teacher note shown above the lesson.
 - windowClosesAt: Optional. When present, defines the moment after which the record leaves active student views. This is not a due date; the platform does not render "due," "late," or "overdue" language to students or teachers, and finalization is not blocked by the window closing. See PDR-010.
 - availableAt: Optional. If present, the record is hidden from students until this time.
+- lmsPublicationRef: Optional reference to the most recent `lmsAssignmentPublications/{publicationId}` mirror document for this assignment. Reserved by the ratified LMS integration architecture. Absent on every pre-existing assignment. Presence records that publication has been attempted; success or failure is recorded on the referenced publication document. Publication is a side effect per PDR-019d; the assignment record remains authoritative.
 
 Relationships: References one class, one teacher, one school, and one lesson version. Has many submissions.
 
@@ -760,11 +800,15 @@ AI-generated feedback on a submission is stored as a separate feedback document 
 
 ### 10.5 Google Classroom Integration
 
-Google Classroom rosters are ingested into a rosters collection, then reconciled with enrollments. External IDs (Google Classroom class IDs, student email hashes) are stored on rosters and referenced by enrollments. Existing classes and enrollments do not need to change shape.
+The canonical architecture for LMS integration is `LMS_INTEGRATION_ARCHITECTURE.md`, ratified into the certified corpus by `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` and recorded as PDR-019. Google Classroom is the initial provider.
+
+The integration lands as the five additive mirror collections named in §2.9.a (`lmsProviders`, `lmsConnections`, `lmsClassLinks`, `lmsRosterLinks`, `lmsAssignmentPublications`) and as the additive optional fields on `classes` (`enrollmentSource`, `lmsProviderRef`), `enrollments` (`lmsRosterRef`), and `assignments` (`lmsPublicationRef`). The reserved `rosters` collection (§2.8) is not repurposed by the LMS integration; it remains reserved for SIS-fed rosters. Existing classes, enrollments, assignments, and submissions never change shape and never require a destructive migration. Historical join-code classes continue to operate under their default `joinCode` enrollment source.
+
+The mirror is never authoritative for the upstream LMS state (PDR-019b). External identifiers (LMS class IDs, LMS roster entry IDs, LMS assignment IDs) live on the mirror records, not on the certified `classes`, `enrollments`, `assignments`, or `submissions` documents.
 
 ### 10.6 Canvas Integration
 
-Same shape as Google Classroom. External identifiers are attached at the roster boundary, not to every downstream document.
+Same shape as Google Classroom. A second LMS provider is added by extending the `lmsProviders` closed set and by writing a second adapter under PDR-019h. External identifiers are attached at the mirror boundary, not to any certified downstream document. No structural rewrite is required.
 
 ### 10.7 Teacher-Created Lessons
 

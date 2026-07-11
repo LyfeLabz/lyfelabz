@@ -1,5 +1,9 @@
 import type { Session } from "../session/types";
 import type { ListClasses } from "../classes/listClasses";
+import type {
+  AssignmentsCallables,
+  IntegrationsDeps,
+} from "../settings/integrations/types";
 import { renderHeader } from "./header";
 import { renderNavigation, type WorkspaceSurfaceKey } from "./navigation";
 import { renderFooter } from "./footer";
@@ -32,6 +36,13 @@ export type ShellDeps = {
   // null (no preview) so production renders the certified no-data
   // state. Tests inject the fictional preview to validate hierarchy.
   readonly snapshotPreview?: SnapshotPreview | null;
+  // Sprint 8C: Teacher Integrations dependencies. Null in unit tests
+  // that do not exercise Settings > Integrations; the real entry point
+  // wires the callable seam. See LMS_EXPERIENCE.md §3 and PDR-020c.
+  readonly integrations?: IntegrationsDeps | null;
+  // Sprint 8D.1: authoritative assignment lifecycle callables consumed
+  // by the Assign Experience.
+  readonly assignments?: AssignmentsCallables | null;
 };
 
 export function mountTeacherShell(
@@ -59,6 +70,8 @@ export function mountTeacherShell(
     listClasses: deps.listClasses,
     onLaunchPresentMode: deps.onLaunchPresentMode,
     snapshotPreview: deps.snapshotPreview ?? null,
+    integrations: deps.integrations ?? null,
+    assignments: deps.assignments ?? null,
   };
 
   const renderNav = (): void => {

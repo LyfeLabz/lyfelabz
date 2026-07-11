@@ -224,6 +224,54 @@ The platform itself, executing privileged operations on behalf of users.
 
 **May access:** Whatever a specific operation requires, scoped to that operation's purpose. System context is not a general-purpose admin. Each Cloud Function has a documented purpose and touches only the data required for that purpose.
 
+## 3.10 External LMS Providers
+
+External learning management systems that LyfeLabz integrates with under PDR-019 and `LMS_INTEGRATION_ARCHITECTURE.md`. Google Classroom is the initial provider. Canvas, Schoology, and Teams for Education are reserved as future providers.
+
+An external LMS is a data source and a publication target, not a security actor inside LyfeLabz. It is never trusted to make an authorization decision inside the platform.
+
+**LyfeLabz trusts an external LMS to:**
+
+- Return the classes an authenticated teacher teaches when a server-side Cloud Function asks for them under a scope the teacher granted.
+- Return the roster of a class the teacher has explicitly opted to import.
+- Accept a LyfeLabz-authored assignment publication under a scope the teacher granted.
+- Reject any request whose OAuth token has been revoked upstream.
+
+**LyfeLabz does not trust an external LMS to:**
+
+- Establish a LyfeLabz identity. LyfeLabz identity remains established by Google Sign-In through Firebase Authentication per PDR-002.
+- Grant, elevate, or revoke a LyfeLabz role or `schoolId` claim. Claims remain a Cloud Function Charter concern per PDR-019f.
+- Determine LyfeLabz class ownership. PDR-005 and PDR-019j remain authoritative.
+- Author or mutate a LyfeLabz assignment record. Publication is one-way per PDR-019d.
+- Author or mutate a LyfeLabz submission. Submissions remain owned by the student and finalized only by the certified Cloud Function per PDR-008.
+- Delete LyfeLabz historical data. An upstream deletion becomes a signal, not an authority; the mirror is marked broken and the LyfeLabz record is preserved.
+
+**Trust boundary invariants:**
+
+- OAuth access tokens and refresh tokens are server-only artifacts. Clients never hold, transmit, or observe an LMS token. Token fields on any Firestore document are unreadable by every client role, including Platform Administrator, without an audited elevation. Token storage and rotation are Cloud Function Charter concerns.
+- Clients never make direct HTTP calls to an LMS's REST or gRPC surface. Every LMS request originates in a Cloud Function on behalf of an authenticated teacher.
+- The client never computes an LMS API URL from an unvalidated Firestore field.
+- Every LMS callable revalidates the Canonical Session Object before acting. LMS callables run only for an `active` teacher; no LMS callable runs for a caller in `provisioned`, `pendingVerification`, `suspended`, or `archived`.
+- OAuth scopes are requested incrementally. LyfeLabz never asks for the union of every scope it might ever need. The first scope requested is the minimum required to list a teacher's classes and inspect a class's roster. Additional scopes are requested only when the teacher initiates a workflow that requires them (for example, publishing an assignment).
+- Revocation is honored immediately. If the LMS returns an authorization error, the connection is marked `revoked`, affected class links are marked `stale`, and the teacher sees a plain-language message on next visit.
+
+**Ownership boundaries for LMS mirror records:**
+
+- `lmsConnections/{connectionId}` is readable only by the connection's owning teacher (through the fields that do not carry the token reference) and by Platform Administrator under audit. The token reference itself is unreadable by any client role.
+- `lmsClassLinks/{linkId}` is readable only by the teacher who owns the linked LyfeLabz class and by the enrolled student, in the same scoping as the underlying certified `classes/{classId}` and `enrollments/{enrollmentId}` records.
+- `lmsRosterLinks/{rosterLinkId}` is readable only by the teacher of the linked class and by the enrolled student it references.
+- `lmsAssignmentPublications/{publicationId}` is readable only by the teacher who initiated the publication and by Platform Administrator under audit. It is never readable by students.
+- `lmsProviders/{providerId}` is read-only reference data readable by every authenticated user. It contains no PII and no token.
+- No LMS integration record is readable by an unauthenticated visitor.
+
+**Privacy expectations.**
+
+- LMS integration does not widen the PDR-011 collection surface. Guardian contact information, LMS-computed grades, disciplinary records, attendance records, non-LyfeLabz assignment submissions or feedback, teacher notes authored inside the LMS, and announcements and comments authored in the LMS are never copied.
+- Placeholder enrollments (a student who exists in the LMS roster but has not yet signed into LyfeLabz) carry only the identifier needed to reconcile the sign-in.
+- Data minimization (Section 8.9) governs every LMS read.
+
+Concrete Firestore Rules and Cloud Function code are downstream artifacts, authored by the LMS Integration Foundation phase (`TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §4, Phase 9). Nothing in this section authorizes implementation. This section defines the trust boundary that every downstream implementation must satisfy.
+
 ---
 
 # 4. Ownership Model
@@ -631,6 +679,21 @@ The following events are recorded without exception:
 - Ownership transfers.
 - Retention and deletion actions.
 - Emergency access.
+
+## 11.7.a LMS Integration Audit Vocabulary
+
+The LMS Integration Foundation phase (Phase 9, per `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §4 and `LMS_INTEGRATION_ARCHITECTURE.md`) extends the audit vocabulary with LMS-scoped event kinds. Every event follows the append-only invariant per PDR-013. Every event carries the canonical `actorUserId`, `actorRole`, `action`, `targetType`, `targetId`, `occurredAt`, and `schoolId` fields defined by the Firestore Data Model.
+
+- `lms.connectionCreated` - a teacher completed an OAuth grant to a supported LMS provider.
+- `lms.connectionRevoked` - a teacher disconnected a provider, or the server observed an upstream revocation.
+- `lms.classImported` - a teacher imported an LMS class into a LyfeLabz class record.
+- `lms.classRefreshed` - a teacher confirmed a manual refresh of a linked class.
+- `lms.classUnlinked` - a teacher unlinked a LyfeLabz class from its LMS mirror.
+- `lms.assignmentPublished` - a teacher published a LyfeLabz assignment to a linked LMS.
+- `lms.publishFailed` - a publication attempt failed at the LMS boundary.
+- `lms.ownershipDrift` - the server observed that the LyfeLabz-owning teacher is no longer the LMS teacher of record.
+
+These vocabulary terms are reserved by this document and become live audit terms only when the LMS Integration Foundation phase is scheduled. No sprint may extend the vocabulary silently.
 
 ## 11.8 Audit Properties
 

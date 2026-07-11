@@ -1,5 +1,9 @@
 import type { Session } from "../../session/types";
 import type { ListClasses } from "../../classes/listClasses";
+import type {
+  AssignmentsCallables,
+  IntegrationsDeps,
+} from "../../settings/integrations/types";
 import type { WorkspaceSurfaceKey } from "../navigation";
 import { renderCurriculumSurface } from "./curriculum";
 import { renderClassesSurface } from "./classes";
@@ -36,6 +40,15 @@ export type WorkspaceDeps = {
   // implementation-local, never persisted, and never sourced from
   // Firestore or Cloud Functions. See snapshot.ts.
   readonly snapshotPreview?: SnapshotPreview | null;
+  // Sprint 8C: injected Teacher Integrations dependencies. When null the
+  // Settings surface renders without an Integrations entry point and
+  // Connected Services remains a preview category. See
+  // LMS_EXPERIENCE.md §3, LMS_INTEGRATION_ARCHITECTURE.md, and PDR-020c.
+  readonly integrations?: IntegrationsDeps | null;
+  // Sprint 8D.1: injected authoritative assignment lifecycle callables.
+  // When null the Assign Experience runs UI-only session state (test
+  // harness path). The entry point wires the real seam.
+  readonly assignments?: AssignmentsCallables | null;
 };
 
 export type WorkspaceSurface = {
@@ -60,7 +73,11 @@ export const WORKSPACE_SURFACES: Readonly<
       session: ActiveTeacher,
       deps: WorkspaceDeps,
     ) =>
-      renderCurriculumSurface(mount, session, { listClasses: deps.listClasses }),
+      renderCurriculumSurface(mount, session, {
+        listClasses: deps.listClasses,
+        integrations: deps.integrations ?? null,
+        assignments: deps.assignments ?? null,
+      }),
   }),
   classes: Object.freeze({
     key: "classes" as const,
@@ -87,8 +104,14 @@ export const WORKSPACE_SURFACES: Readonly<
   }),
   settings: Object.freeze({
     key: "settings" as const,
-    render: (mount: HTMLElement, session: ActiveTeacher) =>
-      renderSettingsSurface(mount, session),
+    render: (
+      mount: HTMLElement,
+      session: ActiveTeacher,
+      deps: WorkspaceDeps,
+    ) =>
+      renderSettingsSurface(mount, session, {
+        integrations: deps.integrations ?? null,
+      }),
   }),
 });
 

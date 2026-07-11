@@ -16,6 +16,17 @@ export {
   enrollmentsSetStatus,
   enrollmentsTeacherAdd,
 } from "./enrollments";
+export {
+  lmsAssignmentsPublish,
+  lmsClassesDiscover,
+  lmsClassesImport,
+  lmsClassesListTopics,
+  lmsConnectionsBegin,
+  lmsConnectionsComplete,
+  lmsConnectionsDescribe,
+  lmsConnectionsDisconnect,
+  lmsProvidersList,
+} from "./lms";
 export { schoolsCreate } from "./schools";
 export { studentsCompleteOnboarding } from "./students";
 export { submissionsCreate, submissionsFinalize } from "./submissions";

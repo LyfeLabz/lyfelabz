@@ -29,7 +29,14 @@ export type AuditAction =
   | "assignments.closed"
   | "assignments.archived"
   | "submissions.created"
-  | "submissions.finalized";
+  | "submissions.finalized"
+  | "lms.connectionCreated"
+  | "lms.connectionRevoked"
+  | "lms.classImported"
+  | "lms.classUnlinked"
+  | "lms.ownershipDrift"
+  | "lms.assignmentPublished"
+  | "lms.publishFailed";
 
 // Audit events are indexed by target type and target id per Data Model §3.8.
 // The set is left open as `string` because target types cross domain

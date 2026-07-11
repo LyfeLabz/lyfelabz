@@ -70,6 +70,8 @@ Snapshot never renders inside Present Mode. Snapshot never links to Present Mode
 
 Snapshot inherits Present Mode's privacy posture as a design floor: any data that Present Mode forbids on a projector must also be absent from any Snapshot element that might appear on a projector by accident. Snapshot is not intended for projection, and no Snapshot control invites projection. The Teacher Workspace remains a teacher-only surface.
 
+Snapshot does not display LMS state. The ratified LMS integration architecture (`LMS_INTEGRATION_ARCHITECTURE.md`, PDR-019, `LMS_EXPERIENCE.md` §4) locates LMS connection status, LMS class name badges, LMS topic names, LMS publication outcomes, and LMS roster deltas in Settings, not on Snapshot. The additive `lmsRosterRef` and `lmsPublicationRef` fields recorded in the Firestore Data Model are present on the enrollment and assignment records Snapshot reads, but Snapshot never renders them.
+
 ---
 
 ## 6. Navigation Placement

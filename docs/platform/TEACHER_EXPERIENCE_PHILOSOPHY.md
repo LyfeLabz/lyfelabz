@@ -87,6 +87,8 @@ The assignment workflow minimizes steps and must eventually support:
 
 The workflow is not implemented by this document. It is designed by the Assignment domain UI sprint under Phase 5.
 
+**LMS-linked class rows.** When the ratified LMS integration architecture (`LMS_INTEGRATION_ARCHITECTURE.md`, PDR-019) is implemented in the phase named by `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §4, the Assignment Dialog's per-class row shape gains two additive affordances on rows for LMS-linked classes: a Google Classroom topic selector and a publication toggle (defaulting off until the teacher opts in for that class). These affordances are additive controls on the same one dialog. The Assign Experience remains one workflow per `ASSIGN_EXPERIENCE.md`. Rows for classes that are not LMS-linked are unchanged.
+
 ### 3.6 Class workspace
 
 Selecting a class opens a spreadsheet-style learning-data workspace.
@@ -230,7 +232,7 @@ Google Classroom (where in use) remains the assignment and communication hub. Ly
 
 PowerSchool (or the equivalent SIS) remains the gradebook of record. LyfeLabz collects and displays mastery data as instructional evidence; it does not compute a report-card grade.
 
-Both are external systems. Integration work is a separate architecture phase gated on PDR-015 (documented demand) and, for Google Classroom specifically, on a dedicated integration architecture pass. No integration ships in the current sprint sequence.
+Both are external systems. Integration work is a separate architecture phase gated on PDR-015 (documented demand) and, for Google Classroom specifically, on a dedicated integration architecture pass. That architecture pass is now recorded in `LMS_INTEGRATION_ARCHITECTURE.md`, its teacher-facing shape in `LMS_EXPERIENCE.md`, and its ratified amendments to the certified corpus in `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md`. The load-bearing integration posture is recorded as PDR-019. The named phase for implementation is Phase 9 (LMS Integration Foundation) in `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §4. No integration ships in the current sprint sequence.
 
 ---
 

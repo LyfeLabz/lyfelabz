@@ -403,7 +403,7 @@ Reserved extensions include:
 - District Platform - a District entity above Schools, enabling `districtId` claims and district-scoped rollups.
 - SIS-fed Rosters - the reserved `rosters` collection.
 - AI Tutoring and AI-Generated Feedback - attached at the Lesson and Submission layers respectively.
-- LMS Integrations - Google Classroom and Canvas, treated as external systems mapped into LyfeLabz entities.
+- LMS Integrations - Google Classroom and Canvas, treated as external systems mapped into LyfeLabz entities. The canonical architecture for this extension is recorded in `LMS_INTEGRATION_ARCHITECTURE.md`, its teacher-facing shape in `LMS_EXPERIENCE.md`, and the ratified amendments to the certified architecture in `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md`. The named phase for this extension is Phase 9 (LMS Integration Foundation), described in Section 4. PDR-020 advances Phase 9 ahead of Phase 8 (Administrator Platform) for the narrow initial scope named in PDR-020c. Google Classroom is the formally authorized initial provider under PDR-020a; provider neutrality is preserved as a permanent architectural property under PDR-019h and PDR-020f. Canvas, Schoology, and Microsoft Teams for Education remain named-but-deferred subsequent providers.
 - Professional Learning Communities.
 - Teacher-authored instructional content, distinct from Lessons.
 
@@ -415,9 +415,9 @@ Each of these will receive its own roadmap when its time comes.
 
 ## 4. Implementation Roadmap
 
-The roadmap is organized as sequential phases. Each phase corresponds to one domain from Section 3, expanded into an implementable body of work. Phase 1 is complete. Phases 2 through 8 will each be preceded by a sprint specification, prosecuted by one or more sprints, and closed by a completion report and certification in the same pattern as Sprints 1 through 3.
+The roadmap is organized as sequential phases. Each phase corresponds to one domain from Section 3, expanded into an implementable body of work. Phase 1 is complete. Each phase is preceded by a sprint specification, prosecuted by one or more sprints, and closed by a completion report and certification in the same pattern as Sprints 1 through 3.
 
-Phases are strictly sequential. A phase does not begin until the phase before it is certified complete.
+Phases are strictly sequential within the certified domain chain in §2. Phase execution order follows the phase-number sequence with one authorized exception: PDR-020 (LMS Phase Re-Sequencing and Initial Scope) advances Phase 9 (LMS Integration Foundation) ahead of Phase 8 (Administrator Platform) for the narrow initial scope named in PDR-020c. The certified domain chain in §2 is not reordered by that decision; Phase 8 remains defined in its own right and is scheduled as a subsequent phase after Phase 9's initial scope certifies. A phase does not begin until every phase it depends on is certified complete.
 
 ---
 
@@ -672,6 +672,8 @@ Present Mode, curriculum activation, class workspaces, private student supports,
 
 ### Phase 8: Administrator Platform
 
+**Sequencing note.** PDR-020b advances Phase 9 (LMS Integration Foundation) ahead of Phase 8 for the narrow initial scope named in PDR-020c. Phase 8 is unchanged in scope, objectives, deliverables, exit criteria, risks, and non-goals; it is scheduled as a subsequent phase after the LMS initial scope certifies. Administrative work continues to run through the callables already established in Phases 1 through 7 until Phase 8 certifies. See Phase 9 below for the advanced-phase description.
+
 **Objectives.** Deliver the operational partner to the Teacher Platform. Give platform administrators a coherent surface for managing schools, teachers, enrollments, submissions retention, and analytics, replacing every direct callable invocation used during Phases 2 through 7 for administrative work.
 
 **Deliverables.**
@@ -696,6 +698,77 @@ Present Mode, curriculum activation, class workspaces, private student supports,
 - District platform.
 - Cross-platform export surfaces.
 - Parent, student, or teacher-facing extensions to administrator work.
+
+---
+
+### Phase 9: LMS Integration Foundation
+
+**Status.** Scheduled. Advanced ahead of Phase 8 (Administrator Platform) by PDR-020 (LMS Phase Re-Sequencing and Initial Scope). Implementation of the initial scope named below is authorized. Every load-bearing decision in PDR-019 continues to apply without exception.
+
+**Placement rationale.** Phase 9 was originally sequenced strictly after Phase 8. PDR-020 advances it ahead of Phase 8 for a narrow initial scope in response to pilot priorities: teacher onboarding for pilot schools is materially improved by importing existing Google Classroom classes rather than reconstructing them by hand. The certified domain chain in §2 is not reordered by this move. Phase 8 remains defined in its own right and is scheduled as a subsequent phase. Advancing Phase 9 does not delete, compress, or redefine Phase 8. Administrative work continues to run through the callables already established in Phases 1 through 7 until Phase 8 certifies. The initial scope named below is narrow by design; every excluded capability remains reachable as its own subsequent sprint under the internal Phase 9 sequence recorded in `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` §8.
+
+**Objectives.** Deliver vendor-neutral LMS integration as described in `LMS_INTEGRATION_ARCHITECTURE.md`. Google Classroom is formally authorized as the initial provider under PDR-020a. Preserve every certified boundary between LyfeLabz and every external learning management system. Preserve every load-bearing decision in PDR-004, PDR-005, PDR-010, PDR-011, PDR-012, PDR-015, PDR-017, PDR-018, PDR-019, and PDR-020.
+
+**Approved initial scope (per PDR-020c).** The initial LMS scope authorized under PDR-020 contains only:
+
+- provider abstraction,
+- provider registry,
+- connection lifecycle (creation, lookup, revocation, ownership verification),
+- secure infrastructure (server-only OAuth flow and token storage abstractions),
+- class discovery,
+- class import.
+
+The initial scope explicitly excludes:
+
+- roster synchronization,
+- assignment publication,
+- assignment refresh,
+- grade synchronization,
+- automatic synchronization,
+- background jobs,
+- webhooks,
+- Google Drive integration,
+- Gmail integration,
+- Calendar integration,
+- Canvas implementation,
+- Schoology implementation,
+- Microsoft Teams for Education implementation,
+- SIS integration,
+- district rollup.
+
+Every excluded capability remains reachable as its own subsequent sprint under the internal Phase 9 sequence recorded in `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` §8. No excluded capability may be introduced by an implementation sprint that authorizes only the initial scope. Expansion of the initial scope requires a subsequent PDR or a subsequent sprint specification. Expansion by implementation is prohibited.
+
+**Deliverables (initial scope).**
+
+- Provider abstraction and provider registry named by the Cloud Function Charter, seeded with a single `googleClassroom` provider under the closed set in the Firestore Data Model amendment.
+- OAuth initiation and completion callables owned by the Cloud Function Charter, satisfying the server-only token boundary in PDR-019e.
+- The additive Firestore collections `lmsProviders`, `lmsConnections`, and `lmsClassLinks` named by the Firestore Data Model amendment. The `lmsRosterLinks` and `lmsAssignmentPublications` collections remain reserved by the data model but are not populated by the initial scope.
+- Additive fields on `classes/{classId}` (`lmsProviderRef`, `enrollmentSource`) recorded in the Firestore Data Model amendment. Additive fields on `enrollments/{enrollmentId}` and `assignments/{assignmentId}` remain reserved but unpopulated under the initial scope.
+- Firestore Rules covering the new collections and the new fields under the same class-scoping principles as the underlying certified records.
+- Teacher-facing Integrations surface inside Settings under the workspace-surface identifier `settings/integrations`, per `PLATFORM_CONTRACTS.md`, delivering connection lifecycle, class discovery, and class import to the teacher.
+- LMS-scoped audit vocabulary limited to the events emitted by the initial scope: `lms.connectionCreated`, `lms.connectionRevoked`, `lms.classImported`, `lms.classUnlinked`, `lms.ownershipDrift`. The remaining LMS audit vocabulary (`lms.classRefreshed`, `lms.assignmentPublished`, `lms.publishFailed`) remains reserved but unemitted until its owning sprint.
+
+**Exit criteria (initial scope).**
+
+- A verified teacher can connect Google Classroom, discover the classes she teaches in Google Classroom, import a specific class into LyfeLabz, and disconnect the integration, all under the Emulator Suite.
+- Every LMS write is server-mediated and produces an audit record. No OAuth token reaches the client.
+- The Teacher Workspace continues to render when Google Classroom is unreachable. Present Mode, Curriculum, Classes, Snapshot, and Practice/Classroom Mode are unaffected by LMS integration state.
+- CI and rules tests remain green.
+
+**Architectural risks.**
+
+- Initial scope creeping into excluded capabilities during implementation. Mitigation: PDR-020c names the excluded capabilities explicitly; expansion by implementation is prohibited.
+- LMS integration becoming an alternate assign workflow. Mitigation: `ASSIGN_EXPERIENCE.md` §5 remains authoritative and the one-dialog rule is preserved. Publication is out of the initial scope.
+- OAuth tokens leaking to the client. Mitigation: server-only token storage per the Firebase Security Model amendment.
+- Google-specific decisions becoming architectural facts. Mitigation: PDR-019h and PDR-020f preserve provider neutrality as a permanent architectural property. Provider-specific concerns live inside the provider adapter; provider-neutral concerns live inside the core.
+- Automatic synchronization introduced silently. Mitigation: manual import is the initial scope; refresh is out of the initial scope; PDR-019c preserves the manual-first posture.
+- Silent ownership reassignment on LMS teacher-of-record change. Mitigation: PDR-005 remains authoritative; LMS integration never reassigns class ownership.
+
+**Explicit non-goals (initial scope).** Every capability enumerated in the exclusion list above is an explicit non-goal for the initial scope. It remains reachable as its own subsequent sprint but is not delivered by the sprint that lands the initial scope.
+
+**Sequencing.** Depends on Phase 5 (Assignment Foundation) and Phase 6 (Submission Foundation), which own the record shapes the LMS phase extends. Both are certified complete. Does not require Phase 7 (Analytics) or Phase 8 (Administrator Platform); PDR-020d and PDR-020e establish that neither is a technical prerequisite for the initial scope. The recommended internal sprint sequence for Phase 9 is recorded in `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` §8. The initial scope corresponds to the amendment's LMS Sprint B (Firestore, Rules, and callable scaffolding) and the discovery-and-import portion of LMS Sprint C. Refresh, publication, and the remaining LMS sprints are reachable subsequent phases and remain out of the initial scope.
+
+---
 
 ---
 

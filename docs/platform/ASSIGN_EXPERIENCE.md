@@ -140,6 +140,17 @@ Exceptions are handled inside the same dialog. A teacher who is releasing Grade 
 - Every prefilled value is editable in place.
 - Exceptions are handled inside the same dialog. There is never a second dialog for edge cases.
 
+### LMS-linked class row shape
+
+When the ratified LMS integration architecture (`LMS_INTEGRATION_ARCHITECTURE.md`, PDR-019) is implemented, the shape of a class row for an LMS-linked class carries two additional affordances alongside the release time, points, and deselection controls already described:
+
+- A Google Classroom topic selector, prefilled with the teacher's last-used topic for that class and populated from the linked LMS class's topics. Where a class is not LMS-linked, this control is absent from the row, not shown as a disabled control.
+- An "Also publish to Google Classroom" toggle, off by default until the teacher opts in for that class. When on, confirming the dialog publishes the LyfeLabz assignment to the linked LMS as a side effect of scheduling, per PDR-019d.
+
+The affordances are additive. Every rule in Section 5 continues to apply to LMS-linked rows: independent per-row configuration, prefill from remembered preferences, in-place edits, no propagation across rows, and no second workflow. The dialog remains one dialog. There is no "publish to Google Classroom" wizard, no "Google Classroom settings" secondary panel, and no LMS-specific dialog. The Assign Experience is one workflow whether or not any of the teacher's classes are LMS-linked.
+
+Rows for classes that are not LMS-linked are unchanged.
+
 ---
 
 ## 6. Scheduling
@@ -186,6 +197,15 @@ Nothing about the Confirmation moment redirects the teacher. She is on the Curri
 
 The Confirmation is not a report ritual. It is the closing punctuation on a preparation ritual.
 
+### LMS-side publication outcomes
+
+When a row's "Also publish to Google Classroom" toggle is on, the confirmation surface names the publication outcome alongside the LyfeLabz scheduling outcome. The LyfeLabz assignment is authoritative; publication is a side effect per PDR-019d. The confirmation reads either:
+
+- "The LyfeLabz assignment was scheduled. Publishing to Google Classroom succeeded."
+- "The LyfeLabz assignment was scheduled. Publishing to Google Classroom did not succeed."
+
+The LyfeLabz record exists in either case. A failed publication does not undo the LyfeLabz assignment; it is a retryable side effect that the teacher may re-attempt from the class's assignment detail view. The confirmation surface never blames the teacher, never emits a stack trace, and never asks the teacher to contact an administrator without a plain-language description of what happened. This preserves the "return, do not redirect" rule.
+
 ### Design Rules
 
 - After scheduling, the teacher returns to exactly where she was.
@@ -193,6 +213,7 @@ The Confirmation is not a report ritual. It is the closing punctuation on a prep
 - A concise confirmation summarizes what was scheduled. It is quiet, dismissible, and self-dismissing.
 - The confirmation never redirects the teacher to a new surface.
 - The confirmation is closing punctuation, not a next-step ladder.
+- Where LMS publication was requested, the confirmation names the LMS-side outcome in one plain-language line. The LyfeLabz assignment is authoritative regardless of the LMS-side outcome.
 
 ---
 

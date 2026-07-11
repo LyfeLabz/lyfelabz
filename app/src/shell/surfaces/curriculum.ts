@@ -1,6 +1,12 @@
 import type { Session } from "../../session/types";
 import type { ClassSummary } from "../../classes/types";
 import type { ListClasses } from "../../classes/listClasses";
+import type {
+  AssignmentsCallables,
+  IntegrationsClassLink,
+  IntegrationsDeps,
+  IntegrationsLmsTopic,
+} from "../../settings/integrations/types";
 import {
   getSurfaceableLessons,
   TOPIC_LABEL,
@@ -32,6 +38,21 @@ type TopicFilter = "all" | LessonTopic;
 
 export type CurriculumSurfaceDeps = {
   readonly listClasses: ListClasses;
+  // Sprint 8D authorized scope expansion. When absent-or-null the
+  // Assignment Dialog renders every class row unchanged
+  // (ASSIGN_EXPERIENCE.md §5 preserves the non-LMS shape). When
+  // present, LMS-linked class rows carry the topic selector and the
+  // "Also publish to Google Classroom" toggle described in §5's
+  // "LMS-linked class row shape" subsection.
+  readonly integrations?: IntegrationsDeps | null;
+  // Sprint 8D.1 authoritative assignment lifecycle seam. When present,
+  // confirming the dialog creates and publishes a persistent LyfeLabz
+  // assignment per selected class through the certified lifecycle before
+  // any LMS-side publication is attempted. When absent-or-null the
+  // dialog runs UI-only session-state (used by lightweight UI harnesses
+  // that do not exercise the callable lifecycle); no LyfeLabz assignment
+  // is persisted and no LMS publication is issued.
+  readonly assignments?: AssignmentsCallables | null;
 };
 
 const DEFAULT_LIST_CLASSES: ListClasses = () =>
@@ -53,9 +74,11 @@ const DEFAULT_RELEASE_TIME = "07:45";
 const sessionPreferences: {
   releaseTime: string;
   topic: string;
+  lmsTopicId: string;
 } = {
   releaseTime: DEFAULT_RELEASE_TIME,
   topic: "",
+  lmsTopicId: "",
 };
 
 type RowConfig = {
@@ -64,6 +87,11 @@ type RowConfig = {
   time: string;
   topic: string;
   points: number;
+  // Sprint 8D authorized additions. Present on every row so the dialog
+  // stays one dialog; only rendered for LMS-linked class rows per
+  // ASSIGN_EXPERIENCE.md §5.
+  publishToLms: boolean;
+  lmsTopicId: string;
 };
 
 type Assignment = {
@@ -84,6 +112,24 @@ let cachedClasses: {
   readonly rows: ReadonlyArray<ClassSummary>;
 } | null = null;
 let classesInFlight: Promise<void> | null = null;
+
+// LMS class-link cache. Populated lazily alongside `cachedClasses` when
+// the Integrations deps carry a `listClassLinks` reader. Keyed by uid
+// for the same sign-in-safety reason. Absent-or-empty means every class
+// row renders the non-LMS shape (ASSIGN_EXPERIENCE.md §5).
+let cachedClassLinks: {
+  readonly uid: string;
+  readonly linksByClassId: ReadonlyMap<string, IntegrationsClassLink>;
+} | null = null;
+let classLinksInFlight: Promise<void> | null = null;
+
+// Per-link topic cache. Topics are LMS-owned per PDR-020g and are not
+// mirrored into Firestore; the callable resolves them on demand each
+// time the dialog opens an LMS-linked class row. The cache is keyed by
+// linkId and is cleared alongside the class cache on sign-out.
+const cachedTopicsByLinkId: Map<string, ReadonlyArray<IntegrationsLmsTopic>> =
+  new Map();
+const topicsInFlightByLinkId: Map<string, Promise<void>> = new Map();
 
 const GRADE_FILTERS: ReadonlyArray<{
   readonly key: GradeFilter;
@@ -140,11 +186,68 @@ function ensureClasses(
   return classesInFlight;
 }
 
+function ensureClassLinks(
+  uid: string,
+  integrations: IntegrationsDeps | null,
+): Promise<void> {
+  if (integrations === null || integrations.listClassLinks === undefined) {
+    if (!cachedClassLinks || cachedClassLinks.uid !== uid) {
+      cachedClassLinks = Object.freeze({ uid, linksByClassId: new Map() });
+    }
+    return Promise.resolve();
+  }
+  if (cachedClassLinks && cachedClassLinks.uid === uid) return Promise.resolve();
+  if (classLinksInFlight) return classLinksInFlight;
+  const reader = integrations.listClassLinks;
+  classLinksInFlight = reader()
+    .then((rows) => {
+      const map = new Map<string, IntegrationsClassLink>();
+      for (const r of rows) map.set(r.classId, r);
+      cachedClassLinks = Object.freeze({ uid, linksByClassId: map });
+    })
+    .catch(() => {
+      cachedClassLinks = Object.freeze({ uid, linksByClassId: new Map() });
+    })
+    .finally(() => {
+      classLinksInFlight = null;
+    });
+  return classLinksInFlight;
+}
+
+function ensureTopics(
+  linkId: string,
+  integrations: IntegrationsDeps | null,
+): Promise<void> {
+  if (integrations === null) return Promise.resolve();
+  if (cachedTopicsByLinkId.has(linkId)) return Promise.resolve();
+  const inFlight = topicsInFlightByLinkId.get(linkId);
+  if (inFlight) return inFlight;
+  const p = integrations.callables
+    .listClassTopics({ linkId })
+    .then((rows) => {
+      cachedTopicsByLinkId.set(linkId, rows);
+    })
+    .catch(() => {
+      cachedTopicsByLinkId.set(linkId, Object.freeze([]));
+    })
+    .finally(() => {
+      topicsInFlightByLinkId.delete(linkId);
+    });
+  topicsInFlightByLinkId.set(linkId, p);
+  return p;
+}
+
 export function renderCurriculumSurface(
   mount: HTMLElement,
   session: ActiveTeacher,
-  deps: CurriculumSurfaceDeps = { listClasses: DEFAULT_LIST_CLASSES },
+  deps: CurriculumSurfaceDeps = {
+    listClasses: DEFAULT_LIST_CLASSES,
+    integrations: null,
+    assignments: null,
+  },
 ): void {
+  const integrations = deps.integrations ?? null;
+  const assignments = deps.assignments ?? null;
   const doc = mount.ownerDocument;
 
   const welcome = doc.createElement("h2");
@@ -296,6 +399,8 @@ export function renderCurriculumSurface(
       lesson,
       session,
       listClasses: deps.listClasses,
+      integrations,
+      assignments,
       onConfirm: (summary) => {
         refreshAssignControl(card, lesson);
         showSuccess(successBanner, summary);
@@ -308,8 +413,10 @@ export function renderCurriculumSurface(
   }
   applyFilters();
 
-  // Prefetch classes so the dialog opens with the class list ready.
+  // Prefetch classes and their LMS link status so the dialog opens
+  // with the class list and the LMS-linked class row shape ready.
   void ensureClasses(session.uid, deps.listClasses);
+  void ensureClassLinks(session.uid, integrations);
 
   const returnLink = doc.createElement("a");
   returnLink.href = "/";
@@ -460,11 +567,21 @@ type OpenDialogInput = {
   readonly lesson: SurfaceableLesson;
   readonly session: ActiveTeacher;
   readonly listClasses: ListClasses;
+  readonly integrations: IntegrationsDeps | null;
+  readonly assignments: AssignmentsCallables | null;
   readonly onConfirm: (summary: string) => void;
 };
 
 async function openDialog(input: OpenDialogInput): Promise<void> {
-  const { doc, lesson, session, listClasses, onConfirm } = input;
+  const {
+    doc,
+    lesson,
+    session,
+    listClasses,
+    integrations,
+    assignments,
+    onConfirm,
+  } = input;
 
   const overlay = doc.createElement("div");
   overlay.className = "shell-assign-overlay";
@@ -534,7 +651,10 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   loading.textContent = "Loading your classes";
   body.appendChild(loading);
 
-  await ensureClasses(session.uid, listClasses);
+  await Promise.all([
+    ensureClasses(session.uid, listClasses),
+    ensureClassLinks(session.uid, integrations),
+  ]);
   if (!overlay.isConnected) return;
   body.removeChild(loading);
 
@@ -571,9 +691,16 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
             time: sessionPreferences.releaseTime,
             topic: sessionPreferences.topic,
             points: DEFAULT_POINTS,
+            publishToLms: false,
+            lmsTopicId: sessionPreferences.lmsTopicId,
           },
     );
   }
+
+  const linksByClassId =
+    cachedClassLinks && cachedClassLinks.uid === session.uid
+      ? cachedClassLinks.linksByClassId
+      : new Map<string, IntegrationsClassLink>();
 
   const rowsHost = doc.createElement("div");
   rowsHost.className = "shell-assign-rows";
@@ -588,22 +715,53 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
   };
 
   for (const c of classes) {
-    rowsHost.appendChild(renderRow(doc, c, rowState, updateConfirmState));
+    const link = linksByClassId.get(c.id) ?? null;
+    rowsHost.appendChild(
+      renderRow(doc, c, rowState, updateConfirmState, link, integrations),
+    );
   }
   updateConfirmState();
 
+  // Guard against double-clicks / repeated submissions. A second click
+  // before the certified lifecycle resolves is a no-op; the callable
+  // registers a stable assignmentId per (lesson, class, session-open) so
+  // any callable replay is idempotent server-side, but preventing a
+  // second dispatch keeps the client-side outcome accounting honest.
+  let submissionInFlight = false;
   confirm.addEventListener("click", () => {
-    // Persist to session memory.
+    if (submissionInFlight) return;
+    submissionInFlight = true;
+    confirm.disabled = true;
+    confirm.setAttribute("aria-busy", "true");
+
+    // Persist row state so revisit-in-place works when the dialog is
+    // reopened. This is the "temporary in-dialog form state" the sprint
+    // authorizes retaining in session memory; the authoritative record
+    // is the persistent LyfeLabz assignment produced below.
     const stored: Assignment = { rows: new Map() };
     let enabledCount = 0;
     let firstEnabledTime = "";
     let firstEnabledTopic = "";
+    let firstEnabledLmsTopicId = "";
+    type EnabledRow = {
+      readonly classId: string;
+      readonly cfg: RowConfig;
+      readonly link: IntegrationsClassLink | null;
+    };
+    const enabledRows: EnabledRow[] = [];
     for (const [cid, cfg] of rowState) {
       stored.rows.set(cid, { ...cfg });
       if (cfg.enabled) {
         enabledCount += 1;
         if (!firstEnabledTime) firstEnabledTime = cfg.time;
         if (!firstEnabledTopic && cfg.topic) firstEnabledTopic = cfg.topic;
+        if (!firstEnabledLmsTopicId && cfg.lmsTopicId)
+          firstEnabledLmsTopicId = cfg.lmsTopicId;
+        enabledRows.push({
+          classId: cid,
+          cfg,
+          link: linksByClassId.get(cid) ?? null,
+        });
       }
     }
     if (enabledCount === 0) {
@@ -613,15 +771,49 @@ async function openDialog(input: OpenDialogInput): Promise<void> {
     }
     if (firstEnabledTime) sessionPreferences.releaseTime = firstEnabledTime;
     if (firstEnabledTopic) sessionPreferences.topic = firstEnabledTopic;
+    if (firstEnabledLmsTopicId)
+      sessionPreferences.lmsTopicId = firstEnabledLmsTopicId;
 
-    const summary =
-      enabledCount === 0
-        ? `${lesson.title}: no classes selected. Assignment removed.`
-        : enabledCount === 1
+    // No selected classes -> no assignment lifecycle to run.
+    if (enabledCount === 0) {
+      close();
+      onConfirm(`${lesson.title}: no classes selected. Assignment removed.`);
+      return;
+    }
+
+    // No callable seam wired -> UI-only lightweight harness path. The
+    // dialog still renders the "return, do not redirect" confirmation
+    // that ASSIGN_EXPERIENCE.md §7 requires. No LMS publication is
+    // attempted because there is no authoritative assignment ID to bind
+    // it to; this preserves the Sprint 8D.1 rule that LMS publication
+    // never runs before a successful LyfeLabz publication.
+    if (assignments === null) {
+      close();
+      const summary =
+        enabledCount === 1
           ? `Assigned ${lesson.title} to 1 class.`
           : `Assigned ${lesson.title} to ${enabledCount} classes.`;
+      onConfirm(summary);
+      return;
+    }
+
     close();
-    onConfirm(summary);
+    // Optimistic quiet-confirmation follows §7's "return, do not
+    // redirect" rule. The final per-class outcomes replace the pending
+    // line once the certified lifecycle resolves.
+    onConfirm(
+      enabledCount === 1
+        ? `Assigning ${lesson.title} to 1 class.`
+        : `Assigning ${lesson.title} to ${enabledCount} classes.`,
+    );
+    void runAssignmentLifecycle({
+      lesson,
+      teacherUid: session.uid,
+      enabledRows,
+      assignments,
+      integrations,
+      onConfirm,
+    });
   });
 
   try {
@@ -636,6 +828,8 @@ function renderRow(
   cls: ClassSummary,
   rowState: Map<string, RowConfig>,
   onChange: () => void,
+  link: IntegrationsClassLink | null,
+  integrations: IntegrationsDeps | null,
 ): HTMLElement {
   const cfg = rowState.get(cls.id);
   if (!cfg) throw new Error(`missing row state for class ${cls.id}`);
@@ -644,6 +838,11 @@ function renderRow(
   row.className = "shell-assign-row";
   row.setAttribute("data-testid", `assign-row-${cls.id}`);
   row.setAttribute("data-class-id", cls.id);
+  if (link) {
+    row.setAttribute("data-lms-linked", "true");
+    row.setAttribute("data-lms-link-id", link.linkId);
+    row.setAttribute("data-lms-provider", link.providerId);
+  }
 
   // Enabled checkbox + class identity.
   const header = doc.createElement("label");
@@ -692,17 +891,76 @@ function renderRow(
   });
   fields.appendChild(timeInput.wrapper);
 
-  const topicInput = fieldInput(doc, {
-    id: `assign-row-topic-${cls.id}`,
-    label: "Google Classroom topic",
-    type: "text",
-    value: cfg.topic,
-    placeholder: "None",
-    onInput: (v) => {
-      cfg.topic = v;
-    },
-  });
-  fields.appendChild(topicInput.wrapper);
+  // For LMS-linked classes, the Google Classroom topic field is a
+  // populated dropdown per ASSIGN_EXPERIENCE.md §5 ("LMS-linked class
+  // row shape"). For non-LMS classes the plain-text preference input is
+  // preserved so Sprint 6E's remembered-topic behavior is unchanged.
+  let topicInput: { wrapper: HTMLElement; input: HTMLInputElement } | null =
+    null;
+  let lmsTopicSelect: HTMLSelectElement | null = null;
+  if (link && integrations !== null) {
+    const wrapper = doc.createElement("label");
+    wrapper.className = "shell-assign-field shell-assign-lms-topic-field";
+    const caption = doc.createElement("span");
+    caption.className = "shell-assign-field-label";
+    caption.textContent = "Google Classroom topic";
+    wrapper.appendChild(caption);
+    const select = doc.createElement("select");
+    select.className = "shell-assign-lms-topic-select";
+    select.setAttribute("data-testid", `assign-row-lms-topic-${cls.id}`);
+    const noneOption = doc.createElement("option");
+    noneOption.value = "";
+    noneOption.textContent = "No topic";
+    select.appendChild(noneOption);
+    const loadingOption = doc.createElement("option");
+    loadingOption.value = "__loading";
+    loadingOption.textContent = "Loading topics";
+    loadingOption.disabled = true;
+    loadingOption.selected = true;
+    select.appendChild(loadingOption);
+    select.addEventListener("change", () => {
+      const v = select.value;
+      cfg.lmsTopicId = v === "__loading" ? "" : v;
+    });
+    wrapper.appendChild(select);
+    fields.appendChild(wrapper);
+    lmsTopicSelect = select;
+    void ensureTopics(link.linkId, integrations).then(() => {
+      const topics = cachedTopicsByLinkId.get(link.linkId) ?? [];
+      // Populate the select with the resolved topics. If the topic
+      // callable fails (either operationally not-yet-provisioned per
+      // PDR-020 §10.3 or an upstream error per §8), the "No topic"
+      // option remains the only usable choice; the row stays functional.
+      loadingOption.remove();
+      for (const t of topics) {
+        const opt = doc.createElement("option");
+        opt.value = t.lmsTopicId;
+        opt.textContent = t.name;
+        select.appendChild(opt);
+      }
+      if (
+        cfg.lmsTopicId &&
+        topics.some((t) => t.lmsTopicId === cfg.lmsTopicId)
+      ) {
+        select.value = cfg.lmsTopicId;
+      } else {
+        select.value = "";
+        cfg.lmsTopicId = "";
+      }
+    });
+  } else {
+    topicInput = fieldInput(doc, {
+      id: `assign-row-topic-${cls.id}`,
+      label: "Google Classroom topic",
+      type: "text",
+      value: cfg.topic,
+      placeholder: "None",
+      onInput: (v) => {
+        cfg.topic = v;
+      },
+    });
+    fields.appendChild(topicInput.wrapper);
+  }
 
   const pointsInput = fieldInput(doc, {
     id: `assign-row-points-${cls.id}`,
@@ -717,17 +975,50 @@ function renderRow(
   });
   fields.appendChild(pointsInput.wrapper);
 
+  // Sprint 8D authorized addition. The publish toggle is present only
+  // for LMS-linked rows per ASSIGN_EXPERIENCE.md §5. It is off by
+  // default until the teacher opts in for that class (PDR-019a
+  // "integration is opt-in per teacher, per class, per action").
+  let publishCheckbox: HTMLInputElement | null = null;
+  if (link && integrations !== null) {
+    const publishWrapper = doc.createElement("label");
+    publishWrapper.className = "shell-assign-field shell-assign-lms-publish-field";
+    publishCheckbox = doc.createElement("input");
+    publishCheckbox.type = "checkbox";
+    publishCheckbox.checked = cfg.publishToLms;
+    publishCheckbox.setAttribute(
+      "data-testid",
+      `assign-row-lms-publish-${cls.id}`,
+    );
+    publishCheckbox.setAttribute(
+      "aria-label",
+      `Also publish ${cls.title} to Google Classroom`,
+    );
+    publishWrapper.appendChild(publishCheckbox);
+    const publishLabel = doc.createElement("span");
+    publishLabel.className = "shell-assign-field-label";
+    publishLabel.textContent = "Also publish to Google Classroom";
+    publishWrapper.appendChild(publishLabel);
+    publishCheckbox.addEventListener("change", () => {
+      cfg.publishToLms = publishCheckbox!.checked;
+    });
+    fields.appendChild(publishWrapper);
+  }
+
   const setRowEnabled = (enabled: boolean): void => {
     cfg.enabled = enabled;
     row.setAttribute("data-enabled", enabled ? "true" : "false");
     row.classList.toggle("shell-assign-row-disabled", !enabled);
-    for (const el of [
+    const controls: HTMLElement[] = [
       dateInput.input,
       timeInput.input,
-      topicInput.input,
       pointsInput.input,
-    ]) {
-      el.disabled = !enabled;
+    ];
+    if (topicInput) controls.push(topicInput.input);
+    if (lmsTopicSelect) controls.push(lmsTopicSelect);
+    if (publishCheckbox) controls.push(publishCheckbox);
+    for (const el of controls) {
+      (el as HTMLInputElement | HTMLSelectElement).disabled = !enabled;
     }
     onChange();
   };
@@ -773,6 +1064,211 @@ function fieldInput(
 }
 
 // -----------------------------------------------------------------------------
+// Authoritative assignment lifecycle
+// -----------------------------------------------------------------------------
+
+// Canonical LyfeLabz curriculum resources are static per PDR-007 and are
+// not versioned per lesson today; every assignment created by the Assign
+// Experience references the sole "v1" lesson version so the callable
+// contract's required `lessonVersion` field is populated with a stable
+// value. When per-lesson versioning ships, the manifest becomes the
+// authoritative source of this value.
+const DEFAULT_LESSON_VERSION = "v1";
+
+// Deterministic client-side assignmentId for a (teacher, lesson, class,
+// dialog-open) tuple. The server-side callable is idempotent against
+// replays of the same id (assignmentsCreateDraft §4 "Idempotency"), so a
+// unique id per teacher-initiated confirmation keeps repeat submissions
+// from silently minting duplicate records while still guaranteeing a
+// fresh record for each distinct confirmation moment. Constrained to the
+// callable's URL-safe pattern.
+function mintAssignmentId(
+  teacherUid: string,
+  lessonSlug: string,
+  classId: string,
+  nonce: string,
+): string {
+  const safe = (v: string): string =>
+    v.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase();
+  const raw = `a-${safe(lessonSlug)}-${safe(classId)}-${safe(teacherUid)}-${safe(nonce)}`;
+  // Callable enforces max 64 chars; trim from the front (which repeats
+  // stable teacher context) and keep the tail (which includes the fresh
+  // per-confirm nonce) so replay idempotency is preserved.
+  return raw.length <= 64 ? raw : raw.slice(raw.length - 64);
+}
+
+function mintNonce(): string {
+  const g = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
+  if (g && typeof g.randomUUID === "function") {
+    return g.randomUUID().replace(/-/g, "").slice(0, 12);
+  }
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+}
+
+type PerClassOutcome = {
+  readonly classId: string;
+  readonly lyfelabzAssigned: boolean;
+  readonly lmsRequested: boolean;
+  readonly lmsSucceeded: boolean;
+};
+
+// Run the certified per-class lifecycle:
+//   1. assignmentsCreateDraft  (persistent record; server-authoritative)
+//   2. assignmentsPublish      (advances lifecycle to `published`)
+//   3. lmsAssignmentsPublish   (side effect, gated on 1+2 success and
+//                               teacher opt-in for that class)
+//
+// Independent per-class outcomes: a failure for one class never erases
+// or reverses a success for another. LMS publication is skipped for any
+// class whose LyfeLabz assignment did not reach `published`; the
+// authoritative record is never disturbed by an LMS-side failure. This
+// is the load-bearing invariant PDR-019d records and PDR-020c preserves.
+async function runAssignmentLifecycle(input: {
+  readonly lesson: SurfaceableLesson;
+  readonly teacherUid: string;
+  readonly enabledRows: readonly {
+    readonly classId: string;
+    readonly cfg: RowConfig;
+    readonly link: IntegrationsClassLink | null;
+  }[];
+  readonly assignments: AssignmentsCallables;
+  readonly integrations: IntegrationsDeps | null;
+  readonly onConfirm: (summary: string) => void;
+}): Promise<void> {
+  const { lesson, teacherUid, enabledRows, assignments, integrations, onConfirm } =
+    input;
+  const nonce = mintNonce();
+  const lyfelabzUrl =
+    typeof window !== "undefined" && window.location
+      ? `${window.location.origin}${lesson.href}`
+      : lesson.href;
+
+  const outcomes = await Promise.all(
+    enabledRows.map(async (row): Promise<PerClassOutcome> => {
+      const assignmentId = mintAssignmentId(
+        teacherUid,
+        lesson.slug,
+        row.classId,
+        nonce,
+      );
+      const wantsLms =
+        row.link !== null && row.cfg.publishToLms && integrations !== null;
+
+      // Step 1: authoritative draft. If this fails, no publish and no
+      // LMS side effect.
+      try {
+        await assignments.createDraft({
+          assignmentId,
+          classId: row.classId,
+          lessonSlug: lesson.slug,
+          lessonVersion: DEFAULT_LESSON_VERSION,
+          mode: "classroom",
+          title: lesson.title,
+        });
+      } catch {
+        return {
+          classId: row.classId,
+          lyfelabzAssigned: false,
+          lmsRequested: wantsLms,
+          lmsSucceeded: false,
+        };
+      }
+
+      // Step 2: advance to published. The certified LyfeLabz assignment
+      // record must reach `published` before any LMS-side publication
+      // may be issued.
+      try {
+        await assignments.publish({ assignmentId });
+      } catch {
+        return {
+          classId: row.classId,
+          lyfelabzAssigned: false,
+          lmsRequested: wantsLms,
+          lmsSucceeded: false,
+        };
+      }
+
+      // Step 3: optional LMS publication using the authoritative id.
+      if (!wantsLms || row.link === null || integrations === null) {
+        return {
+          classId: row.classId,
+          lyfelabzAssigned: true,
+          lmsRequested: false,
+          lmsSucceeded: false,
+        };
+      }
+      const lmsTopicId = row.cfg.lmsTopicId;
+      try {
+        const outcome = await integrations.callables.publishAssignment({
+          assignmentId,
+          linkId: row.link.linkId,
+          lyfelabzAssignmentUrl: lyfelabzUrl,
+          title: lesson.title,
+          ...(lmsTopicId !== "" ? { lmsTopicId } : {}),
+        });
+        return {
+          classId: row.classId,
+          lyfelabzAssigned: true,
+          lmsRequested: true,
+          lmsSucceeded: outcome.status === "succeeded",
+        };
+      } catch {
+        return {
+          classId: row.classId,
+          lyfelabzAssigned: true,
+          lmsRequested: true,
+          lmsSucceeded: false,
+        };
+      }
+    }),
+  );
+
+  onConfirm(summarizeOutcomes(lesson, outcomes));
+}
+
+function summarizeOutcomes(
+  lesson: SurfaceableLesson,
+  outcomes: readonly PerClassOutcome[],
+): string {
+  const total = outcomes.length;
+  const assigned = outcomes.filter((o) => o.lyfelabzAssigned).length;
+  const notAssigned = total - assigned;
+  const lmsRequested = outcomes.filter((o) => o.lmsRequested).length;
+  const lmsSucceeded = outcomes.filter((o) => o.lmsSucceeded).length;
+  const lmsFailed = lmsRequested - lmsSucceeded;
+
+  // Base LyfeLabz-scoped line. Independent per-class success/failure is
+  // reported alongside the aggregate count so a single failure never
+  // silently erases the successes for other classes.
+  let base: string;
+  if (assigned === total && total === 1) {
+    base = `Assigned ${lesson.title} to 1 class.`;
+  } else if (assigned === total) {
+    base = `Assigned ${lesson.title} to ${assigned} classes.`;
+  } else if (assigned === 0) {
+    base = `${lesson.title}: LyfeLabz assignment was not created. Google Classroom publication was not attempted.`;
+  } else {
+    base = `Assigned ${lesson.title} to ${assigned} of ${total} classes. ${notAssigned} did not save.`;
+  }
+
+  if (lmsRequested === 0) return base;
+  if (assigned === 0) return base;
+
+  // LMS-side outcome line follows the "return, do not redirect" and
+  // "authoritative LyfeLabz record" rules of §7. It never blames the
+  // teacher and never implies the LyfeLabz assignment was rolled back.
+  let lmsLine: string;
+  if (lmsFailed === 0) {
+    lmsLine = "Publishing to Google Classroom succeeded.";
+  } else if (lmsSucceeded === 0) {
+    lmsLine = "Publishing to Google Classroom did not succeed.";
+  } else {
+    lmsLine = `Publishing to Google Classroom succeeded for ${lmsSucceeded} class${lmsSucceeded === 1 ? "" : "es"} and did not succeed for ${lmsFailed}.`;
+  }
+  return `${base} ${lmsLine}`;
+}
+
+// -----------------------------------------------------------------------------
 // Test helpers
 // -----------------------------------------------------------------------------
 
@@ -782,6 +1278,11 @@ export function _resetCurriculumSessionStateForTest(): void {
   sessionAssignments.clear();
   cachedClasses = null;
   classesInFlight = null;
+  cachedClassLinks = null;
+  classLinksInFlight = null;
+  cachedTopicsByLinkId.clear();
+  topicsInFlightByLinkId.clear();
   sessionPreferences.releaseTime = DEFAULT_RELEASE_TIME;
   sessionPreferences.topic = "";
+  sessionPreferences.lmsTopicId = "";
 }

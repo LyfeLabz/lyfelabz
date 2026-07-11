@@ -215,6 +215,99 @@ service cloud.firestore {
       );
     }
 
+    // ---------- lmsProviders/{providerId} ----------
+    //
+    // LMS Integration Foundation (PDR-020c, Data Model §2.9.a). Closed
+    // reference set of supported LMS providers. Read-only reference data
+    // that carries no PII and no token material. Any authenticated caller
+    // may get and list so the Teacher Workspace can render the
+    // Settings > Integrations surface without hardcoding provider
+    // identifiers on the client. Every write is server-only.
+    match /lmsProviders/{providerId} {
+      allow get, list: if isSignedIn();
+    }
+
+    // ---------- lmsConnections/{connectionId} ----------
+    //
+    // LMS Integration Foundation (PDR-020c, Data Model §2.9.a,
+    // Amendment §3.3). One document per (teacher, provider) pair. The
+    // token reference field is server-only per PDR-019e; even the owning
+    // teacher receives only the mirror-visible fields, and the token
+    // itself never lives in Firestore. The mirror record is scoped to the
+    // owning teacher through the denormalized `teacherId` field per
+    // Amendment §3.4.
+    //
+    // Reads:
+    //   - `get`: the owning teacher may read their own connection. The
+    //     `tokenRef` field is present on the record but is not a token; it
+    //     is an opaque server-side pointer. The token store never resolves
+    //     it for a client-originated read.
+    //   - `list`: the owning teacher may list only connections they own
+    //     (teacherId equality).
+    //
+    // Writes:
+    //   - All client writes remain denied. `lmsConnectionsBegin`,
+    //     `lmsConnectionsComplete`, `lmsConnectionsDescribe`, and
+    //     `lmsConnectionsDisconnect` write through the Admin SDK from the
+    //     Cloud Function trust boundary and therefore bypass Rules.
+    match /lmsConnections/{connectionId} {
+      allow get: if isSignedIn()
+        && resource.data.teacherId == request.auth.uid;
+      allow list: if isSignedIn()
+        && resource.data.teacherId == request.auth.uid;
+    }
+
+    // ---------- lmsClassLinks/{linkId} ----------
+    //
+    // LMS Integration Foundation (PDR-020c, Data Model §2.9.a,
+    // Amendment §3.3). One document per (LyfeLabz class, LMS class) pair.
+    // Owner-teacher-scoped through the denormalized `ownerUid` per
+    // Amendment §3.4.
+    //
+    // Reads:
+    //   - `get`: the owning teacher may read a link for a class they own.
+    //     Ownership is authorized on the document's `ownerUid`
+    //     denormalization; the class ownership immutability guarantee
+    //     (PDR-005) ensures this cannot drift.
+    //   - `list`: the owning teacher may list only links they own.
+    //
+    // Writes:
+    //   - All client writes remain denied. `lmsClassesImport` writes
+    //     through the Admin SDK from the Cloud Function trust boundary.
+    match /lmsClassLinks/{linkId} {
+      allow get: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid;
+      allow list: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid;
+    }
+
+    // ---------- lmsAssignmentPublications/{publicationId} ----------
+    //
+    // LMS Integration Foundation (Sprint 8D authorized scope expansion,
+    // Data Model §2.9.a, Amendment §3.3). One document per publication
+    // attempt from a LyfeLabz assignment to an LMS class. The publishing
+    // teacher is the sole client-side reader per Amendment §3.3; the
+    // record is scoped to the owning teacher through the denormalized
+    // `ownerUid` per Amendment §3.4.
+    //
+    // Reads:
+    //   - `get`: the publishing teacher may read a publication record
+    //     they authored. Ownership is authorized on the document's
+    //     `ownerUid` denormalization.
+    //   - `list`: the publishing teacher may list only publications
+    //     they authored.
+    //
+    // Writes:
+    //   - All client writes remain denied. `lmsAssignmentsPublish`
+    //     writes through the Admin SDK from the Cloud Function trust
+    //     boundary and therefore bypasses Rules.
+    match /lmsAssignmentPublications/{publicationId} {
+      allow get: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid;
+      allow list: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid;
+    }
+
     // ---------- auditEvents/{eventId} ----------
     //
     // Append-only server-write, server-read per Security Model §11 and

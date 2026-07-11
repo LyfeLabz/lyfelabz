@@ -977,9 +977,9 @@ Roadmap items in the architecture document represent possible futures. Some are 
 
 **District deployments.** Enabled by school and district identifiers being first-class references from day one, even when only one school is live. Reconsidered when the first district commits.
 
-**Google Classroom integration.** Enabled by enrollment being a source-aware operation (join code, roster sync, manual invite) so roster sync is additive. Reconsidered when demand is documented.
+**Google Classroom integration.** Enabled by enrollment being a source-aware operation (join code, roster sync, manual invite) so roster sync is additive. Ratification of `LMS_INTEGRATION_ARCHITECTURE.md` and `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` records the canonical architecture. Implementation is authorized under PDR-020 (LMS Phase Re-Sequencing and Initial Scope), which supersedes the prior Phase 8 gating for the narrow initial scope named in PDR-020. Google Classroom is the initial implementation target under PDR-019h; provider neutrality is preserved as a permanent architectural property.
 
-**Canvas integration.** Enabled by identity abstraction and stable class identifiers. Reconsidered when demand is documented.
+**Canvas integration.** Enabled by identity abstraction and stable class identifiers. Reconsidered when demand is documented. Any Canvas integration inherits the vendor-neutral architecture recorded in `LMS_INTEGRATION_ARCHITECTURE.md` and is added as a second adapter under PDR-019; it does not rewrite the core.
 
 **Parent accounts.** Enabled by ownership-first data design and by attaching a consent object to the student record so parent access is additive.
 
@@ -1266,7 +1266,279 @@ Limitations:
 
 ---
 
+## PDR-019: LMS Integration Posture
+
+### Decision
+
+LyfeLabz integrates with external learning management systems as a complement, never as a replacement. LMS integration is a vendor-neutral extension of the certified domains, opt-in per teacher, per class, and per action, manual-first, and server-authoritative. Google Classroom is the initial provider. The canonical architecture is recorded in `LMS_INTEGRATION_ARCHITECTURE.md`, its teacher-facing shape in `LMS_EXPERIENCE.md`, and the ratified amendments to the certified architecture in `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md`.
+
+### Status
+
+Accepted. Load-bearing posture for every LMS integration LyfeLabz will ever ship. Implementation of the narrow initial scope described in PDR-020 is authorized under that record. The load-bearing sub-decisions in this record (complement not replace, authority boundaries, manual-first, one-way publication, server-only tokens, no new roles, additive schema, vendor-neutral core, class-scoped enrollment source, ownership never silently reassigns, privacy not widened, Present Mode not touched) are unchanged by PDR-020 and remain the permanent guardrails of every LMS sprint.
+
+### Background
+
+PDR-015 records Google Classroom and Canvas integrations as reachable-but-deferred capabilities. PDR-018a records that LyfeLabz complements existing LMS and SIS platforms rather than replacing them. `TEACHER_EXPERIENCE_PHILOSOPHY.md` §4.7 anticipates a dedicated integration architecture pass gated on documented demand. During Sprint 7 planning, an ad hoc Google Classroom import proposal was correctly rejected because the certified architecture required a formal integration architecture first.
+
+The correct response was to author that architecture, review its risks, and reconcile the certified documentation. `LMS_INTEGRATION_ARCHITECTURE.md`, `LMS_EXPERIENCE.md`, and `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` do that work. This record captures the load-bearing posture the platform adopts as a result.
+
+The posture is small in principle. It is large in scope, because it touches roadmap ordering, the Firestore Data Model, the Firebase Security Model, the Cloud Function Charter, the Platform Contracts, and several teacher-facing product documents. Recording the posture as a dedicated PDR closes a class of drift attempts: "the integration is different, so PDR-X does not apply." Every rule the integration inherits from PDR-004, PDR-005, PDR-010, PDR-011, PDR-012, PDR-015, PDR-017, and PDR-018 is re-anchored here so a future contributor cannot claim ambiguity.
+
+### Alternatives Considered
+
+- **Fold the integration posture into PDR-015 alone.** Rejected. PDR-015 is a framework record about reachable expansions. The integration surface requires its own load-bearing rules that outlast the reconsideration criterion.
+- **Add the posture to `TEACHER_EXPERIENCE_PHILOSOPHY.md` only.** Rejected. Philosophy documents describe intent; PDRs record locked commitments with reconsideration criteria. The complement-not-replace commitment is identity-level and belongs in the decision log alongside PDR-001 and PDR-018.
+- **Author a separate PDR per sub-decision (server-only tokens, manual-first synchronization, one-way publication, no new roles).** Rejected as needlessly granular. The sub-decisions share a single motivating principle and are naturally read together.
+- **Defer authoring any PDR until the LMS phase begins.** Rejected. Ratifying the posture now is what makes the phase schedulable. Deferring it would recreate the ambiguity Sprint 7 exposed.
+
+### Decision
+
+**PDR-019a. Complement, do not replace.**
+
+- LyfeLabz complements the connected LMS. It never replaces it.
+- This is PDR-018a extended into the integration surface. Where PDR-018a and PDR-019a appear to conflict, PDR-018a controls and this record is amended.
+- LyfeLabz never markets itself as an LMS replacement, and no LMS integration sprint may propose surfaces that would move LyfeLabz toward being one.
+
+**PDR-019b. Authority boundaries.**
+
+- The LMS is authoritative for classroom identity, teacher ownership, and roster.
+- LyfeLabz is authoritative for LyfeLabz assignments, Practice/Classroom mode, Present Mode, Snapshot, and every learning interaction.
+- Conflicts between the LMS and the LyfeLabz mirror resolve through this rule. The mirror is never authoritative for the upstream, and the upstream is never authoritative for LyfeLabz-owned surfaces.
+
+**PDR-019c. Manual before automatic.**
+
+- Manual import and manual refresh are the Version 1 integration posture.
+- Automatic synchronization is a deferred, opt-in, reversible extension. It is never the default and it never ships silently.
+- Reconsideration of the automatic posture requires an amendment to `LMS_INTEGRATION_ARCHITECTURE.md`.
+
+**PDR-019d. One-way publication.**
+
+- LyfeLabz publishes to the LMS. The LMS never authors a LyfeLabz assignment record.
+- Publication is a side effect of the LyfeLabz assignment, not an alternate assign path. The Assign Experience remains the single canonical origin of assignment records.
+- Bidirectional publication is deliberately not on the roadmap and requires its own decision record.
+
+**PDR-019e. Server-only tokens.**
+
+- OAuth access tokens and refresh tokens are held server-side only.
+- Clients never hold, transmit, or observe an LMS token.
+- Token storage, rotation, and revocation are Cloud Function Charter concerns.
+
+**PDR-019f. No new roles, claims, or lifecycle fields.**
+
+- LMS integration introduces no new user role, no new custom claim key (`role` and `schoolId` remain the only claim keys), and no new authoritative lifecycle field on `users/{uid}`, `classes/{classId}`, `enrollments/{enrollmentId}`, `assignments/{assignmentId}`, or `submissions/{submissionId}`.
+- The closed role model in PDR-004, the lifecycle model in `PLATFORM_STATE_MACHINE.md`, and the claim shape in the Cloud Function Charter are unchanged.
+
+**PDR-019g. Additive schema evolution.**
+
+- Every Firestore change introduced by LMS integration is additive per the foundational "additive schema evolution" commitment recorded in this document.
+- No existing collection is renamed, restructured, or relocated. No existing field is renamed.
+- The mirror collections (`lmsProviders`, `lmsConnections`, `lmsClassLinks`, `lmsRosterLinks`, `lmsAssignmentPublications`) are subordinate to the certified records they mirror.
+
+**PDR-019h. Vendor-neutral core, vendor-specific edges.**
+
+- The platform surface (session, callables, storage, security) speaks in LyfeLabz concepts.
+- The LMS-specific adapter translates. A second LMS is added by writing a second adapter; it never rewrites the core.
+- Google Classroom is the first implementation target. Canvas, Schoology, and Teams for Education are reserved as future targets under PDR-015's reconsideration criteria.
+
+**PDR-019i. Enrollment source is a class property.**
+
+- A class is either LMS-linked or not. A teacher who imports a class through the LMS may not use join codes for that class.
+- Redeeming a join code against a linked class is refused server-side with a plain-language error.
+- Unlinking a class returns it to the join-code path and preserves the historical mirror for audit. Unlinking never deletes an enrollment record.
+
+**PDR-019j. Ownership never silently reassigns.**
+
+- If the LyfeLabz-owning teacher is no longer the LMS teacher of record, the mirror connection becomes stale and the teacher sees a plain-language message.
+- LyfeLabz never reassigns class ownership in response to an LMS change. Ownership transfers remain the audited Platform Administrator path recorded by PDR-005.
+
+**PDR-019k. Privacy is not widened.**
+
+- LMS integration does not widen the PDR-011 collection surface.
+- The exclusion list in `LMS_INTEGRATION_ARCHITECTURE.md` §9.4 is load-bearing. Guardian contact information, LMS-computed grades, disciplinary records, attendance records, non-LyfeLabz submissions, teacher LMS notes, and LMS announcements are never copied.
+
+**PDR-019l. Present Mode is not touched.**
+
+- Present Mode remains a structurally separate surface with no Firebase SDK on the canonical instructional origin.
+- No LMS token, OAuth flow, LMS bundle, or LMS-scoped payload reaches the canonical origin.
+- This preserves PDR-018b and PDR-018c.
+
+### Rationale
+
+The dedicated posture closes drift by naming which certified decisions the integration inherits and which sub-decisions are unique to it. It also makes reconsideration criteria explicit: the integration surface can grow as documented demand accumulates, but the load-bearing rules (complement not replace, manual first, one-way publication, server-only tokens, no new roles) are foundational.
+
+Naming the posture at the decision-log level is the natural extension of PDR-018 into the integration surface. PDR-018 named what the teacher platform is not; PDR-019 names what the LMS integration is not. Both records preserve identity across future sprints.
+
+### Consequences
+
+Benefits:
+
+- Every LMS integration decision has a canonical anchor. Future sprints locate themselves inside PDR-019 before proposing surface shape.
+- The certified domains (Identity, Schools, Teachers, Classrooms, Enrollments, Assignments, Submissions, Analytics, Administrator Platform) remain unchanged in identity.
+- Vendor neutrality is preserved permanently. A second LMS ships as a second adapter, not as an architectural rewrite.
+- Teacher trust is preserved: no silent import, no silent refresh, no silent grade export, no silent ownership reassignment.
+- The teacher who does not use an LMS sees no change to any workflow. The join-code enrollment path remains the default.
+
+Limitations:
+
+- Some feature requests (automatic synchronization at Version 1, LMS-authored LyfeLabz assignments, LMS grade export as a first-class LyfeLabz surface) are declined and referred to their own future decision records.
+- Multi-account teachers (two Google Workspace identities) hold two LyfeLabz identities. Merging identities remains a PDR-004 concern.
+- LMS integration is scheduled ahead of Phase 8 under PDR-020 for the narrow initial scope named there. Every load-bearing sub-decision in this record (a through l) applies to the initial scope without exception.
+
+### Future Reconsideration Criteria
+
+- **PDR-019a** reconsidered only if PDR-001 or PDR-018a is redefined by the platform's owners.
+- **PDR-019b** reconsidered only when a new upstream system (SIS, district identity provider) requires a load-bearing authority reassignment. Any change is authored as an amendment to `LMS_INTEGRATION_ARCHITECTURE.md`.
+- **PDR-019c** reconsidered when manual synchronization has been used at scale and its edge cases are known. Automatic synchronization requires an amendment to `LMS_INTEGRATION_ARCHITECTURE.md`.
+- **PDR-019d** reconsidered only through a new decision record specifically authorizing bidirectional publication. It does not become negotiable through implementation.
+- **PDR-019e** reconsidered only if the Cloud Function Charter's server-only trust boundary itself is redefined.
+- **PDR-019f** and **PDR-019g** reconsidered only through the formal-review path already required for changes to PDR-004 and to the additive schema evolution commitment.
+- **PDR-019h** reconsidered only if a second provider's identity or API model requires a rewrite of the core rather than an adapter. Growth pressure alone is not sufficient.
+- **PDR-019i** reconsidered only when a proven, staged, reversible dual-source enrollment path is authored. Growth pressure alone is not sufficient.
+- **PDR-019j** reconsidered only if PDR-005's ownership immutability is redefined.
+- **PDR-019k** reconsidered only under a change to PDR-011.
+- **PDR-019l** reconsidered only if PDR-018b or PDR-018c is redefined.
+
+Reconsideration of any PDR-019 sub-decision requires the same level of scrutiny as its parent PDR.
+
+---
+
+## PDR-020: LMS Phase Re-Sequencing and Initial Scope
+
+### Decision
+
+The LMS Integration Foundation phase is advanced ahead of the Administrator Platform phase for a narrow, defined initial scope. Google Classroom is formally authorized as the initial LMS implementation target. Provider neutrality remains a permanent architectural property; Google Classroom being first is an implementation decision, not an architectural limitation.
+
+### Status
+
+Accepted. Authorizes implementation of the initial scope named below. Every load-bearing decision in PDR-019 continues to apply without exception.
+
+### Background
+
+`TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §4 originally sequenced Phase 9 (LMS Integration Foundation) strictly after Phase 8 (Administrator Platform). `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` §7 listed Phase 5 (Assignment Foundation) and Phase 6 (Submission Foundation) certification, along with several operational prerequisites, as gates on implementation. That sequencing was correct at the moment PDR-019 was ratified.
+
+Product priorities have since changed. The Teacher Platform is preparing for a pilot in which teacher onboarding is meaningfully improved by importing existing Google Classroom classes rather than reconstructing them by hand. Leadership has approved advancing a narrowly scoped LMS Foundation ahead of the Administrator Platform on the following observations:
+
+- Teacher onboarding for pilot schools is the load-bearing adoption moment. Reducing setup friction at the point of first classroom construction has an outsized effect on whether the pilot succeeds.
+- Phase 8 (Administrator Platform) is the operational partner to the Teacher Platform. Its surfaces consolidate administrative work that today happens through direct callable invocation. Nothing in Phase 8 is a technical prerequisite for LMS class discovery or LMS class import.
+- Phase 7 (Analytics) is a derived, read-side domain that consumes upstream records. Nothing in Phase 7 is a technical prerequisite for the initial LMS scope.
+- Phases 5 (Assignment Foundation) and 6 (Submission Foundation) own the record shapes the LMS integration extends. Those phases have been certified complete and their exit criteria hold.
+
+Advancing Phase 9 before Phase 8 is therefore an implementation-sequence decision, not an architectural change. The certified domain chain remains linear; the order in which the domains ship is the concern of this record.
+
+### Alternatives Considered
+
+- **Preserve the original Phase 8 gate and defer the pilot.** Rejected. Teacher onboarding is the pilot's load-bearing moment. Deferring LMS integration would reshape the pilot around a compensating manual workflow that does not exist today.
+- **Ship a Google-specific integration outside the vendor-neutral core to move faster.** Rejected. Provider neutrality is preserved under PDR-019h as a permanent architectural property. A Google-only implementation would require rewriting the core when the second provider ships and would violate PDR-017's one-canonical-way commitment.
+- **Ship a broader initial scope (roster sync, assignment publication, refresh) alongside class import.** Rejected. Manual-first synchronization is preserved under PDR-019c. A broader initial scope would concentrate multiple novel surfaces in one release, raise the review burden past what a pilot can absorb, and create pressure to relax PDR-019c's manual-first commitment.
+- **Bundle Phase 8 into the pilot.** Rejected. Phase 8 is a substantial phase in its own right. Bundling would delay the pilot and introduce concurrent domain churn without a pilot-side justification.
+
+### Decision
+
+**PDR-020a. Google Classroom as the initial implementation target.**
+
+- Google Classroom is formally authorized as the first LMS implementation. It is chosen because the target market is already on Google Workspace for Education, because Google Classroom's roster and assignment concepts translate cleanly to LyfeLabz's certified concepts, and because the OAuth prompt is an expansion of a trust relationship the teacher already has under PDR-002.
+- Google Classroom being first is an implementation decision. It is not an architectural limitation. The platform remains vendor-neutral under PDR-019h. A second LMS ships as a second adapter, not as a rewrite of the core.
+
+**PDR-020b. Phase 9 is scheduled ahead of Phase 8.**
+
+- Phase 9 (LMS Integration Foundation) is scheduled to begin before Phase 8 (Administrator Platform).
+- The certified domain chain in `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §2 is not reordered. Phase 8 remains defined and reachable in its own right.
+- Advancing Phase 9 does not delete, compress, or redefine Phase 8. Administrator surfaces continue to be delivered as recorded in `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §4 (Phase 8), on their own sequence, after Phase 9's initial scope certifies.
+
+**PDR-020c. Approved initial scope.**
+
+The initial LMS scope authorized by this record contains only:
+
+- provider abstraction,
+- provider registry,
+- connection lifecycle,
+- secure infrastructure,
+- class discovery,
+- class import.
+
+The initial scope explicitly excludes:
+
+- roster synchronization,
+- assignment publication,
+- assignment refresh,
+- grade synchronization,
+- automatic synchronization,
+- background jobs,
+- webhooks,
+- Google Drive integration,
+- Gmail integration,
+- Calendar integration,
+- Canvas implementation,
+- Schoology implementation,
+- Microsoft Teams for Education implementation,
+- SIS integration,
+- district rollup.
+
+Every excluded capability remains reachable as its own subsequent sprint under the internal Phase 9 sequence recorded in `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` §8. Each excluded capability requires its own sprint specification. No excluded capability may be introduced by an implementation sprint that authorizes only the initial scope.
+
+**PDR-020d. Administrator Platform remains defined.**
+
+- Phase 8 (Administrator Platform) is not a prerequisite for the initial LMS scope. It remains defined and scheduled as a subsequent phase.
+- The absence of the Administrator Platform is not a substitute for administrative operations. Administrative operations continue to run through the callables already established in Phases 1 through 7, exactly as they do today.
+
+**PDR-020e. Analytics remains defined.**
+
+- Phase 7 (Analytics) is not a prerequisite for the initial LMS scope. Analytics reads across upstream records; it does not gate LMS class discovery or LMS class import.
+
+**PDR-020f. Provider neutrality is permanent.**
+
+- No Google-specific decision made under PDR-020 is permitted to become an architectural fact.
+- Every provider-specific concern lives inside the provider adapter; every provider-neutral concern lives inside the core.
+- A second LMS is added by writing a second adapter. It never rewrites the core. This is PDR-019h restated to prevent regression under implementation pressure.
+
+**PDR-020g. External systems remain authoritative for information they own.**
+
+- This principle is elevated to a permanent architectural rule. The connected LMS is authoritative for classroom identity, teacher ownership, enrollment, and roster. LyfeLabz is authoritative for instructional workflow, Present Mode, Snapshot, Assign, and every learning interaction.
+- Implementation never blurs these ownership boundaries. A mirror record never asserts authority over the upstream system. An upstream system never authors a LyfeLabz-owned record.
+
+**PDR-020h. Load-bearing PDR-019 sub-decisions remain in force.**
+
+- Every sub-decision in PDR-019 (a through l) applies to the initial scope without exception.
+- Where PDR-020 and PDR-019 appear to conflict, PDR-019 controls and this record is amended.
+- Where the LMS integration architecture and PDR-020 appear to conflict, the architecture controls and this record is amended.
+
+### Rationale
+
+Recording the re-sequencing as a dedicated PDR closes a class of drift attempts: "the LMS phase moved, so PDR-X no longer applies." Naming the initial scope explicitly prevents the sprint that lands class discovery and class import from silently expanding into roster synchronization, publication, or automatic refresh. Naming Google Classroom explicitly, while restating provider neutrality as permanent, prevents a future contributor from reading "Google Classroom is first" as "Google Classroom is the architecture."
+
+The re-sequencing is a product-priority decision. The architecture does not change. Every load-bearing rule in PDR-019 continues to apply. Every certified domain retains its ownership. The vendor-neutral core, the server trust boundary, the one-way publication rule, the manual-first synchronization posture, and the class-scoped enrollment-source rule are all preserved.
+
+### Consequences
+
+Benefits:
+
+- The pilot is unblocked at the load-bearing onboarding moment.
+- Teachers who already use Google Classroom can bring their classes into LyfeLabz without reconstructing them by hand.
+- The initial scope is narrow enough to review, certify, and operate without concentrating multiple novel surfaces in one release.
+- Provider neutrality remains a permanent architectural property.
+- Phase 8 remains defined and reachable; its scope is not compressed.
+
+Limitations:
+
+- Administrative work continues to run through direct callable invocation until Phase 8 certifies. This is a preservation of the current state, not a regression.
+- Roster synchronization, assignment publication, refresh, and every excluded capability remains unavailable under the initial scope. Each remains reachable as its own subsequent sprint.
+- The Google Cloud project OAuth client and its operational scaffolding must be provisioned before the first implementation sprint. This is recorded in the operational readiness section of `LMS_INTEGRATION_ARCHITECTURE.md`.
+
+### Future Reconsideration Criteria
+
+- **PDR-020a** reconsidered only when a second provider is formally authorized. A second provider does not remove Google Classroom as an initial target; it extends the provider set.
+- **PDR-020b** reconsidered only if pilot priorities change materially before the initial scope ships. After the initial scope certifies, PDR-020b becomes historical.
+- **PDR-020c** reconsidered only by an explicit expansion of the initial scope through a subsequent PDR or a subsequent sprint specification. Expansion by implementation is prohibited.
+- **PDR-020d** and **PDR-020e** reconsidered only if Phase 8 or Phase 7 becomes a technical prerequisite for a subsequent LMS sprint. Neither is a prerequisite for the initial scope.
+- **PDR-020f** reconsidered only if a second provider's identity or API model requires a rewrite of the core rather than an adapter. Growth pressure alone is not sufficient. This mirrors PDR-019h.
+- **PDR-020g** reconsidered only if the authority boundary in PDR-019b is redefined.
+- **PDR-020h** is not reconsidered; it is a restatement clause.
+
+---
+
 ## Change Log
 
 - 2026-07-07 - Initial platform decision record established.
 - 2026-07-09 - PDR-018 (Teacher Experience Surface Boundaries) added.
+- 2026-07-10 - PDR-019 (LMS Integration Posture) added. PDR-015 amended to reference the ratified LMS integration architecture.
+- 2026-07-10 - PDR-020 (LMS Phase Re-Sequencing and Initial Scope) added. PDR-015 and PDR-019 amended to remove the Phase 8 gate for the initial LMS scope. Google Classroom formally authorized as the initial LMS implementation target. Provider neutrality reaffirmed as a permanent architectural property.

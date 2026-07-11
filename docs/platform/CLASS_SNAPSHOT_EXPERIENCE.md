@@ -199,7 +199,7 @@ Snapshot composes with the other certified teacher surfaces. It does not overlap
 
 **Class workspace (spreadsheet).** The spreadsheet-style workspace lives one level deeper than Snapshot and is described in Teacher Journey §5 and §6 and Teacher Experience Philosophy §3.6. Snapshot never duplicates a spreadsheet capability. The spreadsheet never duplicates a Snapshot capability. They compose.
 
-**Google Classroom and PowerSchool.** Snapshot never reads from Google Classroom and never writes to Google Classroom. Snapshot never posts a grade, never records attendance, and never mutates a PowerSchool record. Snapshot lives alongside those tools. It does not integrate with them.
+**Google Classroom and PowerSchool.** Snapshot never reads from Google Classroom and never writes to Google Classroom. Snapshot never posts a grade, never records attendance, and never mutates a PowerSchool record. Snapshot lives alongside those tools. It does not integrate with them. When the ratified LMS integration architecture (`LMS_INTEGRATION_ARCHITECTURE.md`, PDR-019) is implemented, LMS state (connection status, LMS class names, LMS topics, publication outcomes, LMS roster deltas) remains a Settings concern, not a Snapshot concern; Snapshot is not amended by the LMS phase.
 
 ### Product Rules
 

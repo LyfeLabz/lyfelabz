@@ -140,6 +140,7 @@ Second block walks in. She switches classes. The new class opens on its own Snap
 - The spreadsheet-style workspace exists one level deeper. It is not the first screen.
 - The Snapshot never surfaces private accommodations or notes on a shared screen. Those live in Settings.
 - Moving between classes preserves the pattern. Every class works the same way.
+- The Snapshot never displays LMS state. Connection status, LMS class names, LMS topic names, LMS publication outcomes, and LMS roster deltas are not between-moments concerns. LMS state lives in Settings. This preserves the between-moments posture Snapshot was designed for and honors the ratified LMS integration architecture (PDR-019l, `LMS_EXPERIENCE.md` §4).
 
 ---
 
@@ -192,6 +193,28 @@ Nothing about her day depended on LyfeLabz being open. Everything about her day 
 - The Snapshot is often enough on its own. Depth is available but not demanded.
 - LyfeLabz is measured by how little of a teacher's day it consumes, not by how much.
 - Every session ends cleanly. There is no "logout to save" moment.
+
+---
+
+## 7A. Opting Into Google Classroom
+
+Some time after her first week on LyfeLabz, the teacher decides she does not want to invite students by join code for the class that already exists in Google Classroom. She opens Settings.
+
+Settings has a section called Integrations. She has never opened it. She opens it now. The section is quiet. It lists one supported provider today, Google Classroom. It says, in plain language, what LyfeLabz will and will not do if she connects: LyfeLabz will read the list of classes she teaches, will read the rosters of the classes she chooses to import, and will publish LyfeLabz assignments to Google Classroom when she asks it to. LyfeLabz will never post, comment, message, email, or grade on her behalf. LyfeLabz will never read the streams, announcements, comments, or non-LyfeLabz assignments from Google Classroom. She can disconnect at any moment.
+
+She confirms. Google's own OAuth screen appears. She grants the scopes. She returns to Settings and sees a connection card that shows the connection is active. Nothing has changed in her Classes list. Nothing has changed on Curriculum. Nothing has changed for her students. She has only opened a door.
+
+She closes Settings and continues her afternoon. The next morning, in the same preparation moment described in Chapter 3, she opens the Assignment Dialog. Her Google Classroom-linked classes appear with two additional affordances on their rows: a topic selector and an "Also publish to Google Classroom" toggle. Everything else about the dialog is the same. The one-dialog rhythm she has already learned is preserved. She confirms. The confirmation reads: "The LyfeLabz assignment was scheduled. Publishing to Google Classroom succeeded." She goes to the whiteboard.
+
+The opting-in moment is small on purpose. It sits inside Settings, not on Curriculum, not on Classes, and not on Snapshot. A teacher who does not open Settings has never encountered LMS integration. A teacher who opens it has the same option, the same explanation, and the same one-click reversal every time.
+
+### Product Rules
+
+- LMS integration is opt-in and lives inside Settings. It does not appear on Curriculum, Classes, Snapshot, or Present Mode.
+- Connecting an LMS is a small, deliberate moment. LyfeLabz never enrolls a teacher in an integration by default.
+- The one-dialog Assign rhythm is preserved. LMS-linked class rows receive additive affordances inside the same dialog.
+- Publishing is a side effect of confirming the dialog. It is never a second workflow.
+- Disconnecting is always available and never destroys LyfeLabz data.
 
 ---
 

@@ -1992,3 +1992,523 @@ describe("Class Snapshot foundation (Sprint 7B)", () => {
     expect(text).not.toContain("document.cookie");
   });
 });
+
+// -----------------------------------------------------------------------------
+// Sprint 8D.1 - Authoritative assignment lifecycle
+// -----------------------------------------------------------------------------
+
+describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
+  const teacher = teacherSession();
+
+  type CreateDraftIn = {
+    assignmentId: string;
+    classId: string;
+    lessonSlug: string;
+    lessonVersion: string;
+    mode: "practice" | "classroom";
+    title?: string;
+  };
+  type PublishIn = { assignmentId: string };
+  type LmsPublishIn = {
+    assignmentId: string;
+    linkId: string;
+    lyfelabzAssignmentUrl: string;
+    title?: string;
+    lmsTopicId?: string;
+  };
+
+  const twoClasses: ReadonlyArray<ClassSummary> = freeze([
+    freeze({ id: "c1", title: "6A Life Science", grade: "6", status: "active" }),
+    freeze({ id: "c2", title: "7B Systems", grade: "7", status: "active" }),
+  ] as ClassSummary[]);
+  const listTwo: ListClasses = () => Promise.resolve(twoClasses);
+
+  const makeAssignments = () => {
+    const events: string[] = [];
+    const drafts: CreateDraftIn[] = [];
+    const publishes: PublishIn[] = [];
+    let createDraftResult: (
+      input: CreateDraftIn,
+    ) => Promise<{ assignmentId: string; status: "draft"; alreadyCreated: boolean }> =
+      async (input) => ({
+        assignmentId: input.assignmentId,
+        status: "draft",
+        alreadyCreated: false,
+      });
+    let publishResult: (
+      input: PublishIn,
+    ) => Promise<{
+      assignmentId: string;
+      status: "published";
+      alreadyPublished: boolean;
+    }> = async (input) => ({
+      assignmentId: input.assignmentId,
+      status: "published",
+      alreadyPublished: false,
+    });
+    return {
+      events,
+      drafts,
+      publishes,
+      seam: {
+        createDraft: async (input: CreateDraftIn) => {
+          events.push(`draft:${input.classId}`);
+          drafts.push(input);
+          return createDraftResult(input);
+        },
+        publish: async (input: PublishIn) => {
+          events.push(`publish:${input.assignmentId}`);
+          publishes.push(input);
+          return publishResult(input);
+        },
+      },
+      failDraftFor: (classId: string) => {
+        const prior = createDraftResult;
+        createDraftResult = async (input) => {
+          if (input.classId === classId) {
+            throw Object.assign(new Error("draft failed"), {
+              code: "assignments.classNotFound",
+            });
+          }
+          return prior(input);
+        };
+      },
+      failPublishFor: (assignmentSubstring: string) => {
+        const prior = publishResult;
+        publishResult = async (input) => {
+          if (input.assignmentId.includes(assignmentSubstring)) {
+            throw Object.assign(new Error("publish failed"), {
+              code: "assignments.invalidTransition",
+            });
+          }
+          return prior(input);
+        };
+      },
+    };
+  };
+
+  type IntegrationsFakeOpts = {
+    linkedClassIds?: readonly string[];
+    lmsResult?: "succeeded" | "failed" | "throw";
+  };
+  const makeIntegrations = (opts: IntegrationsFakeOpts = {}) => {
+    const lmsCalls: LmsPublishIn[] = [];
+    const links = (opts.linkedClassIds ?? []).map((cid) =>
+      Object.freeze({
+        linkId: `link-${cid}`,
+        classId: cid,
+        providerId: "googleClassroom",
+        lmsClassId: `lms-${cid}`,
+      }),
+    );
+    const events: string[] = [];
+    const deps = {
+      callables: {
+        listProviders: async () => Object.freeze([]),
+        describeConnections: async () => Object.freeze([]),
+        beginConnection: async () => ({
+          authorizationUrl: "",
+          state: "",
+        }),
+        completeConnection: async () => ({
+          connectionId: "",
+          alreadyConnected: false,
+        }),
+        disconnect: async () => ({ alreadyRevoked: false }),
+        discoverClasses: async () => Object.freeze([]),
+        importClass: async () => ({
+          linkId: "",
+          classId: "",
+          lmsClassId: "",
+          alreadyLinked: false,
+        }),
+        listClassTopics: async () =>
+          Object.freeze([
+            Object.freeze({ lmsTopicId: "t1", name: "Unit 1" }),
+            Object.freeze({ lmsTopicId: "t2", name: "Unit 2" }),
+          ]),
+        publishAssignment: async (input: LmsPublishIn) => {
+          events.push(`lms:${input.assignmentId}`);
+          lmsCalls.push(input);
+          if (opts.lmsResult === "throw") {
+            throw new Error("network");
+          }
+          const status =
+            opts.lmsResult === "failed" ? "failed" : "succeeded";
+          return Object.freeze({
+            publicationId: `pub-${input.assignmentId}`,
+            status,
+            ...(status === "succeeded"
+              ? { lmsAssignmentId: `lms-a-${input.assignmentId}` }
+              : {
+                  errorCode: "lms.providerNotYetOperational",
+                  errorMessage:
+                    "Google Classroom publication is not available yet.",
+                }),
+          }) as never;
+        },
+      },
+      openOAuth: async () => ({ code: "", state: "" }),
+      listTeacherClasses: async () => Object.freeze([]),
+      redirectUri: "",
+      listClassLinks: async () => Object.freeze(links),
+    };
+    return { deps, lmsCalls, events };
+  };
+
+  beforeEach(() => {
+    _resetCurriculumSessionStateForTest();
+    document
+      .querySelectorAll("[data-testid=assign-overlay]")
+      .forEach((el) => el.remove());
+  });
+
+  test("createDraft is called before publish, and publish before any LMS-side publication", async () => {
+    const asn = makeAssignments();
+    const int = makeIntegrations({ linkedClassIds: ["c1"] });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      integrations: int.deps as never,
+      assignments: asn.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-assign-earths-layers]",
+      )
+      ?.click();
+    await flush();
+    // Enable the LMS publish toggle on the linked class row.
+    const pub = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-lms-publish-c1]",
+    );
+    pub!.checked = true;
+    pub!.dispatchEvent(new Event("change"));
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
+      ?.click();
+    await flush();
+    await flush();
+
+    // Ordering: every draft precedes its own publish; every publish
+    // precedes any LMS call for the same assignmentId.
+    expect(asn.drafts.length).toBe(2);
+    expect(asn.publishes.length).toBe(2);
+    for (const d of asn.drafts) {
+      const draftIdx = asn.events.indexOf(`draft:${d.classId}`);
+      const publishIdx = asn.events.indexOf(`publish:${d.assignmentId}`);
+      expect(draftIdx).toBeGreaterThanOrEqual(0);
+      expect(publishIdx).toBeGreaterThan(draftIdx);
+    }
+    expect(int.lmsCalls.length).toBe(1);
+    // The LMS call must use an authoritative id that was minted by
+    // createDraft, never a session-only synthetic id.
+    expect(int.lmsCalls[0]!.assignmentId).not.toMatch(/^session:/);
+    expect(
+      asn.drafts.map((d) => d.assignmentId),
+    ).toContain(int.lmsCalls[0]!.assignmentId);
+  });
+
+  test("LMS publication is skipped when assignmentsCreateDraft fails", async () => {
+    const asn = makeAssignments();
+    asn.failDraftFor("c1");
+    const int = makeIntegrations({ linkedClassIds: ["c1"] });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      integrations: int.deps as never,
+      assignments: asn.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-assign-earths-layers]",
+      )
+      ?.click();
+    await flush();
+    const pub = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-lms-publish-c1]",
+    );
+    pub!.checked = true;
+    pub!.dispatchEvent(new Event("change"));
+    // Only c1 selected so we isolate the failure path.
+    const c2Cb = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-enabled-c2]",
+    );
+    c2Cb!.checked = false;
+    c2Cb!.dispatchEvent(new Event("change"));
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
+      ?.click();
+    await flush();
+    await flush();
+    expect(asn.publishes.length).toBe(0);
+    expect(int.lmsCalls.length).toBe(0);
+  });
+
+  test("LMS publication is skipped when assignmentsPublish fails", async () => {
+    const asn = makeAssignments();
+    asn.failPublishFor("");
+    const int = makeIntegrations({ linkedClassIds: ["c1"] });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      integrations: int.deps as never,
+      assignments: asn.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-assign-earths-layers]",
+      )
+      ?.click();
+    await flush();
+    const pub = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-lms-publish-c1]",
+    );
+    pub!.checked = true;
+    pub!.dispatchEvent(new Event("change"));
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
+      ?.click();
+    await flush();
+    await flush();
+    expect(asn.drafts.length).toBe(2);
+    expect(asn.publishes.length).toBe(2);
+    // Every publish threw; LMS must not have been invoked.
+    expect(int.lmsCalls.length).toBe(0);
+  });
+
+  test("successful LyfeLabz assignment remains successful when LMS publication fails", async () => {
+    const asn = makeAssignments();
+    const int = makeIntegrations({
+      linkedClassIds: ["c1"],
+      lmsResult: "failed",
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      integrations: int.deps as never,
+      assignments: asn.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-assign-earths-layers]",
+      )
+      ?.click();
+    await flush();
+    const pub = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-lms-publish-c1]",
+    );
+    pub!.checked = true;
+    pub!.dispatchEvent(new Event("change"));
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
+      ?.click();
+    await flush();
+    await flush();
+    // Both LyfeLabz assignments published; LMS attempted once and failed.
+    expect(asn.publishes.length).toBe(2);
+    expect(int.lmsCalls.length).toBe(1);
+    // The card still reflects the Assigned state; the LyfeLabz record is
+    // authoritative and untouched by the LMS-side failure.
+    const assign = mount.querySelector<HTMLButtonElement>(
+      "[data-testid=lesson-assign-earths-layers]",
+    );
+    expect(assign?.getAttribute("data-assigned")).toBe("true");
+    // The confirmation names the LMS-side outcome without blaming the
+    // teacher and without rolling back the LyfeLabz assignment.
+    const summary = mount.querySelector(
+      "[data-testid=assign-success]",
+    )?.textContent;
+    expect(summary).toContain("Assigned");
+    expect(summary).toContain("Google Classroom");
+    expect(summary).toContain("did not succeed");
+  });
+
+  test("providerNotYetOperational produces graceful teacher messaging", async () => {
+    const asn = makeAssignments();
+    const int = makeIntegrations({
+      linkedClassIds: ["c1"],
+      lmsResult: "failed",
+    });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      integrations: int.deps as never,
+      assignments: asn.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-assign-earths-layers]",
+      )
+      ?.click();
+    await flush();
+    const pub = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-lms-publish-c1]",
+    );
+    pub!.checked = true;
+    pub!.dispatchEvent(new Event("change"));
+    // Only c1 selected so the aggregate suffix is a single line.
+    const c2Cb = document.querySelector<HTMLInputElement>(
+      "[data-testid=assign-row-enabled-c2]",
+    );
+    c2Cb!.checked = false;
+    c2Cb!.dispatchEvent(new Event("change"));
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
+      ?.click();
+    await flush();
+    await flush();
+    const summary = mount.querySelector(
+      "[data-testid=assign-success]",
+    )?.textContent;
+    expect(summary).toMatch(/Assigned .* to 1 class\./);
+    expect(summary).toContain("did not succeed");
+    // Never blames the teacher and never suggests a stack trace.
+    expect(summary).not.toMatch(/error/i);
+    expect(summary).not.toMatch(/stack/i);
+  });
+
+  test("multiple selected classes receive independent assignment records and outcomes", async () => {
+    const asn = makeAssignments();
+    const int = makeIntegrations({ linkedClassIds: ["c1", "c2"] });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      integrations: int.deps as never,
+      assignments: asn.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-assign-earths-layers]",
+      )
+      ?.click();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
+      ?.click();
+    await flush();
+    await flush();
+    expect(asn.drafts.length).toBe(2);
+    const ids = new Set(asn.drafts.map((d) => d.assignmentId));
+    // Each class receives its own persistent record.
+    expect(ids.size).toBe(2);
+    // Ownership fields the client controls are per-class and never
+    // reused across classes.
+    expect(
+      new Set(asn.drafts.map((d) => d.classId)),
+    ).toEqual(new Set(["c1", "c2"]));
+  });
+
+  test("non-LMS-linked classes never invoke LMS publication", async () => {
+    const asn = makeAssignments();
+    // No LMS class links.
+    const int = makeIntegrations({ linkedClassIds: [] });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      integrations: int.deps as never,
+      assignments: asn.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-assign-earths-layers]",
+      )
+      ?.click();
+    await flush();
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
+      ?.click();
+    await flush();
+    await flush();
+    expect(asn.publishes.length).toBe(2);
+    expect(int.lmsCalls.length).toBe(0);
+  });
+
+  test("LMS topic selection remains scoped to the correct class", async () => {
+    const asn = makeAssignments();
+    const int = makeIntegrations({ linkedClassIds: ["c1", "c2"] });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      integrations: int.deps as never,
+      assignments: asn.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-assign-earths-layers]",
+      )
+      ?.click();
+    await flush();
+    await flush();
+    // Choose distinct topics per row.
+    const t1 = document.querySelector<HTMLSelectElement>(
+      "[data-testid=assign-row-lms-topic-c1]",
+    );
+    t1!.value = "t1";
+    t1!.dispatchEvent(new Event("change"));
+    const t2 = document.querySelector<HTMLSelectElement>(
+      "[data-testid=assign-row-lms-topic-c2]",
+    );
+    t2!.value = "t2";
+    t2!.dispatchEvent(new Event("change"));
+    // Enable both publishToLms toggles.
+    for (const cid of ["c1", "c2"]) {
+      const pub = document.querySelector<HTMLInputElement>(
+        `[data-testid=assign-row-lms-publish-${cid}]`,
+      );
+      pub!.checked = true;
+      pub!.dispatchEvent(new Event("change"));
+    }
+    document
+      .querySelector<HTMLButtonElement>("[data-testid=assign-confirm]")
+      ?.click();
+    await flush();
+    await flush();
+    // Each LMS call carries its own class's topic and its own linkId.
+    const byLink = new Map(int.lmsCalls.map((c) => [c.linkId, c] as const));
+    expect(byLink.get("link-c1")?.lmsTopicId).toBe("t1");
+    expect(byLink.get("link-c2")?.lmsTopicId).toBe("t2");
+  });
+
+  test("clicking Confirm a second time before the lifecycle resolves does not dispatch a duplicate submission", async () => {
+    let releaseDraft: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      releaseDraft = resolve;
+    });
+    const asn = makeAssignments();
+    const originalCreate = asn.seam.createDraft;
+    let creates = 0;
+    (asn.seam as { createDraft: typeof originalCreate }).createDraft = async (
+      input,
+    ) => {
+      creates += 1;
+      await gate;
+      return originalCreate(input);
+    };
+    const int = makeIntegrations({ linkedClassIds: [] });
+    const mount = mkMount();
+    renderCurriculumSurface(mount, teacher, {
+      listClasses: listTwo,
+      integrations: int.deps as never,
+      assignments: asn.seam,
+    });
+    mount
+      .querySelector<HTMLButtonElement>(
+        "[data-testid=lesson-assign-earths-layers]",
+      )
+      ?.click();
+    await flush();
+    const confirm = document.querySelector<HTMLButtonElement>(
+      "[data-testid=assign-confirm]",
+    );
+    confirm!.click();
+    confirm!.click();
+    confirm!.click();
+    // Only the first click enters flight (2 drafts, one per class).
+    expect(creates).toBe(2);
+    releaseDraft();
+    await flush();
+    await flush();
+    expect(creates).toBe(2);
+  });
+});

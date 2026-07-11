@@ -382,6 +382,136 @@
   @media (prefers-reduced-motion: reduce) {
     .shell-main, .shell-card { transition: none !important; animation: none !important; }
   }
+  /* Sprint 8C: Settings > Integrations surface. Reuses the shell card
+     language; introduces no new design system. */
+  .shell-settings-category-button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  .shell-settings-category-button:hover .shell-settings-category-title,
+  .shell-settings-category-button:focus-visible .shell-settings-category-title {
+    text-decoration: underline;
+  }
+  .shell-settings-category-hint {
+    margin: 0.35rem 0 0 0;
+    font-size: 0.85rem;
+    color: #555;
+  }
+  .shell-integrations {
+    display: block;
+  }
+  .shell-integrations-back {
+    background: transparent;
+    border: none;
+    color: #444;
+    font: inherit;
+    padding: 0.25rem 0;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+  }
+  .shell-integrations-back:hover,
+  .shell-integrations-back:focus-visible { text-decoration: underline; }
+  .shell-integrations-heading {
+    font-size: 1.05rem;
+    margin: 0;
+    color: #222;
+  }
+  .shell-integrations-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .shell-integrations-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .shell-integrations-row-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .shell-integrations-pill-inactive {
+    background: #eef1f5;
+    color: #555;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .shell-integrations-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .shell-integrations-error {
+    color: #a24218;
+    background: rgba(255, 112, 67, 0.08);
+    border: 1px solid rgba(162, 66, 24, 0.25);
+    border-radius: 4px;
+    padding: 0.6rem 0.85rem;
+    margin: 0 0 1rem 0;
+  }
+  .shell-integrations-info {
+    color: #1f6b3d;
+    background: rgba(61, 220, 132, 0.08);
+    border: 1px solid rgba(61, 140, 89, 0.3);
+    border-radius: 4px;
+    padding: 0.6rem 0.85rem;
+    margin: 0 0 1rem 0;
+  }
+  .shell-integrations-candidates {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .shell-integrations-candidate {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    background: #fafafa;
+    border: 1px solid rgba(0, 0, 0, 0.09);
+    border-radius: 4px;
+    flex-wrap: wrap;
+  }
+  .shell-integrations-candidate-name { margin: 0; font-weight: 600; color: #222; }
+  .shell-integrations-candidate-section { margin: 0.15rem 0 0 0; font-size: 0.85rem; color: #555; }
+  .shell-integrations-candidate-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .shell-integrations-select-label {
+    font-size: 0.85rem;
+    color: #444;
+  }
+  .shell-integrations-select {
+    font: inherit;
+    padding: 0.3rem 0.4rem;
+    min-height: 32px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 4px;
+    background: #fff;
+  }
+  .shell-integrations-empty {
+    color: #555;
+    margin: 0.5rem 0 1rem 0;
+  }
+  @media (pointer: coarse) {
+    .shell-integrations-back, .shell-integrations-select { min-height: 44px; }
+  }
 </style>
 </head>
 <body>

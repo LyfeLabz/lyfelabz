@@ -71,6 +71,11 @@ const VALID_ACTIONS: readonly AuditAction[] = [
   "assignments.archived",
   "submissions.created",
   "submissions.finalized",
+  "lms.connectionCreated",
+  "lms.connectionRevoked",
+  "lms.classImported",
+  "lms.classUnlinked",
+  "lms.ownershipDrift",
 ];
 
 function isNonEmptyString(value: unknown): value is string {

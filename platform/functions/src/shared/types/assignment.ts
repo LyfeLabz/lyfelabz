@@ -53,6 +53,13 @@ export type AssignmentRecord = {
   readonly instructions?: string;
   readonly windowClosesAt?: Timestamp;
   readonly availableAt?: Timestamp;
+  // Additive optional field reserved by the ratified LMS integration
+  // architecture (Amendment §3.4). Set by the assignment-publish callable
+  // to the identifier of the most recent successful publication record in
+  // `lmsAssignmentPublications`; absent when no publication has ever
+  // succeeded for the assignment. The field is a mirror pointer only and
+  // does not confer authority on the LMS-side record (PDR-019d).
+  readonly lmsPublicationRef?: string;
 };
 
 // Write shape for the draft-creation callable (assignmentsCreateDraft).
@@ -118,4 +125,16 @@ export type AssignmentCloseWrite = {
 // state and no other field is modified.
 export type AssignmentArchiveWrite = {
   readonly status: "archived";
+};
+
+// Write shape for the assignment-publication callable
+// (lmsAssignmentsPublish). Narrow by design: only the additive
+// `lmsPublicationRef` mirror pointer is writable through this path.
+// Ownership fields (classId, teacherId, schoolId), lifecycle field
+// (`status`), lesson fields (`lessonSlug`, `lessonVersion`), timing
+// fields, and title/instructions are intentionally absent so an LMS
+// publication cannot launder into an ownership reassignment or a
+// content edit per PDR-019d.
+export type AssignmentLmsPublicationWrite = {
+  readonly lmsPublicationRef: string;
 };

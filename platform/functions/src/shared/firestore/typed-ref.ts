@@ -6,6 +6,7 @@ import {
   type AssignmentCloseWrite,
   type AssignmentCreationWrite,
   type AssignmentDraftUpdateWrite,
+  type AssignmentLmsPublicationWrite,
   type AssignmentPublishWrite,
   type AssignmentRecord,
 } from "../types/assignment";
@@ -14,9 +15,26 @@ import {
   CLASSES_COLLECTION,
   type ClassArchiveWrite,
   type ClassCreationWrite,
+  type ClassLmsLinkWrite,
   type ClassMetadataUpdateWrite,
   type ClassRecord,
 } from "../types/class";
+import {
+  LMS_ASSIGNMENT_PUBLICATIONS_COLLECTION,
+  LMS_CLASS_LINKS_COLLECTION,
+  LMS_CONNECTIONS_COLLECTION,
+  LMS_PROVIDERS_COLLECTION,
+  type LmsAssignmentPublicationCreationWrite,
+  type LmsAssignmentPublicationRecord,
+  type LmsClassLinkCreationWrite,
+  type LmsClassLinkRecord,
+  type LmsClassLinkUnlinkWrite,
+  type LmsConnectionCreationWrite,
+  type LmsConnectionRecord,
+  type LmsConnectionRevocationWrite,
+  type LmsProviderCreationWrite,
+  type LmsProviderRecord,
+} from "../types/lms";
 import {
   ENROLLMENTS_COLLECTION,
   type EnrollmentCreationWrite,
@@ -81,6 +99,7 @@ export function schoolCreationDocRef(
 // enrollmentsJoinByCode callable to resolve a class by its (joinCode,
 // schoolId) tuple without reaching through to the raw Firestore instance.
 export function classesCollectionRef(): CollectionReference<ClassRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
   return getAdminFirestore()
     .collection(CLASSES_COLLECTION) as CollectionReference<ClassRecord>;
 }
@@ -139,6 +158,7 @@ export function classArchiveDocRef(
 // Audit-event document IDs are opaque and system-generated per Data Model
 // §5.1, so the canonical shared reference is at the collection level.
 export function auditEventsCollectionRef(): CollectionReference<AuditEventWrite> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
   return getAdminFirestore()
     .collection(AUDIT_EVENTS_COLLECTION) as CollectionReference<AuditEventWrite>;
 }
@@ -190,6 +210,7 @@ export function enrollmentStatusChangeDocRef(
 // classId) enrollment by indexed query for idempotency, and by the
 // join-by-code callable to look up a class by joinCode.
 export function enrollmentsCollectionRef(): CollectionReference<EnrollmentRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
   return getAdminFirestore()
     .collection(ENROLLMENTS_COLLECTION) as CollectionReference<EnrollmentRecord>;
 }
@@ -198,6 +219,7 @@ export function enrollmentsCollectionRef(): CollectionReference<EnrollmentRecord
 // Sprint 4D admin scans; not used by the current callable set but exported
 // alongside the record-level references for symmetry with the other domains.
 export function assignmentsCollectionRef(): CollectionReference<AssignmentRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
   return getAdminFirestore()
     .collection(ASSIGNMENTS_COLLECTION) as CollectionReference<AssignmentRecord>;
 }
@@ -278,11 +300,28 @@ export function assignmentArchiveDocRef(
     .doc(assignmentId) as DocumentReference<AssignmentArchiveWrite>;
 }
 
+// LMS-publication-ref write reference for assignments/{assignmentId}. The
+// lmsAssignmentsPublish callable uses this reference to `.update()` a
+// narrow `AssignmentLmsPublicationWrite` payload that carries only the
+// additive `lmsPublicationRef` mirror pointer. Ownership fields,
+// lifecycle field, lesson fields, and every other assignment field are
+// absent from the write shape so an LMS publication side effect can
+// never launder into an ownership reassignment or a content edit
+// (PDR-019d).
+export function assignmentLmsPublicationDocRef(
+  assignmentId: string,
+): DocumentReference<AssignmentLmsPublicationWrite> {
+  return getAdminFirestore()
+    .collection(ASSIGNMENTS_COLLECTION)
+    .doc(assignmentId) as DocumentReference<AssignmentLmsPublicationWrite>;
+}
+
 // Collection-level typed reference for submissions. Reserved for future
 // admin scans and rollup jobs; not used by the current callable set but
 // exported alongside the record-level references for symmetry with the
 // other domains.
 export function submissionsCollectionRef(): CollectionReference<SubmissionRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
   return getAdminFirestore()
     .collection(SUBMISSIONS_COLLECTION) as CollectionReference<SubmissionRecord>;
 }
@@ -327,4 +366,134 @@ export function submissionFinalizationDocRef(
   return getAdminFirestore()
     .collection(SUBMISSIONS_COLLECTION)
     .doc(submissionId) as DocumentReference<SubmissionFinalizationWrite>;
+}
+
+// -------------------- LMS integration references --------------------
+//
+// Typed Firestore references for the LMS Integration Foundation. Reads
+// and writes follow the same narrow-write pattern as the certified
+// domains: reads return record-typed snapshots, writes are performed
+// through narrower FieldValue-safe references that never widen the field
+// set beyond what the callable is authorized to write.
+
+export function lmsProvidersCollectionRef(): CollectionReference<LmsProviderRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
+  return getAdminFirestore()
+    .collection(LMS_PROVIDERS_COLLECTION) as CollectionReference<LmsProviderRecord>;
+}
+
+export function lmsProviderDocRef(
+  providerId: string,
+): DocumentReference<LmsProviderRecord> {
+  return getAdminFirestore()
+    .collection(LMS_PROVIDERS_COLLECTION)
+    .doc(providerId) as DocumentReference<LmsProviderRecord>;
+}
+
+export function lmsProviderCreationDocRef(
+  providerId: string,
+): DocumentReference<LmsProviderCreationWrite> {
+  return getAdminFirestore()
+    .collection(LMS_PROVIDERS_COLLECTION)
+    .doc(providerId) as DocumentReference<LmsProviderCreationWrite>;
+}
+
+export function lmsConnectionsCollectionRef(): CollectionReference<LmsConnectionRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
+  return getAdminFirestore()
+    .collection(LMS_CONNECTIONS_COLLECTION) as CollectionReference<LmsConnectionRecord>;
+}
+
+export function lmsConnectionDocRef(
+  connectionId: string,
+): DocumentReference<LmsConnectionRecord> {
+  return getAdminFirestore()
+    .collection(LMS_CONNECTIONS_COLLECTION)
+    .doc(connectionId) as DocumentReference<LmsConnectionRecord>;
+}
+
+export function lmsConnectionCreationDocRef(
+  connectionId: string,
+): DocumentReference<LmsConnectionCreationWrite> {
+  return getAdminFirestore()
+    .collection(LMS_CONNECTIONS_COLLECTION)
+    .doc(connectionId) as DocumentReference<LmsConnectionCreationWrite>;
+}
+
+export function lmsConnectionRevocationDocRef(
+  connectionId: string,
+): DocumentReference<LmsConnectionRevocationWrite> {
+  return getAdminFirestore()
+    .collection(LMS_CONNECTIONS_COLLECTION)
+    .doc(connectionId) as DocumentReference<LmsConnectionRevocationWrite>;
+}
+
+export function lmsClassLinksCollectionRef(): CollectionReference<LmsClassLinkRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
+  return getAdminFirestore()
+    .collection(LMS_CLASS_LINKS_COLLECTION) as CollectionReference<LmsClassLinkRecord>;
+}
+
+export function lmsClassLinkDocRef(
+  linkId: string,
+): DocumentReference<LmsClassLinkRecord> {
+  return getAdminFirestore()
+    .collection(LMS_CLASS_LINKS_COLLECTION)
+    .doc(linkId) as DocumentReference<LmsClassLinkRecord>;
+}
+
+export function lmsClassLinkCreationDocRef(
+  linkId: string,
+): DocumentReference<LmsClassLinkCreationWrite> {
+  return getAdminFirestore()
+    .collection(LMS_CLASS_LINKS_COLLECTION)
+    .doc(linkId) as DocumentReference<LmsClassLinkCreationWrite>;
+}
+
+export function lmsClassLinkUnlinkDocRef(
+  linkId: string,
+): DocumentReference<LmsClassLinkUnlinkWrite> {
+  return getAdminFirestore()
+    .collection(LMS_CLASS_LINKS_COLLECTION)
+    .doc(linkId) as DocumentReference<LmsClassLinkUnlinkWrite>;
+}
+
+export function lmsAssignmentPublicationsCollectionRef(): CollectionReference<LmsAssignmentPublicationRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
+  return getAdminFirestore()
+    .collection(
+      LMS_ASSIGNMENT_PUBLICATIONS_COLLECTION,
+    ) as CollectionReference<LmsAssignmentPublicationRecord>;
+}
+
+export function lmsAssignmentPublicationDocRef(
+  publicationId: string,
+): DocumentReference<LmsAssignmentPublicationRecord> {
+  return getAdminFirestore()
+    .collection(LMS_ASSIGNMENT_PUBLICATIONS_COLLECTION)
+    .doc(publicationId) as DocumentReference<LmsAssignmentPublicationRecord>;
+}
+
+export function lmsAssignmentPublicationCreationDocRef(
+  publicationId: string,
+): DocumentReference<LmsAssignmentPublicationCreationWrite> {
+  return getAdminFirestore()
+    .collection(LMS_ASSIGNMENT_PUBLICATIONS_COLLECTION)
+    .doc(
+      publicationId,
+    ) as DocumentReference<LmsAssignmentPublicationCreationWrite>;
+}
+
+// Narrow LMS-link write reference for classes/{classId}. The class-import
+// callable uses this reference to `.update()` a `ClassLmsLinkWrite`
+// payload that carries only the additive enrollment-source fields.
+// Ownership, lifecycle, joinCode, and metadata fields are absent from the
+// write shape so an LMS import can never launder into an ownership
+// reassignment or a metadata edit (PDR-019i, PDR-019j).
+export function classLmsLinkDocRef(
+  classId: string,
+): DocumentReference<ClassLmsLinkWrite> {
+  return getAdminFirestore()
+    .collection(CLASSES_COLLECTION)
+    .doc(classId) as DocumentReference<ClassLmsLinkWrite>;
 }
