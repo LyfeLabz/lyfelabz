@@ -1,4 +1,6 @@
 import type {
+  IntegrationsClassHealthStatus,
+  IntegrationsClassLink,
   IntegrationsConnection,
   IntegrationsDeps,
   IntegrationsLmsClass,
@@ -34,11 +36,18 @@ type ViewState =
       readonly kind: "ready";
       readonly providers: readonly IntegrationsProvider[];
       readonly connections: readonly IntegrationsConnection[];
+      readonly links: readonly IntegrationsClassLink[];
+      readonly teacherClasses: readonly IntegrationsLyfeLabzClass[];
+      readonly healthByLinkId: ReadonlyMap<string, IntegrationsClassHealthStatus>;
+      readonly refreshingLinkId: string | null;
     }
   | {
       readonly kind: "importing";
       readonly providers: readonly IntegrationsProvider[];
       readonly connections: readonly IntegrationsConnection[];
+      readonly links: readonly IntegrationsClassLink[];
+      readonly teacherClasses: readonly IntegrationsLyfeLabzClass[];
+      readonly healthByLinkId: ReadonlyMap<string, IntegrationsClassHealthStatus>;
       readonly connectionId: string;
       readonly candidates: readonly IntegrationsLmsClass[];
       readonly targetClasses: readonly IntegrationsLyfeLabzClass[];
@@ -110,6 +119,7 @@ export function renderIntegrationsSurface(
         break;
       case "ready":
         renderReady(container, state.providers, state.connections);
+        renderImportedClasses(container, state);
         break;
       case "importing":
         renderImporting(container, state);
@@ -270,6 +280,108 @@ export function renderIntegrationsSurface(
     return li;
   };
 
+  const renderImportedClasses = (
+    parent: HTMLElement,
+    s: Extract<ViewState, { kind: "ready" }>,
+  ): void => {
+    if (s.links.length === 0) return;
+    const section = doc.createElement("section");
+    section.className = "shell-card shell-integrations-imported";
+    section.setAttribute("data-testid", "integrations-imported-classes");
+
+    const h3 = doc.createElement("h3");
+    h3.className = "shell-integrations-heading";
+    h3.textContent = "Imported classes";
+    section.appendChild(h3);
+
+    const intro = doc.createElement("p");
+    intro.className = "shell-status";
+    intro.textContent =
+      "Refresh a class to check that LyfeLabz can still reach it. Refresh runs on demand. LyfeLabz never modifies your Google Classroom roster, stream, or comments.";
+    section.appendChild(intro);
+
+    const list = doc.createElement("ul");
+    list.className = "shell-integrations-imported-list";
+    list.setAttribute("aria-label", "Imported classes");
+
+    const classById = new Map<string, IntegrationsLyfeLabzClass>();
+    for (const c of s.teacherClasses) classById.set(c.id, c);
+
+    for (const link of s.links) {
+      list.appendChild(renderImportedRow(link, classById.get(link.classId) ?? null, s));
+    }
+    section.appendChild(list);
+    parent.appendChild(section);
+  };
+
+  const renderImportedRow = (
+    link: IntegrationsClassLink,
+    lyfelabzClass: IntegrationsLyfeLabzClass | null,
+    s: Extract<ViewState, { kind: "ready" }>,
+  ): HTMLElement => {
+    const li = doc.createElement("li");
+    li.className = "shell-integrations-imported-row";
+    li.setAttribute("data-testid", `integrations-imported-${link.linkId}`);
+
+    const label = doc.createElement("div");
+    label.className = "shell-integrations-imported-label";
+    const name = doc.createElement("p");
+    name.className = "shell-integrations-candidate-name";
+    name.textContent = lyfelabzClass
+      ? lyfelabzClass.title
+      : "LyfeLabz class no longer available";
+    label.appendChild(name);
+    if (lyfelabzClass) {
+      const grade = doc.createElement("p");
+      grade.className = "shell-integrations-candidate-section";
+      grade.textContent = `Grade ${lyfelabzClass.grade}`;
+      label.appendChild(grade);
+    }
+    li.appendChild(label);
+
+    const health = s.healthByLinkId.get(link.linkId) ?? null;
+    const badge = doc.createElement("span");
+    badge.className = `shell-pill ${healthPillClass(health)}`;
+    badge.setAttribute(
+      "data-testid",
+      `integrations-imported-health-${link.linkId}`,
+    );
+    badge.setAttribute("role", "status");
+    badge.textContent = healthPillLabel(health);
+    li.appendChild(badge);
+
+    if (health !== null) {
+      const guidance = doc.createElement("p");
+      guidance.className = "shell-status shell-integrations-imported-guidance";
+      guidance.setAttribute(
+        "data-testid",
+        `integrations-imported-guidance-${link.linkId}`,
+      );
+      guidance.textContent = healthGuidance(health);
+      li.appendChild(guidance);
+    }
+
+    const controls = doc.createElement("div");
+    controls.className = "shell-integrations-imported-controls";
+
+    const refreshBtn = doc.createElement("button");
+    refreshBtn.type = "button";
+    refreshBtn.className = "shell-lesson-toggle shell-lesson-toggle-active";
+    refreshBtn.setAttribute(
+      "data-testid",
+      `integrations-refresh-${link.linkId}`,
+    );
+    const busy = s.refreshingLinkId === link.linkId;
+    refreshBtn.disabled = busy;
+    refreshBtn.textContent = busy ? "Checking..." : "Refresh";
+    refreshBtn.addEventListener("click", () => {
+      void onRefreshLink(link);
+    });
+    controls.appendChild(refreshBtn);
+    li.appendChild(controls);
+    return li;
+  };
+
   const renderImporting = (
     parent: HTMLElement,
     s: Extract<ViewState, { kind: "importing" }>,
@@ -317,7 +429,13 @@ export function renderIntegrationsSurface(
         kind: "ready",
         providers: s.providers,
         connections: s.connections,
+        links: s.links,
+        teacherClasses: s.teacherClasses,
+        healthByLinkId: s.healthByLinkId,
+        refreshingLinkId: null,
       };
+      // Refresh imported-class list to pick up newly linked class.
+      void refreshAfterMutation();
       render();
     });
     card.appendChild(closeBtn);
@@ -419,11 +537,23 @@ export function renderIntegrationsSurface(
     notice = null;
     render();
     try {
-      const [providers, connections] = await Promise.all([
+      const [providers, connections, links, teacherClasses] = await Promise.all([
         deps.callables.listProviders(),
         deps.callables.describeConnections(),
+        deps.listClassLinks
+          ? deps.listClassLinks()
+          : Promise.resolve(Object.freeze<IntegrationsClassLink[]>([])),
+        deps.listTeacherClasses(),
       ]);
-      state = { kind: "ready", providers, connections };
+      state = {
+        kind: "ready",
+        providers,
+        connections,
+        links,
+        teacherClasses,
+        healthByLinkId: new Map(),
+        refreshingLinkId: null,
+      };
     } catch (err) {
       state = { kind: "unavailable", message: describeLoadError(err) };
     }
@@ -496,10 +626,25 @@ export function renderIntegrationsSurface(
         state.kind === "ready" || state.kind === "importing"
           ? state.connections
           : [];
+      const links =
+        state.kind === "ready" || state.kind === "importing"
+          ? state.links
+          : Object.freeze<IntegrationsClassLink[]>([]);
+      const priorTeacherClasses =
+        state.kind === "ready" || state.kind === "importing"
+          ? state.teacherClasses
+          : targetClasses;
+      const healthByLinkId =
+        state.kind === "ready" || state.kind === "importing"
+          ? state.healthByLinkId
+          : new Map<string, IntegrationsClassHealthStatus>();
       state = {
         kind: "importing",
         providers,
         connections,
+        links,
+        teacherClasses: priorTeacherClasses,
+        healthByLinkId,
         connectionId: connection.connectionId,
         candidates,
         targetClasses,
@@ -547,15 +692,83 @@ export function renderIntegrationsSurface(
 
   const refreshAfterMutation = async (): Promise<void> => {
     try {
-      const [providers, connections] = await Promise.all([
+      const [providers, connections, links, teacherClasses] = await Promise.all([
         deps.callables.listProviders(),
         deps.callables.describeConnections(),
+        deps.listClassLinks
+          ? deps.listClassLinks()
+          : Promise.resolve(Object.freeze<IntegrationsClassLink[]>([])),
+        deps.listTeacherClasses(),
       ]);
-      state = { kind: "ready", providers, connections };
+      const priorHealth =
+        state.kind === "ready" || state.kind === "importing"
+          ? state.healthByLinkId
+          : new Map<string, IntegrationsClassHealthStatus>();
+      state = {
+        kind: "ready",
+        providers,
+        connections,
+        links,
+        teacherClasses,
+        healthByLinkId: priorHealth,
+        refreshingLinkId: null,
+      };
     } catch (err) {
       state = { kind: "unavailable", message: describeLoadError(err) };
     }
     render();
+  };
+
+  const onRefreshLink = async (
+    link: IntegrationsClassLink,
+  ): Promise<void> => {
+    if (state.kind !== "ready") return;
+    const priorState = state;
+    state = { ...priorState, refreshingLinkId: link.linkId };
+    render();
+    try {
+      const result = await deps.callables.refreshClass({ linkId: link.linkId });
+      const nextHealth = new Map(priorState.healthByLinkId);
+      nextHealth.set(link.linkId, result.status);
+
+      // If the reconciliation transitioned a link or connection, refetch
+      // the underlying lists so the surface stays consistent with the
+      // server view without a full page reload.
+      let nextLinks = priorState.links;
+      let nextConnections = priorState.connections;
+      if (result.changed) {
+        try {
+          const [links, connections] = await Promise.all([
+            deps.listClassLinks
+              ? deps.listClassLinks()
+              : Promise.resolve(priorState.links),
+            deps.callables.describeConnections(),
+          ]);
+          nextLinks = links;
+          nextConnections = connections;
+        } catch {
+          // Best-effort refetch. The health verdict from the callable is
+          // still displayed even if the follow-up read is unavailable.
+        }
+      }
+
+      state = {
+        ...priorState,
+        links: nextLinks,
+        connections: nextConnections,
+        healthByLinkId: nextHealth,
+        refreshingLinkId: null,
+      };
+      notice = {
+        kind: result.status === "healthy" ? "info" : "error",
+        message: healthNotice(result.status),
+      };
+      render();
+    } catch (err) {
+      state = { ...priorState, refreshingLinkId: null };
+      notice = { kind: "error", message: describeGenericError(err) };
+      render();
+    }
   };
 
   render();
@@ -643,4 +856,84 @@ function describeGenericError(err: unknown): string {
     return "We could not reach LyfeLabz just now. Try again in a moment.";
   }
   return "Something did not work. Try again in a moment.";
+}
+
+// -----------------------------------------------------------------------------
+// Health copy helpers (Sprint 8E)
+// -----------------------------------------------------------------------------
+//
+// Every health string is stored beside the surface that renders it so
+// the reconciliation callable never mints teacher-facing prose. The
+// callable returns the neutral health enum; the client renders the
+// matching plain-language label, guidance, and notice.
+
+function healthPillLabel(status: IntegrationsClassHealthStatus | null): string {
+  switch (status) {
+    case null:
+      return "Not checked yet";
+    case "healthy":
+      return "Healthy";
+    case "disconnected":
+      return "Disconnected";
+    case "revoked":
+      return "Access revoked";
+    case "ownershipDrift":
+      return "Ownership changed";
+    case "missingUpstream":
+      return "Class removed";
+    case "reconnectRequired":
+      return "Reconnect required";
+    case "providerUnavailable":
+      return "Provider unavailable";
+  }
+}
+
+function healthPillClass(status: IntegrationsClassHealthStatus | null): string {
+  switch (status) {
+    case "healthy":
+      return "shell-pill-verified";
+    case null:
+    case "providerUnavailable":
+      return "shell-integrations-pill-inactive";
+    default:
+      return "shell-integrations-pill-attention";
+  }
+}
+
+function healthGuidance(status: IntegrationsClassHealthStatus): string {
+  switch (status) {
+    case "healthy":
+      return "This class is linked and reachable from Google Classroom.";
+    case "disconnected":
+      return "Google Classroom is no longer connected. Reconnect Google Classroom from the provider list above to keep this class linked.";
+    case "revoked":
+      return "Google Classroom told LyfeLabz your access was revoked. Reconnect Google Classroom to restore this class.";
+    case "ownershipDrift":
+      return "Google Classroom no longer lists you as the teacher of this class. Ask the teacher of record to add you back, then re-import the class.";
+    case "missingUpstream":
+      return "The Google Classroom class was removed or archived. Re-import a different Google Classroom class if you want to keep this LyfeLabz class linked.";
+    case "reconnectRequired":
+      return "This class's connection needs a fresh sign-in. Reconnect Google Classroom from the provider list above.";
+    case "providerUnavailable":
+      return "Google Classroom did not answer this time. Try refreshing again in a moment.";
+  }
+}
+
+function healthNotice(status: IntegrationsClassHealthStatus): string {
+  switch (status) {
+    case "healthy":
+      return "This class is healthy.";
+    case "disconnected":
+      return "Google Classroom is disconnected. Reconnect to restore this class.";
+    case "revoked":
+      return "Google Classroom access was revoked. Reconnect to restore this class.";
+    case "ownershipDrift":
+      return "Google Classroom no longer lists you as the teacher of this class.";
+    case "missingUpstream":
+      return "That Google Classroom class was removed or archived.";
+    case "reconnectRequired":
+      return "This class's connection needs a fresh sign-in.";
+    case "providerUnavailable":
+      return "Google Classroom did not answer. Try refreshing again in a moment.";
+  }
 }

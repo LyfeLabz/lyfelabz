@@ -66,6 +66,19 @@ export type IntegrationsClassLink = {
   readonly lmsClassId: string;
 };
 
+// Sprint 8E manual refresh vocabulary. Health names track
+// LMS_INTEGRATION_ARCHITECTURE.md Amendment §6 exactly. Every user-
+// facing string that describes a state lives beside the surface that
+// renders it so the callable never mints teacher-facing prose.
+export type IntegrationsClassHealthStatus =
+  | "healthy"
+  | "disconnected"
+  | "revoked"
+  | "ownershipDrift"
+  | "missingUpstream"
+  | "reconnectRequired"
+  | "providerUnavailable";
+
 // The Teacher's own LyfeLabz classes as consumed by the Import step.
 // Duplicates ClassSummary from src/classes/types.ts by shape but keeps
 // the Integrations module independent of the Classes reader so the
@@ -118,6 +131,22 @@ export type IntegrationsCallables = {
   readonly listClassTopics: (input: {
     readonly linkId: string;
   }) => Promise<readonly IntegrationsLmsTopic[]>;
+  // Sprint 8E authorized manual refresh + reconciliation callable per
+  // LMS_INTEGRATION_ARCHITECTURE.md Amendment §6. Verifies upstream
+  // state for a single imported class and reconciles the mirror. Every
+  // side effect (link "broken", connection "revoked", audit event) is
+  // written server-side; the client only receives the resulting health
+  // verdict.
+  readonly refreshClass: (input: {
+    readonly linkId: string;
+  }) => Promise<{
+    readonly linkId: string;
+    readonly classId: string;
+    readonly lmsClassId: string;
+    readonly providerId: string;
+    readonly status: IntegrationsClassHealthStatus;
+    readonly changed: boolean;
+  }>;
   readonly publishAssignment: (input: {
     readonly assignmentId: string;
     readonly linkId: string;

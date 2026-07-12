@@ -20,6 +20,7 @@ export {
   lmsAssignmentsPublish,
   lmsClassesDiscover,
   lmsClassesImport,
+  lmsClassesRefresh,
   lmsClassesListTopics,
   lmsConnectionsBegin,
   lmsConnectionsComplete,

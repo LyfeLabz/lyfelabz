@@ -140,6 +140,17 @@ export type LmsClassLinkUnlinkWrite = {
   readonly unlinkedAt: FieldValue;
 };
 
+// Write shape for the Sprint 8E reconciliation callable when server-side
+// reconciliation observes upstream drift (missing upstream class,
+// ownership drift). Narrow by design: only the lifecycle field and the
+// termination timestamp are writable, so a reconciliation write can
+// never launder into an ownership change or a metadata edit per
+// PDR-019i / PDR-019j.
+export type LmsClassLinkBreakWrite = {
+  readonly status: "broken";
+  readonly unlinkedAt: FieldValue;
+};
+
 // -------------------- lmsAssignmentPublications/{publicationId} --------------------
 //
 // One document per publication attempt from a LyfeLabz assignment to an

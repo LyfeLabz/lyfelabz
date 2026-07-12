@@ -113,6 +113,7 @@ export function createLmsCallables(functions: Functions): IntegrationsCallables 
   const importClass = httpsCallable(functions, "lmsClassesImport");
   const listTopics = httpsCallable(functions, "lmsClassesListTopics");
   const publishAssignment = httpsCallable(functions, "lmsAssignmentsPublish");
+  const refreshClass = httpsCallable(functions, "lmsClassesRefresh");
 
   return Object.freeze({
     listProviders: async () => {
@@ -172,6 +173,36 @@ export function createLmsCallables(functions: Functions): IntegrationsCallables 
         lmsClassId,
         alreadyLinked: data.alreadyLinked === true,
       };
+    },
+    refreshClass: async (input) => {
+      const res = await refreshClass(input);
+      const data = (res.data ?? {}) as CallableRecord;
+      const linkId = readString(data.linkId);
+      const classId = readString(data.classId);
+      const lmsClassId = readString(data.lmsClassId);
+      const providerId = readString(data.providerId);
+      const rawStatus = data.status;
+      const status =
+        rawStatus === "healthy" ||
+        rawStatus === "disconnected" ||
+        rawStatus === "revoked" ||
+        rawStatus === "ownershipDrift" ||
+        rawStatus === "missingUpstream" ||
+        rawStatus === "reconnectRequired" ||
+        rawStatus === "providerUnavailable"
+          ? rawStatus
+          : null;
+      if (!linkId || !classId || !lmsClassId || !providerId || !status) {
+        throw new Error("lmsClassesRefresh returned an unexpected shape.");
+      }
+      return Object.freeze({
+        linkId,
+        classId,
+        lmsClassId,
+        providerId,
+        status,
+        changed: data.changed === true,
+      });
     },
     listClassTopics: async (input) => {
       const res = await listTopics(input);

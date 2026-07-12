@@ -28,6 +28,7 @@ import {
   type LmsAssignmentPublicationRecord,
   type LmsClassLinkCreationWrite,
   type LmsClassLinkRecord,
+  type LmsClassLinkBreakWrite,
   type LmsClassLinkUnlinkWrite,
   type LmsConnectionCreationWrite,
   type LmsConnectionRecord,
@@ -456,6 +457,17 @@ export function lmsClassLinkUnlinkDocRef(
   return getAdminFirestore()
     .collection(LMS_CLASS_LINKS_COLLECTION)
     .doc(linkId) as DocumentReference<LmsClassLinkUnlinkWrite>;
+}
+
+// Narrow reconciliation-only write reference for lmsClassLinks/{linkId}.
+// The Sprint 8E reconciliation callable is the only writer of this
+// reference. See LmsClassLinkBreakWrite for the write shape.
+export function lmsClassLinkBreakDocRef(
+  linkId: string,
+): DocumentReference<LmsClassLinkBreakWrite> {
+  return getAdminFirestore()
+    .collection(LMS_CLASS_LINKS_COLLECTION)
+    .doc(linkId) as DocumentReference<LmsClassLinkBreakWrite>;
 }
 
 export function lmsAssignmentPublicationsCollectionRef(): CollectionReference<LmsAssignmentPublicationRecord> {

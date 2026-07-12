@@ -2127,6 +2127,15 @@ describe("Assign Experience - Sprint 8D.1 authoritative lifecycle", () => {
             Object.freeze({ lmsTopicId: "t1", name: "Unit 1" }),
             Object.freeze({ lmsTopicId: "t2", name: "Unit 2" }),
           ]),
+        refreshClass: async (input: { linkId: string }) =>
+          Object.freeze({
+            linkId: input.linkId,
+            classId: "",
+            lmsClassId: "",
+            providerId: "googleClassroom",
+            status: "healthy" as const,
+            changed: false,
+          }),
         publishAssignment: async (input: LmsPublishIn) => {
           events.push(`lms:${input.assignmentId}`);
           lmsCalls.push(input);
