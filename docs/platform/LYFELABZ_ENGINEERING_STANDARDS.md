@@ -267,6 +267,56 @@ Drift is not prevented by good intentions. It is prevented by a review culture t
 
 ---
 
+## 15A. Sprint 9A Operational Standards for the Assessment Pipeline
+
+The formative assessment pipeline is governed by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021. Every operational obligation below applies to platform code and platform operations:
+
+**Server scoring.**
+
+- Attempt writes originate only from the Cloud Function scorer. No client role holds a direct write path to the attempt collection.
+- The scorer computes the aggregate score, item-level correctness, and item-level points earned against the server-confidential answer key. The scorer's return payload is the sole source of truth for the browser's post-submission display.
+- The scorer is idempotent under retry. Every submission carries a client-supplied idempotency marker; the scorer deduplicates on the marker.
+- Scorer outages are teacher-visible only as submission failures. Sessions are not expired by scorer downtime; session expiration is measured from student activity, not from platform activity.
+
+**Answer key protection.**
+
+- Answer keys are held in a server-controlled surface readable only by the scorer's admin-authority code path.
+- Answer keys are never delivered to a client before submission. No client-reachable artifact (network payload, CDN asset, JavaScript bundle, cached response) contains an answer key.
+- Answer keys are versioned with the internal assessment revision identifier. Deploying an answer-key change without a matching revision boundary is prohibited.
+
+**Session retention.**
+
+- Session expiration: platform default 24 hours from last student activity. Configurable operational constant. Not exposed to teachers.
+- Grace period: platform default 1 hour after assignment close, for sessions live at close. Configurable operational constant. Not exposed to teachers.
+- Session storage lives in its own collection, distinct from attempts. Sessions are never mutated into attempts; the scorer produces the attempt as a new document.
+
+**Archived session retention.**
+
+- Archived sessions are retained for a bounded recovery window (a configurable operational constant) and are then deleted under the platform's ordinary retention policy.
+- Session recovery from the archived state runs only through a server-side callable. Clients cannot promote an archived session back to live on their own authority.
+- Archived sessions are never counted as attempts and never appear on teacher-facing surfaces as attempts.
+
+**Immutable attempts.**
+
+- Attempts are immutable. Security Rules deny update and delete on the attempt collection for every client role.
+- Administrative correction paths, if introduced, run through an audited server-side callable that writes an adjacent correction record. The attempt itself is never overwritten.
+- Rollups are recomputable from attempts. Attempts are not recomputable from rollups. Any dispute between the two is resolved by reading the attempt.
+
+**Assignment lifecycle.**
+
+- Every assignment belongs to exactly one class. Assigning one activity to multiple classes is implemented as automatic server-mediated fan-out into N assignment records, one per class.
+- Assignment lifecycle events - publication, closure, grace-period activation, archival - are recorded as audit events.
+- Closed assignments never re-open. A teacher who wishes to re-authorize an activity publishes a new assignment.
+
+**Assessment revisions.**
+
+- The internal assessment revision identifier is platform-owned and platform-authored. Revision identifiers never appear on teacher-facing or student-facing surfaces.
+- Every attempt records the internal revision identifier at the moment of submission. Historical attempts remain interpretable across later revisions.
+
+Deviations from these operational standards require a Platform Decision Record amendment. Silent divergence is treated as a defect under Section 15.
+
+---
+
 ## 16. Living Document Rules
 
 This document evolves, but slowly.

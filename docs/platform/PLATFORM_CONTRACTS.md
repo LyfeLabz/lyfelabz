@@ -2,7 +2,17 @@
 
 **Status:** Authoritative for cross-cutting platform contracts.
 **Purpose:** Centralize the reusable technical agreements that more than one LyfeLabz platform feature relies on, so future implementation sprints inherit consistent behavior instead of reinventing it.
-**Companion documents:** LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, PRESENT_MODE_ARCHITECTURE.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_JOURNEY.md, ASSIGN_EXPERIENCE.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, PLATFORM_STATE_MACHINE.md, SPRINT_HISTORY.md.
+**Companion documents:** LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, PRESENT_MODE_ARCHITECTURE.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_JOURNEY.md, ASSIGN_EXPERIENCE.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, PLATFORM_STATE_MACHINE.md, ASSESSMENT_PIPELINE_SPECIFICATION.md, SPRINT_HISTORY.md.
+
+## Sprint 9A Reconciliation Notice
+
+Every mention of "submission" in this document is read forward under the Sprint 9A mapping **Submission → Attempt** established by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021. The storage prohibitions in Section 3 continue to apply to the Attempt entity, to the Session entity, and to feedback payloads. In particular:
+
+- `localStorage` must not be used for authenticated identity, authorization, class, student, assignment, attempt, session, mastery, or accommodation state.
+- URL query parameters and URL fragments must not contain teacher, class, student, assignment, attempt, session, authentication, or analytics data.
+- Backend-authoritative state (roles, claims, lifecycle status, class ownership, enrollment, assignment, attempt, session, score, and audit records) must not be replaced by browser storage.
+
+Session state is durable server-side per the specification (Sections 6, 9, 10); the client does not own session persistence.
 
 This document is authoritative for cross-cutting platform contracts. Feature architecture documents remain authoritative for feature-specific behavior. The broader platform architecture (`LYFELABZ_PLATFORM_ARCHITECTURE.md`) and the certified decision log (`LYFELABZ_PLATFORM_DECISIONS.md`) remain authoritative for platform identity, boundaries, and locked decisions. This document composes with those sources; it does not override them.
 

@@ -403,9 +403,21 @@ Reconsider only if the instructional repository itself is fundamentally reorgani
 
 ## PDR-008: Assessment Submission Model
 
+### Sprint 9A Reconciliation Notice
+
+This record is superseded in part by PDR-021 and by `ASSESSMENT_PIPELINE_SPECIFICATION.md`. The load-bearing commitments of PDR-008 - server-side finalization, immutability, ownership stamping, version stamping, retention of prior records on new attempts - all survive intact and are restated in the specification. The following terminology and scope changes apply:
+
+- The authoritative record entity is renamed **Attempt**. There is no separate Submission entity. The transient `submitted` state remains internal to the server transaction and is never externally observable.
+- The word "retake" is reserved for the future summative pipeline. Formative repeatable evidence is an **attempt**.
+- Formative attempts are unlimited by default.
+- Client-authoritative scoring is prohibited. The specification requires server-authoritative scoring and server-confidential answer keys.
+- Sessions are a distinct entity from attempts. See Sections 6, 8, 9, and 10 of the specification.
+
+Where this record and the specification appear to disagree, the specification controls.
+
 ### Decision
 
-Submissions are ownership-stamped, immutable-once-finalized records that reference the lesson by identifier and by version. Finalization occurs through a Cloud Function from Version 1. Timestamps are server-set. Retakes create new submissions and preserve prior ones.
+Attempts are ownership-stamped, immutable-once-finalized records that reference the lesson by identifier and by internal assessment revision. Finalization occurs through a Cloud Function from Version 1. Timestamps are server-set. New attempts create new attempt records and preserve all prior ones. Formative attempts are unlimited by default. Sessions are distinct from attempts and are governed by `ASSESSMENT_PIPELINE_SPECIFICATION.md`.
 
 ### Status
 
@@ -1536,9 +1548,104 @@ Limitations:
 
 ---
 
+## PDR-021: Assessment Pipeline Architecture
+
+### Decision
+
+The formative assessment pipeline is defined by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and comprises seven load-bearing sub-decisions recorded below. Together they specify how a LyfeLabz formative assessment is offered, taken, saved, submitted, scored, recorded, revised, and reported on.
+
+### Status
+
+Accepted. Ratified 2026-07-12 in the Sprint 9A Architecture Decision Workshop. Supersedes PDR-008 in part (see PDR-008 Sprint 9A Reconciliation Notice) and constrains every subsequent assessment-related sprint. Every load-bearing decision below is locked before Sprint 9B implementation begins.
+
+### Background
+
+Sprint 8 completed the LMS foundation on top of an assessment pipeline that had not yet ratified session lifecycle, revision boundary, scoring authority, feedback contract, mode surface, or per-class assignment rule. Ambiguity in those areas would compound as authenticated student traffic grows. Sprint 9A ratified the entire assessment pipeline before authenticated student traffic ships.
+
+### Alternatives Considered
+
+The specification records the alternatives considered for each sub-decision. This record aggregates the outcomes.
+
+### Decision
+
+**PDR-021a. Session and attempt are distinct entities.**
+
+- A **session** is transient, resumable, autosaving working state. Sessions are never counted as attempts and never appear as attempts on any teacher-facing surface.
+- An **attempt** is the authoritative, immutable record of a completed formative assessment. Attempts are created only after successful server-side submission.
+- There is no separate Submission entity. The `submitted` state is a transient state inside the server-side submission transaction; it is never externally observable.
+- Sessions expire on inactivity. Platform default: 24 hours after last activity. Configurable operational constant. Expired sessions are archived and are retained for a bounded recovery window before deletion. Recovery of an archived session returns it to the live state and does not itself produce an attempt.
+
+**PDR-021b. Server-authoritative scoring; server-confidential answer keys.**
+
+- Scoring is completely server-authoritative. The browser submits answers; the server computes the score, the item-level correctness, and the item-level points earned; the server stores the score; the browser displays only the score the server returns. No browser-authoritative score exists.
+- Authoritative answer keys never reach the browser before submission. Cloud Functions perform grading. Only the scorer reads the answer key.
+- Post-submission, the platform returns to the browser a specific, permitted feedback payload: the aggregate score, the correct answers to each item, and the item-level explanations. The client is responsible only for display.
+
+**PDR-021c. Unlimited attempts, immutable history, teacher analytics.**
+
+- Formative assessments allow unlimited attempts. Every submitted attempt is preserved. No attempt is overwritten.
+- Teacher dashboards initially expose exactly five metrics per (student, assignment): **highest score, first score, latest score, attempt count, growth**. Additional analytics remain internal until a subsequent PDR authorizes exposure.
+
+**PDR-021d. Platform-owned assessment revision boundary.**
+
+- Teachers never manage assessment versions.
+- The platform automatically creates an internal revision identifier when the assessment content changes in a way that would meaningfully affect scoring or student experience. Minor editorial corrections do not create a new revision.
+- Revision identifiers are internal. They never appear on a teacher-facing surface or a student-facing surface.
+- Every attempt records the internal revision identifier of the assessment at the moment of submission. Historical attempts remain interpretable across later revisions.
+
+**PDR-021e. Practice / Classroom mode toggle is removed.**
+
+- The authenticated platform no longer exposes a Practice / Classroom toggle on the student surface. Behavior derives automatically from authentication and authorization.
+- Anonymous exploration replaces the surface that "Practice" used to name. Authenticated, authorized attempt replaces the surface that "Classroom" used to name. Neither name appears on the student surface.
+- Anonymous interaction produces no session and no attempt. Anonymous quiz activity is deliberately not observable to LyfeLabz.
+
+**PDR-021f. Assignment windows and grace period.**
+
+- Assignment windows control who may begin an assessment. No new sessions begin after the close moment.
+- Students already working when the window closed receive a one-hour grace period during which they may submit. The grace period does not authorize new sessions. Saved work in a live session remains preserved even if the student does not submit within the grace period.
+- The one-hour grace period is a platform default and a configurable operational constant. Teachers do not set or override it.
+
+**PDR-021g. One assignment belongs to exactly one class; canonical curriculum ownership.**
+
+- Every assignment belongs to exactly one class. Assigning one activity to multiple classes automatically creates one assignment per class. Teachers experience this as one workflow; internally the platform holds N assignment records.
+- Canonical curriculum - lessons, quizzes, extensions, investigations, simulations, challenges, answer keys, explanations, and standards alignment - is owned exclusively by the Platform Administrator. Teachers configure delivery but do not modify canonical curriculum. A future teacher suggestion workflow may be added; it is a suggestion pipeline, not authorization to write curriculum directly.
+
+### Rationale
+
+Recording the pipeline as a dedicated PDR closes a class of drift attempts and gives Sprint 9B implementation a stable target. Naming the session-attempt separation prevents future sprints from folding session state into the authoritative record. Naming the server-authoritative scoring rule prevents future sprints from admitting a client-side score field into the attempt document under any name. Naming the removed Practice / Classroom toggle prevents its reappearance under a different label. Naming the one-assignment-per-class rule prevents cross-class attempt records from being introduced under an ambiguous multi-class assignment shape.
+
+### Consequences
+
+Benefits:
+
+- The assessment pipeline is ratified end-to-end before authenticated student traffic ships.
+- Historical attempts remain defensible across curriculum evolution because every attempt carries an internal revision identifier.
+- Student attempt history is uncapped, preserved, and immutable, satisfying the growth-over-completion posture.
+- Teacher metrics are small, stable, and workflow-relevant, satisfying the minimize-cognitive-load principle.
+- The client cannot fabricate or influence a score, satisfying the preserve-educational-integrity principle.
+
+Limitations:
+
+- Every scoring operation runs through a Cloud Function. Scorer outages block attempt creation; they do not block exploration or session autosave.
+- The attempt collection grows without a per-student cap. Retention is governed by class-level historical retention.
+- Teacher analytics are limited to five metrics at the initial release; expanding the teacher surface requires a subsequent PDR.
+
+### Future Reconsideration Criteria
+
+- **PDR-021a** reconsidered only if the session and attempt entities' distinct roles cease to model the workflow (for example, if the platform ever adopts a summative pipeline that unifies them - which is prohibited under Section 2 of the specification).
+- **PDR-021b** reconsidered only if a compelling privacy or performance case is made against server scoring. Growth pressure is not sufficient.
+- **PDR-021c** reconsidered only if the unlimited-attempt posture materially undermines educational integrity in observed practice, or if a teacher surface expansion is authorized through PDR-018.
+- **PDR-021d** reconsidered only if teachers require version selection for a defensible educational reason (none has been named).
+- **PDR-021e** reconsidered only if authentication or authorization semantics change materially. The toggle does not return under a rename.
+- **PDR-021f** reconsidered only if the one-hour grace period proves operationally wrong; the value is a constant, not a policy.
+- **PDR-021g** reconsidered only if the one-assignment-per-class rule proves incompatible with a future teacher workflow. Multi-class assignment surfaces remain a workflow-layer concern with a per-class record shape.
+
+---
+
 ## Change Log
 
 - 2026-07-07 - Initial platform decision record established.
 - 2026-07-09 - PDR-018 (Teacher Experience Surface Boundaries) added.
 - 2026-07-10 - PDR-019 (LMS Integration Posture) added. PDR-015 amended to reference the ratified LMS integration architecture.
 - 2026-07-10 - PDR-020 (LMS Phase Re-Sequencing and Initial Scope) added. PDR-015 and PDR-019 amended to remove the Phase 8 gate for the initial LMS scope. Google Classroom formally authorized as the initial LMS implementation target. Provider neutrality reaffirmed as a permanent architectural property.
+- 2026-07-12 - PDR-021 (Assessment Pipeline Architecture) added under Sprint 9A. PDR-008 amended with a Sprint 9A Reconciliation Notice recording the Submission → Attempt terminology change, the session/attempt separation, the server-authoritative scoring rule, and the removal of the Practice / Classroom mode toggle. `ASSESSMENT_PIPELINE_SPECIFICATION.md` established as the single source of truth for formative assessment behavior.

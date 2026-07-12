@@ -2,7 +2,24 @@
 
 **Status:** Constitutional document
 **Scope:** All trusted server-side logic within the LyfeLabz platform
-**Companion to:** LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_PLATFORM_ARCHITECTURE.md
+**Companion to:** LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, ASSESSMENT_PIPELINE_SPECIFICATION.md
+
+## Sprint 9A Reconciliation Notice
+
+The formative assessment portion of this charter is superseded by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021. The charter's principles (server-authoritative scoring, idempotency, single-purpose functions, out-of-band scaling) survive intact. Terminology and scope are amended as follows.
+
+- Read every mention of "submission" as **attempt**. There is no separate Submission entity. The `submitted` state is transient inside the scoring transaction.
+- The `submissionsCreate` and `submissionsFinalize` callables described in Section §12 are, going forward, understood as the scorer's write path for the Attempt entity. The `mode: "practice"` / `mode: "classroom"` field is retired; every recorded attempt is by definition an authenticated authorized attempt (see PDR-021e). Sprint 9B implementation is responsible for the concrete function renames and shape changes required by the specification.
+- A distinct **Session** surface exists for autosave and resume of student working state. Session writes originate from the client through a server-mediated callable that validates enrollment and window state; sessions are not the attempt path and never write to the attempt collection. Session shape, expiration (24 hours), archival, and recovery follow specification Sections 6, 9, and 10.
+- Scoring is server-authoritative. The client submits answers; the scorer computes the score against the server-confidential answer key; the scorer returns the score, correctness, and explanations. Section §11's "Immediate right/wrong feedback for practice questions is computed locally" continues to apply only to non-recording exploration surfaces; every authoritative attempt is scored server-side. No client-authoritative score field ever enters the attempt document under any name.
+- Assignment windows are enforced at session creation and at attempt submission. Assignments closed at submission time are accepted only if the session was live at close and is within the one-hour grace period (specification §7.1).
+- Assignments are per-class. Assigning one activity to multiple classes creates one assignment record per class through server-mediated fan-out. The publication callable enforces the per-class shape.
+- Answer keys are held in a server-controlled surface readable only by the scorer. Answer keys never appear in any client-reachable artifact.
+- Every attempt carries the **internal assessment revision identifier** at the moment of submission. The revision boundary is platform-owned (see PDR-021d).
+
+Where this charter and the specification conflict, the specification controls.
+
+
 
 This charter answers one question:
 

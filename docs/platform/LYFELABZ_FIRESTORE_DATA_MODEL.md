@@ -11,6 +11,20 @@ This document assumes the reader is already familiar with:
 - LYFELABZ_PLATFORM_DOMAIN_MODEL.md
 - LYFELABZ_PLATFORM_ARCHITECTURE.md
 - LYFELABZ_PLATFORM_ARCHITECTURE_CERTIFICATION.md
+- ASSESSMENT_PIPELINE_SPECIFICATION.md
+
+## Sprint 9A Reconciliation Notice
+
+The formative assessment portion of this document is superseded by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021. Read every mention of `submissions/{submissionId}` in this document under the mapping **Submission → Attempt** and apply the following:
+
+- The authoritative record is the **Attempt**. There is no separate Submission entity. The `submitted` state remains internal to the server-side scoring transaction and is never externally observable.
+- A distinct **Session** entity holds transient, resumable, autosaving student working state. Sessions expire 24 hours after last activity, are archived on expiry, and are retained for a bounded recovery window before deletion. Sessions are never counted as attempts. Session storage lives in its own collection distinct from attempts. The specification (Sections 6, 9, 10) governs session shape and retention.
+- Every attempt document records the **internal assessment revision identifier** the student was scored against. Lesson version stamping continues to apply (PDR-009).
+- The `mode` field on the pre-Sprint 9A submission shape ("classroom" / "practice") is retired. Every recorded attempt is by definition an authenticated authorized attempt; the pre-Sprint 9A Practice / Classroom mode toggle is removed by PDR-021e.
+- Every assignment belongs to exactly one class. Assigning one activity to multiple classes creates one assignment document per class through server-side fan-out (PDR-021g).
+- Scoring is server-authoritative. Answer keys are server-confidential and are not delivered to the client before submission. Attempt writes originate only from the Cloud Function scorer.
+
+Where this document and the specification conflict, the specification controls. Sprint 9B implementation is responsible for reconciling the concrete Firestore shape (collection names, field names, retention windows) with the specification.
 
 ---
 

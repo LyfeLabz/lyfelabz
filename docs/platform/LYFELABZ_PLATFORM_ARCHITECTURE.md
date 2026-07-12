@@ -5,6 +5,21 @@
 **Audience:** Platform architects, contributors, future maintainers
 **Scope:** Version 1 through the five-year platform roadmap
 
+## Sprint 9A Reconciliation Notice
+
+The formative assessment portion of this document is superseded by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021. The specification is the single source of truth for how a LyfeLabz formative assessment is offered, taken, saved, submitted, scored, recorded, revised, and reported on. Read every mention of "submission" in this document as **attempt**, and apply the following corrections while reading:
+
+- The authoritative assessment record is the **Attempt**. There is no separate Submission entity. A distinct **Session** entity holds transient, resumable, autosaving working state.
+- Scoring is server-authoritative. Answer keys are server-confidential.
+- Every assignment belongs to exactly one class; multi-class assignment is expressed as automatic per-class fan-out.
+- The Practice / Classroom mode toggle is removed. Behavior derives from authentication and authorization.
+- Formative attempts are unlimited by default. "Retake" is reserved for the future summative pipeline.
+- Assignment windows are backed by a one-hour grace period for sessions live at close.
+- Sessions expire 24 hours after last activity and are archived; archived sessions are recoverable within a bounded window and are then deleted.
+
+Where this document and the specification conflict, the specification controls.
+
+
 This document is the canonical reference for every LyfeLabz platform decision. It defines what the platform is, how its systems relate, and which decisions should be considered locked before implementation begins. It is deliberately conceptual. It does not contain Firestore schemas, security rules, Cloud Functions, or configuration files. Those artifacts follow this document, they do not shape it.
 
 The instructional repository is complete. The platform layer wraps around it. Nothing in this document is permitted to weaken the instructional philosophy that produced the existing repository.

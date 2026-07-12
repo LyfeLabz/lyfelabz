@@ -8,6 +8,23 @@
 - LYFELABZ_PLATFORM_ARCHITECTURE.md
 - LYFELABZ_PLATFORM_DOMAIN_MODEL.md
 - LYFELABZ_FIRESTORE_DATA_MODEL.md
+- ASSESSMENT_PIPELINE_SPECIFICATION.md
+
+## Sprint 9A Reconciliation Notice
+
+The formative assessment portion of this document is superseded by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021. Read every mention of `submissions` and `submission` under the mapping **Submission → Attempt**. In addition:
+
+- The **Attempt** collection is written only by the Cloud Function scorer. No client role - student, teacher, or administrator - holds a direct write path to an attempt document. Security Rules deny direct client writes; the scorer's admin-authority write path is the only allowed producer.
+- A distinct **Session** collection exists for autosaving student working state. Security Rules scope session reads and writes to the owning student and to the platform's session-management callables. Teachers do not read live sessions. Teacher preview never produces a session.
+- Answer keys are held in a server-controlled surface that is never delivered to any client role. No Security Rule permits a read of the answer-key surface from any client. Only the scorer, running with admin authority, reads the surface.
+- Anonymous callers hold no read or write path to attempts or sessions. Anonymous interaction is stateless.
+- Attempts are immutable. Security Rules deny update and delete on the attempt collection for every client role. Administrative correction paths, if introduced, run through an audited server-side callable that writes an adjacent correction record.
+- Assignment authorization is class-scoped. A student holds attempt authorization only through an active enrollment in the class referenced by the assignment.
+- Session recovery from the archived state occurs only through a server-side callable. Clients cannot promote an archived session back to live on their own authority.
+
+Where this document and the specification conflict, the specification controls.
+
+
 - LYFELABZ_FIRESTORE_QUERY_AND_INDEX_STRATEGY.md
 - LYFELABZ_SUBMISSION_ROLLUP_STRATEGY.md
 

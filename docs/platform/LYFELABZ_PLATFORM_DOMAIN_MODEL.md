@@ -1,7 +1,23 @@
 # LyfeLabz Platform Domain Model
 
 Status: Canonical
-Companion to: LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_ARCHITECTURE_REVIEW.md, LYFELABZ_PLATFORM_DECISIONS.md
+Companion to: LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_ARCHITECTURE_REVIEW.md, LYFELABZ_PLATFORM_DECISIONS.md, ASSESSMENT_PIPELINE_SPECIFICATION.md
+
+## Sprint 9A Reconciliation Notice
+
+The formative assessment portion of this document is superseded by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021. Read every mention of "Submission" or "Assessment Submission" in this document under the mapping **Submission → Attempt**. Additional Sprint 9A points to apply while reading:
+
+- The authoritative record entity is **Attempt**, not Submission. There is no separate Submission entity.
+- A **Session** is a distinct entity from an Attempt. Sessions are transient, resumable, autosaving working state; they are never counted as attempts, never appear on any teacher-facing surface as attempts, and are governed by the specification (Sections 6, 8, 9, 10).
+- Formative attempts are unlimited by default. "Retake" is reserved for the future summative pipeline and is not a synonym for a repeat formative attempt.
+- Scoring is server-authoritative. Answer keys are server-confidential. No browser-authoritative score exists.
+- Every assignment belongs to exactly one class. Assigning one activity to multiple classes automatically creates one assignment per class.
+- The Practice / Classroom mode toggle described in earlier surface documents is removed. Behavior derives automatically from authentication and authorization.
+
+Where this document and the specification conflict, the specification controls.
+
+---
+
 
 ---
 

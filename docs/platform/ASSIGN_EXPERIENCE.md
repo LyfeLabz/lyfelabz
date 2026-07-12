@@ -1,7 +1,23 @@
 # LyfeLabz Assign Experience
 
 Status: Canonical product specification for the teacher assignment workflow.
-Companion documents: TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, PRESENT_MODE_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md.
+Companion documents: TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, PRESENT_MODE_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, ASSESSMENT_PIPELINE_SPECIFICATION.md.
+
+## Sprint 9A Reconciliation Notice
+
+The assignment behavior described in this document is governed by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021 for every assessment-bearing activity. Terminology and behavior reconciled:
+
+- **One assignment belongs to exactly one class.** A teacher who assigns one activity to multiple classes triggers automatic per-class fan-out; the platform creates one assignment record per class. Teachers experience one workflow; the internal record shape is per-class.
+- **Assignment windows and grace period.** Windows control who may begin an assessment. Students already working when a window closes receive a **one-hour grace period** for submission. No new sessions begin after close. Saved work in a live session is preserved even if the student does not submit within the grace period. The one-hour value is a platform default and a configurable operational constant; teachers do not set or override it.
+- **Unlimited attempts by default.** Formative activities allow unlimited attempts. Every submitted attempt is preserved. Attempt caps are not offered on the initial teacher UI (see PDR-021c).
+- **Attempts are the authoritative record.** The word "submission" throughout this document is read forward as **attempt**. The `submitted` state remains internal to the scoring transaction and is not a teacher-visible state.
+- **Sessions are internal.** Autosaving, resuming, and expiring student sessions are platform behaviors. Teachers do not manage sessions.
+- **Practice / Classroom toggle removed.** The pre-Sprint 9A student-facing mode toggle is removed. Assignment configuration does not include a Practice / Classroom mode. Behavior derives automatically from authentication and authorization.
+- **Assessment revisions are internal.** Teachers do not select an assessment version. The platform automatically stamps every attempt with the internal revision identifier at submission time.
+
+Where this document and the specification conflict, the specification controls.
+
+
 
 This document is a product specification. It is not an architecture specification, a sprint plan, or an implementation guide. It defines what assigning a LyfeLabz resource should feel like from the teacher's perspective. Where a moment implies an architectural implication, that implication is left to the sprint specification that owns the surface, and always defers to the certified architecture.
 

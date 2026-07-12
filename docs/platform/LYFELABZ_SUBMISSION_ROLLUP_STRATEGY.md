@@ -6,6 +6,23 @@ Status: Strategy document. No implementation code, no Cloud Functions, no Securi
 
 This document is the third of three implementation preconditions identified during the Firestore Data Model readiness assessment. It follows the Firestore Data Model document and the Firestore Query and Index Strategy document. It defines how student submissions become authoritative historical records and how teacher dashboards read summarized state without scanning submission history at read time.
 
+## Sprint 9A Reconciliation Notice
+
+This document is superseded in terminology and in several load-bearing rules by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021. The rollup discipline in Sections 4 through 11 remains correct and is retained by the specification. Read this document under the following mapping:
+
+- **Submission → Attempt.** The authoritative record entity is renamed Attempt. There is no separate Submission entity.
+- **Retake → Attempt.** In Section 5, "Resubmission policy" describes what the specification calls unlimited attempts. The prior authoritative record is preserved on every new attempt.
+- **"Resubmission" → new attempt.** Formative activities allow unlimited attempts by default. Every submitted attempt is preserved. No attempt is overwritten.
+- **Session distinction.** The lifecycle in Section 2 mentions a client "in-progress state" and a "short-lived working area." The specification names this a **Session** and gives it explicit lifecycle, expiration (24 hours), archival, and recovery semantics. Sessions are distinct from attempts and are never counted as attempts.
+- **Grace period.** Section 5 "Assignment closure" is amended: assignments that close during a live session grant that session a one-hour grace period during which submission remains permitted. No new sessions begin after close.
+- **Server-authoritative scoring.** Section 3's "Score" field is produced by a Cloud Function scorer against a server-confidential answer key. No client-authoritative score exists.
+- **Teacher metrics.** Section 4's rollup-derived metrics initially expose only the five metrics named in PDR-021c: highest score, first score, latest score, attempt count, and growth.
+- **Session state is never on a workflow rollup.** Rollups do not report "how far along" a student is inside a live session.
+
+Where this document and the specification conflict, the specification controls.
+
+---
+
 ---
 
 ## 1. Submission Philosophy
