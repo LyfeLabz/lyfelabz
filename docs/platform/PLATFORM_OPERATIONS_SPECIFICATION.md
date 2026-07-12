@@ -322,6 +322,8 @@ Session policy is designed to be invisible during a class period. A student who 
 
 The assessment session lifecycle (PDR-021a) is distinct from the authentication session. Assessment sessions expire 24 hours after last activity; authentication sessions are governed by this section. Neither replaces the other.
 
+Identity persistence (`IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023) is also distinct from authentication session persistence. Identity is the server-authoritative `users/{uid}` record and the claims written on it; the authentication session is the client-observable Firebase Authentication state. Neither replaces the other. After sign-in, users return to the exact location they were previously using, per `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` §22.
+
 ---
 
 ## 18. Present Mode During Deployment

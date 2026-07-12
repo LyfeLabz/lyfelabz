@@ -1777,6 +1777,79 @@ PDR-014's remaining properties continue to hold without amendment.
 
 ---
 
+## PDR-023: Identity and Onboarding Architecture
+
+### Decision
+
+LyfeLabz identity, onboarding, verification, roster authority, and the authenticated experience shell are governed by `IDENTITY_AND_ONBOARDING_SPECIFICATION.md`. That document is the single source of truth for identity behavior. This record ratifies its load-bearing decisions and anchors them in the decision log.
+
+### Status
+
+Accepted. Load-bearing.
+
+### Background
+
+Prior identity behavior was distributed across PDR-002, PDR-003, PDR-004, PDR-005, PDR-015, PDR-019, PDR-020, `LYFELABZ_SPRINT_2_ONBOARDING_AND_VERIFICATION.md`, and the Domain Model. Sprint 9C ratified a canonical specification that unifies these commitments, promotes District to a first-class entity, retires the verified-domain automated verification path, and codifies the verification-code path with a Request Teacher Access fallback.
+
+### Sub-decisions
+
+- **PDR-023a. Authentication is not authorization.** Google Workspace authenticates; the platform authorizes. Custom claims are written only when the identity's `status` is `active`.
+- **PDR-023b. Two identity families.** Teacher identities and student identities are governed by distinct provisioning, verification, and lifecycle rules.
+- **PDR-023c. District is a first-class security boundary.** Platform → District → School → Teacher Identity → Class → Enrollment. District is promoted from `Future` to load-bearing.
+- **PDR-023d. Teacher identity is district-bound.** Changing districts creates a new LyfeLabz teacher identity. Cross-district identity linking never occurs automatically. Within a district, a teacher identity may be authorized for multiple schools.
+- **PDR-023e. Student LyfeLabz Student ID is the authoritative student identifier.** Google is the authentication provider. Additional providers may be linked without changing the identifier.
+- **PDR-023f. Roster import does not create student identities.** Student identities are created only after first successful Google sign-in. Roster placeholders carry an `awaitingFirstSignIn` state until activation.
+- **PDR-023g. Identity matching is server-authoritative.** Primary key is Google Classroom User ID; email is the secondary validator. Students never resolve identity ambiguity by hand.
+- **PDR-023h. One roster authority per class.** Google Classroom for LMS-linked classes; LyfeLabz for manual classes. Hybrid authority is refused.
+- **PDR-023i. Google Classroom is the preferred onboarding path.** Manual classes remain fully supported for teachers whose classes are not represented in Google Classroom.
+- **PDR-023j. Join codes exist only for manual classes.** Server-generated, unique, revocable, replaceable, disabled after archive, never anonymous.
+- **PDR-023k. Teacher verification prefers a one-time institution-bound verification code.** The Request Teacher Access workflow is the fallback. The maintained verified-domain automated path is retired.
+- **PDR-023l. Verification is invisible after completion.** No residual verification chrome in the verified teacher's ordinary workflow.
+- **PDR-023m. Identity operations are atomic and idempotent.** No duplicate identities, enrollments, activations, or verifications.
+- **PDR-023n. Global header is uniform.** Identity is never hidden inside the hamburger menu. `Sign In` is globally visible for anonymous users; identity control is upper-right for authenticated users.
+- **PDR-023o. Authentication becomes required only when a capability depends on identity.** After sign-in, users return to the exact location they were previously using.
+
+### Rationale
+
+The identity architecture is the trust foundation for every other domain. Assessments, assignments, roster management, and LMS integration all depend on identity resolving to exactly one person with exactly one set of authorized capabilities. Distributing this contract across multiple records made drift easy. A single specification, anchored by a single PDR, makes drift structurally visible.
+
+### Consequences
+
+Benefits:
+
+- Every identity behavior has a canonical anchor.
+- The verified-domain allowlist is retired, closing a class of edge cases (personal domains, contractor accounts, transitional accounts).
+- District becomes a first-class security boundary before the first district ships, preventing a load-bearing migration later.
+- The onboarding surface is stable enough to be exercised end-to-end by pilot teachers.
+
+Limitations:
+
+- Verification codes require a Platform Administrator or authorized school administrator to issue. The Request Teacher Access fallback remains the safety net.
+- Cross-district teacher continuity is not automatic. This is intentional under PDR-023d.
+
+### Future Reconsideration Criteria
+
+- Automatic cross-district identity linking may be reconsidered when a district integration provides authoritative teacher rosters and consent for cross-district relationships is codified.
+- Non-Google identity providers may be added as linked providers without amending the specification's identity model, provided the two-layered rule (§3) is preserved.
+
+---
+
+## PDR-003 Sprint 9C Reconciliation Notice
+
+PDR-003 (Teacher Verification Philosophy) is ratified for its foundational commitments: teachers are provisional at first sign-in, verification is a designed screen and not a locked dashboard, and Platform Administrators are the authoritative reviewers. Sprint 9C supersedes PDR-003 in the following respect:
+
+- The maintained verified-domain automated verification path is retired. The preferred verification mechanism is a one-time, institution-bound verification code. The fallback is the Request Teacher Access workflow. See `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` §13 and PDR-023k.
+
+PDR-003's reconsideration criterion (district integration providing authoritative teacher rosters) is preserved and now points to PDR-023d and PDR-023k as the correct extension surface.
+
+---
+
+## PDR-015 Sprint 9C Reconciliation Notice
+
+PDR-015 (Future Expansion Philosophy) is ratified. Sprint 9C promotes the District entity from "reachable expansion" to a first-class, load-bearing entity that acts as the certified security boundary in the identity hierarchy. See `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` §6 and PDR-023c. The other expansions PDR-015 names (Canvas, Schoology, parent surface, additional authentication providers) remain reachable-but-deferred.
+
+---
+
 ## Change Log
 
 - 2026-07-07 - Initial platform decision record established.
@@ -1785,3 +1858,4 @@ PDR-014's remaining properties continue to hold without amendment.
 - 2026-07-10 - PDR-020 (LMS Phase Re-Sequencing and Initial Scope) added. PDR-015 and PDR-019 amended to remove the Phase 8 gate for the initial LMS scope. Google Classroom formally authorized as the initial LMS implementation target. Provider neutrality reaffirmed as a permanent architectural property.
 - 2026-07-12 - PDR-021 (Assessment Pipeline Architecture) added under Sprint 9A. PDR-008 amended with a Sprint 9A Reconciliation Notice recording the Submission → Attempt terminology change, the session/attempt separation, the server-authoritative scoring rule, and the removal of the Practice / Classroom mode toggle. `ASSESSMENT_PIPELINE_SPECIFICATION.md` established as the single source of truth for formative assessment behavior.
 - 2026-07-12 - PDR-022 (Platform Operations Architecture) added under Sprint 9B. PDR-014 amended with a Sprint 9B Reconciliation Notice ratifying Firebase Hosting as the permanent canonical production origin, replacing the Testing environment nomenclature with Preview, and naming Platform Administrator approval as the load-bearing human gate. `PLATFORM_OPERATIONS_SPECIFICATION.md` established as the single source of truth for LyfeLabz operational behavior.
+- 2026-07-12 - PDR-023 (Identity and Onboarding Architecture) added under Sprint 9C. PDR-003 amended with a Sprint 9C Reconciliation Notice retiring the maintained verified-domain automated verification path in favor of the verification-code path with the Request Teacher Access fallback. PDR-015 amended with a Sprint 9C Reconciliation Notice promoting the District entity from reachable expansion to a first-class security boundary. `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` established as the single source of truth for LyfeLabz identity, onboarding, verification, roster authority, and the authenticated experience shell.

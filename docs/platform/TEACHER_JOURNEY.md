@@ -1,7 +1,20 @@
 # LyfeLabz Teacher Journey
 
 Status: Canonical product narrative.
-Companion documents: TEACHER_EXPERIENCE_PHILOSOPHY.md, PRESENT_MODE_ARCHITECTURE.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md.
+Companion documents: TEACHER_EXPERIENCE_PHILOSOPHY.md, PRESENT_MODE_ARCHITECTURE.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, IDENTITY_AND_ONBOARDING_SPECIFICATION.md.
+
+## Sprint 9C Reconciliation Notice
+
+The identity, verification, class creation, and onboarding moments in this narrative are subordinate to `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Apply the following while reading:
+
+- Class creation lives in the `Classes` workspace under `+ Add Class`, offering exactly two options: **Import from Google Classroom** or **Create Class Manually**. `Settings` is never used for class creation.
+- Google Classroom is the preferred onboarding path. Join codes exist only for manual classes.
+- Teacher verification prefers a one-time institution-bound verification code; the Request Teacher Access workflow is the fallback. Verification is completed once and then becomes invisible.
+- The global header is uniform across surfaces. Identity is never hidden inside the hamburger menu.
+
+Where the narrative and the specification appear to conflict, the specification controls.
+
+---
 
 This document is a narrative. It is not an architecture specification, a sprint plan, or an implementation guide. It describes what it should feel like to teach with LyfeLabz across an ordinary school day. Every principle it names defers to the certified architecture. Where a moment implies an implementation detail, that detail is left to the sprint specification that owns the surface.
 

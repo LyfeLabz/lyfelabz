@@ -1,7 +1,20 @@
 # LyfeLabz LMS Integration Architecture
 
 Status: Implementation authorized following this ratification. The narrow initial scope named in PDR-020c is authorized for implementation under Phase 9 (LMS Integration Foundation) as advanced ahead of Phase 8 by PDR-020b. Every load-bearing decision in PDR-019 and PDR-020 continues to apply. Capabilities beyond the initial scope remain reachable-but-deferred and require their own subsequent sprint specifications.
-Companion documents: LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, PLATFORM_CONTRACTS.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_JOURNEY.md, ASSIGN_EXPERIENCE.md, PRESENT_MODE_ARCHITECTURE.md, CLASS_SNAPSHOT_EXPERIENCE.md, SNAPSHOT_ARCHITECTURE.md, LMS_EXPERIENCE.md, LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md, LMS_INTEGRATION_OPERATIONS.md.
+Companion documents: LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, PLATFORM_CONTRACTS.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_JOURNEY.md, ASSIGN_EXPERIENCE.md, PRESENT_MODE_ARCHITECTURE.md, CLASS_SNAPSHOT_EXPERIENCE.md, SNAPSHOT_ARCHITECTURE.md, LMS_EXPERIENCE.md, LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md, LMS_INTEGRATION_OPERATIONS.md, IDENTITY_AND_ONBOARDING_SPECIFICATION.md.
+
+## Sprint 9C Reconciliation Notice
+
+The identity and roster portions of this architecture are subordinate to `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Nothing in Sprint 9C widens or narrows the LMS surface; it names the identity contract this architecture already assumed.
+
+- **Roster authority.** Every class has exactly one roster authority. LMS-linked classes: Google Classroom. Manual classes: LyfeLabz. Hybrid authority is refused. This is the identity restatement of PDR-019b and PDR-019i.
+- **Identity matching.** Google Classroom User ID is the primary matching key for LMS-linked classes; email is the secondary validator. Students never resolve identity ambiguity by hand.
+- **Roster placeholders and first sign-in activation.** Roster import produces placeholders in the `awaitingFirstSignIn` state. Student identities are created only at first successful Google sign-in.
+- **District boundary.** LMS integration operations are refused across district boundaries. A teacher may only import Google Classroom classes into their own district's school membership.
+
+Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict on identity or roster authority, the specification controls.
+
+---
 
 This document defines the canonical architecture for integrating LyfeLabz with external learning management systems. It is implementation-neutral. It does not ship Firestore fields, Firebase Security Rules, Cloud Function code, callable signatures, or client bundles. Those artifacts follow this document. The amendments recommended in `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md` have been ratified into the platform architecture; PDR-019 records the load-bearing posture and PDR-020 authorizes the initial implementation scope.
 

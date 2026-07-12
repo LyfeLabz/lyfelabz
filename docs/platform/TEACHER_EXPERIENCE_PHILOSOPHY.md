@@ -1,7 +1,17 @@
 # LyfeLabz Teacher Experience Philosophy
 
 Status: Canonical
-Companion documents: LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, LYFELABZ_PLATFORM_DOMAIN_MODEL.md, PLATFORM_STATE_MACHINE.md
+Companion documents: LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, LYFELABZ_PLATFORM_DOMAIN_MODEL.md, PLATFORM_STATE_MACHINE.md, IDENTITY_AND_ONBOARDING_SPECIFICATION.md
+
+## Sprint 9C Reconciliation Notice
+
+Every teacher surface principle in this document is subordinate to `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023 in the following respects:
+
+- **Class creation lives in the Classes workspace**, never in Settings. The two options are Import from Google Classroom and Create Class Manually.
+- **Teacher verification is invisible after completion.** Verified teachers see no residual verification chrome in their ordinary workflow.
+- **The global header is uniform.** Identity is never hidden inside the hamburger menu; `Sign In` for anonymous users and the identity control for authenticated users occupy the upper right.
+
+Where philosophy and specification conflict, the specification controls.
 
 ---
 

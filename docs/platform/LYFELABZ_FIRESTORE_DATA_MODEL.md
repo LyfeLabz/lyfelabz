@@ -12,6 +12,22 @@ This document assumes the reader is already familiar with:
 - LYFELABZ_PLATFORM_ARCHITECTURE.md
 - LYFELABZ_PLATFORM_ARCHITECTURE_CERTIFICATION.md
 - ASSESSMENT_PIPELINE_SPECIFICATION.md
+- IDENTITY_AND_ONBOARDING_SPECIFICATION.md
+
+## Sprint 9C Reconciliation Notice
+
+The identity portion of this document is superseded by `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Apply the following while reading:
+
+- **District identifier is required.** Every `schools/{schoolId}` document carries a required `districtId`. Every `users/{uid}` document carries a `districtId` for teacher and student records once identity is `active`. Cross-district reads are refused at the security-rule layer per Section 6 of the specification.
+- **Roster placeholders are a class-scoped concept.** A roster placeholder in the `awaitingFirstSignIn` state is stored on the class (or on a per-class enrollment mirror), not as a `users/{uid}` document. `users/{uid}` documents are created only at first successful Google sign-in.
+- **Join code storage is exclusive to manual classes.** Any collection or field representing a join code is scoped to manual classes. LMS-linked classes carry no active join code.
+- **Roster authority is a class-level attribute.** Each class carries a canonical `rosterAuthority` value of `google_classroom` or `lyfelabz`. Hybrid authority is refused.
+- **Teacher multi-school membership is expressed on the identity record.** A teacher `users/{uid}` document carries a set of authorized `schoolIds` within its `districtId`, not a duplicated identity per school. The `schoolId` custom claim reflects the currently active membership.
+- **Verification-code redemption records are server-only.** Any collection introduced to hold or track verification-code state is server-writable only. No client role reads a valid, unredeemed code.
+
+Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the specification controls.
+
+---
 
 ## Sprint 9A Reconciliation Notice
 

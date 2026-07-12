@@ -9,6 +9,22 @@
 - LYFELABZ_PLATFORM_DOMAIN_MODEL.md
 - LYFELABZ_FIRESTORE_DATA_MODEL.md
 - ASSESSMENT_PIPELINE_SPECIFICATION.md
+- IDENTITY_AND_ONBOARDING_SPECIFICATION.md
+
+## Sprint 9C Reconciliation Notice
+
+The identity portion of this document is superseded by `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Apply the following while reading:
+
+- **District is a required security boundary.** Cross-district reads and writes are refused. Every rule that scopes a read or write by `schoolId` is additionally scoped by the caller's `districtId` claim (reserved by the Cloud Function Charter §2 canonical claim shape).
+- **Roster placeholders (`awaitingFirstSignIn`) are readable by the owning teacher and unwriteable by clients.** Placeholder activation is performed only by the callable that resolves first sign-in.
+- **Join-code redemption is server-only.** The callable path is the sole producer of an enrollment from a join code. Rules do not permit client-side writes to enrollment documents.
+- **Redeeming a join code against an LMS-linked class is refused server-side** with a plain-language error, matching PDR-019i.
+- **Verification-code state is default-deny for all client roles.** No client role reads a valid, unredeemed verification code. Redemption is performed by the callable that produces `teachers.verificationApproved` under the verification-code path.
+- **The teacher pre-verification identity has no capability-bearing rules.** Rules keyed on `role: "teacher"` require an `active` status per `PLATFORM_STATE_MACHINE.md`.
+
+Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the specification controls.
+
+---
 
 ## Sprint 9A Reconciliation Notice
 

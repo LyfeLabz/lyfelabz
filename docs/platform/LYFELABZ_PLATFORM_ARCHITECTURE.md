@@ -33,6 +33,21 @@ Section 12 (Deployment Strategy) of this document is superseded by `PLATFORM_OPE
 
 Where this document and `PLATFORM_OPERATIONS_SPECIFICATION.md` conflict, the specification controls.
 
+## Sprint 9C Reconciliation Notice
+
+The identity, onboarding, verification, roster authority, and authenticated-experience-shell portions of this document are superseded by `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Read the platform organizational hierarchy as `Platform → District → School → Teacher Identity → Class → Enrollment`, and apply the following while reading:
+
+- **Authentication is not authorization.** Google Workspace authenticates. The platform authorizes through the canonical claims (`role`, `schoolId`, reserved `districtId`).
+- **District is a first-class security boundary.** Every school, class, roster, teacher identity, and student identity lives inside exactly one district.
+- **Teacher identity is district-bound.** Changing districts creates a new LyfeLabz teacher identity.
+- **Teacher verification prefers a one-time institution-bound verification code**, with a Request Teacher Access fallback. The maintained verified-domain automated path is retired.
+- **Every class has exactly one roster authority.** Google Classroom for LMS-linked classes, LyfeLabz for manual classes. Join codes exist only for manual classes.
+- **Student identity is created only at first successful Google sign-in.** Roster placeholders (`awaitingFirstSignIn`) exist on the class until then. Students never resolve identity ambiguity by hand.
+- **The global header is uniform across LyfeLabz.** `LYFELABZ` wordmark on the far left. Identity control on the upper right (`Sign In` when anonymous, name and disclosure caret when authenticated). Hamburger menu on the far right. Identity is never hidden inside the hamburger menu.
+- **Authentication becomes required only when a capability depends on identity.** After sign-in, users return to the exact location they were previously using.
+
+Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the specification controls.
+
 
 This document is the canonical reference for every LyfeLabz platform decision. It defines what the platform is, how its systems relate, and which decisions should be considered locked before implementation begins. It is deliberately conceptual. It does not contain Firestore schemas, security rules, Cloud Functions, or configuration files. Those artifacts follow this document, they do not shape it.
 

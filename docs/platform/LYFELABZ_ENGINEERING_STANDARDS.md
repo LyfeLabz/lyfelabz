@@ -26,6 +26,22 @@ Engineering obligations that follow from Sprint 9B:
 - Production deployments never interrupt active classroom sessions. Client code must not force a mid-class reload for a new release (PDR-022h).
 - Operational monitoring is scoped to platform health. Adding student behavioral telemetry beyond platform health requires a new PDR (PDR-022i).
 
+## Sprint 9C Reconciliation Notice
+
+Identity behavior (authentication, authorization, identity resolution, verification, roster authority, onboarding, and the authenticated experience shell) is defined by `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. This document restates the engineering-level obligations that follow; it does not redefine identity behavior. Where this document and the identity specification conflict, the specification controls.
+
+Engineering obligations that follow from Sprint 9C:
+
+- Identity-changing operations run only in Cloud Functions. No client path may create, verify, or transfer an identity.
+- Every identity-changing callable is atomic and idempotent. Repeated invocation with the same inputs produces the same terminal state.
+- Custom claims are written only when `status` is `active`. `role`, `schoolId`, and `districtId` are the only claim keys; `districtId` is now written on every active identity.
+- Roster placeholders (`awaitingFirstSignIn`) are never modeled as `users/{uid}` documents. They live on the class.
+- Join codes are never minted or observed by the client. Join-code redemption is refused against an LMS-linked class.
+- Verification codes are never observable to any client role prior to redemption. Verification-code redemption produces `teachers.verificationApproved` under the state-machine semantics of `PLATFORM_STATE_MACHINE.md`.
+- Every callable that touches identity refuses cross-district operations.
+- The global header is a repository-wide layout obligation. New surfaces must implement it. Present Mode remains the sole documented exception (PDR-018b).
+- No identity secret, roster placeholder value, verification code, or join code is stored in `localStorage`, `sessionStorage`, URL query parameters, or URL fragments (`PLATFORM_CONTRACTS.md`).
+
 ---
 
 ## 1. Guiding Philosophy

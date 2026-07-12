@@ -2,7 +2,22 @@
 
 **Status:** Constitutional document
 **Scope:** All trusted server-side logic within the LyfeLabz platform
-**Companion to:** LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, ASSESSMENT_PIPELINE_SPECIFICATION.md
+**Companion to:** LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, ASSESSMENT_PIPELINE_SPECIFICATION.md, IDENTITY_AND_ONBOARDING_SPECIFICATION.md
+
+## Sprint 9C Reconciliation Notice
+
+The identity portion of this charter is superseded by `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. The charter's principles (server-authoritative, atomic, idempotent, single-purpose) survive intact. Terminology and scope are amended as follows.
+
+- The canonical custom claims shape (`role`, `schoolId`, reserved `districtId`) is unchanged. Sprint 9C promotes `districtId` from a documented reserved slot to a claim that is written on every `active` identity, per PDR-023c.
+- A **verification-code redemption callable** is added to the teacher onboarding surface. It validates the code server-side, transitions the identity from `pendingVerification` (or `provisioned` where applicable) to `active`, writes the canonical claims through the Sprint 2 §4.4 helper, and produces `teachers.verificationApproved`. The Sprint 2 admin approve/deny callables continue to serve the Request Teacher Access fallback path.
+- A **join-code redemption callable** is added to the student enrollment surface. It validates the code, refuses redemption against an LMS-linked class per PDR-019i, and produces the enrollment record. Redemption is atomic and idempotent.
+- A **first-sign-in activation callable** is the sole producer of the transition from a roster placeholder (`awaitingFirstSignIn`) to an active enrollment tied to a newly provisioned LyfeLabz Student ID. It is transactional. It never runs on the client.
+- An **LMS roster refresh callable** remains the sole producer of roster changes on LMS-linked classes (`LMS_INTEGRATION_ARCHITECTURE.md`). No client role writes roster records directly.
+- **District-scoping is enforced at every callable seam.** Callables refuse identity-affecting operations that cross district boundaries.
+
+Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the specification controls.
+
+---
 
 ## Sprint 9A Reconciliation Notice
 

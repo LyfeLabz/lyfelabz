@@ -2,7 +2,19 @@
 
 **Status:** Authoritative for cross-cutting platform contracts.
 **Purpose:** Centralize the reusable technical agreements that more than one LyfeLabz platform feature relies on, so future implementation sprints inherit consistent behavior instead of reinventing it.
-**Companion documents:** LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, PRESENT_MODE_ARCHITECTURE.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_JOURNEY.md, ASSIGN_EXPERIENCE.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, PLATFORM_STATE_MACHINE.md, ASSESSMENT_PIPELINE_SPECIFICATION.md, SPRINT_HISTORY.md.
+**Companion documents:** LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, PRESENT_MODE_ARCHITECTURE.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_JOURNEY.md, ASSIGN_EXPERIENCE.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, PLATFORM_STATE_MACHINE.md, ASSESSMENT_PIPELINE_SPECIFICATION.md, IDENTITY_AND_ONBOARDING_SPECIFICATION.md, SPRINT_HISTORY.md.
+
+## Sprint 9C Reconciliation Notice
+
+The identity-adjacent contracts in this document are subordinate to `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Apply the following while reading:
+
+- Storage prohibitions extend to identity resolution, roster placeholder state (`awaitingFirstSignIn`), verification-code payloads, and join-code payloads. None of these values may be persisted to `localStorage`, `sessionStorage`, URL query parameters, URL fragments, or any other client-observable surface.
+- Activation state on roster displays must be communicated by more than color under the accessibility contract. Text or iconography is required.
+- The global header contract in `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` §22 is a repository-wide layout contract. New surfaces must implement it; they must not hide identity inside the hamburger menu.
+
+Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the specification controls.
+
+---
 
 ## Sprint 9A Reconciliation Notice
 

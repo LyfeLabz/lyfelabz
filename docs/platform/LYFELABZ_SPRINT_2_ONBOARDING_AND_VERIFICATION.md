@@ -2,7 +2,22 @@
 
 **Status:** Approved implementation specification
 **Sprint:** Sprint 2
-**Companion documents:** LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, LYFELABZ_ENGINEERING_STANDARDS.md, PLATFORM_STATE_MACHINE.md, SPRINT_1_COMPLETION_REPORT.md, SPRINT_HISTORY.md
+**Companion documents:** LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, LYFELABZ_ENGINEERING_STANDARDS.md, PLATFORM_STATE_MACHINE.md, SPRINT_1_COMPLETION_REPORT.md, SPRINT_HISTORY.md, IDENTITY_AND_ONBOARDING_SPECIFICATION.md
+
+## Sprint 9C Reconciliation Notice
+
+Sprint 2's deliverables are preserved. The audit vocabulary, the callable surface, the Firestore rule set, the custom claims shape, and the state-machine references remain valid. Sprint 9C ratifies `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023 as the canonical identity architecture; the Sprint 2 implementation is a subordinate blueprint under that specification.
+
+Apply the following while reading:
+
+- **Section 4.3 (Verified school domain storage).** The auto-verification-via-verified-domain-list optimization is retired. The preferred verification mechanism is a one-time institution-bound verification code, and the fallback is the Request Teacher Access workflow (which is exactly the Sprint 2 request/approve/deny flow). The `teachers.verificationApproved` audit event is produced by either path.
+- **Section 4.4 (Custom claims shape).** `districtId` is promoted from a documented reserved slot to a claim written on every `active` identity. `role` and `schoolId` are unchanged.
+- **Section 6 (Firestore Rules).** Rules keyed by `schoolId` are additionally scoped by the caller's `districtId` claim under Sprint 9C.
+- **Section 7 (Cloud Functions).** A verification-code redemption callable joins the teacher onboarding surface. A join-code redemption callable and a first-sign-in activation callable are the sole producers of enrollments and student identities, respectively.
+
+Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the specification controls.
+
+---
 
 This document is the authoritative implementation specification for Sprint 2. It records the architecture decisions approved during engineering review and describes the exact deliverables Sprint 2 produces. It contains no unresolved placeholders. Where lifecycle behavior appears, this document refers to `PLATFORM_STATE_MACHINE.md` rather than duplicating definitions.
 

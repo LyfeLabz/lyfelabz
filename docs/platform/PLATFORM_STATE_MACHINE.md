@@ -2,7 +2,19 @@
 
 **Status:** Canonical reference
 **Scope:** The single authoritative definition of the account lifecycle across the entire LyfeLabz platform
-**Companion documents:** LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, LYFELABZ_PLATFORM_DECISIONS.md
+**Companion documents:** LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, LYFELABZ_PLATFORM_DECISIONS.md, IDENTITY_AND_ONBOARDING_SPECIFICATION.md
+
+## Sprint 9C Reconciliation Notice
+
+This document remains the sole canonical location for the `users/{uid}` `status` lifecycle. Sprint 9C introduces no new user-level state. It clarifies one adjacent concept:
+
+- **`awaitingFirstSignIn`** is a roster-level state that lives on a class's roster placeholder, not on `users/{uid}`. It exists before any student identity is provisioned. First successful Google sign-in matched to the placeholder atomically provisions the LyfeLabz Student ID and transitions the placeholder to `active`. This is described in full in `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` §16.
+
+Teacher verification transitions (`teachers.verificationRequested`, `teachers.verificationApproved`, `teachers.verificationDenied`) are unchanged. The Sprint 9C verification-code redemption callable produces `teachers.verificationApproved` under the same transition semantics as the Request Teacher Access approval path.
+
+Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` disagree on identity terminology, the specification controls; where they disagree on lifecycle state semantics, this document controls.
+
+---
 
 This document is the one canonical location for the account lifecycle. Every future sprint, Cloud Function, security rule, dashboard, and audit consumer refers to this document rather than redefining lifecycle states in place. If this document and any other document disagree on lifecycle terminology or transitions, this document is authoritative and the other is a defect.
 

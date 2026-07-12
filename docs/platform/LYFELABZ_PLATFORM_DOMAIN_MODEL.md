@@ -1,7 +1,22 @@
 # LyfeLabz Platform Domain Model
 
 Status: Canonical
-Companion to: LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_ARCHITECTURE_REVIEW.md, LYFELABZ_PLATFORM_DECISIONS.md, ASSESSMENT_PIPELINE_SPECIFICATION.md
+Companion to: LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_ARCHITECTURE_REVIEW.md, LYFELABZ_PLATFORM_DECISIONS.md, ASSESSMENT_PIPELINE_SPECIFICATION.md, IDENTITY_AND_ONBOARDING_SPECIFICATION.md
+
+## Sprint 9C Reconciliation Notice
+
+The identity portion of this document is superseded by `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Apply the following mappings while reading:
+
+- **District** is a first-class, load-bearing entity. Treat every "Future: District" statement as ratified and read District as the certified security boundary above School.
+- **Teacher** identity is district-bound. Section 4 (Ownership Rules) is amended so that a Teacher identity may hold authorized membership in more than one School within the same District. Cross-district teacher continuity does not occur automatically; changing districts produces a new LyfeLabz teacher identity.
+- **Join Code** exists only for manual classes. LMS-linked classes never use join codes. Every class has exactly one roster authority (Google Classroom for LMS-linked classes; LyfeLabz for manual classes).
+- **Roster placeholder** is introduced as a first-class concept. A roster placeholder in the `awaitingFirstSignIn` state exists on a class before any Student identity is provisioned. First successful Google sign-in activates the placeholder and provisions the LyfeLabz Student ID.
+- **Student** identity is created only at first successful Google sign-in, not at roster import. The LyfeLabz Student ID is authoritative; Google is the authentication provider.
+- **Assessment Submission** section retains the Sprint 9A mapping to Attempt.
+
+Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the specification controls.
+
+---
 
 ## Sprint 9A Reconciliation Notice
 
