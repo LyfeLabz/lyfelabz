@@ -3,6 +3,18 @@
 Status: Canonical product specification for the teacher assignment workflow.
 Companion documents: TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, PRESENT_MODE_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, ASSESSMENT_PIPELINE_SPECIFICATION.md.
 
+## Sprint 9D Reconciliation Notice
+
+The assignment workflow described in this document is subordinate to `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` and PDR-024 in the following respects:
+
+- **Activation and publication are separate.** Activation determines whether students may access a lesson inside LyfeLabz. Publication sends the assignment to Google Classroom for a specific LMS-linked class. Activation without publication is a supported state. Publication without activation is refused.
+- **Publication is per LMS-linked class row.** The per-class publication toggle continues to default off until the teacher opts in for that class, consistent with `TEACHER_EXPERIENCE_PHILOSOPHY.md` §3.5.
+- **Google Classroom remains the student assignment hub.** LyfeLabz never asks a student to check a second assignment list. Assignment communication for LMS-linked classes flows through Google Classroom.
+
+Where this document and the specification conflict, the specification controls.
+
+---
+
 ## Sprint 9A Reconciliation Notice
 
 The assignment behavior described in this document is governed by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021 for every assessment-bearing activity. Terminology and behavior reconciled:

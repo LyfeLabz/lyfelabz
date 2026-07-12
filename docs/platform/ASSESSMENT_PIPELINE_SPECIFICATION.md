@@ -11,6 +11,19 @@ The specification reads top-down. Sections 1 through 3 establish philosophy and 
 
 ---
 
+## Sprint 9 Foundational Specification Set
+
+This document is one of the four foundational Sprint 9 canonical specifications that together form the architectural foundation of the LyfeLabz platform. Future engineers should navigate between them as a single corpus:
+
+- **`ASSESSMENT_PIPELINE_SPECIFICATION.md` (Sprint 9A, PDR-021)** - this document. The platform's assessment substrate.
+- **`PLATFORM_OPERATIONS_SPECIFICATION.md` (Sprint 9B, PDR-022)** - the platform's operational substrate.
+- **`IDENTITY_AND_ONBOARDING_SPECIFICATION.md` (Sprint 9C, PDR-023)** - the platform's identity substrate.
+- **`PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` (Sprint 9D, PDR-024)** - the transition between the core platform architecture and the operational teacher and student experience.
+
+`PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` §0 records the relationship between the four documents and how they compose. Attempt semantics, session semantics, unlimited attempts by default, immutable history, server-authoritative scoring, and grace-period behavior originate in this document and are inherited by the pilot's student experience (`My Assignments`, `My Results`, submit-equals-completion, Improve My Score) without amendment.
+
+---
+
 ## 1. Educational Philosophy
 
 LyfeLabz assessments exist to reveal student thinking, not to sort students. Every architectural decision in this document is downstream of that stance.

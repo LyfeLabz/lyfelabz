@@ -1,7 +1,19 @@
 # LyfeLabz LMS Experience
 
 Status: Canonical product specification for the teacher-facing LMS integration workflow.
-Companion documents: LMS_INTEGRATION_ARCHITECTURE.md, LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md, TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, ASSIGN_EXPERIENCE.md, CLASS_SNAPSHOT_EXPERIENCE.md, PRESENT_MODE_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md.
+Companion documents: LMS_INTEGRATION_ARCHITECTURE.md, LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md, TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, ASSIGN_EXPERIENCE.md, CLASS_SNAPSHOT_EXPERIENCE.md, PRESENT_MODE_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md.
+
+## Sprint 9D Reconciliation Notice
+
+The Google Classroom integration philosophy in this document is subordinate to `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` and PDR-024 in the following respects:
+
+- **Activation and publication are separate.** Activation controls access to lessons inside LyfeLabz. Publication sends assignments into Google Classroom. Activation without publication is a supported state. Publication without activation is refused.
+- **Google Classroom remains the assignment hub for LMS-linked classes.** LyfeLabz's `My Assignments` surface is a status view, not a competing assignment hub.
+- **Deep links land the student in the correct authorized attempt context silently.** The student never selects a class or an assignment after arriving from Google Classroom.
+- **Integrate Rather Than Duplicate.** Wherever Google Classroom already answers a question, LyfeLabz defers.
+
+Where this document and the specification conflict, the specification controls.
+
 
 This document is a product specification. It is not an architecture specification, a sprint plan, or an implementation guide. It defines what LMS integration should feel like from the teacher's perspective. Every principle here defers to the certified architecture and to `LMS_INTEGRATION_ARCHITECTURE.md`.
 

@@ -9,6 +9,25 @@ This specification supersedes prior operational statements distributed across th
 
 ---
 
+## Sprint 9D Reconciliation Notice
+
+Section 22 (Pilot Readiness Certification) of this document is the operational readiness bar for the pilot. Sprint 9D adds a product readiness bar in `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` §10.1 and PDR-024q. Both bars must be satisfied before the pilot begins. The operational readiness bar in Section 22 is preserved without amendment. The product readiness bar defers to Section 22 for all operational, security, deployment, rollback, monitoring, and recovery obligations.
+
+---
+
+## Sprint 9 Foundational Specification Set
+
+This document is one of the four foundational Sprint 9 canonical specifications that together form the architectural foundation of the LyfeLabz platform. Future engineers should navigate between them as a single corpus:
+
+- **`ASSESSMENT_PIPELINE_SPECIFICATION.md` (Sprint 9A, PDR-021)** - the platform's assessment substrate.
+- **`PLATFORM_OPERATIONS_SPECIFICATION.md` (Sprint 9B, PDR-022)** - this document. The platform's operational substrate.
+- **`IDENTITY_AND_ONBOARDING_SPECIFICATION.md` (Sprint 9C, PDR-023)** - the platform's identity substrate.
+- **`PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` (Sprint 9D, PDR-024)** - the transition between the core platform architecture and the operational teacher and student experience.
+
+`PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` §0 records the relationship between the four documents and how they compose. Hosting, environments, release pipeline, rollback, maintenance mode, authentication session policy, monitoring, incident response, operational Pilot Readiness Certification, and GitHub Pages retirement originate in this document. The pilot's product readiness bar rests on the operational bar in §22 without amendment.
+
+---
+
 ## 1. Operational Philosophy
 
 LyfeLabz is a classroom product. Deployment failures and operational surprises reach real students during real class periods. Operational architecture exists to make platform behavior predictable, boring, and worthy of instructional trust.

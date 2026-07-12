@@ -1850,6 +1850,58 @@ PDR-015 (Future Expansion Philosophy) is ratified. Sprint 9C promotes the Distri
 
 ---
 
+## PDR-024: Platform Transition and Pilot Readiness
+
+**Status:** Ratified under Sprint 9D. Canonical.
+
+**Anchor document:** `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md`.
+
+**Context.** Sprint 9A ratified the assessment pipeline (PDR-021). Sprint 9B ratified platform operations (PDR-022). Sprint 9C ratified identity and onboarding (PDR-023). Sprint 9D closes Sprint 9 by ratifying the product philosophy that governs the platform's transition from an instructional website into the first production teacher pilot, and the long-term learning-journey posture that follows.
+
+**Sub-decisions.**
+
+- **PDR-024a. Teach First, Configure Second.** No LyfeLabz surface requires a teacher to complete configuration screens before teaching. First-time verified teachers receive an optional, non-blocking Welcome Guide, not a setup wizard.
+- **PDR-024b. Access is requested; approval is human.** Unknown teachers request access. Platform Administrator approval is the load-bearing human gate for teacher onboarding during and after the pilot.
+- **PDR-024c. Public educational content remains browsable without authentication.** The pilot never gates the public curriculum on sign-in. Authentication becomes required only when a capability depends on identity.
+- **PDR-024d. LyfeLabz is not a Learning Management System.** The Teacher Workspace does not include a calendar, planner, curriculum-mapping tool, gradebook, messaging system, recommendation engine, or analytics dashboard during or after the pilot. Adding any of these surfaces requires a new PDR that supersedes PDR-024d.
+- **PDR-024e. Teacher Workspace pilot scope.** In-scope capabilities: recent submissions, students who have not submitted the latest assignment, activate or deactivate lessons, publish assignments to Google Classroom, launch Present Mode, open lesson, class roster.
+- **PDR-024f. Activation and publication are separate.** Activation controls access to lessons inside LyfeLabz. Publication sends assignments into Google Classroom. Activation without publication is a supported state. Publication without activation is refused.
+- **PDR-024g. Google Classroom is the assignment hub.** Where a class is linked to Google Classroom, Google Classroom remains the student's assignment hub and To-do list. LyfeLabz does not compete for the teacher's or student's attention with a second assignment channel.
+- **PDR-024h. Deep links land the student in the correct lesson silently.** A student launching an assignment from Google Classroom enters the correct authorized attempt context without selecting a class or an assignment.
+- **PDR-024i. Student identity menu is exactly My Assignments and My Results.** No additional student surface is introduced by the pilot.
+- **PDR-024j. Submit equals completion.** The student's submit gesture records the attempt, scores the assessment, reveals correct answers, and marks the assignment complete in a single step.
+- **PDR-024k. Improve My Score is offered on every less-than-perfect best score.** A best score of 9/10 receives the Well Done indicator and still offers Improve My Score. A best score of 10/10 receives the Perfect Score indicator and does not offer Improve My Score.
+- **PDR-024l. Status indicators.** Four indicators are canonical: Ready to Begin (blue circle), Improving (yellow circle), Well Done! (green circle), Perfect Score (gold star). Indicators are never represented by color alone.
+- **PDR-024m. Celebrate improvement as much as achievement.** Personal bests are celebrated. Students are never compared to one another. Punitive language such as `Failed`, `Poor`, or `Needs Improvement` is prohibited on every student surface.
+- **PDR-024n. Learning belongs to the student.** Archived lessons remain permanently accessible through the student's login. Students may review lessons, vocabulary, Explore, scores, attempts, and explanations. Students may not submit again, modify responses, or create new attempts after archival. Teacher class archival never removes student learning history.
+- **PDR-024o. Multi-year portfolio.** Completed learning accumulates across Grade 6 through Grade 8 under the permanent LyfeLabz Student ID. The resulting portfolio is a preservation surface, not a test-prep product. Its use as MCAS preparation is a byproduct, not the product.
+- **PDR-024p. Calm software.** LyfeLabz does not emit email notifications, push notifications, marketing notifications, or engagement reminders. Notifications exist only when immediate classroom action is required. The pilot has no such notifications.
+- **PDR-024q. Product Readiness bar for the pilot.** Pilot readiness under PDR-022 (operations) is joined by the product readiness bar in `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` §10.1. Both must be satisfied before the pilot begins.
+- **PDR-024r. Every feature must earn its place.** A pilot feature that cannot be located inside a real teacher or student moment does not belong in the pilot, and does not belong after the pilot without a superseding PDR.
+
+**Reconciliation notes.**
+
+- PDR-001 is strengthened. LyfeLabz complements Google Classroom and PowerSchool during and after the pilot.
+- PDR-010 is preserved. Activation continues as the teacher-facing expression of curation. Publication is an adjacent, LMS-scoped operation that does not modify activation.
+- PDR-011 is preserved. The pilot introduces no analytics dashboard.
+- PDR-018 is preserved. The pilot's Teacher Workspace stays within the surface boundaries recorded in PDR-018.
+- PDR-019 and PDR-020 are preserved. Google Classroom remains the initial LMS implementation target; PDR-024f, PDR-024g, and PDR-024h are the product-level expression of that posture.
+- PDR-021 is preserved. Submit-equals-completion (PDR-024j) and Improve My Score (PDR-024k) rely on the unlimited-attempts default in PDR-021.
+- PDR-022 is preserved. Pilot Readiness under PDR-022 remains the operational bar. PDR-024q adds a product bar.
+- PDR-023 is preserved. Teacher onboarding under PDR-024a and PDR-024b is the pilot-scoped extension of PDR-023.
+
+**Anti-decisions.**
+
+- The pilot does not introduce a calendar, planner, curriculum-mapping tool, gradebook, messaging system, recommendation engine, analytics dashboard, inbox, notification bell, engagement email, or marketing surface. Adding any of these requires a superseding PDR.
+
+---
+
+## PDR-022 Sprint 9D Reconciliation Notice
+
+PDR-022 (Platform Operations Architecture) is ratified. Sprint 9D adds a product readiness bar that operates alongside the operational Pilot Readiness bar in `PLATFORM_OPERATIONS_SPECIFICATION.md` §22. Both bars must be satisfied before the pilot begins. See `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` §10 and PDR-024q.
+
+---
+
 ## Change Log
 
 - 2026-07-07 - Initial platform decision record established.
@@ -1859,3 +1911,4 @@ PDR-015 (Future Expansion Philosophy) is ratified. Sprint 9C promotes the Distri
 - 2026-07-12 - PDR-021 (Assessment Pipeline Architecture) added under Sprint 9A. PDR-008 amended with a Sprint 9A Reconciliation Notice recording the Submission → Attempt terminology change, the session/attempt separation, the server-authoritative scoring rule, and the removal of the Practice / Classroom mode toggle. `ASSESSMENT_PIPELINE_SPECIFICATION.md` established as the single source of truth for formative assessment behavior.
 - 2026-07-12 - PDR-022 (Platform Operations Architecture) added under Sprint 9B. PDR-014 amended with a Sprint 9B Reconciliation Notice ratifying Firebase Hosting as the permanent canonical production origin, replacing the Testing environment nomenclature with Preview, and naming Platform Administrator approval as the load-bearing human gate. `PLATFORM_OPERATIONS_SPECIFICATION.md` established as the single source of truth for LyfeLabz operational behavior.
 - 2026-07-12 - PDR-023 (Identity and Onboarding Architecture) added under Sprint 9C. PDR-003 amended with a Sprint 9C Reconciliation Notice retiring the maintained verified-domain automated verification path in favor of the verification-code path with the Request Teacher Access fallback. PDR-015 amended with a Sprint 9C Reconciliation Notice promoting the District entity from reachable expansion to a first-class security boundary. `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` established as the single source of truth for LyfeLabz identity, onboarding, verification, roster authority, and the authenticated experience shell.
+- 2026-07-12 - PDR-024 (Platform Transition and Pilot Readiness) added under Sprint 9D. PDR-022 amended with a Sprint 9D Reconciliation Notice adding a product readiness bar alongside the operational Pilot Readiness bar. `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` established as the single source of truth for teacher onboarding, teacher workspace philosophy, the student assignment and results experience, the Google Classroom integration philosophy, the learning archive, notifications, the long-term student learning journey, and the pilot transition.

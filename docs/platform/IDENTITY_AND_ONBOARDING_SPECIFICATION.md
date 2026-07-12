@@ -1,5 +1,30 @@
 # LyfeLabz Identity and Onboarding Specification
 
+## Sprint 9D Reconciliation Notice
+
+The pilot-scoped product behavior that extends teacher onboarding (§14) and the authenticated student experience (§16) is governed by `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` and PDR-024. Apply the following while reading this document:
+
+- **First-time verified teachers receive an optional, non-blocking Welcome Guide, not a setup wizard.** See PDR-024a.
+- **Public educational content remains browsable without authentication throughout the pilot.** Authentication becomes required only when a capability depends on identity. See PDR-024c.
+- **The student identity menu is exactly `My Assignments` and `My Results`.** See PDR-024i and the specification §6.
+
+The identity architecture in this document is preserved. Where the pilot's product philosophy and this specification appear to conflict on onboarding chrome or student surface scope, `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` controls.
+
+---
+
+## Sprint 9 Foundational Specification Set
+
+This document is one of the four foundational Sprint 9 canonical specifications that together form the architectural foundation of the LyfeLabz platform. Future engineers should navigate between them as a single corpus:
+
+- **`ASSESSMENT_PIPELINE_SPECIFICATION.md` (Sprint 9A, PDR-021)** - the platform's assessment substrate.
+- **`PLATFORM_OPERATIONS_SPECIFICATION.md` (Sprint 9B, PDR-022)** - the platform's operational substrate.
+- **`IDENTITY_AND_ONBOARDING_SPECIFICATION.md` (Sprint 9C, PDR-023)** - this document. The platform's identity substrate.
+- **`PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` (Sprint 9D, PDR-024)** - the transition between the core platform architecture and the operational teacher and student experience.
+
+`PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` §0 records the relationship between the four documents and how they compose. Authentication versus authorization, the two identity families, district as first-class security boundary, teacher verification, roster authority, student identity permanence, and the authenticated experience shell originate in this document. The pilot's teacher onboarding (§3), student experience (§6), and learning archive (§7) extend the identity foundations here without amendment.
+
+---
+
 **Status:** Certified. Canonical single source of truth for LyfeLabz identity, onboarding, verification, roster authority, and the authenticated experience shell.
 **Sprint of record:** Sprint 9C - Architecture Decision Workshop (Identity and Onboarding).
 **Authoritative anchor:** PDR-023 (Identity and Onboarding Architecture). Precedent PDRs (PDR-002, PDR-003, PDR-004, PDR-005, PDR-015, PDR-019, PDR-020) are reconciled through this document.

@@ -3,6 +3,20 @@
 Status: Canonical product narrative.
 Companion documents: TEACHER_EXPERIENCE_PHILOSOPHY.md, PRESENT_MODE_ARCHITECTURE.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, IDENTITY_AND_ONBOARDING_SPECIFICATION.md.
 
+## Sprint 9D Reconciliation Notice
+
+The onboarding and teacher-workspace moments in this narrative are subordinate to `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` and PDR-024. Apply the following while reading:
+
+- **First-time verified teachers receive an optional, non-blocking Welcome Guide, not a setup wizard.** The teacher's goal at first sign-in is to prepare tomorrow's lesson, not to configure software.
+- **The Teacher Workspace is not a Learning Management System.** No calendar, planner, curriculum-mapping tool, gradebook, messaging system, recommendation engine, or analytics dashboard is introduced by the pilot.
+- **Activation and publication are separate.** Publication sends the assignment to Google Classroom; activation controls access inside LyfeLabz.
+- **Google Classroom remains the assignment hub for LMS-linked classes.** LyfeLabz never asks a student to check a second assignment list.
+- **Calm software.** No email, push, marketing, or engagement notifications.
+
+Where the narrative and the specification conflict, the specification controls.
+
+---
+
 ## Sprint 9C Reconciliation Notice
 
 The identity, verification, class creation, and onboarding moments in this narrative are subordinate to `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Apply the following while reading:

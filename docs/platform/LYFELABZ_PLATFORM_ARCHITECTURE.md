@@ -48,6 +48,24 @@ The identity, onboarding, verification, roster authority, and authenticated-expe
 
 Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the specification controls.
 
+## Sprint 9D Reconciliation Notice
+
+The teacher onboarding, Teacher Workspace scope, student assignment and results experience, Google Classroom integration philosophy, learning archive, notification, and pilot transition portions of this document are superseded by `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` and PDR-024. Apply the following while reading downstream sections:
+
+- **Teach First, Configure Second.** First-time verified teachers receive an optional, non-blocking Welcome Guide, not a setup wizard.
+- **LyfeLabz is not a Learning Management System.** The Teacher Workspace does not include a calendar, planner, curriculum-mapping tool, gradebook, messaging system, recommendation engine, or analytics dashboard.
+- **Activation and publication are separate.** Activation controls access to lessons inside LyfeLabz. Publication sends assignments into Google Classroom.
+- **Google Classroom is the student assignment hub.** LyfeLabz never competes for the student's attention with a second assignment list. Deep links land the student in the correct authorized attempt context silently.
+- **The student identity menu is exactly `My Assignments` and `My Results`.** Submit equals completion. `Improve My Score` is offered on every less-than-perfect best score. A best score of 9/10 receives Well Done and still offers Improve My Score; 10/10 receives Perfect Score and does not.
+- **Status indicators.** Ready to Begin, Improving, Well Done!, Perfect Score, each carrying an accessible label. Never color alone.
+- **Celebrate improvement as much as achievement.** Punitive language is prohibited on every student surface.
+- **Learning belongs to the student.** Archived lessons remain permanently accessible through the student's login. Teacher class archival never removes student learning history.
+- **Multi-year portfolio.** Completed learning accumulates across Grade 6 through Grade 8 under the permanent LyfeLabz Student ID as a preservation surface, not a test-prep product.
+- **Calm software.** No email, push, marketing, or engagement notifications.
+- **Pilot Readiness is both operational and product.** The operational bar in `PLATFORM_OPERATIONS_SPECIFICATION.md` §22 is joined by the product bar in `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` §10.1.
+
+Where this document and `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` conflict, the specification controls.
+
 
 This document is the canonical reference for every LyfeLabz platform decision. It defines what the platform is, how its systems relate, and which decisions should be considered locked before implementation begins. It is deliberately conceptual. It does not contain Firestore schemas, security rules, Cloud Functions, or configuration files. Those artifacts follow this document, they do not shape it.
 

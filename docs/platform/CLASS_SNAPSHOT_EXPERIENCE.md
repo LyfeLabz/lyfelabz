@@ -1,7 +1,18 @@
 # LyfeLabz Class Snapshot Experience
 
 Status: Canonical product specification for the class Snapshot surface.
-Companion documents: TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, ASSIGN_EXPERIENCE.md, PRESENT_MODE_ARCHITECTURE.md, SNAPSHOT_ARCHITECTURE.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md.
+Companion documents: TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, ASSIGN_EXPERIENCE.md, PRESENT_MODE_ARCHITECTURE.md, SNAPSHOT_ARCHITECTURE.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md.
+
+## Sprint 9D Reconciliation Notice
+
+Snapshot is preserved as the class-scoped between-moments surface. Under `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` and PDR-024:
+
+- **Snapshot is not an analytics dashboard.** The pilot introduces no analytics dashboard. Snapshot answers a between-classes and during-class question; it does not evolve into a dashboard during the pilot.
+- **Pilot Teacher Workspace scope.** Recent submissions and students who have not submitted the latest assignment are load-bearing Snapshot content per PDR-024e.
+- **Calm software.** Snapshot never introduces engagement or marketing chrome.
+
+Where this document and the specification conflict, the specification controls.
+
 
 This document is a product design specification. It is not an architecture specification, a sprint plan, or an implementation guide. It defines what Snapshot should feel like from the teacher's perspective. Where a moment implies an architectural implication, that implication is left to `SNAPSHOT_ARCHITECTURE.md` and to the sprint specification that owns the surface. Every principle here defers to the certified platform architecture in every case of conflict.
 

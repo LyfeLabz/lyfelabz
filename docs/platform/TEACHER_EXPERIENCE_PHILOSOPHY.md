@@ -3,6 +3,20 @@
 Status: Canonical
 Companion documents: LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, LYFELABZ_PLATFORM_DOMAIN_MODEL.md, PLATFORM_STATE_MACHINE.md, IDENTITY_AND_ONBOARDING_SPECIFICATION.md
 
+## Sprint 9D Reconciliation Notice
+
+Every teacher surface principle in this document is subordinate to `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` and PDR-024 in the following respects:
+
+- **Teach First, Configure Second.** First-time verified teachers receive an optional, non-blocking Welcome Guide, not a setup wizard.
+- **LyfeLabz is not a Learning Management System.** The Teacher Workspace does not include a calendar, planner, curriculum-mapping tool, gradebook, messaging system, recommendation engine, or analytics dashboard during or after the pilot.
+- **Pilot Teacher Workspace scope.** Recent submissions, students who have not submitted the latest assignment, activate or deactivate lessons, publish assignments to Google Classroom, launch Present Mode, open lesson, class roster.
+- **Activation and publication are separate.** Activation controls access to lessons inside LyfeLabz. Publication sends assignments into Google Classroom.
+- **Calm software.** No email, push, marketing, or engagement notifications.
+
+Where philosophy and specification conflict, the specification controls.
+
+---
+
 ## Sprint 9C Reconciliation Notice
 
 Every teacher surface principle in this document is subordinate to `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023 in the following respects:
