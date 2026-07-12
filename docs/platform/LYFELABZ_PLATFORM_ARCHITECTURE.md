@@ -19,6 +19,20 @@ The formative assessment portion of this document is superseded by `ASSESSMENT_P
 
 Where this document and the specification conflict, the specification controls.
 
+## Sprint 9B Reconciliation Notice
+
+Section 12 (Deployment Strategy) of this document is superseded by `PLATFORM_OPERATIONS_SPECIFICATION.md` and PDR-022. The specification is the single source of truth for hosting, environments, release pipeline, rollback, maintenance mode, authentication session policy, monitoring, incident response, Pilot Readiness Certification, and GitHub Pages retirement. While reading Section 12, apply the following corrections:
+
+- **Firebase Hosting is the permanent canonical production origin.** `https://lyfelabz.com/` is the sole production origin, serving public curriculum from the repository root and the authenticated platform from `/app/**` under path-based routing. GitHub Pages is retained only as a migration safety net and will be retired.
+- **The pre-production environment is Preview, not Testing.** Preview runs on Firebase Hosting Preview Channels of the canonical origin or on a dedicated preview project mirroring production. No deployment moves from Development to Production without passing through Preview.
+- **Production deployment always requires explicit Platform Administrator approval.** Automated tests are required but never replace human approval.
+- **A Certified Release is defined by the ten criteria of the specification §12.** Only Certified Releases are valid rollback targets.
+- **Rollback is one action and targets a previous Certified Release from Firebase Hosting's release history.** Repairs happen in Preview; production is redeployed only after recertification.
+- **Production deployments never interrupt active classroom sessions.** Present Mode, assessment sessions, and teacher workflows continue across a deployment.
+- **Maintenance mode, authentication session policy, monitoring scope, Pilot Readiness Certification, and GitHub Pages retirement** are defined in the specification.
+
+Where this document and `PLATFORM_OPERATIONS_SPECIFICATION.md` conflict, the specification controls.
+
 
 This document is the canonical reference for every LyfeLabz platform decision. It defines what the platform is, how its systems relate, and which decisions should be considered locked before implementation begins. It is deliberately conceptual. It does not contain Firestore schemas, security rules, Cloud Functions, or configuration files. Those artifacts follow this document, they do not shape it.
 

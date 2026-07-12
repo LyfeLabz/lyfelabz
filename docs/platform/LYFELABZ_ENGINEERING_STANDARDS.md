@@ -11,6 +11,21 @@ It is deliberately opinionated. It exists so that every future contributor write
 
 If this document and a piece of existing code disagree, this document is authoritative and the code is a defect to be corrected during normal maintenance. If this document and the platform architecture documents disagree, the architecture documents win.
 
+## Sprint 9B Reconciliation Notice
+
+Operational behavior (hosting, environments, release pipeline, rollback, maintenance mode, authentication session policy, monitoring, incident response, Pilot Readiness Certification, GitHub Pages retirement) is defined by `PLATFORM_OPERATIONS_SPECIFICATION.md` and PDR-022. This document restates engineering-level obligations that follow from those operational commitments; it does not redefine them. Where this document and the operations specification conflict, the operations specification controls.
+
+Engineering obligations that follow from Sprint 9B:
+
+- Every production release passes through Preview. Local verification is not a substitute for preview verification.
+- Preview deployment is automatic on merge to `main`; production deployment is never automatic. Production promotion requires recorded Platform Administrator approval (PDR-022d).
+- A Certified Release is defined by the ten criteria of `PLATFORM_OPERATIONS_SPECIFICATION.md` §12. Documentation reconciliation is part of the release, not a follow-up.
+- Rollback targets a previous Certified Release. Repairs are made in Preview, not on production.
+- Firestore schema evolution is additive by default. Destructive changes require a documented migration plan, a paired backup, and named Platform Administrator approval.
+- Cloud Functions and security rules are individually revertible.
+- Production deployments never interrupt active classroom sessions. Client code must not force a mid-class reload for a new release (PDR-022h).
+- Operational monitoring is scoped to platform health. Adding student behavioral telemetry beyond platform health requires a new PDR (PDR-022i).
+
 ---
 
 ## 1. Guiding Philosophy

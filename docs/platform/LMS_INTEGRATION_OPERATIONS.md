@@ -1,5 +1,9 @@
 # LyfeLabz LMS Integration Operations Runbook
 
+## Sprint 9B Reconciliation Notice
+
+This runbook is subordinate to `PLATFORM_OPERATIONS_SPECIFICATION.md` and PDR-022 for hosting, environments, release pipeline, rollback, maintenance mode, authentication session policy, monitoring, incident response, Pilot Readiness Certification, and GitHub Pages retirement. Where a procedure below implies a hosting posture, an environment name, or a deployment path that conflicts with the operations specification, the operations specification controls. LMS-specific operational obligations (provider identity, token custody, quota management, provider incident handling) extend the operations specification and are unchanged by Sprint 9B.
+
 Status: Operational. This runbook records the procedures Platform Operations follows to bring the LMS integration surface described in `LMS_INTEGRATION_ARCHITECTURE.md` and authorized by PDR-020 into a live, teacher-facing configuration. It is the canonical operational companion to the certified architecture. It ships no product functionality of its own.
 
 Companion documents: `LMS_INTEGRATION_ARCHITECTURE.md`, `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, `LYFELABZ_PLATFORM_DECISIONS.md`, `PLATFORM_CONTRACTS.md`, `LMS_EXPERIENCE.md`.

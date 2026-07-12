@@ -2,9 +2,15 @@
 
 A repeatable checklist for manually creating or verifying a LyfeLabz Firebase project through the Firebase Console.
 
-This checklist reflects the exact configuration used for the current production project, `lyfelabz-platform`, and is written so that future `lyfelabz-dev` and `lyfelabz-test` projects can be brought up identically.
+This checklist reflects the exact configuration used for the current production project, `lyfelabz-platform`, and is written so that future `lyfelabz-dev` and `lyfelabz-preview` projects can be brought up identically.
 
-GitHub Pages remains the production website. Firebase is the backend platform for authentication, data, storage, and future Cloud Functions. Hosting is initialized but not used for the public site.
+## Sprint 9B Reconciliation Notice
+
+Sprint 9B ratified Firebase Hosting as the **permanent canonical production origin**. GitHub Pages is retained only as a migration safety net and will be retired under the criteria in `PLATFORM_OPERATIONS_SPECIFICATION.md` §23. Prior statements in this checklist that "GitHub Pages remains the production website" and that "Hosting is initialized but not used for the public site" are superseded. Firebase Hosting is bound to the canonical origin (`https://lyfelabz.com/`) once preview and production certification are achieved. Where this checklist and the operations specification conflict, the specification controls. Where the checklist and PDR-022 conflict, PDR-022 controls.
+
+The pre-production Firebase project is `lyfelabz-preview`, not `lyfelabz-test`, reflecting the Preview environment nomenclature ratified in PDR-022b.
+
+Firebase is the backend platform for authentication, data, storage, and Cloud Functions. Firebase Hosting is the production website origin after migration completes.
 
 ---
 
@@ -33,9 +39,9 @@ The following configuration is the current, verified state of `lyfelabz-platform
     }
   }
   ```
-- Hosting: initialized only (not deployed, no custom domain)
-- Cloud Functions: not manually initialized
-- Public website: GitHub Pages (unchanged)
+- Hosting: initialized; bound to the canonical origin `https://lyfelabz.com/` after Preview and Production certification. See `PLATFORM_OPERATIONS_SPECIFICATION.md` §§3, 5.
+- Cloud Functions: introduced through the release pipeline (`PLATFORM_OPERATIONS_SPECIFICATION.md` §11)
+- Public website origin: Firebase Hosting is the permanent canonical origin; GitHub Pages is retained as a migration safety net until retirement (PDR-022a, PDR-022k).
 
 ---
 
@@ -125,10 +131,10 @@ Run this section after initial setup and again any time a teammate suspects drif
 - [ ] Authentication is enabled with Google as an active provider
 - [ ] Storage default bucket exists, location `us`, Standard class
 - [ ] Storage rules match the locked-down block in section 1 exactly
-- [ ] Hosting shows as initialized with no deploys and no custom domains
-- [ ] Cloud Functions shows no functions and no manual initialization
+- [ ] Hosting is initialized; before Preview and Production certification, no deploys and no custom domains; after certification, bound to the canonical origin per `PLATFORM_OPERATIONS_SPECIFICATION.md` §§3, 5.
+- [ ] Cloud Functions is deployed only through the release pipeline (`PLATFORM_OPERATIONS_SPECIFICATION.md` §11)
 - [ ] App Check, Realtime Database, App Hosting, and Analytics are all disabled or absent
-- [ ] GitHub Pages is still serving the public website unchanged
+- [ ] Migration safety net: GitHub Pages continues to serve legacy public curriculum URLs until retirement criteria (PDR-022k, `PLATFORM_OPERATIONS_SPECIFICATION.md` §23) are met.
 
 ---
 
@@ -137,8 +143,8 @@ Run this section after initial setup and again any time a teammate suspects drif
 The following actions must not be performed from the Firebase Console or by hand. Each one belongs to a later, repository-driven workflow, and doing it manually will create drift that the repository cannot reconcile.
 
 - Do not manually initialize Cloud Functions
-- Do not deploy Firebase Hosting
-- Do not add a custom domain to Firebase Hosting
+- Do not deploy Firebase Hosting outside the certified release pipeline (`PLATFORM_OPERATIONS_SPECIFICATION.md` §§11, 14)
+- Do not add or change the custom domain on Firebase Hosting outside the certified release pipeline
 - Do not enable Google Analytics
 - Do not enable App Check
 - Do not enable Realtime Database

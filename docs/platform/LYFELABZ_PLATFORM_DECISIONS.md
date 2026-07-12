@@ -1642,6 +1642,141 @@ Limitations:
 
 ---
 
+## PDR-022: Platform Operations Architecture
+
+### Decision
+
+The LyfeLabz platform operations architecture is defined by `PLATFORM_OPERATIONS_SPECIFICATION.md` and comprises the load-bearing sub-decisions recorded below. Together they specify how LyfeLabz is hosted, deployed, rolled back, maintained, monitored, and pilot-certified.
+
+### Status
+
+Accepted. Ratified 2026-07-12 in the Sprint 9B Architecture Decision Workshop. Supersedes PDR-014 in part (see PDR-014 Sprint 9B Reconciliation Notice) and constrains every subsequent operational decision. Every load-bearing decision below is locked before Sprint 9C implementation begins.
+
+### Background
+
+The pre-platform LyfeLabz curriculum has been served by GitHub Pages. Firebase has been the backend platform for authentication, data, storage, and future Cloud Functions. Sprint 9B ratified the migration to Firebase Hosting as the permanent canonical production origin, the three-environment architecture, the Certified Release model, and the Pilot Readiness Certification process. Prior operational statements distributed across the architecture document, PDR-014, and the Firebase build checklist are superseded to the extent they conflict with this decision.
+
+### Alternatives Considered
+
+- **Keep GitHub Pages as the permanent production origin.** Rejected: GitHub Pages does not support authenticated surfaces, Cloud Functions, or an approval-gated release pipeline. Preserving it as the origin would fragment the platform across two origins and reintroduce the surface boundary as a cross-origin concern.
+- **Introduce a permanent subdomain (`app.lyfelabz.com`) for the authenticated platform.** Rejected: permanent subdomains complicate the surface boundary contract and introduce cross-origin authentication and cookie concerns without a corresponding benefit.
+- **Skip a Preview environment for small changes.** Rejected: preview verification is a load-bearing gate. The failure modes it catches are exactly the failure modes small changes are assumed not to have.
+- **Automate production promotion when preview verification is green.** Rejected: automated tests do not replace human approval for a classroom product. Explicit Platform Administrator approval remains the load-bearing human gate.
+- **Introduce Staging from day one.** Deferred: Preview is sufficient until release cadence or concurrent workstreams justify a Staging environment. This restates PDR-014's staging posture.
+
+### Decision
+
+**PDR-022a. Firebase Hosting is the permanent canonical production origin.**
+
+- `https://lyfelabz.com/` is the sole production origin.
+- Firebase Hosting serves the public curriculum surface and the authenticated platform surface from a single origin under path-based routing.
+- Permanent subdomains are not introduced.
+- GitHub Pages is retained only as a migration safety net until the retirement criteria in `PLATFORM_OPERATIONS_SPECIFICATION.md` §23 are met.
+
+**PDR-022b. LyfeLabz operates three permanent environments.**
+
+- Development (local emulators), Preview (Firebase Hosting Preview Channels of the canonical origin, or a dedicated preview project mirroring production), and Production (`lyfelabz-platform`).
+- No deployment moves directly from Development to Production. Every production release passes through Preview.
+- A future Staging environment is introduced only when release cadence or concurrent workstreams justify it.
+
+**PDR-022c. Certified Releases require the ten criteria of §12.**
+
+- Architecture certified, documentation reconciled, implementation complete, local verification passed, security verification passed, operational documentation updated, preview deployment verified, Platform Administrator approval recorded, production deployment completed, and post-deployment health verified.
+- Only Certified Releases are valid rollback targets.
+
+**PDR-022d. Production deployment always requires explicit Platform Administrator approval.**
+
+- Automated tests are required but never replace human approval.
+- Approval is granted for a specific release candidate and is recorded in writing.
+- Emergency deployments still require approval; compressed certification is recorded.
+
+**PDR-022e. Rollback is the immediate response to a material production issue.**
+
+- Rollback targets a previous Certified Release from Firebase Hosting's release history.
+- Rollback is one action, performed by the Platform Administrator or an explicitly authorized on-call operator.
+- Repairs occur in Preview. Production is redeployed only after recertification.
+
+**PDR-022f. Maintenance mode is a formal, Platform-Administrator-controlled operational state.**
+
+- Public curriculum remains readable when safe.
+- Write-dependent services are temporarily disabled.
+- In-progress assessment sessions are preserved with no partial attempt records.
+- Users see friendly maintenance messaging that names the state and the expected exit.
+
+**PDR-022g. Google Authentication uses secure persistent sessions.**
+
+- Students remain signed in unless they sign out, security requires reauthentication, or session expiration occurs.
+- Authentication sessions are distinct from assessment sessions (PDR-021a).
+
+**PDR-022h. Production deployments never interrupt active classroom sessions.**
+
+- Active Present Mode sessions, active assessment sessions, and active teacher workflows continue through a deployment.
+- New sessions receive the new release. There is no in-product mid-class reload prompt.
+
+**PDR-022i. Operational monitoring is scoped to platform health.**
+
+- Authentication, Cloud Functions, assessment scoring, assignments, routing, deployment, rollback, latency, session recovery, and infrastructure are monitored.
+- Student behavioral telemetry beyond platform health is not collected. Educational analytics remain separate.
+
+**PDR-022j. Pilot Readiness is a formal, one-time certification.**
+
+- Pilot Readiness requires verification of architecture, security, authentication, teacher workflows, student workflows, the assessment pipeline, Present Mode, deployment, rollback, monitoring, recovery, and operational ownership.
+- Pilot Readiness is certified by the Platform Administrator and is re-certified if material conditions change before the pilot begins.
+
+**PDR-022k. GitHub Pages retirement follows the criteria of §23.**
+
+- Retirement occurs only after curriculum parity, custom domain, authentication, routing, Present Mode, anonymous browsing, authorized student access, deployment, rollback, search indexing, legacy redirects, and a seven-day observation period have been verified.
+- After retirement, Firebase Hosting is the sole production origin. GitHub remains the source repository only.
+
+### Rationale
+
+Recording the operational architecture as a dedicated PDR closes a class of drift attempts and gives Sprint 9C implementation a stable operational target. Naming Firebase Hosting as the permanent production origin prevents accidental preservation of GitHub Pages as a second production surface. Naming the three-environment architecture prevents future sprints from skipping Preview under time pressure. Naming the ten-criterion Certified Release prevents partial releases from reaching production. Naming Platform Administrator approval as a load-bearing human gate prevents it from being automated away. Naming rollback as one action prevents mid-incident debate about the response.
+
+### Consequences
+
+Benefits:
+
+- Operational behavior is uniform across every release.
+- Deployment, rollback, maintenance mode, and Pilot Readiness are documented once and are consistent thereafter.
+- Classrooms are protected across every operational transition.
+- Instructional trust is earned by predictable operational behavior.
+
+Limitations:
+
+- Every production release passes through Preview, adding latency to small changes.
+- Every production release requires Platform Administrator approval, adding a coordination cost.
+- Emergency changes still require approval and recorded compressed certification.
+
+### Future Reconsideration Criteria
+
+- **PDR-022a** reconsidered only if a compelling classroom-safety or platform-boundary case is made against a single canonical origin. Growth pressure is not sufficient.
+- **PDR-022b** amended by adding a Staging environment when release cadence or concurrent workstreams justify it. Not amended by removing Preview.
+- **PDR-022c** amended only by making the certification criteria stricter. Loosening any criterion requires a new PDR.
+- **PDR-022d** is not reconsidered. Automated tests never replace human approval for a classroom product.
+- **PDR-022e** reconsidered only if a documented operational surface makes single-action rollback infeasible; the replacement must be as fast for classrooms.
+- **PDR-022f** amended only by adding scope. Removing scope requires a new PDR.
+- **PDR-022g** reconsidered only if authentication provider constraints change materially.
+- **PDR-022h** is not reconsidered. Mid-class reloads are prohibited.
+- **PDR-022i** amended only by adding platform-health signals. Adding student behavioral telemetry requires a new PDR.
+- **PDR-022j** amended only by adding criteria.
+- **PDR-022k** is not reconsidered. Retirement is a one-way transition.
+
+---
+
+## PDR-014 Sprint 9B Reconciliation Notice
+
+PDR-014 (Deployment Philosophy) is ratified and continues to hold for the deployment properties it names: predictable, boring deployments; a testing environment that mirrors production configuration; GitHub as the single source of truth; every deployable artifact originating from a tagged commit on main; feature flags for grade rollouts; predictable release cadence; access-controlled production deploys; and rollback as one action.
+
+Sprint 9B supersedes PDR-014 in three respects, recorded here and elaborated in PDR-022:
+
+1. **Hosting posture.** PDR-014's implicit assumption that GitHub Pages remained the production website is superseded. Firebase Hosting is the permanent canonical production origin. See PDR-022a.
+2. **Environment nomenclature.** PDR-014 named "Testing" as the pre-production Firebase project. Sprint 9B ratifies "Preview" as the certified pre-production environment, backed by Firebase Hosting Preview Channels or a dedicated preview project mirroring production. Where prior text says Testing, read Preview. A future Staging environment remains deferred.
+3. **Human approval gate.** PDR-014's "deliberate promotion" is ratified explicitly as Platform Administrator approval. Automated tests are required but never replace human approval. See PDR-022d.
+
+PDR-014's remaining properties continue to hold without amendment.
+
+---
+
 ## Change Log
 
 - 2026-07-07 - Initial platform decision record established.
@@ -1649,3 +1784,4 @@ Limitations:
 - 2026-07-10 - PDR-019 (LMS Integration Posture) added. PDR-015 amended to reference the ratified LMS integration architecture.
 - 2026-07-10 - PDR-020 (LMS Phase Re-Sequencing and Initial Scope) added. PDR-015 and PDR-019 amended to remove the Phase 8 gate for the initial LMS scope. Google Classroom formally authorized as the initial LMS implementation target. Provider neutrality reaffirmed as a permanent architectural property.
 - 2026-07-12 - PDR-021 (Assessment Pipeline Architecture) added under Sprint 9A. PDR-008 amended with a Sprint 9A Reconciliation Notice recording the Submission → Attempt terminology change, the session/attempt separation, the server-authoritative scoring rule, and the removal of the Practice / Classroom mode toggle. `ASSESSMENT_PIPELINE_SPECIFICATION.md` established as the single source of truth for formative assessment behavior.
+- 2026-07-12 - PDR-022 (Platform Operations Architecture) added under Sprint 9B. PDR-014 amended with a Sprint 9B Reconciliation Notice ratifying Firebase Hosting as the permanent canonical production origin, replacing the Testing environment nomenclature with Preview, and naming Platform Administrator approval as the load-bearing human gate. `PLATFORM_OPERATIONS_SPECIFICATION.md` established as the single source of truth for LyfeLabz operational behavior.
