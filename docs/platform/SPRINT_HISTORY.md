@@ -1163,3 +1163,328 @@ Firestore Rules package (working directory `/Users/breezy/Documents/GitHub/lyfel
 - No tests were modified.
 - No runtime behavior was changed.
 - No commits were made.
+
+---
+
+## Sprint 7A: Class Snapshot Experience and Architecture
+
+**Date:** 2026-07-10
+**Status:** Complete. Documentation-only sprint.
+**Commit:** `0b29d5d` Sprint 7A: Design Class Snapshot experience and architecture
+**Companion documents:** `CLASS_SNAPSHOT_EXPERIENCE.md`, `SNAPSHOT_ARCHITECTURE.md`.
+
+### Objective
+
+Ratify the Class Snapshot experience and its underlying architecture before implementation begins. Establish the Snapshot as the teacher's preparation-focused entry into a specific class - the answer to "what do I need to know about this class right now, before I teach?" - without introducing an analytics dashboard or a gradebook surrogate.
+
+### Major accomplishments
+
+- Created `CLASS_SNAPSHOT_EXPERIENCE.md` as the canonical product specification for the class-scoped Snapshot: purpose, non-goals, information density constraints, ordering rules, and the design principle that Snapshot is a preparation surface, not an analytics surface.
+- Created `SNAPSHOT_ARCHITECTURE.md` as the companion architecture document: data sources, read shapes, projection boundaries, and the rules that keep Snapshot bounded and cheap.
+- Documented the load-bearing product decisions: Snapshot always opens on a preparation view; recent submissions and the roster of students who have not yet submitted the latest assignment are load-bearing content; Snapshot never introduces engagement or marketing chrome; color is never load-bearing.
+
+### Architecture posture
+
+- No production code, tests, runtime behavior, Cloud Functions, Firestore Rules, custom claims, or lifecycle fields were introduced.
+- Preservation mode intact. The instructional repository at the repository root was not touched.
+
+---
+
+## Sprint 7B: Class Snapshot Foundation
+
+**Date:** 2026-07-10
+**Status:** Implementation complete.
+**Commit:** `81a2247` Sprint 7B: Implement Class Snapshot foundation
+**Companion documents:** `CLASS_SNAPSHOT_EXPERIENCE.md`, `SNAPSHOT_ARCHITECTURE.md`.
+
+### Objective
+
+Land the client-side Class Snapshot foundation inside the Teacher Workspace Classes surface. Deliver the preparation-focused Snapshot view that opens when a teacher selects a class card, without introducing a new backend surface or an analytics dashboard.
+
+### Major accomplishments
+
+- Introduced `app/src/shell/surfaces/snapshot.ts` as the canonical Class Snapshot render surface. The Snapshot opens on selection of a class card and shows the preparation-first content ratified in Sprint 7A.
+- Extended `app/src/shell/surfaces/classes.ts` with the class-card selection affordance that opens the Snapshot and the return path back to the Classes list.
+- Wired the Snapshot through the existing workspace outlet (`app/src/shell/surfaces/workspace.ts`) so the shell composition and navigation contracts from Sprints 6A-6H are preserved.
+- Extended `app/src/shell/shell.ts` with the composition needed to route selected-class state through the outlet.
+
+### Architecture posture
+
+- No Cloud Function, Firestore Rule, custom claim, lifecycle field, Session field, audit vocabulary term, or new callable surface was introduced.
+- Certified architecture and platform contracts are unchanged. No new browser storage was introduced. The shell no-Firebase-import invariant is preserved; any Firestore-touching reader is injected through the existing dependency seam.
+- Preservation mode intact.
+
+---
+
+## Sprint 8: LMS Foundation and Assignment Publication
+
+**Date:** 2026-07-11
+**Status:** Implementation complete.
+**Commit:** `50ca28e` Sprint 8: LMS foundation and assignment publication
+**Companion documents:** `LMS_INTEGRATION_ARCHITECTURE.md`, `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md`, `LMS_INTEGRATION_OPERATIONS.md`, `LMS_EXPERIENCE.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` (§1.a, §2), `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-019, PDR-020).
+
+### Objective
+
+Ratify the LMS integration architecture, ship the first LMS foundation (Google Classroom), and connect the Assign Experience to an authoritative, server-mediated assignment lifecycle with optional one-way publication to a linked LMS.
+
+### Major accomplishments
+
+- Ratified LMS implementation sequencing and initial scope. Google Classroom is the initial LMS. Publication is one-way: LyfeLabz is the authoritative assignment record; publication is a side effect.
+- Added provider-neutral LMS infrastructure (`platform/functions/src/lms/**`) with a canonical provider interface, a Google Classroom adapter, and server-mediated callables for connection begin / complete / describe / disconnect, class discovery / import, topic listing, and assignment publication.
+- Added the teacher `Integrations` experience under the Settings surface (`app/src/settings/integrations/**`). Teachers can begin an LMS connection, complete OAuth, describe the current connection, and disconnect. Tokens are server-only and never appear in any client-reachable artifact.
+- Added `LMS_EXPERIENCE.md` (product specification), `LMS_INTEGRATION_ARCHITECTURE.md`, `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md`, and `LMS_INTEGRATION_OPERATIONS.md` (runbook).
+- Extended the Assign Experience with optional Google Classroom publication and connected Assign to the authoritative assignment lifecycle.
+- Extended `LYFELABZ_FIRESTORE_DATA_MODEL.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, and `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` with the initial LMS collections, direct Rules coverage, external-integrations principles (§1.a), and Section 2 responsibilities. Added the LMS audit vocabulary.
+- Preserved provider neutrality, default-deny security, and the "no LMS SDK on the canonical instructional origin" invariant. Present Mode remains structurally separate.
+
+### Architecture posture
+
+- The client is never authoritative for LMS operations. All OAuth tokens, refresh tokens, and upstream credentials are held server-side. Every consequential LMS operation emits an `auditEvents` record under the reserved vocabulary.
+- Assign remains the one workflow. Publication is opt-in per class row and never blocks activation.
+- Preservation mode intact.
+
+---
+
+## Sprint 8E: LMS Refresh and Reconciliation
+
+**Date:** 2026-07-11
+**Status:** Implementation complete.
+**Commit:** `7585214` Sprint 8E: LMS refresh and reconciliation
+**Companion documents:** `LMS_INTEGRATION_ARCHITECTURE.md`, `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md`, `LMS_INTEGRATION_OPERATIONS.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` (§2).
+
+### Objective
+
+Add the manual LMS refresh and reconciliation workflow that keeps a teacher's LMS-linked classes in sync with their upstream state, detects ownership drift and revoked access, and surfaces plain-language guidance without silent retries or automatic ownership reassignment.
+
+### Major accomplishments
+
+- Added a provider-neutral reconciliation callable (`platform/functions/src/lms/classes-refresh.ts`) that reads the upstream class state, compares it to the LyfeLabz mirror under the certified enrollment vocabulary (`active`, `transferred`, `withdrawn`, `archived`), and never hard-deletes an enrollment record.
+- Detects ownership drift, revoked access, and missing upstream classes. On revocation, the connection is marked revoked and the class link is marked stale; the teacher sees a plain-language message on the next visit.
+- Added class health evaluation and guidance surfaced through the Integrations experience. Refresh is manual and idempotent.
+- Extended the teacher Integrations experience (`app/src/settings/integrations/**`) with refresh controls and health messaging.
+- Reused the existing LMS audit vocabulary; no new vocabulary terms were introduced. Rules-level protections remain intact.
+
+### Architecture posture
+
+- Provider neutrality preserved. Default-deny security preserved. No token ever crosses the client boundary.
+- No new custom claim, lifecycle field, or Firestore collection was introduced.
+- Preservation mode intact.
+
+---
+
+## Sprint 9A: Assessment Pipeline Architecture Decision Workshop
+
+**Date:** 2026-07-12
+**Status:** Certified. Architecture-only sprint. No production code, Cloud Functions, or Firebase configuration was modified.
+**Commit:** `451e407` Sprint 9A: Add canonical assessment pipeline specification and reconcile architecture
+**Reconciliation report:** `SPRINT_9A_RECONCILIATION_REPORT.md`
+**Canonical specification:** `ASSESSMENT_PIPELINE_SPECIFICATION.md`
+**Decision record:** PDR-021 in `LYFELABZ_PLATFORM_DECISIONS.md`.
+
+### Objective
+
+Ratify the LyfeLabz formative assessment pipeline as a single canonical specification, remove ambiguity around submission versus attempt, formalize session semantics, lock in server-authoritative scoring and server-confidential answer keys, and reconcile every downstream document to defer to the new specification.
+
+### Load-bearing ratifications
+
+- Attempt is the single authoritative assessment record. There is no separate Submission entity. Session is a separate entity holding transient, resumable, autosaving working state.
+- Scoring is server-authoritative; answer keys are server-confidential.
+- Every assignment belongs to exactly one class; multi-class assignment is expressed as automatic per-class fan-out.
+- The Practice / Classroom mode toggle is retired.
+- Formative attempts are unlimited by default. Retake is reserved for the future summative pipeline.
+- Assignment windows are backed by a one-hour grace period for sessions live at close.
+- Sessions expire 24 hours after last activity and are archived; archived sessions are recoverable within a bounded window.
+- Every attempt carries the internal assessment revision identifier at submission time. Revision boundaries are platform-owned.
+
+### Files created
+
+- `docs/platform/ASSESSMENT_PIPELINE_SPECIFICATION.md`
+- `docs/platform/SPRINT_9A_RECONCILIATION_REPORT.md`
+
+### Files reconciled
+
+- `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-008 reconciliation notice; PDR-021 added with seven sub-decisions).
+- `LYFELABZ_SUBMISSION_ROLLUP_STRATEGY.md`, `LYFELABZ_PLATFORM_DOMAIN_MODEL.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, `PLATFORM_CONTRACTS.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `ASSIGN_EXPERIENCE.md`, `LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_ENGINEERING_STANDARDS.md`.
+
+### Architecture posture
+
+- No application source, Cloud Function source, Firebase configuration, Firestore Rules, or emulator configuration was modified.
+- Preservation mode intact.
+
+---
+
+## Sprint 9B: Platform Operations Architecture Decision Workshop
+
+**Date:** 2026-07-12
+**Status:** Certified. Architecture-only sprint. No production code, Cloud Functions, or Firebase configuration was modified.
+**Commit:** `974617b` Sprint 9B: Add canonical platform operations specification and reconcile architecture
+**Reconciliation report:** `SPRINT_9B_RECONCILIATION_REPORT.md`
+**Canonical specification:** `PLATFORM_OPERATIONS_SPECIFICATION.md`
+**Decision record:** PDR-022 in `LYFELABZ_PLATFORM_DECISIONS.md`.
+
+### Objective
+
+Ratify the LyfeLabz platform operations architecture as a single canonical specification. Establish Firebase Hosting as the permanent canonical production origin, formalize the three permanent environments, define the Certified Release, define rollback and maintenance mode, define operational monitoring and incident response, and set the operational Pilot Readiness bar for the Weston teacher pilot.
+
+### Load-bearing ratifications
+
+- Firebase Hosting is the permanent canonical production origin at `https://lyfelabz.com/`. Public curriculum and the authenticated platform share the origin under path-based routing. GitHub Pages is retained only as a migration safety net and will be retired.
+- Three permanent environments: Development (local emulators), Preview (Firebase Hosting Preview Channels or a dedicated preview project mirroring production), and Production. No deployment moves from Development to Production without passing through Preview. A future Staging environment is deferred.
+- A Certified Release is defined by ten criteria (architecture certified, documentation reconciled, implementation complete, local verification passed, security verification passed, operational documentation updated, preview deployment verified, Platform Administrator approval recorded, production deployment completed, and post-deployment health verified). Only Certified Releases are valid rollback targets.
+- Rollback is one action and targets a previous Certified Release from Firebase Hosting's release history. Repairs happen in Preview; production is redeployed only after recertification.
+- Production deployments never interrupt active classroom sessions, assessment sessions, or Present Mode.
+- Section 22 defines the operational Pilot Readiness Certification for the Weston teacher pilot (twelve criteria).
+
+### Files created
+
+- `docs/platform/PLATFORM_OPERATIONS_SPECIFICATION.md`
+- `docs/platform/SPRINT_9B_RECONCILIATION_REPORT.md`
+
+### Files reconciled
+
+- `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-014 Sprint 9B reconciliation notice; PDR-022 added with eleven sub-decisions).
+- `LYFELABZ_PLATFORM_ARCHITECTURE.md` (Section 12 superseded), `LYFELABZ_FIREBASE_BUILD_CHECKLIST.md`, `LMS_INTEGRATION_OPERATIONS.md`, `LYFELABZ_ENGINEERING_STANDARDS.md`.
+
+### Architecture posture
+
+- No application source, Cloud Function source, Firebase configuration, Firestore Rules, or emulator configuration was modified.
+- Preservation mode intact.
+
+---
+
+## Sprint 9C: Identity and Onboarding Architecture Decision Workshop
+
+**Date:** 2026-07-12
+**Status:** Certified. Architecture-only sprint. No production code, Cloud Functions, or Firebase configuration was modified.
+**Commit:** `7b1dfc7` Sprint 9C: Add canonical identity and onboarding specification and reconcile architecture
+**Reconciliation report:** `SPRINT_9C_RECONCILIATION_REPORT.md`
+**Canonical specification:** `IDENTITY_AND_ONBOARDING_SPECIFICATION.md`
+**Decision record:** PDR-023 in `LYFELABZ_PLATFORM_DECISIONS.md`.
+
+### Objective
+
+Ratify the LyfeLabz identity, onboarding, verification, roster authority, and authenticated-experience-shell architecture as a single canonical specification. Promote the District entity to a first-class security boundary, replace the maintained verified-domain automated verification path with a verification-code path, and formalize roster authority as one-per-class.
+
+### Load-bearing ratifications
+
+- Authentication is not authorization. Google Workspace authenticates; the platform authorizes through the canonical claims (`role`, `schoolId`, `districtId`). `districtId` is promoted from a reserved slot to a claim written on every `active` identity.
+- Domain hierarchy is `Platform → District → School → Teacher Identity → Class → Enrollment`. District is a first-class security boundary.
+- Teacher identity is district-bound. Multi-school membership is expressed at the teacher-identity layer without relaxing class ownership.
+- Verification prefers a one-time institution-bound verification code (§13.1). Request Teacher Access (§13.2) is the fallback. The maintained verified-domain automated path is retired.
+- Every class has exactly one roster authority: Google Classroom for LMS-linked classes; LyfeLabz for manual classes. Join codes exist only for manual classes.
+- Student identity is created only at first successful Google sign-in. Roster placeholders (`awaitingFirstSignIn`) exist on the class until then. Students never resolve identity ambiguity by hand.
+- Three callable surfaces are named as canonical: verification-code redemption, join-code redemption, and first-sign-in activation. Names, signatures, and error codes are finalized by the implementation sprint that introduces them.
+- The global header is uniform across LyfeLabz. Identity is never hidden inside the hamburger menu.
+
+### Files created
+
+- `docs/platform/IDENTITY_AND_ONBOARDING_SPECIFICATION.md`
+- `docs/platform/SPRINT_9C_RECONCILIATION_REPORT.md`
+
+### Files reconciled
+
+- `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-003 Sprint 9C reconciliation notice; PDR-015 Sprint 9C reconciliation notice; PDR-023 added with fifteen sub-decisions).
+- `LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_PLATFORM_DOMAIN_MODEL.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_SPRINT_2_ONBOARDING_AND_VERIFICATION.md`, `PLATFORM_STATE_MACHINE.md`, `PLATFORM_CONTRACTS.md`, `LMS_INTEGRATION_ARCHITECTURE.md`, `TEACHER_JOURNEY.md`, `TEACHER_EXPERIENCE_PHILOSOPHY.md`.
+
+### Architecture posture
+
+- No application source, Cloud Function source, Firebase configuration, Firestore Rules, or emulator configuration was modified.
+- Preservation mode intact.
+
+---
+
+## Sprint 9D: Platform Transition and Pilot Readiness
+
+**Date:** 2026-07-12
+**Status:** Certified. Architecture-only sprint. No production code, Cloud Functions, or Firebase configuration was modified.
+**Commit:** `f8766d2` Sprint 9D: Add Platform Transition specification and reconcile Sprint 9 architecture
+**Reconciliation report:** `SPRINT_9D_RECONCILIATION_REPORT.md`
+**Canonical specification:** `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md`
+**Decision record:** PDR-024 in `LYFELABZ_PLATFORM_DECISIONS.md`.
+
+### Objective
+
+Close Sprint 9 by ratifying the product philosophy that governs the platform's transition from an instructional website into the first production teacher pilot, and the long-term learning-journey posture that follows. Define the product Pilot Readiness bar as a peer to Sprint 9B's operational Pilot Readiness bar.
+
+### Load-bearing ratifications
+
+- Teach First, Configure Second. First-time verified teachers receive an optional, non-blocking Welcome Guide, not a setup wizard.
+- LyfeLabz is not a Learning Management System. The Teacher Workspace does not include a calendar, planner, curriculum-mapping tool, gradebook, messaging system, recommendation engine, or analytics dashboard.
+- Activation and publication are separate. Activation controls access to lessons inside LyfeLabz. Publication sends assignments into Google Classroom.
+- Google Classroom is the student assignment hub. LyfeLabz never competes for the student's attention with a second assignment list. Deep links land the student in the correct authorized attempt context silently.
+- The student identity menu is exactly `My Assignments` and `My Results`. Submit equals completion. `Improve My Score` is offered on every less-than-perfect best score.
+- Status indicators are `Ready to Begin`, `Improving`, `Well Done!`, `Perfect Score`, each carrying an accessible label. Color is never load-bearing.
+- Learning belongs to the student. Archived lessons remain permanently accessible through the student's login. Teacher class archival never removes student learning history.
+- Multi-year portfolio. Completed learning accumulates across Grade 6 through Grade 8 under the permanent LyfeLabz Student ID as a preservation surface, not a test-prep product.
+- Calm software. No email, push, marketing, or engagement notifications.
+- Pilot Readiness is both operational and product. Section 10.1 defines the product bar; `PLATFORM_OPERATIONS_SPECIFICATION.md` §22 continues to define the operational bar.
+
+### Files created
+
+- `docs/platform/PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md`
+- `docs/platform/SPRINT_9D_RECONCILIATION_REPORT.md`
+
+### Files reconciled
+
+- `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-022 Sprint 9D reconciliation notice; PDR-024 added with eighteen sub-decisions).
+- `LYFELABZ_PLATFORM_ARCHITECTURE.md`, `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` (Sprint 9 Foundational Specification Set cross-reference), `PLATFORM_OPERATIONS_SPECIFICATION.md` (Sprint 9 Foundational Specification Set cross-reference), `ASSESSMENT_PIPELINE_SPECIFICATION.md` (Sprint 9 Foundational Specification Set cross-reference), `TEACHER_EXPERIENCE_PHILOSOPHY.md`, `TEACHER_JOURNEY.md`, `LMS_EXPERIENCE.md`, `ASSIGN_EXPERIENCE.md`, `CLASS_SNAPSHOT_EXPERIENCE.md`.
+
+### Architecture posture
+
+- No application source, Cloud Function source, Firebase configuration, Firestore Rules, or emulator configuration was modified.
+- Preservation mode intact.
+
+---
+
+## Sprint 9E: Platform Architecture Certification
+
+**Date:** 2026-07-12
+**Status:** **Architecture Certified. Implementation may resume.** Architecture-only sprint. No production code, Cloud Functions, or Firebase configuration was modified. No commits were made.
+**Detailed certification:** `SPRINT_9E_PLATFORM_ARCHITECTURE_CERTIFICATION.md`
+**Companion documents:** `LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_PLATFORM_DECISIONS.md`, `ASSESSMENT_PIPELINE_SPECIFICATION.md`, `PLATFORM_OPERATIONS_SPECIFICATION.md`, `IDENTITY_AND_ONBOARDING_SPECIFICATION.md`, `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md`.
+
+### Objective
+
+Certify that the LyfeLabz platform architecture is complete, internally consistent, and ready for implementation to resume. Confirm that engineers can build against the certified corpus without inventing platform behavior. Record any genuine architectural gap as a future decision item rather than solving it in Sprint 9E.
+
+### Certification method
+
+The four Sprint 9 foundational specifications (9A - 9D), the master platform architecture, the Platform Decision Records (PDR-001 - PDR-024), the domain and data model documents, the security model, the Cloud Function charter, `PLATFORM_CONTRACTS.md`, `PLATFORM_STATE_MACHINE.md`, and the teacher and student experience specifications were reviewed as a single unified architectural corpus. Each Sprint 9E charter criterion (canonical ownership, internal consistency, cross references, user journey completeness, security boundaries, platform philosophy, operational readiness) was evaluated against the corpus. Findings and unresolved items were recorded.
+
+### Certification conclusion
+
+**Architecture Certified. Implementation may resume.**
+
+The three documentation-only conditions identified during Sprint 9E were resolved editorially within Sprint 9E and no new blocking inconsistency was discovered:
+
+- **G-1 resolved.** `SPRINT_HISTORY.md` was back-filled with entries for Sprints 7A, 7B, 8, 8E, 9A, 9B, 9C, and 9D drawn from the certified per-sprint documents and reconciliation reports. The Sprint 9E entry is updated to reflect the certified conclusion.
+- **G-2 resolved.** `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` Appendix A now enumerates the three Sprint 9C identity callables (verification-code redemption, join-code redemption, first-sign-in activation) with their authority boundaries, atomicity, idempotency, and audit vocabulary. Concrete function names, argument shapes, and error codes are left to the first implementation sprint that introduces them.
+- **G-6 resolved.** `LYFELABZ_PLATFORM_ARCHITECTURE.md` §9 was rewritten as a high-level narrative that defers to `ASSESSMENT_PIPELINE_SPECIFICATION.md` for every load-bearing behavior (attempt versus session, server-authoritative scoring, answer-key custody, immediate feedback, revision stamping, submit equals completion, per-class assignments, and the removal of the Practice / Classroom mode toggle).
+
+Three items previously carried as future decisions - G-3 (School Administrator role), G-4 (suspension, reinstatement, and archival of user identities), and G-5 (parent accounts) - are reclassified as intentional future architecture or roadmap boundaries. They are explicitly outside the current pilot architecture and do not require engineers to invent behavior during the certified implementation scope.
+
+### Architecture strengths recorded
+
+- Four coherent Sprint 9 specifications with declared internal precedence.
+- Explicit reconciliation notices at the top of `LYFELABZ_PLATFORM_ARCHITECTURE.md` and inline in `LYFELABZ_PLATFORM_DECISIONS.md`.
+- Session / attempt separation, server-authoritative scoring, and server-confidential answer keys.
+- District promoted to a first-class security boundary.
+- One roster authority per class.
+- Activation and publication kept separate; Google Classroom remains the assignment hub.
+- Pilot bounded by an explicit Sprint 9D §4.2 out-of-scope list guarding against LMS drift.
+- Two readiness bars for the pilot: operational (Sprint 9B §22) and product (Sprint 9D §10.1).
+
+### Files created
+
+- `docs/platform/SPRINT_9E_PLATFORM_ARCHITECTURE_CERTIFICATION.md`
+
+### Files modified
+
+- `docs/platform/SPRINT_HISTORY.md` (this entry).
+
+### Confirmations
+
+- No application source, Cloud Function source, Firestore configuration, security rules, or emulator configuration was modified.
+- No test file was modified.
+- No runtime behavior was changed.
+- No commits were made.

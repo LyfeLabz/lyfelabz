@@ -304,23 +304,27 @@ The same three-layer control applies to supporting resource types: investigation
 
 ## 9. Assessment Architecture
 
-Assessment v2 is the durable, ownership-stamped submission model that replaces ad hoc quiz storage.
+**Canonical source of truth.** The LyfeLabz formative assessment pipeline is defined in full by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021. This section is a high-level narrative and defers to the specification for every load-bearing detail. Where this section and the specification appear to conflict, the specification controls.
 
-**Submission Ownership.** Every submission carries a stable reference to its student, its class at the moment of submission, the lesson identifier, and the lesson version. Ownership is verified server-side before the submission is finalized. A submission that cannot be attributed is rejected.
+**Attempts, not submissions.** The authoritative assessment record is the **Attempt**. There is no separate Submission entity. The pre-Sprint-9A vocabulary that spoke of "submissions" is retained only in the historical `LYFELABZ_SUBMISSION_ROLLUP_STRATEGY.md` document, which is read forward under the specification's `Submission → Attempt` mapping.
 
-**Timestamps.** Every submission records creation, last update, and finalization timestamps in UTC. Timestamps are set by trusted sources (Firestore server timestamps or Cloud Functions), never by the client.
+**Sessions hold in-progress work.** A distinct **Session** entity holds transient, resumable, autosaving working state while a student is completing an attempt. Sessions and attempts are separate concerns. Session lifecycle, expiration (24 hours after last activity), archival, and recovery are governed by the specification. A session is not an attempt; only the attempt is authoritative.
 
-**Versioning.** Submissions are immutable once finalized. A student who retakes an assessment produces a new submission. The prior submission remains readable to preserve history. Lesson version is captured so that a submission's questions can be reconstructed even after the lesson evolves.
+**Server-authoritative scoring.** Scoring is performed on the server against server-confidential answer keys. The client submits answers; the scorer computes the score and returns the outcome with immediate feedback. No client-authoritative score field ever enters the attempt document under any name. Answer keys are readable only by the scorer and never appear in any client-reachable artifact.
 
-**Student Responses.** Responses are stored per-question in a structured, forward-compatible format that supports multiple choice today and open-response, ordering, and rubric-scored answers later. Response schema evolution is additive.
+**Immediate feedback.** On submission, the student receives immediate correctness feedback and, where the specification defines them, explanations. Immediate feedback is a property of server-authoritative scoring, not of a client-side mode toggle.
 
-**Future Rubric Support.** Rubric scoring is anticipated but not designed here. The submission format reserves space for teacher-assigned scores and comments so that adding rubric support does not require a migration.
+**Ownership, immutability, and revision stamping.** Every attempt carries a stable reference to its student, its class at the moment of submission, the lesson identifier, and the internal assessment revision identifier at submission time. Attempts are immutable once written. The prior attempts of the same student on the same assignment are preserved to protect historical continuity. Assessment revisions are platform-owned and governed by the specification's curriculum-governance section.
 
-**Recommendation.** Submissions are append-only from the student side, finalized by a trusted path (Cloud Function or transactional client write with server timestamps), and versioned against the lesson at submission time.
+**Assignments are per-class.** Every assignment belongs to exactly one class. Assigning a single activity to multiple classes is expressed as automatic per-class fan-out into individual assignment records. Assignment windows are enforced at session creation and at attempt submission, with a one-hour grace period for sessions that were live at the moment the window closed.
 
-*Why.* This produces trustworthy historical data, protects submission integrity, and makes future rubric and analytics work possible without reshaping past submissions.
+**Submit equals completion; unlimited formative attempts.** In the formative pipeline, submitting an attempt is what marks the student's work complete for that assignment. Formative attempts are unlimited by default; `Improve My Score` is the student surface for re-engagement on a less-than-perfect best score. Retake as a summative mechanic is reserved for a future pipeline and is not implemented in Version 1.
 
-Analytics is explicitly out of scope for this section.
+**No Practice / Classroom mode toggle.** The pre-Sprint-9A `mode: "practice"` / `mode: "classroom"` distinction is removed. Behavior derives from authentication and authorization, not from a client-chosen mode. Anonymous exploration produces no attempt; every recorded attempt is by definition an authenticated authorized attempt.
+
+**Analytics.** Teacher-facing analytics is governed by the specification's five-metric teacher analytics surface. Analytics is explicitly out of scope for this section beyond that pointer.
+
+For the load-bearing behavior - session lifecycle, attempt lifecycle, grace period, scoring transaction, feedback contract, revision boundary, answer-key custody, and teacher analytics - read `ASSESSMENT_PIPELINE_SPECIFICATION.md` directly.
 
 ---
 
