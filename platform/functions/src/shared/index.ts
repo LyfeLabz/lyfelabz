@@ -8,6 +8,16 @@ export {
   type CanonicalCustomClaims,
   type WriteCustomClaimsInput,
 } from "./auth/claims";
+export {
+  requireDistrictContext,
+  type DistrictClaimToken,
+  type DistrictContext,
+} from "./auth/require-district-context";
+export {
+  DISTRICT_ERROR_IDS,
+  isDistrictErrorId,
+  type DistrictErrorId,
+} from "./errors/district-errors";
 export { PlatformError } from "./errors/platform-error";
 export {
   assignmentArchiveDocRef,

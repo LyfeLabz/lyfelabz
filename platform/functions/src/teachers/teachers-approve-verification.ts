@@ -3,6 +3,7 @@ import { onCall, type CallableRequest } from "firebase-functions/v2/https";
 import {
   PlatformError,
   log,
+  schoolDocRef,
   userRecordDocRef,
   writeAuditEvent,
   writeCustomClaims,
@@ -90,6 +91,33 @@ async function loadUserRecord(uid: string): Promise<UserRecord> {
   return data;
 }
 
+async function resolveSchoolDistrictId(schoolId: string): Promise<string> {
+  const snapshot = await schoolDocRef(schoolId).get();
+  if (!snapshot.exists) {
+    throw new PlatformError(
+      "school-district-mismatch",
+      "The target teacher's active school could not be resolved.",
+    );
+  }
+  const school = snapshot.data() as
+    | (Record<string, unknown> & { districtId?: unknown })
+    | undefined;
+  if (!school) {
+    throw new PlatformError(
+      "school-district-mismatch",
+      "The target teacher's active school record was unreadable.",
+    );
+  }
+  const districtId = school.districtId;
+  if (typeof districtId !== "string" || districtId.trim().length === 0) {
+    throw new PlatformError(
+      "district-unassigned",
+      "The target teacher's active school is not assigned to a district.",
+    );
+  }
+  return districtId;
+}
+
 function safeLog(fn: () => void): void {
   try {
     fn();
@@ -167,6 +195,7 @@ async function teachersApproveVerificationHandler(
   }
 
   const schoolId = target.schoolId;
+  const districtId = await resolveSchoolDistrictId(schoolId);
 
   const approval: TeacherApprovalWrite = { status: "active" };
   await userRecordDocRef(targetUid).update(approval);
@@ -176,6 +205,7 @@ async function teachersApproveVerificationHandler(
     status: "active",
     role: "teacher",
     schoolId,
+    districtId,
   });
 
   await writeAuditEvent({

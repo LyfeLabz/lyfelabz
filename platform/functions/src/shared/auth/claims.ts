@@ -2,7 +2,7 @@ import { PlatformError } from "../errors/platform-error";
 import type { Role, UserStatus } from "../types/user";
 import { getAdminAuth } from "./admin";
 
-// Canonical custom claims shape per Cloud Function Charter §2.
+// Canonical custom claims shape per PDR-025 §6 and Cloud Function Charter §2.
 //
 // Claims carry authorization data only. Lifecycle state remains on the
 // users/{uid} document (see PLATFORM_STATE_MACHINE.md §1). Claims are
@@ -10,13 +10,14 @@ import { getAdminAuth } from "./admin";
 // absence of claims is the canonical signal that the user has no active
 // authorization.
 //
-// `districtId` is a documented reserved slot in the charter for the
-// PDR-015 district expansion path and is intentionally not part of this
-// type. When it is added, it will be added here first and then wired
-// through every writer in a single sprint.
+// PDR-025 §6 ratifies the three-field canonical shape
+// `{ role, schoolId, districtId }` with every value a non-empty string.
+// The writer input surface mirrors the canonical shape exactly: the
+// TypeScript contract and the runtime contract agree.
 export type CanonicalCustomClaims = {
   readonly role: Role;
   readonly schoolId: string;
+  readonly districtId: string;
 };
 
 export type WriteCustomClaimsInput = {
@@ -24,6 +25,7 @@ export type WriteCustomClaimsInput = {
   readonly status: UserStatus;
   readonly role: Role;
   readonly schoolId: string;
+  readonly districtId: string;
 };
 
 const VALID_ROLES: readonly Role[] = [
@@ -50,11 +52,12 @@ function isValidRole(value: unknown): value is Role {
 // - the active-only invariant: claims are written only when status is
 //   `active`. Any other status is rejected as `claims.notActive`.
 // - the canonical shape invariant: the object passed to
-//   setCustomUserClaims contains exactly `role` and `schoolId`, so any
-//   prior claim fields (including the reserved `districtId` slot before
-//   it is implemented) are erased on write.
-// - input validation: uid, role, and schoolId are non-empty; role is a
-//   value from the canonical Role union.
+//   setCustomUserClaims contains exactly `role`, `schoolId`, and
+//   `districtId`, per PDR-025 §6. Any prior extraneous claim fields are
+//   erased on write because the admin SDK replaces the claim payload
+//   atomically.
+// - input validation: uid, role, schoolId, and districtId are non-empty;
+//   role is a value from the canonical Role union.
 //
 // The helper returns the exact object written, so callers can log it
 // deterministically without re-deriving the shape.
@@ -82,10 +85,17 @@ export async function writeCustomClaims(
       "schoolId must be a non-empty string.",
     );
   }
+  if (!isNonEmptyString(input.districtId)) {
+    throw new PlatformError(
+      "claims.invalidDistrictId",
+      "districtId must be a non-empty string.",
+    );
+  }
 
   const claims: CanonicalCustomClaims = {
     role: input.role,
     schoolId: input.schoolId,
+    districtId: input.districtId,
   };
 
   try {

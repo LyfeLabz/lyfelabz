@@ -93,7 +93,9 @@ function activeStudentSnapshot(
   };
 }
 
-function schoolSnapshotExists() {
+function schoolSnapshotExists(
+  overrides: { districtId?: unknown } = {},
+) {
   return {
     exists: true,
     data: () => ({
@@ -101,6 +103,8 @@ function schoolSnapshotExists() {
       shortName: "Test",
       timezone: "America/New_York",
       createdAt: {} as never,
+      districtId:
+        "districtId" in overrides ? overrides.districtId : "district-abc",
     }),
   };
 }
@@ -126,6 +130,7 @@ describe("studentsCompleteOnboarding", () => {
     mockWriteCustomClaims.mockResolvedValueOnce({
       role: "student",
       schoolId: "school-123",
+      districtId: "district-abc",
     });
     mockWriteAuditEvent.mockResolvedValueOnce({
       eventId: "evt-1",
@@ -307,6 +312,7 @@ describe("studentsCompleteOnboarding", () => {
     mockWriteCustomClaims.mockResolvedValueOnce({
       role: "student",
       schoolId: "school-123",
+      districtId: "district-abc",
     });
     mockWriteAuditEvent.mockResolvedValueOnce({
       eventId: "evt-1",
@@ -321,7 +327,104 @@ describe("studentsCompleteOnboarding", () => {
       status: "active",
       role: "student",
       schoolId: "school-123",
+      districtId: "district-abc",
     });
+    const claimsCall = mockWriteCustomClaims.mock.calls[0][0];
+    expect(Object.keys(claimsCall).sort()).toEqual([
+      "districtId",
+      "role",
+      "schoolId",
+      "status",
+      "uid",
+    ]);
+  });
+
+  it("resolves districtId from the canonical school record, ignoring any client-supplied district value", async () => {
+    mockUserGet.mockResolvedValueOnce(provisionedSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(
+      schoolSnapshotExists({ districtId: "district-canonical" }),
+    );
+    mockUserUpdate.mockResolvedValueOnce(undefined);
+    mockWriteCustomClaims.mockResolvedValueOnce({
+      role: "student",
+      schoolId: "school-123",
+      districtId: "district-canonical",
+    });
+    mockWriteAuditEvent.mockResolvedValueOnce({
+      eventId: "evt-1",
+      record: {},
+    });
+
+    await __studentsCompleteOnboardingHandler(
+      makeRequest({
+        data: {
+          role: "student",
+          schoolId: "school-123",
+          displayName: "Test Student",
+          districtId: "district-client-spoofed",
+        },
+      }),
+    );
+
+    expect(mockWriteCustomClaims).toHaveBeenCalledWith({
+      uid: "uid-abc",
+      status: "active",
+      role: "student",
+      schoolId: "school-123",
+      districtId: "district-canonical",
+    });
+  });
+
+  it("throws district-unassigned when the school has no districtId", async () => {
+    mockUserGet.mockResolvedValueOnce(provisionedSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(
+      schoolSnapshotExists({ districtId: undefined }),
+    );
+
+    await expect(
+      __studentsCompleteOnboardingHandler(makeRequest()),
+    ).rejects.toMatchObject({
+      name: "PlatformError",
+      code: "district-unassigned",
+    });
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("throws district-unassigned when the school districtId is empty or whitespace", async () => {
+    mockUserGet.mockResolvedValueOnce(provisionedSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(
+      schoolSnapshotExists({ districtId: "" }),
+    );
+    await expect(
+      __studentsCompleteOnboardingHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "district-unassigned" });
+
+    mockUserGet.mockResolvedValueOnce(provisionedSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(
+      schoolSnapshotExists({ districtId: "   " }),
+    );
+    await expect(
+      __studentsCompleteOnboardingHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "district-unassigned" });
+
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("throws district-unassigned when the school districtId is not a string", async () => {
+    mockUserGet.mockResolvedValueOnce(provisionedSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(
+      schoolSnapshotExists({ districtId: 42 }),
+    );
+
+    await expect(
+      __studentsCompleteOnboardingHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "district-unassigned" });
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
   });
 
   it("invokes the canonical audit helper with action students.activated and the canonical target fields", async () => {
@@ -331,6 +434,7 @@ describe("studentsCompleteOnboarding", () => {
     mockWriteCustomClaims.mockResolvedValueOnce({
       role: "student",
       schoolId: "school-123",
+      districtId: "district-abc",
     });
     mockWriteAuditEvent.mockResolvedValueOnce({
       eventId: "evt-1",
@@ -360,7 +464,11 @@ describe("studentsCompleteOnboarding", () => {
     });
     mockWriteCustomClaims.mockImplementationOnce(() => {
       calls.push("claims");
-      return Promise.resolve({ role: "student", schoolId: "school-123" });
+      return Promise.resolve({
+        role: "student",
+        schoolId: "school-123",
+        districtId: "district-abc",
+      });
     });
     mockWriteAuditEvent.mockImplementationOnce(() => {
       calls.push("audit");
@@ -396,6 +504,7 @@ describe("studentsCompleteOnboarding", () => {
     mockWriteCustomClaims.mockResolvedValueOnce({
       role: "student",
       schoolId: "school-123",
+      districtId: "district-abc",
     });
     const auditErr = new PlatformError(
       "audit.writeFailed",

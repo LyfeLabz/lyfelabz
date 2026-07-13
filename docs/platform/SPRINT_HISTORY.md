@@ -1780,3 +1780,118 @@ Sprint 10A is documentation only. The certified test baselines from Sprint 9E ca
 ### Certification statement
 
 Sprint 10A is complete and certified. The implementation contract layer defined by PDR-025 through PDR-028 is internally consistent, externally consistent with the Sprint 9E certified product architecture, and free of duplicated ownership or unassigned responsibility. Implementation may resume. See `SPRINT_10A_CERTIFICATION.md` for the authoritative certification artifact.
+
+---
+
+## Sprint 11A: Certified Contract Implementation Inventory
+
+**Dates:** 2026-07-13
+**Status:** Complete (inventory only)
+**Detailed report:** SPRINT_11A_IMPLEMENTATION_INVENTORY.md
+
+### Objective
+
+Compare the current LyfeLabz repository against the four canonical Sprint 10A implementation contracts (PDR-025 District Security Boundary, PDR-026 Assessment Implementation, PDR-027 Google Classroom Deep-Link, PDR-028 Roster Display Name) and produce an evidence-based inventory that names, for each contract requirement and required test category, whether the repository is Implemented, Partially Implemented, Missing, Conflicting, or Not Applicable. Recommend a bounded implementation sequence. Select exactly one Sprint 11B slice. Change no runtime code.
+
+### Documents reviewed
+
+- The four Sprint 10A implementation contracts (`DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md`, `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`, `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md`, `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md`).
+- `SPRINT_10A_CERTIFICATION.md`, `SPRINT_10A_FINAL_RECONCILIATION_REPORT.md`, `SPRINT_10A_COMPLETION_REPORT.md`.
+- Supporting authorities: `LYFELABZ_PLATFORM_DECISIONS.md`, `IDENTITY_AND_ONBOARDING_SPECIFICATION.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIRESTORE_QUERY_AND_INDEX_STRATEGY.md`, `PLATFORM_STATE_MACHINE.md`, `PLATFORM_CONTRACTS.md`, `LMS_INTEGRATION_ARCHITECTURE.md`, `LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md`, `LMS_EXPERIENCE.md`, `ASSESSMENT_PIPELINE_SPECIFICATION.md`, `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md`, `PLATFORM_OPERATIONS_SPECIFICATION.md`.
+- Repository code and configuration under `platform/functions/src/**`, `platform/firebase/firestore.rules`, `platform/firebase/firestore.indexes.json`, `platform/firebase/tests/**`, and `app/src/**`.
+
+### The four contract assessments
+
+- **PDR-025 District Security Boundary.** The canonical claim shape reserves `districtId` but ships as `{ role, schoolId }` only (`platform/functions/src/shared/auth/claims.ts:17-20`). No Firestore document carries `districtId`. No rule compares it. No callable derives or enforces it. The activation callables, resource ownership chains, cross-district prevention, stale-claim behavior, canonical error identifiers, and Rules and emulator test matrices from §11 through §19 are Missing. The claims writer, `PlatformError`, audit-event writer, and Sprint 2 self-write allowlist are preserved foundations.
+- **PDR-026 Assessment Implementation.** The seven assessment collections (`assessments`, `assessmentRevisions`, `assessmentAnswerKeys`, `assessmentSessions`, `attempts`, `attemptRollups`, `assignmentRollups`) do not exist. None of the eleven §21 callables is exported. `submissions/{submissionId}` with `submissionsCreate` and `submissionsFinalize` remains in place and is superseded by `attempts/{attemptId}` and `assessmentAttemptsFinalize` per §21 and §26. Composite indexes, audit vocabulary, and error identifiers are Missing.
+- **PDR-027 Google Classroom Deep-Link.** The publication callable exists as `lmsAssignmentsPublish` (plural) at `platform/functions/src/lms/assignments-publish.ts` and is the sole writer of the publication mirror. Three reconciliations are required by the contract: rename to `lmsAssignmentPublish`; remove the client-supplied `lyfelabzAssignmentUrl` and introduce a single server-side URL builder for `https://lyfelabz.com/app/a/{assignmentId}` per §8.3; adopt the deterministic ordinal identifier per §12. `lmsDeepLinkResolve`, `lmsAssignmentUnpublish`, `lmsClassUnlink`, and `lmsOwnershipDriftHandler` are Missing. Required indexes on `lmsAssignmentPublications` and the resolver audit event `lms.deepLinkResolved` are Missing.
+- **PDR-028 Roster Display Name.** `users.displayName` and `enrollments.displayNameOverride` fields exist. The Sprint 2 rules-allowlisted self-write is present. `enrollmentsSetDisplayNameOverride`, `usersUpdateProfile` or the `usersOnDisplayNameChange` trigger, `usersFirstSignInActivation`, the shared normalizer, the shared resolver, and the roster placeholder shape are Missing. The four required audit event names are not emitted anywhere. `lmsClassImport` does not yet write placeholder names.
+
+### Recommended implementation sequence
+
+Twenty bounded slices in dependency order. Slice 1 lands the shared district context (extends the canonical claim shape, adds the district error identifier vocabulary, introduces the `requireDistrictContext` helper). Slices 2 through 5 propagate `districtId` through activation callables, denormalization on child resources, Firestore Rules, and app-side session reconciliation. Slices 6 through 9 land the display-name normalizer, resolver, audit vocabulary, the rename path, the override callable, and the roster placeholder shape and first-sign-in activation callable. Slices 10 through 12 land the deep-link URL builder and parser, the publication callable reconciliation, and the deep-link resolver. Slices 13 through 19 land the assessment collection scaffolding, session callables, attempt transaction, rollup Cloud Function, scheduled sweep/purge/recover, administrative answer-key read, the `submissions` migration, and the `My Results` and teacher analytics consumers. Slice 20 reserves the unpublish callable and the district transfer callable. Full detail is in `SPRINT_11A_IMPLEMENTATION_INVENTORY.md` §13.
+
+### Selected Sprint 11B scope
+
+Slice 1 - PDR-025 shared district context. Extend `platform/functions/src/shared/auth/claims.ts` so `CanonicalCustomClaims` and `WriteCustomClaimsInput` require `districtId`. Extend `platform/functions/src/shared/errors/platform-error.ts` with the closed set of district-boundary error identifiers from PDR-025 §17 (`unauthenticated`, `account-inactive`, `role-forbidden`, `district-unassigned`, `district-mismatch`, `school-district-mismatch`, `cross-district-reference`, `claim-stale`, `claim-state-mismatch`, `server-only-field`, `transfer-not-supported`). Add a new `platform/functions/src/shared/auth/require-district-context.ts` helper that verifies auth, reads `users/{uid}`, refuses non-`active` status, resolves `districtId` through `schools/{schoolId}`, and compares the caller claim to the record. Add colocated unit tests. This is the first PDR-025 §20 checklist item, unblocks every downstream contract, touches only the shared module, is verifiable through Jest without an emulator round-trip, and carries no migration risk because no callable yet consumes the extended shape.
+
+### Files created
+
+- `docs/platform/SPRINT_11A_IMPLEMENTATION_INVENTORY.md`
+
+### Files modified
+
+- `docs/platform/SPRINT_HISTORY.md` (this entry only)
+
+### Confirmation
+
+- No production code, Cloud Function, app code, shared type, Firestore Rule, index, test, or configuration was modified.
+- No certified architecture contract, PDR, completion report, or certification report was modified.
+- No em dash appears in either created or modified document.
+- Every matrix conclusion in the inventory carries repository evidence.
+- Every checklist item and required test category from PDR-025 through PDR-028 is represented.
+- Exactly one Sprint 11B implementation slice was selected.
+- No commits were made.
+
+## Sprint 11B Slice 1: PDR-025 Shared District Context
+
+Sprint 11B implements the first slice identified by the Sprint 11A implementation inventory (§13, §14). The slice extends the canonical custom-claims shape with `districtId`, declares the closed-set district-boundary error identifier vocabulary from PDR-025 §17, and introduces the shared `requireDistrictContext` authorization helper. The two existing `writeCustomClaims` callers (`teachersApproveVerification`, `studentsCompleteOnboarding`) receive narrowly scoped mechanical updates so that the certified claim type can be made strictly required without an unsafe optional-input transition. No callable lifecycle is redesigned. No Firestore Rules, app code, LMS integration, assessment pipeline, or display-name path is modified.
+
+### Canonical authority
+
+- `docs/platform/DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` (PDR-025), primary implementation authority for §6 canonical claim shape, §12 callable enforcement obligations, §15 stale-claim reconciliation, and §17 error identifier vocabulary.
+- `docs/platform/SPRINT_11A_IMPLEMENTATION_INVENTORY.md` §13 Slice 1 and §14 recommended Sprint 11B scope.
+- `docs/platform/LYFELABZ_CLOUD_FUNCTION_CHARTER.md` §2 canonical claim shape convention.
+- `docs/platform/IDENTITY_AND_ONBOARDING_SPECIFICATION.md` for identity and school-to-district resolution rules.
+- `docs/platform/LYFELABZ_FIREBASE_SECURITY_MODEL.md` for the rule-layer baseline this helper unblocks.
+- `docs/platform/PLATFORM_CONTRACTS.md` §client-storage prohibitions inherited by the helper.
+- `docs/platform/PLATFORM_STATE_MACHINE.md` §1 for the closed user-status enumeration.
+
+### Files created
+
+- `platform/functions/src/shared/errors/district-errors.ts` (closed-set `DISTRICT_ERROR_IDS`, `DistrictErrorId` type, `isDistrictErrorId` guard).
+- `platform/functions/src/shared/auth/require-district-context.ts` (shared authorization helper).
+- `platform/functions/src/shared/auth/require-district-context.test.ts` (34 unit tests).
+- `docs/platform/SPRINT_11B_SLICE1_COMPLETION_REPORT.md` (this slice's completion report).
+
+### Files modified
+
+- `platform/functions/src/shared/auth/claims.ts` (add `districtId` to `CanonicalCustomClaims` and to `WriteCustomClaimsInput` as strictly required; runtime validation for non-empty districtId; write the three-field canonical shape). The TypeScript and runtime contracts agree.
+- `platform/functions/src/shared/auth/claims.test.ts` (pin the three-field canonical shape; add missing-and-empty districtId refusal cases; update overwrite semantics assertions).
+- `platform/functions/src/shared/index.ts` (barrel re-exports for `requireDistrictContext`, `DistrictContext`, `DistrictClaimToken`, `DISTRICT_ERROR_IDS`, `DistrictErrorId`, `isDistrictErrorId`).
+- `platform/functions/src/teachers/teachers-approve-verification.ts` (resolve `districtId` from the canonical `schools/{schoolId}` record via the typed reference, refuse with `school-district-mismatch` when the school document is missing or unreadable, refuse with `district-unassigned` when the school has no valid districtId, and pass the resolved value to `writeCustomClaims`). The callable does not accept a client-supplied district value. No other callable behavior is redesigned.
+- `platform/functions/src/students/students-complete-onboarding.ts` (replace the existence-only school probe with a canonical school read that returns the resolved `districtId`, refuse with `district-unassigned` when the school has no valid districtId, and pass the resolved value to `writeCustomClaims`). Existing `students.schoolNotFound` behavior is preserved. The callable does not accept a client-supplied district value.
+- `platform/functions/src/teachers/teachers-approve-verification.test.ts` (mock `schoolDocRef`; assert `writeCustomClaims` receives the resolved `districtId`; add refusal cases for missing school, missing/empty/whitespace/non-string school `districtId`; assert a client-supplied district value is ignored).
+- `platform/functions/src/students/students-complete-onboarding.test.ts` (extend the school snapshot fixture with `districtId`; assert `writeCustomClaims` receives the resolved `districtId`; add refusal cases for missing/empty/whitespace/non-string school `districtId`; assert a client-supplied district value is ignored).
+
+### Tests added
+
+- 22 new assertions across the extended `claims.test.ts` (three-field write shape, missing-districtId refusal, empty-districtId refusal, overwrite semantics with the three-field shape).
+- 34 unit tests colocated with the new helper (`require-district-context.test.ts`) covering: closed-set identifier export, `isDistrictErrorId` guard, authenticated happy path (teacher and student), missing authentication, empty and whitespace uid, missing user document, every non-active status value, malformed record data (missing role, invalid role, missing schoolId, whitespace schoolId, undefined snapshot data), missing school document, missing school data, missing/empty/whitespace/non-string districtId on school, missing/empty token claims for `role`, `schoolId`, `districtId`, non-string token values, role and schoolId mismatch between token and record, districtId mismatch between token and resolved school district, and non-leaking `district-mismatch` error message.
+- New assertions in `teachers-approve-verification.test.ts` and `students-complete-onboarding.test.ts` covering canonical `districtId` resolution from the school record, `writeCustomClaims` receiving the resolved value in the three-field shape, missing-school refusal via `school-district-mismatch` (teachers), missing/empty/whitespace/non-string school `districtId` refusal via `district-unassigned`, and confirmation that any client-supplied district value on the request payload is ignored.
+- Full Jest suite green: 353 tests across 24 suites (up from 344 across 24).
+
+### Scope boundary
+
+Slice 1 is deliberately narrow. It touches the shared module and the two existing `writeCustomClaims` callers only. It does not modify Firestore Rules, the app, the LMS integration, the assessment pipeline, the display-name path, indexes, or Firestore document shapes. No callable lifecycle is redesigned. No client-supplied district value is introduced on any callable. The two callable edits are the smallest architecture-conforming mechanical change required to keep the certified claim type and the runtime writer contract in agreement. It writes exactly one implementation slice from the Sprint 11A §13 sequence.
+
+### Deferred Sprint 11 slices
+
+- Slice 2 (PDR-025 activation callables issue district claim) is intentionally deferred.
+- Slice 3 (PDR-025 denormalization on child resources) is intentionally deferred.
+- Slice 4 (PDR-025 Rules invariants) is intentionally deferred.
+- Slice 5 (PDR-025 stale-claim handling and app-side reconciliation) is intentionally deferred.
+- Slices 6 through 20 (PDR-026, PDR-027, PDR-028 implementation) are intentionally deferred.
+
+### Claim contract alignment note
+
+`WriteCustomClaimsInput.districtId` and `CanonicalCustomClaims.districtId` are both strictly required, matching PDR-025 §6 exactly. The TypeScript contract and the runtime writer contract agree, so no caller can compile while omitting the field. `districtId` is resolved from the canonical `schools/{schoolId}` document on the server; no client-supplied district value is accepted anywhere on the two callable request payloads. The certified error vocabulary from PDR-025 §17 (`school-district-mismatch`, `district-unassigned`) is used at the resolution points; no new district error identifier was introduced.
+
+### Confirmation
+
+- No Firestore Rules were modified.
+- No app code was modified.
+- No later Sprint 11 slices were started.
+- Every new and existing Jest test passes locally.
+- No em dash appears in any created or modified document.
+- No commits were made.

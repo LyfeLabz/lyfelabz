@@ -7,6 +7,9 @@ const mockUserRecordDocRef = jest.fn(() => ({
   update: mockUserUpdate,
 }));
 
+const mockSchoolGet = jest.fn();
+const mockSchoolDocRef = jest.fn(() => ({ get: mockSchoolGet }));
+
 const mockWriteCustomClaims = jest.fn();
 const mockWriteAuditEvent = jest.fn();
 
@@ -25,11 +28,32 @@ jest.mock("../shared", () => {
   return {
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
+    schoolDocRef: mockSchoolDocRef,
     userRecordDocRef: mockUserRecordDocRef,
     writeCustomClaims: mockWriteCustomClaims,
     writeAuditEvent: mockWriteAuditEvent,
   };
 });
+
+function schoolSnapshot(
+  overrides: { exists?: boolean; districtId?: unknown } = {},
+) {
+  const exists = overrides.exists ?? true;
+  return {
+    exists,
+    data: () =>
+      exists
+        ? {
+            name: "Test School",
+            shortName: "Test",
+            timezone: "America/New_York",
+            createdAt: {} as never,
+            districtId:
+              "districtId" in overrides ? overrides.districtId : "district-abc",
+          }
+        : undefined,
+  };
+}
 
 import { PlatformError } from "../shared/errors/platform-error";
 import { __teachersApproveVerificationHandler } from "./teachers-approve-verification";
@@ -90,6 +114,8 @@ describe("teachersApproveVerification", () => {
     mockUserGet.mockReset();
     mockUserUpdate.mockReset();
     mockUserRecordDocRef.mockClear();
+    mockSchoolGet.mockReset();
+    mockSchoolDocRef.mockClear();
     mockWriteCustomClaims.mockReset();
     mockWriteAuditEvent.mockReset();
     mockLogInfo.mockReset();
@@ -99,10 +125,12 @@ describe("teachersApproveVerification", () => {
 
   it("transitions a pendingVerification teacher to active and returns the canonical response", async () => {
     mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
     mockUserUpdate.mockResolvedValueOnce(undefined);
     mockWriteCustomClaims.mockResolvedValueOnce({
       role: "teacher",
       schoolId: "school-123",
+      districtId: "district-abc",
     });
     mockWriteAuditEvent.mockResolvedValueOnce({
       eventId: "evt-1",
@@ -207,12 +235,14 @@ describe("teachersApproveVerification", () => {
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 
-  it("invokes writeCustomClaims with the canonical shape", async () => {
+  it("invokes writeCustomClaims with the canonical shape including districtId resolved from the school record", async () => {
     mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
     mockUserUpdate.mockResolvedValueOnce(undefined);
     mockWriteCustomClaims.mockResolvedValueOnce({
       role: "teacher",
       schoolId: "school-123",
+      districtId: "district-abc",
     });
     mockWriteAuditEvent.mockResolvedValueOnce({
       eventId: "evt-1",
@@ -221,21 +251,126 @@ describe("teachersApproveVerification", () => {
 
     await __teachersApproveVerificationHandler(makeRequest());
 
+    expect(mockSchoolDocRef).toHaveBeenCalledWith("school-123");
     expect(mockWriteCustomClaims).toHaveBeenCalledTimes(1);
     expect(mockWriteCustomClaims).toHaveBeenCalledWith({
       uid: "uid-teacher",
       status: "active",
       role: "teacher",
       schoolId: "school-123",
+      districtId: "district-abc",
     });
+    const claimsCall = mockWriteCustomClaims.mock.calls[0][0];
+    expect(Object.keys(claimsCall).sort()).toEqual([
+      "districtId",
+      "role",
+      "schoolId",
+      "status",
+      "uid",
+    ]);
   });
 
-  it("invokes the audit helper with teachers.verificationApproved and the canonical target fields", async () => {
+  it("resolves districtId from the canonical school record, ignoring any client-supplied district value", async () => {
     mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(
+      schoolSnapshot({ districtId: "district-canonical" }),
+    );
     mockUserUpdate.mockResolvedValueOnce(undefined);
     mockWriteCustomClaims.mockResolvedValueOnce({
       role: "teacher",
       schoolId: "school-123",
+      districtId: "district-canonical",
+    });
+    mockWriteAuditEvent.mockResolvedValueOnce({
+      eventId: "evt-1",
+      record: {},
+    });
+
+    await __teachersApproveVerificationHandler(
+      makeRequest({
+        data: {
+          targetUid: "uid-teacher",
+          districtId: "district-client-spoofed",
+        },
+      }),
+    );
+
+    expect(mockWriteCustomClaims).toHaveBeenCalledWith({
+      uid: "uid-teacher",
+      status: "active",
+      role: "teacher",
+      schoolId: "school-123",
+      districtId: "district-canonical",
+    });
+  });
+
+  it("throws school-district-mismatch when the school document is missing", async () => {
+    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot({ exists: false }));
+
+    await expect(
+      __teachersApproveVerificationHandler(makeRequest()),
+    ).rejects.toMatchObject({
+      name: "PlatformError",
+      code: "school-district-mismatch",
+    });
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("throws district-unassigned when the school has no districtId", async () => {
+    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(
+      schoolSnapshot({ districtId: undefined }),
+    );
+
+    await expect(
+      __teachersApproveVerificationHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "district-unassigned" });
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("throws district-unassigned when the school districtId is empty or whitespace", async () => {
+    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot({ districtId: "" }));
+    await expect(
+      __teachersApproveVerificationHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "district-unassigned" });
+
+    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(
+      schoolSnapshot({ districtId: "   " }),
+    );
+    await expect(
+      __teachersApproveVerificationHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "district-unassigned" });
+
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+  });
+
+  it("throws district-unassigned when the school districtId is not a string", async () => {
+    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot({ districtId: 42 }));
+
+    await expect(
+      __teachersApproveVerificationHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "district-unassigned" });
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+    expect(mockWriteCustomClaims).not.toHaveBeenCalled();
+  });
+
+  it("invokes the audit helper with teachers.verificationApproved and the canonical target fields", async () => {
+    mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
+    mockUserUpdate.mockResolvedValueOnce(undefined);
+    mockWriteCustomClaims.mockResolvedValueOnce({
+      role: "teacher",
+      schoolId: "school-123",
+      districtId: "district-abc",
     });
     mockWriteAuditEvent.mockResolvedValueOnce({
       eventId: "evt-1",
@@ -258,13 +393,18 @@ describe("teachersApproveVerification", () => {
   it("orders side effects: user update, then claims, then audit event", async () => {
     const calls: string[] = [];
     mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
     mockUserUpdate.mockImplementationOnce(() => {
       calls.push("update");
       return Promise.resolve();
     });
     mockWriteCustomClaims.mockImplementationOnce(() => {
       calls.push("claims");
-      return Promise.resolve({ role: "teacher", schoolId: "school-123" });
+      return Promise.resolve({
+        role: "teacher",
+        schoolId: "school-123",
+        districtId: "district-abc",
+      });
     });
     mockWriteAuditEvent.mockImplementationOnce(() => {
       calls.push("audit");
@@ -278,6 +418,7 @@ describe("teachersApproveVerification", () => {
 
   it("propagates a downstream claims failure and does not write audit", async () => {
     mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
     mockUserUpdate.mockResolvedValueOnce(undefined);
     const claimsErr = new PlatformError(
       "claims.writeFailed",
@@ -294,10 +435,12 @@ describe("teachersApproveVerification", () => {
 
   it("propagates a downstream audit helper failure", async () => {
     mockUserGet.mockResolvedValueOnce(pendingTeacherSnapshot());
+    mockSchoolGet.mockResolvedValueOnce(schoolSnapshot());
     mockUserUpdate.mockResolvedValueOnce(undefined);
     mockWriteCustomClaims.mockResolvedValueOnce({
       role: "teacher",
       schoolId: "school-123",
+      districtId: "district-abc",
     });
     const auditErr = new PlatformError(
       "audit.writeFailed",

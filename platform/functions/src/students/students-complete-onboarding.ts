@@ -104,7 +104,7 @@ async function loadUserRecord(uid: string): Promise<UserRecord> {
   return data;
 }
 
-async function assertSchoolExists(schoolId: string): Promise<void> {
+async function resolveSchoolDistrictId(schoolId: string): Promise<string> {
   const snapshot = await schoolDocRef(schoolId).get();
   if (!snapshot.exists) {
     throw new PlatformError(
@@ -112,6 +112,23 @@ async function assertSchoolExists(schoolId: string): Promise<void> {
       "Referenced school does not exist.",
     );
   }
+  const school = snapshot.data() as
+    | (Record<string, unknown> & { districtId?: unknown })
+    | undefined;
+  if (!school) {
+    throw new PlatformError(
+      "school-district-mismatch",
+      "The referenced school record was unreadable.",
+    );
+  }
+  const districtId = school.districtId;
+  if (typeof districtId !== "string" || districtId.trim().length === 0) {
+    throw new PlatformError(
+      "district-unassigned",
+      "The referenced school is not assigned to a district.",
+    );
+  }
+  return districtId;
 }
 
 function safeLog(fn: () => void): void {
@@ -181,7 +198,7 @@ async function studentsCompleteOnboardingHandler(
     );
   }
 
-  await assertSchoolExists(input.schoolId);
+  const districtId = await resolveSchoolDistrictId(input.schoolId);
 
   const activation: StudentActivationWrite = {
     role: "student",
@@ -197,6 +214,7 @@ async function studentsCompleteOnboardingHandler(
     status: "active",
     role: "student",
     schoolId: input.schoolId,
+    districtId,
   });
 
   await writeAuditEvent({
