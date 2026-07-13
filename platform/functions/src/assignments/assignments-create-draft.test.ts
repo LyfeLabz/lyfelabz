@@ -8,6 +8,7 @@ const mockAssignmentDocRef = jest.fn(() => ({ get: mockAssignmentGet }));
 const mockAssignmentCreationDocRef = jest.fn(() => ({ set: mockAssignmentSet }));
 
 const mockWriteAuditEvent = jest.fn();
+const mockRequireDistrictContext = jest.fn();
 
 const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
@@ -45,11 +46,17 @@ jest.mock("../shared", () => {
     classDocRef: mockClassDocRef,
     assignmentDocRef: mockAssignmentDocRef,
     assignmentCreationDocRef: mockAssignmentCreationDocRef,
+    requireDistrictContext: mockRequireDistrictContext,
     writeAuditEvent: mockWriteAuditEvent,
   };
 });
 
+import { PlatformError } from "../shared/errors/platform-error";
 import { __assignmentsCreateDraftHandler } from "./assignments-create-draft";
+
+const TEACHER_UID = "teacher-uid";
+const SCHOOL_ID = "school-a";
+const DISTRICT_ID = "district-1";
 
 const VALID_DATA = {
   assignmentId: "assign-1",
@@ -59,27 +66,23 @@ const VALID_DATA = {
   mode: "classroom",
 };
 
+const VALID_DISTRICT_CONTEXT = Object.freeze({
+  uid: TEACHER_UID,
+  role: "teacher" as const,
+  schoolId: SCHOOL_ID,
+  districtId: DISTRICT_ID,
+});
+
 function makeRequest(
   overrides: {
-    uid?: string;
     data?: unknown;
-    hasAuth?: boolean;
-    token?: Record<string, unknown> | null;
   } = {},
 ): CallableRequest<unknown> {
-  const hasAuth = overrides.hasAuth ?? true;
-  const uid = overrides.uid ?? "teacher-uid";
   const data =
     overrides.data === undefined ? { ...VALID_DATA } : overrides.data;
-  const token =
-    overrides.token === undefined
-      ? { role: "teacher", schoolId: "school-a" }
-      : overrides.token;
   return {
     data,
-    auth: hasAuth
-      ? ({ uid, token: token ?? undefined } as never)
-      : undefined,
+    auth: { uid: TEACHER_UID, token: {} } as never,
     rawRequest: {} as never,
   };
 }
@@ -138,6 +141,8 @@ describe("assignmentsCreateDraft", () => {
     mockAssignmentDocRef.mockClear();
     mockAssignmentCreationDocRef.mockClear();
     mockWriteAuditEvent.mockReset();
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
     mockLogInfo.mockReset();
     mockLogWarn.mockReset();
     mockLogError.mockReset();
@@ -151,14 +156,15 @@ describe("assignmentsCreateDraft", () => {
 
     const result = await __assignmentsCreateDraftHandler(makeRequest());
 
+    expect(mockRequireDistrictContext).toHaveBeenCalledTimes(1);
     expect(mockClassDocRef).toHaveBeenCalledWith("class-abc");
     expect(mockAssignmentDocRef).toHaveBeenCalledWith("assign-1");
     expect(mockAssignmentCreationDocRef).toHaveBeenCalledWith("assign-1");
     expect(mockAssignmentSet).toHaveBeenCalledTimes(1);
     expect(mockAssignmentSet).toHaveBeenCalledWith({
       classId: "class-abc",
-      teacherId: "teacher-uid",
-      schoolId: "school-a",
+      teacherId: TEACHER_UID,
+      schoolId: SCHOOL_ID,
       lessonSlug: "lesson_g7_earths-layers",
       lessonVersion: "1",
       mode: "classroom",
@@ -166,12 +172,12 @@ describe("assignmentsCreateDraft", () => {
       createdAt: SERVER_TIMESTAMP_SENTINEL,
     });
     expect(mockWriteAuditEvent).toHaveBeenCalledWith({
-      actorUserId: "teacher-uid",
+      actorUserId: TEACHER_UID,
       actorRole: "teacher",
       action: "assignments.created",
       targetType: "assignment",
       targetId: "assign-1",
-      schoolId: "school-a",
+      schoolId: SCHOOL_ID,
       payload: {
         classId: "class-abc",
         lessonSlug: "lesson_g7_earths-layers",
@@ -215,39 +221,99 @@ describe("assignmentsCreateDraft", () => {
     );
   });
 
-  it("rejects an unauthenticated caller", async () => {
+  it("propagates the canonical unauthenticated district error", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockRejectedValueOnce(
+      new PlatformError("unauthenticated", "no auth"),
+    );
     await expect(
-      __assignmentsCreateDraftHandler(makeRequest({ hasAuth: false })),
-    ).rejects.toMatchObject({ code: "assignments.unauthenticated" });
+      __assignmentsCreateDraftHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "unauthenticated" });
     expect(mockClassGet).not.toHaveBeenCalled();
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 
-  it("rejects non-teacher callers", async () => {
+  it("propagates the canonical account-inactive district error", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockRejectedValueOnce(
+      new PlatformError("account-inactive", "not active"),
+    );
     await expect(
-      __assignmentsCreateDraftHandler(
-        makeRequest({ token: { role: "student", schoolId: "school-a" } }),
-      ),
-    ).rejects.toMatchObject({ code: "assignments.unauthorized" });
-    await expect(
-      __assignmentsCreateDraftHandler(makeRequest({ token: {} })),
-    ).rejects.toMatchObject({ code: "assignments.unauthorized" });
-    await expect(
-      __assignmentsCreateDraftHandler(makeRequest({ token: null })),
-    ).rejects.toMatchObject({ code: "assignments.unauthorized" });
+      __assignmentsCreateDraftHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "account-inactive" });
+    expect(mockClassGet).not.toHaveBeenCalled();
   });
 
-  it("rejects a teacher missing the schoolId claim", async () => {
+  it("propagates the canonical claim-stale district error", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockRejectedValueOnce(
+      new PlatformError("claim-stale", "stale claim"),
+    );
     await expect(
-      __assignmentsCreateDraftHandler(
-        makeRequest({ token: { role: "teacher" } }),
-      ),
-    ).rejects.toMatchObject({ code: "assignments.unauthorized" });
+      __assignmentsCreateDraftHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "claim-stale" });
+    expect(mockClassGet).not.toHaveBeenCalled();
+  });
+
+  it("propagates the canonical district-mismatch district error", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockRejectedValueOnce(
+      new PlatformError("district-mismatch", "mismatch"),
+    );
     await expect(
-      __assignmentsCreateDraftHandler(
-        makeRequest({ token: { role: "teacher", schoolId: "" } }),
-      ),
-    ).rejects.toMatchObject({ code: "assignments.unauthorized" });
+      __assignmentsCreateDraftHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "district-mismatch" });
+    expect(mockClassGet).not.toHaveBeenCalled();
+  });
+
+  it("propagates the canonical school-district-mismatch district error", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockRejectedValueOnce(
+      new PlatformError("school-district-mismatch", "mismatch"),
+    );
+    await expect(
+      __assignmentsCreateDraftHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "school-district-mismatch" });
+    expect(mockClassGet).not.toHaveBeenCalled();
+  });
+
+  it("propagates the canonical district-unassigned district error", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockRejectedValueOnce(
+      new PlatformError("district-unassigned", "no district"),
+    );
+    await expect(
+      __assignmentsCreateDraftHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "district-unassigned" });
+    expect(mockClassGet).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-teacher active caller with role-forbidden", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockResolvedValueOnce({
+      uid: "student-uid",
+      role: "student",
+      schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
+    });
+    await expect(
+      __assignmentsCreateDraftHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "role-forbidden" });
+    expect(mockClassGet).not.toHaveBeenCalled();
+  });
+
+  it("rejects a platformAdministrator active caller with role-forbidden", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockResolvedValueOnce({
+      uid: "admin-uid",
+      role: "platformAdministrator",
+      schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
+    });
+    await expect(
+      __assignmentsCreateDraftHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "role-forbidden" });
+    expect(mockClassGet).not.toHaveBeenCalled();
   });
 
   it("rejects non-object request payloads", async () => {

@@ -6,6 +6,7 @@ import {
   assignmentDocRef,
   assignmentDraftUpdateDocRef,
   log,
+  requireDistrictContext,
   writeAuditEvent,
   type AssignmentDraftUpdateWrite,
   type AssignmentMode,
@@ -50,32 +51,17 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function assertAuthenticatedTeacher(
+async function assertActiveTeacherInDistrict(
   request: CallableRequest<unknown>,
-): { readonly uid: string; readonly schoolId: string } {
-  const auth = request.auth;
-  if (!auth || !isNonEmptyString(auth.uid)) {
+): Promise<{ readonly uid: string; readonly schoolId: string; readonly districtId: string }> {
+  const context = await requireDistrictContext(request);
+  if (context.role !== "teacher") {
     throw new PlatformError(
-      "assignments.unauthenticated",
-      "An authenticated caller is required.",
-    );
-  }
-  const token = auth.token as
-    | { readonly role?: unknown; readonly schoolId?: unknown }
-    | undefined;
-  if (!token || token.role !== "teacher") {
-    throw new PlatformError(
-      "assignments.unauthorized",
+      "role-forbidden",
       "Caller must be an active teacher.",
     );
   }
-  if (!isNonEmptyString(token.schoolId)) {
-    throw new PlatformError(
-      "assignments.unauthorized",
-      "Caller is missing a canonical schoolId claim.",
-    );
-  }
-  return { uid: auth.uid, schoolId: token.schoolId };
+  return { uid: context.uid, schoolId: context.schoolId, districtId: context.districtId };
 }
 
 function parseIsoTimestamp(value: unknown, field: string): Timestamp {
@@ -369,7 +355,7 @@ function safeLog(fn: () => void): void {
 async function assignmentsUpdateDraftHandler(
   request: CallableRequest<unknown>,
 ): Promise<AssignmentsUpdateDraftResponse> {
-  const actor = assertAuthenticatedTeacher(request);
+  const actor = await assertActiveTeacherInDistrict(request);
   const input = validateRequest(request.data);
 
   const existing = await loadAssignment(input.assignmentId);

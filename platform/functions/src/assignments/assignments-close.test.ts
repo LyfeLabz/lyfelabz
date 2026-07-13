@@ -8,6 +8,7 @@ const mockAssignmentCloseDocRef = jest.fn(() => ({
 }));
 
 const mockWriteAuditEvent = jest.fn();
+const mockRequireDistrictContext = jest.fn();
 
 const mockLogInfo = jest.fn();
 const mockLogWarn = jest.fn();
@@ -28,37 +29,38 @@ jest.mock("../shared", () => {
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     assignmentDocRef: mockAssignmentDocRef,
     assignmentCloseDocRef: mockAssignmentCloseDocRef,
+    requireDistrictContext: mockRequireDistrictContext,
     writeAuditEvent: mockWriteAuditEvent,
   };
 });
 
+import { PlatformError } from "../shared/errors/platform-error";
 import { __assignmentsCloseHandler } from "./assignments-close";
 
+const TEACHER_UID = "teacher-uid";
+const SCHOOL_ID = "school-a";
+const DISTRICT_ID = "district-1";
 const ASSIGNMENT_ID = "assign-1";
+
+const VALID_DISTRICT_CONTEXT = Object.freeze({
+  uid: TEACHER_UID,
+  role: "teacher" as const,
+  schoolId: SCHOOL_ID,
+  districtId: DISTRICT_ID,
+});
 
 function makeRequest(
   overrides: {
-    uid?: string;
     data?: unknown;
-    hasAuth?: boolean;
-    token?: Record<string, unknown> | null;
   } = {},
 ): CallableRequest<unknown> {
-  const hasAuth = overrides.hasAuth ?? true;
-  const uid = overrides.uid ?? "teacher-uid";
   const data =
     overrides.data === undefined
       ? { assignmentId: ASSIGNMENT_ID }
       : overrides.data;
-  const token =
-    overrides.token === undefined
-      ? { role: "teacher", schoolId: "school-a" }
-      : overrides.token;
   return {
     data,
-    auth: hasAuth
-      ? ({ uid, token: token ?? undefined } as never)
-      : undefined,
+    auth: { uid: TEACHER_UID, token: {} } as never,
     rawRequest: {} as never,
   };
 }
@@ -89,6 +91,8 @@ describe("assignmentsClose", () => {
     mockAssignmentDocRef.mockClear();
     mockAssignmentCloseDocRef.mockClear();
     mockWriteAuditEvent.mockReset();
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockResolvedValue({ ...VALID_DISTRICT_CONTEXT });
     mockLogInfo.mockReset();
     mockLogWarn.mockReset();
     mockLogError.mockReset();
@@ -101,14 +105,15 @@ describe("assignmentsClose", () => {
 
     const result = await __assignmentsCloseHandler(makeRequest());
 
+    expect(mockRequireDistrictContext).toHaveBeenCalledTimes(1);
     expect(mockAssignmentUpdate).toHaveBeenCalledWith({ status: "closed" });
     expect(mockWriteAuditEvent).toHaveBeenCalledWith({
-      actorUserId: "teacher-uid",
+      actorUserId: TEACHER_UID,
       actorRole: "teacher",
       action: "assignments.closed",
       targetType: "assignment",
       targetId: ASSIGNMENT_ID,
-      schoolId: "school-a",
+      schoolId: SCHOOL_ID,
       payload: { classId: "class-abc" },
     });
     expect(result).toEqual({
@@ -150,16 +155,79 @@ describe("assignmentsClose", () => {
     ).rejects.toMatchObject({ code: "assignments.invalidTransition" });
   });
 
-  it("rejects unauthenticated, non-teacher, cross-teacher, and cross-school callers", async () => {
+  it("propagates the canonical unauthenticated district error", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockRejectedValueOnce(
+      new PlatformError("unauthenticated", "no auth"),
+    );
     await expect(
-      __assignmentsCloseHandler(makeRequest({ hasAuth: false })),
-    ).rejects.toMatchObject({ code: "assignments.unauthenticated" });
-    await expect(
-      __assignmentsCloseHandler(
-        makeRequest({ token: { role: "student", schoolId: "school-a" } }),
-      ),
-    ).rejects.toMatchObject({ code: "assignments.unauthorized" });
+      __assignmentsCloseHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "unauthenticated" });
+    expect(mockAssignmentDocRef).not.toHaveBeenCalled();
+  });
 
+  it("propagates the canonical account-inactive district error", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockRejectedValueOnce(
+      new PlatformError("account-inactive", "not active"),
+    );
+    await expect(
+      __assignmentsCloseHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "account-inactive" });
+    expect(mockAssignmentDocRef).not.toHaveBeenCalled();
+  });
+
+  it("propagates the canonical claim-stale district error", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockRejectedValueOnce(
+      new PlatformError("claim-stale", "stale claim"),
+    );
+    await expect(
+      __assignmentsCloseHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "claim-stale" });
+    expect(mockAssignmentDocRef).not.toHaveBeenCalled();
+  });
+
+  it("propagates the canonical district-mismatch district error", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockRejectedValueOnce(
+      new PlatformError("district-mismatch", "mismatch"),
+    );
+    await expect(
+      __assignmentsCloseHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "district-mismatch" });
+    expect(mockAssignmentDocRef).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-teacher active caller with role-forbidden", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockResolvedValueOnce({
+      uid: "student-uid",
+      role: "student",
+      schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
+    });
+    await expect(
+      __assignmentsCloseHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "role-forbidden" });
+    expect(mockAssignmentDocRef).not.toHaveBeenCalled();
+  });
+
+  it("rejects a platformAdministrator active caller with role-forbidden", async () => {
+    mockRequireDistrictContext.mockReset();
+    mockRequireDistrictContext.mockResolvedValueOnce({
+      uid: "admin-uid",
+      role: "platformAdministrator",
+      schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
+    });
+    await expect(
+      __assignmentsCloseHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "role-forbidden" });
+    expect(mockAssignmentDocRef).not.toHaveBeenCalled();
+  });
+
+  it("rejects cross-teacher and cross-school ownership", async () => {
     mockAssignmentGet.mockResolvedValueOnce(
       existingSnapshot({ teacherId: "someone-else" }),
     );

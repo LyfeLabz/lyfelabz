@@ -2029,3 +2029,69 @@ Slice 3 is deliberately narrow. It touches only the three `enrollments/*` handle
 - Every new and existing Jest test passes locally.
 - No em dash appears in any created or modified document.
 - No commits were made.
+
+## Sprint 11B Slice 4: PDR-025 Assignment Callables Adopt requireDistrictContext
+
+**Date:** 2026-07-13
+**Anchor decision:** PDR-025 District Security Boundary.
+**Slice scope:** Extending the shared `requireDistrictContext` helper adopted in Slices 2 and 3 to the five assignment-management callables. No other layer touched.
+
+### Purpose
+
+Slice 4 continues the Sprint 11A implementation sequence by extending the district-context authorization model from the `classes/*` and `enrollments/*` layers to the `assignments/*` layer. The five assignments callables (`assignmentsCreateDraft`, `assignmentsUpdateDraft`, `assignmentsPublish`, `assignmentsClose`, `assignmentsArchive`) now delegate authentication, active-status, role, school-record, and district-record verification to `requireDistrictContext(request)`, and refuse a role mismatch with the canonical PDR-025 §17 `role-forbidden` identifier.
+
+### Files created
+
+- `docs/platform/SPRINT_11B_SLICE4_COMPLETION_REPORT.md`. Slice 4 completion report.
+
+### Files modified
+
+- `platform/functions/src/assignments/assignments-create-draft.ts`. Inline `assertAuthenticatedTeacher` replaced with `assertActiveTeacherInDistrict` wrapping `requireDistrictContext` and refusing `role-forbidden` for non-teacher callers.
+- `platform/functions/src/assignments/assignments-update-draft.ts`. Same transformation.
+- `platform/functions/src/assignments/assignments-publish.ts`. Same transformation.
+- `platform/functions/src/assignments/assignments-close.ts`. Same transformation.
+- `platform/functions/src/assignments/assignments-archive.ts`. Same transformation.
+- `platform/functions/src/assignments/assignments-create-draft.test.ts`. Introduces `mockRequireDistrictContext`; adds tests for the six canonical district refusals and two `role-forbidden` refusals; preserves every prior assertion.
+- `platform/functions/src/assignments/assignments-update-draft.test.ts`. Introduces `mockRequireDistrictContext`; adds tests for four canonical district refusals and two `role-forbidden` refusals; preserves every prior assertion.
+- `platform/functions/src/assignments/assignments-publish.test.ts`. Same test-side transformation.
+- `platform/functions/src/assignments/assignments-close.test.ts`. Same test-side transformation.
+- `platform/functions/src/assignments/assignments-archive.test.ts`. Same test-side transformation.
+- `docs/platform/SPRINT_HISTORY.md`. This entry.
+
+Separately, `platform/functions/src/shared/auth/require-district-context.test.ts` received a CI lint correction. The two local mocks `mockUserRecordDocRef` and `mockSchoolDocRef` are now typed as `jest.Mock` without unused underscore-prefixed parameters, and the two fixture helpers `userSnapshot` and `schoolSnapshot` no longer cast `createdAt: {}` to `never`. The correction is editorial, does not change any test behavior, and is unrelated to the Slice 4 assignment migration. It is documented distinctly from Slice 4 in the completion report.
+
+### Authorization contract
+
+- Every district refusal propagates unchanged: `unauthenticated`, `account-inactive`, `claim-stale`, `claim-state-mismatch`, `school-district-mismatch`, `district-unassigned`, `district-mismatch`.
+- Callable-local role refusal uses the canonical `role-forbidden` identifier.
+- Every pre-existing assignment-namespace refusal is preserved unchanged, including `assignments.invalidRequest`, `assignments.invalidAssignmentId`, `assignments.invalidClassId`, `assignments.notFound`, `assignments.classNotFound`, `assignments.forbidden`, `assignments.conflict`, `assignments.invalidStatus`, and `assignments.invalidTransition`.
+- Assignment schema, four canonical lifecycle states (`draft`, `published`, `closed`, `archived`), allowed-transitions table, ownership rules, audit vocabulary (`assignments.created`, `assignments.updated`, `assignments.published`, `assignments.closed`, `assignments.archived`), idempotent replay semantics, and response contracts are unchanged.
+- The `districtId` returned by the helper is passed through the `actor` structure inside each callable but is not yet persisted to `assignments/{assignmentId}` or emitted on audit events; those are intentionally out of scope for this slice.
+
+### Callables not migrated in this slice
+
+- The three `classes/*` callables migrated in Slice 2 and the three `enrollments/*` callables migrated in Slice 3 are unchanged.
+- `teachersApproveVerification` and `studentsCompleteOnboarding` remain on the Slice 1 mechanical `districtId` resolution.
+- Every `submissions/*` callable, every `lms/*` callable, and every trigger under `auth/*` retains its existing inline authorization pending a future slice. Broad platform-wide migration is out of scope.
+
+### Test totals
+
+- Full Jest suite green: 24 suites, 407 tests (up from 24 suites, 380 tests in Slice 3).
+- Lint clean, typecheck clean, build clean, `git diff --check` clean.
+
+### Deferred Sprint 11 slices
+
+- Slice 5 (PDR-025 Rules invariants) is intentionally deferred.
+- Slice 6 (PDR-025 stale-claim handling and app-side reconciliation) is intentionally deferred.
+- Slices 7 through 20 (PDR-026, PDR-027, PDR-028 implementation, plus `submissions/*`, `lms/*`, and `auth/*` migrations) are intentionally deferred.
+
+### Confirmation
+
+- No Firestore Rules were modified.
+- No app code was modified.
+- No Firestore document shape or index was modified.
+- No callable outside the five `assignments/*` handlers was modified.
+- The CI lint correction in `require-district-context.test.ts` is a separate editorial change and does not modify any production code or test behavior.
+- Every new and existing Jest test passes locally.
+- No em dash appears in any created or modified document.
+- No commits were made.
