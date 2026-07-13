@@ -21,6 +21,12 @@ Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the
 
 ---
 
+## Sprint 10A F-2 Reconciliation Notice
+
+The formative assessment portion of this charter is further reconciled by `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` under PDR-026. The Sprint 9A Reconciliation Notice below is preserved. The implementation contract supersedes the older `submissionsCreate` / `submissionsFinalize` split with a single `assessmentAttemptsFinalize` callable, adds the session callables (`assessmentSessionsBegin`, `assessmentSessionsAutosave`, `assessmentSessionsResume`), scheduled sweep and purge callables, an administrative session-recovery callable, an administrative answer-key read callable, and the rollup document-event callable. Where this charter names the older callables, read forward under the mapping in `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §21 and §26. The charter's guiding principles (server-authoritative, single-purpose, idempotent, atomic) survive intact. No commit is authorized by this notice; the actual callable renames land in the implementation sprint that follows Sprint 10A.
+
+---
+
 ## Sprint 9A Reconciliation Notice
 
 The formative assessment portion of this charter is superseded by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021. The charter's principles (server-authoritative scoring, idempotency, single-purpose functions, out-of-band scaling) survive intact. Terminology and scope are amended as follows.

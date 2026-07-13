@@ -29,6 +29,12 @@ Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the
 
 ---
 
+## Sprint 10A F-2 Reconciliation Notice
+
+The formative assessment portion of this document is further reconciled by `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` under PDR-026. The Sprint 9A Reconciliation Notice below is preserved. The implementation contract adds canonical collection ownership for `assessments`, `assessmentRevisions`, `assessmentAnswerKeys`, `assessmentSessions`, `attempts`, `attemptRollups`, and `assignmentRollups`; defines the deterministic identifier construction for each; and supersedes the pre-Sprint 9A `submissions/{submissionId}` collection with `attempts/{attemptId}`. Where this document names the `submissions` collection, read forward under the mapping in `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §11 and §26. No shape or field is rewritten by this notice; the actual collection introductions and the migration of the existing `submissions` documents are planned by the implementation sprint that follows Sprint 10A.
+
+---
+
 ## Sprint 9A Reconciliation Notice
 
 The formative assessment portion of this document is superseded by `ASSESSMENT_PIPELINE_SPECIFICATION.md` and PDR-021. Read every mention of `submissions/{submissionId}` in this document under the mapping **Submission → Attempt** and apply the following:

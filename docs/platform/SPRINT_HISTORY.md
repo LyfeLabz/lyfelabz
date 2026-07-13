@@ -1536,3 +1536,53 @@ Address the first primary finding from the Sprint 9E independent architecture re
 
 - No em dash appears in any created or modified document.
 - No commits were made. F-2 has not been started.
+
+---
+
+## Sprint 10A Step F-2: Assessment Implementation Contract
+
+**Date:** 2026-07-12
+**Status:** Step F-2 complete. Architecture-only step. No production code, Cloud Functions, Firestore Rules, configuration, or tests were modified. No commits were made. Sprint 10A remains open; further steps beyond F-2 have not been started.
+**Reconciliation report:** `SPRINT_10A_F2_ASSESSMENT_IMPLEMENTATION_REPORT.md`
+**Canonical specification:** `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`
+**Decision record:** PDR-026 in `LYFELABZ_PLATFORM_DECISIONS.md`.
+
+### Objective
+
+Address the second primary finding from the Sprint 9E independent architecture review by reconciling the formative assessment pipeline into a single implementation contract. Translate the certified architecture (PDR-021, PDR-008 as amended by Sprint 9A, PDR-024) into engineer-facing normative rules for sessions, attempts, revisions, answer keys, callable ownership, Firestore collection ownership, index strategy, and audit events, without redesigning any product behavior established by PDR-021.
+
+### Load-bearing ratifications
+
+- `attempts/{attemptId}` supersedes `submissions/{submissionId}` for the formative pipeline. Attempts are immutable after write.
+- `assessmentSessions/{sessionId}` is a distinct collection from `attempts`. Only one Live session MAY exist per (student, assignment).
+- `assessmentAttemptsFinalize` is the sole writer of `attempts/*`. The pre-Sprint 9A `submissionsCreate` / `submissionsFinalize` split is retired.
+- Answer keys live only in `assessmentAnswerKeys/{revisionId}`. Firestore Security Rules refuse client reads for every role, including `platformAdministrator`. Administrative inspection routes through an audited callable.
+- Assessment revisions are internal, monotonic, and never surface to teachers. Every attempt records the revision it was scored against; revisions are never deleted while an attempt references them.
+- `attemptRollups/{assignmentId}__{studentId}` and `assignmentRollups/{assignmentId}` serve `My Results`, `Improve My Score`, and the five-metric teacher surface. Both are rewritten atomically on every attempt write by a single rollup Cloud Function. No teacher surface reads `attempts/*` in bulk.
+- Every callable also satisfies the district enforcement contract in `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §12.
+- Assessment audit vocabulary is fixed. Autosave and rollup recomputation are not audited event-by-event. No second audit sink is created.
+- Practice Mode remains client-only. `practice`-mode assignments are refused by `assessmentSessionsBegin`.
+
+### Files created
+
+- `docs/platform/ASSESSMENT_IMPLEMENTATION_CONTRACT.md`
+- `docs/platform/SPRINT_10A_F2_ASSESSMENT_IMPLEMENTATION_REPORT.md`
+
+### Files reconciled
+
+- `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-026 added with nine sub-decisions; change log extended).
+- `ASSESSMENT_PIPELINE_SPECIFICATION.md` (narrow implementation-contract pointer added to the front matter; no behavior clause changed).
+- `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` (Sprint 10A F-2 Reconciliation Notice prepended; Sprint 9A notice preserved).
+- `LYFELABZ_FIRESTORE_DATA_MODEL.md` (Sprint 10A F-2 Reconciliation Notice prepended; Sprint 9A notice preserved).
+
+### Architecture posture
+
+- No application source, Cloud Function source, Firebase configuration, Firestore Rules, or emulator configuration was modified.
+- No test file was modified.
+- No runtime behavior was changed.
+- Preservation mode intact.
+
+### Confirmations
+
+- No em dash appears in any created or modified document.
+- No commits were made. Sprint 10A has not been closed by this step.

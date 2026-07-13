@@ -1945,6 +1945,49 @@ PDR-022 (Platform Operations Architecture) is ratified. Sprint 9D adds a product
 
 ---
 
+## PDR-026: Assessment Implementation Contract
+
+**Status:** Ratified under Sprint 10A step F-2. Canonical.
+
+**Anchor document:** `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`.
+
+**Context.** PDR-021 established the certified assessment pipeline (session-attempt separation, server-authoritative scoring, server-confidential answer keys, unlimited attempts, immutable history, one-hour grace, 24-hour session expiration). The independent Sprint 9E architecture review recorded that the implementation rules that follow from that stance were distributed across the Assessment Pipeline Specification, the Cloud Function Charter, the Firestore Data Model, the Firebase Security Model, the Firestore Query and Index Strategy, and the Submission Rollup Strategy. Sprint 10A F-2 collapses those statements into one implementation contract without redesigning any product behavior established by PDR-021.
+
+**Decision.** The load-bearing rules for assessment implementation are canonical in `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`. Older documents are reconciled to defer to it.
+
+**Sub-decisions.**
+
+- **PDR-026a. Attempt is the sole authoritative record.** `attempts/{attemptId}` supersedes `submissions/{submissionId}` for the formative pipeline. Attempts are immutable after write. The existing `submissions` collection is superseded and its migration is planned in the implementation sprint (Contract §26).
+- **PDR-026b. Sessions and attempts are distinct collections.** `assessmentSessions/{sessionId}` holds transient working state; `attempts/{attemptId}` holds authoritative history. Only one Live session MAY exist per (student, assignment). Sessions never become attempts by rename; a scorer transaction creates the attempt and deletes the session atomically.
+- **PDR-026c. `assessmentAttemptsFinalize` is the sole writer of `attempts/*`.** The two-callable split (`submissionsCreate` / `submissionsFinalize`) is retired. A single callable runs the submission transaction described in Contract §8. Idempotency is enforced against a client-supplied marker.
+- **PDR-026d. Answer keys live only in `assessmentAnswerKeys/{revisionId}`.** Firestore Security Rules refuse client reads for every role, including `platformAdministrator`. Only the scorer reads answer keys at request time. Administrative inspection is routed through an audited callable.
+- **PDR-026e. Assessment revisions are platform-owned.** Revisions are internal, monotonic, and never surface to teachers. Every attempt records the revision it was scored against; revisions are never deleted while an attempt references them.
+- **PDR-026f. Rollups are the read path for `My Results` and teacher analytics.** `attemptRollups/{assignmentId}__{studentId}` and `assignmentRollups/{assignmentId}` are rewritten atomically on every attempt write by a single rollup Cloud Function. No teacher surface reads `attempts/*` in bulk.
+- **PDR-026g. District enforcement is additive.** Every callable in this contract also complies with `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §12. Nothing in this contract widens the district boundary.
+- **PDR-026h. Audit vocabulary is fixed.** Assessment transitions emit exactly the events in Contract §24. Autosave is not audited event-by-event. Rollup recomputation is not audited. No second audit sink is created.
+- **PDR-026i. Practice Mode remains client-only.** The recorded pipeline never runs in Practice Mode. `practice`-mode assignments are refused by `assessmentSessionsBegin`. This preserves the existing offline-friendly instructional surface.
+
+**Reconciliation notes.**
+
+- PDR-008 is preserved. PDR-026 implements the Sprint 9A amendment to PDR-008 that renamed Submission to Attempt.
+- PDR-021 is preserved. PDR-026 implements it without amending the specification.
+- PDR-024 is preserved. `My Results`, `Improve My Score`, and the five-metric teacher surface consume this pipeline without change.
+- PDR-025 is preserved. Every callable named here also satisfies the district enforcement contract.
+- PDR-013 is preserved. Audit vocabulary is extended, not replaced. No second audit sink is created.
+- PDR-017 is preserved. A single scorer helper and a single session helper avoid duplicating the trust boundary.
+
+**Anti-decisions.**
+
+- PDR-026 does not introduce a summative pipeline, a teacher-editable answer key, a per-class assessment fork, a live-session viewer for teachers, a teacher annotation collection, a rubric-scored open-response item, a language-model scoring pathway, a parent view, a grade-export surface, a Practice Mode server pathway, a new user-facing state, or a per-assignment attempt cap surface.
+
+**Future Reconsideration Criteria.**
+
+- A rubric-scored or model-scored item type may be added when a superseding PDR authorizes it and defines the item-level score shape, the validation posture for model outputs, and any additional error identifiers.
+- A teacher annotation surface may be added when a superseding PDR authorizes it and defines the annotation collection, its callable ownership, and its relationship to the immutable attempt record.
+- The archival recovery window and the autosave throttle constant may be finalized in the sprint that lands the callables; the resulting decisions amend `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §31 without a new PDR.
+
+---
+
 ## Change Log
 
 - 2026-07-07 - Initial platform decision record established.
@@ -1956,3 +1999,4 @@ PDR-022 (Platform Operations Architecture) is ratified. Sprint 9D adds a product
 - 2026-07-12 - PDR-023 (Identity and Onboarding Architecture) added under Sprint 9C. PDR-003 amended with a Sprint 9C Reconciliation Notice retiring the maintained verified-domain automated verification path in favor of the verification-code path with the Request Teacher Access fallback. PDR-015 amended with a Sprint 9C Reconciliation Notice promoting the District entity from reachable expansion to a first-class security boundary. `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` established as the single source of truth for LyfeLabz identity, onboarding, verification, roster authority, and the authenticated experience shell.
 - 2026-07-12 - PDR-024 (Platform Transition and Pilot Readiness) added under Sprint 9D. PDR-022 amended with a Sprint 9D Reconciliation Notice adding a product readiness bar alongside the operational Pilot Readiness bar. `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` established as the single source of truth for teacher onboarding, teacher workspace philosophy, the student assignment and results experience, the Google Classroom integration philosophy, the learning archive, notifications, the long-term student learning journey, and the pilot transition.
 - 2026-07-12 - PDR-025 (District Security Boundary Implementation Contract) added under Sprint 10A step F-1. `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` established as the single source of truth for server-side enforcement of the district tenancy boundary across Firestore, Cloud Functions, custom claims, session behavior, and audit events. Narrow reconciliation notices applied to `LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LMS_INTEGRATION_ARCHITECTURE.md`, and `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` retiring the residual "reserved `districtId`" language.
+- 2026-07-12 - PDR-026 (Assessment Implementation Contract) added under Sprint 10A step F-2. `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` established as the single source of truth for server-side implementation of the formative assessment pipeline, including sessions, attempts, revisions, answer keys, callable ownership, Firestore collection ownership, index strategy, audit events, and error semantics. Narrow reconciliation notices applied to `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, and `ASSESSMENT_PIPELINE_SPECIFICATION.md` pointing implementation questions at the new contract without amending PDR-021 or PDR-008.
