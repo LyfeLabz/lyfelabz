@@ -1694,34 +1694,89 @@ Address the fourth and final primary finding from the Sprint 9E independent arch
 
 ---
 
-## Sprint 10A Final Reconciliation
+## Sprint 10A: Implementation Contract Layer
 
-**Date:** 2026-07-13
-**Status:** Reconciliation review complete. Sprint 10A remains open; certification has not been performed by this step.
+**Dates:** 2026-07-12 to 2026-07-13
+**Status:** Complete and certified. Documentation-only sprint. No implementation code, Cloud Functions, Firestore Rules, indexes, configuration, or tests were modified. No commits were made.
+**Detailed report:** SPRINT_10A_COMPLETION_REPORT.md
+**Certification:** SPRINT_10A_CERTIFICATION.md
+**Reconciliation report:** SPRINT_10A_FINAL_RECONCILIATION_REPORT.md
+**Step reports (preserved above):** SPRINT_10A_F1, F-2, F-3, F-4.
 
-Reviewed the four Sprint 10A implementation contracts (PDR-025 through PDR-028) together with every certified platform document that references implementation ownership. Verified that Firestore ownership, Cloud Function ownership, security authority, district authority, assessment authority, roster display-name ownership, and Google Classroom ownership are each defined in exactly one canonical location. Verified that every reconciliation notice points to the correct anchor contract.
+### Objective
 
-### Findings
+Close the four primary findings from the Sprint 9E independent architecture review by producing an implementation contract layer that sits between the certified product architecture and the implementation sprint. Give each implementation responsibility a single canonical owner. Ratify each owner as a versioned Platform Decision Record. Change no runtime code.
 
-- `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §5 retained two bullets that pre-dated Sprint 9C and contradicted PDR-023c and PDR-025. Narrow in-place edit applied.
-- `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §10, §12, §13, and §17 retained pre-Sprint 9A `submissions*` names because F-1 was authored before F-2 landed. A single Sprint 10A F-2 Reconciliation Notice was prepended to the district contract pointing all `submissions*` references at PDR-026. No table cell, invariant, or callable behavior statement was rewritten.
+### Major accomplishments
+
+- Ratified four new Platform Decision Records: PDR-025 District Security Boundary, PDR-026 Assessment Implementation, PDR-027 Google Classroom Deep-Link, PDR-028 Roster Display Name. No pre-Sprint 10A PDR was amended.
+- Delivered four implementation contracts: `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md`, `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`, `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md`, `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md`. Each contract names, for its authority slice, every callable, Firestore collection, audit event, claim, rule invariant, idempotency contract, and error identifier the implementation sprint MUST honor.
+- Prepended reconciliation notices to every certified document that references implementation ownership so no reader is routed to the older document by mistake. Sprint 9A, Sprint 9C, and Sprint 9D notices were preserved above the older content unchanged.
+- Performed a final cross-contract reconciliation review. Applied two narrow, in-place corrections without amending any PDR: two `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §5 bullets that pre-dated Sprint 9C were replaced with statements referencing PDR-025; a Sprint 10A F-2 Reconciliation Notice was prepended to `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` so residual `submissions*` names route to PDR-026.
+- Certified Sprint 10A. The implementation contract layer is internally consistent, externally consistent with the Sprint 9E product architecture certification, and free of duplicated ownership or unassigned responsibility. Implementation is authorized to resume.
+
+### Load-bearing ratifications
+
+- District enforcement is authoritative in PDR-025 and additive under PDR-026g, PDR-027h, and PDR-028i.
+- Custom claim shape is `{ role, schoolId, districtId }`. All three are server-issued. Claims are written only when `status === "active"` and cleared on every transition out of `active`. Client-driven `districtId` mutation is denied at both the callable and rule layers.
+- `attempts/{attemptId}` supersedes `submissions/{submissionId}` for the formative pipeline. `assessmentAttemptsFinalize` is the sole writer. `assessmentAnswerKeys/*` is unreadable to every client role.
+- The deep-link URL `https://lyfelabz.com/app/a/{assignmentId}` is the sole authorized Classroom coursework link material. `lmsAssignmentPublish` is the sole writer of `lmsAssignmentPublications/*`. `lmsDeepLinkResolve` is read-only.
+- `users/{uid}.displayName` is the sole canonical display name. `enrollments/{enrollmentId}.displayNameOverride` is the sole per-class presentation override and never propagates. The canonical resolver ordering is override, then resolved user display name, then placeholder, then null.
+- Audit vocabulary is partitioned across contracts. No two contracts define the same event. No contract creates a second audit sink.
+
+### Product architecture versus implementation architecture
+
+Sprint 9 completed the platform's product architecture: what LyfeLabz does, how it behaves, and what its data model, state machine, and security posture are. Sprint 10A completed the platform's implementation architecture: who owns each implementation responsibility and how each responsibility is realized in the codebase. Both layers are required before implementation begins. Sprint 10A did not redesign product architecture.
+
+### Files created
+
+- `docs/platform/DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md`
+- `docs/platform/ASSESSMENT_IMPLEMENTATION_CONTRACT.md`
+- `docs/platform/GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md`
+- `docs/platform/ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md`
+- `docs/platform/SPRINT_10A_F1_DISTRICT_SECURITY_BOUNDARY_REPORT.md`
+- `docs/platform/SPRINT_10A_F2_ASSESSMENT_IMPLEMENTATION_REPORT.md`
+- `docs/platform/SPRINT_10A_F3_GOOGLE_CLASSROOM_IMPLEMENTATION_REPORT.md`
+- `docs/platform/SPRINT_10A_F4_ROSTER_DISPLAY_NAME_IMPLEMENTATION_REPORT.md`
+- `docs/platform/SPRINT_10A_FINAL_RECONCILIATION_REPORT.md`
+- `docs/platform/SPRINT_10A_COMPLETION_REPORT.md`
+- `docs/platform/SPRINT_10A_CERTIFICATION.md`
 
 ### Files reconciled
 
-- `docs/platform/SPRINT_10A_FINAL_RECONCILIATION_REPORT.md` (created).
-- `docs/platform/DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` (Sprint 10A F-2 Reconciliation Notice prepended; no other change).
-- `docs/platform/TEACHER_PLATFORM_DOMAIN_ROADMAP.md` (two §5 bullets narrowly corrected).
-- `docs/platform/SPRINT_HISTORY.md` (this entry appended).
+- `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-025 through PDR-028 appended; change log extended).
+- `LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md` (Sprint 9C notice updated in place to point at PDR-025).
+- `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md` (Sprint 10A F-2, F-3, F-4 reconciliation notices prepended above the preserved Sprint 9A and Sprint 9C notices).
+- `ASSESSMENT_PIPELINE_SPECIFICATION.md` (implementation-contract pointer recorded in the precedence block).
+- `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` (Sprint 10A F-4 notice prepended above the preserved Sprint 9D notice).
+- `LMS_INTEGRATION_ARCHITECTURE.md`, `LMS_EXPERIENCE.md` (Sprint 10A F-3 and F-4 notices prepended above the preserved Sprint 9C and Sprint 9D notices).
+- `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` (Sprint 10A F-3 notice prepended).
+- `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` (Sprint 10A F-1 pointer added; two §5 bullets corrected in the final reconciliation pass).
+- `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` (Sprint 10A F-2 Reconciliation Notice prepended in the final reconciliation pass; no table cell, invariant, or callable behavior statement rewritten).
+- `SPRINT_HISTORY.md` (step-level F-1 through F-4 and final reconciliation entries preserved above; this consolidated Sprint 10A summary replaces the earlier standalone Final Reconciliation entry).
 
 ### Architecture posture
 
-- No PDR amended. No implementation contract redesigned. No product behavior changed.
-- No application source, Cloud Function source, Firebase configuration, Firestore Rules, or emulator configuration was modified.
-- No test file was modified.
-- No runtime behavior was changed.
-- Preservation mode intact.
+- No PDR authored before Sprint 10A was amended. No implementation contract was redesigned. No product behavior clause was rewritten.
+- No file under `platform/functions/**`, `platform/firebase/**`, `platform/emulator/**`, or `app/**` was modified.
+- No test file was modified. No CI, Firebase, or emulator configuration was modified.
+- Preservation mode remains intact. No file at the repository root was modified.
+
+### Repository validation
+
+Sprint 10A is documentation only. The certified test baselines from Sprint 9E carry forward unchanged.
+
+- `platform/functions` typecheck, lint, and build unchanged.
+- `platform/functions` unit test baseline unchanged.
+- `platform/firebase` Rules test baseline unchanged.
+- `app` typecheck, lint, build, and unit test baseline unchanged.
 
 ### Confirmations
 
 - No em dash appears in any created or modified document.
-- No commits were made. Sprint 10A has not been certified by this step.
+- No documentation link introduced by Sprint 10A resolves to a missing file.
+- No commits were made.
+
+### Certification statement
+
+Sprint 10A is complete and certified. The implementation contract layer defined by PDR-025 through PDR-028 is internally consistent, externally consistent with the Sprint 9E certified product architecture, and free of duplicated ownership or unassigned responsibility. Implementation may resume. See `SPRINT_10A_CERTIFICATION.md` for the authoritative certification artifact.
