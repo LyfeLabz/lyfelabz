@@ -37,7 +37,7 @@ Where this document and `PLATFORM_OPERATIONS_SPECIFICATION.md` conflict, the spe
 
 The identity, onboarding, verification, roster authority, and authenticated-experience-shell portions of this document are superseded by `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Read the platform organizational hierarchy as `Platform → District → School → Teacher Identity → Class → Enrollment`, and apply the following while reading:
 
-- **Authentication is not authorization.** Google Workspace authenticates. The platform authorizes through the canonical claims (`role`, `schoolId`, reserved `districtId`).
+- **Authentication is not authorization.** Google Workspace authenticates. The platform authorizes through the canonical claims (`role`, `schoolId`, `districtId`). Sprint 9C (PDR-023c) promoted `districtId` from a reserved slot to a claim written on every `active` identity; Sprint 10A F-1 records the implementation contract in `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` under PDR-025.
 - **District is a first-class security boundary.** Every school, class, roster, teacher identity, and student identity lives inside exactly one district.
 - **Teacher identity is district-bound.** Changing districts creates a new LyfeLabz teacher identity.
 - **Teacher verification prefers a one-time institution-bound verification code**, with a Request Teacher Access fallback. The maintained verified-domain automated path is retired.

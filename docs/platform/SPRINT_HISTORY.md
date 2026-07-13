@@ -1488,3 +1488,51 @@ Three items previously carried as future decisions - G-3 (School Administrator r
 - No test file was modified.
 - No runtime behavior was changed.
 - No commits were made.
+
+---
+
+## Sprint 10A Step F-1: District Security Boundary Implementation Contract
+
+**Date:** 2026-07-12
+**Status:** Step F-1 complete. Architecture-only step. No production code, Cloud Functions, Firestore Rules, configuration, or tests were modified. No commits were made. Sprint 10A remains open; F-2 has not been started.
+**Reconciliation report:** `SPRINT_10A_F1_DISTRICT_SECURITY_BOUNDARY_REPORT.md`
+**Canonical specification:** `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md`
+**Decision record:** PDR-025 in `LYFELABZ_PLATFORM_DECISIONS.md`.
+
+### Objective
+
+Address the first primary finding from the Sprint 9E independent architecture review by reconciling the district enforcement model into a single implementation contract. Translate the certified architecture (PDR-023c, PDR-023d, PDR-015 Sprint 9C notice) into engineer-facing normative rules for server-side district isolation across Firestore, Cloud Functions, custom claims, session behavior, and audit events, without redesigning identity, onboarding, or platform-operations behavior.
+
+### Load-bearing ratifications
+
+- Firestore `users/{uid}` is the durable authority for role, account state, school membership, and district membership. Custom claims are an authorization projection of that record.
+- The recognized custom claim shape is `{ role, schoolId, districtId }`. All three are server-issued. Claims are written only when `status === "active"` and cleared on any transition out of `active`.
+- Clients MUST NOT submit `districtId`, `schoolId`, or `role` as authoritative input. Every callable derives ownership from server state.
+- Firestore Security Rules compare the caller's `districtId` claim to the resource's canonical district ownership. Rules default to deny.
+- Cross-district references are refused at both the callable layer and the rule layer.
+- Platform administrator access is explicit and bounded. The administrator claim shape MAY omit `districtId` and `schoolId` as the canonical administrator sentinel; the sentinel is unavailable to any other role.
+- Client-driven `districtId` mutation is denied. A district transfer callable is not authorized in Sprint 10A; new-identity provisioning per PDR-023d and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` §18 is the interim path.
+- Stale sessions fail closed. When token claims and the canonical record disagree, both the callable and the rule layer deny the operation.
+- Every district-relevant transition emits an `auditEvents` record under the certified append-only vocabulary. No second audit sink is created.
+
+### Files created
+
+- `docs/platform/DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md`
+- `docs/platform/SPRINT_10A_F1_DISTRICT_SECURITY_BOUNDARY_REPORT.md`
+
+### Files reconciled
+
+- `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-025 added with eleven sub-decisions; change log extended).
+- `LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LMS_INTEGRATION_ARCHITECTURE.md`, `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` (narrow edits retiring the residual `reserved districtId` language and pointing at PDR-025).
+
+### Architecture posture
+
+- No application source, Cloud Function source, Firebase configuration, Firestore Rules, or emulator configuration was modified.
+- No test file was modified.
+- No runtime behavior was changed.
+- Preservation mode intact.
+
+### Confirmations
+
+- No em dash appears in any created or modified document.
+- No commits were made. F-2 has not been started.

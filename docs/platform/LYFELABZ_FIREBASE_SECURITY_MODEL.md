@@ -15,7 +15,7 @@
 
 The identity portion of this document is superseded by `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Apply the following while reading:
 
-- **District is a required security boundary.** Cross-district reads and writes are refused. Every rule that scopes a read or write by `schoolId` is additionally scoped by the caller's `districtId` claim (reserved by the Cloud Function Charter §2 canonical claim shape).
+- **District is a required security boundary.** Cross-district reads and writes are refused. Every rule that scopes a read or write by `schoolId` is additionally scoped by the caller's `districtId` claim. Sprint 9C (PDR-023c) promoted `districtId` from a reserved slot to a claim written on every `active` identity; the full rule-layer, callable-layer, and stale-session contract is canonical in `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` under PDR-025.
 - **Roster placeholders (`awaitingFirstSignIn`) are readable by the owning teacher and unwriteable by clients.** Placeholder activation is performed only by the callable that resolves first sign-in.
 - **Join-code redemption is server-only.** The callable path is the sole producer of an enrollment from a join code. Rules do not permit client-side writes to enrollment documents.
 - **Redeeming a join code against an LMS-linked class is refused server-side** with a plain-language error, matching PDR-019i.

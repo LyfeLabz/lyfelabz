@@ -118,7 +118,7 @@ Any change to a user's `role`, `schoolId`, `districtId`, or equivalent claim is 
 
 - `role`: one of the values defined by PDR-004 and the Firestore Data Model. Present only when the user is `active`.
 - `schoolId`: the school reference stamped on the user's document. Present only when the user is `active`.
-- `districtId`: reserved slot for the district expansion path in PDR-015. Not written by Version 1 functions.
+- `districtId`: the district that owns the caller's school. Sprint 9C (PDR-023c) promoted this claim from a reserved slot to a claim written on every `active` identity. Present only when the user is `active`. The claim write contract, refresh behavior, and enforcement invariants are canonical in `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` under PDR-025. Older Sprint 6 completion reports that describe this slot as unwritten are historical and are superseded by PDR-023c and PDR-025.
 
 Claims are written only when the user's `status` (see `PLATFORM_STATE_MACHINE.md`) is `active`. A user in any other state, including `pendingVerification`, `provisioned`, `suspended`, or `archived`, carries no claims. The absence of claims is the canonical signal that the user has no active authorization and is distinct from the presence of claims with any particular values. Every custom claims write in the platform flows through the single canonical helper defined by the Engineering Standards (PDR-017); no second write path exists.
 

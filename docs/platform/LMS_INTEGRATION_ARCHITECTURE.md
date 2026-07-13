@@ -327,7 +327,7 @@ LMS integration is a small write path relative to the certified submission pipel
 - **Additional LMS providers.** Adding a second provider extends the `lmsProviders` closed set and adds a second adapter. It does not touch the certified domains.
 - **Automatic synchronization.** Opt-in automatic refresh is a future capability. Its architecture ships as an amendment to this document.
 - **Bidirectional publication.** LyfeLabz reading LMS-authored assignments is deliberately not on the roadmap and would require a formal decision record; it does not become negotiable through implementation.
-- **District rollup.** The reserved `districtId` slot in PDR-015 and PDR-018 remains reserved. LMS integration does not fill it.
+- **District rollup.** Sprint 9C (PDR-023c) promoted `districtId` to a first-class security boundary and Sprint 10A F-1 records the implementation contract in `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` under PDR-025. LMS integration does not itself assign `districtId`; the identity family that owns the caller assigns it. LMS classes and roster links inherit their district ownership from the school that owns the class.
 - **SIS integration.** PowerSchool and equivalent SIS integrations are governed by TEACHER_EXPERIENCE_PHILOSOPHY §4.7 and remain a separate architecture pass. This document does not authorize them.
 
 ---

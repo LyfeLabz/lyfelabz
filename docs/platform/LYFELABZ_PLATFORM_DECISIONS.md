@@ -1902,6 +1902,49 @@ PDR-022 (Platform Operations Architecture) is ratified. Sprint 9D adds a product
 
 ---
 
+## PDR-025: District Security Boundary Implementation Contract
+
+**Status:** Ratified under Sprint 10A step F-1. Canonical.
+
+**Anchor document:** `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md`.
+
+**Context.** PDR-023c promoted District to a first-class security boundary and PDR-023d bound teacher identity to a single district. The independent Sprint 9E architecture review recorded that the district enforcement model was distributed across several documents (Cloud Function Charter, Security Model, Data Model, Identity Specification, Engineering Standards, Domain Roadmap, LMS Integration Architecture) at different levels of abstraction. Sprint 10A F-1 collapses those statements into one implementation contract without redesigning the identity, onboarding, class, enrollment, assessment, or platform-operations experiences.
+
+**Decision.** The load-bearing rules for district enforcement are canonical in `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md`. Older documents are reconciled to defer to it.
+
+**Sub-decisions.**
+
+- **PDR-025a. Firestore is the durable source of truth.** `users/{uid}` is the durable authority for role, account state, school membership, and district membership. Custom claims are an authorization projection of that record, never the business record.
+- **PDR-025b. Custom claims are server-issued.** Only `role`, `schoolId`, and `districtId` are recognized. All three are written exclusively by Cloud Functions. Clients MUST NOT submit ownership values as authoritative input.
+- **PDR-025c. Claims are written only when `status === "active"`.** Any transition out of `active` clears the claim. Any authorized change to role, district, or active school membership writes the record first and issues a claim replacement in the same server-authoritative transition.
+- **PDR-025d. No partial district activation.** A user is district-active only after `status === "active"` and the matching claims are on a refreshed token. A pending verification, a stored `districtId` on a non-active record, a Google identity email domain, an enrollment invitation, and a stale claim never confer district access on their own.
+- **PDR-025e. Security Rules enforce district isolation.** Every district-scoped rule compares the caller's `districtId` claim to the resource's canonical district ownership (denormalized where the rule layer requires a single-document read). Rules default to deny. Rules never trust ownership fields in `request.resource.data` without an independent comparison to the caller's claim.
+- **PDR-025f. Callables enforce parent ownership.** Every callable that touches a district-scoped resource derives `districtId` from server state, verifies parent ownership through the resolved chain, refuses client-supplied ownership, verifies the caller's account state, and emits at least one canonical audit event.
+- **PDR-025g. Cross-district references are refused.** No class MAY reference a school outside its district. No enrollment MAY join a student to a class outside the student's district. No assignment MAY reference a class outside its district. No submission MAY reference an assignment outside its district. No client MAY forge ownership fields.
+- **PDR-025h. Platform administrator authority is bounded.** Administrator access is explicit and audited; it is not a wildcard. Administrators MAY carry a claim shape that omits `districtId` and `schoolId` as the canonical administrator sentinel. The administrator sentinel MUST NOT be usable by any other role.
+- **PDR-025i. District transfer is not implemented in Sprint 10A.** The safe default is denial of client-driven `districtId` mutation. Where a district change is operationally required before a transfer callable is authorized, a new identity is provisioned in the new district per PDR-023d and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` §18. A future PDR is required to authorize a transfer callable.
+- **PDR-025j. Stale sessions fail closed.** When token claims and the canonical record disagree, the callable and the rule layer deny the operation. Fallback to the record at the rule layer is forbidden. Callables that reissue claims MUST return a refresh signal; the client MUST refresh or sign out.
+- **PDR-025k. Auditability is mandatory.** Every district-relevant transition emits an `auditEvents` record with `districtId` populated where the transition resolves to a district. No second audit sink is created.
+
+**Reconciliation notes.**
+
+- PDR-023 is preserved. PDR-025 implements PDR-023c and PDR-023d without amending identity philosophy.
+- PDR-015 Sprint 9C notice is preserved. PDR-025 records the enforcement contract that follows from the promotion of District to a first-class boundary.
+- PDR-003 Sprint 9C notice is preserved. Teacher verification callable behavior is bounded by PDR-025f.
+- PDR-004 is preserved. The recognized role set is unchanged.
+- PDR-013 is preserved. Audit vocabulary is extended, not replaced. No second audit sink is created.
+
+**Anti-decisions.**
+
+- PDR-025 does not introduce district self-service, teacher-selected district assignment, automatic district trust based on email domain, a School Administrator or District Administrator role, a Parent role, a new user-facing state, a district management surface, an unrestricted platform-administrator bypass, a new audit sink, or a district transfer capability.
+
+**Future Reconsideration Criteria.**
+
+- A district transfer callable may be added when a superseding PDR authorizes it and defines the transition, claim replacement, stale-session handling, revocation, historical learning ownership, cross-district data leakage prevention, and audit vocabulary specified in `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §14.
+- The platform administrator claim shape (absence-as-sentinel vs explicit sentinel) may be finalized in the sprint that lands the claim write path; the resulting decision amends `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §6 without a new PDR.
+
+---
+
 ## Change Log
 
 - 2026-07-07 - Initial platform decision record established.
@@ -1912,3 +1955,4 @@ PDR-022 (Platform Operations Architecture) is ratified. Sprint 9D adds a product
 - 2026-07-12 - PDR-022 (Platform Operations Architecture) added under Sprint 9B. PDR-014 amended with a Sprint 9B Reconciliation Notice ratifying Firebase Hosting as the permanent canonical production origin, replacing the Testing environment nomenclature with Preview, and naming Platform Administrator approval as the load-bearing human gate. `PLATFORM_OPERATIONS_SPECIFICATION.md` established as the single source of truth for LyfeLabz operational behavior.
 - 2026-07-12 - PDR-023 (Identity and Onboarding Architecture) added under Sprint 9C. PDR-003 amended with a Sprint 9C Reconciliation Notice retiring the maintained verified-domain automated verification path in favor of the verification-code path with the Request Teacher Access fallback. PDR-015 amended with a Sprint 9C Reconciliation Notice promoting the District entity from reachable expansion to a first-class security boundary. `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` established as the single source of truth for LyfeLabz identity, onboarding, verification, roster authority, and the authenticated experience shell.
 - 2026-07-12 - PDR-024 (Platform Transition and Pilot Readiness) added under Sprint 9D. PDR-022 amended with a Sprint 9D Reconciliation Notice adding a product readiness bar alongside the operational Pilot Readiness bar. `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` established as the single source of truth for teacher onboarding, teacher workspace philosophy, the student assignment and results experience, the Google Classroom integration philosophy, the learning archive, notifications, the long-term student learning journey, and the pilot transition.
+- 2026-07-12 - PDR-025 (District Security Boundary Implementation Contract) added under Sprint 10A step F-1. `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` established as the single source of truth for server-side enforcement of the district tenancy boundary across Firestore, Cloud Functions, custom claims, session behavior, and audit events. Narrow reconciliation notices applied to `LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LMS_INTEGRATION_ARCHITECTURE.md`, and `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` retiring the residual "reserved `districtId`" language.

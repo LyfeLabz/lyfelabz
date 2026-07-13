@@ -124,7 +124,7 @@ Collections and callable names in this section are the canonical names already e
 - Self-get and narrow self-update on `users/{uid}`.
 - Authenticated get on `schools/{schoolId}`.
 - Server-only writes to `auditEvents`.
-- Custom claims restricted to `{ role, schoolId }`. `districtId` is reserved only.
+- Custom claims are `{ role, schoolId, districtId }`. Sprint 9C (PDR-023c) promoted `districtId` from a reserved slot to a claim written on every `active` identity; the enforcement contract is `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` under PDR-025.
 
 **Depends on.** No earlier platform domain. Depends on the Firebase project, Firebase Authentication, and the Sprint 1 Cloud Function scaffold.
 
@@ -133,7 +133,6 @@ Collections and callable names in this section are the canonical names already e
 **Deferred to future sprints.**
 
 - New roles beyond `teacher`, `student`, `platformAdministrator`.
-- `districtId` becoming a real claim rather than a reserved slot.
 - Parent identity.
 - School-managed identity provider federation for students.
 - Bulk provisioning through roster imports.
