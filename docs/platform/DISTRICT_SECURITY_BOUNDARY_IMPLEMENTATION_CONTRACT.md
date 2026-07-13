@@ -10,6 +10,12 @@ This document is an engineer-facing implementation contract. It does not redesig
 
 ---
 
+## Sprint 10A F-2 Reconciliation Notice
+
+Where this contract names `submissions/{submissionId}`, `submissionsCreate`, or `submissionsFinalize` (§10, §12, §13, §17), read forward under `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §21 and §26. PDR-026 supersedes the older collection and callable names with `attempts/{attemptId}` and the single `assessmentAttemptsFinalize` callable. The district enforcement invariants stated in this contract are unchanged; every named responsibility applies identically to the successor collection and callable. No document shape or invariant is amended by this notice.
+
+---
+
 ## 1. Purpose
 
 The LyfeLabz certified architecture ratified the District entity as a first-class security boundary (PDR-023c). The architecture corpus, however, describes district enforcement across many documents at different levels of abstraction. This contract collapses those statements into one authoritative reference so engineers do not have to reconstruct the district enforcement model from many partial statements.

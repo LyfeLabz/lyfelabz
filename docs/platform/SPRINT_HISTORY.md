@@ -1691,3 +1691,37 @@ Address the fourth and final primary finding from the Sprint 9E independent arch
 
 - No em dash appears in any created or modified document.
 - No commits were made. Sprint 10A has not been closed by this step.
+
+---
+
+## Sprint 10A Final Reconciliation
+
+**Date:** 2026-07-13
+**Status:** Reconciliation review complete. Sprint 10A remains open; certification has not been performed by this step.
+
+Reviewed the four Sprint 10A implementation contracts (PDR-025 through PDR-028) together with every certified platform document that references implementation ownership. Verified that Firestore ownership, Cloud Function ownership, security authority, district authority, assessment authority, roster display-name ownership, and Google Classroom ownership are each defined in exactly one canonical location. Verified that every reconciliation notice points to the correct anchor contract.
+
+### Findings
+
+- `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` §5 retained two bullets that pre-dated Sprint 9C and contradicted PDR-023c and PDR-025. Narrow in-place edit applied.
+- `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §10, §12, §13, and §17 retained pre-Sprint 9A `submissions*` names because F-1 was authored before F-2 landed. A single Sprint 10A F-2 Reconciliation Notice was prepended to the district contract pointing all `submissions*` references at PDR-026. No table cell, invariant, or callable behavior statement was rewritten.
+
+### Files reconciled
+
+- `docs/platform/SPRINT_10A_FINAL_RECONCILIATION_REPORT.md` (created).
+- `docs/platform/DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` (Sprint 10A F-2 Reconciliation Notice prepended; no other change).
+- `docs/platform/TEACHER_PLATFORM_DOMAIN_ROADMAP.md` (two §5 bullets narrowly corrected).
+- `docs/platform/SPRINT_HISTORY.md` (this entry appended).
+
+### Architecture posture
+
+- No PDR amended. No implementation contract redesigned. No product behavior changed.
+- No application source, Cloud Function source, Firebase configuration, Firestore Rules, or emulator configuration was modified.
+- No test file was modified.
+- No runtime behavior was changed.
+- Preservation mode intact.
+
+### Confirmations
+
+- No em dash appears in any created or modified document.
+- No commits were made. Sprint 10A has not been certified by this step.
