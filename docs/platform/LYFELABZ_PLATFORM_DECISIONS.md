@@ -2033,6 +2033,54 @@ PDR-022 (Platform Operations Architecture) is ratified. Sprint 9D adds a product
 
 ---
 
+## PDR-028: Roster Display Name Implementation Contract
+
+**Status:** Ratified under Sprint 10A step F-4. Canonical.
+
+**Anchor document:** `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md`.
+
+**Context.** PDR-003 established the verified teacher identity path, PDR-005 established a single teacher-of-record per class, PDR-011 established personal-data minimization, PDR-019 established the LMS roster authority rule, and PDR-023 established identity, onboarding, and roster authority as first-class boundaries. The independent Sprint 9E architecture review recorded that the implementation rules governing teacher-readable roster display names were distributed across `IDENTITY_AND_ONBOARDING_SPECIFICATION.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md` §3.1 and §3.4, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LMS_INTEGRATION_ARCHITECTURE.md` §7 and §7.5, `LMS_EXPERIENCE.md` §5 and §12, `LYFELABZ_PLATFORM_ARCHITECTURE.md` §229, and the Sprint 3 shell specifications. In one direction the resolution model was circular: the display name a teacher reads on a roster may be resolved from the user, from the enrollment override, or from the placeholder, and the "authoritative" answer was not uniformly named. Sprint 10A F-4 collapses those statements into one implementation contract without redesigning any product behavior established by PDR-003, PDR-005, PDR-011, PDR-019, or PDR-023.
+
+**Decision.** The load-bearing rules for canonical ownership of teacher-readable roster display names across users, enrollments, roster placeholders, Google profile interaction, LMS roster refresh, teacher roster resolution, and the Firestore, Cloud Function, and audit ownership of every writer that produces a name a teacher will read are canonical in `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md`. Older documents are reconciled to defer to it.
+
+**Sub-decisions.**
+
+- **PDR-028a. `users/{uid}.displayName` is the sole canonical display name for a signed-in person.** No other collection duplicates it. No callable derives an authorization decision from it.
+- **PDR-028b. `enrollments/{enrollmentId}.displayNameOverride` is the sole authorized per-class presentation override.** It never propagates to `users/{uid}.displayName`, never propagates to another enrollment, and never becomes the canonical display name.
+- **PDR-028c. The roster placeholder name is not a display name for a LyfeLabz identity.** It is the teacher-readable name for a not-yet-resolved LMS roster entry, sourced from the LMS at import and refreshed only on explicit teacher confirmation. It is retired at placeholder resolution.
+- **PDR-028d. The teacher-facing roster resolver is a single, canonical function.** For every enrollment, the resolver returns the per-class override, or the resolved `users/{uid}.displayName`, or the placeholder name, or `null`, in that order. No teacher surface concatenates a name from any other source.
+- **PDR-028e. The Google profile display name is a source only at first sign-in.** After the initial `authOnUserCreate` seed, LyfeLabz MUST NOT read the Google profile display name into any canonical field. A Google profile rename does not silently rename a LyfeLabz identity.
+- **PDR-028f. The LMS-reported display name never overwrites `users/{uid}.displayName` for a resolved enrollment.** LMS refresh applies confirmed name-change deltas to placeholders only; overriding a resolved enrollment's rendered name is an explicit per-class teacher gesture.
+- **PDR-028g. A single shared normalizer validates every display-name write.** It trims, collapses whitespace, refuses empty and over-long values, and refuses disallowed characters. No callable inlines its own validator.
+- **PDR-028h. Attempts, sessions, submissions, rollups, classes, and assignments MUST NOT carry a denormalized display-name copy.** This restates `ASSESSMENT_PIPELINE_SPECIFICATION.md` §466 and `LYFELABZ_FIRESTORE_DATA_MODEL.md` §766 into the display-name surface.
+- **PDR-028i. District enforcement is additive.** Every callable in this contract also complies with `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §12. Cross-district and cross-class display-name reads are refused at the callable and rule layers.
+- **PDR-028j. Audit vocabulary is fixed.** Display-name transitions emit exactly `users.displayNameChanged`, `enrollments.displayNameOverrideChanged`, `roster.placeholderNameChanged`, and `roster.placeholderResolved`. No second audit sink is created.
+
+**Reconciliation notes.**
+
+- PDR-003 is preserved. Teacher-verified identity remains the load-bearing authorization boundary; display-name changes do not affect verification state.
+- PDR-005 is preserved. A single teacher-of-record per class remains the authority for a per-class override gesture; co-teacher writes remain unauthorized.
+- PDR-011 is preserved. Personal-data minimization continues to prohibit denormalized display-name copies on submission or attempt records.
+- PDR-019 is preserved. LMS roster authority remains the source of placeholder names and remains constrained to placeholder-only writes; a LyfeLabz-identity rename never routes through an LMS callable.
+- PDR-023 is preserved. Identity, onboarding, verification, roster authority, and the authenticated experience shell remain owned by `IDENTITY_AND_ONBOARDING_SPECIFICATION.md`; display-name ratification at activation is called out here without amending the identity lifecycle.
+- PDR-025 is preserved. Every callable named here also complies with the district enforcement contract.
+- PDR-026 is preserved. Attempts remain owned by `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`; no display-name field participates in an attempt record.
+- PDR-027 is preserved. Google Classroom deep-link and publication paths remain owned by `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md`; a display-name change never propagates through the deep-link URL or a Classroom coursework record.
+- PDR-013 is preserved. Audit vocabulary is extended, not replaced.
+- PDR-017 is preserved. A single normalizer, a single resolver, and a single writer per display-name field avoid duplicating the trust boundary.
+
+**Anti-decisions.**
+
+- PDR-028 does not introduce a separate legal-name field, a preferred-pronouns field, a family-name field, or any additional personal-name field. PDR-028 does not authorize automatic reconciliation of a Google profile display-name change into `users/{uid}.displayName`. PDR-028 does not authorize automatic reconciliation of an LMS-reported display-name change into a resolved enrollment's canonical name. PDR-028 does not authorize a teacher rename of another user's canonical display name. PDR-028 does not introduce a denormalized display-name copy on any attempt, session, submission, rollup, class, or assignment document. PDR-028 does not introduce a display-name-based authorization decision. PDR-028 does not introduce a parent, districtAdministrator, schoolAdministrator, or co-teacher display-name surface.
+
+**Future Reconsideration Criteria.**
+
+- A separate legal-name or preferred-pronouns field may be added when a superseding PDR authorizes it and defines the collection, its callable ownership, and its interaction with the resolver.
+- A user-initiated "refresh from Google" gesture may be added when a superseding decision authorizes it under an explicit user confirmation.
+- The display-name length bound in §13.1 may be finalized in the implementation sprint under the tuning permission recorded in G-10A-16; any change above 200 code points requires a new PDR.
+
+---
+
 ## Change Log
 
 - 2026-07-07 - Initial platform decision record established.
@@ -2046,3 +2094,4 @@ PDR-022 (Platform Operations Architecture) is ratified. Sprint 9D adds a product
 - 2026-07-12 - PDR-025 (District Security Boundary Implementation Contract) added under Sprint 10A step F-1. `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` established as the single source of truth for server-side enforcement of the district tenancy boundary across Firestore, Cloud Functions, custom claims, session behavior, and audit events. Narrow reconciliation notices applied to `LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LMS_INTEGRATION_ARCHITECTURE.md`, and `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` retiring the residual "reserved `districtId`" language.
 - 2026-07-12 - PDR-026 (Assessment Implementation Contract) added under Sprint 10A step F-2. `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` established as the single source of truth for server-side implementation of the formative assessment pipeline, including sessions, attempts, revisions, answer keys, callable ownership, Firestore collection ownership, index strategy, audit events, and error semantics. Narrow reconciliation notices applied to `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, and `ASSESSMENT_PIPELINE_SPECIFICATION.md` pointing implementation questions at the new contract without amending PDR-021 or PDR-008.
 - 2026-07-12 - PDR-027 (Google Classroom Deep-Link Implementation Contract) added under Sprint 10A step F-3. `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md` established as the single source of truth for server-side implementation of Google Classroom deep-link resolution, assignment resolution, URL contracts, security boundaries, multiple-class publication behavior, multiple-teacher publication behavior, Classroom synchronization ownership, and the Cloud Function and Firestore ownership of publication records. Narrow reconciliation notices applied to `LMS_INTEGRATION_ARCHITECTURE.md`, `LMS_EXPERIENCE.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, and `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` pointing implementation questions at the new contract without amending PDR-019, PDR-020, or PDR-024.
+- 2026-07-12 - PDR-028 (Roster Display Name Implementation Contract) added under Sprint 10A step F-4. `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md` established as the single source of truth for canonical ownership of teacher-readable roster display names across users, enrollments, roster placeholders, Google profile interaction, LMS roster refresh, teacher roster resolution, and the Firestore, Cloud Function, and audit ownership of every writer that produces a name a teacher will read. Narrow reconciliation notices applied to `LYFELABZ_FIRESTORE_DATA_MODEL.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `IDENTITY_AND_ONBOARDING_SPECIFICATION.md`, `LMS_INTEGRATION_ARCHITECTURE.md`, and `LMS_EXPERIENCE.md` pointing implementation questions at the new contract without amending PDR-003, PDR-005, PDR-011, PDR-019, or PDR-023.

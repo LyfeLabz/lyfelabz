@@ -3,6 +3,14 @@
 Status: Canonical product specification for the teacher-facing LMS integration workflow.
 Companion documents: LMS_INTEGRATION_ARCHITECTURE.md, LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md, TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, ASSIGN_EXPERIENCE.md, CLASS_SNAPSHOT_EXPERIENCE.md, PRESENT_MODE_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md.
 
+## Sprint 10A F-4 Reconciliation Notice
+
+The teacher-facing display-name behavior in this document (including the "students whose display name in the LMS has changed since the last refresh" delta in §5 and the class-name display-override language in §12) is further reconciled by `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md` under PDR-028. The teacher-facing surfaces, refresh confirmation language, and product principles in this document remain authoritative. Implementation questions about which callable writes which display-name field, how a resolved enrollment's canonical name is protected from an LMS-reported delta, and how a per-class override is applied route to the new contract.
+
+Where this document and the implementation contract conflict on teacher-facing surface shape or refresh confirmation language, this document controls and the implementation contract is reconciled.
+
+---
+
 ## Sprint 10A F-3 Reconciliation Notice
 
 The engineer-facing implementation rules that follow from the Google Classroom integration philosophy in this document are canonical in `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md` under PDR-027. The teacher-facing surfaces, error messages, and product principles in this document remain authoritative. Implementation questions about the deep-link URL, the publication callable, the resolution callable, multiple-class fan-out, and Classroom-side co-teacher handling route to the new contract.

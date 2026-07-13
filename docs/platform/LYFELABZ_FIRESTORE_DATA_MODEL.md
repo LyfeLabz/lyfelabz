@@ -29,6 +29,19 @@ Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the
 
 ---
 
+## Sprint 10A F-4 Reconciliation Notice
+
+The display-name portion of this document is further reconciled by `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md` under PDR-028. The `users/{uid}.displayName` field defined in §3.1 and the `enrollments/{enrollmentId}.displayNameOverride` field defined in §3.4 retain the shapes named in this document and are further constrained as follows:
+
+- `users/{uid}.displayName` is the sole canonical display name for a signed-in person and is written only by the callables enumerated in `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md` §14 (or the Sprint 2 rules-allowlisted self-write under the convergence decision in §14.1).
+- `enrollments/{enrollmentId}.displayNameOverride` is the sole authorized per-class presentation override and is written only by `enrollmentsSetDisplayNameOverride`. It never propagates to `users/{uid}.displayName` and never becomes the canonical display name.
+- Roster placeholder documents (per the Sprint 9C Reconciliation Notice) carry a `placeholderName` field written only by `lmsClassImport` and `lmsClassRefresh`. The placeholder shape choice is enumerated in `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md` §7.1.
+- No attempt, session, submission, rollup, class, or assignment document carries a denormalized display-name copy. This restates the personal-data minimization posture in §766.
+
+Read the collection descriptions in §3.1 and §3.4 forward under the implementation contract's ownership matrix (§6) and resolver rule (§9). This notice modifies no document shape; it points implementation questions at the new contract. No commit is authorized by this notice.
+
+---
+
 ## Sprint 10A F-3 Reconciliation Notice
 
 The Google Classroom publication portion of this document is further reconciled by `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md` under PDR-027. The additive collection `lmsAssignmentPublications/{publicationId}` and the additive optional field `assignments/{assignmentId}.lmsPublicationRef` retain the shapes named in this document and are further constrained by the implementation contract as follows:

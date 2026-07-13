@@ -1,5 +1,18 @@
 # LyfeLabz Identity and Onboarding Specification
 
+## Sprint 10A F-4 Reconciliation Notice
+
+The display-name portion of this specification is further reconciled by `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md` under PDR-028. Every rule in this specification governing identity, provisioning, roster authority, roster placeholders, and the authenticated experience shell is preserved. The implementation contract records:
+
+- `users/{uid}.displayName` is the sole canonical display name for a signed-in person. Activation callables (`teachersCompleteVerification`, `studentsCompleteOnboarding`, `usersFirstSignInActivation`) ratify the field per §10.2 of the implementation contract; user-initiated rename runs through the convergence path in §14.1.
+- The Google profile display name is a source only at first sign-in (`authOnUserCreate`); it is not re-read into any canonical field afterwards.
+- The LMS-reported display name never overwrites `users/{uid}.displayName` for a resolved enrollment; LMS refresh applies confirmed name-change deltas to placeholders only.
+- The roster placeholder shape is enumerated as two candidate implementations in §7.1 of the implementation contract; the choice is an operational detail and does not amend this specification.
+
+Where this specification and the implementation contract conflict on identity behavior, this specification controls. Where they conflict on display-name implementation, the implementation contract controls.
+
+---
+
 ## Sprint 9D Reconciliation Notice
 
 The pilot-scoped product behavior that extends teacher onboarding (§14) and the authenticated student experience (§16) is governed by `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` and PDR-024. Apply the following while reading this document:

@@ -1638,3 +1638,56 @@ Address the third primary finding from the Sprint 9E independent architecture re
 
 - No em dash appears in any created or modified document.
 - No commits were made. Sprint 10A has not been closed by this step.
+
+---
+
+## Sprint 10A Step F-4: Roster Display Name Implementation Contract
+
+**Date:** 2026-07-12
+**Status:** Step F-4 complete. Architecture-only step. No production code, Cloud Functions, Firestore Rules, configuration, or tests were modified. No commits were made. Sprint 10A remains open; certification of Sprint 10A has not been started.
+**Reconciliation report:** `SPRINT_10A_F4_ROSTER_DISPLAY_NAME_IMPLEMENTATION_REPORT.md`
+**Canonical specification:** `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md`
+**Decision record:** PDR-028 in `LYFELABZ_PLATFORM_DECISIONS.md`.
+
+### Objective
+
+Address the fourth and final primary finding from the Sprint 9E independent architecture review by defining the canonical ownership model for teacher-readable roster display names. Eliminate the circular reference recorded by the review: the display name a teacher reads on a roster may be resolved from the user, from the enrollment override, or from the placeholder, and prior to this step the "authoritative" answer was not uniformly named. Translate the certified architecture (PDR-003, PDR-005, PDR-011, PDR-019, PDR-023) into engineer-facing normative rules for canonical ownership, Firestore ownership, Cloud Function ownership, the teacher-facing roster resolver, Google profile interaction, LMS roster refresh, historical consistency, and audit vocabulary, without redesigning any product behavior established by PDR-003, PDR-005, PDR-011, PDR-019, or PDR-023.
+
+### Load-bearing ratifications
+
+- `users/{uid}.displayName` is the sole canonical display name for a signed-in person. No other collection duplicates it. No callable derives an authorization decision from it.
+- `enrollments/{enrollmentId}.displayNameOverride` is the sole authorized per-class presentation override. It never propagates to `users/{uid}.displayName`, never propagates to another enrollment, and never becomes the canonical display name.
+- The roster placeholder name is not a display name for a LyfeLabz identity. It is written only by `lmsClassImport` and `lmsClassRefresh` and is retired at placeholder resolution.
+- The teacher-facing roster resolver is a single, canonical function: per-class override, then resolved `users/{uid}.displayName`, then placeholder name, then null.
+- The Google profile display name is a source only at first sign-in. LyfeLabz never re-reads it into any canonical field afterwards.
+- The LMS-reported display name never overwrites `users/{uid}.displayName` for a resolved enrollment. LMS refresh applies confirmed name-change deltas to placeholders only.
+- A single shared normalizer validates every display-name write.
+- No attempt, session, submission, rollup, class, or assignment carries a denormalized display-name copy.
+- Every callable also satisfies the district enforcement contract in `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §12.
+- The audit vocabulary is fixed: `users.displayNameChanged`, `enrollments.displayNameOverrideChanged`, `roster.placeholderNameChanged`, `roster.placeholderResolved`. No second audit sink is created.
+
+### Files created
+
+- `docs/platform/ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md`
+- `docs/platform/SPRINT_10A_F4_ROSTER_DISPLAY_NAME_IMPLEMENTATION_REPORT.md`
+
+### Files reconciled
+
+- `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-028 added with ten sub-decisions; change log extended).
+- `LYFELABZ_FIRESTORE_DATA_MODEL.md` (Sprint 10A F-4 Reconciliation Notice prepended; prior Sprint 10A F-3, Sprint 10A F-2, Sprint 9A, and Sprint 9C notices preserved; no document shape changed).
+- `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` (Sprint 10A F-4 Reconciliation Notice prepended; prior Sprint 10A F-3, Sprint 10A F-2, and Sprint 9A/9C notices preserved).
+- `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` (Sprint 10A F-4 Reconciliation Notice prepended; Sprint 9D notice preserved; identity architecture preserved).
+- `LMS_INTEGRATION_ARCHITECTURE.md` (Sprint 10A F-4 Reconciliation Notice prepended; Sprint 10A F-3 and Sprint 9C notices preserved; every load-bearing decision preserved).
+- `LMS_EXPERIENCE.md` (Sprint 10A F-4 Reconciliation Notice prepended; Sprint 10A F-3 and Sprint 9D notices preserved; teacher-facing surfaces remain authoritative).
+
+### Architecture posture
+
+- No application source, Cloud Function source, Firebase configuration, Firestore Rules, or emulator configuration was modified.
+- No test file was modified.
+- No runtime behavior was changed.
+- Preservation mode intact.
+
+### Confirmations
+
+- No em dash appears in any created or modified document.
+- No commits were made. Sprint 10A has not been closed by this step.

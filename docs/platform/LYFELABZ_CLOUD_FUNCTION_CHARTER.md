@@ -21,6 +21,12 @@ Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the
 
 ---
 
+## Sprint 10A F-4 Reconciliation Notice
+
+The display-name portion of this charter is further reconciled by `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md` under PDR-028. The implementation contract names the canonical callables and triggers that write any teacher-readable name (`authOnUserCreate`, `teachersCompleteVerification`, `studentsCompleteOnboarding`, `usersFirstSignInActivation`, `usersUpdateProfile` or the Sprint 2 rules-allowlisted self-write plus `usersOnDisplayNameChange`, `enrollmentsSetDisplayNameOverride`, `lmsClassImport`, `lmsClassRefresh`), fixes the shared validator and the resolver, and enumerates the sole authorized writers of `users/{uid}.displayName`, `enrollments/{enrollmentId}.displayNameOverride`, and the roster placeholder name. Where this charter names identity, enrollment, or LMS callables that touch a display-name field, read forward under the callable ownership matrix in `ROSTER_DISPLAY_NAME_IMPLEMENTATION_CONTRACT.md` §14. The charter's guiding principles (server-authoritative, single-purpose, idempotent, atomic) survive intact. No commit is authorized by this notice; the actual callable landings occur in the implementation sprint that follows Sprint 10A.
+
+---
+
 ## Sprint 10A F-3 Reconciliation Notice
 
 The Google Classroom publication and deep-link resolution portion of this charter is further reconciled by `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md` under PDR-027. The implementation contract names the canonical callables (`lmsAssignmentPublish`, `lmsDeepLinkResolve`, reserved `lmsAssignmentUnpublish`, ownership-drift handler), fixes the deep-link URL contract, records the fan-out and co-teacher behavior, and enumerates the sole authorized writers of `lmsAssignmentPublications/*` and the additive `assignments/{assignmentId}.lmsPublicationRef` field. Where this charter names the "LyfeLabz-to-LMS assignment publication" and related server responsibilities in §2, read forward under the callable ownership matrix in `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md` §17. The charter's guiding principles (server-authoritative, single-purpose, idempotent, atomic) survive intact. No commit is authorized by this notice; the actual callable landings occur in the implementation sprint that follows Sprint 10A.
