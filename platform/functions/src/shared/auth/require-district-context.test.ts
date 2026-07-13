@@ -2,8 +2,8 @@ import type { CallableRequest } from "firebase-functions/v2/https";
 
 const mockUserGet = jest.fn();
 const mockSchoolGet = jest.fn();
-const mockUserRecordDocRef = jest.fn((_uid: string) => ({ get: mockUserGet }));
-const mockSchoolDocRef = jest.fn((_schoolId: string) => ({ get: mockSchoolGet }));
+const mockUserRecordDocRef: jest.Mock = jest.fn(() => ({ get: mockUserGet }));
+const mockSchoolDocRef: jest.Mock = jest.fn(() => ({ get: mockSchoolGet }));
 
 jest.mock("../firestore/typed-ref", () => ({
   userRecordDocRef: (uid: string) => mockUserRecordDocRef(uid),
@@ -67,7 +67,7 @@ function userSnapshot(
   const data: Record<string, unknown> = {
     authUid: "uid-caller",
     status: "status" in overrides ? overrides.status : "active",
-    createdAt: {} as never,
+    createdAt: {},
     role: "role" in overrides ? overrides.role : "teacher",
     schoolId: "schoolId" in overrides ? overrides.schoolId : "school-123",
     displayName: "Test User",
@@ -86,7 +86,7 @@ function schoolSnapshot(
     name: "Test School",
     shortName: "Test",
     timezone: "America/New_York",
-    createdAt: {} as never,
+    createdAt: {},
     districtId:
       "districtId" in overrides ? overrides.districtId : "district-abc",
   };
