@@ -12,7 +12,7 @@ A prompt at the end of each major section that asks students to recall material 
 - Back-to-back with a checkpoint covering the same idea.
 
 ## GOLD-STANDARD REFERENCES
-- extension_biological-evolution.html - retrieval present (rare today).
+- (no dedicated canonical example yet; markup source: checkpoint-card from investigation_amplitude-challenge.html)
 - No page does this systematically yet; the checkpoint-card structure from investigation_amplitude-challenge.html is the markup to reuse.
 
 ## STRUCTURE

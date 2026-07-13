@@ -575,6 +575,12 @@
   .cont-desc { font-size: 0.9rem; color: rgba(232,244,248,0.78); line-height: 1.6; flex: 1; }
   .cont-status { display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.4rem 0.95rem; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: var(--text-muted); align-self: flex-start; margin-top: auto; }
   .cont-card.lesson .cont-status { background: rgba(20,184,166,0.12); border-color: rgba(20,184,166,0.4); color: #2dd4bf; }
+  .cont-card.inv { background: rgba(59,130,246,0.10); border: 1px solid rgba(59,130,246,0.35); }
+  .cont-card.inv::before { background: linear-gradient(90deg, #93C5FD, #3B82F6); }
+  .cont-card.inv:hover { border-color: rgba(59,130,246,0.6); box-shadow: 0 14px 40px rgba(59,130,246,0.15); transform: translateY(-4px); }
+  .cont-card.inv .cont-icon { background: rgba(59,130,246,0.18); }
+  .cont-card.inv .cont-cat { color: #3B82F6; }
+  .cont-card.inv .cont-status { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.3); color: #3B82F6; }
 
   /* ── VOCAB HIGHLIGHT PULSE ── */
   @keyframes vocabPulse {
@@ -1715,14 +1721,15 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="container">
     <span class="section-label">Go Further</span>
     <h2 class="section-title">More Learning</h2>
-    <p class="continue-intro">The lesson is just the beginning. Dig deeper into <strong>biotic and abiotic factors</strong>, <strong>habitat and niche</strong>, and the ways species interact through <strong>predation, symbiosis, and competition</strong>. More investigations, simulations, and challenges are coming soon.</p>
+    <p class="continue-intro">The lesson is just the beginning. Dig deeper into <strong>biotic and abiotic factors</strong>, <strong>habitat and niche</strong>, and the ways species interact through <strong>predation, symbiosis, and competition</strong>.</p>
     <div class="continue-grid">
-      <div class="cont-card soon">
-        <div class="cont-icon">&#128640;</div>
-        <div class="cont-name">More Coming Soon</div>
-        <div class="cont-desc">The lesson is just the beginning. More investigations, simulations, and challenges are coming soon.</div>
-        <span class="cont-status">Coming Soon</span>
-      </div>
+      <a class="cont-card inv" href="investigation_population-patterns.html" aria-label="Population Patterns investigation">
+        <div class="cont-icon">&#128202;</div>
+        <div class="cont-cat">Investigation</div>
+        <div class="cont-name">Population Patterns</div>
+        <div class="cont-desc">Analyze real population data from Isle Royale, the boreal forest, and Yellowstone to find evidence for how resource availability shapes populations over time.</div>
+        <span class="cont-status">Investigate</span>
+      </a>
     </div>
     <!-- ── Instructional Design note · Educator Mode ── -->
     <div class="edu-note">

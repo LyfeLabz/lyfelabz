@@ -175,9 +175,7 @@ Massachusetts assignment.
 | system_*.html (8 files) | (organ-system content) | Individual body systems |
 | disease_*.html (8 files) | (system disease content) | System disorders |
 | lesson_biological-evolution.html | MS-LS4-1, MS-LS4-2 | Evolution / fossil evidence |
-| extension_biological-evolution.html | MS-LS4-1, MS-LS4-2 | Evolution extension |
 | extension_chernobyl-frogs.html | MS-LS4-1, MS-LS4-2 | Evolution case study |
-| activity_biological-evolution.html | (none) | Evolution activity |
 | game_evolution-clicker.html | (none) | Evolution game |
 | lesson_chemical-reactions.html | MS-PS1-5, MS-PS1-6 | Chemical reactions / energy |
 | extension_hidden-world-of-matter.html | 8.MS-PS1-1 (Grade 8) | The Hidden World of Matter - Looking Ahead extension, no longer a Grade 6 core lesson |
@@ -190,6 +188,8 @@ Massachusetts assignment.
 | investigation_amplitude-challenge.html | MS-PS4-1, MS-PS4-2 | Wave amplitude investigation |
 | game_photon-runner.html | (none) | Light/wave game |
 | lesson_engineering-design.html | MS-ETS1-1, MS-ETS1-6(MA) | Engineering design process |
+| lesson_choosing-materials.html | MS-ETS2-1(MA) | Material properties selection |
+| lesson_designing-to-scale.html | MS-ETS1-5(MA) | Scale drawings and proportion |
 | lesson_design-tradeoffs.html | MS-ETS1-2 | Decision matrix (grade 7) |
 | lesson_introduction-to-electricity.html | MS-PS2-3 | Static electricity (grade 7) |
 | lesson_forms-of-energy.html | MS-PS3-7(MA) | Energy forms (grade 7) |
@@ -214,8 +214,8 @@ Massachusetts assignment.
 | 6.MS-LS1-1 | All organisms made of cells | lesson_cell-types, lesson_what-is-life, investigation_gray-zone, extension_virus, game_is-it-alive, game_cell-explorer, game_cellular-showdown | Fully Covered | Deep, multi-modal coverage. |
 | 6.MS-LS1-2 | Model of cell parts and functions | lesson_organelles, lesson_cell-types, lesson_what-is-life, investigation_cell-energy, investigation_protein-pathway, extension_neuron-explorer, game_cell-explorer | Fully Covered | Watch assessment boundary: avoid ATP / biochemical-step depth in assessed items. |
 | 6.MS-LS1-3 | Body systems interact | lesson_body-systems, extension_body-systems, extension_neuron-explorer, game_exercise, system_*.html (8), disease_*.html (8) | Fully Covered | Very rich strand; emphasis on interactions matches the standard. |
-| 6.MS-LS4-1 | Fossil-record evidence of change/extinction | lesson_biological-evolution, extension_biological-evolution, extension_chernobyl-frogs, activity_biological-evolution | Fully Covered | Keep within boundary (no speciation mechanism - that is grade 8). |
-| 6.MS-LS4-2 | Anatomical structures, evolutionary relationships | lesson_biological-evolution, extension_biological-evolution, extension_chernobyl-frogs | Fully Covered | Homology/analogy argument is on grade. |
+| 6.MS-LS4-1 | Fossil-record evidence of change/extinction | lesson_biological-evolution, extension_chernobyl-frogs | Fully Covered | Keep within boundary (no speciation mechanism - that is grade 8). |
+| 6.MS-LS4-2 | Anatomical structures, evolutionary relationships | lesson_biological-evolution, extension_chernobyl-frogs | Fully Covered | Homology/analogy argument is on grade. |
 | 6.MS-PS1-6 | Exothermic/endothermic reactions, thermal energy | lesson_chemical-reactions | Fully Covered | PE is met, but the covering page overshoots into grade-8 atomic mechanism. **See Off-Grade Risk.** A clean grade-6 treatment would emphasize energy in/out, not atom rearrangement. |
 | 6.MS-PS1-7(MA) | Particulate model: density, proportional reasoning | lesson_measuring-matter, lesson_physical-properties | Fully Covered | Uses particulate ("particles") framing, which is on grade. Good model. |
 | 6.MS-PS1-8(MA) | Mixtures separable into pure substances by physical means | lesson_pure-substances-and-mixtures, lesson_physical-properties | Fully Covered | Minor risk: keep "pure substance" at the particle level, not atomic structure. **See Off-Grade Risk (minor).** |
@@ -224,9 +224,9 @@ Massachusetts assignment.
 | 6.MS-PS4-2 | Light & mechanical waves: reflect/absorb/transmit | lesson_wave-behavior, investigation_amplitude-challenge | Fully Covered | Qualitative, on grade. |
 | 6.MS-PS4-3 | Digitized signals (0s/1s) encode/transmit info | lesson_digital-signals | Fully Covered | Stays qualitative per boundary. |
 | 6.MS-ETS1-1 | Define criteria and constraints of a design problem | lesson_engineering-design | Fully Covered | Core engineering-design lesson carries the PE. |
-| 6.MS-ETS1-5(MA) | Visual representations; scale & proportion | - | Not Covered | No lesson on scaled drawings / orthographic views / scale-proportion. |
+| 6.MS-ETS1-5(MA) | Visual representations; scale & proportion | lesson_designing-to-scale | Fully Covered | Designing to Scale lesson addresses scale drawings and proportion. |
 | 6.MS-ETS1-6(MA) | Communicate a design solution to a user | lesson_engineering-design | Fully Covered | Badged on the engineering-design lesson; consider a dedicated "communicate your solution" task for assessment evidence. |
-| 6.MS-ETS2-1(MA) | Compare properties of metals/plastics/wood/ceramics | - | Not Covered | No materials-properties lesson. (design-tradeoffs is grade-7 ETS1-2.) |
+| 6.MS-ETS2-1(MA) | Compare properties of metals/plastics/wood/ceramics | lesson_choosing-materials | Fully Covered | Choosing Materials lesson addresses material property comparison and selection. |
 | 6.MS-ETS2-2(MA) | Select materials by required properties | - | Not Covered | No materials-selection lesson/task. |
 | 6.MS-ETS2-3(MA) | Use measuring/hand/power tools to build a prototype | - | Not Covered | No tools-and-fabrication lesson; hands-on prototyping strand absent. |
 
@@ -254,8 +254,7 @@ are listed; gaps mark what still needs to be built.
 
 ### Unit 3 - Evolution and the Fossil Record
 - **Standards:** 6.MS-LS4-1, 6.MS-LS4-2
-- **Existing pages:** lesson_biological-evolution, extension_biological-evolution,
-  extension_chernobyl-frogs, activity_biological-evolution, game_evolution-clicker
+- **Existing pages:** lesson_biological-evolution, extension_chernobyl-frogs, game_evolution-clicker
 - **Gaps:** None. Keep speciation mechanism out (grade 8).
 
 ### Unit 4 - Matter and Its Properties

@@ -17,7 +17,7 @@
 | Vocabulary System | lesson_nature-of-waves.html | phases-of-the-moon, sun-earth-moon, eclipses, continental-drift (inline `data-tip` only; word-bank exists only in nature-of-waves) | `word-bank` + `vocab-*` + `data-tip` |
 | Checkpoint Cards | investigation_amplitude-challenge.html | cell-energy, protein-pathway, gravity-wells, eclipse-alignment, body-systems (lesson), photon-runner | `checkpoint-card/-options/-feedback/-actions` |
 | Prediction Cycle | investigation_amplitude-challenge.html | photon-runner, beetle-island, gray-zone, exercise, chernobyl-frogs | `prediction-card`, capture-before-result |
-| Retrieval Practice | extension_biological-evolution.html (sparse) | incidental 1-3 hits in most lessons | reuse checkpoint-card markup, "Quick Recall" label |
+| Retrieval Practice | (no dedicated canonical example) | incidental 1-3 hits in most lessons | reuse checkpoint-card markup, "Quick Recall" label |
 | Reflection | lesson_what-is-life.html | cell-types, wave-behavior, ragebaiting, gray-zone (via CER) | section + textarea into submission |
 | Quiz Architecture | lesson_sun-earth-moon.html | all 13 lessons, eclipse-alignment, fossil-hunt, virus, neuron-explorer, layer-detective, all 8 system_ pages | `quiz-section`, `quiz-mode-toggle`, `quiz-progress-sticky`, `quiz-submit-btn` |
 | Practice/Classroom Mode | simulation_gravity-wells.html | all lessons (quiz-level), all sims, all investigations, layer-detective, cell-explorer, evolution-clicker, fossil-hunt, virus, neuron-explorer, chernobyl-frogs | `mode-btn`, `?mode=classroom`, `modeHintPractice/Classroom` |
@@ -61,7 +61,6 @@ Legend: Y = present, p = partial/weak, - = missing. Columns: EQ (driving questio
 | extension_neuron-explorer | - | - | p | - | - | - | - | p | p | Y | Y | Y | - | - |
 | extension_virus | - | - | p | - | - | - | - | - | p | Y | Y | Y | - | - |
 | extension_chernobyl-frogs | - | - | - | - | - | Y | - | - | Y | - | Y | Y | - | - |
-| extension_biological-evolution | - | - | p | - | - | - | - | Y | p | - | Y (script ref) | - | - | - |
 | extension_body-systems | - | - | p | - | - | - | - | - | - | - | - | - | - | - |
 | extension_moon-tonight | - | - | - | - | Y (hook) | - | - | - | - | - | - | - | - | - |
 | game_photon-runner | - | - | p | - | p | Y | Y | p | Y | p | Y | p | Y (Lab Notes) | - (kbd-only) |
@@ -146,7 +145,7 @@ Ranked by educational value x ease.
 | Vocabulary System | lesson_nature-of-waves.html | Only page with word-bank + inline `vocab-*` + `data-tip`, 35 vocab touches |
 | Checkpoint Cards | investigation_amplitude-challenge.html | Full four-class structure (options/feedback/actions) with reveal logic |
 | Prediction Cycle | investigation_amplitude-challenge.html | Prediction captured before result, compared after, per phase |
-| Retrieval Practice | extension_biological-evolution.html (only example); markup source: amplitude-challenge | Retrieval is the thinnest existing pattern |
+| Retrieval Practice | (no dedicated canonical example); markup source: amplitude-challenge | Retrieval is the thinnest existing pattern |
 | Reflection | lesson_what-is-life.html | Cleanest phenomenon-to-concept arc ending in student explanation |
 | Quiz Architecture | lesson_sun-earth-moon.html | 10 questions, clean practice/classroom handling, full class-name set |
 | Practice/Classroom Mode | simulation_gravity-wells.html | Reference implementation: URL param, mode hints, gated submission |

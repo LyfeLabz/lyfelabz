@@ -44,9 +44,8 @@ Ranked strongest to weakest within each type. Ranking weighs: depth of the core 
 1. **extension_fossil-hunt.html** - the richest extension; quiz, classroom mode, submission - effectively a mini-lesson.
 2. **extension_neuron-explorer.html** / **extension_virus.html** - quiz + classroom mode + submission; strong.
 3. **extension_chernobyl-frogs.html** - classroom mode + submission, narrative-driven.
-4. **extension_biological-evolution.html** - retrieval present, lighter interactivity, no submission.
-5. **extension_body-systems.html** - no mode, no submission; thin.
-6. **extension_moon-tonight.html** - clever real-moon hook but almost no structure (no quiz, no mode, no submission); weakest extension.
+4. **extension_body-systems.html** - no mode, no submission; thin.
+5. **extension_moon-tonight.html** - clever real-moon hook but almost no structure (no quiz, no mode, no submission); weakest extension.
 
 ### Games
 

@@ -441,12 +441,6 @@
 
   <!-- ── EXTENSIONS ────────────────────────────────────────── -->
   <url>
-    <loc>https://lyfelabz.com/extension_biological-evolution.html</loc>
-    <lastmod>2026-05-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://lyfelabz.com/extension_body-systems.html</loc>
     <lastmod>2026-05-01</lastmod>
     <changefreq>monthly</changefreq>
@@ -467,14 +461,6 @@
   <url>
     <loc>https://lyfelabz.com/extension_moon-tonight.html</loc>
     <lastmod>2026-07-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- ── ACTIVITIES ────────────────────────────────────────── -->
-  <url>
-    <loc>https://lyfelabz.com/activity_biological-evolution.html</loc>
-    <lastmod>2026-05-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
