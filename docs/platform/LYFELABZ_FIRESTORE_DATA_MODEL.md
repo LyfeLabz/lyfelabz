@@ -29,6 +29,19 @@ Where this document and `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` conflict, the
 
 ---
 
+## Sprint 10A F-3 Reconciliation Notice
+
+The Google Classroom publication portion of this document is further reconciled by `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md` under PDR-027. The additive collection `lmsAssignmentPublications/{publicationId}` and the additive optional field `assignments/{assignmentId}.lmsPublicationRef` retain the shapes named in this document and are further constrained by the implementation contract as follows:
+
+- `lmsAssignmentPublications/{publicationId}` uses the deterministic identifier construction `{assignmentId}__{lmsClassLinkId}__p{ordinal}` (implementation contract §12).
+- `lmsAssignmentPublications/*` is written exclusively by `lmsAssignmentPublish`; the reserved future `lmsAssignmentUnpublish` callable appends only a terminal `unpublishedAt` field.
+- `assignments/{assignmentId}.lmsPublicationRef` is written exclusively by `lmsAssignmentPublish` on successful publication; it is never rewritten from a Google Classroom callback.
+- Every publication document carries the `districtId` at write time. Cross-district publications MUST NOT exist.
+
+Read the collection descriptions in §2.9 and the assignment field description in §3.6 forward under the implementation contract's ownership matrix (§13) and identifier construction (§12). This notice modifies no document shape; it points implementation questions at the new contract. No commit is authorized by this notice.
+
+---
+
 ## Sprint 10A F-2 Reconciliation Notice
 
 The formative assessment portion of this document is further reconciled by `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` under PDR-026. The Sprint 9A Reconciliation Notice below is preserved. The implementation contract adds canonical collection ownership for `assessments`, `assessmentRevisions`, `assessmentAnswerKeys`, `assessmentSessions`, `attempts`, `attemptRollups`, and `assignmentRollups`; defines the deterministic identifier construction for each; and supersedes the pre-Sprint 9A `submissions/{submissionId}` collection with `attempts/{attemptId}`. Where this document names the `submissions` collection, read forward under the mapping in `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §11 and §26. No shape or field is rewritten by this notice; the actual collection introductions and the migration of the existing `submissions` documents are planned by the implementation sprint that follows Sprint 10A.

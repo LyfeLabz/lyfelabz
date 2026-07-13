@@ -1586,3 +1586,55 @@ Address the second primary finding from the Sprint 9E independent architecture r
 
 - No em dash appears in any created or modified document.
 - No commits were made. Sprint 10A has not been closed by this step.
+
+---
+
+## Sprint 10A Step F-3: Google Classroom Deep-Link Implementation Contract
+
+**Date:** 2026-07-12
+**Status:** Step F-3 complete. Architecture-only step. No production code, Cloud Functions, Firestore Rules, configuration, or tests were modified. No commits were made. Sprint 10A remains open; further steps beyond F-3 have not been started.
+**Reconciliation report:** `SPRINT_10A_F3_GOOGLE_CLASSROOM_IMPLEMENTATION_REPORT.md`
+**Canonical specification:** `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md`
+**Decision record:** PDR-027 in `LYFELABZ_PLATFORM_DECISIONS.md`.
+
+### Objective
+
+Address the third primary finding from the Sprint 9E independent architecture review by reconciling the Google Classroom deep-link, publication, and resolution model into a single implementation contract. Translate the certified architecture (PDR-019, PDR-020, PDR-024f, PDR-024g, PDR-024h) into engineer-facing normative rules for the deep-link URL, the resolution callable, the publication callable, multiple-class publication behavior, multiple-teacher publication behavior, Classroom synchronization ownership, Cloud Function ownership, Firestore ownership, and audit vocabulary, without redesigning any product behavior established by PDR-019, PDR-020, or PDR-024.
+
+### Load-bearing ratifications
+
+- LyfeLabz owns the deep-link URL. The shape `https://lyfelabz.com/app/a/{assignmentId}` is the sole authorized Classroom coursework link material. The URL never carries a token, session identifier, student identifier, score, answer-key excerpt, or Classroom coursework identifier.
+- The canonical LyfeLabz `assignmentId` is the load-bearing authorization key. Classroom coursework identifiers are recorded for reconciliation only.
+- `lmsAssignmentPublish` is the sole writer of `lmsAssignmentPublications/*` and of `assignments/{assignmentId}.lmsPublicationRef`. The transaction is atomic; failed Classroom writes leave no publication document. Idempotency is enforced by a client-supplied marker AND a deterministic identifier.
+- `lmsDeepLinkResolve` is read-only. It never writes to `assessmentSessions/*`, `attempts/*`, `assignments/*`, `lmsAssignmentPublications/*`, or `lmsClassLinks/*`. Session creation remains the sole responsibility of `assessmentSessionsBegin`.
+- Fan-out publication is per (assignment, class). Each target succeeds or fails independently. The deterministic identifier refuses a second publication of the same assignment against the same Classroom course.
+- LyfeLabz enforces a single teacher-of-record per LyfeLabz class. Classroom co-teachers do not authorize LyfeLabz publication. Ownership drift refuses publication and marks the link stale; LyfeLabz never silently reassigns class ownership.
+- Classroom synchronization is bounded to list, read-roster, and create-one-coursework operations. LyfeLabz never posts to the class stream, comments, messages, grades, edits published coursework after create, deletes Classroom state, or reads non-LyfeLabz Classroom content.
+- Every callable also satisfies the district enforcement contract in `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §12. Cross-district publications and resolutions are refused. Every publication document carries `districtId`.
+- The audit vocabulary is fixed: `lms.assignmentPublished`, `lms.publishFailed`, `lms.deepLinkResolved`, `lms.ownershipDrift`, and (reserved for future unpublish) `lms.assignmentUnpublished`. No second audit sink is created.
+
+### Files created
+
+- `docs/platform/GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md`
+- `docs/platform/SPRINT_10A_F3_GOOGLE_CLASSROOM_IMPLEMENTATION_REPORT.md`
+
+### Files reconciled
+
+- `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-027 added with ten sub-decisions; change log extended).
+- `LMS_INTEGRATION_ARCHITECTURE.md` (Sprint 10A F-3 Reconciliation Notice prepended; every load-bearing decision preserved).
+- `LMS_EXPERIENCE.md` (Sprint 10A F-3 Reconciliation Notice prepended; teacher-facing surfaces remain authoritative).
+- `LYFELABZ_CLOUD_FUNCTION_CHARTER.md` (Sprint 10A F-3 Reconciliation Notice prepended; Sprint 10A F-2 and Sprint 9A notices preserved).
+- `LYFELABZ_FIRESTORE_DATA_MODEL.md` (Sprint 10A F-3 Reconciliation Notice prepended; Sprint 10A F-2 and Sprint 9A notices preserved; no document shape changed).
+- `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` (Sprint 10A F-3 Reconciliation Notice prepended; §5 remains authoritative for product behavior).
+
+### Architecture posture
+
+- No application source, Cloud Function source, Firebase configuration, Firestore Rules, or emulator configuration was modified.
+- No test file was modified.
+- No runtime behavior was changed.
+- Preservation mode intact.
+
+### Confirmations
+
+- No em dash appears in any created or modified document.
+- No commits were made. Sprint 10A has not been closed by this step.

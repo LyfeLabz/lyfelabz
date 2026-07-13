@@ -1988,6 +1988,51 @@ PDR-022 (Platform Operations Architecture) is ratified. Sprint 9D adds a product
 
 ---
 
+## PDR-027: Google Classroom Deep-Link Implementation Contract
+
+**Status:** Ratified under Sprint 10A step F-3. Canonical.
+
+**Anchor document:** `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md`.
+
+**Context.** PDR-019 established the LMS integration posture, PDR-020 authorized the initial Google Classroom scope, and PDR-024f, PDR-024g, and PDR-024h fixed the pilot integration philosophy (activation and publication are separate, Classroom is the assignment hub, deep links land the student in the correct authorized attempt context silently). The independent Sprint 9E architecture review recorded that the implementation rules that follow from that stance were distributed across the LMS Integration Architecture, the LMS Integration Architecture Amendment, the LMS Integration Operations runbook, the LMS Experience, the Cloud Function Charter, the Firestore Data Model, the Firebase Security Model, the Assign Experience, and the Platform Transition and Pilot Readiness Specification. Sprint 10A F-3 collapses those statements into one implementation contract without redesigning any product behavior established by PDR-019, PDR-020, or PDR-024.
+
+**Decision.** The load-bearing rules for Google Classroom deep-link resolution, assignment resolution, URL contracts, security boundaries, and multiple-class and multiple-teacher publication behavior are canonical in `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md`. Older documents are reconciled to defer to it.
+
+**Sub-decisions.**
+
+- **PDR-027a. LyfeLabz owns the deep-link URL.** The URL shape `https://lyfelabz.com/app/a/{assignmentId}` is the sole authorized deep-link Classroom coursework link material. No token, session identifier, student identifier, score, answer-key excerpt, or Classroom coursework identifier appears in the URL. The URL is emitted only by the publication callable and consumed only by the resolver callable.
+- **PDR-027b. The canonical LyfeLabz `assignmentId` is the load-bearing key.** Classroom coursework identifiers (`providerCourseId`, `providerCourseWorkId`) are recorded for reconciliation only. They are never an authorization key. Bidirectional lookup between `assignments/{assignmentId}` and `lmsAssignmentPublications/{publicationId}` is one-directional at authorization time: the resolver reads only the LyfeLabz assignment.
+- **PDR-027c. `lmsAssignmentPublish` is the sole writer of `lmsAssignmentPublications/*`.** It writes one publication document per successful (LyfeLabz assignment, target class) attempt. It is the sole writer of `assignments/{assignmentId}.lmsPublicationRef`. The transaction is atomic; a failed Classroom write leaves no publication document.
+- **PDR-027d. `lmsDeepLinkResolve` is read-only against LyfeLabz state.** It never writes to `assessmentSessions/*`, `attempts/*`, `assignments/*`, `lmsAssignmentPublications/*`, or `lmsClassLinks/*`. It never calls Google Classroom. Silent arrival is dispatched through the internal navigation target; session creation remains the sole responsibility of `assessmentSessionsBegin`.
+- **PDR-027e. Fan-out publication is per (assignment, class).** A teacher gesture targeting multiple linked classes produces one LyfeLabz assignment per class per `ASSESSMENT_PIPELINE_SPECIFICATION.md` §12.1 and one publication attempt per (assignment, class). Each target succeeds or fails independently. Partial fan-out is a supported terminal state.
+- **PDR-027f. LyfeLabz enforces a single teacher-of-record per LyfeLabz class.** The LyfeLabz class owner is the sole authorized publisher. Classroom co-teachers do not authorize LyfeLabz publication. Ownership drift refuses publication and marks the link stale; LyfeLabz never silently reassigns class ownership.
+- **PDR-027g. Classroom synchronization is bounded.** LyfeLabz reads Classroom courses and rosters and writes exactly one Classroom coursework record per publication. LyfeLabz never posts to the class stream, comments, messages, grades, edits published coursework after create, deletes Classroom state, or reads non-LyfeLabz Classroom content.
+- **PDR-027h. District enforcement is additive.** Every callable in this contract also complies with `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` §12. Cross-district publications and cross-district resolutions are refused at the callable layer and the rule layer. Nothing in this contract widens the district boundary.
+- **PDR-027i. Audit vocabulary is fixed.** Publication and resolution transitions emit exactly `lms.assignmentPublished`, `lms.publishFailed`, `lms.deepLinkResolved`, `lms.ownershipDrift`, and (reserved for future unpublish) `lms.assignmentUnpublished`. No second audit sink is created.
+- **PDR-027j. Google Classroom is an integration, not the source of truth.** The LyfeLabz assignment record is authoritative. Deactivating, closing, or archiving a LyfeLabz assignment does not modify the Classroom coursework record. Deleting or archiving a Classroom course does not modify LyfeLabz assignment or learning state. Every conflict resolves through the certified authority boundaries in PDR-019b.
+
+**Reconciliation notes.**
+
+- PDR-019 is preserved. PDR-027 implements PDR-019a through PDR-019l without amending the integration posture.
+- PDR-020 is preserved. Google Classroom remains the initial and only supported provider in Version 1; provider neutrality is preserved by naming Google-specific choices as such.
+- PDR-024 is preserved. Activation and publication remain separate (PDR-024f), Google Classroom remains the assignment hub (PDR-024g), and deep links land the student silently (PDR-024h).
+- PDR-025 is preserved. Every callable named here also satisfies the district enforcement contract.
+- PDR-026 is preserved. `lmsDeepLinkResolve` never creates a session or an attempt; session creation remains the sole responsibility of `assessmentSessionsBegin` and attempt creation the sole responsibility of `assessmentAttemptsFinalize`.
+- PDR-013 is preserved. Audit vocabulary is extended, not replaced. No second audit sink is created.
+- PDR-017 is preserved. A single deep-link URL builder, a single deep-link URL parser, a single Google Classroom adapter, a single publication transaction, and a single resolution implementation avoid duplicating the trust boundary.
+
+**Anti-decisions.**
+
+- PDR-027 does not introduce bidirectional publication, grade export to Classroom, automatic publication, a second-provider adapter, a LyfeLabz-side co-teacher role, a deep-link URL that carries a session identifier or score, a teacher-facing publication history surface, a Classroom-driven curation of the LyfeLabz curriculum, a Present Mode integration with Classroom, or a parent view of Classroom activity.
+
+**Future Reconsideration Criteria.**
+
+- An `lmsAssignmentUnpublish` callable may be added when a superseding sprint authors its transaction as an amendment to `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md` §17.
+- A coursework-deleted-upstream reconciliation sweep may be added when operational evidence indicates the manual gesture is insufficient. The sweep is enumerated as G-10A-10 and is deferred until then.
+- Second-provider (Canvas, Schoology, Microsoft Teams for Education) adapters may be added under PDR-020 and PDR-019h once demand is documented; each adapter satisfies this contract's shape without rewriting it.
+
+---
+
 ## Change Log
 
 - 2026-07-07 - Initial platform decision record established.
@@ -2000,3 +2045,4 @@ PDR-022 (Platform Operations Architecture) is ratified. Sprint 9D adds a product
 - 2026-07-12 - PDR-024 (Platform Transition and Pilot Readiness) added under Sprint 9D. PDR-022 amended with a Sprint 9D Reconciliation Notice adding a product readiness bar alongside the operational Pilot Readiness bar. `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` established as the single source of truth for teacher onboarding, teacher workspace philosophy, the student assignment and results experience, the Google Classroom integration philosophy, the learning archive, notifications, the long-term student learning journey, and the pilot transition.
 - 2026-07-12 - PDR-025 (District Security Boundary Implementation Contract) added under Sprint 10A step F-1. `DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md` established as the single source of truth for server-side enforcement of the district tenancy boundary across Firestore, Cloud Functions, custom claims, session behavior, and audit events. Narrow reconciliation notices applied to `LYFELABZ_PLATFORM_ARCHITECTURE.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIREBASE_SECURITY_MODEL.md`, `LMS_INTEGRATION_ARCHITECTURE.md`, and `TEACHER_PLATFORM_DOMAIN_ROADMAP.md` retiring the residual "reserved `districtId`" language.
 - 2026-07-12 - PDR-026 (Assessment Implementation Contract) added under Sprint 10A step F-2. `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` established as the single source of truth for server-side implementation of the formative assessment pipeline, including sessions, attempts, revisions, answer keys, callable ownership, Firestore collection ownership, index strategy, audit events, and error semantics. Narrow reconciliation notices applied to `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, and `ASSESSMENT_PIPELINE_SPECIFICATION.md` pointing implementation questions at the new contract without amending PDR-021 or PDR-008.
+- 2026-07-12 - PDR-027 (Google Classroom Deep-Link Implementation Contract) added under Sprint 10A step F-3. `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md` established as the single source of truth for server-side implementation of Google Classroom deep-link resolution, assignment resolution, URL contracts, security boundaries, multiple-class publication behavior, multiple-teacher publication behavior, Classroom synchronization ownership, and the Cloud Function and Firestore ownership of publication records. Narrow reconciliation notices applied to `LMS_INTEGRATION_ARCHITECTURE.md`, `LMS_EXPERIENCE.md`, `LYFELABZ_CLOUD_FUNCTION_CHARTER.md`, `LYFELABZ_FIRESTORE_DATA_MODEL.md`, and `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` pointing implementation questions at the new contract without amending PDR-019, PDR-020, or PDR-024.

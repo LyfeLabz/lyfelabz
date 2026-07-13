@@ -3,6 +3,14 @@
 Status: Implementation authorized following this ratification. The narrow initial scope named in PDR-020c is authorized for implementation under Phase 9 (LMS Integration Foundation) as advanced ahead of Phase 8 by PDR-020b. Every load-bearing decision in PDR-019 and PDR-020 continues to apply. Capabilities beyond the initial scope remain reachable-but-deferred and require their own subsequent sprint specifications.
 Companion documents: LYFELABZ_PLATFORM_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_FIRESTORE_DATA_MODEL.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, PLATFORM_CONTRACTS.md, TEACHER_PLATFORM_DOMAIN_ROADMAP.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, TEACHER_JOURNEY.md, ASSIGN_EXPERIENCE.md, PRESENT_MODE_ARCHITECTURE.md, CLASS_SNAPSHOT_EXPERIENCE.md, SNAPSHOT_ARCHITECTURE.md, LMS_EXPERIENCE.md, LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md, LMS_INTEGRATION_OPERATIONS.md, IDENTITY_AND_ONBOARDING_SPECIFICATION.md.
 
+## Sprint 10A F-3 Reconciliation Notice
+
+The Google Classroom deep-link, publication, and resolution implementation rules that follow from PDR-019 and PDR-020 are canonical in `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md` under PDR-027. Every load-bearing decision in this document (complement not replace, authority boundaries, manual-first, one-way publication, server-only tokens, no new roles, vendor-neutral core) is preserved without amendment. Implementation questions about the deep-link URL contract, the publication callable, the resolution callable, multiple-class publication behavior, multiple-teacher publication behavior, and Classroom synchronization ownership route to the new contract.
+
+Where this document and the implementation contract conflict on architecture or on the LMS trust boundary, this document controls and the implementation contract is reconciled.
+
+---
+
 ## Sprint 9C Reconciliation Notice
 
 The identity and roster portions of this architecture are subordinate to `IDENTITY_AND_ONBOARDING_SPECIFICATION.md` and PDR-023. Nothing in Sprint 9C widens or narrows the LMS surface; it names the identity contract this architecture already assumed.

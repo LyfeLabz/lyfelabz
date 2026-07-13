@@ -3,6 +3,14 @@
 Status: Canonical product specification for the teacher-facing LMS integration workflow.
 Companion documents: LMS_INTEGRATION_ARCHITECTURE.md, LMS_INTEGRATION_ARCHITECTURE_AMENDMENT.md, TEACHER_JOURNEY.md, TEACHER_EXPERIENCE_PHILOSOPHY.md, ASSIGN_EXPERIENCE.md, CLASS_SNAPSHOT_EXPERIENCE.md, PRESENT_MODE_ARCHITECTURE.md, LYFELABZ_PLATFORM_DECISIONS.md, LYFELABZ_PLATFORM_ARCHITECTURE.md, PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md.
 
+## Sprint 10A F-3 Reconciliation Notice
+
+The engineer-facing implementation rules that follow from the Google Classroom integration philosophy in this document are canonical in `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md` under PDR-027. The teacher-facing surfaces, error messages, and product principles in this document remain authoritative. Implementation questions about the deep-link URL, the publication callable, the resolution callable, multiple-class fan-out, and Classroom-side co-teacher handling route to the new contract.
+
+Where this document and the implementation contract conflict on product behavior or on teacher-facing surface shape, this document controls and the implementation contract is reconciled.
+
+---
+
 ## Sprint 9D Reconciliation Notice
 
 The Google Classroom integration philosophy in this document is subordinate to `PLATFORM_TRANSITION_AND_PILOT_READINESS_SPECIFICATION.md` and PDR-024 in the following respects:

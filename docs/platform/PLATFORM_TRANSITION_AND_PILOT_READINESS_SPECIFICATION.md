@@ -9,6 +9,12 @@ This specification is the single source of truth for how LyfeLabz behaves as it 
 
 ---
 
+## Sprint 10A F-3 Reconciliation Notice
+
+The engineer-facing implementation rules that follow from §5 (Google Classroom Integration Philosophy), and in particular §5.3 (Deep Link Behavior) and PDR-024f, PDR-024g, and PDR-024h, are canonical in `GOOGLE_CLASSROOM_DEEP_LINK_IMPLEMENTATION_CONTRACT.md` under PDR-027. The product philosophy in §5 remains authoritative. Implementation questions about the deep-link URL contract, the resolution callable, the publication callable, multiple-class fan-out, multiple-teacher publication, and Classroom synchronization ownership route to the new contract. Where this specification and the implementation contract conflict on product behavior, this specification controls.
+
+---
+
 ## 0. Relationship to Existing Canonical Specifications
 
 This specification builds upon and complements three foundational Sprint 9 canonical specifications:
