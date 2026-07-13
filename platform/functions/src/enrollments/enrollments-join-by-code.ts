@@ -7,6 +7,7 @@ import {
   enrollmentCreationDocRef,
   enrollmentDocRef,
   log,
+  requireDistrictContext,
   writeAuditEvent,
   type ClassRecord,
   type EnrollmentCreationWrite,
@@ -41,32 +42,17 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function assertAuthenticatedStudent(
+async function assertActiveStudentInDistrict(
   request: CallableRequest<unknown>,
-): { readonly uid: string; readonly schoolId: string } {
-  const auth = request.auth;
-  if (!auth || !isNonEmptyString(auth.uid)) {
+): Promise<{ readonly uid: string; readonly schoolId: string; readonly districtId: string }> {
+  const context = await requireDistrictContext(request);
+  if (context.role !== "student") {
     throw new PlatformError(
-      "enrollments.unauthenticated",
-      "An authenticated caller is required.",
-    );
-  }
-  const token = auth.token as
-    | { readonly role?: unknown; readonly schoolId?: unknown }
-    | undefined;
-  if (!token || token.role !== "student") {
-    throw new PlatformError(
-      "enrollments.unauthorized",
+      "role-forbidden",
       "Caller must be an active student.",
     );
   }
-  if (!isNonEmptyString(token.schoolId)) {
-    throw new PlatformError(
-      "enrollments.unauthorized",
-      "Caller is missing a canonical schoolId claim.",
-    );
-  }
-  return { uid: auth.uid, schoolId: token.schoolId };
+  return { uid: context.uid, schoolId: context.schoolId, districtId: context.districtId };
 }
 
 function validateRequest(data: unknown): EnrollmentsJoinByCodeRequest {
@@ -178,7 +164,7 @@ function safeLog(fn: () => void): void {
 async function enrollmentsJoinByCodeHandler(
   request: CallableRequest<unknown>,
 ): Promise<EnrollmentsJoinByCodeResponse> {
-  const actor = assertAuthenticatedStudent(request);
+  const actor = await assertActiveStudentInDistrict(request);
   const input = validateRequest(request.data);
 
   const { classId, record: classRecord } = await resolveClassByJoinCode(

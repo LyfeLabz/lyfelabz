@@ -1963,3 +1963,69 @@ Slice 2 is deliberately narrow. It touches only the three `classes/*` handler fi
 - Every new and existing Jest test passes locally.
 - No em dash appears in any created or modified document.
 - No commits were made.
+
+
+## Sprint 11B Slice 3: PDR-025 Enrollment Callables Adopt requireDistrictContext
+
+**Date:** 2026-07-13
+**Anchor decision:** PDR-025 District Security Boundary.
+**Slice scope:** Extending the shared `requireDistrictContext` helper adopted in Slice 2 to the three enrollment-management callables. No other layer touched.
+
+### Purpose
+
+Slice 3 continues the Sprint 11A implementation sequence by extending the district-context authorization model from the `classes/*` layer to the `enrollments/*` layer. The three enrollments callables (`enrollmentsJoinByCode`, `enrollmentsTeacherAdd`, `enrollmentsSetStatus`) now delegate authentication, active-status, role, school-record, and district-record verification to `requireDistrictContext(request)`, and refuse a role mismatch with the canonical PDR-025 §17 `role-forbidden` identifier.
+
+### Files created
+
+- `docs/platform/SPRINT_11B_SLICE3_COMPLETION_REPORT.md`. Slice 3 completion report.
+
+### Files modified
+
+- `platform/functions/src/enrollments/enrollments-join-by-code.ts`. Inline `assertAuthenticatedStudent` replaced with `assertActiveStudentInDistrict` wrapping `requireDistrictContext` and refusing `role-forbidden` for non-student callers.
+- `platform/functions/src/enrollments/enrollments-teacher-add.ts`. Inline `assertAuthenticatedTeacher` replaced with `assertActiveTeacherInDistrict` wrapping `requireDistrictContext` and refusing `role-forbidden` for non-teacher callers.
+- `platform/functions/src/enrollments/enrollments-set-status.ts`. Same transformation.
+- `platform/functions/src/enrollments/enrollments-join-by-code.test.ts`. Introduces `mockRequireDistrictContext`; adds tests for the six canonical district refusals and two `role-forbidden` refusals; preserves every prior assertion.
+- `platform/functions/src/enrollments/enrollments-teacher-add.test.ts`. Introduces `mockRequireDistrictContext`; adds tests for four canonical district refusals and two `role-forbidden` refusals; preserves every prior assertion.
+- `platform/functions/src/enrollments/enrollments-set-status.test.ts`. Same test-side transformation.
+- `docs/platform/SPRINT_HISTORY.md`. This entry.
+
+### Authorization contract
+
+- Every district refusal propagates unchanged: `unauthenticated`, `account-inactive`, `claim-stale`, `claim-state-mismatch`, `school-district-mismatch`, `district-unassigned`, `district-mismatch`.
+- Callable-local role refusal uses the canonical `role-forbidden` identifier.
+- Every pre-existing enrollment-namespace refusal is preserved unchanged, including `enrollments.forbidden`, `enrollments.conflict`, `enrollments.invalidClassStatus`, `enrollments.invalidTransition`, `enrollments.joinCodeNotFound`, `enrollments.notFound`, `enrollments.classNotFound`, `enrollments.studentNotFound`, `enrollments.invalidTargetRole`, and `enrollments.invalidTargetStatus`.
+- Enrollment schema, lifecycle states, exit-timestamp policy, audit vocabulary, and idempotency semantics are unchanged.
+- The `districtId` returned by the helper is passed through the `actor` structure inside each callable but is not yet persisted to `enrollments/{enrollmentId}` or emitted on audit events; those are intentionally out of scope for this slice.
+
+### Callables not migrated in this slice
+
+- `teachersApproveVerification` and `studentsCompleteOnboarding` remain on the Slice 1 mechanical `districtId` resolution because their callers are not yet `"active"` when the callable is invoked and cannot satisfy the helper's precondition.
+- The three `classes/*` callables migrated in Slice 2 are unchanged.
+- Every `assignments/*`, `submissions/*`, `lms/*` callable, and every `auth/*` trigger retains its existing inline authorization pending a future slice. Broad platform-wide migration is out of scope.
+
+### Test coverage
+
+- `enrollments-join-by-code.test.ts`: 8 new assertions (6 canonical district refusals + 2 `role-forbidden` refusals), 3 prior authorization tests replaced.
+- `enrollments-teacher-add.test.ts`: 6 new assertions (4 canonical district refusals + 2 `role-forbidden` refusals), 2 prior authorization tests replaced.
+- `enrollments-set-status.test.ts`: 6 new assertions (4 canonical district refusals + 2 `role-forbidden` refusals), 2 prior authorization tests replaced.
+- Full Jest suite green: 380 tests across 24 suites (up from 366 across 24).
+
+### Scope boundary
+
+Slice 3 is deliberately narrow. It touches only the three `enrollments/*` handler files and their colocated test files, plus this history entry and the Slice 3 completion report. It does not modify Firestore Rules, the app, LMS integration, the assessment pipeline, assignments, submissions, the display-name path, indexes, Firestore document shapes, the shared writer contract, the shared district-context helper, the audit vocabulary, any PDR, any architecture document, or any prior completion report.
+
+### Deferred Sprint 11 slices
+
+- Slice 4 (PDR-025 Rules invariants) is intentionally deferred.
+- Slice 5 (PDR-025 stale-claim handling and app-side reconciliation) is intentionally deferred.
+- Slices 6 through 20 (PDR-026, PDR-027, PDR-028 implementation) are intentionally deferred.
+
+### Confirmation
+
+- No Firestore Rules were modified.
+- No app code was modified.
+- No Firestore document shape or index was modified.
+- No callable outside the three `enrollments/*` handlers was modified.
+- Every new and existing Jest test passes locally.
+- No em dash appears in any created or modified document.
+- No commits were made.
