@@ -1895,3 +1895,71 @@ Slice 1 is deliberately narrow. It touches the shared module and the two existin
 - Every new and existing Jest test passes locally.
 - No em dash appears in any created or modified document.
 - No commits were made.
+
+## Sprint 11B Slice 2: PDR-025 Callables Adopt requireDistrictContext
+
+**Date:** 2026-07-13
+**Report:** `docs/platform/SPRINT_11B_SLICE2_COMPLETION_REPORT.md`
+**Anchor:** PDR-025 District Security Boundary §10, §12, §17, §20 items 1 through 3.
+**Objective:** Begin consuming the shared district-context foundation. Integrate `requireDistrictContext()` into the callable-layer authorization flow at exactly the minimum coherent surface: the three `classes/*` callables that sit at the top of the resource-ownership chain and previously shared a duplicated inline authentication helper.
+
+### Files created
+
+- `docs/platform/SPRINT_11B_SLICE2_COMPLETION_REPORT.md`.
+
+### Files modified
+
+- `platform/functions/src/classes/classes-create.ts`. Replaces the inline `assertAuthenticatedTeacher` helper with `assertActiveTeacherInDistrict`, a thin wrapper that awaits `requireDistrictContext(request)` and refuses `role-forbidden` when the resolved role is not `"teacher"`. Preserves request validation, idempotency, conflict detection, the canonical `classes/{classId}` write, audit emission, and response shape.
+- `platform/functions/src/classes/classes-update-metadata.ts`. Same transformation. Preserves narrow-metadata diffing, cross-teacher and cross-school ownership refusal (`classes.forbidden`), archived-status refusal (`classes.invalidStatus`), audit emission, and response shape.
+- `platform/functions/src/classes/classes-archive.ts`. Same transformation. Preserves terminal archive semantics, idempotency, ownership refusal, audit emission, and update-then-audit ordering.
+- `platform/functions/src/classes/classes-create.test.ts`. Introduces a `mockRequireDistrictContext` on the `../shared` mock. Adds tests for six canonical district refusals (`unauthenticated`, `account-inactive`, `claim-stale`, `district-mismatch`, `school-district-mismatch`, `district-unassigned`) and two `role-forbidden` refusals (student and platform administrator callers). Preserves every prior assertion.
+- `platform/functions/src/classes/classes-update-metadata.test.ts`. Same mock introduction. Adds four canonical district refusals and two `role-forbidden` refusals. Preserves every prior assertion.
+- `platform/functions/src/classes/classes-archive.test.ts`. Same mock introduction. Adds four canonical district refusals and two `role-forbidden` refusals. Preserves every prior assertion.
+- `docs/platform/SPRINT_HISTORY.md`. This entry.
+
+### Shared authorization changes
+
+- The three `classes` callables now route authentication, active-status, role, school-record, and district-record verification through a single shared helper. No callable re-implements any part of that flow.
+- Refusals emitted by the shared helper propagate to the callable boundary as canonical PDR-025 §17 identifiers: `unauthenticated`, `account-inactive`, `claim-stale`, `claim-state-mismatch`, `school-district-mismatch`, `district-unassigned`, `district-mismatch`. The callables do not rename, alias, or wrap these identifiers.
+- The role-narrowing refusal (caller must be `"teacher"`) is expressed as `role-forbidden` per PDR-025 §17. No new district-error identifier is introduced.
+- The shared helper never mutates state, never emits an audit event, and never re-issues claims. Every callable's audit-event contract is unchanged.
+- The `districtId` returned by the helper is threaded through the `actor` structure inside each callable but is not yet written to `classes/{classId}` documents or emitted on audit events. Both are Slice 3 responsibilities.
+
+### Callables updated
+
+- `classesCreate`
+- `classesUpdateMetadata`
+- `classesArchive`
+
+Callables intentionally not updated:
+
+- `teachersApproveVerification` and `studentsCompleteOnboarding` remain on the Slice 1 mechanical `districtId` resolution because their callers are not yet `"active"` when the callable is invoked and cannot satisfy the helper's precondition.
+- Every `enrollments/*`, `assignments/*`, `submissions/*`, and `lms/*` callable retains its existing inline authorization pending a future slice. Broad platform-wide migration is out of scope.
+
+### Test coverage
+
+- `classes-create.test.ts`: 8 new assertions (6 canonical district refusals + 2 `role-forbidden` refusals), 3 prior authorization tests replaced.
+- `classes-update-metadata.test.ts`: 6 new assertions (4 canonical district refusals + 2 `role-forbidden` refusals), 2 prior authorization tests replaced.
+- `classes-archive.test.ts`: 6 new assertions (4 canonical district refusals + 2 `role-forbidden` refusals), 2 prior authorization tests replaced.
+- Full Jest suite green: 366 tests across 24 suites (up from 353 across 24).
+
+### Scope boundary
+
+Slice 2 is deliberately narrow. It touches only the three `classes/*` handler files and their colocated test files, plus this history entry and the Slice 2 completion report. It does not modify Firestore Rules, the app, LMS integration, the assessment pipeline, the display-name path, indexes, Firestore document shapes, the shared writer contract, the shared district-context helper, the audit vocabulary, any PDR, any architecture document, or any prior completion report.
+
+### Deferred Sprint 11 slices
+
+- Slice 3 (PDR-025 denormalization on child resources) is intentionally deferred.
+- Slice 4 (PDR-025 Rules invariants) is intentionally deferred.
+- Slice 5 (PDR-025 stale-claim handling and app-side reconciliation) is intentionally deferred.
+- Slices 6 through 20 (PDR-026, PDR-027, PDR-028 implementation) are intentionally deferred.
+
+### Confirmation
+
+- No Firestore Rules were modified.
+- No app code was modified.
+- No Firestore document shape or index was modified.
+- No callable outside the three `classes/*` handlers was modified.
+- Every new and existing Jest test passes locally.
+- No em dash appears in any created or modified document.
+- No commits were made.
