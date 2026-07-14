@@ -15,3 +15,12 @@ export {
   type AssessmentAttemptsFinalizeRequest,
   type AssessmentAttemptsFinalizeResponse,
 } from "./assessment-attempts-finalize";
+export {
+  assessmentIdFor,
+  deployAssessmentRevision,
+  parseRevisionOrdinalFromId,
+  revisionIdFor,
+  type AssessmentDeploymentInput,
+  type AssessmentDeploymentItemInput,
+  type AssessmentDeploymentResult,
+} from "./assessment-deployment";

@@ -2361,3 +2361,78 @@ Land the terminal Live-to-Attempt transition of the assessment pipeline. Sprint 
 - The app was not modified.
 - Assignments, classes, enrollments, LMS, and submissions were not modified.
 - No commit was made.
+
+## Sprint 11C Slice 4 - Assessment Content Deployment Foundation
+
+Date: 2026-07-14
+
+### Purpose
+
+Introduce the canonical server-owned deployment path that atomically publishes an assessment root document, an immutable revision, and the paired server-confidential answer key per `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §5, §11, §12 and `ASSESSMENT_SCORING_CONTRACT.md` §4, §5, §13.
+
+### Authorities reviewed
+
+- `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §5, §11, §12, §14, §15, §16, §21, §22, §24, §29.
+- `ASSESSMENT_SCORING_CONTRACT.md` §3, §4, §5, §5.3, §6, §7, §12, §13, §13.1, §13.2, §14, §16, §17.
+- `ASSESSMENT_PIPELINE_SPECIFICATION.md` §15.
+- `SPRINT_11A_IMPLEMENTATION_INVENTORY.md`.
+- `SPRINT_11C_SLICE1_COMPLETION_REPORT.md`, `SPRINT_11C_SLICE2_COMPLETION_REPORT.md`, `SPRINT_11C_SLICE3_COMPLETION_REPORT.md`.
+
+### Deployment implementation
+
+- New `deployAssessmentRevision(rawInput)` entry point at `platform/functions/src/assessments/assessment-deployment.ts`. Validates the merged deployment input, derives the canonical identifiers per §12 (`assessment_{activityId}`, `{assessmentId}__r{ordinal}`), splits the merged item shape into the paired revision-side (no correct-answer material) and answer-key-side records, and writes the three documents atomically inside a single `runFirestoreTransaction` region.
+- Three narrow deployment-write typed references added to `platform/functions/src/shared/firestore/typed-ref.ts`: `assessmentDeploymentDocRef`, `assessmentRevisionDeploymentDocRef`, `assessmentAnswerKeyDeploymentDocRef`. The read-side references (`assessmentDocRef`, `assessmentRevisionDocRef`, `assessmentAnswerKeyDocRef`) are consumed inside the transaction for the pre-write existence checks.
+- Deployment path is a server-owned mechanism; it is intentionally not exported from `platform/functions/src/index.ts` because no deployment callable is enumerated in `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §21.
+
+### Validation rules
+
+- Structural validator refuses non-object input, missing or malformed `activityId`, non-integer or sub-1 `revisionOrdinal`, non-`authoredOrder` `itemOrderingRule`, non-v1 `schemaVersion`, blank `publishedBy`, empty items, duplicate itemIds, unsupported `itemType`, blank stems, non-unit `points`, fewer than two options, malformed options, duplicate optionIds, blank option text, blank `correctOptionId`, `correctOptionId` not among the item's options, and blank explanations.
+- Transactional validator refuses duplicate revision publication, duplicate answer-key publication, activity mismatch on the existing assessment root, unparseable `currentRevisionId`, and non-monotonic `revisionOrdinal` per §13.2.
+
+### Transaction behavior
+
+- All three writes (revision, answer key, assessment root) enqueue inside a single `runFirestoreTransaction` region so partial publication is impossible per §13.1.
+- Pre-write existence checks are transactional reads; a concurrent publisher racing the same ordinal sees one commit succeed and the other refuse on retry.
+- A validation refusal inside the transaction throws before any `tx.set` runs.
+
+### Immutable publication
+
+- `assessmentRevisions/{revisionId}` and `assessmentAnswerKeys/{revisionId}` are refused when the deterministic identifier collides. No revision or answer key is ever rewritten.
+- The `AssessmentRevisionDeploymentWrite` and `AssessmentAnswerKeyDeploymentWrite` narrow-write shapes carry only the certified fields; a caller cannot mutate an existing document through this path.
+- The assessment root is create-or-updated with the advanced `currentRevisionId`; no ordinal is ever demoted.
+
+### Audit behavior
+
+- `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §24 does not certify a deployment audit action. Per the sprint scope ("implement only certified deployment audit events; do not invent new vocabulary"), the deployment path emits no `auditEvents/*` document. A structured `log.info("assessmentDeployment.published", ...)` observability entry is recorded so a deployment run remains traceable in Cloud Logging.
+
+### Tests added
+
+- Twenty-three new Jest cases covering identifier derivation, first and subsequent successful publication, every certified refusal (duplicate revision, duplicate answer key, non-monotonic ordinal, activity mismatch, unparseable currentRevisionId, empty items, duplicate ids, unsupported item type, malformed shapes), no-audit behavior, and single-transaction atomicity.
+- All prior Jest tests preserved unchanged and continue to pass.
+
+### Validation results
+
+- `npm run lint` passes with zero errors and zero warnings.
+- `npm run typecheck` passes with no diagnostics.
+- `npm run build` passes.
+- `npm test` passes. 28 suites, 511 tests, 0 failures.
+- `git diff --check` passes.
+- The completion report and this entry contain no em dashes.
+
+### Deferred work
+
+- Every PDR-026 §21 callable beyond the runtime session and attempt path landed in Slices 1 through 3 remains Missing.
+- Authoring tools, teacher edit surfaces, retrieval APIs, answer-reveal surfaces, dashboards, analytics, LMS integration, roster changes, assignment changes, and app changes remain unchanged.
+- Retirement is not written by this slice.
+- Session ordinal advancement, Firestore Security Rules updates for the deployment-owned collections, composite index deployment updates, legacy `submissions` migration, emulator tests per PDR-026 §28, and rules-test matrix per PDR-026 §27 all remain deferred.
+- Deployment audit vocabulary remains uncertified.
+
+### Confirmation
+
+- Only Sprint 11C Slice 4 was implemented.
+- No other slice was advanced.
+- No architecture document was amended and no PDR was superseded.
+- Firestore Rules were not modified.
+- The app was not modified.
+- Assignments, classes, enrollments, LMS, submissions, and every runtime assessment callable landed in Slices 1 through 3 were not modified.
+- No commit was made.

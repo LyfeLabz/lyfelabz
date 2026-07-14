@@ -98,9 +98,15 @@ export type AssessmentRecord = {
   readonly retiredAt?: Timestamp;
 };
 
-// Deployment-only write shapes. Declared for completeness so a later
-// deployment-pipeline slice imports the same names; no callable in this
-// slice writes any of these documents.
+// Deployment-only write shapes owned by the assessment deployment
+// pipeline per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §11 and
+// ASSESSMENT_SCORING_CONTRACT.md §13. The deployment entry point is the
+// sole writer of `assessments/*`, `assessmentRevisions/*`, and
+// `assessmentAnswerKeys/*`. No callable in the pipeline mutates these
+// documents outside the atomic deployment transaction. The write shapes
+// are kept structurally distinct from the read shapes so a caller cannot
+// accidentally reuse a stored-record type at the write boundary and
+// forfeit the FieldValue-safe `publishedAt` sentinel.
 export type AssessmentDeploymentWrite = {
   readonly assessmentId: string;
   readonly activityId: string;

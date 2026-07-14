@@ -63,8 +63,11 @@ import {
   ASSESSMENT_ANSWER_KEYS_COLLECTION,
   ASSESSMENT_REVISIONS_COLLECTION,
   ASSESSMENTS_COLLECTION,
+  type AssessmentAnswerKeyDeploymentWrite,
   type AssessmentAnswerKeyRecord,
+  type AssessmentDeploymentWrite,
   type AssessmentRecord,
+  type AssessmentRevisionDeploymentWrite,
   type AssessmentRevisionRecord,
 } from "../types/assessment";
 import {
@@ -480,6 +483,38 @@ export function assessmentAnswerKeyDocRef(
   return getAdminFirestore()
     .collection(ASSESSMENT_ANSWER_KEYS_COLLECTION)
     .doc(revisionId) as DocumentReference<AssessmentAnswerKeyRecord>;
+}
+
+// Deployment-write typed references for the deployment-pipeline-owned
+// assessment content surfaces per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §11
+// and ASSESSMENT_SCORING_CONTRACT.md §13. Sole writer is the deployment
+// pipeline entry point; no callable in the pipeline mutates these
+// collections outside deployment. The narrow-write shapes keep
+// FieldValue-safe sentinels at the write boundary while the read-side
+// references remain typed as the immutable record shapes.
+
+export function assessmentDeploymentDocRef(
+  assessmentId: string,
+): DocumentReference<AssessmentDeploymentWrite> {
+  return getAdminFirestore()
+    .collection(ASSESSMENTS_COLLECTION)
+    .doc(assessmentId) as DocumentReference<AssessmentDeploymentWrite>;
+}
+
+export function assessmentRevisionDeploymentDocRef(
+  revisionId: string,
+): DocumentReference<AssessmentRevisionDeploymentWrite> {
+  return getAdminFirestore()
+    .collection(ASSESSMENT_REVISIONS_COLLECTION)
+    .doc(revisionId) as DocumentReference<AssessmentRevisionDeploymentWrite>;
+}
+
+export function assessmentAnswerKeyDeploymentDocRef(
+  revisionId: string,
+): DocumentReference<AssessmentAnswerKeyDeploymentWrite> {
+  return getAdminFirestore()
+    .collection(ASSESSMENT_ANSWER_KEYS_COLLECTION)
+    .doc(revisionId) as DocumentReference<AssessmentAnswerKeyDeploymentWrite>;
 }
 
 // -------------------- Assessment attempt references --------------------

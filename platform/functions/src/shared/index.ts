@@ -20,8 +20,11 @@ export {
 } from "./errors/district-errors";
 export { PlatformError } from "./errors/platform-error";
 export {
+  assessmentAnswerKeyDeploymentDocRef,
   assessmentAnswerKeyDocRef,
+  assessmentDeploymentDocRef,
   assessmentDocRef,
+  assessmentRevisionDeploymentDocRef,
   assessmentRevisionDocRef,
   assessmentSessionAutosaveDocRef,
   assessmentSessionCreationDocRef,
