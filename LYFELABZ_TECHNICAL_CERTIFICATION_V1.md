@@ -40,6 +40,8 @@ LyfeLabz is a static instructional platform served through GitHub Pages with a c
 
 All page types share the canonical LyfeLabz visual language, canonical mobile stylesheet, and canonical accessibility baseline.
 
+The published curriculum scope (lessons by unit, investigations, standards coverage, supplemental content, and curriculum governance decisions) is documented in `docs/LYFELABZ_V1_CURRICULUM_CERTIFICATION.md`. That document is the companion to this technical certification and together they constitute the complete V1 certification record.
+
 ---
 
 ## 3. Instructional Architecture

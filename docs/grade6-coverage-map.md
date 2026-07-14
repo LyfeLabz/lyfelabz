@@ -209,7 +209,7 @@ Massachusetts assignment.
 |---|---|---|---|---|
 | 6.MS-ESS1-1a | Earth-Sun-Moon model: phases & eclipses | lesson_sun-earth-moon, lesson_phases-of-the-moon, lesson_eclipses, simulation_eclipse-alignment, extension_moon-tonight | Fully Covered | Strong cluster. Pages use base code `MS-ESS1-1`; update badge to `6.MS-ESS1-1a` for submission precision. |
 | 6.MS-ESS1-4 | Rock layers + index fossils, relative ages | lesson_layers-of-time, extension_fossil-hunt, game_layer-detective | Fully Covered | Superposition/relative dating addressed; supported by game + extension. |
-| 6.MS-ESS1-5(MA) | Earth/solar system in Milky Way; galaxies | - | Not Covered | No astronomy-scale / galaxies page exists. |
+| 6.MS-ESS1-5(MA) | Earth/solar system in Milky Way; galaxies | lesson_earths-place-in-the-universe | Fully Covered | Nested scale model: Earth to solar system to Milky Way to universe. Published 2026-07-14. |
 | 6.MS-ESS2-3 | Maps of fossils/rocks/seafloor: plate motion evidence | lesson_continental-drift, lesson_layers-of-time | Fully Covered | Continental-drift carries the PE; stay within the assessment boundary (evidence, not mechanism - mechanism is grade 7). |
 | 6.MS-LS1-1 | All organisms made of cells | lesson_cell-types, lesson_what-is-life, investigation_gray-zone, extension_virus, game_is-it-alive, game_cell-explorer, game_cellular-showdown | Fully Covered | Deep, multi-modal coverage. |
 | 6.MS-LS1-2 | Model of cell parts and functions | lesson_organelles, lesson_cell-types, lesson_what-is-life, investigation_cell-energy, investigation_protein-pathway, extension_neuron-explorer, game_cell-explorer | Fully Covered | Watch assessment boundary: avoid ATP / biochemical-step depth in assessed items. |
@@ -290,47 +290,53 @@ are listed; gaps mark what still needs to be built.
 
 > **Astronomy / Earth-in-space standards (6.MS-ESS1-1a, 6.MS-ESS1-4,
 > 6.MS-ESS1-5(MA), 6.MS-ESS2-3, 6.MS-PS2-4)** can form an optional **Unit 0 -
-> Earth and Space** or be distributed as a seventh unit. Existing Earth-Sun-Moon,
-> relative-dating, and continental-drift clusters cover most of it; the
-> remaining gap is 6.MS-ESS1-5(MA) (galaxies/scale). The core lesson for
-> 6.MS-PS2-4 (gravity) is now built (lesson_gravity.html). Because gravity
-> (PS2-4) and Earth-Sun-Moon (ESS1-1a) reinforce each other, grouping them is
-> natural.
+> Earth and Space** or be distributed as a seventh unit. All five standards in
+> this cluster are now fully covered. lesson_earths-place-in-the-universe.html
+> (published 2026-07-14) closes ESS1-5(MA). Because gravity (PS2-4) and
+> Earth-Sun-Moon (ESS1-1a) reinforce each other, grouping them is natural.
 
 ---
 
 ## Step 5 - Summary
 
-**Total standards: 22 | Fully Covered: 17 | Partially: 0 | Not Covered: 5**
+**Total standards: 22 | Fully Covered: 20 | Partially: 0 | Not Covered: 2**
 
-- Fully Covered (17): ESS1-1a, ESS1-4, ESS2-3, LS1-1, LS1-2, LS1-3, LS4-1,
-  LS4-2, PS1-6, PS1-7(MA), PS1-8(MA), PS2-4, PS4-1, PS4-2, PS4-3, ETS1-1,
-  ETS1-6(MA)
-- Not Covered (5): ESS1-5(MA), ETS1-5(MA), ETS2-1(MA), ETS2-2(MA), ETS2-3(MA)
+Updated 2026-07-14 to reflect V1 Curriculum Governance (lesson_choosing-materials.html,
+lesson_designing-to-scale.html, and lesson_earths-place-in-the-universe.html published).
 
-**Overall progress toward a complete Grade 6 core program: about 77%**
-(17 full / 22 = 77%). Three of the five
-content domains - Life Science, Waves, and the matter strand - are effectively
-complete. The gap is concentrated in Technology/Engineering (the entire ETS2
-"Materials, Tools, and Manufacturing" strand plus ETS1-5) and one astronomy
-standard.
+- Fully Covered (20): ESS1-1a, ESS1-4, ESS1-5(MA), ESS2-3, LS1-1, LS1-2, LS1-3,
+  LS4-1, LS4-2, PS1-6, PS1-7(MA), PS1-8(MA), PS2-4, PS4-1, PS4-2, PS4-3, ETS1-1,
+  ETS1-5(MA), ETS1-6(MA), ETS2-1(MA)
+- Not Covered (2): ETS2-2(MA), ETS2-3(MA)
 
-### Top 5 highest-priority gaps to build next
+**Overall progress toward a complete Grade 6 core program: about 91%**
+(20 full / 22 = 91%). Three of the five content domains - Life Science, Waves, and
+the matter strand - are effectively complete. The astronomy cluster is now fully
+covered. The Technology/Engineering gap remains the only area with outstanding
+standards. Two standards remain not covered: ETS2-2 (material selection as a
+standalone design task) and ETS2-3 (tools and prototyping; addressed at the capstone
+level through challenge_welcome-to-floatia.html).
 
-1. **6.MS-ETS2-1(MA) - Compare material properties.** Zero coverage and the
-   conceptual anchor for the whole ETS2 strand; ETS2-2 depends on it.
-2. **6.MS-ETS2-2(MA) - Select materials by property.** Zero coverage; the
-   applied counterpart to ETS2-1 and a natural design task to pair with the
-   existing engineering-design lesson.
-3. **6.MS-ETS2-3(MA) - Tools and prototyping.** Zero coverage; the hands-on
-   "build it" capability the framework expects at grade 6 and currently absent
-   entirely.
-4. **6.MS-ESS1-5(MA) - Earth's place in the universe (galaxies/scale).** Zero
-   coverage; completes the astronomy story and is the cosmic-scale prerequisite
-   that frames the Earth-Sun-Moon work students already do.
-5. **6.MS-ETS1-5(MA) - Scaled visual representations.** Zero coverage; a
-   prerequisite skill (scale and proportion in drawings) that feeds the ETS2
-   prototyping work and connects to math.
+### Remaining gaps (updated for V1 Curriculum Governance)
+
+1. **6.MS-ETS2-2(MA) - Select materials by property.** Not covered by a
+   standalone lesson or investigation. The concept of material selection is
+   introduced in lesson_choosing-materials.html and applied in the Floatia
+   engineering challenge, but no dedicated selection-by-property design task
+   exists.
+2. **6.MS-ETS2-3(MA) - Tools and prototyping.** Zero coverage as a standalone
+   lesson; addressed at the capstone level through challenge_welcome-to-floatia.html.
+
+Previous Top 5 gaps (for historical reference):
+
+1. ~~**6.MS-ETS2-1(MA) - Compare material properties.**~~ **RESOLVED 2026-07-13:**
+   lesson_choosing-materials.html published.
+2. **6.MS-ETS2-2(MA) - Select materials by property.** See above.
+3. **6.MS-ETS2-3(MA) - Tools and prototyping.** Partially addressed; see above.
+4. ~~**6.MS-ESS1-5(MA) - Earth in the Milky Way.**~~ **RESOLVED 2026-07-14:**
+   lesson_earths-place-in-the-universe.html published.
+5. ~~**6.MS-ETS1-5(MA) - Scaled visual representations.**~~ **RESOLVED 2026-07-13:**
+   lesson_designing-to-scale.html published.
 
 > Note on PS2-4 (gravity): now Fully Covered. lesson_gravity.html supplies the
 > core claim-and-evidence lesson and carries the badge; the gravity-wells
