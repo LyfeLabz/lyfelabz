@@ -2276,3 +2276,88 @@ Sprint 11C Slice 3 was intentionally halted. The certified architecture (PDR-021
 - No Firestore Rules were modified.
 - No app code was modified.
 - No commit was made.
+
+## Sprint 11C Slice 3 - Assessment Attempt Finalization (2026-07-14)
+
+### Purpose
+
+Land the terminal Live-to-Attempt transition of the assessment pipeline. Sprint 11C Slice 3 introduces the canonical `assessmentAttemptsFinalize` callable per `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §7 and §8 and the v1 scorer defined by `ASSESSMENT_SCORING_CONTRACT.md`. The callable reads a Live session under the caller's authenticated identity, resolves the paired revision and server-confidential answer key from the session's frozen `assessmentRevisionId`, applies the v1 `singleChoice` scoring rule, writes an immutable `attempts/{attemptId}` document, deletes the session inside the same Firestore transaction, and emits exactly one `assessment.attemptFinalized` audit event on successful commit. Every other PDR-026 §21 callable (sweep, purge, recover, resume, attempt reads, rollup, administrative answer-key read) remains deferred.
+
+### Files created
+
+- `platform/functions/src/shared/types/assessment.ts`. Canonical read shapes for `assessments/*`, `assessmentRevisions/*`, and `assessmentAnswerKeys/*`; v1 discriminant literals and item shapes; deployment-only write shapes reserved for a later slice.
+- `platform/functions/src/shared/types/attempt.ts`. Canonical read shape and narrow creation-write shape for `attempts/*`; per-item feedback shape `AssessmentAttemptItemResult`.
+- `platform/functions/src/shared/firestore/transaction.ts`. `runFirestoreTransaction` wrapper used by the finalize callable.
+- `platform/functions/src/assessments/assessment-attempts-finalize.ts`. The `assessmentAttemptsFinalize` callable, its internal handler export, the deterministic `attemptIdFor` helper, and the v1 scorer.
+- `platform/functions/src/assessments/assessment-attempts-finalize.test.ts`. Thirty-four Jest cases.
+- `docs/platform/SPRINT_11C_SLICE3_COMPLETION_REPORT.md`. The completion report.
+
+### Files modified
+
+- `platform/functions/src/shared/firestore/typed-ref.ts`. Adds read references for revision, answer key, attempt; adds the attempts collection reference; adds the narrow-write attempt-creation reference.
+- `platform/functions/src/shared/types/audit-event.ts`. Adds `"assessment.attemptFinalized"` to the `AuditAction` union.
+- `platform/functions/src/shared/audit/write-audit-event.ts`. Adds the same literal to the runtime allowlist.
+- `platform/functions/src/shared/index.ts`. Re-exports the new refs, the transaction helper, and the new type identifiers.
+- `platform/functions/src/assessments/index.ts`. Re-exports the finalize callable, the `attemptIdFor` helper, and the request and response types.
+- `platform/functions/src/index.ts`. Publishes `assessmentAttemptsFinalize` under the canonical PDR-026 §21 name.
+- `docs/platform/SPRINT_HISTORY.md`. This entry.
+
+### Callable landed
+
+- `assessmentAttemptsFinalize` accepts `{ sessionId, idempotencyKey }` and returns `{ attemptId, attemptNumber, score, maxScore, percentage, itemResults, replay }`. Sole writer of `attempts/*`; sole deleter of the referenced session on successful commit. Session read, idempotency lookup, revision and answer-key reads, attempt-collision precheck, attempt-count query, attempt write, and session delete occur inside a single Firestore transaction per PDR-026 §8. The `assessment.attemptFinalized` audit event is emitted after successful commit and never fabricated on a rolled-back transaction.
+
+### Scoring implementation
+
+- v1 supports exclusively `itemType: "singleChoice"`.
+- Per-item rule: strict case-sensitive string equality between the student's `response` and the answer key's `correctOptionId`. Full credit or zero.
+- Unanswered items score zero and record `studentResponse: null`.
+- A response element whose `itemId` is not in the revision is ignored by the scorer and persisted verbatim on the attempt's `responses`.
+- `attempt.score = sum(item.pointsEarned)`. `attempt.maxScore = sum(item.points)`. `attempt.percentage = round((score / maxScore) * 100, 2)` under banker's rounding.
+- Zero-item answer keys refuse rather than divide by zero (`assessmentAttempts.answerKeyIntegrity`).
+- The scorer resolves the revision from the session's frozen `assessmentRevisionId`, never from the assessment's current revision at scoring time.
+- Two invocations against the same session, revision, and answer key produce identical scoring output.
+
+### Server-owned data protections
+
+- The client MUST NOT supply a score, per-item correctness, points-earned value, correct-answer value, explanation, item results, responses, attempt number, attempt identifier, or any ownership field on the request. A twenty-two-key structural refusal returns `assessmentAttempts.invalidRequest` before the transaction opens.
+- Ownership fields on the attempt are copied verbatim from the session's frozen ownership fields.
+- Answer-key material never crosses the callable boundary outside the per-item `correctOptionId` and `explanation` fields on `itemResults`. The full answer-key document is read exactly once per finalize inside the scoring transaction and never logged or emitted in an error payload.
+
+### Idempotency
+
+- The client supplies an idempotency marker. A retry with the same marker after a successful commit returns the existing attempt payload with `replay: true`; no second attempt is written and no second audit event is emitted.
+
+### Audit vocabulary
+
+- Adds `"assessment.attemptFinalized"` to the canonical `AuditAction` union and the runtime allowlist per PDR-026 §24. The event payload carries `assignmentId`, `classId`, `activityId`, `assessmentId`, `assessmentRevisionId`, `attemptNumber`, `score`, `maxScore`, `percentage`, `districtId`.
+
+### Tests added
+
+- Thirty-four new Jest cases covering the successful path, scoring correctness across all mixture patterns, banker's rounding, idempotent replay, all authorization and lifecycle refusals, all integrity failures, revision resolution from the session's frozen id, determinism, atomicity of session delete and attempt write, and containment of the response payload to the certified feedback subset.
+- All prior Jest tests are preserved unchanged and continue to pass.
+
+### Validation results
+
+- `npm run lint` passes with zero errors and zero warnings.
+- `npm run typecheck` passes with no diagnostics.
+- `npm run build` passes.
+- `npm test` passes. 27 suites, 486 tests, 0 failures.
+- `git diff --check` passes.
+- The completion report and this entry contain no em dashes.
+
+### Deferred work
+
+- Every PDR-026 §21 callable beyond `assessmentSessionsBegin`, `assessmentSessionsAutosave`, and `assessmentAttemptsFinalize` remains Missing.
+- Deployment-pipeline integration for `assessments/*`, `assessmentRevisions/*`, and `assessmentAnswerKeys/*` remains deferred.
+- Session-ordinal advancement, Firestore Security Rules updates, composite index deployment updates, legacy `submissions` migration, emulator tests per PDR-026 §28, and rules-test matrix per PDR-026 §27 all remain deferred.
+- Rollups, LMS integration, teacher analytics, and app surfaces remain unchanged by this slice.
+
+### Confirmation
+
+- Only Sprint 11C Slice 3 was implemented.
+- No other slice was advanced.
+- No architecture document was amended and no PDR was superseded.
+- Firestore Rules were not modified.
+- The app was not modified.
+- Assignments, classes, enrollments, LMS, and submissions were not modified.
+- No commit was made.

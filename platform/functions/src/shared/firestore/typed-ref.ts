@@ -60,6 +60,19 @@ import {
   type AssessmentSessionRecord,
 } from "../types/assessment-session";
 import {
+  ASSESSMENT_ANSWER_KEYS_COLLECTION,
+  ASSESSMENT_REVISIONS_COLLECTION,
+  ASSESSMENTS_COLLECTION,
+  type AssessmentAnswerKeyRecord,
+  type AssessmentRecord,
+  type AssessmentRevisionRecord,
+} from "../types/assessment";
+import {
+  ATTEMPTS_COLLECTION,
+  type AssessmentAttemptCreationWrite,
+  type AssessmentAttemptRecord,
+} from "../types/attempt";
+import {
   USERS_COLLECTION,
   type UserProvisioningWrite,
   type UserRecord,
@@ -432,6 +445,74 @@ export function assessmentSessionAutosaveDocRef(
   return getAdminFirestore()
     .collection(ASSESSMENT_SESSIONS_COLLECTION)
     .doc(sessionId) as DocumentReference<AssessmentSessionAutosaveWrite>;
+}
+
+// -------------------- Assessment content references --------------------
+//
+// Typed Firestore references for the deployment-pipeline-owned assessment
+// content surfaces per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §11 and
+// ASSESSMENT_SCORING_CONTRACT.md §4, §5, §13. Only the scorer inside
+// `assessmentAttemptsFinalize` reads `assessmentAnswerKeys/*` at request
+// time (PDR-026d). No callable in this slice writes to any of these
+// collections; the read references exist so the scorer can resolve the
+// paired revision and answer-key documents from the session's frozen
+// `assessmentRevisionId`.
+
+export function assessmentDocRef(
+  assessmentId: string,
+): DocumentReference<AssessmentRecord> {
+  return getAdminFirestore()
+    .collection(ASSESSMENTS_COLLECTION)
+    .doc(assessmentId) as DocumentReference<AssessmentRecord>;
+}
+
+export function assessmentRevisionDocRef(
+  revisionId: string,
+): DocumentReference<AssessmentRevisionRecord> {
+  return getAdminFirestore()
+    .collection(ASSESSMENT_REVISIONS_COLLECTION)
+    .doc(revisionId) as DocumentReference<AssessmentRevisionRecord>;
+}
+
+export function assessmentAnswerKeyDocRef(
+  revisionId: string,
+): DocumentReference<AssessmentAnswerKeyRecord> {
+  return getAdminFirestore()
+    .collection(ASSESSMENT_ANSWER_KEYS_COLLECTION)
+    .doc(revisionId) as DocumentReference<AssessmentAnswerKeyRecord>;
+}
+
+// -------------------- Assessment attempt references --------------------
+//
+// Typed Firestore references for the immutable authoritative attempt
+// record per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §7, §11, §21.
+// `assessmentAttemptsFinalize` is the sole writer of `attempts/*`. The
+// creation reference is separate from the read reference so the write
+// shape (`AssessmentAttemptCreationWrite`, which types `submittedAt` as
+// `FieldValue`) is enforced at the write boundary while the read shape
+// (`AssessmentAttemptRecord`) remains authoritative for downstream
+// consumers.
+
+export function attemptsCollectionRef(): CollectionReference<AssessmentAttemptRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
+  return getAdminFirestore()
+    .collection(ATTEMPTS_COLLECTION) as CollectionReference<AssessmentAttemptRecord>;
+}
+
+export function attemptDocRef(
+  attemptId: string,
+): DocumentReference<AssessmentAttemptRecord> {
+  return getAdminFirestore()
+    .collection(ATTEMPTS_COLLECTION)
+    .doc(attemptId) as DocumentReference<AssessmentAttemptRecord>;
+}
+
+export function attemptCreationDocRef(
+  attemptId: string,
+): DocumentReference<AssessmentAttemptCreationWrite> {
+  return getAdminFirestore()
+    .collection(ATTEMPTS_COLLECTION)
+    .doc(attemptId) as DocumentReference<AssessmentAttemptCreationWrite>;
 }
 
 // -------------------- LMS integration references --------------------

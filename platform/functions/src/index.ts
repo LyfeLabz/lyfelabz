@@ -1,4 +1,5 @@
 export {
+  assessmentAttemptsFinalize,
   assessmentSessionsAutosave,
   assessmentSessionsBegin,
 } from "./assessments";

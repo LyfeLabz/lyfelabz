@@ -72,6 +72,7 @@ const VALID_ACTIONS: readonly AuditAction[] = [
   "submissions.created",
   "submissions.finalized",
   "assessment.sessionBegan",
+  "assessment.attemptFinalized",
   "lms.connectionCreated",
   "lms.connectionRevoked",
   "lms.classImported",

@@ -31,6 +31,7 @@ export type AuditAction =
   | "submissions.created"
   | "submissions.finalized"
   | "assessment.sessionBegan"
+  | "assessment.attemptFinalized"
   | "lms.connectionCreated"
   | "lms.connectionRevoked"
   | "lms.classImported"

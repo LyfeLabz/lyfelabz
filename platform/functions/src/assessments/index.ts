@@ -9,3 +9,9 @@ export {
   type AssessmentSessionsAutosaveRequest,
   type AssessmentSessionsAutosaveResponse,
 } from "./assessment-sessions-autosave";
+export {
+  assessmentAttemptsFinalize,
+  attemptIdFor,
+  type AssessmentAttemptsFinalizeRequest,
+  type AssessmentAttemptsFinalizeResponse,
+} from "./assessment-attempts-finalize";

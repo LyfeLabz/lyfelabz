@@ -20,10 +20,16 @@ export {
 } from "./errors/district-errors";
 export { PlatformError } from "./errors/platform-error";
 export {
+  assessmentAnswerKeyDocRef,
+  assessmentDocRef,
+  assessmentRevisionDocRef,
   assessmentSessionAutosaveDocRef,
   assessmentSessionCreationDocRef,
   assessmentSessionDocRef,
   assessmentSessionsCollectionRef,
+  attemptCreationDocRef,
+  attemptDocRef,
+  attemptsCollectionRef,
   assignmentArchiveDocRef,
   assignmentCloseDocRef,
   assignmentCreationDocRef,
@@ -67,6 +73,7 @@ export {
   userDocRef,
   userRecordDocRef,
 } from "./firestore/typed-ref";
+export { runFirestoreTransaction } from "./firestore/transaction";
 export { log, type LogPayload } from "./logging/logger";
 export {
   ASSIGNMENTS_COLLECTION,
@@ -148,6 +155,30 @@ export {
   type AssessmentSessionResponse,
   type AssessmentSessionStatus,
 } from "./types/assessment-session";
+export {
+  ASSESSMENTS_COLLECTION,
+  ASSESSMENT_ANSWER_KEYS_COLLECTION,
+  ASSESSMENT_REVISIONS_COLLECTION,
+  ASSESSMENT_SCHEMA_VERSION_V1,
+  type AssessmentAnswerKeyDeploymentWrite,
+  type AssessmentAnswerKeyItem,
+  type AssessmentAnswerKeyRecord,
+  type AssessmentDeploymentWrite,
+  type AssessmentItemOrderingRule,
+  type AssessmentItemType,
+  type AssessmentRecord,
+  type AssessmentRevisionDeploymentWrite,
+  type AssessmentRevisionItem,
+  type AssessmentRevisionItemOption,
+  type AssessmentRevisionRecord,
+  type AssessmentSchemaVersion,
+} from "./types/assessment";
+export {
+  ATTEMPTS_COLLECTION,
+  type AssessmentAttemptCreationWrite,
+  type AssessmentAttemptItemResult,
+  type AssessmentAttemptRecord,
+} from "./types/attempt";
 export {
   USERS_COLLECTION,
   type ConsentState,
