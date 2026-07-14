@@ -20,6 +20,7 @@ export {
 } from "./errors/district-errors";
 export { PlatformError } from "./errors/platform-error";
 export {
+  assessmentSessionAutosaveDocRef,
   assessmentSessionCreationDocRef,
   assessmentSessionDocRef,
   assessmentSessionsCollectionRef,
@@ -141,8 +142,10 @@ export {
 } from "./types/submission";
 export {
   ASSESSMENT_SESSIONS_COLLECTION,
+  type AssessmentSessionAutosaveWrite,
   type AssessmentSessionCreationWrite,
   type AssessmentSessionRecord,
+  type AssessmentSessionResponse,
   type AssessmentSessionStatus,
 } from "./types/assessment-session";
 export {

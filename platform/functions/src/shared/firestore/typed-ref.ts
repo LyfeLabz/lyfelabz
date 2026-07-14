@@ -55,6 +55,7 @@ import {
 } from "../types/submission";
 import {
   ASSESSMENT_SESSIONS_COLLECTION,
+  type AssessmentSessionAutosaveWrite,
   type AssessmentSessionCreationWrite,
   type AssessmentSessionRecord,
 } from "../types/assessment-session";
@@ -414,6 +415,23 @@ export function assessmentSessionCreationDocRef(
   return getAdminFirestore()
     .collection(ASSESSMENT_SESSIONS_COLLECTION)
     .doc(sessionId) as DocumentReference<AssessmentSessionCreationWrite>;
+}
+
+// Autosave-write typed reference for assessmentSessions/{sessionId}. The
+// assessmentSessionsAutosave callable uses this reference to `.update()` a
+// narrow `AssessmentSessionAutosaveWrite` payload that carries only the
+// mutable `responses` and `lastActivityAt` fields per
+// ASSESSMENT_IMPLEMENTATION_CONTRACT.md §6 and §14. Ownership fields,
+// `sessionOrdinal`, `status`, and `startedAt` are absent from the write
+// shape so no autosave can silently reassign ownership, advance the
+// lifecycle, or backdate the start moment. Scoring artifacts are
+// structurally excluded from the write shape.
+export function assessmentSessionAutosaveDocRef(
+  sessionId: string,
+): DocumentReference<AssessmentSessionAutosaveWrite> {
+  return getAdminFirestore()
+    .collection(ASSESSMENT_SESSIONS_COLLECTION)
+    .doc(sessionId) as DocumentReference<AssessmentSessionAutosaveWrite>;
 }
 
 // -------------------- LMS integration references --------------------

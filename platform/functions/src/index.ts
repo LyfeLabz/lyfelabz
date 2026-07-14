@@ -1,4 +1,7 @@
-export { assessmentSessionsBegin } from "./assessments";
+export {
+  assessmentSessionsAutosave,
+  assessmentSessionsBegin,
+} from "./assessments";
 export {
   assignmentsArchive,
   assignmentsClose,

@@ -2148,3 +2148,76 @@ Slice 1 of Sprint 11C lands the canonical initialization of the assessment-attem
 - Every new and existing Jest test passes locally.
 - No em dash appears in any created or modified document.
 - No commits were made.
+
+---
+
+## Sprint 11C Slice 2: Assessment Session Autosave
+
+**Dates:** 2026-07-14
+**Status:** Complete
+**Detailed report:** SPRINT_11C_SLICE2_COMPLETION_REPORT.md
+
+### Purpose
+
+Slice 2 of Sprint 11C lands the durable autosave step of the assessment-attempt lifecycle governed by PDR-026 (`ASSESSMENT_IMPLEMENTATION_CONTRACT.md`). The slice introduces the `assessmentSessionsAutosave` callable that persists the student's in-progress `responses` and a server-stamped `lastActivityAt` timing marker onto the Live session written by the Slice 1 `assessmentSessionsBegin` callable. Resume, sweep, purge, recover, finalize, attempt reads, rollups, and the administrative answer-key read remain deferred to later slices.
+
+### Files created
+
+- `platform/functions/src/assessments/assessment-sessions-autosave.ts`. The `assessmentSessionsAutosave` callable, its request and response types, and its internal handler export for unit testing.
+- `platform/functions/src/assessments/assessment-sessions-autosave.test.ts`. Jest coverage for canonical write, idempotent coalescing, differing-payload mutation, empty-payload boundary coalescing, non-owner refusal, cross-district refusal, cross-school refusal, archived-session refusal, missing-session refusal, four canonical district refusals, `role-forbidden`, request-shape refusals, malformed `sessionId` refusals, per-element response refusals, forbidden-scoring-key refusals, non-serializable value refusals, 200-response cap, and 64 KiB serialized payload cap.
+- `docs/platform/SPRINT_11C_SLICE2_COMPLETION_REPORT.md`. Slice 2 completion report.
+
+### Files modified
+
+- `platform/functions/src/shared/types/assessment-session.ts`. Adds the canonical `AssessmentSessionResponse` `{itemId, response}` element type, adds the optional `responses` and `lastActivityAt` fields on the read-side `AssessmentSessionRecord`, and adds the narrow-write `AssessmentSessionAutosaveWrite` type carrying only `responses` and the `FieldValue`-typed `lastActivityAt`. Every Slice 1 field, type, and identifier is preserved.
+- `platform/functions/src/shared/firestore/typed-ref.ts`. Adds the narrow-write `assessmentSessionAutosaveDocRef` typed reference. The Slice 1 collection-level, read, and creation-write references are preserved unchanged.
+- `platform/functions/src/shared/index.ts`. Re-exports the new `assessmentSessionAutosaveDocRef` typed reference and the two new type identifiers (`AssessmentSessionAutosaveWrite`, `AssessmentSessionResponse`).
+- `platform/functions/src/assessments/index.ts`. Re-exports the new callable and its request and response types alongside the Slice 1 `assessmentSessionsBegin` exports.
+- `platform/functions/src/index.ts`. Publishes `assessmentSessionsAutosave` alongside `assessmentSessionsBegin`.
+- `docs/platform/SPRINT_HISTORY.md`. This entry.
+
+### Callable contract
+
+`assessmentSessionsAutosave` accepts `{ sessionId, responses }` on an authenticated request and returns `{ sessionId, persisted }`. The handler enforces authentication and district context through `requireDistrictContext`, refuses non-student callers with `role-forbidden`, validates the request shape and every response element, loads the referenced session, refuses non-owner (`assessmentSessions.notOwned`), cross-district (`district-mismatch`), and cross-school (`assessmentSessions.forbidden`) callers, refuses a non-Live session (`assessmentSessions.sessionNotLive`) and a missing session (`assessmentSessions.sessionNotFound`), coalesces identical replays without a Firestore write, and writes the narrow autosave payload with `FieldValue.serverTimestamp()` on `lastActivityAt` for a differing payload.
+
+### Narrow mutable write type
+
+The `AssessmentSessionAutosaveWrite` type carries only `responses` and `lastActivityAt`. Every frozen ownership field (`studentId`, `assignmentId`, `classId`, `teacherId`, `schoolId`, `districtId`, `activityId`, `assessmentId`, `assessmentRevisionId`), `sessionOrdinal`, `status`, and `startedAt` is structurally unreachable through this callable. Frozen-field enforcement is structural rather than diffed. Scoring artifacts (`score`, `correctness`, `isCorrect`, `correctAnswer`, `pointsEarned`, `explanation`, and related keys) are additionally forbidden inside any nested `response` value so a client-authoritative scoring value cannot enter the session document through this callable.
+
+### Ownership and live-session enforcement
+
+The session's `studentId`, `districtId`, `schoolId`, and `status` are compared against the caller's verified identity and against the required Live lifecycle state before any write is attempted. Every refusal surfaces a canonical error identifier consistent with PDR-026 §25 and PDR-025 §17. No enrollment re-check is issued at the autosave boundary; enrollment was verified at session creation and the session's frozen `classId` and `teacherId` denormalize the relationship as it existed at creation. Lifecycle-authoritative refusal on enrollment change happens at the deferred finalize step.
+
+### Payload validation
+
+Per-element validation refuses missing or malformed `itemId`, missing `response`, unexpected element keys, duplicate `itemId` values within a single call, non-serializable response values (functions, symbols, `undefined`, `bigint`, non-finite numbers), and any scoring artifact key inside a nested response value. Payload-size ceilings cap the array at 200 elements and cap the serialized `responses` payload at 65,536 bytes of UTF-8 JSON. Every request-layer refusal surfaces `assessmentSessions.invalidRequest`, `assessmentSessions.invalidSessionId`, or `assessmentSessions.invalidResponses`.
+
+### Idempotent coalescing
+
+Autosave is idempotent under identical payload per PDR-026 §21. A replay whose `responses` array is byte-equivalent to the currently stored `responses` returns `{ persisted: false }` with no Firestore write and no `lastActivityAt` restamp. This satisfies the §31 G-10A-4 throttle recommendation for the well-behaved client that resends the current working state. Coalescing also applies at the initial boundary where the stored `responses` is absent and the incoming payload is empty. Coalescing is payload-based rather than time-based; a differing payload received arbitrarily soon after a prior write is still persisted so a legitimate answer change is never silently dropped.
+
+### No per-autosave audit event
+
+Per PDR-026 §24, autosave writes are not audited event-by-event. No audit event is emitted by this callable. The audit vocabulary and `VALID_ACTIONS` list are unchanged; `assessment.sessionBegan` from Slice 1 remains the sole audit event on the session lifecycle at the end of this slice. A sampled `assessment.sessionAutosaveSampled` observability event MAY be introduced in a later slice.
+
+### Test totals
+
+- Full Jest suite green: 26 suites, 452 tests (up from 25 suites, 428 tests at Sprint 11C Slice 1 completion; 25 new tests all in `assessment-sessions-autosave.test.ts`, and one new suite).
+- Lint clean, typecheck clean, build clean.
+- No audit event is emitted for autosave.
+- 200-response element cap and 64 KiB serialized payload cap are both enforced at the request-validation layer and both covered by dedicated cases.
+- Identical-response coalescing returns `persisted: false` with no Firestore write and no `lastActivityAt` restamp; covered by a dedicated case and by the empty-payload boundary case.
+
+### Deferred assessment slices
+
+- `assessmentSessionsResume`, `assessmentSessionsSweepExpired`, `assessmentSessionsPurgeArchived`, `assessmentSessionsRecover`, `assessmentAttemptsFinalize`, `assessmentAttemptsGetForStudent`, `assessmentAttemptsGetForTeacher`, `assessmentRollupsRecomputeAttempt`, `assessmentAnswerKeysAdministrativeRead`. The paired `assessments/*`, `assessmentRevisions/*`, and `assessmentAnswerKeys/*` collections and their deployment pipeline are deferred with the scorer. The `attempts/*`, `attemptRollups/*`, and `assignmentRollups/*` collections are deferred with the scorer. Firestore Rules invariants and composite indexes for every assessment collection are deferred. The `submissions/*` to `attempts/*` reconciliation migration per PDR-026 §26 is deferred.
+
+### Confirmation
+
+- Only Sprint 11C Assessment Slice 2 was implemented; the documentation task changed only the two documentation files above.
+- No Firestore Rules were modified.
+- No app code was modified.
+- No callable outside the newly created `assessments/*` autosave handler was modified except for the additive typed-ref, type, and barrel-export changes required to publish it.
+- Every new and existing Jest test passes locally.
+- No em dash appears in any created or modified document.
+- No commits were made.
