@@ -2221,3 +2221,58 @@ Per PDR-026 §24, autosave writes are not audited event-by-event. No audit event
 - Every new and existing Jest test passes locally.
 - No em dash appears in any created or modified document.
 - No commits were made.
+
+---
+
+## Sprint 11C Pre-3: Assessment Scoring Contract
+
+**Dates:** 2026-07-14
+**Status:** Architecture only. No implementation.
+
+### Purpose
+
+Sprint 11C Slice 3 was intentionally halted. The certified architecture (PDR-021, PDR-026, `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`, `ASSESSMENT_PIPELINE_SPECIFICATION.md`) did not yet define enough shape-level information to safely implement the server-side scorer. Specifically, the certified documents did not fix the `assessmentRevisions/{revisionId}` document shape, the `assessmentAnswerKeys/{revisionId}` document shape, the supported v1 item types, the response representation, the comparison rule, or the deployment pipeline shape for assessment content. Sprint 11C Pre-3 creates the canonical scoring contract required before Sprint 11C Slice 3 implementation can resume.
+
+### Files created
+
+- `docs/platform/ASSESSMENT_SCORING_CONTRACT.md`. The canonical v1 scoring specification. Fixes the revision and answer-key document shapes, the v1 `singleChoice` item type, the response schema, the deterministic scoring algorithm, the attempt-score and percentage calculations, the answer-key confidentiality boundary at scoring time, the deployment ownership boundary, the schema-version and revision-ordinal versioning boundaries, the future extension strategy, the required implementation checklist for Sprint 11C Slice 3, and the required testing checklist. Includes reconciliation notes back to PDR-026, the assessment implementation contract, the assessment pipeline specification, and the Sprint 11A inventory.
+
+### Files modified
+
+- `docs/platform/SPRINT_HISTORY.md`. This entry.
+
+### Architecture decisions documented
+
+- v1 supports exactly one item type: single-answer multiple choice (`itemType: "singleChoice"`).
+- v1 response shape is `{itemId, response}` where `response` is the selected `optionId`. The wire, session, and attempt use the same element shape.
+- v1 answer-key items carry `{itemId, correctOptionId, points, explanation}`. Every item is worth exactly one point. Partial credit and negative scoring are prohibited.
+- v1 scoring rule is strict case-sensitive string equality between `response` and `correctOptionId`. Full credit on match, zero credit otherwise. Unanswered items score zero.
+- v1 attempt score is the sum of `pointsEarned`. Percentage is `round((score / maxScore) * 100, 2)` with banker's rounding. Zero-item answer keys refuse.
+- v1 revision and answer-key documents carry `schemaVersion: 1`. Any future schema bump requires a superseding PDR.
+- The deployment pipeline is the sole writer of `assessments/*`, `assessmentRevisions/*`, and `assessmentAnswerKeys/*` and MUST write the three documents atomically at the deployment boundary. A revision without a paired answer key MUST NOT be observable.
+- The scorer resolves the revision from the session's frozen `assessmentRevisionId`, never from `assessments/{assessmentId}.currentRevisionId` at scoring time.
+- Answer-key confidentiality at scoring time: read exactly once inside the scoring transaction, never logged, never included in Firestore writes or callable responses beyond the certified feedback subset.
+- Each answer-key integrity failure surfaces a distinguishable error identifier and leaves the session Live.
+
+### Reconciliations performed
+
+- Reviewed `LYFELABZ_PLATFORM_DECISIONS.md` (PDR-021, PDR-026), `ASSESSMENT_IMPLEMENTATION_CONTRACT.md`, `ASSESSMENT_PIPELINE_SPECIFICATION.md`, and `SPRINT_11A_IMPLEMENTATION_INVENTORY.md`.
+- Confirmed the v1 shape is a strict subset of the collection ownership rows in `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §11 (no rubrics, no distractor rationales in v1).
+- No certified document was modified. Reconciliation notes on future revisions of PDR-026 and `ASSESSMENT_IMPLEMENTATION_CONTRACT.md` §11 are recorded in Section 18 of the new contract so that those documents can cite the scoring contract at their next revision.
+- No behavior is changed. The scoring contract only eliminates ambiguity so Sprint 11C Slice 3 can proceed.
+
+### Validation results
+
+- No production code was written or modified. `platform/functions/src/` is unchanged.
+- No test file was created or modified.
+- No Firestore Rules file was modified.
+- No app code was modified.
+- The repository contains only the two documentation changes listed above.
+- The new contract was scanned for em dashes; none appear.
+
+### Confirmation
+
+- Only the canonical scoring contract was authored. No code changed.
+- No Firestore Rules were modified.
+- No app code was modified.
+- No commit was made.
