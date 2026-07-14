@@ -54,6 +54,11 @@ import {
   type SubmissionRecord,
 } from "../types/submission";
 import {
+  ASSESSMENT_SESSIONS_COLLECTION,
+  type AssessmentSessionCreationWrite,
+  type AssessmentSessionRecord,
+} from "../types/assessment-session";
+import {
   USERS_COLLECTION,
   type UserProvisioningWrite,
   type UserRecord,
@@ -367,6 +372,48 @@ export function submissionFinalizationDocRef(
   return getAdminFirestore()
     .collection(SUBMISSIONS_COLLECTION)
     .doc(submissionId) as DocumentReference<SubmissionFinalizationWrite>;
+}
+
+// -------------------- Assessment pipeline references --------------------
+//
+// Typed Firestore references for the assessment pipeline foundation
+// introduced in Sprint 11C Slice 1. This slice defines only the
+// assessmentSessions/{sessionId} read reference and the paired creation
+// write reference used by `assessmentSessionsBegin`. Autosave, sweep,
+// recover, purge, and attempt-finalize references are deferred to later
+// slices per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §11 and §21.
+
+export function assessmentSessionsCollectionRef(): CollectionReference<AssessmentSessionRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- TS requires the CollectionReference<T> cast even though eslint sees the receiver as compatible; the Admin SDK's .collection() returns CollectionReference<DocumentData>.
+  return getAdminFirestore()
+    .collection(ASSESSMENT_SESSIONS_COLLECTION) as CollectionReference<AssessmentSessionRecord>;
+}
+
+// Read typed reference for assessmentSessions/{sessionId}. Reads return a
+// DocumentSnapshot<AssessmentSessionRecord> aligned with the canonical
+// ASSESSMENT_IMPLEMENTATION_CONTRACT.md §6 read shape. Callers that need
+// to perform a creation write use `assessmentSessionCreationDocRef` so that
+// FieldValue-safe write shapes are preserved at the write boundary.
+export function assessmentSessionDocRef(
+  sessionId: string,
+): DocumentReference<AssessmentSessionRecord> {
+  return getAdminFirestore()
+    .collection(ASSESSMENT_SESSIONS_COLLECTION)
+    .doc(sessionId) as DocumentReference<AssessmentSessionRecord>;
+}
+
+// Creation-write typed reference for assessmentSessions/{sessionId}. The
+// assessmentSessionsBegin callable uses this reference to `.set()` a
+// canonical `AssessmentSessionCreationWrite` payload so that
+// `FieldValue.serverTimestamp()` can be used at the write boundary while
+// the read-side `assessmentSessionDocRef` remains typed as
+// `AssessmentSessionRecord`.
+export function assessmentSessionCreationDocRef(
+  sessionId: string,
+): DocumentReference<AssessmentSessionCreationWrite> {
+  return getAdminFirestore()
+    .collection(ASSESSMENT_SESSIONS_COLLECTION)
+    .doc(sessionId) as DocumentReference<AssessmentSessionCreationWrite>;
 }
 
 // -------------------- LMS integration references --------------------

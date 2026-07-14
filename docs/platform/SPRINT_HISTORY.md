@@ -2095,3 +2095,56 @@ Separately, `platform/functions/src/shared/auth/require-district-context.test.ts
 - Every new and existing Jest test passes locally.
 - No em dash appears in any created or modified document.
 - No commits were made.
+
+---
+
+## Sprint 11C Slice 1: Assessment Attempt Foundation
+
+**Dates:** 2026-07-14
+**Status:** Complete
+**Detailed report:** SPRINT_11C_SLICE1_COMPLETION_REPORT.md
+
+### Purpose
+
+Slice 1 of Sprint 11C lands the canonical initialization of the assessment-attempt lifecycle governed by PDR-026 (`ASSESSMENT_IMPLEMENTATION_CONTRACT.md`). The slice introduces the `assessmentSessions/{sessionId}` collection foundation and the `assessmentSessionsBegin` callable that opens a Live session for an authenticated student against a published classroom-mode assignment. Autosave, resume, sweep, recover, purge, and the finalize/scorer transaction that writes attempts are explicitly deferred to later slices.
+
+### Files created
+
+- `platform/functions/src/shared/types/assessment-session.ts`. Canonical `AssessmentSessionRecord`, `AssessmentSessionCreationWrite`, `AssessmentSessionStatus`, and `ASSESSMENT_SESSIONS_COLLECTION` per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §6, §11, §12.
+- `platform/functions/src/assessments/index.ts`. Barrel export for the new assessment callable namespace.
+- `platform/functions/src/assessments/assessment-sessions-begin.ts`. The `assessmentSessionsBegin` callable and its `sessionIdFor` deterministic identifier helper.
+- `platform/functions/src/assessments/assessment-sessions-begin.test.ts`. Jest coverage for canonical write, idempotent replay, conflict refusal, six district refusals, `role-forbidden`, request validation, assignment refusals, enrollment refusals, and audit event non-emission on write failure.
+- `docs/platform/SPRINT_11C_SLICE1_COMPLETION_REPORT.md`. Slice 1 completion report.
+
+### Files modified
+
+- `platform/functions/src/shared/types/audit-event.ts`. Adds `"assessment.sessionBegan"` to the canonical `AuditAction` union.
+- `platform/functions/src/shared/audit/write-audit-event.ts`. Adds `"assessment.sessionBegan"` to the closed `VALID_ACTIONS` list so the canonical writer accepts the new event.
+- `platform/functions/src/shared/firestore/typed-ref.ts`. Adds `assessmentSessionsCollectionRef`, `assessmentSessionDocRef`, and `assessmentSessionCreationDocRef` typed references.
+- `platform/functions/src/shared/index.ts`. Exports the new typed references and the new session types.
+- `platform/functions/src/index.ts`. Exports the `assessmentSessionsBegin` callable.
+- `docs/platform/SPRINT_HISTORY.md`. This entry.
+
+### Assessment callables inspected
+
+- `submissionsCreate` and `submissionsFinalize` (`platform/functions/src/submissions/*`). These are the existing (Sprint 5A) attempt-adjacent surface superseded by PDR-026 §26. They are preserved unchanged in this slice; the reconciliation migration is deferred per the sprint scope.
+- No prior `assessments/*` callable exists in the tree. The Sprint 11A inventory records every callable in the PDR-026 §21 matrix as Missing.
+
+### Test totals
+
+- Full Jest suite green: 25 suites, 428 tests (up from 24 suites, 407 tests at Sprint 11B Slice 4 completion).
+- Lint clean, typecheck clean, build clean, `git diff --check` clean.
+
+### Deferred work
+
+- `assessmentSessionsAutosave`, `assessmentSessionsSweepExpired`, `assessmentSessionsPurgeArchived`, `assessmentSessionsRecover`, `assessmentAttemptsFinalize`, `assessmentAttemptsGetForStudent`, `assessmentAttemptsGetForTeacher`. The paired assessments/revisions/answer-keys collections, `attempts/*`, `attemptRollups/*`, and `assignmentRollups/*` are deferred with them. Firestore Rules invariants and composite indexes for every assessment collection are deferred.
+
+### Confirmation
+
+- Only Sprint 11C Assessment Slice 1 was implemented.
+- No Firestore Rules were modified.
+- No app code was modified.
+- No callable outside the newly created `assessments/*` handler was modified except for the additive audit-vocabulary and typed-ref changes required to publish it.
+- Every new and existing Jest test passes locally.
+- No em dash appears in any created or modified document.
+- No commits were made.

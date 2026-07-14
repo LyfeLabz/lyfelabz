@@ -20,6 +20,9 @@ export {
 } from "./errors/district-errors";
 export { PlatformError } from "./errors/platform-error";
 export {
+  assessmentSessionCreationDocRef,
+  assessmentSessionDocRef,
+  assessmentSessionsCollectionRef,
   assignmentArchiveDocRef,
   assignmentCloseDocRef,
   assignmentCreationDocRef,
@@ -136,6 +139,12 @@ export {
   type SubmissionResponse,
   type SubmissionStatus,
 } from "./types/submission";
+export {
+  ASSESSMENT_SESSIONS_COLLECTION,
+  type AssessmentSessionCreationWrite,
+  type AssessmentSessionRecord,
+  type AssessmentSessionStatus,
+} from "./types/assessment-session";
 export {
   USERS_COLLECTION,
   type ConsentState,

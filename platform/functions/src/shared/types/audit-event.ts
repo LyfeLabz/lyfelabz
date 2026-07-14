@@ -30,6 +30,7 @@ export type AuditAction =
   | "assignments.archived"
   | "submissions.created"
   | "submissions.finalized"
+  | "assessment.sessionBegan"
   | "lms.connectionCreated"
   | "lms.connectionRevoked"
   | "lms.classImported"
