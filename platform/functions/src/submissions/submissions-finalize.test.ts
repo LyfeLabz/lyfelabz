@@ -27,11 +27,15 @@ jest.mock("firebase-functions/v2/https", () => ({
   onCall: <T,>(handler: T) => handler,
 }));
 
+const mockAssertLegacyEnabled = jest.fn();
+
 jest.mock("../shared", () => {
   const { PlatformError } = jest.requireActual(
     "../shared/errors/platform-error",
   );
   return {
+    platformCallable: (handler: unknown) => handler,
+    assertLegacySubmissionsWritesEnabled: mockAssertLegacyEnabled,
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     submissionDocRef: mockSubmissionDocRef,

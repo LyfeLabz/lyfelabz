@@ -1,7 +1,8 @@
-import { FieldValue } from "firebase-admin/firestore";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   assessmentSessionCreationDocRef,
   assessmentSessionDocRef,
@@ -103,14 +104,14 @@ async function loadAssignment(assignmentId: string): Promise<AssignmentRecord> {
   const snapshot = await assignmentDocRef(assignmentId).get();
   if (!snapshot.exists) {
     throw new PlatformError(
-      "assessmentSessions.assignmentNotFound",
+      "assignment-not-found",
       "Referenced assignment was not found.",
     );
   }
   const data = snapshot.data();
   if (!data) {
     throw new PlatformError(
-      "assessmentSessions.assignmentNotFound",
+      "assignment-not-found",
       "Referenced assignment record was empty.",
     );
   }
@@ -125,24 +126,51 @@ async function loadActiveEnrollment(
   const snapshot = await enrollmentDocRef(id).get();
   if (!snapshot.exists) {
     throw new PlatformError(
-      "assessmentSessions.notEnrolled",
+      "enrollment-inactive",
       "Caller is not enrolled in the referenced class.",
     );
   }
   const data = snapshot.data();
   if (!data) {
     throw new PlatformError(
-      "assessmentSessions.notEnrolled",
+      "enrollment-inactive",
       "Caller is not enrolled in the referenced class.",
     );
   }
   if (data.status !== "active") {
     throw new PlatformError(
-      "assessmentSessions.notEnrolled",
+      "enrollment-inactive",
       "Caller is not actively enrolled in the referenced class.",
     );
   }
   return data;
+}
+
+// Availability + close-window enforcement per
+// ASSESSMENT_IMPLEMENTATION_CONTRACT.md §17 and §21. `assessmentSessionsBegin`
+// refuses when the assignment has not become available yet, and refuses
+// when the window is closed (no grace period applies at begin time - the
+// grace period governs finalize of a session that was Live at the close
+// moment, per §7 and §17). Every refusal identifier below is drawn from
+// the certified refusal set (§25).
+function assertAssignmentBeginWindow(assignment: AssignmentRecord): void {
+  const now = Timestamp.now();
+
+  if (assignment.availableAt && assignment.availableAt.toMillis() > now.toMillis()) {
+    throw new PlatformError(
+      "assignment-window-closed",
+      "Assignment is not yet available.",
+    );
+  }
+  if (
+    assignment.windowClosesAt &&
+    assignment.windowClosesAt.toMillis() <= now.toMillis()
+  ) {
+    throw new PlatformError(
+      "assignment-window-closed",
+      "Assignment window has closed.",
+    );
+  }
 }
 
 // Deterministic session identifier for the first session on a
@@ -267,16 +295,24 @@ async function assessmentSessionsBeginHandler(
   }
   if (assignment.mode !== "classroom") {
     throw new PlatformError(
-      "assessmentSessions.invalidAssignmentMode",
+      "assignment-mode-invalid",
       "Sessions are only recorded for classroom-mode assignments.",
+    );
+  }
+  if (assignment.status === "closed") {
+    throw new PlatformError(
+      "assignment-window-closed",
+      "Assignment is closed to new sessions.",
     );
   }
   if (assignment.status !== "published") {
     throw new PlatformError(
-      "assessmentSessions.invalidAssignmentStatus",
+      "assignment-not-published",
       "Sessions may only be created against a published assignment.",
     );
   }
+
+  assertAssignmentBeginWindow(assignment);
 
   await loadActiveEnrollment(assignment.classId, actor.uid);
 
@@ -352,7 +388,7 @@ async function assessmentSessionsBeginHandler(
   return { sessionId, alreadyLive: false };
 }
 
-export const assessmentSessionsBegin = onCall(assessmentSessionsBeginHandler);
+export const assessmentSessionsBegin = platformCallable(assessmentSessionsBeginHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

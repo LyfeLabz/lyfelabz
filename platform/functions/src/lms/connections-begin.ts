@@ -1,6 +1,6 @@
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
-import { PlatformError } from "../shared";
+import {platformCallable, PlatformError } from "../shared";
 
 import { getProviderAdapter, isRegisteredProvider } from "./providers/registry";
 import {
@@ -66,5 +66,5 @@ async function handler(
   return { authorizationUrl, state };
 }
 
-export const lmsConnectionsBegin = onCall(handler);
+export const lmsConnectionsBegin = platformCallable(handler);
 export const __lmsConnectionsBeginHandler = handler;

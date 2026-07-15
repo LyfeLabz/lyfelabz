@@ -1,8 +1,10 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
+  assertLegacySubmissionsWritesEnabled,
   assignmentDocRef,
   enrollmentDocRef,
   log,
@@ -280,6 +282,14 @@ function safeLog(fn: () => void): void {
 async function submissionsCreateHandler(
   request: CallableRequest<unknown>,
 ): Promise<SubmissionsCreateResponse> {
+  // Sprint 11C Remediation Slice 1 (C-4). PDR-026 §26 requires that the
+  // legacy `submissions` write path and the authoritative `attempts`
+  // write path are never simultaneously writable in production. This
+  // callable is retained for the migration window but is inert unless
+  // explicitly opted in by a deployment operator via the
+  // `LYFELABZ_LEGACY_SUBMISSIONS_WRITES_ENABLED` environment variable.
+  assertLegacySubmissionsWritesEnabled();
+
   const actor = assertAuthenticatedStudent(request);
   const input = validateRequest(request.data);
 
@@ -370,7 +380,7 @@ async function submissionsCreateHandler(
   return { submissionId, alreadyCreated: false };
 }
 
-export const submissionsCreate = onCall(submissionsCreateHandler);
+export const submissionsCreate = platformCallable(submissionsCreateHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

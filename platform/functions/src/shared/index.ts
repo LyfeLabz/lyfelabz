@@ -20,6 +20,16 @@ export {
 } from "./errors/district-errors";
 export { PlatformError } from "./errors/platform-error";
 export {
+  mapPlatformCodeToHttpsCode,
+  platformCallable,
+  translateThrown,
+} from "./errors/https-callable";
+export {
+  LEGACY_SUBMISSIONS_ENV_VAR,
+  assertLegacySubmissionsWritesEnabled,
+  legacySubmissionsWritesEnabled,
+} from "./legacy-submissions-flag";
+export {
   assessmentAnswerKeyDeploymentDocRef,
   assessmentAnswerKeyDocRef,
   assessmentDeploymentDocRef,

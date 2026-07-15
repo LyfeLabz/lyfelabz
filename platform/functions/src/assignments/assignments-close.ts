@@ -1,6 +1,7 @@
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   assignmentCloseDocRef,
   assignmentDocRef,
@@ -178,7 +179,7 @@ async function assignmentsCloseHandler(
   };
 }
 
-export const assignmentsClose = onCall(assignmentsCloseHandler);
+export const assignmentsClose = platformCallable(assignmentsCloseHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

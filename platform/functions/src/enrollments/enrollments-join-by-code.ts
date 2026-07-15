@@ -1,7 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   classesCollectionRef,
   enrollmentCreationDocRef,
@@ -241,7 +242,7 @@ async function enrollmentsJoinByCodeHandler(
   return { enrollmentId: id, classId, alreadyEnrolled: false };
 }
 
-export const enrollmentsJoinByCode = onCall(enrollmentsJoinByCodeHandler);
+export const enrollmentsJoinByCode = platformCallable(enrollmentsJoinByCodeHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

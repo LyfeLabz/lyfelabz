@@ -1,7 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   lmsConnectionCreationDocRef,
   lmsConnectionDocRef,
@@ -153,5 +154,5 @@ async function handler(
   return { connectionId, providerId, alreadyConnected: false };
 }
 
-export const lmsConnectionsComplete = onCall(handler);
+export const lmsConnectionsComplete = platformCallable(handler);
 export const __lmsConnectionsCompleteHandler = handler;

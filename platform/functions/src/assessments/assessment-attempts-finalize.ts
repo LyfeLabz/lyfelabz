@@ -1,14 +1,17 @@
-import { FieldValue, type Transaction } from "firebase-admin/firestore";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { FieldValue, Timestamp, type Transaction } from "firebase-admin/firestore";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   assessmentAnswerKeyDocRef,
   assessmentRevisionDocRef,
   assessmentSessionDocRef,
+  assignmentDocRef,
   attemptCreationDocRef,
   attemptDocRef,
   attemptsCollectionRef,
+  enrollmentDocRef,
   log,
   requireDistrictContext,
   runFirestoreTransaction,
@@ -21,7 +24,16 @@ import {
   type AssessmentRevisionRecord,
   type AssessmentSessionRecord,
   type AssessmentSessionResponse,
+  type AssignmentRecord,
 } from "../shared";
+
+// Grace period per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §7.1 and
+// ASSESSMENT_PIPELINE_SPECIFICATION.md §7.1: one hour after
+// `assignment.windowClosesAt` during which sessions live at close MAY
+// still finalize. New sessions (`assessmentSessionsBegin`) are refused
+// with `assignment-window-closed` at the close moment; only finalize
+// honors the grace window.
+const GRACE_PERIOD_MS = 60 * 60 * 1000;
 
 // Client-supplied request payload for assessmentAttemptsFinalize per
 // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §8, §21 and
@@ -410,6 +422,64 @@ async function findAttemptByIdempotencyKey(
   return { id: doc.id, data: doc.data() };
 }
 
+// Finalize-boundary window enforcement per
+// ASSESSMENT_IMPLEMENTATION_CONTRACT.md §7, §7.1, §17. A `published`
+// assignment authorizes finalize. A `closed` assignment authorizes
+// finalize only while within the one-hour grace period after
+// `windowClosesAt`. `draft` and `archived` refuse finalize. Every
+// refusal identifier is drawn from the certified refusal set (§25).
+function assertAssignmentFinalizeWindow(assignment: AssignmentRecord): void {
+  if (assignment.status === "archived" || assignment.status === "draft") {
+    throw new PlatformError(
+      "assignment-not-published",
+      "Assignment is not in a state that permits finalize.",
+    );
+  }
+
+  const now = Timestamp.now().toMillis();
+  const closesAt = assignment.windowClosesAt?.toMillis();
+
+  if (assignment.status === "closed") {
+    if (closesAt === undefined) {
+      throw new PlatformError(
+        "assignment-window-closed",
+        "Assignment is closed to finalize.",
+      );
+    }
+    if (now > closesAt + GRACE_PERIOD_MS) {
+      throw new PlatformError(
+        "assignment-window-closed",
+        "Grace period after window close has elapsed.",
+      );
+    }
+    return;
+  }
+
+  // status === "published"
+  if (closesAt !== undefined && now > closesAt + GRACE_PERIOD_MS) {
+    throw new PlatformError(
+      "assignment-window-closed",
+      "Grace period after window close has elapsed.",
+    );
+  }
+}
+
+// Session identifier parser per ASSESSMENT_IMPLEMENTATION_CONTRACT.md §12
+// (`{assignmentId}__{studentId}__{sessionOrdinal}`). Used only by the
+// finalize-replay path (Sprint 11C Remediation Slice 1, C-1) to recover
+// the target assignmentId when the session document has already been
+// deleted by a prior successful commit. The idempotency-lookup query
+// requires `(studentId, assignmentId, idempotencyKey)` to match the
+// existing composite index; parsing the session identifier avoids
+// introducing a wider index for the replay path.
+function parseAssignmentIdFromSessionId(sessionId: string): string | undefined {
+  const parts = sessionId.split("__");
+  if (parts.length < 3) return undefined;
+  const [assignmentId] = parts;
+  if (!assignmentId) return undefined;
+  return assignmentId;
+}
+
 async function countExistingAttempts(
   studentId: string,
   assignmentId: string,
@@ -422,11 +492,24 @@ async function countExistingAttempts(
   return snap.size;
 }
 
+// Minimal projection of session-level context needed by the post-transaction
+// audit emitter and logger. Sourced from the session record on the normal
+// path and from the existing attempt record on the session-absent replay
+// path, so neither path needs to fabricate or cast a partial session.
+type FinalizeSessionContext = {
+  readonly assignmentId: string;
+  readonly classId: string;
+  readonly activityId: string;
+  readonly assessmentId: string;
+  readonly assessmentRevisionId: string;
+  readonly districtId: string;
+};
+
 type FinalizeInternalResult = {
   readonly response: AssessmentAttemptsFinalizeResponse;
   readonly wroteAttempt: boolean;
   readonly attemptId: string;
-  readonly session: AssessmentSessionRecord;
+  readonly sessionContext: FinalizeSessionContext;
   readonly scoring?: ScoringResult;
   readonly attemptNumber: number;
 };
@@ -485,6 +568,43 @@ async function assessmentAttemptsFinalizeHandler(
       const sessionRef = assessmentSessionDocRef(input.sessionId);
       const sessionSnap = await tx.get(sessionRef);
       if (!sessionSnap.exists) {
+        // Sprint 11C Remediation Slice 1 (C-1). A committed finalize
+        // deletes the session inside the same transaction (§8, §11).
+        // A client retry after commit therefore observes a missing
+        // session; the certified idempotency contract requires the
+        // callable to return the existing attempt payload unchanged
+        // rather than refuse with `sessionNotFound`. The assignmentId
+        // is recovered from the deterministic session identifier
+        // (§12) so the existing `(studentId, assignmentId,
+        // idempotencyKey)` composite index continues to serve the
+        // idempotency lookup without a new index.
+        const parsedAssignmentId = parseAssignmentIdFromSessionId(
+          input.sessionId,
+        );
+        if (parsedAssignmentId !== undefined) {
+          const replay = await findAttemptByIdempotencyKey(
+            actor.uid,
+            parsedAssignmentId,
+            input.idempotencyKey,
+            tx,
+          );
+          if (replay) {
+            return {
+              response: feedbackFromAttempt(replay.id, replay.data),
+              wroteAttempt: false,
+              attemptId: replay.id,
+              sessionContext: {
+                assignmentId: replay.data.assignmentId,
+                classId: replay.data.classId,
+                activityId: replay.data.activityId,
+                assessmentId: replay.data.assessmentId,
+                assessmentRevisionId: replay.data.assessmentRevisionId,
+                districtId: replay.data.districtId,
+              },
+              attemptNumber: replay.data.attemptNumber,
+            };
+          }
+        }
         throw new PlatformError(
           "assessmentAttempts.sessionNotFound",
           "Referenced session was not found.",
@@ -537,9 +657,59 @@ async function assessmentAttemptsFinalizeHandler(
           response: feedbackFromAttempt(existing.id, existing.data),
           wroteAttempt: false,
           attemptId: existing.id,
-          session,
+          sessionContext: {
+            assignmentId: session.assignmentId,
+            classId: session.classId,
+            activityId: session.activityId,
+            assessmentId: session.assessmentId,
+            assessmentRevisionId: session.assessmentRevisionId,
+            districtId: session.districtId,
+          },
           attemptNumber: existing.data.attemptNumber,
         };
+      }
+
+      // Sprint 11C Remediation Slice 1 (C-2). Enforce the certified
+      // assignment-window and enrollment invariants per
+      // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §7, §17, §21. New attempts
+      // require an active enrollment and either an in-window assignment
+      // or a session finalized within the one-hour grace period after
+      // window close (§7.1). The reads participate in the same
+      // transaction as the attempt write so a mid-transaction lifecycle
+      // change refuses the write instead of racing a stale snapshot.
+      const assignmentSnap = await tx.get(
+        assignmentDocRef(session.assignmentId),
+      );
+      if (!assignmentSnap.exists) {
+        throw new PlatformError(
+          "assignment-not-found",
+          "Referenced assignment was not found.",
+        );
+      }
+      const assignment = assignmentSnap.data();
+      if (!assignment) {
+        throw new PlatformError(
+          "assignment-not-found",
+          "Referenced assignment record was empty.",
+        );
+      }
+      assertAssignmentFinalizeWindow(assignment);
+
+      const enrollmentSnap = await tx.get(
+        enrollmentDocRef(`${session.classId}__${actor.uid}`),
+      );
+      if (!enrollmentSnap.exists) {
+        throw new PlatformError(
+          "enrollment-inactive",
+          "Caller is not enrolled in the referenced class.",
+        );
+      }
+      const enrollment = enrollmentSnap.data();
+      if (!enrollment || enrollment.status !== "active") {
+        throw new PlatformError(
+          "enrollment-inactive",
+          "Caller is not actively enrolled in the referenced class.",
+        );
       }
 
       // Revision and answer key are resolved from the session's frozen
@@ -636,7 +806,14 @@ async function assessmentAttemptsFinalizeHandler(
         },
         wroteAttempt: true,
         attemptId,
-        session,
+        sessionContext: {
+          assignmentId: session.assignmentId,
+          classId: session.classId,
+          activityId: session.activityId,
+          assessmentId: session.assessmentId,
+          assessmentRevisionId: session.assessmentRevisionId,
+          districtId: session.districtId,
+        },
         scoring,
         attemptNumber,
       };
@@ -652,16 +829,16 @@ async function assessmentAttemptsFinalizeHandler(
       targetId: outcome.attemptId,
       schoolId: actor.schoolId,
       payload: {
-        assignmentId: outcome.session.assignmentId,
-        classId: outcome.session.classId,
-        activityId: outcome.session.activityId,
-        assessmentId: outcome.session.assessmentId,
-        assessmentRevisionId: outcome.session.assessmentRevisionId,
+        assignmentId: outcome.sessionContext.assignmentId,
+        classId: outcome.sessionContext.classId,
+        activityId: outcome.sessionContext.activityId,
+        assessmentId: outcome.sessionContext.assessmentId,
+        assessmentRevisionId: outcome.sessionContext.assessmentRevisionId,
         attemptNumber: outcome.attemptNumber,
         score: outcome.scoring?.score ?? 0,
         maxScore: outcome.scoring?.maxScore ?? 0,
         percentage: outcome.scoring?.percentage ?? 0,
-        districtId: outcome.session.districtId,
+        districtId: outcome.sessionContext.districtId,
       },
     });
 
@@ -669,7 +846,7 @@ async function assessmentAttemptsFinalizeHandler(
       log.info("assessmentAttempts.finalized", {
         actorUserId: actor.uid,
         attemptId: outcome.attemptId,
-        assignmentId: outcome.session.assignmentId,
+        assignmentId: outcome.sessionContext.assignmentId,
         attemptNumber: outcome.attemptNumber,
       }),
     );
@@ -685,7 +862,7 @@ async function assessmentAttemptsFinalizeHandler(
   return outcome.response;
 }
 
-export const assessmentAttemptsFinalize = onCall(
+export const assessmentAttemptsFinalize = platformCallable(
   assessmentAttemptsFinalizeHandler,
 );
 

@@ -1,7 +1,8 @@
 import { Timestamp } from "firebase-admin/firestore";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   assignmentDocRef,
   assignmentDraftUpdateDocRef,
@@ -411,7 +412,7 @@ async function assignmentsUpdateDraftHandler(
   return { assignmentId: input.assignmentId, alreadyUpdated: false };
 }
 
-export const assignmentsUpdateDraft = onCall(assignmentsUpdateDraftHandler);
+export const assignmentsUpdateDraft = platformCallable(assignmentsUpdateDraftHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

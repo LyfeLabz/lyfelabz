@@ -1,6 +1,7 @@
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   log,
   schoolDocRef,
@@ -219,7 +220,7 @@ async function teachersRequestVerificationHandler(
   };
 }
 
-export const teachersRequestVerification = onCall(
+export const teachersRequestVerification = platformCallable(
   teachersRequestVerificationHandler,
 );
 

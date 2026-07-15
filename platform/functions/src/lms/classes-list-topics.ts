@@ -1,6 +1,7 @@
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   lmsClassLinkDocRef,
   lmsConnectionDocRef,
@@ -107,5 +108,5 @@ async function handler(
   };
 }
 
-export const lmsClassesListTopics = onCall(handler);
+export const lmsClassesListTopics = platformCallable(handler);
 export const __lmsClassesListTopicsHandler = handler;

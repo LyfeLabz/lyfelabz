@@ -7,9 +7,15 @@ import type { CallableRequest } from "firebase-functions/v2/https";
 
 const SERVER_TIMESTAMP_SENTINEL = Symbol("serverTimestamp");
 
+const FIXED_NOW_MS = 1_700_000_000_000;
+
 jest.mock("firebase-admin/firestore", () => ({
   FieldValue: {
     serverTimestamp: () => SERVER_TIMESTAMP_SENTINEL,
+  },
+  Timestamp: {
+    now: () => ({ toMillis: () => FIXED_NOW_MS }),
+    fromMillis: (ms: number) => ({ toMillis: () => ms }),
   },
 }));
 
@@ -21,6 +27,8 @@ const mockRequireDistrictContext = jest.fn();
 const mockWriteAuditEvent = jest.fn();
 const mockRunTransaction = jest.fn();
 
+const mockAssignmentDocRef = jest.fn((id: string) => ({ __kind: "assignment", id }));
+const mockEnrollmentDocRef = jest.fn((id: string) => ({ __kind: "enrollment", id }));
 const mockSessionDocRef = jest.fn((id: string) => ({ __kind: "session", id }));
 const mockRevisionDocRef = jest.fn((id: string) => ({
   __kind: "revision",
@@ -61,6 +69,7 @@ jest.mock("../shared", () => {
     "../shared/errors/platform-error",
   );
   return {
+    platformCallable: (handler: unknown) => handler,
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     ASSESSMENT_SCHEMA_VERSION_V1: 1,
@@ -68,6 +77,8 @@ jest.mock("../shared", () => {
     writeAuditEvent: mockWriteAuditEvent,
     runFirestoreTransaction: (fn: (tx: unknown) => Promise<unknown>) =>
       mockRunTransaction(fn),
+    assignmentDocRef: mockAssignmentDocRef,
+    enrollmentDocRef: mockEnrollmentDocRef,
     assessmentSessionDocRef: mockSessionDocRef,
     assessmentRevisionDocRef: mockRevisionDocRef,
     assessmentAnswerKeyDocRef: mockAnswerKeyDocRef,
@@ -184,6 +195,8 @@ type Fixture = {
   revision?: unknown;
   answerKey?: unknown;
   existingAttempt?: unknown;
+  assignment?: unknown;
+  enrollment?: unknown;
 };
 
 const fixture: Fixture = {};
@@ -210,6 +223,23 @@ function seedDefaultFixture(overrides: Partial<Fixture> = {}) {
   fixture.revision = DEFAULT_REVISION;
   fixture.answerKey = DEFAULT_ANSWER_KEY;
   fixture.existingAttempt = undefined;
+  fixture.assignment = {
+    classId: CLASS_ID,
+    teacherId: TEACHER_UID,
+    schoolId: SCHOOL_ID,
+    lessonSlug: LESSON_SLUG,
+    lessonVersion: LESSON_VERSION,
+    mode: "classroom",
+    status: "published",
+    createdAt: {},
+  };
+  fixture.enrollment = {
+    studentId: STUDENT_UID,
+    classId: CLASS_ID,
+    schoolId: SCHOOL_ID,
+    status: "active",
+    enrolledAt: {},
+  };
   Object.assign(fixture, overrides);
 }
 
@@ -225,6 +255,18 @@ function installTransactionRunner() {
           return makeSnap({
             exists: fixture.session !== undefined,
             data: () => fixture.session,
+          });
+        }
+        if (refOrQuery.__kind === "assignment") {
+          return makeSnap({
+            exists: fixture.assignment !== undefined,
+            data: () => fixture.assignment,
+          });
+        }
+        if (refOrQuery.__kind === "enrollment") {
+          return makeSnap({
+            exists: fixture.enrollment !== undefined,
+            data: () => fixture.enrollment,
           });
         }
         if (refOrQuery.__kind === "revision") {
@@ -297,6 +339,8 @@ describe("assessmentAttemptsFinalize", () => {
     mockWriteAuditEvent.mockReset();
     mockWriteAuditEvent.mockResolvedValue({ eventId: "evt-1" });
     mockRunTransaction.mockReset();
+    mockAssignmentDocRef.mockClear();
+    mockEnrollmentDocRef.mockClear();
     mockSessionDocRef.mockClear();
     mockRevisionDocRef.mockClear();
     mockAnswerKeyDocRef.mockClear();
@@ -312,6 +356,8 @@ describe("assessmentAttemptsFinalize", () => {
     fixture.revision = undefined;
     fixture.answerKey = undefined;
     fixture.existingAttempt = undefined;
+    fixture.assignment = undefined;
+    fixture.enrollment = undefined;
     seedDefaultFixture();
     installTransactionRunner();
   });
@@ -891,5 +937,152 @@ describe("assessmentAttemptsFinalize", () => {
         "score",
       ].sort(),
     );
+  });
+
+  // -------- Sprint 11C Remediation Slice 1 - Critical Finding C-1 --------
+
+  it("C-1: replays the existing attempt after the session has been deleted", async () => {
+    // Simulates a client retry after a committed finalize. The session
+    // is absent (the prior finalize deleted it in-transaction) and an
+    // attempt with the same idempotency marker exists. The callable
+    // MUST return the existing attempt payload unchanged and MUST NOT
+    // refuse with `sessionNotFound`.
+    seedDefaultFixture({
+      session: undefined,
+      existingAttempt: {
+        studentId: STUDENT_UID,
+        assignmentId: ASSIGNMENT_ID,
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        districtId: DISTRICT_ID,
+        activityId: ACTIVITY_ID,
+        assessmentId: ASSESSMENT_ID,
+        assessmentRevisionId: REVISION_ID,
+        attemptNumber: 1,
+        score: 2,
+        maxScore: 2,
+        percentage: 100,
+        responses: DEFAULT_RESPONSES,
+        itemResults: [
+          {
+            itemId: "q1",
+            isCorrect: true,
+            pointsEarned: 1,
+            correctOptionId: "A",
+            explanation: "Because A.",
+            studentResponse: "A",
+          },
+        ],
+        idempotencyKey: IDEMPOTENCY_KEY,
+        submittedAt: {},
+      },
+    });
+    const result = await __assessmentAttemptsFinalizeHandler(makeRequest());
+    expect(result.replay).toBe(true);
+    expect(result.attemptId).toBe(ATTEMPT_ID);
+    expect(result.score).toBe(2);
+    expect(txSets).toHaveLength(0);
+    expect(txDeletes).toHaveLength(0);
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("C-1: still refuses with sessionNotFound when there is no matching attempt", async () => {
+    // A retry with a novel idempotency key against a deleted session
+    // MUST NOT silently succeed. Only a matching (studentId,
+    // assignmentId, idempotencyKey) tuple qualifies as a replay.
+    seedDefaultFixture({ session: undefined, existingAttempt: undefined });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentAttempts.sessionNotFound" });
+    expect(txSets).toHaveLength(0);
+    expect(txDeletes).toHaveLength(0);
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  // -------- Sprint 11C Remediation Slice 1 - Critical Finding C-2 --------
+
+  it("C-2: refuses finalize when the assignment is closed past the grace period", async () => {
+    const graceMs = 60 * 60 * 1000;
+    seedDefaultFixture({
+      assignment: {
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        lessonSlug: LESSON_SLUG,
+        lessonVersion: LESSON_VERSION,
+        mode: "classroom",
+        status: "closed",
+        createdAt: {},
+        windowClosesAt: { toMillis: () => FIXED_NOW_MS - graceMs - 1 },
+      },
+    });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignment-window-closed" });
+    expect(txSets).toHaveLength(0);
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("C-2: permits finalize inside the certified one-hour grace period", async () => {
+    const graceMs = 60 * 60 * 1000;
+    seedDefaultFixture({
+      assignment: {
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        lessonSlug: LESSON_SLUG,
+        lessonVersion: LESSON_VERSION,
+        mode: "classroom",
+        status: "closed",
+        createdAt: {},
+        // Window closed just now - well within the 1h grace period.
+        windowClosesAt: { toMillis: () => FIXED_NOW_MS - graceMs / 2 },
+      },
+    });
+    const result = await __assessmentAttemptsFinalizeHandler(makeRequest());
+    expect(result.replay).toBe(false);
+    expect(txSets).toHaveLength(1);
+  });
+
+  it("C-2: refuses finalize when the caller's enrollment is not active", async () => {
+    seedDefaultFixture({
+      enrollment: {
+        studentId: STUDENT_UID,
+        classId: CLASS_ID,
+        schoolId: SCHOOL_ID,
+        status: "removed",
+        enrolledAt: {},
+      },
+    });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "enrollment-inactive" });
+    expect(txSets).toHaveLength(0);
+  });
+
+  it("C-2: refuses finalize when the assignment is not found", async () => {
+    seedDefaultFixture({ assignment: undefined });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignment-not-found" });
+  });
+
+  it("C-2: refuses finalize when the assignment is archived", async () => {
+    seedDefaultFixture({
+      assignment: {
+        classId: CLASS_ID,
+        teacherId: TEACHER_UID,
+        schoolId: SCHOOL_ID,
+        lessonSlug: LESSON_SLUG,
+        lessonVersion: LESSON_VERSION,
+        mode: "classroom",
+        status: "archived",
+        createdAt: {},
+      },
+    });
+    await expect(
+      __assessmentAttemptsFinalizeHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignment-not-published" });
   });
 });

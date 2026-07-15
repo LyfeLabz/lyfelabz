@@ -29,6 +29,7 @@ jest.mock("../shared", () => {
     "../shared/errors/platform-error",
   );
   return {
+    platformCallable: (handler: unknown) => handler,
     PlatformError,
     log: { info: mockLogInfo, error: mockLogError },
     userDocRef: mockUserDocRef,

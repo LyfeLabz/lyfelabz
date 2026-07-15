@@ -1,7 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   lmsClassLinkBreakDocRef,
   lmsClassLinkDocRef,
@@ -419,5 +420,5 @@ async function handleOwnershipDrift(
   };
 }
 
-export const lmsClassesRefresh = onCall(handler);
+export const lmsClassesRefresh = platformCallable(handler);
 export const __lmsClassesRefreshHandler = handler;

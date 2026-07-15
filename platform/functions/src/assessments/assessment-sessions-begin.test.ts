@@ -19,9 +19,15 @@ const mockLogError = jest.fn();
 
 const SERVER_TIMESTAMP_SENTINEL = Symbol("serverTimestamp");
 
+const FIXED_NOW_MS = 1_700_000_000_000;
+
 jest.mock("firebase-admin/firestore", () => ({
   FieldValue: {
     serverTimestamp: () => SERVER_TIMESTAMP_SENTINEL,
+  },
+  Timestamp: {
+    now: () => ({ toMillis: () => FIXED_NOW_MS }),
+    fromMillis: (ms: number) => ({ toMillis: () => ms }),
   },
 }));
 
@@ -34,6 +40,7 @@ jest.mock("../shared", () => {
     "../shared/errors/platform-error",
   );
   return {
+    platformCallable: (handler: unknown) => handler,
     PlatformError,
     log: { info: mockLogInfo, warn: mockLogWarn, error: mockLogError },
     assignmentDocRef: mockAssignmentDocRef,
@@ -370,7 +377,7 @@ describe("assessmentSessionsBegin", () => {
     });
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "assessmentSessions.assignmentNotFound" });
+    ).rejects.toMatchObject({ code: "assignment-not-found" });
     expect(mockSessionSet).not.toHaveBeenCalled();
   });
 
@@ -392,19 +399,29 @@ describe("assessmentSessionsBegin", () => {
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({
-      code: "assessmentSessions.invalidAssignmentMode",
+      code: "assignment-mode-invalid",
     });
     expect(mockSessionSet).not.toHaveBeenCalled();
   });
 
-  it("rejects a non-published assignment target", async () => {
-    for (const status of ["draft", "closed", "archived"] as const) {
+  it("rejects a non-published assignment target with certified refusals", async () => {
+    // Sprint 11C Remediation Slice 1 (C-2). `closed` maps to the
+    // canonical `assignment-window-closed`; `draft` and `archived` map
+    // to the canonical `assignment-not-published` per
+    // ASSESSMENT_IMPLEMENTATION_CONTRACT.md §25.
+    const cases: ReadonlyArray<{
+      status: "draft" | "closed" | "archived";
+      code: string;
+    }> = [
+      { status: "draft", code: "assignment-not-published" },
+      { status: "closed", code: "assignment-window-closed" },
+      { status: "archived", code: "assignment-not-published" },
+    ];
+    for (const { status, code } of cases) {
       mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot({ status }));
       await expect(
         __assessmentSessionsBeginHandler(makeRequest()),
-      ).rejects.toMatchObject({
-        code: "assessmentSessions.invalidAssignmentStatus",
-      });
+      ).rejects.toMatchObject({ code });
     }
     expect(mockSessionSet).not.toHaveBeenCalled();
   });
@@ -417,7 +434,7 @@ describe("assessmentSessionsBegin", () => {
     });
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "assessmentSessions.notEnrolled" });
+    ).rejects.toMatchObject({ code: "enrollment-inactive" });
     expect(mockSessionSet).not.toHaveBeenCalled();
   });
 
@@ -428,7 +445,7 @@ describe("assessmentSessionsBegin", () => {
     );
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
-    ).rejects.toMatchObject({ code: "assessmentSessions.notEnrolled" });
+    ).rejects.toMatchObject({ code: "enrollment-inactive" });
     expect(mockSessionSet).not.toHaveBeenCalled();
   });
 
@@ -441,5 +458,43 @@ describe("assessmentSessionsBegin", () => {
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toThrow("write failed");
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
+  });
+
+  // -------- Sprint 11C Remediation Slice 1 - Critical Finding C-2 --------
+
+  it("C-2: refuses when the assignment window has not yet opened", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(
+      assignmentSnapshot({
+        availableAt: { toMillis: () => FIXED_NOW_MS + 60_000 },
+      }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignment-window-closed" });
+    expect(mockEnrollmentGet).not.toHaveBeenCalled();
+    expect(mockSessionSet).not.toHaveBeenCalled();
+  });
+
+  it("C-2: refuses when the assignment window has already closed", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(
+      assignmentSnapshot({
+        windowClosesAt: { toMillis: () => FIXED_NOW_MS - 60_000 },
+      }),
+    );
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assignment-window-closed" });
+    expect(mockSessionSet).not.toHaveBeenCalled();
+  });
+
+  it("C-2: refuses when the caller is not enrolled at all with enrollment-inactive", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce({
+      exists: false,
+      data: () => undefined,
+    });
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "enrollment-inactive" });
   });
 });

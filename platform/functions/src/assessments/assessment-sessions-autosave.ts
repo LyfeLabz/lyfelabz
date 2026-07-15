@@ -1,7 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   assessmentSessionAutosaveDocRef,
   assessmentSessionDocRef,
@@ -404,7 +405,7 @@ async function assessmentSessionsAutosaveHandler(
   return { sessionId: input.sessionId, persisted: true };
 }
 
-export const assessmentSessionsAutosave = onCall(
+export const assessmentSessionsAutosave = platformCallable(
   assessmentSessionsAutosaveHandler,
 );
 

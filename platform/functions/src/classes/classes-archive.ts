@@ -1,6 +1,7 @@
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   classArchiveDocRef,
   classDocRef,
@@ -174,7 +175,7 @@ async function classesArchiveHandler(
   };
 }
 
-export const classesArchive = onCall(classesArchiveHandler);
+export const classesArchive = platformCallable(classesArchiveHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

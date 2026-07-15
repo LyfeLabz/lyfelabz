@@ -1,6 +1,7 @@
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   lmsConnectionsCollectionRef,
   type LmsConnectionStatus,
@@ -59,5 +60,5 @@ async function handler(
   }
 }
 
-export const lmsConnectionsDescribe = onCall(handler);
+export const lmsConnectionsDescribe = platformCallable(handler);
 export const __lmsConnectionsDescribeHandler = handler;

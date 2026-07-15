@@ -1,6 +1,7 @@
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   classDocRef,
   classMetadataUpdateDocRef,
@@ -294,7 +295,7 @@ async function classesUpdateMetadataHandler(
   return { classId: input.classId, alreadyUpdated: false };
 }
 
-export const classesUpdateMetadata = onCall(classesUpdateMetadataHandler);
+export const classesUpdateMetadata = platformCallable(classesUpdateMetadataHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

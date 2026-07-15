@@ -1,7 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   log,
   userRecordDocRef,
@@ -198,7 +199,7 @@ async function teachersDenyVerificationHandler(
   };
 }
 
-export const teachersDenyVerification = onCall(
+export const teachersDenyVerification = platformCallable(
   teachersDenyVerificationHandler,
 );
 

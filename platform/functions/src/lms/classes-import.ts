@@ -1,7 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   classDocRef,
   classLmsLinkDocRef,
@@ -289,5 +290,5 @@ async function handler(
   return { linkId, classId, lmsClassId, alreadyLinked: false };
 }
 
-export const lmsClassesImport = onCall(handler);
+export const lmsClassesImport = platformCallable(handler);
 export const __lmsClassesImportHandler = handler;

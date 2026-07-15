@@ -1,6 +1,6 @@
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
-import { PlatformError, lmsConnectionDocRef } from "../shared";
+import {platformCallable, PlatformError, lmsConnectionDocRef } from "../shared";
 
 import { getProviderAdapter } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms, requireNonEmptyString } from "./shared/actor";
@@ -86,5 +86,5 @@ async function handler(
   };
 }
 
-export const lmsClassesDiscover = onCall(handler);
+export const lmsClassesDiscover = platformCallable(handler);
 export const __lmsClassesDiscoverHandler = handler;

@@ -2436,3 +2436,69 @@ Introduce the canonical server-owned deployment path that atomically publishes a
 - The app was not modified.
 - Assignments, classes, enrollments, LMS, submissions, and every runtime assessment callable landed in Slices 1 through 3 were not modified.
 - No commit was made.
+
+---
+
+## Sprint 11C Remediation - Slice 1 (Critical Findings C-1 through C-4)
+
+**Anchor decisions:** PDR-025, PDR-026.
+**Governance:** Independent Sprint 11 Implementation Review Critical findings only. The certified architecture is preserved; no redesign, no new features.
+
+### Critical findings addressed
+
+- C-1. `assessmentAttemptsFinalize` now performs an idempotent replay when a client retries after a committed attempt (the session having already been deleted in-transaction per §8, §11). The retry parses `assignmentId` from the deterministic session identifier, queries the existing `(studentId, assignmentId, idempotencyKey)` composite, and returns the existing attempt payload with no additional write and no additional audit event. A retry with a novel idempotency marker still refuses with `sessionNotFound`.
+- C-2. Certified assignment-window and enrollment invariants (§7, §17, §21, §25) are enforced. `assessmentSessionsBegin` refuses `availableAt` in the future, `windowClosesAt` in the past, and every non-published status through the canonical refusal identifiers (`assignment-window-closed`, `assignment-not-published`, `assignment-not-found`, `assignment-mode-invalid`, `enrollment-inactive`). `assessmentAttemptsFinalize` reads the assignment and the enrollment inside the finalize transaction and honors the one-hour grace period after window close (§7.1).
+- C-3. A single shared `platformCallable` wrapper (`src/shared/errors/https-callable.ts`) translates every thrown `PlatformError` into a Firebase `HttpsError` while preserving the canonical platform identifier in `HttpsError.details.code`. Every existing callable now uses the wrapper; no individual callable handler was rewritten.
+- C-4. A single shared deployment gate (`src/shared/legacy-submissions-flag.ts`) is invoked by `submissionsCreate` and `submissionsFinalize`. The gate defaults to disabled and refuses with the canonical `submissions.legacyWritesDisabled` identifier so the legacy `submissions/*` write path and the authoritative `attempts/*` write path cannot both be active in production per PDR-026 §26.
+
+### Files created
+
+- `platform/functions/src/shared/errors/https-callable.ts`
+- `platform/functions/src/shared/errors/https-callable.test.ts`
+- `platform/functions/src/shared/legacy-submissions-flag.ts`
+- `platform/functions/src/shared/legacy-submissions-flag.test.ts`
+- `docs/platform/SPRINT_11C_REMEDIATION_SLICE1_COMPLETION_REPORT.md`
+
+### Files modified
+
+- `platform/functions/src/shared/index.ts`
+- `platform/functions/src/assessments/assessment-attempts-finalize.ts`
+- `platform/functions/src/assessments/assessment-attempts-finalize.test.ts`
+- `platform/functions/src/assessments/assessment-sessions-begin.ts`
+- `platform/functions/src/assessments/assessment-sessions-begin.test.ts`
+- `platform/functions/src/submissions/submissions-create.ts`
+- `platform/functions/src/submissions/submissions-create.test.ts`
+- `platform/functions/src/submissions/submissions-finalize.ts`
+- `platform/functions/src/submissions/submissions-finalize.test.ts`
+- Every other callable and its test file, for the mechanical `onCall` -> `platformCallable` swap (C-3). No handler logic was changed.
+
+### Tests added
+
+- C-1: two new cases in `assessment-attempts-finalize.test.ts` covering the successful replay after session deletion and the negative case with a novel idempotency marker.
+- C-2: five new cases in `assessment-attempts-finalize.test.ts` covering assignment-window refusal, grace-period behavior, inactive enrollment, missing assignment, and archived assignment. Three new cases in `assessment-sessions-begin.test.ts` covering `availableAt` in the future, `windowClosesAt` in the past, and enrollment-not-found through the certified identifiers. The existing non-published-status test now asserts the certified refusal codes.
+- C-3: a new `https-callable.test.ts` covering the code-mapping table, canonical identifier preservation in `details.code`, HttpsError pass-through, and unknown-throwable coercion.
+- C-4: a new `legacy-submissions-flag.test.ts` covering the disabled default, the canonical refusal identifier, the case-insensitive true opt-in, and rejection of every other value.
+
+All pre-existing tests are preserved.
+
+### Validation results
+
+- `npm run lint` passes with zero errors and zero warnings.
+- `npm run typecheck` passes with no diagnostics.
+- `npm run build` passes.
+- `npm test` passes. 30 suites, 535 tests, 0 failures.
+- `git diff --check` passes.
+- The completion report and this entry contain no em dashes.
+
+### Deferred work
+
+- Every Important and Minor finding from the Independent Sprint 11 Implementation Review is deferred to a subsequent slice.
+- Firestore Rules, retrieval APIs, dashboards, deployment automation, session ordinal redesign, performance optimizations, and non-Critical documentation reconciliations are out of scope for this slice.
+
+### Confirmation
+
+- Only Critical findings C-1 through C-4 were implemented.
+- No Important or Minor finding was implemented.
+- The certified architecture is unchanged.
+- Firestore Rules were not modified.
+- No commit was made.

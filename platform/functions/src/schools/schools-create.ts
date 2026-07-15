@@ -1,7 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
 import {
+  platformCallable,
   PlatformError,
   log,
   schoolCreationDocRef,
@@ -301,7 +302,7 @@ async function schoolsCreateHandler(
   return { schoolId: input.schoolId, alreadyCreated: false };
 }
 
-export const schoolsCreate = onCall(schoolsCreateHandler);
+export const schoolsCreate = platformCallable(schoolsCreateHandler);
 
 // Exported for direct unit testing without going through the callable
 // wrapper. Not part of the public callable surface.

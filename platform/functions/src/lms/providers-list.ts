@@ -1,6 +1,6 @@
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 
-import type { LmsProviderId } from "../shared";
+import { platformCallable, type LmsProviderId } from "../shared";
 
 import { listRegisteredProviders } from "./providers/registry";
 import { assertAuthenticatedTeacherForLms } from "./shared/actor";
@@ -36,5 +36,5 @@ function handler(
   });
 }
 
-export const lmsProvidersList = onCall(handler);
+export const lmsProvidersList = platformCallable(handler);
 export const __lmsProvidersListHandler = handler;
