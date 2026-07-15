@@ -1009,8 +1009,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <label class="field-label" for="teacherSelect">Teacher</label>
         <select class="field-select" id="teacherSelect">
           <option value="">Select your teacher</option>
-          <option value="MrKankel">Mr. Kankel</option>
-          <option value="MrRovner">Mr. Rovner</option>
+          <option value="mr-kankel">Mr. Kankel</option>
+          <option value="mr-rovner">Mr. Rovner</option>
         </select>
       </div>
     </div>
@@ -1433,11 +1433,7 @@ function setMode(mode){
    CLASSROOM SUBMISSION  (Grade 7 endpoints, same Apps Script pattern)
    ===================================================================== */
 // TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
-const TEACHER_URLS = {
-  MrKankel: 'https://script.google.com/macros/s/REPLACE_WITH_MR_KANKEL_DEPLOYMENT_ID/exec',
-  MrRovner: 'https://script.google.com/macros/s/REPLACE_WITH_MR_ROVNER_DEPLOYMENT_ID/exec'
-};
-const TEACHER_LABEL = { MrKankel:'Mr. Kankel', MrRovner:'Mr. Rovner' };
+const POP_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 function refreshSubmitState(){
   const btn = document.getElementById('submitBtn'); if(!btn) return;
@@ -1473,13 +1469,15 @@ function submitWork(){
   const err = document.getElementById('submitError');
   succ.classList.remove('visible'); err.classList.remove('visible');
   const teacher = document.getElementById('teacherSelect').value;
-  const url = TEACHER_URLS[teacher];
-  if(!url){ err.textContent='Please pick your teacher.'; err.classList.add('visible'); return; }
+  const teacherLabel = teacher === 'mr-kankel' ? 'Mr. Kankel' : 'Mr. Rovner';
+  const letters = ['A','B','C','D'];
   const params = new URLSearchParams({
-    activity:'Population Patterns Investigation',
+    resourceId:'investigation_population-patterns',
+    grade:'7',
     studentName:document.getElementById('studentNameInput').value.trim(),
     block:document.getElementById('blockSelect').value,
-    teacher:TEACHER_LABEL[teacher]||teacher,
+    teacher:teacher,
+    score:state.quizScore!==null?state.quizScore+'/10':'',
     prediction:state.prediction||'',
     checkpoints:JSON.stringify(state.checkpoints),
     cerClaim:state.cer.claim||'',
@@ -1487,18 +1485,25 @@ function submitWork(){
     cerReasoning:state.cer.reasoning||'',
     challengeChoice:state.challengeChoice||'',
     challengeText:state.challengeText||'',
-    quizAnswers:JSON.stringify(state.quizAnswers),
-    quizScore:state.quizScore!==null?state.quizScore:'',
-    submittedAt:new Date().toISOString()
+    quizAnswers:JSON.stringify(state.quizAnswers)
+  });
+  state.quizAnswers.forEach((ans, i) => {
+    params.set('q' + (i + 1), ans !== null ? letters[ans] : '-');
   });
   btn.disabled=true; btn.classList.add('locked'); btn.textContent='Submitting...';
-  fetch(url+'?'+params.toString(), { method:'GET', mode:'no-cors' })
-    .then(()=>{
-      state.submitted=true; saveState();
-      succ.textContent='Submitted to '+(TEACHER_LABEL[teacher]||teacher)+'. Great work.';
-      succ.classList.add('visible');
-      try { sessionStorage.removeItem(STORE_KEY); } catch(e){}
-      refreshSubmitState();
+  fetch(POP_ENDPOINT, { method: 'POST', body: params })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        state.submitted=true; saveState();
+        succ.textContent='Submitted to ' + teacherLabel + '. Great work.';
+        succ.classList.add('visible');
+        try { sessionStorage.removeItem(STORE_KEY); } catch(e){}
+        refreshSubmitState();
+      } else {
+        err.classList.add('visible');
+        btn.disabled=false; btn.classList.remove('locked'); btn.textContent='Submit Investigation';
+      }
     })
     .catch(()=>{
       err.classList.add('visible');

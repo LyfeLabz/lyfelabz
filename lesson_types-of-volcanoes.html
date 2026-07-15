@@ -1541,8 +1541,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label for="vc-teacher-select">Teacher</label>
           <select id="vc-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrKankel">Mr. Kankel</option>
-            <option value="MrRovner">Mr. Rovner</option>
+            <option value="mr-kankel">Mr. Kankel</option>
+            <option value="mr-rovner">Mr. Rovner</option>
           </select>
           <div class="info-error" id="vc-err-teacher">Please select your teacher.</div>
         </div>
@@ -1886,10 +1886,7 @@ function typeClick(n) {
 // ── GOOGLE SHEET URLS ────────────────────────────────────────────────
 // Grade 7 teacher endpoints. Same Google Apps Script pattern as the rest of LyfeLabz.
 // TODO: replace these placeholder /exec URLs with Mr. Kankel's and Mr. Rovner's real Apps Script deployment URLs.
-var VC_SCRIPT_URLS = {
-  MrKankel: 'https://script.google.com/macros/s/REPLACE_WITH_MR_KANKEL_DEPLOYMENT_ID/exec',
-  MrRovner: 'https://script.google.com/macros/s/REPLACE_WITH_MR_ROVNER_DEPLOYMENT_ID/exec'
-};
+const VC_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 var vcQuizState = { selected: [], submitted: false };
 var vcQuizMode  = 'practice';
@@ -2127,30 +2124,30 @@ function vcSubmitQuiz() {
   }
 
   var info2 = vcValidateStudentInfo();
-  var teacherLabel = info2.teacher === 'MrKankel' ? 'Mr. Kankel' : 'Mr. Rovner';
+  var teacherLabel = info2.teacher === 'mr-kankel' ? 'Mr. Kankel' : 'Mr. Rovner';
   // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
   // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
   // Thinking rides along in the final `thinking` field. Teacher selects the
   // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var params = new URLSearchParams({ tab: 'Types of Volcanoes', studentName: info2.name, block: info2.block });
+  var params = new URLSearchParams({ resourceId: 'lesson_types-of-volcanoes', grade: '7', teacher: info2.teacher, studentName: info2.name, block: info2.block });
   vcQuizState.selected.forEach(function (idx, i) {
     params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
   });
   params.set('score', score);
   params.set('thinking', thinkingText);
-  var endpoint = VC_SCRIPT_URLS[info2.teacher];
-  if (!endpoint || endpoint.indexOf('REPLACE_WITH') !== -1) {
-    document.getElementById('vc-submit-status').innerHTML =
-      '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Classroom Mode is not yet available for this lesson. Your score was not submitted.</div>';
-    return;
-  }
-  fetch(VC_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(function () {
-      document.getElementById('vc-submit-status').innerHTML =
-        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+  fetch(VC_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('vc-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('vc-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
     })
-    .catch(function () {
+    .catch(function() {
       document.getElementById('vc-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });

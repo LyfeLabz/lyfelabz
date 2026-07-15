@@ -1116,8 +1116,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
             <label class="field-label" for="teacherSelect">Teacher</label>
             <select id="teacherSelect" class="field-select">
               <option value="">Select teacher…</option>
-              <option value="Mr. Brown">Mr. Brown</option>
-              <option value="Ms. Gay">Ms. Gay</option>
+              <option value="mr-brown">Mr. Brown</option>
+              <option value="ms-gay">Ms. Gay</option>
             </select>
           </div>
           <div>
@@ -1181,10 +1181,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
 
     /* ─── SCRIPT URLS ───────────────────────────────────────────────── */
-    const SCRIPT_URLS = {
-      'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-      'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-    };
+    const FH_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
     /* ─── LEVEL DATA ────────────────────────────────────────────────── */
     const LEVELS = {
@@ -2621,32 +2618,34 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       const btn     = document.getElementById('classroomSubmitBtn');
       if (btn.disabled) return;
       const teacher = document.getElementById('teacherSelect').value;
-      const url     = SCRIPT_URLS[teacher];
-      if (!url) {
-        document.getElementById('submitError').textContent = 'Please select a valid teacher.';
-        document.getElementById('submitError').style.display = 'block';
-        return;
-      }
 
       btn.disabled    = true;
       btn.className   = 'submit-btn locked';
       btn.textContent = 'Submitting\u2026';
       document.getElementById('submitError').style.display = 'none';
 
+      const letters = ['A','B','C','D'];
       const params = new URLSearchParams({
-        tab:           'Fossil Hunt',
+        resourceId:    'extension_fossil-hunt',
+        grade:         '6',
         studentName:   document.getElementById('studentNameInput').value.trim(),
         teacher:       teacher,
         block:         document.getElementById('blockInput').value.trim(),
+        score:         computeQuizScore(),
         difficulty:    state.difficulty,
         groupsMatched: state.completedGroups.length + '/' + Object.keys(currentLevel().groups).length,
         errors:        String(state.errors),
         hintsUsed:     String(state.hintsUsed),
-        quizScore:     computeQuizScore()
+        quizAnswers:   JSON.stringify(state.quizAnswers)
+      });
+      QUIZ_DATA[state.difficulty].forEach(q => {
+        params.set('q' + q.id, state.quizAnswers[q.id] !== undefined ? letters[state.quizAnswers[q.id]] : '-');
       });
 
       try {
-        await fetch(url + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
+        const res = await fetch(FH_ENDPOINT, { method: 'POST', body: params });
+        const data = await res.json();
+        if (data.status !== 'success') throw new Error(data.message || 'Server error');
         const finalQuizScore = computeQuizScore();
         state.quizSubmitted = true;
         showQuizReview();

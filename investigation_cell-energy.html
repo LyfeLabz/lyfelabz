@@ -1418,8 +1418,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label class="field-label" for="teacherSelect">Teacher</label>
           <select class="field-select" id="teacherSelect">
             <option value="">Select your teacher</option>
-            <option value="Mr. Brown">Mr. Brown</option>
-            <option value="Ms. Gay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
         </div>
       </div>
@@ -1545,10 +1545,7 @@ const QUIZ_DATA = [
 /* =====================================================================
    CONSTANTS, GOOGLE SHEET URLS
    ===================================================================== */
-const SCRIPT_URLS = {
-  'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const CE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 /* =====================================================================
    GLOBAL STATE
@@ -1852,28 +1849,27 @@ function submitWork() {
   const teacher = document.getElementById('teacherSelect').value;
   if (!name || !block || !teacher) return;
 
-  const scriptUrl = SCRIPT_URLS[teacher];
-  if (!scriptUrl) { toast('Teacher not recognized.', 'warn'); return; }
-
   // Build score
   let correct = 0;
   QUIZ_DATA.forEach(q => { if (quizAnswers[q.id] === q.correct) correct++; });
 
-  // Collect quiz answers as labeled string
+  const letters = ['A','B','C','D'];
   const answerStr = QUIZ_DATA.map(q => {
-    const letters = ['A','B','C','D'];
-    const chosen  = quizAnswers[q.id] !== undefined ? letters[quizAnswers[q.id]] : '-';
+    const chosen = quizAnswers[q.id] !== undefined ? letters[quizAnswers[q.id]] : '-';
     return `Q${q.id}:${chosen}`;
   }).join(', ');
 
   const params = new URLSearchParams({
-    activity:    'Cell Energy Investigation',
-    student:     name,
+    resourceId:  'investigation_cell-energy',
+    grade:       '6',
+    studentName: name,
     block:       block,
     teacher:     teacher,
     score:       `${correct}/${QUIZ_DATA.length}`,
-    answers:     answerStr,
-    timestamp:   new Date().toISOString()
+    answers:     answerStr
+  });
+  QUIZ_DATA.forEach(q => {
+    params.set('q' + q.id, quizAnswers[q.id] !== undefined ? letters[quizAnswers[q.id]] : '-');
   });
 
   // Disable and show pending
@@ -1881,14 +1877,22 @@ function submitWork() {
   btn.disabled = true;
   btn.textContent = 'Submitting...';
 
-  fetch(scriptUrl + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(() => {
-      quizSubmitted = true;
-      revealQuizResults();
-      document.getElementById('submitSuccess').style.display = 'block';
-      document.getElementById('submitSuccess').textContent   = `Submitted! ${name}, ${correct}/${QUIZ_DATA.length} correct. Nice work.`;
-      btn.style.display = 'none';
-      toast('Work submitted successfully!', 'success');
+  fetch(CE_ENDPOINT, { method: 'POST', body: params })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        quizSubmitted = true;
+        revealQuizResults();
+        document.getElementById('submitSuccess').style.display = 'block';
+        document.getElementById('submitSuccess').textContent   = `Submitted! ${name}, ${correct}/${QUIZ_DATA.length} correct. Nice work.`;
+        btn.style.display = 'none';
+        toast('Work submitted successfully!', 'success');
+      } else {
+        document.getElementById('submitError').style.display = 'block';
+        btn.disabled    = false;
+        btn.textContent = 'Submit Investigation';
+        toast('Submission failed, check your connection.', 'warn');
+      }
     })
     .catch(() => {
       document.getElementById('submitError').style.display = 'block';

@@ -1117,8 +1117,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label class="field-label" for="teacherSelect">Teacher</label>
           <select id="teacherSelect" class="field-select">
             <option value="">Select teacher…</option>
-            <option value="brown">Mr. Brown</option>
-            <option value="gay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
         </div>
         <div>
@@ -2077,10 +2077,7 @@ document.addEventListener('DOMContentLoaded', function() {
 /* =====================================================================
    SUBMISSION
    ===================================================================== */
-var SHEET_URLS = {
-  brown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  gay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const BI_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 function submitReflection() {
   var name    = document.getElementById('studentName').value.trim();
@@ -2102,26 +2099,33 @@ function submitReflection() {
     ? (eventType==='arrive' ? 'Predator Arrived (Gen '+eventGen+')' : 'Predator Left (Gen '+eventGen+')')
     : 'No event';
 
-  var data = {
-    tab:         'Beetle Island',
+  var params = new URLSearchParams({
+    resourceId:  'simulation_beetle-island',
+    grade:       '6',
     studentName: name,
-    teacher:     teacher==='brown' ? 'Mr. Brown' : 'Ms. Gay',
+    teacher:     teacher,
     block:       block,
+    score:       '4/4',
     environment: envNames[env]||env,
     eventType:   eventDesc,
     totalGens:   gen,
     accuracy:    graphAccuracy!==null ? graphAccuracy+'%' : '-',
     prediction:  CHOICE_LABELS[predictionChoice]||'-',
-    q1:q1, q2:q2, q3:q3, q4:q4
-  };
-  var params = new URLSearchParams();
-  Object.keys(data).forEach(function(k){ params.append(k,data[k]); });
+    q1: q1, q2: q2, q3: q3, q4: q4
+  });
 
-  fetch(SHEET_URLS[teacher]+'?'+params.toString(), { method:'GET', mode:'no-cors' })
-    .then(function() {
-      success.style.display='block';
-      btn.textContent='Submitted';
-      document.querySelectorAll('.reflect-input,.field-input,.field-select').forEach(function(el){ el.disabled=true; });
+  fetch(BI_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        success.style.display='block';
+        btn.textContent='Submitted';
+        document.querySelectorAll('.reflect-input,.field-input,.field-select').forEach(function(el){ el.disabled=true; });
+      } else {
+        error.style.display='block';
+        btn.disabled=false;
+        btn.textContent='Submit Reflection';
+      }
     })
     .catch(function() {
       error.style.display='block';

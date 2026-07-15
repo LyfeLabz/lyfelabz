@@ -2734,8 +2734,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label for="psm-teacher-select">Teacher</label>
           <select id="psm-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrBrown">Mr. Brown</option>
-            <option value="MsGay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
           <div class="info-error" id="psm-err-teacher">Please select your teacher.</div>
         </div>
@@ -3285,10 +3285,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 <!-- ===== QUIZ ===== -->
 <script>
 // ── GOOGLE SHEET URLS ────────────────────────────────────────────────
-var PSM_SCRIPT_URLS = {
-  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const PSM_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 // ── QUIZ STATE ────────────────────────────────────────────────────────
 var psmQuizState = { selected: [], submitted: false };
@@ -3571,24 +3568,30 @@ function psmSubmitQuiz() {
   }
 
   var info2 = psmValidateStudentInfo();
-  var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var teacherLabel = info2.teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
   // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
   // Thinking rides along in the final `thinking` field. Teacher selects the
   // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var params = new URLSearchParams({ tab: 'Pure Substances and Mixtures', studentName: info2.name, block: info2.block });
+  var params = new URLSearchParams({ resourceId: 'lesson_pure-substances-and-mixtures', grade: '6', teacher: info2.teacher, studentName: info2.name, block: info2.block });
   psmQuizState.selected.forEach(function (chosenIndex, qi) {
     params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
   params.set('score', score);
   params.set('thinking', thinkingText);
-  fetch(PSM_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(function () {
-      document.getElementById('psm-submit-status').innerHTML =
-        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+  fetch(PSM_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('psm-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('psm-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
     })
-    .catch(function () {
+    .catch(function() {
       document.getElementById('psm-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });

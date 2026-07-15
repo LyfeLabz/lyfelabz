@@ -1067,8 +1067,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label class="ne-field-label" for="teacherSelect">Teacher</label>
           <select class="ne-field-input" id="teacherSelect">
             <option value="">Select your teacher</option>
-            <option value="Mr. Brown">Mr. Brown</option>
-            <option value="Ms. Gay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
         </div>
         <div class="ne-field-full">
@@ -1481,10 +1481,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
    Uses namespaced variables/functions to avoid collision with the
    existing setMode(m) and game state in the main script block.
    ===================================================================== */
-const NE_SCRIPT_URLS = {
-  'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const NE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 let neClassroomMode    = false;
 let neQuizCompleted    = false;
@@ -1541,13 +1538,7 @@ function neSubmitWork() {
   var block   = document.getElementById('blockInput').value.trim();
   if (!name || !teacher || !block || !neQuizCompleted) return;
 
-  var scriptUrl = NE_SCRIPT_URLS[teacher];
-  if (!scriptUrl) {
-    document.getElementById('submitError').textContent = 'Unknown teacher selection. Please try again.';
-    document.getElementById('submitError').style.display = 'block';
-    return;
-  }
-
+  var teacherLabel = teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   var btn = document.getElementById('classroomSubmitBtn');
   btn.disabled = true; btn.className = 'ne-submit-btn locked'; btn.textContent = 'Submitting…';
 
@@ -1556,21 +1547,33 @@ function neSubmitWork() {
   }).join(', ');
 
   var params = new URLSearchParams({
-    tab:        'Neuron Explorer',
+    resourceId:  'extension_neuron-explorer',
+    grade:       '6',
     studentName: name,
-    teacher:    teacher,
-    block:      block,
-    quizScore:  neQuizFinalScore + '/8',
-    answers:    answerStr
+    teacher:     teacher,
+    block:       block,
+    score:       neQuizFinalScore + '/8',
+    answers:     answerStr
+  });
+  neQuizFinalAnswers.forEach(function(ok, i) {
+    params.set('q' + (i + 1), ok ? 'C' : 'W');
   });
 
-  fetch(scriptUrl + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(function() {
-      btn.textContent = '✓ Submitted';
-      var s = document.getElementById('submitSuccess');
-      s.textContent   = 'Submitted! Your quiz score has been sent to ' + teacher + '. Great work.';
-      s.style.display = 'block';
-      document.getElementById('submitError').style.display = 'none';
+  fetch(NE_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        btn.textContent = '✓ Submitted';
+        var s = document.getElementById('submitSuccess');
+        s.textContent   = 'Submitted! Your quiz score has been sent to ' + teacherLabel + '. Great work.';
+        s.style.display = 'block';
+        document.getElementById('submitError').style.display = 'none';
+      } else {
+        btn.disabled  = false;
+        btn.className = 'ne-submit-btn ready';
+        btn.textContent = 'Submit Quiz Score';
+        document.getElementById('submitError').style.display = 'block';
+      }
     })
     .catch(function() {
       btn.disabled  = false;

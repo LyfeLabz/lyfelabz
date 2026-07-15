@@ -2037,8 +2037,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label for="bb-teacher-select">Teacher</label>
           <select id="bb-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrBrown">Mr. Brown</option>
-            <option value="MsGay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
           <div class="info-error" id="bb-err-teacher">Please select your teacher.</div>
         </div>
@@ -2573,10 +2573,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 <!-- ===== QUIZ ===== -->
 <script>
 // ── GOOGLE SHEET URLS ────────────────────────────────────────────────
-var BB_SCRIPT_URLS = {
-  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const BB_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 // ── QUIZ STATE ────────────────────────────────────────────────────────
 var bbQuizState = { selected: [], submitted: false };
@@ -2838,19 +2835,29 @@ function bbSubmitQuiz() {
   }
 
   var info2 = bbValidateStudentInfo();
-  var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var teacherLabel = info2.teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   var letters = ['A','B','C','D'];
   var answerStr = bbQuizState.selected.map(function (idx, i) {
     return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
   }).join(', ');
   var params = new URLSearchParams({
-    tab: 'The Hidden World of Matter', studentName: info2.name, teacher: teacherLabel,
-    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+    resourceId: 'extension_hidden-world-of-matter', grade: '6',
+    studentName: info2.name, teacher: info2.teacher,
+    block: info2.block, score: score, answers: answerStr
   });
-  fetch(BB_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(function () {
-      document.getElementById('bb-submit-status').innerHTML =
-        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+  bbQuizState.selected.forEach(function(idx, i) {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '-');
+  });
+  fetch(BB_ENDPOINT, { method: 'POST', body: params })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.status === 'success') {
+        document.getElementById('bb-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('bb-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
     })
     .catch(function () {
       document.getElementById('bb-submit-status').innerHTML =

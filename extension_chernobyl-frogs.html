@@ -981,7 +981,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
   <div class="reflect-panel" id="reflectPanel" style="display:none;">
     <div class="classroom-section-title" style="color:#76e0b3;">Student Information</div>
     <div class="teacher-select-wrap" id="reflectNameWrap" style="margin-bottom:1.2rem;"><span class="reflect-label">Your Name <span style="color:var(--red);">*</span></span><input type="text" class="teacher-select" id="reflectName" placeholder="First and last name" autocomplete="name"></div>
-    <div class="teacher-select-wrap" id="reflectTeacherWrap" style="margin-bottom:1.2rem;"><span class="reflect-label">Your Teacher <span style="color:var(--red);">*</span></span><select class="teacher-select" id="reflectTeacher"><option value="">Select your teacher...</option><option value="brown">Mr. Brown</option><option value="gay">Ms. Gay</option></select></div>
+    <div class="teacher-select-wrap" id="reflectTeacherWrap" style="margin-bottom:1.2rem;"><span class="reflect-label">Your Teacher <span style="color:var(--red);">*</span></span><select class="teacher-select" id="reflectTeacher"><option value="">Select your teacher...</option><option value="mr-brown">Mr. Brown</option><option value="ms-gay">Ms. Gay</option></select></div>
+    <div class="teacher-select-wrap" id="reflectBlockWrap" style="margin-bottom:1.2rem;"><span class="reflect-label">Period / Block <span style="color:var(--red);">*</span></span><select class="teacher-select" id="reflectBlock"><option value="">Select your block...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option></select></div>
     <div class="reflect-q"><span class="reflect-label">Question 1</span><p class="reflect-prompt">Describe the shape of your graph. Which frog type became more common, and when did the biggest change happen?</p><textarea class="reflect-input" id="reflectQ1" placeholder="The graph shows..."></textarea></div>
     <div class="reflect-q"><span class="reflect-label">Question 2</span><p class="reflect-prompt" id="reflectQ2Prompt">A major environmental event occurred during the simulation. What effect did it have on the frog population?</p><textarea class="reflect-input" id="reflectQ2" placeholder="When the environmental event happened..."></textarea></div>
     <div class="reflect-q"><span class="reflect-label">Question 3</span><p class="reflect-prompt">If the simulation continued for 10 more generations, what do you predict would happen to the population? Explain your reasoning using natural selection.</p><textarea class="reflect-input" id="reflectQ3" placeholder="I predict that... because..."></textarea></div>
@@ -2042,10 +2043,7 @@ function setReflectionMode(mode) {
 }
 
 // ── SHEET SUBMISSION ────────────────────────────────────────────────────────
-const SHEET_URLS = {
-  brown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  gay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec',
-};
+const CF_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 function submitReflection() {
   if (!isGraphComplete()) { alert('Please complete the graph before submitting.'); return; }
@@ -2064,29 +2062,39 @@ function submitReflection() {
   if (!teacher) { alert('Please select your teacher before submitting.'); return; }
   const studentName = document.getElementById('reflectName').value.trim();
   if (!studentName) { alert('Please enter your name before submitting.'); return; }
+  const block = document.getElementById('reflectBlock').value;
+  if (!block) { alert('Please select your period or block before submitting.'); return; }
   const btn    = document.getElementById('reflectSubmitBtn');
   const status = document.getElementById('reflectStatus');
   btn.disabled = true;
   status.className = 'reflect-status sending';
   status.textContent = 'Submitting...';
-  const data = {
-    tab:           'Chernobyl Frogs',
-    studentName,
-    environment:   'Before and After Disaster',
-    eventType:     'Chernobyl Disaster (Gen ' + eventGen + ')',
-    totalGens:     gen,
-    accuracy:      graphAccuracy !== null ? graphAccuracy + '%' : '-',
-    q1, q2, q3, q4,
-  };
-  const params = new URLSearchParams();
-  Object.keys(data).forEach(k => params.append(k, data[k]));
-  const url = SHEET_URLS[teacher] + '?' + params.toString();
-  fetch(url, { method:'GET', mode:'no-cors' })
-    .then(() => {
-      status.className = 'reflect-status success';
-      status.textContent = 'Submitted! Great work.';
-      btn.textContent = 'Submitted';
-      document.querySelectorAll('.reflect-input, .teacher-select, #reflectName').forEach(el => { el.disabled = true; });
+  const params = new URLSearchParams({
+    resourceId:  'extension_chernobyl-frogs',
+    grade:       '6',
+    studentName: studentName,
+    teacher:     teacher,
+    block:       block,
+    score:       '4/4',
+    environment: 'Before and After Disaster',
+    eventType:   'Chernobyl Disaster (Gen ' + eventGen + ')',
+    totalGens:   gen,
+    accuracy:    graphAccuracy !== null ? graphAccuracy + '%' : '-',
+    q1: q1, q2: q2, q3: q3, q4: q4
+  });
+  fetch(CF_ENDPOINT, { method: 'POST', body: params })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        status.className = 'reflect-status success';
+        status.textContent = 'Submitted! Great work.';
+        btn.textContent = 'Submitted';
+        document.querySelectorAll('.reflect-input, .teacher-select, #reflectName').forEach(el => { el.disabled = true; });
+      } else {
+        status.className = 'reflect-status error';
+        status.textContent = 'Something went wrong. Check your connection and try again.';
+        btn.disabled = false;
+      }
     })
     .catch(() => {
       status.className = 'reflect-status error';

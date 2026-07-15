@@ -2453,8 +2453,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label for="bs-teacher-select">Teacher</label>
           <select id="bs-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrBrown">Mr. Brown</option>
-            <option value="MsGay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
           <div class="info-error" id="bs-err-teacher">Please select your teacher.</div>
         </div>
@@ -2678,10 +2678,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </footer>
 
 <script>
-const BS_SCRIPT_URLS = {
-  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  MsGay: 'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const BS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 const bsQuizQuestions = [
   { q: "A virus destroys the cells lining the small intestine. Which prediction correctly applies the hierarchy of biological organization?", options: ["Only the intestine is affected; it is just one organ","The digestive system fails, but other body systems are unaffected","The digestive system is disrupted, which reduces nutrients reaching the circulatory system","All body systems immediately stop functioning"], correct: 2, explanation: "When cells fail, the tissue they form breaks down. That damages the organ (small intestine), which disrupts the digestive system, which then starves the circulatory system of nutrients it needs to deliver. This is the hierarchy in action: damage at one level cascades upward." },
@@ -2871,24 +2868,30 @@ function bsSubmitQuiz() {
 
   // ── Classroom mode: send to Google Sheet ─────────────────
   const { name, teacher, block } = bsValidateStudentInfo();
-  const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  const teacherLabel = teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
   // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
   // Thinking rides along in the final `thinking` field. Teacher selects the
   // endpoint only; it is not a submitted field.
   const letters = ['A','B','C','D'];
-  const params = new URLSearchParams({ tab: 'Body Systems', studentName: name, block });
+  const params = new URLSearchParams({ resourceId: 'lesson_body-systems', grade: '6', teacher, studentName: name, block });
   bsQuizState.selected.forEach((chosenIndex, qi) => {
     params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
   params.set('score', score);
   params.set('thinking', thinkingText);
-  fetch(BS_SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(() => {
-      document.getElementById('bs-submit-status').innerHTML =
-        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+  fetch(BS_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('bs-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('bs-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
     })
-    .catch(() => {
+    .catch(function() {
       document.getElementById('bs-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });

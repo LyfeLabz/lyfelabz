@@ -1180,8 +1180,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
             <label class="field-label" for="teacherSelect">Teacher</label>
             <select id="teacherSelect" class="field-select">
               <option value="">Select teacher…</option>
-              <option value="Mr. Brown">Mr. Brown</option>
-              <option value="Ms. Gay">Ms. Gay</option>
+              <option value="mr-brown">Mr. Brown</option>
+              <option value="ms-gay">Ms. Gay</option>
             </select>
           </div>
           <div>
@@ -1254,12 +1254,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     if(sessionStorage.getItem('lyfelabz-stem')==='on') document.body.classList.add('stem-active');
 
     /* ─── APPS SCRIPT SUBMISSION URLS ───────────────────────────── */
-    // Paste your deployed Apps Script web app URL(s) here.
-    // Each teacher routes to their own Google Sheet.
-    const SCRIPT_URLS = {
-      'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-      'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-    };
+    const LD_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
     /* ─── LEVEL DATA (5 levels) ──────────────────────────────────── */
     const levels = [
@@ -2432,13 +2427,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     refs.classroomSubmitBtn.addEventListener('click', async () => {
       if(refs.classroomSubmitBtn.disabled) return;
 
-      const teacher     = refs.teacherSelect.value;
-      const scriptUrl   = SCRIPT_URLS[teacher];
-      if(!scriptUrl){
-        refs.submitError.textContent = 'Unknown teacher selection. Please choose a valid teacher.';
-        refs.submitError.style.display = 'block';
-        return;
-      }
+      const teacher = refs.teacherSelect.value;
 
       // Lock button during request
       refs.classroomSubmitBtn.disabled    = true;
@@ -2447,28 +2436,28 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       refs.submitError.style.display      = 'none';
 
       const params = new URLSearchParams({
-        tab:         'Layer Detective',
+        resourceId:  'game_layer-detective',
+        grade:       '6',
         studentName: refs.studentNameInput.value.trim(),
         teacher:     teacher,
         block:       refs.blockInput.value.trim(),
+        score:       computeQuizScore(),
         hintsUsed:   String(state.hintsUsed),
-        quizScore:   computeQuizScore()
+        quizAnswers: JSON.stringify(state.quizAnswers)
+      });
+      quizData.forEach(q => {
+        params.set('q' + q.id, state.quizAnswers[q.id] !== undefined ? ['A','B','C','D'][state.quizAnswers[q.id]] : '-');
       });
 
       try {
-        const response = await fetch(scriptUrl + '?' + params.toString(), {
-          method: 'GET'
-        });
-        if(!response.ok){
-          throw new Error('Server returned ' + response.status);
-        }
-        // Only reach here when the server confirmed a real 2xx response
+        const res  = await fetch(LD_ENDPOINT, { method: 'POST', body: params });
+        const data = await res.json();
+        if(data.status !== 'success') throw new Error(data.message || 'error');
         refs.classroomSubmitBtn.textContent  = 'Submitted';
         refs.submitHelperText.style.display  = 'none';
         refs.submitSuccess.innerHTML = `Your work has been submitted! Great job, geologic detective.<br><span class="quiz-score-badge" style="margin-top:10px;">Your quiz score: ${computeQuizScore()}</span>`;
         refs.submitSuccess.style.display     = 'block';
       } catch(err) {
-        // Network failure or non-2xx response - restore button so student can retry
         refs.classroomSubmitBtn.disabled    = false;
         refs.classroomSubmitBtn.className   = 'submit-btn ready';
         refs.classroomSubmitBtn.textContent = 'Submit to Teacher';

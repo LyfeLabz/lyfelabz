@@ -1428,8 +1428,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         <label class="field-label" for="teacherSelect">Teacher</label>
         <select class="field-select" id="teacherSelect">
           <option value="">Select your teacher</option>
-          <option value="Mr. Brown">Mr. Brown</option>
-          <option value="Ms. Gay">Ms. Gay</option>
+          <option value="mr-brown">Mr. Brown</option>
+          <option value="ms-gay">Ms. Gay</option>
         </select>
       </div>
     </div>
@@ -3159,10 +3159,7 @@ function resetQuiz(){
 /* =====================================================================
    CLASSROOM SUBMISSION
    ===================================================================== */
-const TEACHER_URLS = {
-  'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const AC_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 function refreshSubmitState(){
   const btn = document.getElementById('submitBtn');
@@ -3207,14 +3204,16 @@ function submitWork(){
   const err  = document.getElementById('submitError');
   succ.classList.remove('visible'); err.classList.remove('visible');
   const teacher = document.getElementById('teacherSelect').value;
-  const url = TEACHER_URLS[teacher];
-  if (!url){ err.textContent='Please pick your teacher.'; err.classList.add('visible'); return; }
+  const teacherLabel = teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
 
+  const letters = ['A','B','C','D'];
   const params = new URLSearchParams({
-    activity:       'Amplitude Challenge',
+    resourceId:     'investigation_amplitude-challenge',
+    grade:          '6',
     studentName:    document.getElementById('studentNameInput').value.trim(),
     block:          document.getElementById('blockInput').value.trim(),
     teacher:        teacher,
+    score:          state.quizScore !== null ? state.quizScore + '/5' : '',
     prediction:     state.prediction || '',
     trials:         JSON.stringify(state.trials),
     targetAttempts: JSON.stringify(state.targetAttempts),
@@ -3222,21 +3221,27 @@ function submitWork(){
     cerClaim:       state.cer.claim || '',
     cerEvidence:    state.cer.evidence || '',
     cerReasoning:   state.cer.reasoning || '',
-    quizAnswers:    JSON.stringify(state.quizAnswers),
-    quizScore:      state.quizScore !== null ? state.quizScore : '',
-    submittedAt:    new Date().toISOString()
+    quizAnswers:    JSON.stringify(state.quizAnswers)
+  });
+  state.quizAnswers.forEach((ans, i) => {
+    params.set('q' + (i + 1), ans !== null ? letters[ans] : '-');
   });
 
   btn.disabled = true; btn.classList.add('locked'); btn.textContent='Submitting…';
 
-  fetch(url + '?' + params.toString(), { method:'GET', mode:'no-cors' })
-    .then(() => {
-      state.submitted = true; saveState();
-      succ.textContent = 'Submitted to ' + teacher + '. Great work.';
-      succ.classList.add('visible');
-      // Clear local data per project convention
-      try { sessionStorage.removeItem(STORE_KEY); } catch(e){}
-      refreshSubmitState();
+  fetch(AC_ENDPOINT, { method: 'POST', body: params })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        state.submitted = true; saveState();
+        succ.textContent = 'Submitted to ' + teacherLabel + '. Great work.';
+        succ.classList.add('visible');
+        try { sessionStorage.removeItem(STORE_KEY); } catch(e){}
+        refreshSubmitState();
+      } else {
+        err.classList.add('visible');
+        btn.disabled = false; btn.classList.remove('locked'); btn.textContent='Submit Investigation';
+      }
     })
     .catch(() => {
       err.classList.add('visible');

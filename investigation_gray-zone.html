@@ -1872,8 +1872,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label class="cp-field-label" for="teacherSelect">Teacher</label>
           <select class="cp-field-input" id="teacherSelect">
             <option value="">Select your teacher</option>
-            <option value="Mr. Brown">Mr. Brown</option>
-            <option value="Ms. Gay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
         </div>
         <div class="cp-field-full">
@@ -2704,10 +2704,7 @@ resize(); requestAnimationFrame(draw);
 /* =====================================================================
    PRACTICE / CLASSROOM MODE - GRAY ZONE INVESTIGATION
    ===================================================================== */
-const GZ_SCRIPT_URLS = {
-  'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const GZ_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 let gzClassroomMode = false;
 let gzQuizAnswers   = new Array(8).fill(null);
@@ -2752,14 +2749,7 @@ function gzSubmitWork() {
   var block   = document.getElementById('blockInput').value.trim();
   if (!name || !teacher || !block) return;
 
-  var scriptUrl = GZ_SCRIPT_URLS[teacher];
-  if (!scriptUrl) {
-    var err = document.getElementById('submitError');
-    err.textContent = 'Unknown teacher selection. Please try again.';
-    err.style.display = 'block';
-    return;
-  }
-
+  var teacherLabel = teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   var btn = document.getElementById('classroomSubmitBtn');
   btn.disabled = true; btn.className = 'gz-submit-btn locked'; btn.textContent = 'Submitting…';
 
@@ -2769,21 +2759,33 @@ function gzSubmitWork() {
   }).join(', ');
 
   var params = new URLSearchParams({
-    tab:        'Gray Zone',
+    resourceId:  'investigation_gray-zone',
+    grade:       '6',
     studentName: name,
-    teacher:    teacher,
-    block:      block,
-    quizScore:  quizState.correct + '/' + quizData.total,
-    answers:    answerStr
+    teacher:     teacher,
+    block:       block,
+    score:       quizState.correct + '/' + quizData.total,
+    answers:     answerStr
+  });
+  gzQuizAnswers.forEach(function(idx, i) {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '-');
   });
 
-  fetch(scriptUrl + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(function() {
-      btn.textContent = '✓ Submitted';
-      var s = document.getElementById('submitSuccess');
-      s.textContent   = 'Submitted! Your investigation has been sent to ' + teacher + '. Great work.';
-      s.style.display = 'block';
-      document.getElementById('submitError').style.display = 'none';
+  fetch(GZ_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        btn.textContent = '✓ Submitted';
+        var s = document.getElementById('submitSuccess');
+        s.textContent   = 'Submitted! Your investigation has been sent to ' + teacherLabel + '. Great work.';
+        s.style.display = 'block';
+        document.getElementById('submitError').style.display = 'none';
+      } else {
+        btn.disabled  = false;
+        btn.className = 'gz-submit-btn ready';
+        btn.textContent = 'Submit Investigation';
+        document.getElementById('submitError').style.display = 'block';
+      }
     })
     .catch(function() {
       btn.disabled  = false;

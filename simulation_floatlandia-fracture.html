@@ -1268,8 +1268,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label class="field-label" for="teacherSelect">Teacher</label>
           <select id="teacherSelect" class="field-select">
             <option value="">Select teacher...</option>
-            <option value="Mr. Brown">Mr. Brown</option>
-            <option value="Ms. Gay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
         </div>
         <div>
@@ -1880,10 +1880,7 @@ const QUIZ_DATA = [
 /* =====================================================================
    SCRIPT URLS
    ===================================================================== */
-const SCRIPT_URLS = {
-  'Mr. Brown': 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  'Ms. Gay':   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const FF_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 /* =====================================================================
    GLOBAL STATE
@@ -2353,13 +2350,21 @@ function initClassroomSubmit(){
   document.getElementById('classroomSubmitBtn').addEventListener('click',async()=>{
     const btn=document.getElementById('classroomSubmitBtn');if(btn.disabled)return;
     const teacher=document.getElementById('teacherSelect').value;
-    const scriptUrl=SCRIPT_URLS[teacher];
-    if(!scriptUrl){document.getElementById('submitError').textContent='Unknown teacher selection.';document.getElementById('submitError').style.display='block';return;}
     btn.disabled=true;btn.className='submit-btn locked';btn.textContent='Submitting...';
     document.getElementById('submitError').style.display='none';
-    const params=new URLSearchParams({tab:'Floatlandia Fracture',studentName:document.getElementById('studentNameInput').value.trim(),teacher,block:document.getElementById('blockInput').value.trim(),quizScore:computeQuizScore()});
+    const params=new URLSearchParams({
+      resourceId: 'simulation_floatlandia-fracture',
+      grade:      '6',
+      studentName: document.getElementById('studentNameInput').value.trim(),
+      teacher,
+      block:      document.getElementById('blockInput').value.trim(),
+      score:      computeQuizScore()
+    });
+    QUIZ_DATA.forEach(q=>{params.set('q'+q.id,quizAnswers[q.id]!==undefined?['A','B','C','D'][quizAnswers[q.id]]:'-');});
     try{
-      await fetch(scriptUrl+'?'+params.toString(),{method:'GET',mode:'no-cors'});
+      const res=await fetch(FF_ENDPOINT,{method:'POST',body:params});
+      const data=await res.json();
+      if(data.status!=='success')throw new Error(data.message||'error');
       btn.textContent='Submitted';
       document.getElementById('submitHelperText').style.display='none';
       document.getElementById('submitSuccess').innerHTML='Your work has been submitted! Great job, scientist.<br><span class="quiz-score-badge" style="margin-top:10px;">Your quiz score: '+computeQuizScore()+'</span>';

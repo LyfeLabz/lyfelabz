@@ -2556,8 +2556,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label for="cm-teacher-select">Teacher</label>
           <select id="cm-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrBrown">Mr. Brown</option>
-            <option value="MsGay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
           <div class="info-error" id="cm-err-teacher">Please select your teacher.</div>
         </div>
@@ -3138,11 +3138,8 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 
 <!-- ===== QUIZ ===== -->
 <script>
-// ── GOOGLE SHEET URLS ────────────────────────────────────────────────
-var CM_SCRIPT_URLS = {
-  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+// ── SUBMISSION ENDPOINT ───────────────────────────────────────────────
+const WF_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 // ── QUIZ STATE ────────────────────────────────────────────────────────
 var cmQuizState = { selected: [], submitted: false };
@@ -3404,19 +3401,29 @@ function cmSubmitQuiz() {
   }
 
   var info2 = cmValidateStudentInfo();
-  var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var teacherLabel = info2.teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   var letters = ['A','B','C','D'];
-  var answerStr = cmQuizState.selected.map(function (idx, i) {
-    return 'Q' + (i + 1) + ':' + (idx !== null ? letters[idx] : '-');
-  }).join(', ');
   var params = new URLSearchParams({
-    tab: 'Welcome to Floatia', studentName: info2.name, teacher: teacherLabel,
-    block: info2.block, score: score, percent: pct + '%', answers: answerStr
+    resourceId:  'challenge_welcome-to-floatia',
+    grade:       '6',
+    studentName: info2.name,
+    teacher:     info2.teacher,
+    block:       info2.block,
+    score:       score
   });
-  fetch(CM_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(function () {
-      document.getElementById('cm-submit-status').innerHTML =
-        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+  cmQuizState.selected.forEach(function(idx, i) {
+    params.set('q' + (i + 1), idx !== null ? letters[idx] : '-');
+  });
+  fetch(WF_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('cm-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('cm-submit-status').innerHTML =
+          '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+      }
     })
     .catch(function () {
       document.getElementById('cm-submit-status').innerHTML =

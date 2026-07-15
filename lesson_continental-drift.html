@@ -1983,8 +1983,8 @@ function applyReset() {
           <label for="cd-teacher-select">Teacher</label>
           <select id="cd-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrBrown">Mr. Brown</option>
-            <option value="MsGay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
           <div class="info-error" id="cd-err-teacher">Please select your teacher.</div>
         </div>
@@ -2245,10 +2245,7 @@ function vocabJump(targetId) {
 
 <!-- Google Apps Script URLs -->
 <script>
-var CD_SCRIPT_URLS = {
-  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const CD_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 </script>
 
 <!-- Quiz Logic -->
@@ -2539,27 +2536,28 @@ function cdSubmitQuiz() {
   }
 
   var info       = cdValidateStudentInfo();
-  var url        = CD_SCRIPT_URLS[info.teacher];
-  if (!url || url.indexOf('YOUR_') !== -1) {
-    document.getElementById('cd-submit-status').innerHTML = '<div class="score-error">Script URL not configured, ask your teacher.</div>';
-    return;
-  }
-  var teacherLabel = (info.teacher === 'MrBrown') ? 'Mr. Brown' : 'Ms. Gay';
+  var teacherLabel = (info.teacher === 'mr-brown') ? 'Mr. Brown' : 'Ms. Gay';
   // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
   // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
   // Thinking rides along in the final `thinking` field. Teacher selects the
   // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var params = new URLSearchParams({ tab: 'ContinentalDrift', studentName: info.name, block: info.block });
+  var params = new URLSearchParams({ resourceId: 'lesson_continental-drift', grade: '6', teacher: info.teacher, studentName: info.name, block: info.block });
   cdQuizState.selected.forEach(function(chosenIndex, qi) {
     params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
   params.set('score', score);
   params.set('thinking', thinkingText);
-  fetch(url + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(function() {
-      document.getElementById('cd-submit-status').innerHTML =
-        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+  fetch(CD_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('cd-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('cd-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
     })
     .catch(function() {
       document.getElementById('cd-submit-status').innerHTML =

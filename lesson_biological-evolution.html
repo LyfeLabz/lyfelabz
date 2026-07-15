@@ -1673,8 +1673,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label for="be-teacher-select">Teacher</label>
           <select id="be-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrBrown">Mr. Brown</option>
-            <option value="MsGay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
           <div class="info-error" id="be-err-teacher">Please select your teacher.</div>
         </div>
@@ -1871,10 +1871,7 @@ function toggleEv(card) { card.classList.toggle('open'); }
 
 <!-- QUIZ ENGINE -->
 <script>
-const BE_SCRIPT_URLS = {
-  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  MsGay: 'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const BE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 const beQuizQuestions = [
   { q: "What is biological evolution?", options: ["A single organism changing its traits during its lifetime","A population changing over many generations due to environmental pressures","One species instantly turning into a completely different species","Only the strongest animals surviving in the wild"], correct: 1, explanation: "Biological evolution describes populations (not individuals) changing over many generations. A single organism cannot evolve; evolution is a shift in how often certain traits appear across an entire population over time." },
@@ -2062,19 +2059,19 @@ function beSubmitQuiz() {
 
   // ── Classroom mode: send to Google Sheet ─────────────────
   const { name, teacher, block } = beValidateStudentInfo();
-  const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  const teacherLabel = teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
   // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
   // Thinking rides along in the final `thinking` field. Teacher selects the
   // endpoint only; it is not a submitted field.
   const letters = ['A','B','C','D'];
-  const params = new URLSearchParams({ tab: 'Bio Evolution', studentName: name, block });
+  const params = new URLSearchParams({ resourceId: 'lesson_biological-evolution', grade: '6', teacher, studentName: name, block });
   beQuizState.selected.forEach((chosenIndex, qi) => {
     params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
   params.set('score', score);
   params.set('thinking', thinkingText);
-  fetch(BE_SCRIPT_URLS[teacher] + '?' + params.toString())
+  fetch(BE_ENDPOINT, { method: 'POST', body: params })
     .then(r => r.json())
     .then(data => {
       document.getElementById('be-submit-status').innerHTML = data.status === 'success'

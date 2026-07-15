@@ -2069,8 +2069,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label for="og-teacher-select">Teacher</label>
           <select id="og-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrBrown">Mr. Brown</option>
-            <option value="MsGay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
           <div class="info-error" id="og-err-teacher">Please select your teacher.</div>
         </div>
@@ -2286,10 +2286,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 </footer>
 
 <script>
-const OG_SCRIPT_URLS = {
-  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  MsGay: 'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const OG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 const ogQuizQuestions = [
   { q: "Which organelle is described as 'the powerhouse of the cell' because it produces energy?", options: ["Nucleus","Ribosome","Mitochondria","Chloroplast"], correct: 2, explanation: "The mitochondria produce ATP (energy) for the cell through cellular respiration, it's literally called the powerhouse!" },
@@ -2474,24 +2471,30 @@ function ogSubmitQuiz() {
 
   // ── Classroom mode: send to Google Sheet ─────────────────
   const { name, teacher, block } = ogValidateStudentInfo();
-  const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  const teacherLabel = teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
   // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
   // Thinking rides along in the final `thinking` field. Teacher selects the
   // endpoint only; it is not a submitted field.
   const letters = ['A','B','C','D'];
-  const params = new URLSearchParams({ tab: 'Organelles', studentName: name, block });
+  const params = new URLSearchParams({ resourceId: 'lesson_organelles', grade: '6', teacher, studentName: name, block });
   ogQuizState.selected.forEach((chosenIndex, qi) => {
     params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
   params.set('score', score);
   params.set('thinking', thinkingText);
-  fetch(OG_SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(() => {
-      document.getElementById('og-submit-status').innerHTML =
-        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+  fetch(OG_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('og-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('og-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
     })
-    .catch(() => {
+    .catch(function() {
       document.getElementById('og-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });

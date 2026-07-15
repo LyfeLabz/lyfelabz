@@ -2763,8 +2763,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label for="pp-teacher-select">Teacher</label>
           <select id="pp-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrBrown">Mr. Brown</option>
-            <option value="MsGay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
           <div class="info-error" id="pp-err-teacher">Please select your teacher.</div>
         </div>
@@ -3345,10 +3345,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 <!-- ===== QUIZ ===== -->
 <script>
 // ── GOOGLE SHEET URLS ────────────────────────────────────────────────
-var PP_SCRIPT_URLS = {
-  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const PP_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 // ── QUIZ STATE ────────────────────────────────────────────────────────
 var ppQuizState = { selected: [], submitted: false };
@@ -3631,24 +3628,30 @@ function ppSubmitQuiz() {
   }
 
   var info2 = ppValidateStudentInfo();
-  var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var teacherLabel = info2.teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
   // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
   // Thinking rides along in the final `thinking` field. Teacher selects the
   // endpoint only; it is not a submitted field.
   var letters = ['A','B','C','D'];
-  var params = new URLSearchParams({ tab: 'Physical Properties', studentName: info2.name, block: info2.block });
+  var params = new URLSearchParams({ resourceId: 'lesson_physical-properties', grade: '6', teacher: info2.teacher, studentName: info2.name, block: info2.block });
   ppQuizState.selected.forEach(function (chosenIndex, qi) {
     params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
   params.set('score', score);
   params.set('thinking', thinkingText);
-  fetch(PP_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(function () {
-      document.getElementById('pp-submit-status').innerHTML =
-        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+  fetch(PP_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('pp-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('pp-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
     })
-    .catch(function () {
+    .catch(function() {
       document.getElementById('pp-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });

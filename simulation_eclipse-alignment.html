@@ -2515,8 +2515,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label for="quiz-teacher-select">Teacher</label>
           <select id="quiz-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrBrown">Mr. Brown</option>
-            <option value="MsGay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
           <div class="info-error" id="quiz-err-teacher">Please select your teacher.</div>
         </div>
@@ -3668,12 +3668,8 @@ function toast(msg, type) {
    CHECKPOINT, Eclipse Alignment
    ═══════════════════════════════════════════════════════════ */
 
-/* ── SUBMISSION URLS ─────────────────────────────────────── */
-var CHECKPOINT_URLS = {
-  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
-var CHECKPOINT_TAB = 'Eclipse Alignment';
+/* ── SUBMISSION URL ──────────────────────────────────────── */
+const EA_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 /* ── QUESTIONS ───────────────────────────────────────────── */
 var checkQuestions = [
@@ -3882,19 +3878,29 @@ function submitCheckpoint() {
   }
 
   var info = validateCheckInfo();
-  var teacherLabel = info.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var teacherLabel = info.teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   var params = new URLSearchParams({
-    tab: CHECKPOINT_TAB,
+    resourceId:  'simulation_eclipse-alignment',
+    grade:       '6',
     studentName: info.name,
-    teacher: teacherLabel,
-    block: info.block,
-    score: score,
-    percent: pct + '%'
+    teacher:     info.teacher,
+    block:       info.block,
+    score:       score
   });
-  fetch(CHECKPOINT_URLS[info.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(function() {
-      document.getElementById('chk-submit-status').innerHTML =
-        '<div class="score-submitted">&#10003; Score submitted to ' + teacherLabel + '</div>';
+  checkQuestions.forEach(function(q, qi) {
+    var ans = chkState.selected[qi];
+    params.set('q' + (qi + 1), ans !== undefined ? ['A','B','C','D'][ans] : '-');
+  });
+  fetch(EA_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('chk-submit-status').innerHTML =
+          '<div class="score-submitted">&#10003; Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('chk-submit-status').innerHTML =
+          '<div class="score-error">&#9888; Could not reach the server. Check your connection.</div>';
+      }
     })
     .catch(function() {
       document.getElementById('chk-submit-status').innerHTML =

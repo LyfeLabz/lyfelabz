@@ -2565,8 +2565,8 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <label for="ce-teacher-select">Teacher</label>
           <select id="ce-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrBrown">Mr. Brown</option>
-            <option value="MsGay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
           <div class="info-error" id="ce-err-teacher">Please select your teacher.</div>
         </div>
@@ -3063,10 +3063,7 @@ if (sessionStorage.getItem('lyfelabz-ls')   === 'on') document.body.classList.ad
 <!-- ===== QUIZ ===== -->
 <script>
 // ── GOOGLE SHEET URLS ────────────────────────────────────────────────
-var CE_SCRIPT_URLS = {
-  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+const CE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 // ── QUIZ STATE ────────────────────────────────────────────────────────
 var ceQuizState = { selected: [], submitted: false };
@@ -3352,22 +3349,28 @@ function ceSubmitQuiz() {
   }
 
   var info2 = ceValidateStudentInfo();
-  var teacherLabel = info2.teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
+  var teacherLabel = info2.teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   var letters = ['A','B','C','D'];
   // Assessment v2 payload: tab, studentName, block, q1..q10, score, thinking.
   // Teacher selects the endpoint but is not sent in the payload.
-  var params = new URLSearchParams({ tab: 'How to Conduct Experiments', studentName: info2.name, block: info2.block });
+  var params = new URLSearchParams({ resourceId: 'lesson_conducting-experiments', grade: '6', teacher: info2.teacher, studentName: info2.name, block: info2.block });
   ceQuizState.selected.forEach(function (idx, i) {
     params.set('q' + (i + 1), idx !== null ? letters[idx] : '');
   });
   params.set('score', score);
   params.set('thinking', ceThinkingText);
-  fetch(CE_SCRIPT_URLS[info2.teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(function () {
-      document.getElementById('ce-submit-status').innerHTML =
-        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+  fetch(CE_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('ce-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('ce-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
     })
-    .catch(function () {
+    .catch(function() {
       document.getElementById('ce-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });
