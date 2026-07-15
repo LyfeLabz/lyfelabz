@@ -2237,8 +2237,8 @@ buildReflection();
           <label for="ct-teacher-select">Teacher</label>
           <select id="ct-teacher-select">
             <option value="">- Select -</option>
-            <option value="MrBrown">Mr. Brown</option>
-            <option value="MsGay">Ms. Gay</option>
+            <option value="mr-brown">Mr. Brown</option>
+            <option value="ms-gay">Ms. Gay</option>
           </select>
           <div class="info-error" id="ct-err-teacher">Please select your teacher.</div>
         </div>
@@ -2450,11 +2450,8 @@ buildReflection();
 </footer>
 
 <script>
-// ── GOOGLE SHEET URLS ─────────────────────────────────────────────────
-const CT_SCRIPT_URLS = {
-  MrBrown: 'https://script.google.com/macros/s/AKfycbzePx9ajEJv6e2k4rEYNEc8IH5C6vj5g_hSRCB-5DHS5vkJ-FP4MALeeAOYmEV_reYA4Q/exec',
-  MsGay:   'https://script.google.com/macros/s/AKfycbxmDmDi2gDMCBEKC_CTh3o-mTIc_9Tf1Pch7hN6z2lZxOV2O3VnMshG4A4KZjlKrPX_/exec'
-};
+// ── CENTRALIZED ENDPOINT ──────────────────────────────────────────────
+const CT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwdrSOGpB6_lWb7zbNjgADTw8DM-AZgVrB1iS2GPrsSMSM0I8GvWqVcLFHK-LGDP7f5VQ/exec';
 
 // ── QUIZ QUESTIONS ────────────────────────────────────────────────────
 const ctQuizQuestions = [
@@ -2730,24 +2727,26 @@ function ctSubmitQuiz() {
   }
 
   const { name, teacher, block } = ctValidateStudentInfo();
-  const teacherLabel = teacher === 'MrBrown' ? 'Mr. Brown' : 'Ms. Gay';
-  // Assessment v2 payload: the tab name identifies the lesson, each quiz item is
-  // recorded as the student's selected answer letter (A-D), and 🧠 Show Your
-  // Thinking rides along in the final `thinking` field. Teacher selects the
-  // endpoint only; it is not a submitted field.
+  const teacherLabel = teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   const letters = ['A','B','C','D'];
-  const params = new URLSearchParams({ tab: 'Cell Types', studentName: name, block });
+  const params = new URLSearchParams({ resourceId: 'lesson_cell-types', grade: '6', teacher, studentName: name, block });
   ctQuizState.selected.forEach((chosenIndex, qi) => {
     params.set('q' + (qi + 1), chosenIndex !== null ? letters[chosenIndex] : '');
   });
   params.set('score', score);
   params.set('thinking', thinkingText);
-  fetch(CT_SCRIPT_URLS[teacher] + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
-    .then(() => {
-      document.getElementById('ct-submit-status').innerHTML =
-        '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+  fetch(CT_ENDPOINT, { method: 'POST', body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('ct-submit-status').innerHTML =
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
+      } else {
+        document.getElementById('ct-submit-status').innerHTML =
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
+      }
     })
-    .catch(() => {
+    .catch(function() {
       document.getElementById('ct-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });
