@@ -5,15 +5,12 @@
 // Implementation of docs/V1_CENTRALIZED_ASSESSMENT_SUBMISSION_ARCHITECTURE.md
 //
 // One doPost handler routes every registered resource to the appropriate
-// teacher spreadsheet. Spreadsheet IDs are stored in Script Properties, not
-// in this source file.
+// teacher spreadsheet. Spreadsheet IDs are hardcoded in the Teacher Registry.
+// V1 serves four teachers for one academic year; simplicity is preferred over
+// runtime configurability.
 //
 // Setup: In Apps Script Project Settings > Script Properties, add:
-//   SPREADSHEET_MR_BROWN   <Google Sheet ID>
-//   SPREADSHEET_MS_GAY     <Google Sheet ID>
-//   SPREADSHEET_MR_KANKEL  <Google Sheet ID>
-//   SPREADSHEET_MR_ROVNER  <Google Sheet ID>
-//   DIGEST_EMAIL           <recipient email address>
+//   DIGEST_EMAIL  <recipient email address>
 // ============================================================================
 
 // ── Digest settings ──────────────────────────────────────────────────────────
@@ -25,31 +22,32 @@ var DEFAULT_HEADER_COLOR = '#2ecc71';
 var DEFAULT_FONT_COLOR   = '#0a1f0a';
 
 // ── Teacher Registry ──────────────────────────────────────────────────────────
-// spreadsheetPropKey: the Script Property key that holds the actual spreadsheet ID.
+// spreadsheetId: the actual Google Sheets ID for this teacher's spreadsheet.
+// V1 hardcodes these IDs directly. No Script Properties lookup is required.
 var TEACHER_REGISTRY = {
   'mr-brown': {
-    displayName:       'Mr. Brown',
-    grade:             6,
-    spreadsheetPropKey: 'SPREADSHEET_MR_BROWN',
-    active:            true,
+    displayName:   'Mr. Brown',
+    grade:         6,
+    spreadsheetId: '1GvsLh1t-ImQA8OZZlEWmqNPwonv2_NFpoxUNyBZeZso',
+    active:        true,
   },
   'ms-gay': {
-    displayName:       'Ms. Gay',
-    grade:             6,
-    spreadsheetPropKey: 'SPREADSHEET_MS_GAY',
-    active:            true,
+    displayName:   'Ms. Gay',
+    grade:         6,
+    spreadsheetId: '13sE2DOslTklgebTHfBSFK5KFIkmy82XhOwLCnQCxVZ4',
+    active:        true,
   },
   'mr-kankel': {
-    displayName:       'Mr. Kankel',
-    grade:             7,
-    spreadsheetPropKey: 'SPREADSHEET_MR_KANKEL',
-    active:            true,
+    displayName:   'Mr. Kankel',
+    grade:         7,
+    spreadsheetId: '1myEk9L0fha7k_sA8KjbvVRpwb_K6EUdILdGs-92-TYI',
+    active:        true,
   },
   'mr-rovner': {
-    displayName:       'Mr. Rovner',
-    grade:             7,
-    spreadsheetPropKey: 'SPREADSHEET_MR_ROVNER',
-    active:            true,
+    displayName:   'Mr. Rovner',
+    grade:         7,
+    spreadsheetId: '1c3uRwvZsRmAgL7Paih1l-ow0rnbHAQcM2fFf1UBDGlg',
+    active:        true,
   },
 };
 
@@ -783,12 +781,7 @@ function toHeaderLabel(fieldName) {
 
 // ── Spreadsheet access ────────────────────────────────────────────────────────
 function getSpreadsheet(teacher) {
-  var id = PropertiesService.getScriptProperties()
-             .getProperty(teacher.spreadsheetPropKey);
-  if (!id) {
-    throw new Error('Script Property not set: ' + teacher.spreadsheetPropKey);
-  }
-  return SpreadsheetApp.openById(id);
+  return SpreadsheetApp.openById(teacher.spreadsheetId);
 }
 
 // ── Worksheet get-or-create ───────────────────────────────────────────────────
@@ -1109,16 +1102,9 @@ function sendDailySubmissionDigest() {
     var teacher = TEACHER_REGISTRY[key];
     if (!teacher.active) continue;
 
-    var spreadsheetId = PropertiesService.getScriptProperties()
-                          .getProperty(teacher.spreadsheetPropKey);
-    if (!spreadsheetId) {
-      Logger.log('Digest: ' + teacher.spreadsheetPropKey + ' not configured, skipping.');
-      continue;
-    }
-
     var ss;
     try {
-      ss = SpreadsheetApp.openById(spreadsheetId);
+      ss = SpreadsheetApp.openById(teacher.spreadsheetId);
     } catch (openErr) {
       Logger.log('Digest: could not open spreadsheet for ' + teacher.displayName +
                  ': ' + openErr.message);

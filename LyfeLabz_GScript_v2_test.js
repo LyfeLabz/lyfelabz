@@ -356,25 +356,50 @@ function testRegistryIntegrity() {
     var t = TEACHER_REGISTRY[key];
     assert('teacher ' + key + ' has displayName',    typeof t.displayName === 'string');
     assert('teacher ' + key + ' has grade',          t.grade === 6 || t.grade === 7);
-    assert('teacher ' + key + ' has spreadsheetPropKey', typeof t.spreadsheetPropKey === 'string');
+    assert('teacher ' + key + ' has spreadsheetId',  typeof t.spreadsheetId === 'string' && t.spreadsheetId.length > 0);
     assert('teacher ' + key + ' has active flag',    typeof t.active === 'boolean');
-    assert('teacher ' + key + ' prop key not hardcoded ID',
-      t.spreadsheetPropKey.indexOf('SPREADSHEET_') === 0);
+    assert('teacher ' + key + ' no spreadsheetPropKey', t.spreadsheetPropKey === undefined);
   });
 }
 
-function testMissingSpreadsheetProperty() {
-  Logger.log('--- Missing spreadsheet property handling ---');
+function testSpreadsheetIds() {
+  Logger.log('--- Hardcoded spreadsheet IDs ---');
 
-  // Verify that spreadsheetPropKey values match the documented property names.
-  assert('mr-brown prop key is SPREADSHEET_MR_BROWN',
-    TEACHER_REGISTRY['mr-brown'].spreadsheetPropKey === 'SPREADSHEET_MR_BROWN');
-  assert('ms-gay prop key is SPREADSHEET_MS_GAY',
-    TEACHER_REGISTRY['ms-gay'].spreadsheetPropKey === 'SPREADSHEET_MS_GAY');
-  assert('mr-kankel prop key is SPREADSHEET_MR_KANKEL',
-    TEACHER_REGISTRY['mr-kankel'].spreadsheetPropKey === 'SPREADSHEET_MR_KANKEL');
-  assert('mr-rovner prop key is SPREADSHEET_MR_ROVNER',
-    TEACHER_REGISTRY['mr-rovner'].spreadsheetPropKey === 'SPREADSHEET_MR_ROVNER');
+  var GOOGLE_SHEET_ID_PATTERN = /^[A-Za-z0-9_-]{40,}$/;
+
+  function isValidSheetId(id) {
+    return typeof id === 'string' && id.length >= 40 && GOOGLE_SHEET_ID_PATTERN.test(id);
+  }
+
+  assert('mr-brown has a non-empty spreadsheetId',
+    typeof TEACHER_REGISTRY['mr-brown'].spreadsheetId === 'string' &&
+    TEACHER_REGISTRY['mr-brown'].spreadsheetId.length > 0);
+
+  assert('ms-gay has a non-empty spreadsheetId',
+    typeof TEACHER_REGISTRY['ms-gay'].spreadsheetId === 'string' &&
+    TEACHER_REGISTRY['ms-gay'].spreadsheetId.length > 0);
+
+  assert('mr-kankel has a non-empty spreadsheetId',
+    typeof TEACHER_REGISTRY['mr-kankel'].spreadsheetId === 'string' &&
+    TEACHER_REGISTRY['mr-kankel'].spreadsheetId.length > 0);
+
+  assert('mr-rovner has a non-empty spreadsheetId',
+    typeof TEACHER_REGISTRY['mr-rovner'].spreadsheetId === 'string' &&
+    TEACHER_REGISTRY['mr-rovner'].spreadsheetId.length > 0);
+
+  assert('mr-brown spreadsheetId format is valid',     isValidSheetId(TEACHER_REGISTRY['mr-brown'].spreadsheetId));
+  assert('ms-gay spreadsheetId format is valid',       isValidSheetId(TEACHER_REGISTRY['ms-gay'].spreadsheetId));
+  assert('mr-kankel spreadsheetId format is valid',    isValidSheetId(TEACHER_REGISTRY['mr-kankel'].spreadsheetId));
+  assert('mr-rovner spreadsheetId format is valid',    isValidSheetId(TEACHER_REGISTRY['mr-rovner'].spreadsheetId));
+
+  // Routing still resolves: each teacher entry has a spreadsheetId, not a propKey
+  var teacherKeys = Object.keys(TEACHER_REGISTRY);
+  teacherKeys.forEach(function(key) {
+    var t = TEACHER_REGISTRY[key];
+    assert('teacher ' + key + ' routes via spreadsheetId, not propKey',
+      typeof t.spreadsheetId === 'string' && t.spreadsheetPropKey === undefined);
+  });
+
 }
 
 function testPayloadFieldAuthorization() {
@@ -567,7 +592,7 @@ function runAllTests() {
   testServerTimestamp();
   testResponseStructure();
   testRegistryIntegrity();
-  testMissingSpreadsheetProperty();
+  testSpreadsheetIds();
 
   Logger.log('====================================');
   Logger.log('Results: ' + _pass + ' passed, ' + _fail + ' failed');

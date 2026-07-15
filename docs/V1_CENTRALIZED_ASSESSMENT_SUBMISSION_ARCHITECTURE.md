@@ -175,7 +175,7 @@ Each teacher entry has these fields:
 | `teacherKey` | Yes | The registry key and canonical payload value. Lowercase kebab-case (e.g., `mr-brown`, `ms-gay`). This is what the client sends in the `teacher` payload field. Never changes. |
 | `displayName` | Yes | Human-readable name for digest emails and error messages (e.g., `Mr. Brown`). |
 | `grade` | Yes | The grade this teacher teaches. One of `6` or `7`. Used to validate that submitted resources belong to this teacher's grade. |
-| `spreadsheetId` | Yes | Reference to the Script Property key that holds the actual spreadsheet ID (e.g., `SPREADSHEET_MR_BROWN`). Spreadsheet IDs are never hardcoded in the script source. |
+| `spreadsheetId` | Yes | The actual Google Sheets spreadsheet ID for this teacher's spreadsheet. Hardcoded directly in the Teacher Registry. No Script Properties lookup is required at runtime. |
 | `active` | Yes | Boolean. If `false`, the server rejects submissions for this teacher key. |
 
 ### 5.2 V1 Teacher Registry
@@ -187,25 +187,25 @@ TEACHER_REGISTRY = {
   'mr-brown': {
     displayName:   'Mr. Brown',
     grade:         6,
-    spreadsheetId: 'SPREADSHEET_MR_BROWN',
+    spreadsheetId: '1GvsLh1t-ImQA8OZZlEWmqNPwonv2_NFpoxUNyBZeZso',
     active:        true,
   },
   'ms-gay': {
     displayName:   'Ms. Gay',
     grade:         6,
-    spreadsheetId: 'SPREADSHEET_MS_GAY',
+    spreadsheetId: '13sE2DOslTklgebTHfBSFK5KFIkmy82XhOwLCnQCxVZ4',
     active:        true,
   },
   'mr-kankel': {
     displayName:   'Mr. Kankel',
     grade:         7,
-    spreadsheetId: 'SPREADSHEET_MR_KANKEL',
+    spreadsheetId: '1myEk9L0fha7k_sA8KjbvVRpwb_K6EUdILdGs-92-TYI',
     active:        true,
   },
   'mr-rovner': {
     displayName:   'Mr. Rovner',
     grade:         7,
-    spreadsheetId: 'SPREADSHEET_MR_ROVNER',
+    spreadsheetId: '1c3uRwvZsRmAgL7Paih1l-ow0rnbHAQcM2fFf1UBDGlg',
     active:        true,
   },
 }
@@ -213,9 +213,9 @@ TEACHER_REGISTRY = {
 
 ### 5.3 Spreadsheet ID Storage
 
-Spreadsheet IDs are stored in Script Properties, not in the script source. The `spreadsheetId` field in the registry holds the property key name. At runtime, the script calls `PropertiesService.getScriptProperties().getProperty(entry.spreadsheetId)` to obtain the actual ID.
+V1 hardcodes spreadsheet IDs directly in the Teacher Registry. Each `spreadsheetId` field contains the actual Google Sheets ID string.
 
-This allows updating a spreadsheet ID without changing or redeploying the script.
+V1 serves four teachers for one academic year. Simplicity is preferred over runtime configurability. When V2 replaces this backend, the Teacher Registry will be migrated at that time. No Script Properties setup is required to operate V1.
 
 ### 5.4 Teacher Key Format
 
@@ -224,10 +224,9 @@ Teacher keys use lowercase kebab-case. The student-facing teacher select uses th
 ### 5.5 Adding a Teacher
 
 1. Create or designate the teacher's spreadsheet and grant edit access to the Apps Script owner account.
-2. Add the spreadsheet ID to Script Properties under the chosen property key name.
-3. Add the teacher entry to `TEACHER_REGISTRY` in the script.
-4. Add the teacher as a select option on every grade-appropriate page.
-5. Deploy the updated script.
+2. Add the teacher entry to `TEACHER_REGISTRY` in the script, with the actual spreadsheet ID in the `spreadsheetId` field.
+3. Add the teacher as a select option on every grade-appropriate page.
+4. Deploy the updated script.
 
 No per-page endpoint changes are required.
 
@@ -342,7 +341,7 @@ The server executes validation in this order. Any failure returns an error respo
 
 6. **Thinking validation.** If `thinkingRequired` is `true` for this resource, verify that `thinking` is non-empty. Reject with `"Show Your Thinking response is required for this resource"`.
 
-7. **Spreadsheet access.** Obtain the spreadsheet ID from Script Properties using the teacher's `spreadsheetId` key. Open the spreadsheet. On failure, log the error and return `"Could not access teacher spreadsheet"`.
+7. **Spreadsheet access.** Read `spreadsheetId` directly from the Teacher Registry entry. Open the spreadsheet. On failure, log the error and return `"Could not access teacher spreadsheet"`.
 
 8. **Worksheet resolution.** Derive `worksheetName` from the Resource Registry entry (see Section 7.3). Get or create the worksheet in the teacher's spreadsheet.
 
@@ -527,7 +526,7 @@ Before implementation, verify:
 - [ ] The server validates that the teacher's `grade` matches the resource's `grade` before writing.
 - [ ] Spreadsheet routing uses the Teacher Registry. The Resource Registry does not determine the destination spreadsheet.
 - [ ] Worksheet selection uses the Resource Registry.
-- [ ] Spreadsheet IDs are in Script Properties. They are not hardcoded in the script source.
+- [ ] Spreadsheet IDs are hardcoded in the Teacher Registry. No Script Properties lookup is used for routing.
 - [ ] Practice Mode produces no POST.
 - [ ] The Submit button is disabled until teacher, block, name, all questions, and thinking (when required) are provided.
 - [ ] A failed POST leaves student work intact.
