@@ -1,175 +1,1070 @@
-// ═══════════════════════════════════════════════════════════════════════════
-// LYFELABZ ASSESSMENT v2
-// Created: 2026-07-01
+// ============================================================================
+// LYFELABZ CENTRALIZED ASSESSMENT BACKEND
+// Sprint S3A - 2026-07-15
 //
-// A clean-break rewrite of the LyfeLabz submission pipeline for the HQIM
-// workflow. This script writes to a BRAND NEW Google Sheet and is not backward
-// compatible with the v1 script (LyfeLabz_GScript.js), which continues to serve
-// the older lessons on the old sheet during the transition.
+// Implementation of docs/V1_CENTRALIZED_ASSESSMENT_SUBMISSION_ARCHITECTURE.md
 //
-// What is new in v2:
-//   - Every lesson tab shares ONE simple schema. The tab name identifies the
-//     lesson, so there is no Lesson column.
-//   - Each response row stores one column per quiz question (Q1..QN, where N is
-//     the number of questions in that lesson), the Score, and the 🧠 Show Your
-//     Thinking response as the final column. Most lessons have ten questions,
-//     but a lesson may have more (for example Body Systems has fifteen); the
-//     row grows to fit however many q1..qN answers the lesson posts.
-//   - No Teacher column, no Percent column, no Missed Questions transform, and
-//     no per-lesson header/field lists. Teachers wanted the sheet kept simple.
-//   - Show Your Thinking is submitted together with the quiz data (field:
-//     `thinking`) and written into the final column of the correct lesson tab.
+// One doPost handler routes every registered resource to the appropriate
+// teacher spreadsheet. Spreadsheet IDs are stored in Script Properties, not
+// in this source file.
 //
-// Practice Mode vs Classroom Mode is unchanged: practice mode never calls this
-// endpoint, and classroom mode submits exactly as before. The script does not
-// need to distinguish them.
-// ─────────────────────────────────────────────────────────────────────────────
+// Setup: In Apps Script Project Settings > Script Properties, add:
+//   SPREADSHEET_MR_BROWN   <Google Sheet ID>
+//   SPREADSHEET_MS_GAY     <Google Sheet ID>
+//   SPREADSHEET_MR_KANKEL  <Google Sheet ID>
+//   SPREADSHEET_MR_ROVNER  <Google Sheet ID>
+//   DIGEST_EMAIL           <recipient email address>
+// ============================================================================
 
-// Paste the NEW v2 Google Sheet ID here before deploying.
-const SPREADSHEET_ID = 'PASTE_NEW_ASSESSMENT_V2_SHEET_ID_HERE';
+// ── Digest settings ──────────────────────────────────────────────────────────
+var DAILY_DIGEST_HOUR         = 7;
+var DAILY_DIGEST_PROPERTY_KEY = 'LYFELABZ_CENTRALIZED_LAST_DIGEST_SENT_AT';
 
-// Put your email address here.
-const DAILY_DIGEST_EMAIL = 'brownc@weston.org';
+// ── Header styling defaults ───────────────────────────────────────────────────
+var DEFAULT_HEADER_COLOR = '#2ecc71';
+var DEFAULT_FONT_COLOR   = '#0a1f0a';
 
-// Daily digest settings.
-const DAILY_DIGEST_HOUR = 7; // 7 AM
-const DAILY_DIGEST_PROPERTY_KEY = 'LYFELABZ_V2_LAST_DIGEST_SENT_AT';
+// ── Teacher Registry ──────────────────────────────────────────────────────────
+// spreadsheetPropKey: the Script Property key that holds the actual spreadsheet ID.
+var TEACHER_REGISTRY = {
+  'mr-brown': {
+    displayName:       'Mr. Brown',
+    grade:             6,
+    spreadsheetPropKey: 'SPREADSHEET_MR_BROWN',
+    active:            true,
+  },
+  'ms-gay': {
+    displayName:       'Ms. Gay',
+    grade:             6,
+    spreadsheetPropKey: 'SPREADSHEET_MS_GAY',
+    active:            true,
+  },
+  'mr-kankel': {
+    displayName:       'Mr. Kankel',
+    grade:             7,
+    spreadsheetPropKey: 'SPREADSHEET_MR_KANKEL',
+    active:            true,
+  },
+  'mr-rovner': {
+    displayName:       'Mr. Rovner',
+    grade:             7,
+    spreadsheetPropKey: 'SPREADSHEET_MR_ROVNER',
+    active:            true,
+  },
+};
 
-// ── The one shared schema for every lesson tab ────────────────────────────
-// Column order is fixed: the identity columns, then one column per quiz
-// question (Q1..QN), then Score and 🧠 Show Your Thinking. The tab name
-// identifies the lesson, so no Lesson column exists, and 🧠 Show Your Thinking
-// is always the final column.
+// ── Resource Registry ─────────────────────────────────────────────────────────
+// Every resource that submits to this backend is registered here. The registry
+// is the server allowlist: any resourceId not in this object is rejected.
 //
-// Only the number of quiz-answer columns varies between lessons. The leading
-// and trailing columns are constant, and the answer columns are generated to
-// match however many q1..qN answers the lesson posts (see buildSchema).
-const LEADING_HEADERS  = ['Timestamp', 'Student Name', 'Block'];
-const TRAILING_HEADERS = ['Score', '🧠 Show Your Thinking'];
+// Fields:
+//   displayTitle          Student-facing name; also the worksheet tab label by default.
+//   grade                 6 or 7.
+//   resourceType          'lesson' | 'investigation' | 'simulation' | 'extension' |
+//                         'challenge' | 'game'
+//   expectedQuestionCount Number of q1..qN fields the server requires in the payload.
+//                         0 means no per-question validation.
+//   thinkingRequired      If true, 'thinking' must be non-empty.
+//   worksheetName         Optional. Override only when displayTitle exceeds 31 chars
+//                         or contains characters that cause Sheets API errors.
+//   extendedFields        Optional array of approved additional field names beyond
+//                         the canonical payload. Any submitted field not in the
+//                         canonical set or this list is rejected before spreadsheet
+//                         access. The unauthorized field name is logged server-side;
+//                         the response does not expose it.
+//   headerColor / fontColor  Optional header row styling. Defaults to script constants.
+//
+// Migration note: resources marked with pendingMigration:true currently send
+// a legacy GET payload to per-teacher endpoints. Their q1..qN and canonical
+// field names will be wired up in Sprint S3B (client migration). The registry
+// entries here represent the canonical goal state so the server is ready
+// to accept them the moment the client is updated.
 
-// The URL-parameter names each lesson posts. Timestamp is added by the server
-// and is not a submitted field; the quiz answers (q1..qN) sit between these
-// leading and trailing field lists.
-const LEADING_FIELDS  = ['studentName', 'block'];
-const TRAILING_FIELDS = ['score', 'thinking'];
+var RESOURCE_REGISTRY = {
 
-// Build the header and field lists for a lesson with `questionCount` questions.
-// headers include the server-added Timestamp; fields do not.
-function buildSchema(questionCount) {
+  // ── Grade 6 Lessons ────────────────────────────────────────────────────────
+
+  'lesson_what-is-life': {
+    displayTitle:          'What Is Life',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_nature-of-waves': {
+    displayTitle:          'Nature of Waves',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_wave-behavior': {
+    displayTitle:          'Wave Behavior',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_digital-signals': {
+    displayTitle:          'Digital Signals',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_cell-types': {
+    displayTitle:          'Cell Types',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_body-systems': {
+    displayTitle:          'Body Systems',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 15,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_organelles': {
+    displayTitle:          'Organelles',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_biological-evolution': {
+    displayTitle:          'Biological Evolution',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_chemical-reactions': {
+    displayTitle:          'Chemical Reactions',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_choosing-materials': {
+    displayTitle:          'Choosing Materials',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_conducting-experiments': {
+    displayTitle:          'How to Conduct Experiments',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_continental-drift': {
+    displayTitle:          'Continental Drift',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_designing-to-scale': {
+    displayTitle:          'Designing to Scale',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_eclipses': {
+    displayTitle:          'Eclipses',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_engineering-design': {
+    displayTitle:          'Engineering Design',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_gravity': {
+    displayTitle:          'Gravity',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_layers-of-time': {
+    displayTitle:          'Layers of Time',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_measuring-matter': {
+    displayTitle:          'Measuring Matter',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_phases-of-the-moon': {
+    displayTitle:          'Phases of the Moon',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_physical-properties': {
+    displayTitle:          'Physical Properties',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_pure-substances-and-mixtures': {
+    displayTitle:          'Pure Substances and Mixtures',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_ragebaiting': {
+    displayTitle:          "Don't Take the Bait",
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_sun-earth-moon': {
+    displayTitle:          'Sun-Earth-Moon System',
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+  'lesson_earths-place-in-the-universe': {
+    displayTitle:          "Earth's Place in the Universe",
+    grade:                 6,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#2ecc71',
+    fontColor:             '#0a1f0a',
+  },
+
+  // ── Grade 7 Lessons ────────────────────────────────────────────────────────
+
+  'lesson_earths-layers': {
+    displayTitle:          "Earth's Layers",
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_carbon-cycle': {
+    displayTitle:          'Carbon Cycle',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_communication-systems': {
+    displayTitle:          'Communication Systems',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_design-tradeoffs': {
+    displayTitle:          'Design Tradeoffs',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_earthquakes': {
+    displayTitle:          'Earthquakes',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_ecosystem-stability': {
+    displayTitle:          'Ecosystem Stability',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_energy-flow': {
+    displayTitle:          'Energy Flow',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_energy-transfer': {
+    displayTitle:          'Energy Transfer',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_engineering-systems': {
+    displayTitle:          'Engineering Systems',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_forms-of-energy': {
+    displayTitle:          'Forms of Energy',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_heat-transfer': {
+    displayTitle:          'Heat Transfer',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_hotspot-volcanoes': {
+    displayTitle:          'Hotspot Volcanoes',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_human-impacts': {
+    displayTitle:          'Human Impacts',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_innovation-and-sustainability': {
+    displayTitle:          'Innovation and Sustainability',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_introduction-to-electricity': {
+    displayTitle:          'Introduction to Electricity',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_parts-of-an-ecosystem': {
+    displayTitle:          'Parts of an Ecosystem',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_photosynthesis': {
+    displayTitle:          'Photosynthesis',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_plate-tectonics': {
+    displayTitle:          'Plate Tectonics',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_renewable-and-nonrenewable-resources': {
+    displayTitle:          'Renewable and Nonrenewable Resources',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    worksheetName:         'Renewable Resources',
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_reproductive-success': {
+    displayTitle:          'Reproductive Success',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_structural-systems': {
+    displayTitle:          'Structural Systems',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_technology-and-society': {
+    displayTitle:          'Technology and Society',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_transportation-systems': {
+    displayTitle:          'Transportation Systems',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_types-of-volcanoes': {
+    displayTitle:          'Types of Volcanoes',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_water-cycle': {
+    displayTitle:          'Water Cycle',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+  'lesson_weathering-and-erosion': {
+    displayTitle:          'Weathering and Erosion',
+    grade:                 7,
+    resourceType:          'lesson',
+    expectedQuestionCount: 10,
+    thinkingRequired:      true,
+    headerColor:           '#7a8fa6',
+    fontColor:             '#ffffff',
+  },
+
+  // ── Grade 6 Engineering Challenges ────────────────────────────────────────
+
+  'challenge_welcome-to-floatia': {
+    displayTitle:          'Welcome to Floatia: Engineering Challenge',
+    grade:                 6,
+    resourceType:          'challenge',
+    expectedQuestionCount: 10,
+    thinkingRequired:      false,
+    worksheetName:         'Welcome to Floatia',
+    headerColor:           '#ff5470',
+    fontColor:             '#ffffff',
+  },
+
+  // ── Grade 6 Extensions ────────────────────────────────────────────────────
+  // pendingMigration: these currently use legacy GET payloads with compact
+  // quizScore/answers fields. Client migration happens in Sprint S3B.
+  // expectedQuestionCount reflects the actual quiz size; individual q1..qN
+  // fields will be wired up when the client is updated.
+
+  'extension_chernobyl-frogs': {
+    displayTitle:          'Chernobyl Tree Frogs',
+    grade:                 6,
+    resourceType:          'extension',
+    expectedQuestionCount: 4,
+    thinkingRequired:      false,
+    extendedFields:        ['environment', 'eventType', 'totalGens', 'accuracy'],
+    headerColor:           '#3498db',
+    fontColor:             '#ffffff',
+  },
+  'extension_fossil-hunt': {
+    displayTitle:          'Fossil Hunt',
+    grade:                 6,
+    resourceType:          'extension',
+    expectedQuestionCount: 10,
+    thinkingRequired:      false,
+    extendedFields:        ['difficulty', 'groupsMatched', 'errors', 'hintsUsed', 'quizAnswers'],
+    headerColor:           '#3498db',
+    fontColor:             '#ffffff',
+  },
+  'extension_hidden-world-of-matter': {
+    displayTitle:          'The Hidden World of Matter',
+    grade:                 6,
+    resourceType:          'extension',
+    expectedQuestionCount: 10,
+    thinkingRequired:      false,
+    extendedFields:        ['answers'],
+    headerColor:           '#3498db',
+    fontColor:             '#ffffff',
+  },
+  'extension_neuron-explorer': {
+    displayTitle:          'Neuron Explorer',
+    grade:                 6,
+    resourceType:          'extension',
+    expectedQuestionCount: 8,
+    thinkingRequired:      false,
+    extendedFields:        ['answers'],
+    headerColor:           '#3498db',
+    fontColor:             '#ffffff',
+  },
+  'extension_virus': {
+    displayTitle:          'Are Viruses Alive?',
+    grade:                 6,
+    resourceType:          'extension',
+    expectedQuestionCount: 8,
+    thinkingRequired:      false,
+    worksheetName:         'Are Viruses Alive',
+    extendedFields:        ['answers'],
+    headerColor:           '#3498db',
+    fontColor:             '#ffffff',
+  },
+
+  // ── Grade 6 Games ─────────────────────────────────────────────────────────
+
+  'game_layer-detective': {
+    displayTitle:          'Layer Detective',
+    grade:                 6,
+    resourceType:          'game',
+    expectedQuestionCount: 5,
+    thinkingRequired:      false,
+    extendedFields:        ['hintsUsed', 'quizAnswers'],
+    headerColor:           '#f39c12',
+    fontColor:             '#000000',
+  },
+
+  // ── Grade 6 Simulations ───────────────────────────────────────────────────
+
+  'simulation_beetle-island': {
+    displayTitle:          'Beetle Island',
+    grade:                 6,
+    resourceType:          'simulation',
+    expectedQuestionCount: 4,
+    thinkingRequired:      false,
+    extendedFields:        ['environment', 'eventType', 'totalGens', 'accuracy', 'prediction'],
+    headerColor:           '#9b59b6',
+    fontColor:             '#ffffff',
+  },
+  'simulation_eclipse-alignment': {
+    displayTitle:          'Eclipse Alignment',
+    grade:                 6,
+    resourceType:          'simulation',
+    expectedQuestionCount: 5,
+    thinkingRequired:      false,
+    headerColor:           '#9b59b6',
+    fontColor:             '#ffffff',
+  },
+  'simulation_floatlandia-fracture': {
+    displayTitle:          'Floatlandia Fracture',
+    grade:                 6,
+    resourceType:          'simulation',
+    expectedQuestionCount: 5,
+    thinkingRequired:      false,
+    headerColor:           '#9b59b6',
+    fontColor:             '#ffffff',
+  },
+  'simulation_gravity-wells': {
+    displayTitle:          'Gravity Wells',
+    grade:                 6,
+    resourceType:          'simulation',
+    expectedQuestionCount: 5,
+    thinkingRequired:      false,
+    headerColor:           '#9b59b6',
+    fontColor:             '#ffffff',
+  },
+
+  // ── Grade 6 Investigations ────────────────────────────────────────────────
+
+  'investigation_amplitude-challenge': {
+    displayTitle:          'Amplitude Challenge',
+    grade:                 6,
+    resourceType:          'investigation',
+    expectedQuestionCount: 5,
+    thinkingRequired:      false,
+    extendedFields:        [
+      'prediction', 'trials', 'targetAttempts', 'modelChoice',
+      'cerClaim', 'cerEvidence', 'cerReasoning', 'quizAnswers',
+    ],
+    headerColor:           '#e67e22',
+    fontColor:             '#ffffff',
+  },
+  'investigation_cell-energy': {
+    displayTitle:          'Cell Energy Investigation',
+    grade:                 6,
+    resourceType:          'investigation',
+    expectedQuestionCount: 5,
+    thinkingRequired:      false,
+    extendedFields:        ['answers'],
+    headerColor:           '#e67e22',
+    fontColor:             '#ffffff',
+  },
+  'investigation_gray-zone': {
+    displayTitle:          'The Gray Zone Investigation',
+    grade:                 6,
+    resourceType:          'investigation',
+    expectedQuestionCount: 8,
+    thinkingRequired:      false,
+    extendedFields:        ['answers'],
+    headerColor:           '#e67e22',
+    fontColor:             '#ffffff',
+  },
+  'investigation_protein-pathway': {
+    displayTitle:          'The Protein Pathway',
+    grade:                 6,
+    resourceType:          'investigation',
+    expectedQuestionCount: 8,
+    thinkingRequired:      false,
+    extendedFields:        ['answers'],
+    headerColor:           '#e67e22',
+    fontColor:             '#ffffff',
+  },
+
+  // ── Grade 7 Investigations ────────────────────────────────────────────────
+
+  'investigation_population-patterns': {
+    displayTitle:          'Population Patterns',
+    grade:                 7,
+    resourceType:          'investigation',
+    expectedQuestionCount: 10,
+    thinkingRequired:      false,
+    extendedFields:        [
+      'prediction', 'checkpoints', 'cerClaim', 'cerEvidence', 'cerReasoning',
+      'challengeChoice', 'challengeText', 'quizAnswers',
+    ],
+    headerColor:           '#e67e22',
+    fontColor:             '#ffffff',
+  },
+
+};
+
+// ── Canonical worksheet name resolution ──────────────────────────────────────
+function resolveWorksheetName(resource) {
+  return resource.worksheetName || resource.displayTitle;
+}
+
+// ── Schema builder ────────────────────────────────────────────────────────────
+// Returns { headers, fields } for a resource entry. The question columns sit
+// between the fixed leading and trailing columns.
+var LEADING_HEADERS  = ['Timestamp', 'Student Name', 'Block'];
+var TRAILING_HEADERS = ['Score', 'Show Your Thinking'];
+var LEADING_FIELDS   = ['studentName', 'block'];
+var TRAILING_FIELDS  = ['score', 'thinking'];
+
+function buildSchema(resource) {
   var qHeaders = [];
   var qFields  = [];
-  for (var i = 1; i <= questionCount; i++) {
+  for (var i = 1; i <= resource.expectedQuestionCount; i++) {
     qHeaders.push('Q' + i);
     qFields.push('q' + i);
   }
+  var extFields   = resource.extendedFields || [];
+  var extHeaders  = extFields.map(function(f) { return toHeaderLabel(f); });
   return {
-    headers: LEADING_HEADERS.concat(qHeaders, TRAILING_HEADERS),
-    fields:  LEADING_FIELDS.concat(qFields, TRAILING_FIELDS),
+    headers: LEADING_HEADERS.concat(qHeaders, TRAILING_HEADERS, extHeaders),
+    fields:  LEADING_FIELDS.concat(qFields, TRAILING_FIELDS, extFields),
   };
 }
 
-// Count how many quiz answers a submission carries by walking q1, q2, ... until
-// the first missing one. Lessons always post a contiguous q1..qN.
-function countQuestions(params) {
-  var n = 0;
-  while (params['q' + (n + 1)] !== undefined) {
-    n++;
-  }
-  return n;
+function toHeaderLabel(fieldName) {
+  var map = {
+    cerClaim:        'CER: Claim',
+    cerEvidence:     'CER: Evidence',
+    cerReasoning:    'CER: Reasoning',
+    challengeChoice: 'Challenge Choice',
+    challengeText:   'Challenge Response',
+    modelChoice:     'Model Choice',
+    quizAnswers:     'Quiz Answers (JSON)',
+    targetAttempts:  'Target Attempts (JSON)',
+    hintsUsed:       'Hints Used',
+    groupsMatched:   'Groups Matched',
+    totalGens:       'Total Generations',
+    accuracy:        'Graph Accuracy',
+    eventType:       'Event Type',
+    environment:     'Environment',
+    prediction:      'Prediction',
+    difficulty:      'Difficulty',
+    errors:          'Errors',
+    trials:          'Trials (JSON)',
+    checkpoints:     'Checkpoints (JSON)',
+    answers:         'Answers (compact)',
+  };
+  return map[fieldName] || fieldName;
 }
 
-// Default header styling. A lesson may override the color in TAB_CONFIG below.
-const DEFAULT_HEADER_COLOR = '#2ecc71';
-const DEFAULT_FONT_COLOR   = '#0a1f0a';
-
-// ── Registered lesson tabs ────────────────────────────────────────────────
-// Every lesson or extension gets its own tab. Registering a new lesson is one
-// line: the tab name, and optionally a header color. The schema is always the
-// same shape (only the number of Q columns follows the lesson), so there is
-// nothing else to configure.
-//
-// The registry is also the allowlist: doGet rejects any tab that is not listed
-// here, so a typo in a lesson never creates a stray tab.
-const TAB_CONFIG = {
-  'What Is Life': { headerColor: '#2ecc71', fontColor: '#0a1f0a' },
-  // Add future HQIM lessons here, one line each, e.g.:
-  // 'Nature of Waves': { headerColor: '#3bc8e8', fontColor: '#0a1f2e' },
-};
-
-// ── Main handler ──────────────────────────────────────────────────────────
-function doGet(e) {
-  try {
-    var params  = e.parameter;
-    var tabName  = params.tab;
-
-    if (!tabName || !TAB_CONFIG[tabName]) {
-      return respond('error', 'Unknown tab: ' + tabName);
-    }
-
-    var config = TAB_CONFIG[tabName];
-    var schema = buildSchema(countQuestions(params));
-    var ss     = SpreadsheetApp.openById(SPREADSHEET_ID);
-    var sheet  = getOrCreateSheet(ss, tabName, config, schema);
-
-    var row = [new Date()];
-    schema.fields.forEach(function(field) {
-      row.push(params[field] !== undefined ? params[field] : '');
-    });
-
-    sheet.insertRows(2, 1);
-    sheet.getRange(2, 1, 1, schema.headers.length).setValues([row]).setWrap(true);
-
-    return respond('success', 'Row added to ' + tabName);
-  } catch (err) {
-    return respond('error', err.toString());
+// ── Spreadsheet access ────────────────────────────────────────────────────────
+function getSpreadsheet(teacher) {
+  var id = PropertiesService.getScriptProperties()
+             .getProperty(teacher.spreadsheetPropKey);
+  if (!id) {
+    throw new Error('Script Property not set: ' + teacher.spreadsheetPropKey);
   }
+  return SpreadsheetApp.openById(id);
 }
 
-// ── Helper: get or create sheet ───────────────────────────────────────────
-function getOrCreateSheet(ss, name, config, schema) {
-  var sheet = ss.getSheetByName(name);
+// ── Worksheet get-or-create ───────────────────────────────────────────────────
+function getOrCreateSheet(ss, sheetName, resource, schema) {
+  var sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
-    sheet = ss.insertSheet(name);
+    sheet = ss.insertSheet(sheetName);
     sheet.setFrozenRows(1);
   }
+
+  var headerColor = resource.headerColor || DEFAULT_HEADER_COLOR;
+  var fontColor   = resource.fontColor   || DEFAULT_FONT_COLOR;
 
   var headerRange = sheet.getRange(1, 1, 1, schema.headers.length);
   headerRange.setValues([schema.headers]);
   headerRange.setFontWeight('bold');
-  headerRange.setBackground(config.headerColor || DEFAULT_HEADER_COLOR);
-  headerRange.setFontColor(config.fontColor || DEFAULT_FONT_COLOR);
+  headerRange.setBackground(headerColor);
+  headerRange.setFontColor(fontColor);
   headerRange.setFontSize(11);
   headerRange.setWrap(true);
 
-  // Timestamp and Student Name get wider columns; the quiz answer columns stay
-  // narrow; Score narrow; Show Your Thinking (last) is the widest.
-  var lastCol = schema.headers.length;
-  for (var i = 1; i <= lastCol; i++) {
-    var width;
-    if (i === 1)            width = 180; // Timestamp
-    else if (i === 2)       width = 160; // Student Name
-    else if (i === 3)       width = 70;  // Block
-    else if (i === lastCol) width = 360; // 🧠 Show Your Thinking
-    else if (i === lastCol - 1) width = 80; // Score
-    else                    width = 55;  // Q1..QN
-    sheet.setColumnWidth(i, width);
-  }
+  applyColumnWidths(sheet, schema.headers.length);
   return sheet;
 }
 
-// ── Helper: JSON response ─────────────────────────────────────────────────
+function applyColumnWidths(sheet, colCount) {
+  for (var i = 1; i <= colCount; i++) {
+    var header = sheet.getRange(1, i).getValue();
+    var width;
+    if (header === 'Timestamp')            width = 180;
+    else if (header === 'Student Name')    width = 160;
+    else if (header === 'Block')           width = 70;
+    else if (header === 'Score')           width = 80;
+    else if (header === 'Show Your Thinking') width = 360;
+    else if (String(header).indexOf('JSON') !== -1) width = 220;
+    else if (String(header).indexOf('CER') !== -1)  width = 200;
+    else if (String(header).startsWith('Q'))         width = 55;
+    else                                  width = 160;
+    sheet.setColumnWidth(i, width);
+  }
+}
+
+// ── JSON response helper ──────────────────────────────────────────────────────
 function respond(status, message) {
   return ContentService
     .createTextOutput(JSON.stringify({ status: status, message: message }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ============================================================================
+// doPost: the single submission handler
+// Validation order per architecture section 7.2 + S3A field authorization:
+//   1. resource   2. teacher   3. grade   4. teacher-grade   5. questions
+//   6. thinking   7. field authorization   8. spreadsheet   9. worksheet   10. row write
+// ============================================================================
+function doPost(e) {
+  try {
+    var params = e.parameter;
+
+    // 1. Resource validation
+    var resourceId = params.resourceId;
+    if (!resourceId || !RESOURCE_REGISTRY[resourceId]) {
+      return respond('error', 'Unknown resource: ' + (resourceId || '(none)'));
+    }
+    var resource = RESOURCE_REGISTRY[resourceId];
+
+    // 2. Teacher validation
+    var teacherKey = params.teacher;
+    if (!teacherKey || !TEACHER_REGISTRY[teacherKey]) {
+      return respond('error', 'Unknown teacher: ' + (teacherKey || '(none)'));
+    }
+    var teacher = TEACHER_REGISTRY[teacherKey];
+    if (!teacher.active) {
+      return respond('error', 'Teacher is not active: ' + teacherKey);
+    }
+
+    // 3. Grade validation (payload grade vs resource grade)
+    var payloadGrade = parseInt(params.grade, 10);
+    if (isNaN(payloadGrade) || payloadGrade !== resource.grade) {
+      return respond('error',
+        'Grade mismatch: payload says ' + params.grade +
+        ', resource is grade ' + resource.grade);
+    }
+
+    // 4. Teacher-grade cross-validation
+    if (teacher.grade !== resource.grade) {
+      return respond('error',
+        'Teacher ' + teacherKey + ' is grade ' + teacher.grade +
+        ', resource is grade ' + resource.grade);
+    }
+
+    // 5. Required field validation
+    if (!params.studentName || !params.studentName.trim()) {
+      return respond('error', 'Student name is required.');
+    }
+
+    var validBlocks = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    if (!params.block || validBlocks.indexOf(params.block.toUpperCase()) === -1) {
+      return respond('error', 'Block must be A through G.');
+    }
+
+    if (!params.score || !params.score.trim()) {
+      return respond('error', 'Score is required.');
+    }
+
+    // 6. Question completeness
+    var n = resource.expectedQuestionCount;
+    if (n > 0) {
+      var found = 0;
+      for (var i = 1; i <= n; i++) {
+        if (params['q' + i] !== undefined && params['q' + i] !== '') found++;
+      }
+      if (found < n) {
+        return respond('error',
+          'Missing questions: expected ' + n + ', found ' + found);
+      }
+    }
+
+    // 7. Show Your Thinking validation
+    if (resource.thinkingRequired) {
+      var thinking = params.thinking;
+      if (!thinking || !thinking.trim()) {
+        return respond('error',
+          'Show Your Thinking response is required for this resource.');
+      }
+    }
+
+    // 7b. Payload field authorization (must precede any spreadsheet access)
+    var fieldAuthError = validatePayloadFields(params, resource);
+    if (fieldAuthError) {
+      return respond('error', fieldAuthError);
+    }
+
+    // 8. Spreadsheet access
+    var ss;
+    try {
+      ss = getSpreadsheet(teacher);
+    } catch (propErr) {
+      Logger.log('Spreadsheet property error for teacher ' + teacherKey +
+                 ': ' + propErr.message);
+      return respond('error', 'Could not access teacher spreadsheet.');
+    }
+
+    // 9. Worksheet resolution and get-or-create
+    var sheetName = resolveWorksheetName(resource);
+    var schema    = buildSchema(resource);
+    var sheet;
+    try {
+      sheet = getOrCreateSheet(ss, sheetName, resource, schema);
+    } catch (sheetErr) {
+      Logger.log('Worksheet error for ' + sheetName + ': ' + sheetErr.message);
+      return respond('error', 'Could not access worksheet.');
+    }
+
+    // 10. Build row and insert at row 2
+    var timestamp = new Date();
+    var row = [timestamp];
+    for (var fi = 0; fi < schema.fields.length; fi++) {
+      var fieldName = schema.fields[fi];
+      row.push(params[fieldName] !== undefined ? params[fieldName] : '');
+    }
+
+    sheet.insertRows(2, 1);
+    sheet.getRange(2, 1, 1, schema.headers.length)
+         .setValues([row])
+         .setWrap(true);
+
+    return respond('success', 'Submission recorded.');
+
+  } catch (err) {
+    Logger.log('doPost unexpected error: ' + err.message + '\n' + err.stack);
+    return respond('error', 'An unexpected error occurred. Please try again.');
+  }
+}
+
+// ============================================================================
+// VALIDATION HELPERS
+// Pure functions used by doPost and by the test suite.
+// ============================================================================
+
+function validateResource(resourceId) {
+  if (!resourceId) return 'Unknown resource: (none)';
+  if (!RESOURCE_REGISTRY[resourceId]) return 'Unknown resource: ' + resourceId;
+  return null;
+}
+
+function validateTeacher(teacherKey) {
+  if (!teacherKey) return 'Unknown teacher: (none)';
+  if (!TEACHER_REGISTRY[teacherKey]) return 'Unknown teacher: ' + teacherKey;
+  if (!TEACHER_REGISTRY[teacherKey].active) return 'Teacher is not active: ' + teacherKey;
+  return null;
+}
+
+function validateGrade(params, resource) {
+  var payloadGrade = parseInt(params.grade, 10);
+  if (isNaN(payloadGrade) || payloadGrade !== resource.grade) {
+    return 'Grade mismatch: payload says ' + params.grade +
+           ', resource is grade ' + resource.grade;
+  }
+  return null;
+}
+
+function validateTeacherGrade(teacher, resource, teacherKey) {
+  if (teacher.grade !== resource.grade) {
+    return 'Teacher ' + teacherKey + ' is grade ' + teacher.grade +
+           ', resource is grade ' + resource.grade;
+  }
+  return null;
+}
+
+function validateBlock(block) {
+  var valid = ['A','B','C','D','E','F','G'];
+  if (!block || valid.indexOf(block.toUpperCase()) === -1) {
+    return 'Block must be A through G.';
+  }
+  return null;
+}
+
+function validateQuestions(params, expectedCount) {
+  if (expectedCount === 0) return null;
+  var found = 0;
+  for (var i = 1; i <= expectedCount; i++) {
+    if (params['q' + i] !== undefined && params['q' + i] !== '') found++;
+  }
+  if (found < expectedCount) {
+    return 'Missing questions: expected ' + expectedCount + ', found ' + found;
+  }
+  return null;
+}
+
+function validateThinking(params, required) {
+  if (!required) return null;
+  if (!params.thinking || !params.thinking.trim()) {
+    return 'Show Your Thinking response is required for this resource.';
+  }
+  return null;
+}
+
+// Returns null if every key in params is authorized for this resource.
+// Returns a generic error string if any unauthorized field is present.
+// The actual unauthorized field name is logged server-side only.
+function validatePayloadFields(params, resource) {
+  var allowed = {
+    resourceId:  true,
+    grade:       true,
+    teacher:     true,
+    studentName: true,
+    block:       true,
+    score:       true,
+    thinking:    true,
+  };
+  for (var i = 1; i <= resource.expectedQuestionCount; i++) {
+    allowed['q' + i] = true;
+  }
+  var extFields = resource.extendedFields || [];
+  for (var j = 0; j < extFields.length; j++) {
+    allowed[extFields[j]] = true;
+  }
+  var keys = Object.keys(params);
+  for (var k = 0; k < keys.length; k++) {
+    if (!allowed[keys[k]]) {
+      Logger.log('Unauthorized payload field rejected: ' + keys[k] +
+                 ' (resourceId: ' + params.resourceId + ')');
+      return 'Submission contains an unsupported field.';
+    }
+  }
+  return null;
+}
+
+// ============================================================================
 // DAILY EMAIL DIGEST
-// A morning summary of every submission since the last email. On silent days no
-// email is sent and the last-sent timestamp is left untouched, so the next
-// digest's window still reaches back to the last email that went out.
-// ═══════════════════════════════════════════════════════════════════════════
+// Iterates the Teacher Registry instead of a single spreadsheet ID.
+// Recipient is read from Script Properties (DIGEST_EMAIL). If the property
+// is not set, the digest logs a warning and skips sending rather than
+// throwing, so digest failures never affect the submission pipeline.
+// ============================================================================
 
 function setupDailySubmissionDigest() {
   deleteDailySubmissionDigestTriggers();
@@ -178,7 +1073,7 @@ function setupDailySubmissionDigest() {
     .everyDays(1)
     .atHour(DAILY_DIGEST_HOUR)
     .create();
-  Logger.log('Daily LyfeLabz v2 submission digest trigger created.');
+  Logger.log('Daily LyfeLabz digest trigger created.');
 }
 
 function deleteDailySubmissionDigestTriggers() {
@@ -188,11 +1083,16 @@ function deleteDailySubmissionDigestTriggers() {
       ScriptApp.deleteTrigger(trigger);
     }
   });
-  Logger.log('Existing daily digest triggers removed.');
 }
 
 function sendDailySubmissionDigest() {
-  var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var recipientEmail = PropertiesService.getScriptProperties()
+                         .getProperty('DIGEST_EMAIL');
+  if (!recipientEmail) {
+    Logger.log('DIGEST_EMAIL Script Property not set. Digest skipped.');
+    return;
+  }
+
   var now   = new Date();
   var props = PropertiesService.getScriptProperties();
 
@@ -202,144 +1102,144 @@ function sendDailySubmissionDigest() {
     : new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
   var submissions = [];
+  var teacherKeys = Object.keys(TEACHER_REGISTRY);
 
-  Object.keys(TAB_CONFIG).forEach(function(tabName) {
-    var sheet = ss.getSheetByName(tabName);
-    if (!sheet) return;
+  for (var ti = 0; ti < teacherKeys.length; ti++) {
+    var key     = teacherKeys[ti];
+    var teacher = TEACHER_REGISTRY[key];
+    if (!teacher.active) continue;
 
-    var values = sheet.getDataRange().getValues();
-    if (values.length < 2) return;
+    var spreadsheetId = PropertiesService.getScriptProperties()
+                          .getProperty(teacher.spreadsheetPropKey);
+    if (!spreadsheetId) {
+      Logger.log('Digest: ' + teacher.spreadsheetPropKey + ' not configured, skipping.');
+      continue;
+    }
 
-    var headers = values[0].map(function(header) {
-      return String(header).trim();
-    });
+    var ss;
+    try {
+      ss = SpreadsheetApp.openById(spreadsheetId);
+    } catch (openErr) {
+      Logger.log('Digest: could not open spreadsheet for ' + teacher.displayName +
+                 ': ' + openErr.message);
+      continue;
+    }
 
-    var timestampCol = findHeaderIndex(headers, ['Timestamp']);
-    var nameCol      = findHeaderIndex(headers, ['Student Name', 'Name']);
-    var blockCol     = findHeaderIndex(headers, ['Block']);
-    var scoreCol     = findHeaderIndex(headers, ['Score']);
+    var resourceIds = Object.keys(RESOURCE_REGISTRY);
+    for (var ri = 0; ri < resourceIds.length; ri++) {
+      var res = RESOURCE_REGISTRY[resourceIds[ri]];
+      if (res.grade !== teacher.grade) continue;
 
-    if (timestampCol === -1 || nameCol === -1) return;
+      var sheetName = resolveWorksheetName(res);
+      var sheet     = ss.getSheetByName(sheetName);
+      if (!sheet) continue;
 
-    for (var r = 1; r < values.length; r++) {
-      var row       = values[r];
-      var timestamp = row[timestampCol];
+      var values = sheet.getDataRange().getValues();
+      if (values.length < 2) continue;
 
-      if (!(timestamp instanceof Date)) {
-        timestamp = new Date(timestamp);
-      }
-      if (isNaN(timestamp.getTime())) continue;
+      var headers      = values[0].map(function(h) { return String(h).trim(); });
+      var timestampCol = findHeaderIndex(headers, ['Timestamp']);
+      var nameCol      = findHeaderIndex(headers, ['Student Name']);
+      var blockCol     = findHeaderIndex(headers, ['Block']);
+      var scoreCol     = findHeaderIndex(headers, ['Score']);
 
-      if (timestamp > lastSent && timestamp <= now) {
-        submissions.push({
-          assignment:  tabName,
-          studentName: row[nameCol] || '',
-          block:       blockCol !== -1 ? row[blockCol] || '' : '',
-          score:       scoreCol !== -1 ? row[scoreCol] || '' : '',
-          timestamp:   timestamp,
-        });
+      if (timestampCol === -1 || nameCol === -1) continue;
+
+      for (var r = 1; r < values.length; r++) {
+        var row       = values[r];
+        var timestamp = row[timestampCol];
+        if (!(timestamp instanceof Date)) timestamp = new Date(timestamp);
+        if (isNaN(timestamp.getTime())) continue;
+        if (timestamp > lastSent && timestamp <= now) {
+          submissions.push({
+            assignment:  res.displayTitle,
+            teacherName: teacher.displayName,
+            studentName: row[nameCol] || '',
+            block:       blockCol !== -1 ? row[blockCol] || '' : '',
+            score:       scoreCol !== -1 ? row[scoreCol] || '' : '',
+            timestamp:   timestamp,
+          });
+        }
       }
     }
-  });
+  }
 
   submissions.sort(function(a, b) { return a.timestamp - b.timestamp; });
 
-  // Only send a digest when at least one student submitted in the window.
   if (submissions.length === 0) {
-    Logger.log('No new submissions since the last digest. Email skipped.');
+    Logger.log('No new submissions since last digest. Email skipped.');
     return;
   }
 
-  var subject  = 'LyfeLabz Daily Submissions';
-  var body     = buildDailyDigestPlainText(submissions, lastSent, now);
-  var htmlBody = buildDailyDigestHtml(submissions, lastSent, now);
-
   MailApp.sendEmail({
-    to:       DAILY_DIGEST_EMAIL,
-    subject:  subject,
-    body:     body,
-    htmlBody: htmlBody,
+    to:       recipientEmail,
+    subject:  'LyfeLabz Daily Submissions',
+    body:     buildDailyDigestPlainText(submissions, lastSent, now),
+    htmlBody: buildDailyDigestHtml(submissions, lastSent, now),
   });
 
   props.setProperty(DAILY_DIGEST_PROPERTY_KEY, now.toISOString());
-  Logger.log('Daily digest sent. Submission count: ' + submissions.length);
+  Logger.log('Daily digest sent. Submissions: ' + submissions.length);
 }
 
 function findHeaderIndex(headers, possibleNames) {
   for (var i = 0; i < headers.length; i++) {
-    var normalizedHeader = normalizeHeader(headers[i]);
+    var norm = String(headers[i]).trim().toLowerCase().replace(/\s+/g, ' ');
     for (var j = 0; j < possibleNames.length; j++) {
-      if (normalizedHeader === normalizeHeader(possibleNames[j])) {
-        return i;
-      }
+      if (norm === possibleNames[j].toLowerCase()) return i;
     }
   }
   return -1;
 }
 
-function normalizeHeader(header) {
-  return String(header).trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
 function buildDailyDigestPlainText(submissions, lastSent, now) {
-  var timezone = Session.getScriptTimeZone();
-  var lines    = [];
-  lines.push('LyfeLabz Daily Submissions');
-  lines.push('');
-  lines.push('Window: ' + formatDateForEmail(lastSent, timezone) + ' to ' + formatDateForEmail(now, timezone));
-  lines.push('');
-  lines.push('New submissions: ' + submissions.length);
-  lines.push('');
-
+  var tz    = Session.getScriptTimeZone();
+  var lines = [
+    'LyfeLabz Daily Submissions',
+    '',
+    'Window: ' + formatDateForEmail(lastSent, tz) + ' to ' + formatDateForEmail(now, tz),
+    '',
+    'New submissions: ' + submissions.length,
+    '',
+  ];
   submissions.forEach(function(item) {
+    lines.push('Teacher: '    + item.teacherName);
     lines.push('Assignment: ' + item.assignment);
     lines.push('Student: '    + item.studentName);
     lines.push('Block: '      + item.block);
     lines.push('Score: '      + item.score);
-    lines.push('Submitted: '  + formatDateForEmail(item.timestamp, timezone));
+    lines.push('Submitted: '  + formatDateForEmail(item.timestamp, tz));
     lines.push('');
   });
-
   return lines.join('\n');
 }
 
 function buildDailyDigestHtml(submissions, lastSent, now) {
-  var timezone = Session.getScriptTimeZone();
-  var html     = '';
-
-  html += '<div style="font-family: Arial, sans-serif; color: #111827;">';
+  var tz   = Session.getScriptTimeZone();
+  var html = '<div style="font-family: Arial, sans-serif; color: #111827;">';
   html += '<h2 style="margin-bottom: 4px;">LyfeLabz Daily Submissions</h2>';
-  html += '<p style="margin-top: 0; color: #4b5563;">';
-  html += 'Window: ' + escapeHtml(formatDateForEmail(lastSent, timezone)) +
-          ' to ' + escapeHtml(formatDateForEmail(now, timezone));
-  html += '</p>';
-
+  html += '<p style="margin-top: 0; color: #4b5563;">Window: ' +
+          escapeHtml(formatDateForEmail(lastSent, tz)) + ' to ' +
+          escapeHtml(formatDateForEmail(now, tz)) + '</p>';
   html += '<p><strong>New submissions: ' + submissions.length + '</strong></p>';
-  html += '<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; font-size: 14px;">';
-  html += '<thead>';
-  html += '<tr style="background-color: #111827; color: #ffffff;">';
-  html += '<th align="left">Assignment</th>';
-  html += '<th align="left">Student</th>';
-  html += '<th align="left">Block</th>';
-  html += '<th align="left">Score</th>';
-  html += '<th align="left">Submitted</th>';
-  html += '</tr>';
-  html += '</thead>';
-  html += '<tbody>';
-
+  html += '<table border="1" cellpadding="8" cellspacing="0" ' +
+          'style="border-collapse: collapse; width: 100%; font-size: 14px;">';
+  html += '<thead><tr style="background-color: #111827; color: #ffffff;">';
+  html += '<th align="left">Teacher</th><th align="left">Assignment</th>' +
+          '<th align="left">Student</th><th align="left">Block</th>' +
+          '<th align="left">Score</th><th align="left">Submitted</th>';
+  html += '</tr></thead><tbody>';
   submissions.forEach(function(item) {
     html += '<tr>';
-    html += '<td>' + escapeHtml(item.assignment)  + '</td>';
-    html += '<td>' + escapeHtml(item.studentName) + '</td>';
-    html += '<td>' + escapeHtml(item.block)       + '</td>';
-    html += '<td>' + escapeHtml(item.score)       + '</td>';
-    html += '<td>' + escapeHtml(formatDateForEmail(item.timestamp, timezone)) + '</td>';
+    html += '<td>' + escapeHtml(item.teacherName)  + '</td>';
+    html += '<td>' + escapeHtml(item.assignment)   + '</td>';
+    html += '<td>' + escapeHtml(item.studentName)  + '</td>';
+    html += '<td>' + escapeHtml(item.block)        + '</td>';
+    html += '<td>' + escapeHtml(item.score)        + '</td>';
+    html += '<td>' + escapeHtml(formatDateForEmail(item.timestamp, tz)) + '</td>';
     html += '</tr>';
   });
-
-  html += '</tbody>';
-  html += '</table>';
-  html += '</div>';
+  html += '</tbody></table></div>';
   return html;
 }
 
@@ -354,32 +1254,4 @@ function escapeHtml(value) {
     .replace(/>/g,  '&gt;')
     .replace(/"/g,  '&quot;')
     .replace(/'/g,  '&#039;');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// TEST FUNCTION
-// Writes one sample row using the shared schema. Run this after pasting the new
-// SPREADSHEET_ID to confirm the tab, headers, and 🧠 Show Your Thinking column
-// all render correctly.
-// ═══════════════════════════════════════════════════════════════════════════
-
-function testWhatIsLife() {
-  var ss     = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var config = TAB_CONFIG['What Is Life'];
-  var schema = buildSchema(10);
-  var sheet  = getOrCreateSheet(ss, 'What Is Life', config, schema);
-  sheet.insertRows(2, 1);
-  sheet.getRange(2, 1, 1, schema.headers.length).setValues([[
-    new Date(),
-    'Test Student',
-    'B',
-    'B', 'C', 'A', 'D', 'B', 'C', 'A', 'B', 'C', 'D', // Q1-Q10
-    '9/10',
-    'A virus is missing the ability to use energy and reproduce on its own, so it is not truly alive.',
-  ]]).setWrap(true);
-  Logger.log('Test row written to What Is Life tab (v2 schema).');
-}
-
-function testDailySubmissionDigest() {
-  sendDailySubmissionDigest();
 }
