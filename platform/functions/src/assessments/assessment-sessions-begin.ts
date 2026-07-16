@@ -357,7 +357,34 @@ async function assessmentSessionsBeginHandler(
     startedAt: FieldValue.serverTimestamp(),
   };
 
-  await assessmentSessionCreationDocRef(sessionId).set(creation);
+  // Sprint 11D I-3. Use `create` (server-enforced "must-not-exist"
+  // precondition) rather than `set` to eliminate the read/write race
+  // between the pre-check `assessmentSessionDocRef(sessionId).get()`
+  // above and this write. Two concurrent begin calls for the same
+  // deterministic sessionId will both observe `exists === false` at the
+  // pre-check; without `create` semantics the second write would
+  // silently overwrite the first-committed session. `create` refuses the
+  // second write at the write boundary; we translate that specific
+  // `ALREADY_EXISTS` failure into the canonical
+  // `assessmentSessions.conflict` refusal so the caller sees the same
+  // identifier they would have seen on a mid-check-only conflict.
+  try {
+    await assessmentSessionCreationDocRef(sessionId).create(creation);
+  } catch (err) {
+    if (
+      err !== null &&
+      typeof err === "object" &&
+      "code" in (err as Record<string, unknown>) &&
+      ((err as { code?: unknown }).code === 6 ||
+        (err as { code?: unknown }).code === "already-exists")
+    ) {
+      throw new PlatformError(
+        "assessmentSessions.conflict",
+        "A session for this assignment and student already exists.",
+      );
+    }
+    throw err;
+  }
 
   await writeAuditEvent({
     actorUserId: actor.uid,
@@ -366,6 +393,7 @@ async function assessmentSessionsBeginHandler(
     targetType: "assessmentSession",
     targetId: sessionId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
     payload: {
       assignmentId: input.assignmentId,
       classId: assignment.classId,

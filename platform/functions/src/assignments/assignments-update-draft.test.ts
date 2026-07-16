@@ -138,6 +138,7 @@ describe("assignmentsUpdateDraft", () => {
       targetType: "assignment",
       targetId: ASSIGNMENT_ID,
       schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
       payload: { changedFields: ["title", "instructions"] },
     });
     expect(result).toEqual({

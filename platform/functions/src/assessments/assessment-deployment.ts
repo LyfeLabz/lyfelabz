@@ -452,8 +452,17 @@ export async function deployAssessmentRevision(
         currentRevisionId: revisionId,
       };
 
-      tx.set(assessmentRevisionDeploymentDocRef(revisionId), revisionWrite);
-      tx.set(assessmentAnswerKeyDeploymentDocRef(revisionId), answerKeyWrite);
+      // Sprint 11D I-2. Use `create` for the two immutable revision
+      // documents. The transactional read above already refuses a
+      // duplicate; the `create` write adds a server-enforced
+      // "must-not-exist" precondition so that even a hypothetical
+      // concurrent second commit that beat the transaction's retry logic
+      // could not silently overwrite an immutable revision. The parent
+      // `assessments/{assessmentId}` document is legitimately created OR
+      // updated (its `currentRevisionId` advances on republication) and
+      // therefore remains a `set`.
+      tx.create(assessmentRevisionDeploymentDocRef(revisionId), revisionWrite);
+      tx.create(assessmentAnswerKeyDeploymentDocRef(revisionId), answerKeyWrite);
       tx.set(assessmentDeploymentDocRef(assessmentId), assessmentWrite);
 
       return {

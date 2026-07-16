@@ -5,6 +5,12 @@ import { PlatformError } from "../../shared";
 export type LmsAuthenticatedTeacher = {
   readonly uid: string;
   readonly schoolId: string;
+  // Sprint 11D I-5. Canonical `districtId` claim exposed so LMS callables
+  // can carry it onto audit events per DISTRICT_SECURITY_BOUNDARY_
+  // IMPLEMENTATION_CONTRACT.md §7. Optional at the type level so tokens
+  // written before district enforcement (pre-Sprint 9C) continue to
+  // authenticate; audit writes for such tokens omit the field.
+  readonly districtId?: string;
 };
 
 function isNonEmptyString(value: unknown): value is string {
@@ -28,7 +34,11 @@ export function assertAuthenticatedTeacherForLms(
     );
   }
   const token = auth.token as
-    | { readonly role?: unknown; readonly schoolId?: unknown }
+    | {
+        readonly role?: unknown;
+        readonly schoolId?: unknown;
+        readonly districtId?: unknown;
+      }
     | undefined;
   if (!token || token.role !== "teacher") {
     throw new PlatformError(
@@ -42,7 +52,10 @@ export function assertAuthenticatedTeacherForLms(
       "Caller is missing a canonical schoolId claim.",
     );
   }
-  return { uid: auth.uid, schoolId: token.schoolId };
+  const districtId = isNonEmptyString(token.districtId)
+    ? token.districtId
+    : undefined;
+  return { uid: auth.uid, schoolId: token.schoolId, districtId };
 }
 
 export function requireNonEmptyString(

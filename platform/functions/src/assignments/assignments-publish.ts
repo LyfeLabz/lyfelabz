@@ -163,6 +163,7 @@ async function assignmentsPublishHandler(
     targetType: "assignment",
     targetId: input.assignmentId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
     payload: {
       classId: existing.classId,
       lessonSlug: existing.lessonSlug,

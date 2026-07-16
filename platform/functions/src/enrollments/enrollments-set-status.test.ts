@@ -418,6 +418,7 @@ describe("enrollmentsSetStatus", () => {
       targetType: "enrollment",
       targetId: ENROLLMENT_ID,
       schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
       payload: {
         classId: CLASS_ID,
         studentId: STUDENT_UID,

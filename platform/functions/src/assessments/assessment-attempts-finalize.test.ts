@@ -91,6 +91,7 @@ jest.mock("../shared", () => {
 import { PlatformError } from "../shared/errors/platform-error";
 import {
   __assessmentAttemptsFinalizeHandler,
+  __parseAssignmentIdFromSessionId,
   attemptIdFor,
 } from "./assessment-attempts-finalize";
 
@@ -1066,6 +1067,38 @@ describe("assessmentAttemptsFinalize", () => {
     await expect(
       __assessmentAttemptsFinalizeHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "assignment-not-found" });
+  });
+
+  // Sprint 11D R-1. Composite-identifier parsing must be right-anchored
+  // so assignmentIds that legally contain `__` (the ASSIGNMENT_ID pattern
+  // permits repeated `_` characters) survive the round-trip. The
+  // pre-Sprint-11D implementation split on `__` and took `parts[0]`,
+  // silently truncating any such assignmentId to the substring preceding
+  // the first `__`. This test locks the corrected right-anchored parse.
+  describe("R-1: parseAssignmentIdFromSessionId is right-anchored", () => {
+    it("preserves an assignmentId that contains __", () => {
+      const sessionId = "double__underscore__student-uid__1";
+      expect(__parseAssignmentIdFromSessionId(sessionId)).toBe(
+        "double__underscore",
+      );
+    });
+
+    it("returns undefined when the trailing segment is not a numeric ordinal", () => {
+      expect(
+        __parseAssignmentIdFromSessionId("assign__student__notanordinal"),
+      ).toBeUndefined();
+    });
+
+    it("returns undefined for a session identifier without the ordinal separator", () => {
+      expect(__parseAssignmentIdFromSessionId("nope")).toBeUndefined();
+      expect(__parseAssignmentIdFromSessionId("__1")).toBeUndefined();
+    });
+
+    it("preserves the plain three-segment canonical shape", () => {
+      expect(
+        __parseAssignmentIdFromSessionId("assign-1__student-uid__1"),
+      ).toBe("assign-1");
+    });
   });
 
   it("C-2: refuses finalize when the assignment is archived", async () => {

@@ -141,6 +141,15 @@ function installTransactionRunner() {
       set: (ref: unknown, data: unknown) => {
         txSets.push({ ref, data });
       },
+      create: (ref: unknown, data: unknown) => {
+        // Sprint 11D I-2. `deployAssessmentRevision` now uses tx.create()
+        // for the immutable revision and answer-key writes so a
+        // concurrent second commit cannot overwrite an already-published
+        // revision. The mocked transaction records creates alongside
+        // sets so the ordering assertions in this suite continue to
+        // observe every write.
+        txSets.push({ ref, data });
+      },
       delete: (ref: unknown) => {
         txDeletes.push(ref);
       },
@@ -513,6 +522,10 @@ describe("deployAssessmentRevision", () => {
             observedTxSize += 1;
             txSets.push({ ref, data });
           },
+          create: (ref: unknown, data: unknown) => {
+            observedTxSize += 1;
+            txSets.push({ ref, data });
+          },
           delete: (ref: unknown) => {
             txDeletes.push(ref);
           },
@@ -522,5 +535,40 @@ describe("deployAssessmentRevision", () => {
     );
     await deployAssessmentRevision(baseInput());
     expect(observedTxSize).toBe(3);
+  });
+
+  // Sprint 11D I-2. The revision + answer-key writes now use tx.create()
+  // so a concurrent second commit whose transactional read observed the
+  // revision as absent cannot silently overwrite the already-committed
+  // immutable revision. The write layer refuses the second commit with
+  // ALREADY_EXISTS. This test asserts the write-boundary "must not
+  // exist" precondition is invoked on the two immutable refs.
+  it("I-2: uses tx.create for the immutable revision and answer-key writes", async () => {
+    const created: Array<unknown> = [];
+    mockRunTransaction.mockImplementationOnce(
+      (fn: (tx: unknown) => unknown) => {
+        const localTx = {
+          get: (ref: { __kind: string }) => {
+            if (ref.__kind === "assessment") return makeSnap(false);
+            if (ref.__kind === "revision") return makeSnap(false);
+            if (ref.__kind === "answerKey") return makeSnap(false);
+            throw new Error("unexpected");
+          },
+          set: (ref: unknown) => {
+            // parent assessment doc may be created or updated by set().
+            void ref;
+          },
+          create: (ref: unknown) => {
+            created.push(ref);
+          },
+          delete: () => {},
+        };
+        return fn(localTx);
+      },
+    );
+    await deployAssessmentRevision(baseInput());
+    // Both the revision and answer-key immutable writes went through
+    // tx.create(); parent assessment went through tx.set().
+    expect(created).toHaveLength(2);
   });
 });

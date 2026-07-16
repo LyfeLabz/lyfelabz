@@ -118,6 +118,7 @@ describe("classesArchive", () => {
       targetType: "class",
       targetId: CLASS_ID,
       schoolId: "school-a",
+      districtId: "district-1",
     });
     expect(result).toEqual({
       classId: CLASS_ID,

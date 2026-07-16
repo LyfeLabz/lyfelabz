@@ -162,6 +162,7 @@ async function assignmentsCloseHandler(
     targetType: "assignment",
     targetId: input.assignmentId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
     payload: { classId: existing.classId },
   });
 

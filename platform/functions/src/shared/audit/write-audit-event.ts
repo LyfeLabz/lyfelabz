@@ -25,6 +25,12 @@ export type WriteAuditEventInput = {
   readonly targetType: AuditTargetType;
   readonly targetId: string;
   readonly schoolId?: string;
+  // Sprint 11D I-5. District context per DISTRICT_SECURITY_BOUNDARY_
+  // IMPLEMENTATION_CONTRACT.md §7 auditEvents row: every district-relevant
+  // event MUST carry a top-level `districtId` field. Optional at the type
+  // level so pre-district system events (e.g. `auth.userProvisioned`) can
+  // still be written. When supplied it MUST be a non-empty string.
+  readonly districtId?: string;
   readonly payload?: AuditPayload;
   readonly correlationId?: string;
 };
@@ -169,6 +175,12 @@ export async function writeAuditEvent(
       "schoolId must be a non-empty string for user-actor events.",
     );
   }
+  if (input.districtId !== undefined && !isNonEmptyString(input.districtId)) {
+    throw new PlatformError(
+      "audit.invalidDistrictId",
+      "districtId, when supplied, must be a non-empty string.",
+    );
+  }
   if (input.correlationId !== undefined && !isNonEmptyString(input.correlationId)) {
     throw new PlatformError(
       "audit.invalidCorrelationId",
@@ -192,6 +204,7 @@ export async function writeAuditEvent(
     targetType: input.targetType,
     targetId: input.targetId,
     ...(input.schoolId !== undefined ? { schoolId: input.schoolId } : {}),
+    ...(input.districtId !== undefined ? { districtId: input.districtId } : {}),
     ...(input.payload !== undefined ? { payload: input.payload } : {}),
     ...(input.correlationId !== undefined
       ? { correlationId: input.correlationId }

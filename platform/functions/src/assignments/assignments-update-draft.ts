@@ -398,6 +398,7 @@ async function assignmentsUpdateDraftHandler(
     targetType: "assignment",
     targetId: input.assignmentId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
     payload: { changedFields },
   });
 

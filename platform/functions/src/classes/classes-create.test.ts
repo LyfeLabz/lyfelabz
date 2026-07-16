@@ -432,6 +432,7 @@ describe("classesCreate", () => {
       targetType: "class",
       targetId: "class-abc",
       schoolId: "school-a",
+      districtId: "district-1",
     });
   });
 

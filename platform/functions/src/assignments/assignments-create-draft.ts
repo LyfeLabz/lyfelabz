@@ -385,6 +385,7 @@ async function assignmentsCreateDraftHandler(
     targetType: "assignment",
     targetId: input.assignmentId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
     payload: {
       classId: input.classId,
       lessonSlug: input.lessonSlug,

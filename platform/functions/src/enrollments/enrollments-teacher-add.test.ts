@@ -425,6 +425,7 @@ describe("enrollmentsTeacherAdd", () => {
       targetType: "enrollment",
       targetId: EXPECTED_ID,
       schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
       payload: {
         classId: CLASS_ID,
         studentId: STUDENT_UID,

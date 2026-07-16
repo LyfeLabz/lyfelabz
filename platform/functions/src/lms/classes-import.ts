@@ -227,6 +227,7 @@ async function handler(
       targetType: "class",
       targetId: classId,
       schoolId: actor.schoolId,
+      districtId: actor.districtId,
       payload: {
         providerId: connection.providerId,
         lmsClassId,
@@ -272,6 +273,7 @@ async function handler(
     targetType: "class",
     targetId: classId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
     payload: {
       providerId: connection.providerId,
       lmsClassId,

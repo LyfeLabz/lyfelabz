@@ -281,6 +281,7 @@ async function classesUpdateMetadataHandler(
     targetType: "class",
     targetId: input.classId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
     payload: { changedFields },
   });
 

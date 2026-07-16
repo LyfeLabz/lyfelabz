@@ -42,6 +42,10 @@ const AUTH_CODES = new Set([
   "claim-stale",
 ]);
 
+const AUTH_SUFFIXES = [
+  ".unauthenticated",
+];
+
 const PERMISSION_CODES = new Set([
   "role-forbidden",
   "district-mismatch",
@@ -50,6 +54,19 @@ const PERMISSION_CODES = new Set([
   "claim-state-mismatch",
   "account-inactive",
 ]);
+
+// Sprint 11D I-4/R-2. Namespaced-identifier suffixes that map to
+// `permission-denied`. These are canonical business-rule denials expressed
+// as `{domain}.{suffix}` throughout the callable surface, e.g.
+// `assessmentAttempts.notOwned`, `submissions.forbidden`. Adding them here
+// removes the pre-Sprint 11D reliance on exact-string matching so every
+// namespaced form maps consistently without a per-call-site rewrite.
+const PERMISSION_SUFFIXES = [
+  ".unauthorized",
+  ".forbidden",
+  ".notOwned",
+  ".notEnrolled",
+];
 
 const NOT_FOUND_SUFFIXES = [
   ".notFound",
@@ -88,7 +105,9 @@ function endsWithAny(code: string, suffixes: readonly string[]): boolean {
 
 export function mapPlatformCodeToHttpsCode(code: string): FunctionsErrorCode {
   if (AUTH_CODES.has(code)) return "unauthenticated";
+  if (endsWithAny(code, AUTH_SUFFIXES)) return "unauthenticated";
   if (PERMISSION_CODES.has(code)) return "permission-denied";
+  if (endsWithAny(code, PERMISSION_SUFFIXES)) return "permission-denied";
   if (endsWithAny(code, NOT_FOUND_SUFFIXES)) return "not-found";
   if (endsWithAny(code, CONFLICT_SUFFIXES)) return "already-exists";
   if (endsWithAny(code, INVALID_ARG_SUFFIXES)) return "invalid-argument";

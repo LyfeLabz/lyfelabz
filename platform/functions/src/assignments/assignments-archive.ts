@@ -159,6 +159,7 @@ async function assignmentsArchiveHandler(
     targetType: "assignment",
     targetId: input.assignmentId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
     payload: { classId: existing.classId, previousStatus: existing.status },
   });
 

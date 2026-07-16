@@ -225,6 +225,7 @@ async function studentsCompleteOnboardingHandler(
     targetType: "user",
     targetId: uid,
     schoolId: input.schoolId,
+    districtId,
   });
 
   safeLog(() =>

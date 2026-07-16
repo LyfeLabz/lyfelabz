@@ -78,6 +78,7 @@ export type AuditEventRecord = {
   readonly targetType: AuditTargetType;
   readonly targetId: string;
   readonly schoolId?: string;
+  readonly districtId?: string;
   readonly occurredAt: Timestamp;
   readonly payload?: AuditPayload;
   readonly correlationId?: string;
@@ -93,6 +94,7 @@ export type AuditEventWrite = {
   readonly targetType: AuditTargetType;
   readonly targetId: string;
   readonly schoolId?: string;
+  readonly districtId?: string;
   readonly occurredAt: FieldValue;
   readonly payload?: AuditPayload;
   readonly correlationId?: string;

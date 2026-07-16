@@ -307,4 +307,33 @@ describe("writeAuditEvent", () => {
     expect(thrown).toMatchObject({ code: "audit.writeFailed" });
     expect((thrown as PlatformError).cause).toBe(downstream);
   });
+
+  // Sprint 11D I-5. Every district-relevant audit event MUST carry a
+  // top-level `districtId` field per DISTRICT_SECURITY_BOUNDARY_
+  // IMPLEMENTATION_CONTRACT.md §7. The writer must accept it, validate
+  // it as a non-empty string when supplied, and persist it verbatim.
+  it("I-5: persists a supplied districtId at the top level of the audit record", async () => {
+    mockAdd.mockResolvedValueOnce({ id: "evt-district" });
+    const result = await writeAuditEvent(
+      validInput({ districtId: "district-42" }),
+    );
+    expect(result.record).toMatchObject({ districtId: "district-42" });
+    const written = mockAdd.mock.calls[0][0] as { districtId?: string };
+    expect(written.districtId).toBe("district-42");
+  });
+
+  it("I-5: refuses an empty-string districtId", async () => {
+    await expect(
+      writeAuditEvent(validInput({ districtId: "" })),
+    ).rejects.toMatchObject({ code: "audit.invalidDistrictId" });
+    expect(mockAdd).not.toHaveBeenCalled();
+  });
+
+  it("I-5: permits an omitted districtId for legacy pre-district events", async () => {
+    mockAdd.mockResolvedValueOnce({ id: "evt-legacy" });
+    const result = await writeAuditEvent(validInput());
+    expect(result.record).not.toHaveProperty("districtId");
+    const written = mockAdd.mock.calls[0][0] as Record<string, unknown>;
+    expect(written).not.toHaveProperty("districtId");
+  });
 });

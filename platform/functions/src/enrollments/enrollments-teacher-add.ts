@@ -279,6 +279,7 @@ async function enrollmentsTeacherAddHandler(
     targetType: "enrollment",
     targetId: id,
     schoolId: classRecord.schoolId,
+    districtId: actor.districtId,
     payload: {
       classId: input.classId,
       studentId: input.studentId,

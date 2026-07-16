@@ -452,6 +452,7 @@ describe("studentsCompleteOnboarding", () => {
       targetType: "user",
       targetId: "uid-abc",
       schoolId: "school-123",
+      districtId: "district-abc",
     });
   });
 

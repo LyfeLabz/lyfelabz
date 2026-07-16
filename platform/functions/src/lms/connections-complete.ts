@@ -140,6 +140,7 @@ async function handler(
     targetType: "lmsConnection",
     targetId: connectionId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
     payload: { providerId },
   });
 

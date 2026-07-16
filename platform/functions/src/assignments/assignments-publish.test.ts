@@ -115,6 +115,7 @@ describe("assignmentsPublish", () => {
       targetType: "assignment",
       targetId: ASSIGNMENT_ID,
       schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
       payload: {
         classId: "class-abc",
         lessonSlug: "lesson_g7_earths-layers",

@@ -2502,3 +2502,61 @@ All pre-existing tests are preserved.
 - The certified architecture is unchanged.
 - Firestore Rules were not modified.
 - No commit was made.
+
+## Sprint 11D: Important Findings Remediation
+
+**Date:** 2026-07-16
+**Anchor decisions:** PDR-025, PDR-026.
+**Anchor contracts:** ASSESSMENT_IMPLEMENTATION_CONTRACT.md, ASSESSMENT_SCORING_CONTRACT.md, LYFELABZ_CLOUD_FUNCTION_CHARTER.md, LYFELABZ_FIREBASE_SECURITY_MODEL.md, DISTRICT_SECURITY_BOUNDARY_IMPLEMENTATION_CONTRACT.md.
+
+Sprint 11D closes the Important findings (I-1 through I-9) and refinements (R-1, R-2) from the Sprint 11C independent implementation review and remediation follow-up. The certified architecture is preserved. Firestore Rules, retrieval APIs, dashboards, and Minor findings remain out of scope.
+
+### Important findings addressed
+
+- I-1 Audit consistency: verified every callable/writer emits exactly one canonical audit event per operation; strengthened with I-5 district context wiring.
+- I-2 Deployment overwrite protection: `deployAssessmentRevision` now writes the immutable revision and answer-key documents through `tx.create(...)`.
+- I-3 Assessment begin race: `assessmentSessionsBegin` now writes through `.create()` and maps ALREADY_EXISTS to the canonical `assessmentSessions.conflict` refusal.
+- I-4 Error vocabulary reconciliation: `shared/errors/https-callable.ts` mapper adds suffix mappings for `.unauthenticated`, `.unauthorized`, `.forbidden`, `.notOwned`, `.notEnrolled`.
+- I-5 District context in audit records: `WriteAuditEventInput` / `AuditEventWrite` / `AuditEventRecord` now carry an optional top-level `districtId`; every callable with district context supplies it.
+- I-6 Attempt count: reviewed, existing implementation confirmed architecture-conforming, no change.
+- I-7 Finalize response construction: reviewed against `ASSESSMENT_SCORING_CONTRACT.md` §10.4, confirmed conforming, no change.
+- I-8 Session ordinal: reviewed, multi-session ordinal semantics remain deferred to future sweep/recover callables, no change.
+- I-9 Documentation reconciliation: this history entry plus the Sprint 11D completion report cover the scope.
+- R-1 `parseAssignmentIdFromSessionId` is right-anchored so assignmentIds containing `__` survive the round-trip.
+- R-2 Bundled with I-4 above.
+
+### Files added
+
+- `docs/platform/SPRINT_11D_COMPLETION_REPORT.md`
+
+### Files modified
+
+- `platform/functions/src/shared/errors/https-callable.ts` and its test
+- `platform/functions/src/shared/audit/write-audit-event.ts` and its test
+- `platform/functions/src/shared/types/audit-event.ts`
+- `platform/functions/src/assessments/assessment-{deployment,sessions-begin,attempts-finalize}.ts` and their tests
+- `platform/functions/src/assignments/assignments-{archive,close,create-draft,publish,update-draft}.ts` and their tests
+- `platform/functions/src/classes/classes-{archive,create,update-metadata}.ts` and their tests
+- `platform/functions/src/enrollments/enrollments-{join-by-code,set-status,teacher-add}.ts` and their tests
+- `platform/functions/src/lms/{assignments-publish,classes-import,classes-refresh,connections-complete,connections-disconnect}.ts`
+- `platform/functions/src/lms/shared/actor.ts`
+- `platform/functions/src/teachers/teachers-approve-verification.ts` and its test
+- `platform/functions/src/students/students-complete-onboarding.ts` and its test
+- `docs/platform/SPRINT_HISTORY.md` (this entry)
+
+### Validation results
+
+- `npm run lint` passes with zero errors and zero warnings.
+- `npx tsc --noEmit -p tsconfig.json` passes with no diagnostics.
+- `npm run build` passes.
+- `npm test` passes. 30 suites, 546 tests, 0 failures.
+- `git diff --check` passes.
+- The completion report and this entry contain no em dashes.
+
+### Confirmation
+
+- Only the Sprint 11D Important findings (I-1 through I-9) and the two refinements (R-1, R-2) were implemented.
+- No Critical or Minor finding was introduced.
+- The certified architecture is unchanged.
+- Firestore Rules were not modified.
+- No commit was made.

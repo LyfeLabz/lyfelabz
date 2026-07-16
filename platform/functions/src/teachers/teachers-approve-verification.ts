@@ -216,6 +216,7 @@ async function teachersApproveVerificationHandler(
     targetType: "user",
     targetId: targetUid,
     schoolId,
+    districtId,
   });
 
   safeLog(() =>

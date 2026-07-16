@@ -3,12 +3,15 @@ import type { CallableRequest } from "firebase-functions/v2/https";
 const mockAssignmentGet = jest.fn();
 const mockEnrollmentGet = jest.fn();
 const mockSessionGet = jest.fn();
-const mockSessionSet = jest.fn();
+const mockSessionCreate = jest.fn();
 
 const mockAssignmentDocRef = jest.fn(() => ({ get: mockAssignmentGet }));
 const mockEnrollmentDocRef = jest.fn(() => ({ get: mockEnrollmentGet }));
 const mockSessionDocRef = jest.fn(() => ({ get: mockSessionGet }));
-const mockSessionCreationDocRef = jest.fn(() => ({ set: mockSessionSet }));
+const mockSessionCreationDocRef = jest.fn(() => ({
+  set: mockSessionCreate,
+  create: mockSessionCreate,
+}));
 
 const mockWriteAuditEvent = jest.fn();
 const mockRequireDistrictContext = jest.fn();
@@ -152,7 +155,7 @@ describe("assessmentSessionsBegin", () => {
     mockAssignmentGet.mockReset();
     mockEnrollmentGet.mockReset();
     mockSessionGet.mockReset();
-    mockSessionSet.mockReset();
+    mockSessionCreate.mockReset();
     mockAssignmentDocRef.mockClear();
     mockEnrollmentDocRef.mockClear();
     mockSessionDocRef.mockClear();
@@ -176,7 +179,7 @@ describe("assessmentSessionsBegin", () => {
     mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
     mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
     mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
-    mockSessionSet.mockResolvedValueOnce(undefined);
+    mockSessionCreate.mockResolvedValueOnce(undefined);
     mockWriteAuditEvent.mockResolvedValueOnce({ eventId: "evt-1", record: {} });
 
     const result = await __assessmentSessionsBeginHandler(makeRequest());
@@ -186,8 +189,8 @@ describe("assessmentSessionsBegin", () => {
     expect(mockEnrollmentDocRef).toHaveBeenCalledWith(`${CLASS_ID}__${STUDENT_UID}`);
     expect(mockSessionDocRef).toHaveBeenCalledWith(SESSION_ID);
     expect(mockSessionCreationDocRef).toHaveBeenCalledWith(SESSION_ID);
-    expect(mockSessionSet).toHaveBeenCalledTimes(1);
-    expect(mockSessionSet).toHaveBeenCalledWith({
+    expect(mockSessionCreate).toHaveBeenCalledTimes(1);
+    expect(mockSessionCreate).toHaveBeenCalledWith({
       studentId: STUDENT_UID,
       assignmentId: ASSIGNMENT_ID,
       classId: CLASS_ID,
@@ -209,6 +212,7 @@ describe("assessmentSessionsBegin", () => {
       targetType: "assessmentSession",
       targetId: SESSION_ID,
       schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
       payload: {
         assignmentId: ASSIGNMENT_ID,
         classId: CLASS_ID,
@@ -230,7 +234,7 @@ describe("assessmentSessionsBegin", () => {
     const result = await __assessmentSessionsBeginHandler(makeRequest());
 
     expect(result).toEqual({ sessionId: SESSION_ID, alreadyLive: true });
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 
@@ -244,7 +248,7 @@ describe("assessmentSessionsBegin", () => {
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "assessmentSessions.conflict" });
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
     expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 
@@ -258,7 +262,7 @@ describe("assessmentSessionsBegin", () => {
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "assessmentSessions.conflict" });
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
   });
 
   it("propagates the canonical unauthenticated district error", async () => {
@@ -340,7 +344,7 @@ describe("assessmentSessionsBegin", () => {
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "role-forbidden" });
     expect(mockAssignmentGet).not.toHaveBeenCalled();
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
   });
 
   it("rejects a request whose payload is not a structured object", async () => {
@@ -378,7 +382,7 @@ describe("assessmentSessionsBegin", () => {
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "assignment-not-found" });
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
   });
 
   it("rejects a cross-school assignment target", async () => {
@@ -389,7 +393,7 @@ describe("assessmentSessionsBegin", () => {
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "assessmentSessions.forbidden" });
     expect(mockEnrollmentGet).not.toHaveBeenCalled();
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
   });
 
   it("rejects a practice-mode assignment target", async () => {
@@ -401,7 +405,7 @@ describe("assessmentSessionsBegin", () => {
     ).rejects.toMatchObject({
       code: "assignment-mode-invalid",
     });
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
   });
 
   it("rejects a non-published assignment target with certified refusals", async () => {
@@ -423,7 +427,7 @@ describe("assessmentSessionsBegin", () => {
         __assessmentSessionsBeginHandler(makeRequest()),
       ).rejects.toMatchObject({ code });
     }
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
   });
 
   it("rejects a caller without an active enrollment", async () => {
@@ -435,7 +439,7 @@ describe("assessmentSessionsBegin", () => {
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "enrollment-inactive" });
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
   });
 
   it("rejects a caller whose enrollment is not active", async () => {
@@ -446,14 +450,14 @@ describe("assessmentSessionsBegin", () => {
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "enrollment-inactive" });
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
   });
 
   it("does not emit an audit event when the session write fails", async () => {
     mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
     mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
     mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
-    mockSessionSet.mockRejectedValueOnce(new Error("write failed"));
+    mockSessionCreate.mockRejectedValueOnce(new Error("write failed"));
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toThrow("write failed");
@@ -472,7 +476,7 @@ describe("assessmentSessionsBegin", () => {
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "assignment-window-closed" });
     expect(mockEnrollmentGet).not.toHaveBeenCalled();
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
   });
 
   it("C-2: refuses when the assignment window has already closed", async () => {
@@ -484,7 +488,7 @@ describe("assessmentSessionsBegin", () => {
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "assignment-window-closed" });
-    expect(mockSessionSet).not.toHaveBeenCalled();
+    expect(mockSessionCreate).not.toHaveBeenCalled();
   });
 
   it("C-2: refuses when the caller is not enrolled at all with enrollment-inactive", async () => {
@@ -496,5 +500,28 @@ describe("assessmentSessionsBegin", () => {
     await expect(
       __assessmentSessionsBeginHandler(makeRequest()),
     ).rejects.toMatchObject({ code: "enrollment-inactive" });
+  });
+
+  // Sprint 11D I-3. Two concurrent begin calls for the same
+  // deterministic sessionId can both observe `exists === false` at the
+  // pre-check. The pre-Sprint-11D `.set()` write would silently
+  // overwrite the first-committed session. The corrected implementation
+  // uses `.create()` (server-enforced "must-not-exist" precondition) and
+  // maps the ALREADY_EXISTS grpc code back to the canonical
+  // `assessmentSessions.conflict` identifier so the caller observes the
+  // same refusal identifier they would have observed on a mid-check
+  // conflict.
+  it("I-3: maps a create-time ALREADY_EXISTS race to assessmentSessions.conflict", async () => {
+    mockAssignmentGet.mockResolvedValueOnce(assignmentSnapshot());
+    mockEnrollmentGet.mockResolvedValueOnce(enrollmentSnapshot());
+    mockSessionGet.mockResolvedValueOnce(absentSessionSnapshot());
+    const alreadyExists = Object.assign(new Error("already exists"), {
+      code: 6,
+    });
+    mockSessionCreate.mockRejectedValueOnce(alreadyExists);
+    await expect(
+      __assessmentSessionsBeginHandler(makeRequest()),
+    ).rejects.toMatchObject({ code: "assessmentSessions.conflict" });
+    expect(mockWriteAuditEvent).not.toHaveBeenCalled();
   });
 });

@@ -58,6 +58,33 @@ describe("mapPlatformCodeToHttpsCode", () => {
     ).toBe("invalid-argument");
   });
 
+  // Sprint 11D I-4/R-2. Namespaced identifiers ending in canonical
+  // permission/auth suffixes MUST map to their canonical Firebase code
+  // without requiring exact-string entries per callable domain.
+  it("I-4: maps namespaced .unauthenticated suffix to unauthenticated", () => {
+    expect(mapPlatformCodeToHttpsCode("lms.unauthenticated")).toBe(
+      "unauthenticated",
+    );
+    expect(mapPlatformCodeToHttpsCode("submissions.unauthenticated")).toBe(
+      "unauthenticated",
+    );
+  });
+
+  it("I-4: maps namespaced permission suffixes to permission-denied", () => {
+    expect(mapPlatformCodeToHttpsCode("lms.unauthorized")).toBe(
+      "permission-denied",
+    );
+    expect(mapPlatformCodeToHttpsCode("lms.forbidden")).toBe(
+      "permission-denied",
+    );
+    expect(mapPlatformCodeToHttpsCode("assessmentAttempts.notOwned")).toBe(
+      "permission-denied",
+    );
+    expect(mapPlatformCodeToHttpsCode("classes.notEnrolled")).toBe(
+      "permission-denied",
+    );
+  });
+
   it("falls back to failed-precondition for business-rule refusals", () => {
     expect(mapPlatformCodeToHttpsCode("assignment-window-closed")).toBe(
       "failed-precondition",

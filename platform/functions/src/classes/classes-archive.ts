@@ -159,6 +159,7 @@ async function classesArchiveHandler(
     targetType: "class",
     targetId: input.classId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
   });
 
   safeLog(() =>

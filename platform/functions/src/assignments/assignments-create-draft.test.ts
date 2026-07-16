@@ -179,6 +179,7 @@ describe("assignmentsCreateDraft", () => {
       targetType: "assignment",
       targetId: "assign-1",
       schoolId: SCHOOL_ID,
+      districtId: DISTRICT_ID,
       payload: {
         classId: "class-abc",
         lessonSlug: "lesson_g7_earths-layers",

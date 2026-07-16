@@ -472,11 +472,34 @@ function assertAssignmentFinalizeWindow(assignment: AssignmentRecord): void {
 // requires `(studentId, assignmentId, idempotencyKey)` to match the
 // existing composite index; parsing the session identifier avoids
 // introducing a wider index for the replay path.
+// Sprint 11D R-1. Bounded parse from the RIGHT. The canonical session id
+// is `{assignmentId}__{studentId}__{sessionOrdinal}`. The pre-Sprint-11D
+// implementation split on `__` and took `parts[0]`, which silently
+// truncated an assignmentId that legally contains `__` (the assignmentId
+// pattern in `assessment-sessions-begin.ts` allows repeated `_`
+// characters). Parsing right-to-left removes the trailing
+// `__{sessionOrdinal}` and `__{studentId}` segments once each, so an
+// assignmentId that internally contains `__` is preserved intact.
+// `sessionOrdinal` is validated as a positive integer per §12; a
+// non-numeric trailing segment refuses the parse (returns undefined) and
+// the caller falls through to the canonical `sessionNotFound` refusal
+// instead of running the replay lookup against a fabricated identifier.
+export function __parseAssignmentIdFromSessionId(
+  sessionId: string,
+): string | undefined {
+  return parseAssignmentIdFromSessionId(sessionId);
+}
+
 function parseAssignmentIdFromSessionId(sessionId: string): string | undefined {
-  const parts = sessionId.split("__");
-  if (parts.length < 3) return undefined;
-  const [assignmentId] = parts;
-  if (!assignmentId) return undefined;
+  const lastSep = sessionId.lastIndexOf("__");
+  if (lastSep <= 0) return undefined;
+  const ordinalPart = sessionId.slice(lastSep + 2);
+  if (!/^\d+$/.test(ordinalPart)) return undefined;
+  const withoutOrdinal = sessionId.slice(0, lastSep);
+  const secondSep = withoutOrdinal.lastIndexOf("__");
+  if (secondSep <= 0) return undefined;
+  const assignmentId = withoutOrdinal.slice(0, secondSep);
+  if (assignmentId.length === 0) return undefined;
   return assignmentId;
 }
 
@@ -828,6 +851,7 @@ async function assessmentAttemptsFinalizeHandler(
       targetType: "attempt",
       targetId: outcome.attemptId,
       schoolId: actor.schoolId,
+      districtId: outcome.sessionContext.districtId,
       payload: {
         assignmentId: outcome.sessionContext.assignmentId,
         classId: outcome.sessionContext.classId,

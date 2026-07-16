@@ -222,6 +222,7 @@ async function handler(
       return await handleMissingUpstream({
         actorUid: actor.uid,
         schoolId: actor.schoolId,
+        districtId: actor.districtId,
         linkId,
         classId: link.classId,
         providerId: link.providerId,
@@ -233,6 +234,7 @@ async function handler(
       return await handleAccessRevoked({
         actorUid: actor.uid,
         schoolId: actor.schoolId,
+        districtId: actor.districtId,
         linkId,
         classId: link.classId,
         providerId: link.providerId,
@@ -263,6 +265,7 @@ async function handler(
     return await handleOwnershipDrift({
       actorUid: actor.uid,
       schoolId: actor.schoolId,
+      districtId: actor.districtId,
       linkId,
       classId: link.classId,
       providerId: link.providerId,
@@ -287,6 +290,10 @@ async function handler(
 type ReconciliationContext = {
   readonly actorUid: string;
   readonly schoolId: string;
+  // Sprint 11D I-5. Optional districtId carried through to audit events
+  // so `lms.*` reconciliation events satisfy the audit district-context
+  // requirement when the caller's token includes the claim.
+  readonly districtId?: string;
   readonly linkId: string;
   readonly classId: string;
   readonly providerId: string;
@@ -314,6 +321,7 @@ async function handleMissingUpstream(
     targetType: "class",
     targetId: ctx.classId,
     schoolId: ctx.schoolId,
+    districtId: ctx.districtId,
     payload: {
       providerId: ctx.providerId,
       lmsClassId: ctx.lmsClassId,
@@ -355,6 +363,7 @@ async function handleAccessRevoked(
     targetType: "lmsConnection",
     targetId: ctx.connectionId,
     schoolId: ctx.schoolId,
+    districtId: ctx.districtId,
     payload: {
       providerId: ctx.providerId,
       reason: "upstreamAccessRevoked",
@@ -396,6 +405,7 @@ async function handleOwnershipDrift(
     targetType: "class",
     targetId: ctx.classId,
     schoolId: ctx.schoolId,
+    districtId: ctx.districtId,
     payload: {
       providerId: ctx.providerId,
       lmsClassId: ctx.lmsClassId,

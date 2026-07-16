@@ -140,6 +140,7 @@ describe("classesUpdateMetadata", () => {
       targetType: "class",
       targetId: CLASS_ID,
       schoolId: "school-a",
+      districtId: "district-1",
       payload: { changedFields: ["title", "academicTerm"] },
     });
     expect(result).toEqual({ classId: CLASS_ID, alreadyUpdated: false });

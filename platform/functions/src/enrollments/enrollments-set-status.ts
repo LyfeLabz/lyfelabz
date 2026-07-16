@@ -246,6 +246,7 @@ async function enrollmentsSetStatusHandler(
     targetType: "enrollment",
     targetId: input.enrollmentId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
     payload: {
       classId: enrollment.classId,
       studentId: enrollment.studentId,

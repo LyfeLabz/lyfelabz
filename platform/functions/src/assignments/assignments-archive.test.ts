@@ -121,6 +121,7 @@ describe("assignmentsArchive", () => {
         targetType: "assignment",
         targetId: ASSIGNMENT_ID,
         schoolId: SCHOOL_ID,
+        districtId: DISTRICT_ID,
         payload: { classId: "class-abc", previousStatus: fromStatus },
       });
       expect(result).toEqual({

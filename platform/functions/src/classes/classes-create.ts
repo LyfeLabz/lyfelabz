@@ -264,6 +264,7 @@ async function classesCreateHandler(
     targetType: "class",
     targetId: input.classId,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
   });
 
   safeLog(() =>
@@ -271,6 +272,7 @@ async function classesCreateHandler(
       actorUserId: actor.uid,
       classId: input.classId,
       schoolId: actor.schoolId,
+    districtId: actor.districtId,
     }),
   );
 

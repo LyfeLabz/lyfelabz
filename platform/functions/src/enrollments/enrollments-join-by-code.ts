@@ -228,6 +228,7 @@ async function enrollmentsJoinByCodeHandler(
     targetType: "enrollment",
     targetId: id,
     schoolId: actor.schoolId,
+    districtId: actor.districtId,
     payload: { classId, source: "joinByCode" },
   });
 

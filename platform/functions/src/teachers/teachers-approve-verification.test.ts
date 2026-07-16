@@ -388,6 +388,7 @@ describe("teachersApproveVerification", () => {
       targetType: "user",
       targetId: "uid-teacher",
       schoolId: "school-123",
+      districtId: "district-abc",
     });
   });
 
