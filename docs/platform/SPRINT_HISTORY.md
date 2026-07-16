@@ -2733,3 +2733,49 @@ Begin the authenticated-student retrieval layer for the certified assessment pip
 - No dependency changes.
 - No deployment.
 - No commit.
+
+## Sprint 12D Slice 1: Teacher Assessment Retrieval APIs
+
+**Category:** Cloud Functions (retrieval layer, no schema, no Rules, no deployment)
+**Status:** CERTIFIED
+
+### Scope
+
+Add one bounded teacher-facing retrieval callable that consumes the certified assessment data model directly. No redesign of certified backend behavior. No Firestore Rules, schema, index, callable options, or dependency changes.
+
+### Function added
+
+- `assessmentAttemptsListForClass` returns completed attempt summaries for exactly one class owned by the authenticated teacher, newest first.
+- Input: `{ classId: string }`. No student, teacher, district, or school identifier is ever accepted from the client.
+- Response: `{ classId, attempts: TeacherClassAttemptSummary[] }`.
+
+### Implementation notes
+
+- Authorization chain: `requireDistrictContext` (auth, active status, claims, district agreement), teacher-role gate, request-shape validation, class load, class ownership check against the loaded record's frozen `teacherId` and `schoolId`. Same-district non-owner and cross-school teacher are both refused with `classes.forbidden`. Cross-district context is refused because the class school will not match.
+- Query: `attempts.where("classId", "==", classId)` on the auto-created single-field index. Every candidate document is defense-in-depth-checked against the caller's verified `districtId`, `schoolId`, and `teacherId` before projection; mismatches are silently dropped.
+- Projection: explicit allowlist via `projectTeacherClassAttemptSummary`. Fields returned: `attemptId`, `studentId`, `assessmentId`, `assignmentId`, `assessmentRevisionId`, `attemptNumber`, `score`, `maxScore`, `percentage`, `submittedAt`, and constant `status: "completed"`.
+- Confidentiality: `itemResults`, `responses`, `correctOptionId`, `explanation`, `idempotencyKey`, `districtId`, `schoolId`, `teacherId`, `classId` (in the per-attempt object), and `activityId` are never surfaced. The response envelope echoes the requested `classId` intentionally; no district, school, or teacher identifier appears anywhere in the response.
+- `studentDisplayName` is intentionally not returned in this slice. No reusable backend helper reconciles `users.displayName` with `enrollments.displayNameOverride`. A canonical roster display-name resolver is captured as the next bounded slice.
+- Historical membership: class ownership fields are immutable per Data Model section 1.2, so current class ownership authorizes the full historical set of attempts for that class, including attempts by students who have since exited.
+- Errors reuse canonical identifiers already in use: `unauthenticated`, `role-forbidden`, `account-inactive`, `assessmentAttempts.invalidRequest`, `classes.invalidClassId`, `classes.notFound`, `classes.forbidden`.
+- No audit event is written. Retrieval callables are intentionally unaudited, consistent with Sprint 12C.
+
+### Tests added
+
+- `platform/functions/src/assessments/assessment-attempts-list-for-class.test.ts` (33 tests) covering positive retrieval, ordering, empty-class response, projection allowlist, sensitive-field exclusion, unauthenticated and non-teacher refusal, inactive-teacher and malformed-claims refusal, missing / blank / non-string / malformed `classId` refusal, forbidden owner-scoping keys, nonexistent class, cross-teacher and cross-school and cross-district refusal, matching-district-alone and matching-school-alone insufficiency, cross-class and cross-district and cross-school data isolation, cross-teacher data isolation, and cross-assignment inclusion within one class.
+
+### Validation results
+
+- Targeted retrieval tests: 1 suite, 33 tests, all pass.
+- Full Cloud Functions suite: 33 suites, 601 tests, all pass.
+- Lint, typecheck, and build all pass.
+- No em dashes appear in any created or modified file.
+
+### Confirmation
+
+- No certified backend behavior changed.
+- No Firestore Rules changes.
+- No schema, index, or configuration changes.
+- No dependency changes.
+- No deployment.
+- No commit.

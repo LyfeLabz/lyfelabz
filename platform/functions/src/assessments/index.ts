@@ -28,6 +28,13 @@ export {
   type AssessmentAttemptGetResponse,
 } from "./assessment-attempt-get";
 export {
+  assessmentAttemptsListForClass,
+  projectTeacherClassAttemptSummary,
+  type AssessmentAttemptsListForClassRequest,
+  type AssessmentAttemptsListForClassResponse,
+  type TeacherClassAttemptSummary,
+} from "./assessment-attempts-list-for-class";
+export {
   assessmentIdFor,
   deployAssessmentRevision,
   parseRevisionOrdinalFromId,

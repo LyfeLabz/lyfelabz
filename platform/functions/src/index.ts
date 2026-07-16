@@ -2,6 +2,7 @@ export {
   assessmentAttemptGet,
   assessmentAttemptsFinalize,
   assessmentAttemptsList,
+  assessmentAttemptsListForClass,
   assessmentSessionsAutosave,
   assessmentSessionsBegin,
 } from "./assessments";
