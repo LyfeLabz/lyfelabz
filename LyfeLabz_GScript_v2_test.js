@@ -271,14 +271,33 @@ function testSchemaGeneration() {
   assert('15-question schema has correct header count',
     schema15.headers.length === 3 + 15 + 2);
 
-  var schemaExtended = buildSchema(RESOURCE_REGISTRY['investigation_amplitude-challenge']);
-  assert('extended fields appended after Show Your Thinking',
-    schemaExtended.fields.indexOf('cerClaim') > schemaExtended.fields.indexOf('thinking'));
+  // Conditional Show Your Thinking column: only present when thinkingRequired:true
+  var lessonSchema = buildSchema(RESOURCE_REGISTRY['lesson_what-is-life']);
+  assert('lesson schema includes Show Your Thinking (thinkingRequired:true)',
+    lessonSchema.headers[lessonSchema.headers.length - 1] === 'Show Your Thinking');
+
+  var ampSchema = buildSchema(RESOURCE_REGISTRY['investigation_amplitude-challenge']);
+  assert('amplitude-challenge schema has no thinking column (thinkingRequired:false)',
+    ampSchema.fields.indexOf('thinking') === -1);
+  assert('amplitude-challenge schema includes cerClaim as extended field',
+    ampSchema.fields.indexOf('cerClaim') !== -1);
+  assert('cerClaim extended field comes after Score in amplitude-challenge schema',
+    ampSchema.fields.indexOf('cerClaim') > ampSchema.fields.indexOf('score'));
+  assert('amplitude-challenge schema does not include prediction (removed)',
+    ampSchema.fields.indexOf('prediction') === -1);
+  assert('amplitude-challenge schema does not include quizAnswers (removed)',
+    ampSchema.fields.indexOf('quizAnswers') === -1);
 
   var schema0 = buildSchema(RESOURCE_REGISTRY['simulation_beetle-island']);
   // beetle island has expectedQuestionCount:4
   assert('beetle island schema has q1 through q4',
     schema0.fields.indexOf('q4') !== -1 && schema0.fields.indexOf('q5') === -1);
+  assert('beetle island schema has no thinking column (thinkingRequired:false)',
+    schema0.fields.indexOf('thinking') === -1);
+  assert('beetle island schema does not include totalGens (removed)',
+    schema0.fields.indexOf('totalGens') === -1);
+  assert('beetle island schema retains environment and prediction',
+    schema0.fields.indexOf('environment') !== -1 && schema0.fields.indexOf('prediction') !== -1);
 }
 
 function testServerTimestamp() {
@@ -454,13 +473,84 @@ function testPayloadFieldAuthorization() {
     q1:'A', q2:'B', q3:'C', q4:'D',
     score: '4/4',
     thinking: '',
-    environment: 'Forest',
-    eventType: 'radiation',
-    totalGens: '50',
-    accuracy: '0.85',
+    accuracy: '85%',
   };
-  assertNull('registered extendedFields accepted',
+  assertNull('registered extendedField accuracy accepted for chernobyl-frogs',
     validatePayloadFields(extParams, extResource));
+
+  // Removed fields are no longer accepted
+  var extParamsWithRemoved = {};
+  Object.keys(extParams).forEach(function(k) { extParamsWithRemoved[k] = extParams[k]; });
+  extParamsWithRemoved.environment = 'Before and After Disaster';
+  assertNotNull('removed field environment rejected for chernobyl-frogs',
+    validatePayloadFields(extParamsWithRemoved, extResource));
+
+  var extParamsWithTotalGens = {};
+  Object.keys(extParams).forEach(function(k) { extParamsWithTotalGens[k] = extParams[k]; });
+  extParamsWithTotalGens.totalGens = '50';
+  assertNotNull('removed field totalGens rejected for chernobyl-frogs',
+    validatePayloadFields(extParamsWithTotalGens, extResource));
+
+  // Amplitude challenge: cerClaim accepted, removed fields rejected
+  var ampResource = RESOURCE_REGISTRY['investigation_amplitude-challenge'];
+  var ampParams = {
+    resourceId: 'investigation_amplitude-challenge',
+    grade: '6',
+    teacher: 'mr-brown',
+    studentName: 'Alex Reyes',
+    block: 'B',
+    q1:'A', q2:'B', q3:'C', q4:'D', q5:'A',
+    score: '4/5',
+    cerClaim: 'Higher amplitude means more energy.',
+    cerEvidence: 'In my trials, amplitude 8 produced the most energy.',
+    cerReasoning: 'This shows a direct relationship between amplitude and energy.',
+  };
+  assertNull('cerClaim/cerEvidence/cerReasoning accepted for amplitude-challenge',
+    validatePayloadFields(ampParams, ampResource));
+
+  var ampWithQuizAnswers = {};
+  Object.keys(ampParams).forEach(function(k) { ampWithQuizAnswers[k] = ampParams[k]; });
+  ampWithQuizAnswers.quizAnswers = JSON.stringify([0,1,2,0,1]);
+  assertNotNull('removed field quizAnswers rejected for amplitude-challenge',
+    validatePayloadFields(ampWithQuizAnswers, ampResource));
+
+  var ampWithPrediction = {};
+  Object.keys(ampParams).forEach(function(k) { ampWithPrediction[k] = ampParams[k]; });
+  ampWithPrediction.prediction = 'Higher amplitude';
+  assertNotNull('removed field prediction rejected for amplitude-challenge',
+    validatePayloadFields(ampWithPrediction, ampResource));
+
+  // Population patterns: cerClaim/challengeText accepted, removed fields rejected
+  var popResource = RESOURCE_REGISTRY['investigation_population-patterns'];
+  var popParams = {
+    resourceId: 'investigation_population-patterns',
+    grade: '7',
+    teacher: 'mr-kankel',
+    studentName: 'Jordan Kim',
+    block: 'D',
+    q1:'A',q2:'B',q3:'C',q4:'D',q5:'A',q6:'B',q7:'C',q8:'D',q9:'A',q10:'B',
+    score: '9/10',
+    prediction: 'The population will grow then level off.',
+    cerClaim: 'Predator populations depend on prey.',
+    cerEvidence: 'When hare dropped, lynx also dropped.',
+    cerReasoning: 'This shows a food web dependency.',
+    challengeChoice: 'deer-grass',
+    challengeText: 'The grass supply dropped from about 400 to 200 before deer declined.',
+  };
+  assertNull('population-patterns extended fields accepted',
+    validatePayloadFields(popParams, popResource));
+
+  var popWithCheckpoints = {};
+  Object.keys(popParams).forEach(function(k) { popWithCheckpoints[k] = popParams[k]; });
+  popWithCheckpoints.checkpoints = JSON.stringify({1:0, 2:1, 3:2});
+  assertNotNull('removed field checkpoints rejected for population-patterns',
+    validatePayloadFields(popWithCheckpoints, popResource));
+
+  var popWithQuizAnswers = {};
+  Object.keys(popParams).forEach(function(k) { popWithQuizAnswers[k] = popParams[k]; });
+  popWithQuizAnswers.quizAnswers = JSON.stringify([0,1,2,3,0,1,2,3,0,1]);
+  assertNotNull('removed field quizAnswers rejected for population-patterns',
+    validatePayloadFields(popWithQuizAnswers, popResource));
 
   // An extended field registered for another resource is rejected
   var wrongExt = {};

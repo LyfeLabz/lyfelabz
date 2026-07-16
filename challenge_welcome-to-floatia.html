@@ -2548,7 +2548,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
       <div class="info-fields">
         <div class="info-field">
-          <label for="cm-student-name">Your Name</label>
+          <label for="cm-student-name">Student Name</label>
           <input type="text" id="cm-student-name" placeholder="First Last" autocomplete="off">
           <div class="info-error" id="cm-err-name">Please enter your name.</div>
         </div>
@@ -2562,16 +2562,16 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <div class="info-error" id="cm-err-teacher">Please select your teacher.</div>
         </div>
         <div class="info-field">
-          <label for="cm-block-select">Block</label>
+          <label for="cm-block-select">Class Block</label>
           <select id="cm-block-select">
             <option value="">- Select -</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-            <option value="D">D</option>
-            <option value="E">E</option>
-            <option value="F">F</option>
-            <option value="G">G</option>
+            <option value="A">A Block</option>
+            <option value="B">B Block</option>
+            <option value="C">C Block</option>
+            <option value="D">D Block</option>
+            <option value="E">E Block</option>
+            <option value="F">F Block</option>
+            <option value="G">G Block</option>
           </select>
           <div class="info-error" id="cm-err-block">Please select your block.</div>
         </div>
@@ -2591,7 +2591,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="cm-submit-btn" onclick="cmSubmitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="cm-submit-btn" onclick="cmSubmitQuiz()" disabled>Submit Score</button>
     </div>
 
     <!-- Score Board -->
@@ -3295,7 +3295,9 @@ function cmBuildQuiz() {
   container.innerHTML = '';
   cmQuizState.selected  = new Array(cmQuizQuestions.length).fill(null);
   cmQuizState.submitted = false;
-  document.getElementById('cm-submit-btn').disabled = true;
+  var cmSubmitBtnR = document.getElementById('cm-submit-btn');
+  cmSubmitBtnR.disabled = true;
+  cmSubmitBtnR.textContent = 'Submit Score';
   cmUpdateProgress();
   var letters = ['A','B','C','D'];
   cmQuizQuestions.forEach(function (q, qi) {
@@ -3357,7 +3359,8 @@ function cmSubmitQuiz() {
     }
   }
   cmQuizState.submitted = true;
-  document.getElementById('cm-submit-btn').disabled = true;
+  var cmSubmitBtn = document.getElementById('cm-submit-btn');
+  cmSubmitBtn.disabled = true;
   var correct = 0;
   cmQuizQuestions.forEach(function (q, qi) {
     var chosen    = cmQuizState.selected[qi];
@@ -3395,11 +3398,13 @@ function cmSubmitQuiz() {
   }
 
   if (cmQuizMode === 'practice') {
+    cmSubmitBtn.textContent = 'Submitted';
     document.getElementById('cm-submit-status').innerHTML =
       '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
     return;
   }
 
+  cmSubmitBtn.textContent = 'Submitting…';
   var info2 = cmValidateStudentInfo();
   var teacherLabel = info2.teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   var letters = ['A','B','C','D'];
@@ -3418,14 +3423,21 @@ function cmSubmitQuiz() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.status === 'success') {
+        cmSubmitBtn.textContent = 'Submitted';
         document.getElementById('cm-submit-status').innerHTML =
           '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
       } else {
+        cmSubmitBtn.textContent = 'Submit Score';
+        cmSubmitBtn.disabled = false;
+        cmQuizState.submitted = false;
         document.getElementById('cm-submit-status').innerHTML =
-          '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
       }
     })
     .catch(function () {
+      cmSubmitBtn.textContent = 'Submit Score';
+      cmSubmitBtn.disabled = false;
+      cmQuizState.submitted = false;
       document.getElementById('cm-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });

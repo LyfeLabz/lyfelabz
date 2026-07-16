@@ -2029,7 +2029,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
       <div class="info-fields">
         <div class="info-field">
-          <label for="bb-student-name">Your Name</label>
+          <label for="bb-student-name">Student Name</label>
           <input type="text" id="bb-student-name" placeholder="First Last" autocomplete="off">
           <div class="info-error" id="bb-err-name">Please enter your name.</div>
         </div>
@@ -2043,11 +2043,13 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <div class="info-error" id="bb-err-teacher">Please select your teacher.</div>
         </div>
         <div class="info-field">
-          <label for="bb-block-select">Block</label>
+          <label for="bb-block-select">Class Block</label>
           <select id="bb-block-select">
             <option value="">- Select -</option>
-            <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-            <option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option>
+            <option value="A">A Block</option><option value="B">B Block</option>
+            <option value="C">C Block</option><option value="D">D Block</option>
+            <option value="E">E Block</option><option value="F">F Block</option>
+            <option value="G">G Block</option>
           </select>
           <div class="info-error" id="bb-err-block">Please select your block.</div>
         </div>
@@ -2058,7 +2060,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <div class="quiz-progress-sticky">
       <div class="quiz-progress">
         <div class="progress-bar"><div class="progress-fill" id="bb-progress"></div></div>
-        <div class="progress-text" id="bb-progress-text">0 / 5 selected</div>
+        <div class="progress-text" id="bb-progress-text">0 / 10 selected</div>
       </div>
     </div>
 
@@ -2067,7 +2069,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="bb-submit-btn" onclick="bbSubmitQuiz()" disabled>Submit Quiz</button>
+      <button class="quiz-submit-btn" id="bb-submit-btn" onclick="bbSubmitQuiz()" disabled>Submit Score</button>
     </div>
 
     <!-- Score Board -->
@@ -2729,7 +2731,9 @@ function bbBuildQuiz() {
   container.innerHTML = '';
   bbQuizState.selected  = new Array(bbQuizQuestions.length).fill(null);
   bbQuizState.submitted = false;
-  document.getElementById('bb-submit-btn').disabled = true;
+  var submitBtnR = document.getElementById('bb-submit-btn');
+  submitBtnR.disabled = true;
+  submitBtnR.textContent = 'Submit Score';
   bbUpdateProgress();
   var letters = ['A','B','C','D'];
   bbQuizQuestions.forEach(function (q, qi) {
@@ -2791,7 +2795,8 @@ function bbSubmitQuiz() {
     }
   }
   bbQuizState.submitted = true;
-  document.getElementById('bb-submit-btn').disabled = true;
+  var submitBtn = document.getElementById('bb-submit-btn');
+  submitBtn.disabled = true;
   var correct = 0;
   bbQuizQuestions.forEach(function (q, qi) {
     var chosen    = bbQuizState.selected[qi];
@@ -2829,11 +2834,13 @@ function bbSubmitQuiz() {
   }
 
   if (bbQuizMode === 'practice') {
+    submitBtn.textContent = 'Submitted';
     document.getElementById('bb-submit-status').innerHTML =
       '<div class="score-submitted" style="color:var(--text-muted);background:rgba(122,143,166,0.08);border-color:rgba(122,143,166,0.3);">Practice mode - score not submitted</div>';
     return;
   }
 
+  submitBtn.textContent = 'Submitting…';
   var info2 = bbValidateStudentInfo();
   var teacherLabel = info2.teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   var letters = ['A','B','C','D'];
@@ -2843,7 +2850,7 @@ function bbSubmitQuiz() {
   var params = new URLSearchParams({
     resourceId: 'extension_hidden-world-of-matter', grade: '6',
     studentName: info2.name, teacher: info2.teacher,
-    block: info2.block, score: score, answers: answerStr
+    block: info2.block, score: score
   });
   bbQuizState.selected.forEach(function(idx, i) {
     params.set('q' + (i + 1), idx !== null ? letters[idx] : '-');
@@ -2852,14 +2859,21 @@ function bbSubmitQuiz() {
     .then(function (r) { return r.json(); })
     .then(function (data) {
       if (data.status === 'success') {
+        submitBtn.textContent = 'Submitted';
         document.getElementById('bb-submit-status').innerHTML =
           '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
       } else {
+        submitBtn.textContent = 'Submit Score';
+        submitBtn.disabled = false;
+        bbQuizState.submitted = false;
         document.getElementById('bb-submit-status').innerHTML =
           '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
       }
     })
     .catch(function () {
+      submitBtn.textContent = 'Submit Score';
+      submitBtn.disabled = false;
+      bbQuizState.submitted = false;
       document.getElementById('bb-submit-status').innerHTML =
         '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });

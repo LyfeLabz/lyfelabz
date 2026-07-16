@@ -2443,7 +2443,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         block:       refs.blockInput.value.trim(),
         score:       computeQuizScore(),
         hintsUsed:   String(state.hintsUsed),
-        quizAnswers: JSON.stringify(state.quizAnswers)
       });
       quizData.forEach(q => {
         params.set('q' + q.id, state.quizAnswers[q.id] !== undefined ? ['A','B','C','D'][state.quizAnswers[q.id]] : '-');

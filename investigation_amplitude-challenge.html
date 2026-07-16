@@ -3208,20 +3208,15 @@ function submitWork(){
 
   const letters = ['A','B','C','D'];
   const params = new URLSearchParams({
-    resourceId:     'investigation_amplitude-challenge',
-    grade:          '6',
-    studentName:    document.getElementById('studentNameInput').value.trim(),
-    block:          document.getElementById('blockInput').value.trim(),
-    teacher:        teacher,
-    score:          state.quizScore !== null ? state.quizScore + '/5' : '',
-    prediction:     state.prediction || '',
-    trials:         JSON.stringify(state.trials),
-    targetAttempts: JSON.stringify(state.targetAttempts),
-    modelChoice:    state.modelChoice || '',
-    cerClaim:       state.cer.claim || '',
-    cerEvidence:    state.cer.evidence || '',
-    cerReasoning:   state.cer.reasoning || '',
-    quizAnswers:    JSON.stringify(state.quizAnswers)
+    resourceId:   'investigation_amplitude-challenge',
+    grade:        '6',
+    studentName:  document.getElementById('studentNameInput').value.trim(),
+    block:        document.getElementById('blockInput').value.trim(),
+    teacher:      teacher,
+    score:        state.quizScore !== null ? state.quizScore + '/5' : '',
+    cerClaim:     state.cer.claim || '',
+    cerEvidence:  state.cer.evidence || '',
+    cerReasoning: state.cer.reasoning || '',
   });
   state.quizAnswers.forEach((ans, i) => {
     params.set('q' + (i + 1), ans !== null ? letters[ans] : '-');

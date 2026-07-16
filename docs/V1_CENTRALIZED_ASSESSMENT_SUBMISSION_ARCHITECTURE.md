@@ -251,7 +251,7 @@ The client sends exactly these fields in the POST body:
 | `block` | Class block identifier (A-G) | Required. |
 | `q1` through `qN` | The student's answer to each quiz question | One field per question, sequentially numbered. N matches `expectedQuestionCount` for this resource. All N fields must be present. |
 | `score` | Score string (e.g., `9/10`, `14/15`) | Required. |
-| `thinking` | Show Your Thinking response text | Required when `thinkingRequired` is true for this resource. Must be non-empty. |
+| `thinking` | Show Your Thinking response text | Only sent by resources where `thinkingRequired` is `true`. Required and must be non-empty for those resources. Resources without a Show Your Thinking prompt do not send this field and do not receive a Show Your Thinking column. |
 
 No other fields are sent. No `percent` field. No `tab` field. No `submittedAt` field.
 
@@ -362,15 +362,23 @@ The server calls `new Date()` to produce the submission timestamp. This value is
 
 ### 7.5 Row Schema
 
-Every worksheet uses the same schema:
+The standard worksheet schema is:
 
 ```
 Timestamp | Student Name | Block | Q1 | Q2 | ... | QN | Score | Show Your Thinking
 ```
 
+The Show Your Thinking column is present **only when `thinkingRequired` is `true`** for the resource. Resources without a Show Your Thinking prompt (investigations, simulations, extensions, games, and the engineering challenge) use a shorter schema with no blank trailing column:
+
+```
+Timestamp | Student Name | Block | Q1 | Q2 | ... | QN | Score
+```
+
+Extended fields, when registered, appear after Score (or after Show Your Thinking when present).
+
 The number of Q columns varies by resource. The server walks `q1`, `q2`, ... `qN` sequentially based on `expectedQuestionCount` for this resource.
 
-The leading columns (Timestamp, Student Name, Block) and trailing columns (Score, Show Your Thinking) are constant.
+The leading columns (Timestamp, Student Name, Block) are constant. Score is always present. Show Your Thinking is conditional on `thinkingRequired`.
 
 Rows are inserted at position 2 so the most recent submission appears at the top, below the frozen header.
 

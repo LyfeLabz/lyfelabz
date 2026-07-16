@@ -1866,7 +1866,6 @@ function submitWork() {
     block:       block,
     teacher:     teacher,
     score:       `${correct}/${QUIZ_DATA.length}`,
-    answers:     answerStr
   });
   QUIZ_DATA.forEach(q => {
     params.set('q' + q.id, quizAnswers[q.id] !== undefined ? letters[quizAnswers[q.id]] : '-');

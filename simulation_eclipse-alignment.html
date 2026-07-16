@@ -415,7 +415,7 @@ section:nth-child(even) { background: var(--bg-secondary); }
 /* =========================================================
    MODE TOGGLE BAR
    ========================================================= */
-.mode-toggle-bar {
+.quiz-mode-toggle {
   display: flex; align-items: center; justify-content: center; gap: 0;
   margin: 0 auto 6px;
   background: rgba(42,52,71,0.45);
@@ -791,16 +791,16 @@ footer p { font-size: 0.72rem; color: rgba(180,200,220,0.35); }
 /* =========================================================
    QUIZ / CHECKPOINT SECTION
    ========================================================= */
-.quiz-info-box {
+.student-info-box {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 1.5rem 1.7rem;
   margin-bottom: 2rem; border-top: 3px solid var(--accent2);
 }
-.quiz-info-title {
+.student-info-title {
   font-family: 'Fredoka One', cursive; font-size: 1.05rem;
   color: var(--text-primary); margin-bottom: 0.25rem;
 }
-.quiz-info-sub { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 1.1rem; }
+.student-info-sub { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 1.1rem; }
 .info-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.8rem; }
 .info-field label {
   display: block; font-size: 0.72rem; font-weight: 900;
@@ -2492,7 +2492,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     <p class="section-desc">5 questions about eclipse alignment, moon phase, orbital tilt, nodes, and shadows.</p>
 
     <!-- Practice / Classroom toggle -->
-    <div class="mode-toggle-bar" style="margin-bottom: 6px;">
+    <div class="quiz-mode-toggle" style="margin-bottom: 6px;">
       <button class="mode-btn active" id="btn-practice"  onclick="setQuizMode('practice')">Practice Mode</button>
       <button class="mode-btn"        id="btn-classroom" onclick="setQuizMode('classroom')">Classroom Mode</button>
     </div>
@@ -2502,12 +2502,12 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
     </div>
 
     <!-- Student info box (Classroom mode only) -->
-    <div class="quiz-info-box" id="quiz-info-box" style="display:none;">
-      <div class="quiz-info-title">Before You Submit</div>
-      <div class="quiz-info-sub">Your name, teacher, and block are required to send your results.</div>
+    <div class="student-info-box" id="student-info-box" style="display:none;">
+      <div class="student-info-title">Before You Begin</div>
+      <div class="student-info-sub">This info is required to submit your quiz results to your teacher.</div>
       <div class="info-fields">
         <div class="info-field">
-          <label for="quiz-student-name">Your Name</label>
+          <label for="quiz-student-name">Student Name</label>
           <input type="text" id="quiz-student-name" placeholder="First Last" autocomplete="off">
           <div class="info-error" id="quiz-err-name">Please enter your name.</div>
         </div>
@@ -2521,16 +2521,16 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
           <div class="info-error" id="quiz-err-teacher">Please select your teacher.</div>
         </div>
         <div class="info-field">
-          <label for="quiz-block-select">Block</label>
+          <label for="quiz-block-select">Class Block</label>
           <select id="quiz-block-select">
             <option value="">- Select -</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-            <option value="D">D</option>
-            <option value="E">E</option>
-            <option value="F">F</option>
-            <option value="G">G</option>
+            <option value="A">A Block</option>
+            <option value="B">B Block</option>
+            <option value="C">C Block</option>
+            <option value="D">D Block</option>
+            <option value="E">E Block</option>
+            <option value="F">F Block</option>
+            <option value="G">G Block</option>
           </select>
           <div class="info-error" id="quiz-err-block">Please select your block.</div>
         </div>
@@ -2552,7 +2552,7 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
 
     <!-- Submit -->
     <div class="quiz-submit-wrap">
-      <button class="quiz-submit-btn" id="chk-submit-btn" onclick="submitCheckpoint()" disabled>Submit Checkpoint</button>
+      <button class="quiz-submit-btn" id="chk-submit-btn" onclick="submitCheckpoint()" disabled>Submit Score</button>
     </div>
 
     <!-- Score board -->
@@ -2563,6 +2563,39 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
       <button class="reset-btn" onclick="resetCheckpoint()">Try Again</button>
     </div>
 
+  </div>
+</section>
+
+<!-- ── MORE LEARNING ──────────────────────────────────────── -->
+<style>
+#continue { padding: 4rem 0; background: var(--bg-secondary); }
+.continue-intro { text-align: left; font-size: 1rem; color: var(--text-secondary); line-height: 1.7; max-width: 720px; margin: 0 0 2.4rem; }
+.continue-intro strong { color: var(--gold); font-weight: 700; }
+.continue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 340px)); gap: 1.2rem; margin-top: 0; }
+@media (max-width: 720px) { .continue-grid { grid-template-columns: 1fr; } }
+.cont-card { display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.5rem; text-decoration: none; color: var(--text-primary); transition: transform 0.2s, border-color 0.2s, background 0.2s; }
+.cont-card:hover, .cont-card:focus-visible { transform: translateY(-3px); border-color: var(--gold); background: var(--bg-card-hover); }
+.cont-card:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(245,200,66,0.4); }
+.cont-icon { font-size: 1.6rem; margin-bottom: 0.5rem; }
+.cont-cat  { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+.cont-name { font-family: 'Fredoka One', cursive; font-size: 1.25rem; line-height: 1.25; margin-bottom: 0.5rem; color: var(--text-primary); }
+.cont-desc { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: 1rem; }
+.cont-link { margin-top: auto; align-self: flex-start; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.35rem 0.85rem; border-radius: 99px; background: var(--gold-dim); border: 1px solid rgba(245,200,66,0.35); color: var(--gold); }
+</style>
+<section id="continue">
+  <div class="container">
+    <span class="section-label">Go Further</span>
+    <h2 class="section-title">More Learning</h2>
+    <p class="continue-intro">Now that you have manipulated <strong>orbital alignment</strong> in the lab, look up. The same <strong>phases and geometry</strong> you controlled here are playing out in the real sky tonight.</p>
+    <div class="continue-grid">
+      <a href="extension_moon-tonight.html" class="cont-card" aria-label="The Moon Tonight extension">
+        <div class="cont-icon">&#127769;</div>
+        <div class="cont-cat">Extension</div>
+        <div class="cont-name">The Moon Tonight</div>
+        <div class="cont-desc">Take what you learned about phases and Sun-Earth-Moon alignment outside. See where the real Moon sits in the sky tonight and predict what it will look like tomorrow.</div>
+        <span class="cont-link">Extension</span>
+      </a>
+    </div>
   </div>
 </section>
 
@@ -3746,7 +3779,7 @@ var quizMode = 'practice';
 function setQuizMode(mode) {
   quizMode = mode;
   simMode  = mode; // keep saveState consistent
-  var infoBox  = document.getElementById('quiz-info-box');
+  var infoBox  = document.getElementById('student-info-box');
   var btnP     = document.getElementById('btn-practice');
   var btnC     = document.getElementById('btn-classroom');
   var hintP    = document.getElementById('hint-practice');
@@ -3775,7 +3808,9 @@ function buildCheckpoint() {
   container.innerHTML = '';
   chkState.selected  = [null, null, null, null, null];
   chkState.submitted = false;
-  document.getElementById('chk-submit-btn').disabled = true;
+  var chkSubmitBtnR = document.getElementById('chk-submit-btn');
+  chkSubmitBtnR.disabled = true;
+  chkSubmitBtnR.textContent = 'Submit Score';
   updateCheckProgress();
   var letters = ['A','B','C','D'];
   checkQuestions.forEach(function(q, qi) {
@@ -3832,12 +3867,13 @@ function submitCheckpoint() {
   if (quizMode === 'classroom') {
     var check = validateCheckInfo();
     if (!check.valid) {
-      document.getElementById('quiz-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('student-info-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
   }
   chkState.submitted = true;
-  document.getElementById('chk-submit-btn').disabled = true;
+  var chkSubmitBtn = document.getElementById('chk-submit-btn');
+  chkSubmitBtn.disabled = true;
 
   var correct = 0;
   checkQuestions.forEach(function(q, qi) {
@@ -3871,12 +3907,21 @@ function submitCheckpoint() {
   sb.classList.add('show');
   sb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
+  if (pct === 100) {
+    chkState.continueTimer = setTimeout(function () {
+      var more = document.getElementById('continue');
+      if (more) more.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 1900);
+  }
+
   if (quizMode === 'practice') {
+    chkSubmitBtn.textContent = 'Submitted';
     document.getElementById('chk-submit-status').innerHTML =
-      '<div class="score-practice-note">Practice mode, score not submitted</div>';
+      '<div class="score-practice-note">Practice mode - score not submitted</div>';
     return;
   }
 
+  chkSubmitBtn.textContent = 'Submitting…';
   var info = validateCheckInfo();
   var teacherLabel = info.teacher === 'mr-brown' ? 'Mr. Brown' : 'Ms. Gay';
   var params = new URLSearchParams({
@@ -3895,24 +3940,38 @@ function submitCheckpoint() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.status === 'success') {
+        chkSubmitBtn.textContent = 'Submitted';
         document.getElementById('chk-submit-status').innerHTML =
-          '<div class="score-submitted">&#10003; Score submitted to ' + teacherLabel + '</div>';
+          '<div class="score-submitted">✅ Score submitted to ' + teacherLabel + '</div>';
       } else {
+        chkSubmitBtn.textContent = 'Submit Score';
+        chkSubmitBtn.disabled = false;
+        chkState.submitted = false;
         document.getElementById('chk-submit-status').innerHTML =
-          '<div class="score-error">&#9888; Could not reach the server. Check your connection.</div>';
+          '<div class="score-error">⚠️ ' + (data.message || 'Could not submit score.') + '</div>';
       }
     })
     .catch(function() {
+      chkSubmitBtn.textContent = 'Submit Score';
+      chkSubmitBtn.disabled = false;
+      chkState.submitted = false;
       document.getElementById('chk-submit-status').innerHTML =
-        '<div class="score-error">&#9888; Could not reach the server. Check your connection.</div>';
+        '<div class="score-error">⚠️ Could not reach the server. Check your connection.</div>';
     });
 }
 
 /* ── RESET ───────────────────────────────────────────────── */
 function resetCheckpoint() {
+  if (chkState.continueTimer) {
+    clearTimeout(chkState.continueTimer);
+    chkState.continueTimer = null;
+  }
   document.getElementById('chk-score-board').classList.remove('show');
   document.getElementById('chk-submit-status').innerHTML = '';
   buildCheckpoint();
+  var quizLink = document.querySelector('.nav-links a[href="#quiz"]');
+  var target = quizLink && document.querySelector(quizLink.getAttribute('href'));
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ── INIT ────────────────────────────────────────────────── */

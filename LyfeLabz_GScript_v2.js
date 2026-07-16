@@ -562,7 +562,7 @@ var RESOURCE_REGISTRY = {
     resourceType:          'extension',
     expectedQuestionCount: 4,
     thinkingRequired:      false,
-    extendedFields:        ['environment', 'eventType', 'totalGens', 'accuracy'],
+    extendedFields:        ['accuracy'],
     headerColor:           '#3498db',
     fontColor:             '#ffffff',
   },
@@ -572,7 +572,7 @@ var RESOURCE_REGISTRY = {
     resourceType:          'extension',
     expectedQuestionCount: 10,
     thinkingRequired:      false,
-    extendedFields:        ['difficulty', 'groupsMatched', 'errors', 'hintsUsed', 'quizAnswers'],
+    extendedFields:        ['difficulty', 'groupsMatched', 'errors', 'hintsUsed'],
     headerColor:           '#3498db',
     fontColor:             '#ffffff',
   },
@@ -582,7 +582,6 @@ var RESOURCE_REGISTRY = {
     resourceType:          'extension',
     expectedQuestionCount: 10,
     thinkingRequired:      false,
-    extendedFields:        ['answers'],
     headerColor:           '#3498db',
     fontColor:             '#ffffff',
   },
@@ -592,7 +591,6 @@ var RESOURCE_REGISTRY = {
     resourceType:          'extension',
     expectedQuestionCount: 8,
     thinkingRequired:      false,
-    extendedFields:        ['answers'],
     headerColor:           '#3498db',
     fontColor:             '#ffffff',
   },
@@ -603,7 +601,6 @@ var RESOURCE_REGISTRY = {
     expectedQuestionCount: 8,
     thinkingRequired:      false,
     worksheetName:         'Are Viruses Alive',
-    extendedFields:        ['answers'],
     headerColor:           '#3498db',
     fontColor:             '#ffffff',
   },
@@ -616,7 +613,7 @@ var RESOURCE_REGISTRY = {
     resourceType:          'game',
     expectedQuestionCount: 5,
     thinkingRequired:      false,
-    extendedFields:        ['hintsUsed', 'quizAnswers'],
+    extendedFields:        ['hintsUsed'],
     headerColor:           '#f39c12',
     fontColor:             '#000000',
   },
@@ -629,7 +626,7 @@ var RESOURCE_REGISTRY = {
     resourceType:          'simulation',
     expectedQuestionCount: 4,
     thinkingRequired:      false,
-    extendedFields:        ['environment', 'eventType', 'totalGens', 'accuracy', 'prediction'],
+    extendedFields:        ['environment', 'eventType', 'accuracy', 'prediction'],
     headerColor:           '#9b59b6',
     fontColor:             '#ffffff',
   },
@@ -669,10 +666,7 @@ var RESOURCE_REGISTRY = {
     resourceType:          'investigation',
     expectedQuestionCount: 5,
     thinkingRequired:      false,
-    extendedFields:        [
-      'prediction', 'trials', 'targetAttempts', 'modelChoice',
-      'cerClaim', 'cerEvidence', 'cerReasoning', 'quizAnswers',
-    ],
+    extendedFields:        ['cerClaim', 'cerEvidence', 'cerReasoning'],
     headerColor:           '#e67e22',
     fontColor:             '#ffffff',
   },
@@ -682,7 +676,6 @@ var RESOURCE_REGISTRY = {
     resourceType:          'investigation',
     expectedQuestionCount: 5,
     thinkingRequired:      false,
-    extendedFields:        ['answers'],
     headerColor:           '#e67e22',
     fontColor:             '#ffffff',
   },
@@ -692,7 +685,6 @@ var RESOURCE_REGISTRY = {
     resourceType:          'investigation',
     expectedQuestionCount: 8,
     thinkingRequired:      false,
-    extendedFields:        ['answers'],
     headerColor:           '#e67e22',
     fontColor:             '#ffffff',
   },
@@ -702,7 +694,6 @@ var RESOURCE_REGISTRY = {
     resourceType:          'investigation',
     expectedQuestionCount: 8,
     thinkingRequired:      false,
-    extendedFields:        ['answers'],
     headerColor:           '#e67e22',
     fontColor:             '#ffffff',
   },
@@ -716,8 +707,8 @@ var RESOURCE_REGISTRY = {
     expectedQuestionCount: 10,
     thinkingRequired:      false,
     extendedFields:        [
-      'prediction', 'checkpoints', 'cerClaim', 'cerEvidence', 'cerReasoning',
-      'challengeChoice', 'challengeText', 'quizAnswers',
+      'prediction', 'cerClaim', 'cerEvidence', 'cerReasoning',
+      'challengeChoice', 'challengeText',
     ],
     headerColor:           '#e67e22',
     fontColor:             '#ffffff',
@@ -733,10 +724,10 @@ function resolveWorksheetName(resource) {
 // ── Schema builder ────────────────────────────────────────────────────────────
 // Returns { headers, fields } for a resource entry. The question columns sit
 // between the fixed leading and trailing columns.
+// Show Your Thinking is only included when thinkingRequired is true. Resources
+// without a Show Your Thinking prompt do not receive a blank column.
 var LEADING_HEADERS  = ['Timestamp', 'Student Name', 'Block'];
-var TRAILING_HEADERS = ['Score', 'Show Your Thinking'];
 var LEADING_FIELDS   = ['studentName', 'block'];
-var TRAILING_FIELDS  = ['score', 'thinking'];
 
 function buildSchema(resource) {
   var qHeaders = [];
@@ -747,9 +738,15 @@ function buildSchema(resource) {
   }
   var extFields   = resource.extendedFields || [];
   var extHeaders  = extFields.map(function(f) { return toHeaderLabel(f); });
+  var trailingH = resource.thinkingRequired
+    ? ['Score', 'Show Your Thinking']
+    : ['Score'];
+  var trailingF = resource.thinkingRequired
+    ? ['score', 'thinking']
+    : ['score'];
   return {
-    headers: LEADING_HEADERS.concat(qHeaders, TRAILING_HEADERS, extHeaders),
-    fields:  LEADING_FIELDS.concat(qFields, TRAILING_FIELDS, extFields),
+    headers: LEADING_HEADERS.concat(qHeaders, trailingH, extHeaders),
+    fields:  LEADING_FIELDS.concat(qFields, trailingF, extFields),
   };
 }
 
@@ -760,21 +757,14 @@ function toHeaderLabel(fieldName) {
     cerReasoning:    'CER: Reasoning',
     challengeChoice: 'Challenge Choice',
     challengeText:   'Challenge Response',
-    modelChoice:     'Model Choice',
-    quizAnswers:     'Quiz Answers (JSON)',
-    targetAttempts:  'Target Attempts (JSON)',
     hintsUsed:       'Hints Used',
     groupsMatched:   'Groups Matched',
-    totalGens:       'Total Generations',
     accuracy:        'Graph Accuracy',
     eventType:       'Event Type',
     environment:     'Environment',
     prediction:      'Prediction',
     difficulty:      'Difficulty',
     errors:          'Errors',
-    trials:          'Trials (JSON)',
-    checkpoints:     'Checkpoints (JSON)',
-    answers:         'Answers (compact)',
   };
   return map[fieldName] || fieldName;
 }

@@ -2765,7 +2765,6 @@ function gzSubmitWork() {
     teacher:     teacher,
     block:       block,
     score:       quizState.correct + '/' + quizData.total,
-    answers:     answerStr
   });
   gzQuizAnswers.forEach(function(idx, i) {
     params.set('q' + (i + 1), idx !== null ? letters[idx] : '-');

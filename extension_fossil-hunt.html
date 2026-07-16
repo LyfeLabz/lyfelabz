@@ -2636,7 +2636,6 @@ body:has(nav.menu-open) .quiz-progress-sticky { position: static; }
         groupsMatched: state.completedGroups.length + '/' + Object.keys(currentLevel().groups).length,
         errors:        String(state.errors),
         hintsUsed:     String(state.hintsUsed),
-        quizAnswers:   JSON.stringify(state.quizAnswers)
       });
       QUIZ_DATA[state.difficulty].forEach(q => {
         params.set('q' + q.id, state.quizAnswers[q.id] !== undefined ? letters[state.quizAnswers[q.id]] : '-');

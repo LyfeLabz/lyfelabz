@@ -1553,7 +1553,6 @@ function neSubmitWork() {
     teacher:     teacher,
     block:       block,
     score:       neQuizFinalScore + '/8',
-    answers:     answerStr
   });
   neQuizFinalAnswers.forEach(function(ok, i) {
     params.set('q' + (i + 1), ok ? 'C' : 'W');

@@ -1386,7 +1386,6 @@ function submitWork() {
     teacher:     teacher,
     block:       block,
     score:       quizState.correct + '/' + quizData.total,
-    answers:     answerStr
   });
   viQuizAnswers.forEach(function(idx, i) {
     params.set('q' + (i + 1), idx !== null ? letters[idx] : '-');

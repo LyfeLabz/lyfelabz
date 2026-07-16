@@ -1472,20 +1472,18 @@ function submitWork(){
   const teacherLabel = teacher === 'mr-kankel' ? 'Mr. Kankel' : 'Mr. Rovner';
   const letters = ['A','B','C','D'];
   const params = new URLSearchParams({
-    resourceId:'investigation_population-patterns',
-    grade:'7',
-    studentName:document.getElementById('studentNameInput').value.trim(),
-    block:document.getElementById('blockSelect').value,
-    teacher:teacher,
-    score:state.quizScore!==null?state.quizScore+'/10':'',
-    prediction:state.prediction||'',
-    checkpoints:JSON.stringify(state.checkpoints),
-    cerClaim:state.cer.claim||'',
-    cerEvidence:state.cer.evidence||'',
-    cerReasoning:state.cer.reasoning||'',
-    challengeChoice:state.challengeChoice||'',
-    challengeText:state.challengeText||'',
-    quizAnswers:JSON.stringify(state.quizAnswers)
+    resourceId:      'investigation_population-patterns',
+    grade:           '7',
+    studentName:     document.getElementById('studentNameInput').value.trim(),
+    block:           document.getElementById('blockSelect').value,
+    teacher:         teacher,
+    score:           state.quizScore !== null ? state.quizScore + '/10' : '',
+    prediction:      state.prediction || '',
+    cerClaim:        state.cer.claim || '',
+    cerEvidence:     state.cer.evidence || '',
+    cerReasoning:    state.cer.reasoning || '',
+    challengeChoice: state.challengeChoice || '',
+    challengeText:   state.challengeText || '',
   });
   state.quizAnswers.forEach((ans, i) => {
     params.set('q' + (i + 1), ans !== null ? letters[ans] : '-');
